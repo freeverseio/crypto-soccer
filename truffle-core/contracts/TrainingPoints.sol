@@ -26,30 +26,30 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         _assets = Assets(addr);
     }
 
-    function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory)
+    function computeTrainingPoints(uint256 matchLog0, uint256 matchLog1) public pure returns (uint256, uint256)
     {
         // +11 point for winning at home, +22 points for winning
         // away, or in a cup match. 0 points for drawing.
-        uint256 nGoals0 = getNGoals(matchLog[0]);
-        uint256 nGoals1 = getNGoals(matchLog[1]);
+        uint256 nGoals0 = getNGoals(matchLog0);
+        uint256 nGoals1 = getNGoals(matchLog1);
         uint256[2] memory points;
         points[0] = POINTS_FOR_HAVING_PLAYED;
         points[1] = POINTS_FOR_HAVING_PLAYED;
 
-        if (getWinner(matchLog[0])==0) { // we can get winner from [0] or [1], they are the same   
-            points[0] += (getIsHomeStadium(matchLog[0]) ? 11 : 22); // we can get homeStadium from [0] or [1], they are the same   
-        } else if (getWinner(matchLog[0])==1) {
-            points[1] += (getIsHomeStadium(matchLog[0]) ? 22 : 22);    
+        if (getWinner(matchLog0)==0) { // we can get winner from [0] or [1], they are the same   
+            points[0] += (getIsHomeStadium(matchLog0) ? 11 : 22); // we can get homeStadium from [0] or [1], they are the same   
+        } else if (getWinner(matchLog0)==1) {
+            points[1] += (getIsHomeStadium(matchLog0) ? 22 : 22);    
         }
         
         // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
-        points[0] += pointsPerWhoScoredGoalsAndAssists(matchLog[0], nGoals0);
-        points[1] += pointsPerWhoScoredGoalsAndAssists(matchLog[1], nGoals1);
+        points[0] += pointsPerWhoScoredGoalsAndAssists(matchLog0, nGoals0);
+        points[1] += pointsPerWhoScoredGoalsAndAssists(matchLog1, nGoals1);
 
         // if clean-sheet (opponent did not score):
         // +2 per half played by GK/D, +1 per half played for Mids and Atts
-        if (nGoals1 == 0) points[0] += pointsPerCleanSheet(matchLog[0]);
-        if (nGoals0 == 0) points[1] += pointsPerCleanSheet(matchLog[1]);
+        if (nGoals1 == 0) points[0] += pointsPerCleanSheet(matchLog0);
+        if (nGoals0 == 0) points[1] += pointsPerCleanSheet(matchLog1);
 
         uint256[2] memory pointsNeg;
         // -1 for each opponent goal
@@ -57,13 +57,14 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         pointsNeg[1] = nGoals0;
         // -3 for redCards, -1 for yellows
         for (uint8 team = 0; team <2; team++) {
+            uint256 thisLog = (team == 0 ? matchLog0 : matchLog1);
             pointsNeg[team] += 
-                    (getOutOfGameType(matchLog[team], false) == RED_CARD ? 3 : 0)
-                +   (getOutOfGameType(matchLog[team], true)  == RED_CARD ? 3 : 0)
-                +   ((getYellowCard(matchLog[team], 0, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
-                +   ((getYellowCard(matchLog[team], 1, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0)
-                +   ((getYellowCard(matchLog[team], 0, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
-                +   ((getYellowCard(matchLog[team], 1, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0);
+                    (getOutOfGameType(thisLog, false) == RED_CARD ? 3 : 0)
+                +   (getOutOfGameType(thisLog, true)  == RED_CARD ? 3 : 0)
+                +   ((getYellowCard(thisLog, 0, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
+                +   ((getYellowCard(thisLog, 1, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0)
+                +   ((getYellowCard(thisLog, 0, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
+                +   ((getYellowCard(thisLog, 1, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0);
         }
         
         // require(pointsNeg[0] == 10, "....");
@@ -73,8 +74,8 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         points[1] = (points[1] > pointsNeg[1]) ? (points[1] - pointsNeg[1]) : 0;
         
         // +10% for each extra 50 points of lack of balance between teams
-        uint256 teamSumSkills0 = getTeamSumSkills(matchLog[0]);
-        uint256 teamSumSkills1 = getTeamSumSkills(matchLog[1]);
+        uint256 teamSumSkills0 = getTeamSumSkills(matchLog0);
+        uint256 teamSumSkills1 = getTeamSumSkills(matchLog1);
 
         if (teamSumSkills0 > teamSumSkills1) {
             points[0] = (points[0] * teamSumSkills1) / (teamSumSkills0);
@@ -83,9 +84,9 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             points[0] = (points[0] * teamSumSkills1) / (teamSumSkills0);
             points[1] = (points[1] * teamSumSkills0) / (teamSumSkills1);
         }
-        matchLog[0] = addTrainingPoints(matchLog[0], points[0]);
-        matchLog[1] = addTrainingPoints(matchLog[1], points[1]);
-        return matchLog;
+        matchLog0 = addTrainingPoints(matchLog0, points[0]);
+        matchLog1 = addTrainingPoints(matchLog1, points[1]);
+        return (matchLog0, matchLog1);
     }
     
     // if clean-sheet (opponent did not score):

@@ -183,8 +183,9 @@ contract('Evolution', (accounts) => {
         precomp = await EnginePreComp.new().should.be.fulfilled;
         await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
         await training.setAssetsAddress(assets.address).should.be.fulfilled;
-        await play.setEngine(engine.address).should.be.fulfilled;
-        await play.setEvolutionAddress(training.address).should.be.fulfilled;
+        await play.setEngineAddress(engine.address).should.be.fulfilled;
+        await play.setTrainingAddress(training.address).should.be.fulfilled;
+        await play.setEvolutionAddress(evo.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
@@ -211,7 +212,7 @@ contract('Evolution', (accounts) => {
 
     
     
-    it2('updateStatesAfterPlayHalf: half 1', async () => {
+    it('updateStatesAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
         matchLog = await engine.playHalfMatch(
@@ -294,7 +295,7 @@ contract('Evolution', (accounts) => {
         weeks = await evo.getInjuryWeeksLeft(newSkills[1]);
         weeks.toNumber().should.be.equal(1);
         
-        // now try the same with a red card in both halfs
+        // now try the same with a red card in both halfs...
         newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
         newLog = await evo.addOutOfGame(newLog, player = 2, round = 2, typeOfOutOfGame = RED_CARD, is2nd = true).should.be.fulfilled;
         newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half2, newLog, tactics0, is2nd = true).should.be.fulfilled;
@@ -306,8 +307,6 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    return;
-    
     it('getTeamEvolvedSkills: if assignment = 0, it works by doing absolutely nothing', async () => {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
@@ -674,20 +673,20 @@ contract('Evolution', (accounts) => {
     });
 
     it('test that we can a 2nd half and include the training points too', async () => {
-        matchLog = await play.play2ndHalfAndEvolve(
+        const {0: skills, 1: matchLogsAndEvents} = await play.play2ndHalfAndEvolve(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
             [is2nd = true, isHomeStadium, isPlayoff]
         ).should.be.fulfilled;
-
-        matchLog[0].should.be.bignumber.equal('828212031530063714069492904776115492597195551273105492225696825706808722');
-        matchLog[1].should.be.bignumber.equal('993853943853037244967927045470764103456022166605194769473036213412693666');
+        
+        matchLogsAndEvents[0].should.be.bignumber.equal('828212031530063714069492904776115492597195551273105492225696825706808722');
+        matchLogsAndEvents[1].should.be.bignumber.equal('993853943853037244967927045470764103456022166605194769473036213412693666');
 
         expectedResult = [2, 2];
         expectedPoints = [15, 18];
         for (team = 0; team < 2; team++) {
-            nGoals = await encodeLog.getNGoals(matchLog[team]);
+            nGoals = await encodeLog.getNGoals(matchLogsAndEvents[team]);
             nGoals.toNumber().should.be.equal(expectedResult[team]);
-            points = await encodeLog.getTrainingPoints(matchLog[team]).should.be.fulfilled;
+            points = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expectedPoints[team]);
         }
     });
@@ -709,7 +708,7 @@ contract('Evolution', (accounts) => {
             isHome, ingameSubs1, ingameSubs2, yellows1, yellows2, 
             halfTimeSubstitutions, defs1, defs2, numTot, win, teamSumSkillsDefault, trainingPointsInit);
         
-        logFinal = await training.computeTrainingPoints([log0, log0])
+        logFinal = await training.computeTrainingPoints(log0, log0)
         expected = [36, 25];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
@@ -723,7 +722,7 @@ contract('Evolution', (accounts) => {
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
-        logFinal = await training.computeTrainingPoints([log0, log0])
+        logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(24+8) = 42
         expected = [42, 42];
         for (team = 0; team < 2; team++) {
@@ -743,7 +742,7 @@ contract('Evolution', (accounts) => {
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
-        logFinal = await training.computeTrainingPoints([log0, log0])
+        logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(5)  
         expected = [25, 25];
         for (team = 0; team < 2; team++) {
@@ -763,7 +762,7 @@ contract('Evolution', (accounts) => {
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
-        logFinal = await training.computeTrainingPoints([log0, log0])
+        logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_MIDS(5 * 5) - GOALS_OPPONENT(5)  
         expected = [30, 30];
         for (team = 0; team < 2; team++) {
@@ -783,7 +782,7 @@ contract('Evolution', (accounts) => {
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
-        logFinal = await training.computeTrainingPoints([log0, log0])
+        logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_DEFS(4 * 5) + ASSISTS(3*5) - GOALS_OPPONENT(5)  
         expected = [50, 50];
         for (team = 0; team < 2; team++) {
@@ -815,7 +814,7 @@ contract('Evolution', (accounts) => {
             isHome, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, win, teamSumSkillsDefault, trainingPointsInit);
             
-        logFinal = await training.computeTrainingPoints([log0, log1])
+        logFinal = await training.computeTrainingPoints(log0, log1)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + WIN_AT_HOME(11) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(4)  
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 4) - GOALS_OPPONENT(5)  
         expected = [37, 21];
@@ -847,7 +846,7 @@ contract('Evolution', (accounts) => {
             isHome, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, win, teamSumSkillsDefault, trainingPointsInit);
             
-        logFinal = await training.computeTrainingPoints([log0, log1])
+        logFinal = await training.computeTrainingPoints(log0, log1)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(6)  
         // expect: POINTS_FOR_HAVING_PLAYED(10) + WIN_AWAY(22) + GOALS_BY_ATTACKERS(4 * 6) - GOALS_OPPONENT(5)  
         expected = [24, 51];
@@ -869,7 +868,7 @@ contract('Evolution', (accounts) => {
             isHomeSt, ingameSubs1, ingameSubs2, yellows1, yellows2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
-        logFinal = await training.computeTrainingPoints([log0, log0])
+        logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(23+8) - REDS(3*2) - YELLOWS(4) 
         expected = [31, 31];
         for (team = 0; team < 2; team++) {
@@ -890,7 +889,7 @@ contract('Evolution', (accounts) => {
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
-        logFinal = await training.computeTrainingPoints([log0, log0])
+        logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(5)  
         expected = [25, 25];
         for (team = 0; team < 2; team++) {
@@ -910,7 +909,7 @@ contract('Evolution', (accounts) => {
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPointsInit);
             
-        logFinal = await training.computeTrainingPoints([log0, log1])
+        logFinal = await training.computeTrainingPoints(log0, log1)
         expected = [50, 12];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
@@ -928,7 +927,7 @@ contract('Evolution', (accounts) => {
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPointsInit);
             
-        logFinal = await training.computeTrainingPoints([log0, log1])
+        logFinal = await training.computeTrainingPoints(log0, log1)
         expected = [12, 50];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
