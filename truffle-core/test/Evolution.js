@@ -234,12 +234,13 @@ contract('Evolution', (accounts) => {
         newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
         newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(13,25), teamStateAll50Half1.slice(13,25), toNum = false, verbose = false, isBigNumber = true);
+        alignedRedCarded = await evo.setRedCardLastGame(aligned, true).should.be.fulfilled
+        newSkills[1].should.be.bignumber.equal(alignedRedCarded);
         for (p = 0; p < 13; p++) {
-            console.log(p)
             if (p != 1) {
                 if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
                 else {newSkills[p].should.be.bignumber.equal(substituted);}
-            }
+            } 
         }
     });
     
