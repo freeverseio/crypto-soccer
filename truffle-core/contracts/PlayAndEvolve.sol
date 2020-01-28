@@ -26,7 +26,37 @@ contract PlayAndEvolve {
         _engine = Engine(addr);
     }
 
+    // In a 1st half we need to:
+    //      1. applyTrainingPoints: (oldStates, userAssignment) => (newStates)
+    //      2. playHalfMatch: (newStates) => (matchLog, events)
+    //      3. updateStatesAfterPlayHalf: (newStates, matchLog) => finalStates
+    // Output: (finalStates, matchLogsAndEvents)
+    function play1stHalfAndEvolve(
+        uint256 seed,
+        uint256 matchStartTime,
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[2] memory tactics,
+        uint256[2] memory userAssignment,
+        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
+    )
+        public view returns(uint256[PLAYERS_PER_TEAM_MAX][2] memory, uint256[2+5*ROUNDS_PER_MATCH] memory)
+    {
+        require(!matchBools[IDX_IS_2ND_HALF], "play1stHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
+        states[0] = _training.applyTrainingPoints(states[0], userAssignment[0], matchStartTime);
+        states[1] = _training.applyTrainingPoints(states[1], userAssignment[1], matchStartTime);
+        
+        uint256[2] memory nullLogs;
+        uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
+            _engine.playHalfMatch(seed, matchStartTime, states, tactics, nullLogs, matchBools);
+
+        states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLogsAndEvents[0], tactics[0], true);
+        states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLogsAndEvents[1], tactics[1], true);
+
+        return (states, matchLogsAndEvents);
+    }
+    
+    
     // In a 2nd half we need to:
     //      1. playHalfMatch: (oldStates, matchLogsHalf1) => (matchLogsHalf2, events)
     //      2. updateStatesAfterPlayHalf: (oldStates, matchLogsHalf2) => newStates
@@ -47,8 +77,8 @@ contract PlayAndEvolve {
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
             _engine.playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
 
-        states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLog[0], tactics[0], true);
-        states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLog[1], tactics[1], true);
+        states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLogsAndEvents[0], tactics[0], true);
+        states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLogsAndEvents[1], tactics[1], true);
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = _training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
 

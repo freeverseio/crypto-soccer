@@ -124,7 +124,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         }
     }
     
-    function getTeamEvolvedSkills(
+    function applyTrainingPoints(
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
         uint256 userAssignment,
         uint256 matchStartTime
