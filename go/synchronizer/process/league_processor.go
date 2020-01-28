@@ -72,6 +72,16 @@ func FromStorage(
 	return matches, nil
 }
 
+func ToStorage(
+	tx *sql.Tx,
+	matches engine.Matches,
+) error {
+	for _, match := range matches {
+
+	}
+	return nil
+}
+
 func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmission) error {
 	day := event.Day
 	turnInDay := event.TurnInDay
@@ -95,7 +105,8 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	default:
 		log.Warnf("[LeagueProcessor] ... skipping")
 	} // switch
-	return nil
+
+	return ToStorage(tx, matches)
 }
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
