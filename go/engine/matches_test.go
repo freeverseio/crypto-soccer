@@ -19,7 +19,7 @@ var funcs = []struct {
 
 func BenchmarkPlayer1stHalf(b *testing.B) {
 	for _, f := range funcs {
-		for i := 10; i < 200; i *= 2 {
+		for i := 10; i < 500; i *= 2 {
 			var matches engine.Matches
 			for n := 0; n < i; n++ {
 				matches = append(matches, *engine.NewMatch())

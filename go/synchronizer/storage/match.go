@@ -33,14 +33,12 @@ func NewMatch() *Match {
 
 func (b *Match) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create Match Day %v", b)
-	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_match_log, visitor_match_log) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_match_log, visitor_match_log) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.LeagueIdx,
 		b.MatchDayIdx,
 		b.MatchIdx,
-		b.HomeTeamID.String(),
-		b.VisitorTeamID.String(),
 		b.HomeMatchLog.String(),
 		b.VisitorMatchLog.String(),
 	)

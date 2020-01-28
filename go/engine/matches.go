@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"database/sql"
+	"net/http"
 	"runtime"
 
 	"golang.org/x/sync/errgroup"
@@ -13,6 +14,46 @@ import (
 )
 
 type Matches []Match
+
+func NewMatchesFromTimezoneIdxMatchdayIdx(
+	tx *sql.Tx,
+	timezoneIdx uint8,
+	day uint8,
+) (*Matches, error) {
+	stoMatches, err := storage.MatchesByTimezoneIdxAndMatchDay(tx, timezoneIdx, day)
+	if err != nil {
+		return nil, err
+	}
+
+	var matches Matches
+	for _, stoMatch := range stoMatches {
+		stoHomeTeam, err := storage.TeamByTeamId(tx, stoMatch.HomeTeamID)
+		if err != nil {
+			return nil, err
+		}
+		stoVisitorTeam, err := storage.TeamByTeamId(tx, stoMatch.VisitorTeamID)
+		if err != nil {
+			return nil, err
+		}
+		stoHomePlayers, err := storage.PlayersByTeamId(tx, stoMatch.HomeTeamID)
+		if err != nil {
+			return nil, err
+		}
+		stoVisitorPlayers, err := storage.PlayersByTeamId(tx, stoMatch.VisitorTeamID)
+		if err != nil {
+			return nil, err
+		}
+		match := NewMatchFromStorage(
+			stoMatch,
+			stoHomeTeam,
+			stoVisitorTeam,
+			stoHomePlayers,
+			stoVisitorPlayers,
+		)
+		matches = append(matches, *match)
+	}
+	return &matches, nil
+}
 
 func NewMatchesFromTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(
 	tx *sql.Tx,
@@ -78,7 +119,7 @@ func (b Matches) Play2ndHalf(ctx context.Context, contracts contracts.Contracts)
 
 func (b Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
 	numWorkers := runtime.NumCPU()
-	log.Debugf("Using %v workers", numWorkers)
+	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100
 
 	matchesChannel := make(chan Match, len(b))
 	g, _ := errgroup.WithContext(ctx)
@@ -107,7 +148,7 @@ func (b Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Co
 
 func (b Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
 	numWorkers := runtime.NumCPU()
-	log.Debugf("Using %v workers", numWorkers)
+	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100
 
 	matchesChannel := make(chan Match, len(b))
 	g, _ := errgroup.WithContext(ctx)

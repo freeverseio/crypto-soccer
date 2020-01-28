@@ -99,6 +99,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	// case 0: // first half league match
 	// case 1:
 	if turnInDay < 2 {
+		is2ndHalf := turnInDay == 1
 		countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 		if err != nil {
 			return err
@@ -116,7 +117,6 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 				return err
 			}
 			for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-				is2ndHalf := turnInDay == 1
 				log.Infof("LeagueProcessor::Process timezone: %v, countryIdx %v, leagueIdx %v, 2ndHalf %v", timezoneIdx, countryIdx, leagueIdx, is2ndHalf)
 				if day == 0 {
 					if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx); err != nil {
@@ -127,23 +127,23 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 					}
 				}
 
-				matches, err := engine.NewMatchesFromTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
-				if err != nil {
-					return err
-				}
-				if is2ndHalf {
-					if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
-						return err
-					}
-				} else {
-					if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
-						return err
-					}
-				}
-				if err = matches.ToStorage(*b.contracts, tx); err != nil {
-					return err
-				}
 			}
+		}
+		matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
+		if err != nil {
+			return err
+		}
+		if is2ndHalf {
+			if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
+				return err
+			}
+		} else {
+			if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
+				return err
+			}
+		}
+		if err = matches.ToStorage(*b.contracts, tx); err != nil {
+			return err
 		}
 	}
 	// default:
