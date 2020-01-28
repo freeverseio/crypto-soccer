@@ -80,7 +80,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         for (uint8 posInHalf = 0; posInHalf < 3; posInHalf++) {
             if (getInGameSubsHappened(matchLog, posInHalf, false) == CHG_HAPPENED) {
                 uint8 leavingFieldPlayer    = substitutions[posInHalf];
-                uint8 enteringFieldPlayer   = lineUp[10 + posInHalf];
+                uint8 enteringFieldPlayer   = lineUp[11 + posInHalf];
                 states[leavingFieldPlayer]  = setAlignedEndOfFirstHalf(states[leavingFieldPlayer], false);
                 states[leavingFieldPlayer]  = setSubstitutedFirstHalf(states[leavingFieldPlayer], true);
                 states[enteringFieldPlayer] = setAlignedEndOfFirstHalf(states[enteringFieldPlayer], true);

@@ -211,7 +211,7 @@ contract('Evolution', (accounts) => {
 
     
     
-    
+    // test test/Evolution.js
     it('updateStatesAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
@@ -221,22 +221,49 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
         newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false).should.be.fulfilled;
         // players not aligned did not change state: 
-        debug.compareArrays(newSkills.slice(13,25), teamStateAll50Half1.slice(13,25), toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
         // those that were aligned either finished the 1st half, or were substituted:
         aligned = await evo.setAlignedEndOfFirstHalf(teamStateAll50Half1[0], true).should.be.fulfilled
         substituted = await evo.setSubstitutedFirstHalf(teamStateAll50Half1[0], true).should.be.fulfilled
-        for (p = 0; p < 13; p++) {
+        for (p = 0; p < 14; p++) {
             if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
             else {newSkills[p].should.be.bignumber.equal(substituted);}
         }
         // now try the same with a red card:
-        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false).should.be.fulfilled;
         newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
         newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
-        debug.compareArrays(newSkills.slice(13,25), teamStateAll50Half1.slice(13,25), toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
         alignedRedCarded = await evo.setRedCardLastGame(aligned, true).should.be.fulfilled
         newSkills[1].should.be.bignumber.equal(alignedRedCarded);
-        for (p = 0; p < 13; p++) {
+        for (p = 0; p < 14; p++) {
+            if (p != 1) {
+                if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
+                else {newSkills[p].should.be.bignumber.equal(substituted);}
+            } 
+        }
+        // now try the same with a hard injury:
+        SOFT_INJURY = 1;
+        HARD_INJURY = 2;
+        WEEKS_SOFT_INJ = 2;
+        WEEKS_HARD_INJ = 5;
+        newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = HARD_INJURY, is2nd = false).should.be.fulfilled;
+        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_HARD_INJ).should.be.fulfilled
+        newSkills[1].should.be.bignumber.equal(alignedInjured);
+        for (p = 0; p < 14; p++) {
+            if (p != 1) {
+                if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
+                else {newSkills[p].should.be.bignumber.equal(substituted);}
+            } 
+        }
+        // now try the same with a soft injury:
+        newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = SOFT_INJURY, is2nd = false).should.be.fulfilled;
+        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_SOFT_INJ).should.be.fulfilled
+        newSkills[1].should.be.bignumber.equal(alignedInjured);
+        for (p = 0; p < 14; p++) {
             if (p != 1) {
                 if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
                 else {newSkills[p].should.be.bignumber.equal(substituted);}
