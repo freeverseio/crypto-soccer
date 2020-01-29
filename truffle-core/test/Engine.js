@@ -53,7 +53,7 @@ contract('Engine', (accounts) => {
     const WINNER_HOME = 0;
     const WINNER_AWAY = 1;
     const teamSumSkillsDefault = 3256244;
-    const MAX_GOALS = 12;
+    const MAX_GOALS_IN_HALF = 12;
     const it2 = async(text, f) => {};
     const trainingPointsDefault = 12;
     
@@ -460,9 +460,9 @@ contract('Engine', (accounts) => {
         // cook data so that the first half ended up in a way that:
         //  - there are red cards
         //  - there are the right goals to, then, in 2nd half, end up in draw.
-        assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => i);
-        shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
-        shooterForwardPos  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
+        assistersIdx = Array.from(new Array(MAX_GOALS_IN_HALF), (x,i) => i);
+        shootersIdx  = Array.from(new Array(MAX_GOALS_IN_HALF), (x,i) => 1);
+        shooterForwardPos  = Array.from(new Array(MAX_GOALS_IN_HALF), (x,i) => 1);
         penalties  = Array.from(new Array(7), (x,i) => false);
         typesOutOfGames = [3, 0];
         outOfGameRounds = [7, 0];
@@ -804,9 +804,16 @@ contract('Engine', (accounts) => {
         result[1][4].toNumber().should.be.equal(50);
     });
     
-    it('play a match in home stadium', async () => {
-        log = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHome = true, isPlayoff]).should.be.fulfilled;
+    it('play a match in home stadium, check that max goals is applied', async () => {
+        // note: the home team is much better than the away team
+        log = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2nd = false, isHome = true, isPlayoff]).should.be.fulfilled;
         expected = [10, 0];
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodingLog.getNGoals(log[team]);
+            nGoals.toNumber().should.be.equal(expected[team]);
+        }
+        log = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics0, tactics1], extractMatchLogs(log), [is2nd = false, isHome = true, isPlayoff]).should.be.fulfilled;
+        expected = [MAX_GOALS_IN_MATCH, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
