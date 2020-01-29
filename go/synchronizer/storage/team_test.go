@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"gotest.tools/assert"
 )
 
 func TestTeamCount(t *testing.T) {
@@ -147,6 +148,7 @@ func TestGetTeamInLeague(t *testing.T) {
 	if len(teams) != 1 {
 		t.Fatalf("Expected 1 received %v", len(teams))
 	}
+	assert.Equal(t, teams[0].TeamID.String(), team.TeamID.String())
 }
 
 func TestUpdateTeamOwner(t *testing.T) {

@@ -50,7 +50,7 @@ func TestNewPlayer(t *testing.T) {
 	injuryWeeksLeft := uint8(0)
 	substitutedLastHalf := false
 	p, err := engine.NewPlayer(
-		bc.Contracts,
+		*bc.Contracts,
 		playerID,
 		defence,
 		speed,

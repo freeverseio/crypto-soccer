@@ -11,7 +11,7 @@ import (
 
 func CreateDummyPlayer(
 	t *testing.T,
-	contracts *contracts.Contracts,
+	contracts contracts.Contracts,
 	age uint16,
 	defence uint16,
 	speed uint16,

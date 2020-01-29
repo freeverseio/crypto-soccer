@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"math/big"
@@ -8,23 +9,19 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/matchevents"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type Match struct {
-	Seed            [32]byte
-	StartTime       *big.Int
-	HomeTeam        *Team
-	VisitorTeam     *Team
-	HomeGoals       uint8
-	VisitorGoals    uint8
-	HomeMatchLog    *big.Int
-	VisitorMatchLog *big.Int
-	Events          matchevents.MatchEvents
+	storage.Match
+	Seed        [32]byte
+	StartTime   *big.Int
+	HomeTeam    Team
+	VisitorTeam Team
+	Events      matchevents.MatchEvents
 }
-
-type Matches []Match
 
 func (b Match) DumpState() string {
 	var state string
@@ -43,11 +40,41 @@ func (b Match) DumpState() string {
 func NewMatch() *Match {
 	var mp Match
 	mp.StartTime = big.NewInt(0)
-	mp.HomeTeam = NewTeam()
-	mp.VisitorTeam = NewTeam()
+	mp.HomeTeam = *NewTeam()
+	mp.VisitorTeam = *NewTeam()
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
 	return &mp
+}
+
+func NewMatchFromStorage(
+	sMatch storage.Match,
+	sHomeTeam storage.Team,
+	sVisitorTeam storage.Team,
+	sHomePlayers []*storage.Player,
+	sVisitorPlayers []*storage.Player,
+) *Match {
+	match := NewMatch()
+	match.Match = sMatch
+	match.HomeTeam.Team = sHomeTeam
+	match.VisitorTeam.Team = sVisitorTeam
+	for _, player := range sHomePlayers {
+		match.HomeTeam.Players[player.ShirtNumber].sto = *player
+	}
+	for _, player := range sVisitorPlayers {
+		match.VisitorTeam.Players[player.ShirtNumber].sto = *player
+	}
+	return match
+}
+
+func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
+	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
+		return err
+	}
+	if err := b.VisitorTeam.ToStorage(contracts, tx); err != nil {
+		return err
+	}
+	return b.Update(tx)
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {

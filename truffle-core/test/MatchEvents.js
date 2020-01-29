@@ -12,6 +12,7 @@ const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const Evolution = artifacts.require('Evolution');
 
 contract('Engine', (accounts) => {
     const UNDEF = undefined;
@@ -133,6 +134,9 @@ contract('Engine', (accounts) => {
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
+        evolution = await Evolution.new().should.be.fulfilled;
+        await evolution.setAssetsAddress(assets.address).should.be.fulfilled;
+        await evolution.setEngine(engine.address).should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
@@ -152,6 +156,93 @@ contract('Engine', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
+    });
+
+    it('hardcoded test - half 1', async () => {
+        // We test that this hardcoded-inputs game ends 1-1
+        // At start of first half, all players have indentical state.
+        team0 = [];
+        for (p = 0; p < 25; p++) team0.push('16573429227295117480385309339445376240739796176995438');
+        team1 = [];
+        for (p = 0; p < 25; p++) team1.push('16573429227295117480385309340654302060354425351701614');
+        tactics = '340596594427581673436941882753025';
+        seed0 = '0xd971ed54244f38710fc14e8b5fd0ad9491eba0a0b62fb04f575c9875a3d75739';
+        homeId = 1;
+        awayId = 2;
+        seed0 = await engine.generateMatchSeed(seed0, homeId, awayId);
+        log0 = '0';
+        log1 = '0';
+        startTime = 1570147200;
+        evs = await engine.playHalfMatch(seed0, startTime, [team0, team1], [tactics, tactics], [log0, log1], [is2nd = false, isHome = true,  playoff = false]).should.be.fulfilled;
+        nG = await engine.getNGoals(evs[0]).should.be.fulfilled;
+        nG.toNumber().should.be.equal(1);
+        nG = await engine.getNGoals(evs[1]).should.be.fulfilled;
+        nG.toNumber().should.be.equal(1);
+        expectedLog = '205261884989140840566329426675285474869510664919538653543599802679409'
+        evs[0].should.be.bignumber.equal(expectedLog)
+    });
+    
+    it('hardcoded test - half 2', async () => {
+        // the first half ended 1-1, and the second, 4-1. This test checks that team0 scores 3 goals in the events list.
+        // the states we write here are the output states after 1st half. Basically, players who were linedup have a different state
+        linedUp = '16573434936285888304224833572589254038720341707981934'
+        notLinedUp = '16573429227295117480385309339445376240739796176995438'
+        team0 = [];
+        for (p = 0; p < 25; p++) team0.push(linedUp);
+        for (p = 13; p < 25; p++) team0[p] = notLinedUp;
+        for (p = 1; p <= 2; p++) team0[p] = notLinedUp;
+        
+        linedUp = '16573434936285888304224833573798179858334970882688110'
+        notLinedUp = '16573429227295117480385309340654302060354425351701614'
+        team1 = [];
+        for (p = 0; p < 25; p++) team1.push(linedUp);
+        for (p = 13; p < 25; p++) team1[p] = notLinedUp;
+        for (p = 1; p <= 2; p++) team1[p] = notLinedUp;
+
+        //       
+        tactics = '340596594427581673436941882753025';
+        seed0 = '0xd971ed54244f38710fc14e8b5fd0ad9491eba0a0b62fb04f575c9875a3d75739';
+        homeId = 1;
+        awayId = 2;
+        seed0 = await engine.generateMatchSeed(seed0, homeId, awayId);
+        log0 = '205261884989140840566329426675285474869510664919538653543599802679409';
+        log1 = '205261884989140840566329426675285474869510664919538662550799057420433';
+        startTime = 1570147200;
+
+        // play using evolution, which automatically adds training points, and check againsted expected log coming from Go.
+        evs2 = await evolution.play2ndHalfAndEvolve(seed0, startTime, [team0, team1], [tactics, tactics], [log0, log1], [is2nd = true, isHome = true,  playoff = false]).should.be.fulfilled;
+        nG = await engine.getNGoals(evs2[0]).should.be.fulfilled;
+        nG.toNumber().should.be.equal(4)
+        expectedLog = '1270126589710522258182323394732234344281996953062426276584982961367525236'
+        evs2[0].should.be.bignumber.equal(expectedLog)
+
+        // playing using matchEvents to get the events (besides the logs). Check that the logs, after adding the training points,
+        // lead to the same logs as above
+        evs = await engine.playHalfMatch(seed0, startTime, [team0, team1], [tactics, tactics], [log0, log1], [is2nd = true, isHome = true,  playoff = false]).should.be.fulfilled;
+        nG = await engine.getNGoals(evs[0]).should.be.fulfilled;
+        nG.toNumber().should.be.equal(4)
+        nG = await engine.getNGoals(evs[1]).should.be.fulfilled;
+        nG.toNumber().should.be.equal(1)
+        newLogs = await evolution.computeTrainingPoints([evs[0],evs[1]]).should.be.fulfilled;
+        newLogs[0].should.be.bignumber.equal(expectedLog)
+
+        // comment/uncomment to get new test results
+        // st2 = ''
+        // for (e = 0; e < 12; e++) {
+        //     st = 'event: ' + e
+        //     for (p = 0; p < 5; p++) {
+        //         st += " " + evs[2+5*e+p].toNumber();
+        //         st2 += ', ' + evs[2+5*e+p].toNumber();
+        //     }
+        //     if (evs[2+5*e+3].toNumber() == 1) {
+        //         st += "  -> GOAL"
+        //     }
+        //     console.log(st);
+        // }
+        // console.log(st2);
+        
+        expected = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 7, 1, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 10, 1, 10, 0, 1, 7, 1, 7, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        debug.compareArrays(evs.slice(2), expected, toNum = true, verbose = false);
     });
     
     it('wasPlayerAlignedEndOfLastHalf', async () => {
