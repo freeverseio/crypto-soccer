@@ -1136,7 +1136,8 @@ contract('Engine', (accounts) => {
 
     it('play match with wrong tactic', async () => {
         tacticsWrong = await engine.encodeTactics(substitutions, subsRounds, lineup1, extraAttackNull, tacticIdTooLarge = 6);
-        await engine.playHalfMatch(seed, now, teamStateAll50Half1, teamStateAll50Half1, [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.rejected;
+        await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.rejected;
     });
 
 
