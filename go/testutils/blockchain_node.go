@@ -120,12 +120,12 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	txs = append(txs, tx)
-	playandevolveAddress, tx, _, err := playandevolve.DeployPlayandevolve(auth, b.Client)
+	playandevolveAddress, tx, playandevolveContract, err := playandevolve.DeployPlayandevolve(auth, b.Client)
 	if err != nil {
 		return err
 	}
 	txs = append(txs, tx)
-	trainingpointsAddress, tx, _, err := trainingpoints.DeployTrainingpoints(auth, b.Client)
+	trainingpointsAddress, tx, trainingpointsContract, err := trainingpoints.DeployTrainingpoints(auth, b.Client)
 	if err != nil {
 		return err
 	}
@@ -156,8 +156,20 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	txs = append(txs, tx)
+	if tx, err = trainingpointsContract.SetAssetsAddress(auth, assetsAddress); err != nil {
+		return err
+	}
+	txs = append(txs, tx)
+	if tx, err = playandevolveContract.SetEngineAddress(auth, engineAddress); err != nil {
+		return err
+	}
+	txs = append(txs, tx)
 	tx, err = engineContract.SetPreCompAddr(auth, engineprecompAddress)
 	if err != nil {
+		return err
+	}
+	txs = append(txs, tx)
+	if tx, err = playandevolveContract.SetTrainingAddress(auth, trainingpointsAddress); err != nil {
 		return err
 	}
 	txs = append(txs, tx)
