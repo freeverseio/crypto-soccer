@@ -188,6 +188,23 @@ contract('Engine', (accounts) => {
             expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
             isHomeSt = UNDEF, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            
+        // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
+        expected = [
+            1, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            1, 0, 0, 0, 0, 
+            0, 1, 1, 1, 6, 
+            0, 0, 0, 0, 0, 
+            1, 1, 9, 1, 8, 
+            1, 0, 0, 0, 0, 
+            1, 1, 9, 1, 9, 
+            1, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0
+        ];
+        debug.compareArrays(newLog.slice(2), expected, toNum = true, verbose = false);
     });
 
     it('computeExceptionalEvents no clashes with redcards', async () => {
@@ -1198,9 +1215,30 @@ contract('Engine', (accounts) => {
         }
         matchLog = await engine.playHalfMatch(654322, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expectedResult = [1, 1];
+        result = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expectedResult[team]);
+            result.push(nGoals);
         }
+        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+        // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
+        expected = [ 
+            1, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            1, 1, 7, 1, 9, 
+            0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            1, 0, 0, 0, 0, 
+            0, 1, 10, 1, 10, 
+            1, 0, 0, 0, 0, 
+            1, 0, 0, 0, 0, 
+            1, 1, 8, 0, 0, 
+            1, 1, 10, 0, 0, 
+            1, 0, 0, 0, 0 
+        ];
+        goals = [0,0];
+        for (i=0;i< expected.length/5;i++) goals[expected[5*i]] += expected[5*i+3] + 0*result[0] ;
+        debug.compareArrays(goals, expectedResult, toNum = false, verbose = false);
+        debug.compareArrays(matchLog.slice(2), expected, toNum = true, verbose = false);
     });
 });
