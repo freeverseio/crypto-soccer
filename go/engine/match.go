@@ -99,12 +99,8 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
-	for i, playerSkill := range newSkills[0] {
-		b.HomeTeam.Players[i].sto.EncodedSkills = playerSkill
-	}
-	for i, playerSkill := range newSkills[1] {
-		b.VisitorTeam.Players[i].sto.EncodedSkills = playerSkill
-	}
+	b.HomeTeam.SetSkills(newSkills[0])
+	b.VisitorTeam.SetSkills(newSkills[1])
 	b.HomeMatchLog = logsAndEvents[0]
 	b.VisitorMatchLog = logsAndEvents[1]
 	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
@@ -125,7 +121,7 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
-	_, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
+	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		matchSeed,
 		b.StartTime,
@@ -141,6 +137,8 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
+	b.HomeTeam.SetSkills(newSkills[0])
+	b.VisitorTeam.SetSkills(newSkills[1])
 	b.HomeMatchLog = logsAndEvents[0]
 	b.VisitorMatchLog = logsAndEvents[1]
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
