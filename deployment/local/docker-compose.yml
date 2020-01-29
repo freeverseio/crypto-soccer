@@ -13,6 +13,8 @@ services:
     build: ../../universe.db/
     ports:
       - "5432:5432"
+    volumes:
+      - universe.db-data:/var/lib/postgresql/data
   relay.db:
     build: ../../relay.db/
     ports:
@@ -116,3 +118,4 @@ services:
 volumes:
   ethereum-data:
   ipfs.node-data:
+  universe.db-data:

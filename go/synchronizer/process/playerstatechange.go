@@ -52,7 +52,7 @@ func GeneratePlayerByPlayerIdAndState(
 	opts := &bind.CallOpts{}
 	if encodedSkills, err := contracts.Assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
 		return nil, err
-	} else if defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := utils.DecodeSkills(contracts.Assets, encodedSkills); err != nil {
+	} else if defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := contracts.DecodeSkills(encodedSkills); err != nil {
 		return nil, err
 	} else if preferredPosition, err := GetPlayerPreferredPosition(contracts, encodedSkills); err != nil {
 		return nil, err

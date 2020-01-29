@@ -11,7 +11,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -119,7 +118,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	}
 	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
 	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
-	computedEvents, err := matchevents.GenerateMatchEvents(
+	computedEvents, err := matchevents.Generate(
 		matchSeed,
 		log0,
 		log1,
@@ -219,8 +218,8 @@ func (b *MatchProcessor) InnerProcess(
 	if err != nil {
 		return nil, err
 	}
-	match.HomeGoals = &goalsHome
-	match.VisitorGoals = &goalsVisitor
+	match.HomeGoals = goalsHome
+	match.VisitorGoals = goalsVisitor
 	match.HomeMatchLog = new(big.Int).Set(logs[0])
 	match.VisitorMatchLog = new(big.Int).Set(logs[1])
 	if err = b.UpdatePlayedByHalf(homeTeamPlayers, is2ndHalf, match.HomeTeamID, tactics[0], logs[0]); err != nil {
@@ -578,7 +577,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	if err != nil {
 		return err
 	}
-	team.TrainingPoints = uint32(trainingPoints.Uint64())
+	team.TrainingPoints = trainingPoints.Uint64()
 
 	states, err := b.GetTeamState(players)
 	if err != nil {
@@ -599,7 +598,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	for i := range players {
 		shirtNumber := players[i].ShirtNumber
 		newState := newStates[shirtNumber]
-		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.contracts.Assets, newState)
+		defence, speed, pass, shoot, endurance, _, _, err := b.contracts.DecodeSkills(newState)
 		if err != nil {
 			return err
 		}
