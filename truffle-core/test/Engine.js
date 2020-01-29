@@ -804,7 +804,7 @@ contract('Engine', (accounts) => {
     
     it('play a match in home stadium', async () => {
         log = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHome = true, isPlayoff]).should.be.fulfilled;
-        expected = [10, 0];
+        expected = [7, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -813,7 +813,7 @@ contract('Engine', (accounts) => {
     
     it('play a match', async () => {
         log = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expected = [10, 0];
+        expected = [7, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -1145,7 +1145,7 @@ contract('Engine', (accounts) => {
         // when a team has no players it should lose by the max amount possible (= 12 ROUNDS)
         states = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => 0); 
         matchLog = await engine.playHalfMatch(seed, now, [states, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [0, 12];
+        expectedResult = [0, 7];
         result = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
@@ -1154,7 +1154,7 @@ contract('Engine', (accounts) => {
         // and viceversa:
         debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
         matchLog = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, states], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [12, 0];
+        expectedResult = [7, 0];
         result = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
@@ -1173,7 +1173,7 @@ contract('Engine', (accounts) => {
         }
 
         matchLog = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [11, 0];
+        expectedResult = [7, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             nGoals.toNumber().should.be.equal(expectedResult[team]);
