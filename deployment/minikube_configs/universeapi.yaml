@@ -10,7 +10,7 @@ metadata:
 spec:
   selector:
     app: universeapi
-  type: LoadBalancer
+  #type: LoadBalancer
   ports:
   - name: http
     protocol: TCP
