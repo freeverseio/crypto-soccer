@@ -1,19 +1,19 @@
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
-Players[0]: skills: 5708990770823839524233143877797980545530986496
+Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
-Players[3]: skills: 5708990770823839524233143877797980545530986496
-Players[4]: skills: 5708990770823839524233143877797980545530986496
-Players[5]: skills: 5708990770823839524233143877797980545530986496
-Players[6]: skills: 5708990770823839524233143877797980545530986496
-Players[7]: skills: 5708990770823839524233143877797980545530986496
-Players[8]: skills: 5708990770823839524233143877797980545530986496
-Players[9]: skills: 5708990770823839524233143877797980545530986496
-Players[10]: skills: 5708990770823839524233143877797980545530986496
-Players[11]: skills: 5708990770823839524233143877797980545530986496
-Players[12]: skills: 5708990770823839524233143877797980545530986496
+Players[3]: skills: 0
+Players[4]: skills: 0
+Players[5]: skills: 0
+Players[6]: skills: 0
+Players[7]: skills: 0
+Players[8]: skills: 0
+Players[9]: skills: 0
+Players[10]: skills: 0
+Players[11]: skills: 0
+Players[12]: skills: 0
 Players[13]: skills: 0
 Players[14]: skills: 0
 Players[15]: skills: 0
@@ -29,19 +29,19 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
-Players[0]: skills: 5708990770823839524233143877797980545530986496
+Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
-Players[3]: skills: 5708990770823839524233143877797980545530986496
-Players[4]: skills: 5708990770823839524233143877797980545530986496
-Players[5]: skills: 5708990770823839524233143877797980545530986496
-Players[6]: skills: 5708990770823839524233143877797980545530986496
-Players[7]: skills: 5708990770823839524233143877797980545530986496
-Players[8]: skills: 5708990770823839524233143877797980545530986496
-Players[9]: skills: 5708990770823839524233143877797980545530986496
-Players[10]: skills: 5708990770823839524233143877797980545530986496
-Players[11]: skills: 5708990770823839524233143877797980545530986496
-Players[12]: skills: 5708990770823839524233143877797980545530986496
+Players[3]: skills: 0
+Players[4]: skills: 0
+Players[5]: skills: 0
+Players[6]: skills: 0
+Players[7]: skills: 0
+Players[8]: skills: 0
+Players[9]: skills: 0
+Players[10]: skills: 0
+Players[11]: skills: 0
+Players[12]: skills: 0
 Players[13]: skills: 0
 Players[14]: skills: 0
 Players[15]: skills: 0
@@ -72,5 +72,7 @@ Events[8]: {Minute:33 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPla
 Events[9]: {Minute:38 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:7 SecondaryPlayer:-1}
 Events[10]: {Minute:42 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:0 SecondaryPlayer:0}
 Events[11]: {Minute:45 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:2 SecondaryPlayer:-1}
-Events[12]: {Minute:27 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:5 SecondaryPlayer:-1}
-Events[13]: {Minute:27 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:5 SecondaryPlayer:-1}
+Events[12]: {Minute:28 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:0 SecondaryPlayer:-1}
+Events[13]: {Minute:30 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:0 SecondaryPlayer:-1}
+Events[14]: {Minute:28 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:0 SecondaryPlayer:-1}
+Events[15]: {Minute:30 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:0 SecondaryPlayer:-1}

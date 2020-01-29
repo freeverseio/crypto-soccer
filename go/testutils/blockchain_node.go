@@ -160,16 +160,21 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	txs = append(txs, tx)
-	if tx, err = playandevolveContract.SetEngineAddress(auth, engineAddress); err != nil {
-		return err
-	}
-	txs = append(txs, tx)
+
 	tx, err = engineContract.SetPreCompAddr(auth, engineprecompAddress)
 	if err != nil {
 		return err
 	}
 	txs = append(txs, tx)
 	if tx, err = playandevolveContract.SetTrainingAddress(auth, trainingpointsAddress); err != nil {
+		return err
+	}
+	txs = append(txs, tx)
+	if tx, err = playandevolveContract.SetEngineAddress(auth, engineAddress); err != nil {
+		return err
+	}
+	txs = append(txs, tx)
+	if tx, err = playandevolveContract.SetEvolutionAddress(auth, evolutionAddress); err != nil {
 		return err
 	}
 	txs = append(txs, tx)

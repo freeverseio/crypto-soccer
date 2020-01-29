@@ -39,10 +39,12 @@ module.exports = function (deployer) {
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
     await updates.initUpdates(assets.address).should.be.fulfilled;
     await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
-    await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
     await playAndEvolve.setTrainingAddress(trainingPoints.address);
+    await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
+    await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
+
     console.log("Setting up ... done");
 
     console.log("Initing ... TODO : only one zone actually");

@@ -86,36 +86,6 @@ func NewPlayerFromSkills(skills string) *Player {
 	return &player
 }
 
-func (b *Player) SetAligned(contracts contracts.Contracts, aligned bool) error {
-	var err error
-	b.sto.EncodedSkills, err = contracts.Evolution.SetAlignedEndOfLastHalf(
-		&bind.CallOpts{},
-		b.sto.EncodedSkills,
-		aligned,
-	)
-	return err
-}
-
-func (b *Player) SetRedCard(contracts contracts.Contracts, redCard bool) error {
-	var err error
-	b.sto.EncodedSkills, err = contracts.Evolution.SetRedCardLastGame(
-		&bind.CallOpts{},
-		b.sto.EncodedSkills,
-		redCard,
-	)
-	return err
-}
-
-func (b *Player) SetInjuryWeeks(contracts contracts.Contracts, weeks uint8) error {
-	var err error
-	b.sto.EncodedSkills, err = contracts.Evolution.SetInjuryWeeksLeft(
-		&bind.CallOpts{},
-		b.sto.EncodedSkills,
-		weeks,
-	)
-	return err
-}
-
 func (b Player) DumpState() string {
 	return fmt.Sprintf("skills: %v", b.sto.EncodedSkills)
 }
