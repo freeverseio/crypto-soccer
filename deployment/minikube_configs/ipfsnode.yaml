@@ -8,14 +8,14 @@ metadata:
     part-of: cryptosoccer
     version: "0.0.1"
 spec:
-  selector:
-    app: ipfsnode
-  type: NodePort
+  #type: NodePort
   ports:
   - name: http
     protocol: TCP
     port: 4001
     targetPort: 4001
+  selector:
+    app: ipfsnode
 ---
 apiVersion: apps/v1
 kind: Deployment

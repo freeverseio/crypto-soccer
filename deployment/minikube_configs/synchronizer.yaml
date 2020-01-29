@@ -8,11 +8,11 @@ metadata:
     part-of: cryptosoccer
     version: "0.0.1"
 spec:
-  selector:
-    app: synchronizer
-  type: NodePort
+  #type: NodePort
   ports:
   - port: 4004
+  selector:
+    app: synchronizer
 ---
 apiVersion: apps/v1
 kind: Deployment
