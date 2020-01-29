@@ -9,7 +9,7 @@ import "./EncodingMatchLogPart3.sol";
  * @title Library of functions to serialize matchLogs
  */
 
-    // MAX_GOALS = 12,  NO_OUT_OF_GAME_PLAYER = 14
+    // MAX_GOALS = ROUNDS_PER_MATCH = 12,  NO_OUT_OF_GAME_PLAYER = 14
     // 
     // uint8 nGoals, // 4b, offset 0 
     // uint8 assistersIdx[MAX_GOALS], 4b each, offset 4

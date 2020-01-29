@@ -6,6 +6,7 @@ import "./EncodingMatchLogPart3.sol";
 
 contract Engine is EngineLib, EncodingMatchLogPart3 {
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
+    uint8 public constant MAX_GOALS_IN_MATCH  = 15;   // Max number of goals that one single team in an entire match (no restriction on which half)
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
@@ -308,9 +309,10 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     {
         scoreData[0] = matchLog;
         uint8 currentGoals = getNGoals(matchLog);
-        if (currentGoals > 13) return scoreData;
         uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
         scoreData[1] = uint256(shooter);
+        // if we scored alread the max number of goals, return. Note that isGoal = 0 inside scoreData.
+        if (currentGoals >= MAX_GOALS_IN_MATCH) return scoreData;
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(states[shooter], matchStartTime);
         // penaltyPerAge is in [0, 1M] where 0 is really bad penalty, and 1M is no penalty

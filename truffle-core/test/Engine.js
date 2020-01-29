@@ -4,6 +4,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
+const debug = require('../utils/debugUtils.js');
 const logUtils = require('../utils/matchLogUtils.js');
 
 const Engine = artifacts.require('Engine');
@@ -52,7 +53,7 @@ contract('Engine', (accounts) => {
     const WINNER_HOME = 0;
     const WINNER_AWAY = 1;
     const teamSumSkillsDefault = 3256244;
-    const MAX_GOALS = 12;
+    const MAX_GOALS_IN_HALF = 12;
     const it2 = async(text, f) => {};
     const trainingPointsDefault = 12;
     
@@ -152,6 +153,8 @@ contract('Engine', (accounts) => {
         teamStateAll1Half2 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2, aligned = [true, false]).should.be.fulfilled;
         MAX_RND = await engine.MAX_RND().should.be.fulfilled;
         MAX_RND = MAX_RND.toNumber();
+        MAX_GOALS_IN_MATCH = await engine.MAX_GOALS_IN_MATCH().should.be.fulfilled;
+        MAX_GOALS_IN_MATCH = MAX_GOALS_IN_MATCH.toNumber();
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
@@ -457,9 +460,9 @@ contract('Engine', (accounts) => {
         // cook data so that the first half ended up in a way that:
         //  - there are red cards
         //  - there are the right goals to, then, in 2nd half, end up in draw.
-        assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => i);
-        shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
-        shooterForwardPos  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
+        assistersIdx = Array.from(new Array(MAX_GOALS_IN_HALF), (x,i) => i);
+        shootersIdx  = Array.from(new Array(MAX_GOALS_IN_HALF), (x,i) => 1);
+        shooterForwardPos  = Array.from(new Array(MAX_GOALS_IN_HALF), (x,i) => 1);
         penalties  = Array.from(new Array(7), (x,i) => false);
         typesOutOfGames = [3, 0];
         outOfGameRounds = [7, 0];
@@ -801,9 +804,16 @@ contract('Engine', (accounts) => {
         result[1][4].toNumber().should.be.equal(50);
     });
     
-    it('play a match in home stadium', async () => {
-        log = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHome = true, isPlayoff]).should.be.fulfilled;
+    it('play a match in home stadium, check that max goals is applied', async () => {
+        // note: the home team is much better than the away team
+        log = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2nd = false, isHome = true, isPlayoff]).should.be.fulfilled;
         expected = [10, 0];
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodingLog.getNGoals(log[team]);
+            nGoals.toNumber().should.be.equal(expected[team]);
+        }
+        log = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics0, tactics1], extractMatchLogs(log), [is2nd = false, isHome = true, isPlayoff]).should.be.fulfilled;
+        expected = [MAX_GOALS_IN_MATCH, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -1136,7 +1146,30 @@ contract('Engine', (accounts) => {
 
     it('play match with wrong tactic', async () => {
         tacticsWrong = await engine.encodeTactics(substitutions, subsRounds, lineup1, extraAttackNull, tacticIdTooLarge = 6);
-        await engine.playHalfMatch(seed, now, teamStateAll50Half1, teamStateAll50Half1, [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.rejected;
+        await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.rejected;
+    });
+
+    it('play match with no players at all in one team', async () => {
+        // when a team has no players it should lose by the max amount possible (= 12 ROUNDS)
+        states = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => 0); 
+        matchLog = await engine.playHalfMatch(seed, now, [states, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        expectedResult = [0, 12];
+        result = []
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodingLog.getNGoals(matchLog[team]);
+            result.push(nGoals);
+        }
+        // and viceversa:
+        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+        matchLog = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, states], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        expectedResult = [12, 0];
+        result = []
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodingLog.getNGoals(matchLog[team]);
+            result.push(nGoals);
+        }
+        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
     });
 
 

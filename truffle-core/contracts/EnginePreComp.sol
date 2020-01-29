@@ -284,31 +284,37 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
         uint256 playerSkills = states[0];
-        globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
-        if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
-            globSkills[IDX_BLOCK_SHOOT] = (10 * penaltyPerAge(playerSkills, matchStartTime))/1000000;
+        if (playerSkills != 0) {
+            globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
+            if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
+                globSkills[IDX_BLOCK_SHOOT] = (10 * penaltyPerAge(playerSkills, matchStartTime))/1000000;
+            }
+            else globSkills[IDX_BLOCK_SHOOT] = (getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime))/1000000;
         }
-        else globSkills[IDX_BLOCK_SHOOT] = (getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime))/1000000;
-        
+                
         uint256[3] memory fwdModFactors;
 
         for (uint8 p = 1; p < 11; p++){
             playerSkills = states[p];
-            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
-            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
-            else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
-            else {computeForwardsGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}       
+            if (playerSkills != 0) {
+                penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
+                fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
+                if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
+                else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
+                else {computeForwardsGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}       
+            }
         }
         // endurance is converted to a percentage, 
         // used to multiply (and hence decrease) the start endurance.
         // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
-        if (globSkills[IDX_ENDURANCE] < 500) {
-            globSkills[IDX_ENDURANCE] = 70;
-        } else if (globSkills[IDX_ENDURANCE] < 1400) {
-            globSkills[IDX_ENDURANCE] = 100 - (1400-globSkills[IDX_ENDURANCE])/30;
-        } else {
-            globSkills[IDX_ENDURANCE] = 100;
+        if (globSkills[IDX_ENDURANCE] > 0) {
+            if (globSkills[IDX_ENDURANCE] < 500) {
+                globSkills[IDX_ENDURANCE] = 70;
+            } else if (globSkills[IDX_ENDURANCE] < 1400) {
+                globSkills[IDX_ENDURANCE] = 100 - (1400-globSkills[IDX_ENDURANCE])/30;
+            } else {
+                globSkills[IDX_ENDURANCE] = 100;
+            }
         }
     }
 
