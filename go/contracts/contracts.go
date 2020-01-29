@@ -126,6 +126,12 @@ func New(
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
+	if contracts.PlayAndEvolve, err = playandevolve.NewPlayandevolve(common.HexToAddress(playandevolveAddress), contracts.Client); err != nil {
+		return nil, err
+	}
+	if contracts.TrainingPoints, err = trainingpoints.NewTrainingpoints(common.HexToAddress(trainingpointsAddress), contracts.Client); err != nil {
+		return nil, err
+	}
 
 	return &contracts, nil
 }
