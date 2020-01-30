@@ -11,12 +11,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var s *sql.DB
+var db *sql.DB
 var bc *testutils.BlockchainNode
 
 func TestMain(m *testing.M) {
 	var err error
-	s, err = storage.New("postgres://freeverse:freeverse@localhost:15432/cryptosoccer?sslmode=disable")
+	db, err = storage.New("postgres://freeverse:freeverse@localhost:15432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

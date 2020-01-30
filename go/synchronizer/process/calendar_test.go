@@ -5,22 +5,15 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
+	t.Parallel()
 	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
-
 	calendar, err := process.NewCalendar(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
@@ -36,18 +29,12 @@ func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
 }
 
 func TestResetCalendar(t *testing.T) {
+	t.Parallel()
 	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
-
 	calendarProcessor, err := process.NewCalendar(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
@@ -73,18 +60,12 @@ func TestResetCalendar(t *testing.T) {
 }
 
 func TestGenerateCalendarOfExistingLeague(t *testing.T) {
+	t.Parallel()
 	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
-
 	calendarProcessor, err := process.NewCalendar(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)

@@ -15,6 +15,7 @@ import (
 )
 
 func TestSyncTeams(t *testing.T) {
+	t.Skip("******************************* ACTIVATE **********************************")
 	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)

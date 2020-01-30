@@ -36,46 +36,6 @@ func NewLeagueProcessor(
 	}, nil
 }
 
-func FromStorage(
-	tx *sql.Tx,
-	timezoneIdx uint8,
-	day uint8,
-) (engine.Matches, error) {
-	ms, err := storage.MatchesByTimezoneIdxAndMatchDay(tx, timezoneIdx, day)
-	if err != nil {
-		return nil, err
-	}
-	var matches engine.Matches
-	for i := range ms {
-		m := ms[i]
-		homeTeam, err := storage.TeamByTeamId(tx, m.HomeTeamID)
-		if err != nil {
-			return nil, err
-		}
-		visitorTeam, err := storage.TeamByTeamId(tx, m.VisitorTeamID)
-		if err != nil {
-			return nil, err
-		}
-		homeTeamPlayers, err := storage.PlayersByTeamId(tx, m.HomeTeamID)
-		if err != nil {
-			return nil, err
-		}
-		visitorTeamPlayers, err := storage.PlayersByTeamId(tx, m.VisitorTeamID)
-		if err != nil {
-			return nil, err
-		}
-		match := engine.NewMatchFromStorage(
-			m,
-			homeTeam,
-			visitorTeam,
-			homeTeamPlayers,
-			visitorTeamPlayers,
-		)
-		matches = append(matches, *match)
-	}
-	return matches, nil
-}
-
 func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmission) error {
 	day := event.Day
 	turnInDay := event.TurnInDay
