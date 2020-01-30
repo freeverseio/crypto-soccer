@@ -30,9 +30,6 @@ func (b Player) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	if b.IsNull() {
 		return nil
 	}
-	if err := b.decodeSkills(contracts); err != nil {
-		return err
-	}
 	return b.sto.Update(tx)
 }
 
@@ -80,10 +77,13 @@ func NewPlayer(
 	return &player, err
 }
 
-func NewPlayerFromSkills(skills string) *Player {
+func NewPlayerFromSkills(contracts contracts.Contracts, skills string) (*Player, error) {
 	var player Player
 	player.sto.EncodedSkills, _ = new(big.Int).SetString(skills, 10)
-	return &player
+	if err := player.decodeSkills(contracts); err != nil {
+		return nil, err
+	}
+	return &player, nil
 }
 
 func (b Player) DumpState() string {
@@ -94,28 +94,8 @@ func (b Player) Skills() *big.Int {
 	return new(big.Int).Set(b.sto.EncodedSkills)
 }
 
-func (b *Player) decodeSkills(contracts contracts.Contracts) error {
-	defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := contracts.DecodeSkills(b.sto.EncodedSkills)
-	if err != nil {
-		return err
-	}
-	b.sto.Defence = defence.Uint64()
-	b.sto.Speed = speed.Uint64()
-	b.sto.Pass = pass.Uint64()
-	b.sto.Shoot = shoot.Uint64()
-	b.sto.Endurance = endurance.Uint64()
-	b.sto.Potential = potential.Uint64()
-	b.sto.DayOfBirth = dayOfBirth.Uint64()
-	return nil
-}
-
-func (b Player) Defence(assets *assets.Assets) (uint16, error) {
-	opts := &bind.CallOpts{}
-	value, err := assets.GetDefence(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return 0, err
-	}
-	return uint16(value.Uint64()), nil
+func (b Player) Defence() uint16 {
+	return uint16(b.sto.Defence)
 }
 
 func (b Player) Speed(assets *assets.Assets) (uint16, error) {
@@ -174,4 +154,45 @@ func PlayerAge(birthDayUnix uint16) uint16 {
 	nowInDays := time.Now().Unix() / 3600 / 24
 	age := uint16((nowInDays - int64(birthDayUnix)) * 7 / 365)
 	return age
+}
+
+func (b *Player) decodeSkills(contracts contracts.Contracts) error {
+	opts := &bind.CallOpts{}
+	var err error
+	defence, err := contracts.Assets.GetDefence(opts, b.sto.EncodedSkills)
+	if err != nil {
+		return err
+	}
+	speed, err := contracts.Assets.GetSpeed(opts, b.sto.EncodedSkills)
+	if err != nil {
+		return err
+	}
+	pass, err := contracts.Assets.GetPass(opts, b.sto.EncodedSkills)
+	if err != nil {
+		return err
+	}
+	shoot, err := contracts.Assets.GetShoot(opts, b.sto.EncodedSkills)
+	if err != nil {
+		return err
+	}
+	endurance, err := contracts.Assets.GetEndurance(opts, b.sto.EncodedSkills)
+	if err != nil {
+		return err
+	}
+	potential, err := contracts.Assets.GetPotential(opts, b.sto.EncodedSkills)
+	if err != nil {
+		return err
+	}
+	dayOfBirth, err := contracts.Assets.GetBirthDay(opts, b.sto.EncodedSkills)
+	if err != nil {
+		return err
+	}
+	b.sto.Defence = defence.Uint64()
+	b.sto.Speed = speed.Uint64()
+	b.sto.Pass = pass.Uint64()
+	b.sto.Shoot = shoot.Uint64()
+	b.sto.Endurance = endurance.Uint64()
+	b.sto.Potential = potential.Uint64()
+	b.sto.DayOfBirth = dayOfBirth.Uint64()
+	return nil
 }

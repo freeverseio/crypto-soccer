@@ -17,17 +17,20 @@ func TestNullPlayer(t *testing.T) {
 func TestDefenceOfNullPlayer(t *testing.T) {
 	t.Parallel()
 	p := engine.NewNullPlayer()
-	defence, err := p.Defence(bc.Contracts.Assets)
-	assert.NilError(t, err)
-	assert.Equal(t, defence, uint16(0))
+	assert.Equal(t, p.Defence(), uint16(0))
 }
 
-func TestDefenceOfPlayer(t *testing.T) {
+func TestPlayerNewPlayerFromSkills(t *testing.T) {
 	t.Parallel()
-	p := engine.NewPlayerFromSkills("14606253788909032162646379450304996475079674564248175")
-	defence, err := p.Defence(bc.Contracts.Assets)
+	p, err := engine.NewPlayerFromSkills(*bc.Contracts, "14606253788909032162646379450304996475079674564248175")
 	assert.NilError(t, err)
-	assert.Equal(t, defence, uint16(955))
+	assert.Equal(t, p.Defence(), uint16(955))
+	assert.Equal(t, p.Speed(), uint16(955))
+	assert.Equal(t, p.Pass(), uint16(955))
+	assert.Equal(t, p.Endurance(), uint16(955))
+	assert.Equal(t, p.Potential(), uint16(955))
+	assert.Equal(t, p.Shoot(), uint16(955))
+	assert.Equal(t, p.DayOfBirth(), uint16(955))
 }
 
 func TestNewPlayer(t *testing.T) {
@@ -71,20 +74,11 @@ func TestNewPlayer(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, p.Skills().String(), "730756529746917314243503421506698786561881762037810")
-	value, err := p.Defence(bc.Contracts.Assets)
-	assert.NilError(t, err)
-	assert.Equal(t, value, defence)
-	value, err = p.Speed(bc.Contracts.Assets)
+	assert.Equal(t, p.Defence(), defence)
+	value, err := p.Speed(bc.Contracts.Assets)
 	assert.NilError(t, err)
 	assert.Equal(t, value, speed)
 	value, err = p.BirthDayUnix(bc.Contracts.Assets)
 	assert.NilError(t, err)
 	assert.Equal(t, value, dayOfBirthUnix)
-}
-
-func TestPlayerNewPlayerFromSkills(t *testing.T) {
-	player := engine.NewPlayerFromSkills("730756529746917314243503421506698786561881762037810")
-	defence, err := player.Defence(bc.Contracts.Assets)
-	assert.NilError(t, err)
-	assert.Equal(t, defence, uint16(50))
 }

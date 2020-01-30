@@ -54,8 +54,11 @@ func TestPlayGame(t *testing.T) {
 	m.HomeTeam.TeamID = big.NewInt(int64(1))
 	m.VisitorTeam.TeamID = big.NewInt(int64(2))
 	for i := 0; i < 25; i++ {
-		m.HomeTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309339445376240739796176995438")
-		m.VisitorTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309340654302060354425351701614")
+		var err error
+		m.HomeTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309339445376240739796176995438")
+		assert.NilError(t, err)
+		m.VisitorTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309340654302060354425351701614")
+		assert.NilError(t, err)
 	}
 	golden.Assert(t, m.DumpState(), t.Name()+".starting.golden")
 	err := m.Play1stHalf(*bc.Contracts)
@@ -69,11 +72,13 @@ func TestPlayGame(t *testing.T) {
 func TestPlay2ndHalf(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
-	homePlayer := engine.NewPlayerFromSkills("146156532686539503615416807207209880594713965887498")
-	visitorPlayer := engine.NewPlayerFromSkills("730757187618900670896890173308251570218123297685554")
+	homePlayer, err := engine.NewPlayerFromSkills(*bc.Contracts, "146156532686539503615416807207209880594713965887498")
+	assert.NilError(t, err)
+	visitorPlayer, err := engine.NewPlayerFromSkills(*bc.Contracts, "730757187618900670896890173308251570218123297685554")
+	assert.NilError(t, err)
 	m.HomeTeam.Players[0] = homePlayer
 	m.VisitorTeam.Players[0] = visitorPlayer
-	err := m.Play2ndHalf(*bc.Contracts)
+	err = m.Play2ndHalf(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
@@ -100,8 +105,11 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 			m.HomeTeam.TeamID = big.NewInt(int64(1))
 			m.VisitorTeam.TeamID = big.NewInt(int64(2))
 			for i := 0; i < 25; i++ {
-				m.HomeTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309339445376240739796176995438")
-				m.VisitorTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309340654302060354425351701614")
+				var err error
+				m.HomeTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309339445376240739796176995438")
+				assert.NilError(t, err)
+				m.VisitorTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309340654302060354425351701614")
+				assert.NilError(t, err)
 			}
 			golden.Assert(t, m.DumpState(), t.Name()+".starting.golden")
 			err := m.Play1stHalf(*bc.Contracts)
