@@ -120,10 +120,12 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 			}
 		}
+		log.Info("Timezone %v loading matches from storage", timezoneIdx)
 		matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 		if err != nil {
 			return err
 		}
+		log.Info("Timezone %v processing matches", timezoneIdx)
 		if is2ndHalf {
 			if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
 				return err
@@ -133,6 +135,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 				return err
 			}
 		}
+		log.Info("Timezone %v save matches to storage", timezoneIdx)
 		if err = matches.ToStorage(*b.contracts, tx); err != nil {
 			return err
 		}
