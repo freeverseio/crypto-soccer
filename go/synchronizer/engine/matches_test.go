@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/engine"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )

@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/engine"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"gotest.tools/assert"
 )
 

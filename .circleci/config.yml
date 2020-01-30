@@ -24,12 +24,6 @@ jobs:
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
-  go1:
-    executor: freeverse_ethereum
-    steps:
-      - checkout
-      - run: make setup contracts
-      - run: cd go && go test ./engine/...
   synchronizer:
     machine:
       image: ubuntu-1604:201903-01
@@ -57,6 +51,7 @@ jobs:
       - run: cd go/synchronizer/process && go test ./... -v
       - run: cd go/synchronizer/storage && go test ./... -v
       - run: cd go/synchronizer/utils && go test ./... -v
+      - run: cd go/synchronizer/engine && go test ./... -v
   market-notary:
     executor: freeverse_ethereum
     steps:
