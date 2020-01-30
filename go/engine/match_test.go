@@ -36,15 +36,14 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 }
 
 func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
-	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	engine := engine.NewMatch()
 	err := engine.Play2ndHalf(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, engine.HomeGoals, uint8(0))
 	assert.Equal(t, engine.VisitorGoals, uint8(0))
-	assert.Equal(t, engine.HomeMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
-	assert.Equal(t, engine.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
+	assert.Equal(t, engine.HomeMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
+	assert.Equal(t, engine.VisitorMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
 }
 
 func TestPlayGame(t *testing.T) {
@@ -68,7 +67,6 @@ func TestPlayGame(t *testing.T) {
 }
 
 func TestPlay2ndHalf(t *testing.T) {
-	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	m := engine.NewMatch()
 	homePlayer := engine.NewPlayerFromSkills("146156532686539503615416807207209880594713965887498")
@@ -79,11 +77,11 @@ func TestPlay2ndHalf(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
-	assert.Equal(t, m.HomeMatchLog.String(), "166195960289441810257652497224293923324982848796288083926844440576")
-	assert.Equal(t, m.VisitorMatchLog.String(), "824397783217924227119640170247234125318077195049720029266288050176")
-	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146156532686539503615416807207209880594713965887498")
+	assert.Equal(t, m.HomeMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
+	assert.Equal(t, m.VisitorMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146150823695768679775892574063332082614168434901002")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
-	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730757187618900670896890173308251570218123297685554")
+	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730751478628129847057365940164373772237577766699058")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
 }
 
