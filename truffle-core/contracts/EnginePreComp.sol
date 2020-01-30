@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.5.12 <0.6.2;
 
 import "./EncodingSkills.sol";
 import "./EngineLib.sol";
@@ -6,7 +6,7 @@ import "./SortValues.sol";
 import "./EncodingMatchLogPart1.sol";
 
 contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
-    uint256 private constant ONE256              = uint256(1); 
+    uint256 private constant ONE256            = uint256(1); 
     uint8 private constant CHG_HAPPENED        = uint8(1); 
     uint8 private constant CHG_CANCELLED       = uint8(2); 
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
@@ -21,12 +21,12 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     uint256 private constant SECS_IN_DAY    = 86400; // 24 * 3600 
 
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
-    uint8 public constant NO_SUBST  = 11;   // noone was subtituted
+    // uint8 public constant NO_SUBST  = 11;   // noone was subtituted
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
-    uint8 public constant SOFT_INJURY  = 1;   // type of event = redCard
-    uint8 public constant HARD_INJURY  = 2;   // type of event = redCard
-    uint8 public constant RED_CARD  = 3;   // type of event = redCard
-    uint8 public constant NO_LINEUP = 25; // No player chosen in that position
+    uint8 public constant SOFT_INJURY  = 1;   // type of event
+    uint8 public constant HARD_INJURY  = 2;   // type of event
+    uint8 public constant RED_CARD  = 3;   // type of event
+    // uint8 public constant NO_LINEUP = 25; // No player chosen in that position
 
 
     // Over a game, we would like:
@@ -284,31 +284,37 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
         uint256 playerSkills = states[0];
-        globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
-        if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
-            globSkills[IDX_BLOCK_SHOOT] = (10 * penaltyPerAge(playerSkills, matchStartTime))/1000000;
+        if (playerSkills != 0) {
+            globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
+            if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
+                globSkills[IDX_BLOCK_SHOOT] = (10 * penaltyPerAge(playerSkills, matchStartTime))/1000000;
+            }
+            else globSkills[IDX_BLOCK_SHOOT] = (getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime))/1000000;
         }
-        else globSkills[IDX_BLOCK_SHOOT] = (getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime))/1000000;
-        
+                
         uint256[3] memory fwdModFactors;
 
         for (uint8 p = 1; p < 11; p++){
             playerSkills = states[p];
-            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
-            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
-            else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
-            else {computeForwardsGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}       
+            if (playerSkills != 0) {
+                penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
+                fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
+                if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
+                else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
+                else {computeForwardsGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}       
+            }
         }
         // endurance is converted to a percentage, 
         // used to multiply (and hence decrease) the start endurance.
         // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
-        if (globSkills[IDX_ENDURANCE] < 500) {
-            globSkills[IDX_ENDURANCE] = 70;
-        } else if (globSkills[IDX_ENDURANCE] < 1400) {
-            globSkills[IDX_ENDURANCE] = 100 - (1400-globSkills[IDX_ENDURANCE])/30;
-        } else {
-            globSkills[IDX_ENDURANCE] = 100;
+        if (globSkills[IDX_ENDURANCE] > 0) {
+            if (globSkills[IDX_ENDURANCE] < 500) {
+                globSkills[IDX_ENDURANCE] = 70;
+            } else if (globSkills[IDX_ENDURANCE] < 1400) {
+                globSkills[IDX_ENDURANCE] = 100 - (1400-globSkills[IDX_ENDURANCE])/30;
+            } else {
+                globSkills[IDX_ENDURANCE] = 100;
+            }
         }
     }
 
@@ -477,9 +483,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
             else if (forwardness == IDX_D) {return 2000;}
     }
 
-    // Important: the spec is that all entries in lineup ** must be different **
-    // If substitution number "i" (i=0,1,2) is not set (so that sub[i] = 11) 
-    //  => the corresponding lineup must be (25 + i) (25, 26 or 27 respectively)
     function getLinedUpStates(
         uint256 matchLog, 
         uint256 tactics, 
@@ -504,7 +507,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         for (uint8 p = 0; p < 11; p++) {
             outStates[p] = verifyCanPlay(lineup[p], states[lineup[p]], is2ndHalf, false);
             if (outStates[p] != 0) {
-                if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
+                if (is2ndHalf && !getAlignedEndOfFirstHalf(outStates[p])) {
                     matchLog = addHalfTimeSubs(matchLog, p+1, changes); // for halftime subs, 0 = NO_SUBS
                     changes++;
                     teamSkills += getSumOfSkills(outStates[p]); 
@@ -549,8 +552,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
                         (playerSkills == 0) ||
                         (getInjuryWeeksLeft(playerSkills) != 0) ||
                         getRedCardLastGame(playerSkills);
-        if (is2ndHalf) isWrong = isWrong || getSubstitutedLastHalf(playerSkills);
-        if (isSubst) isWrong = isWrong || getAlignedEndOfLastHalf(playerSkills);
+        if (is2ndHalf) isWrong = isWrong || getSubstitutedFirstHalf(playerSkills);
+        if (isSubst) isWrong = isWrong || getAlignedEndOfFirstHalf(playerSkills);
         if (isWrong) {return 0;} 
         else {return playerSkills;}
     }

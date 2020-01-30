@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity >=0.5.12 <0.6.2;
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */
@@ -218,7 +218,7 @@ contract EncodingSkills {
         return uint256(encodedSkills >> 149 & 7);
     }
 
-    function getAlignedEndOfLastHalf(uint256 encodedSkills) public pure returns (bool) {
+    function getAlignedEndOfFirstHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 152 & 1) == 1;
     }
 
@@ -230,11 +230,11 @@ contract EncodingSkills {
         return uint256(encodedSkills >> 154 & 7);
     }
 
-    function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 157 & 7);
+    function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint8) {
+        return uint8(encodedSkills >> 157 & 7);
     }
 
-    function getSubstitutedLastHalf(uint256 encodedSkills) public pure returns (bool) {
+    function getSubstitutedFirstHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 160 & 1) == 1;
     }
 

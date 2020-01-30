@@ -75,10 +75,12 @@ async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx
     if (outOfGames != UNDEF) {
         is2ndHalfs = [false, true];
         for (p = 0; p <outOfGames.length; p++) {
-            result = await encoding.getOutOfGame(log, is2ndHalfs[p]).should.be.fulfilled;
-            result.player.toNumber().should.be.equal(outOfGames[p]);
-            result.round.toNumber().should.be.equal(outOfGameRounds[p]);
-            result.typeOfOutOfGame.toNumber().should.be.equal(typesOutOfGames[p]);
+            player = await encoding.getOutOfGamePlayer(log, is2ndHalfs[p]).should.be.fulfilled;
+            round = await encoding.getOutOfGameRound(log, is2ndHalfs[p]).should.be.fulfilled;
+            typeOf = await encoding.getOutOfGameType(log, is2ndHalfs[p]).should.be.fulfilled;
+            player.toNumber().should.be.equal(outOfGames[p]);
+            round.toNumber().should.be.equal(outOfGameRounds[p]);
+            typeOf.toNumber().should.be.equal(typesOutOfGames[p]);
         }
     }        
     if (yellowCardedDidNotFinish1stHalf != UNDEF) {

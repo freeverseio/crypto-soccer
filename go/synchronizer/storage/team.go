@@ -27,7 +27,7 @@ type Team struct {
 	GoalsAgainst    uint32
 	PrevPerfPoints  uint64
 	RankingPoints   uint64
-	TrainingPoints  uint32
+	TrainingPoints  uint64
 }
 
 func (b *Team) Equal(team Team) bool {
