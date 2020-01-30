@@ -173,10 +173,6 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - go1:
-          filters:
-            tags:
-              only: /.*/
       - truffle_core:
           filters:
             tags:
