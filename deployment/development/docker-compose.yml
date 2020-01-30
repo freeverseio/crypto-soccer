@@ -1,7 +1,7 @@
 version: '3'
 services:
   ethereum: 
-    image: freeverseio/ethereum:devcontracts
+    image: freeverseio/ethereum:dev
     command: --mine --nodiscover 
     # ports: 
       # - "8545:8545"
@@ -9,6 +9,16 @@ services:
       # - "30303:30303/udp"
     volumes:
       - ethereum-data:/test
+  web3proxy:
+    image: adria0/web3proxy
+    environment:
+      - DEBUG=1
+    ports:
+      - "443:443"
+    command: >
+      "https://prod.gorengine.com/pippolo" "http://ethereum:8545"
+    depends_on:
+      - ethereum
   universe.db:
     image: freeverseio/universe.db:$TAG
     volumes:
