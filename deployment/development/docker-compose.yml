@@ -38,7 +38,7 @@ services:
       -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
       -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
       -playandevolveContractAddress "${PLAYANDEVOLVE_CONTRACT_ADDRESS}"
-      -trainingpointsContractAddress "${TRAININGPOINTS_CONTRACT_ADDRESS}
+      -trainingpointsContractAddress "${TRAININGPOINTS_CONTRACT_ADDRESS}"
     depends_on:
       - universe.db
       - ethereum
