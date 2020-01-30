@@ -212,7 +212,6 @@ workflows:
             # - relay-api
             - relay-actions
             - market-notary
-            - go1
       - dockerization-production:
           filters:
             tags:
@@ -225,7 +224,6 @@ workflows:
             # - relay-api
             - relay-actions
             - market-notary
-            - go1
       - deploy:
           filters:
            branches:
