@@ -3,7 +3,7 @@ package process
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"fmt"
 	"math/big"
 	"sort"
 
@@ -80,17 +80,16 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	day := event.Day
 	turnInDay := event.TurnInDay
 	timezoneIdx := event.TimeZone
-	log.Debugf("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
 
-	if timezoneIdx > 24 {
-		return errors.New("[LaegueProcessor] ... wront timezone")
+	if timezoneIdx < 1 || timezoneIdx > 24 {
+		fmt.Errorf("Unexistent timezone %v", timezoneIdx)
+	}
+	if turnInDay == 2 || turnInDay == 3 {
+		return nil
 	}
 
-	// switch turnInDay {
-	// case 0: // first half league match
-	// case 1:
 	if turnInDay < 2 {
-		is2ndHalf := turnInDay == 1
+		log.Infof("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
 		countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 		if err != nil {
 			return err
@@ -108,7 +107,6 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 				return err
 			}
 			for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-				log.Infof("LeagueProcessor::Process timezone: %v, countryIdx %v, leagueIdx %v, 2ndHalf %v", timezoneIdx, countryIdx, leagueIdx, is2ndHalf)
 				if day == 0 {
 					if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx); err != nil {
 						return err
@@ -120,29 +118,31 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 			}
 		}
-		log.Info("Timezone %v loading matches from storage", timezoneIdx)
-		matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
-		if err != nil {
-			return err
-		}
-		log.Info("Timezone %v processing matches", timezoneIdx)
-		if is2ndHalf {
-			if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
-				return err
-			}
-		} else {
-			if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
-				return err
-			}
-		}
-		log.Info("Timezone %v save matches to storage", timezoneIdx)
-		if err = matches.ToStorage(*b.contracts, tx); err != nil {
-			return err
-		}
 	}
-	// default:
-	// 	log.Warnf("[LeagueProcessor] ... skipping")
-	// } // switch
+
+	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
+	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
+	if err != nil {
+		return err
+	}
+	switch turnInDay {
+	case 0:
+		log.Infof("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
+		if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
+			return err
+		}
+	case 1:
+		log.Infof("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
+		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("Unknown turn in day %v", turnInDay)
+	}
+	log.Infof("Timezone %v save matches to storage", timezoneIdx)
+	if err = matches.ToStorage(*b.contracts, tx); err != nil {
+		return err
+	}
 	return nil
 }
 
