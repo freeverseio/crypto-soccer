@@ -81,3 +81,10 @@ func TestNewPlayer(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, value, dayOfBirthUnix)
 }
+
+func TestPlayerNewPlayerFromSkills(t *testing.T) {
+	player := engine.NewPlayerFromSkills("730756529746917314243503421506698786561881762037810")
+	defence, err := player.Defence(bc.Contracts.Assets)
+	assert.NilError(t, err)
+	assert.Equal(t, defence, uint16(50))
+}
