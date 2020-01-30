@@ -5,36 +5,30 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/engine"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
 
-var funcs = []struct {
-	name string
-	f    func(engine.Matches, context.Context, contracts.Contracts) error
-}{
-	{"main", engine.Matches.Play1stHalf},
-	{"goRoutines", engine.Matches.Play1stHalfParallel},
-}
-
-func BenchmarkPlayer1stHalf(b *testing.B) {
-	for _, f := range funcs {
-		for i := 10; i < 500; i *= 2 {
-			var matches engine.Matches
-			for n := 0; n < i; n++ {
-				matches = append(matches, *engine.NewMatch())
+func BenchmarkPlayer1stHalfParallel(b *testing.B) {
+	matchesCount := []int{10, 100, 200, 500, 1000, 2000}
+	for _, count := range matchesCount {
+		b.Run(fmt.Sprintf("%d", count), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				b.StopTimer()
+				var matches engine.Matches
+				for n := 0; n < count; n++ {
+					matches = append(matches, *engine.NewMatch())
+				}
+				b.StartTimer()
+				matches.Play1stHalfParallel(context.Background(), *bc.Contracts)
 			}
-			b.Run(fmt.Sprintf("%s/%d", f.name, i), func(b *testing.B) {
-				f.f(matches, context.Background(), *bc.Contracts)
-			})
-		}
+		})
 	}
 }
 
 func TestMatchesPlay1stHalf(t *testing.T) {
-	const nMatches = 100
+	const nMatches = 10
 	var matches engine.Matches
 	for i := 0; i < nMatches; i++ {
 		matches = append(matches, *engine.NewMatch())
@@ -45,7 +39,8 @@ func TestMatchesPlay1stHalf(t *testing.T) {
 }
 
 func TestMatchesPlay1stHalfParallel(t *testing.T) {
-	const nMatches = 100
+	t.Parallel()
+	const nMatches = 10
 	var matches engine.Matches
 	for i := 0; i < nMatches; i++ {
 		matches = append(matches, *engine.NewMatch())
