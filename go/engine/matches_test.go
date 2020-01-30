@@ -7,6 +7,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/engine"
+	"gotest.tools/assert"
 )
 
 var funcs = []struct {
@@ -29,4 +30,20 @@ func BenchmarkPlayer1stHalf(b *testing.B) {
 			})
 		}
 	}
+}
+
+func TestMatchesPlay1stHalfParallel(t *testing.T) {
+	const nMatches = 100
+	var matches engine.Matches
+	for i := 0; i < nMatches; i++ {
+		matches = append(matches, *engine.NewMatch())
+	}
+	err := matches.Play1stHalf(context.Background(), *bc.Contracts)
+	assert.NilError(t, err)
+	var matchesP engine.Matches
+	for i := 0; i < nMatches; i++ {
+		matchesP = append(matchesP, *engine.NewMatch())
+	}
+	err = matchesP.Play1stHalfParallel(context.Background(), *bc.Contracts)
+	assert.Equal(t, matches.DumpState(), matchesP.DumpState())
 }

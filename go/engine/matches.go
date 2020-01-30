@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"runtime"
 
@@ -183,4 +184,13 @@ func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 
 	}
 	return nil
+}
+
+func (b Matches) DumpState() string {
+	var state string
+	for i, match := range b {
+		state += fmt.Sprintf("Match: %v\n", i)
+		state += match.DumpState()
+	}
+	return state
 }
