@@ -119,7 +119,7 @@ services:
     ports:
       - "443:443"
     command: >
-      "https://prod.gorengine.com/pippolo" "http://ethereum:8545"
+      "https://dev1.gorengine.com/pippolo" "http://ethereum:8545"
 volumes:
   ethereum-data:
   ipfs.node-data:
