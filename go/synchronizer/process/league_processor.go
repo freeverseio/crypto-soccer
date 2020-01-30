@@ -20,7 +20,6 @@ import (
 type LeagueProcessor struct {
 	contracts         *contracts.Contracts
 	calendarProcessor *Calendar
-	matchProcessor    *MatchProcessor
 }
 
 func NewLeagueProcessor(
@@ -31,17 +30,9 @@ func NewLeagueProcessor(
 	if err != nil {
 		return nil, err
 	}
-	matchProcessor, err := NewMatchProcessor(
-		contracts,
-		namesdb,
-	)
-	if err != nil {
-		return nil, err
-	}
 	return &LeagueProcessor{
 		contracts,
 		calendarProcessor,
-		matchProcessor,
 	}, nil
 }
 
