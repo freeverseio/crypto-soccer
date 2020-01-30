@@ -131,40 +131,45 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	log.Info("Connecting to universe DBMS: ", *postgresURL)
-	universedb, err := storage.New(*postgresURL)
-	if err != nil {
-		log.Fatalf("Failed to connect to universe DBMS: %v", err)
-	}
-
-	log.Info("Connecting to relay DBMS: ", *relayURL)
-	relaydb, err := storage.New(*relayURL)
-	if err != nil {
-		log.Fatalf("Failed to connect to universe DBMS: %v", err)
-	}
-
-	namesdb, err := names.New(*namesDatabase)
-	if err != nil {
-		log.Fatalf("Failed to connect to names DBMS: %v", err)
-	}
-
-	log.Info("All is ready ... 5 seconds to start ...")
-	time.Sleep(5 * time.Second)
-
-	processor, err := process.NewEventProcessor(contracts, namesdb)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Info("On Going ...")
-	delta := uint64(10)
 	for {
-		processedBlocks, err := run(universedb, relaydb, processor, delta)
+		log.Info("Connecting to universe DBMS: ", *postgresURL)
+		universedb, err := storage.New(*postgresURL)
 		if err != nil {
-			log.Error(err)
+			log.Fatalf("Failed to connect to universe DBMS: %v", err)
 		}
-		if processedBlocks == 0 {
-			time.Sleep(2 * time.Second)
+
+		log.Info("Connecting to relay DBMS: ", *relayURL)
+		relaydb, err := storage.New(*relayURL)
+		if err != nil {
+			log.Fatalf("Failed to connect to universe DBMS: %v", err)
 		}
+
+		namesdb, err := names.New(*namesDatabase)
+		if err != nil {
+			log.Fatalf("Failed to connect to names DBMS: %v", err)
+		}
+
+		log.Info("All is ready ... 5 seconds to start ...")
+		time.Sleep(5 * time.Second)
+
+		processor, err := process.NewEventProcessor(contracts, namesdb)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Info("On Going ...")
+		delta := uint64(10)
+		for {
+			processedBlocks, err := run(universedb, relaydb, processor, delta)
+			if err != nil {
+				log.Error(err)
+				break
+			}
+			if processedBlocks == 0 {
+				time.Sleep(2 * time.Second)
+			}
+		}
+		log.Warning("Waiting 2 secs and retry ...")
+		time.Sleep(2 * time.Second)
 	}
 }
