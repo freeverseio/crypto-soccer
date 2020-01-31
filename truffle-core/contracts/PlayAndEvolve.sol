@@ -26,15 +26,20 @@ contract PlayAndEvolve {
         _engine = Engine(addr);
     }
 
+    function generateMatchSeed(bytes32 seed, uint256[2] memory teamIds) public pure returns (uint256) {
+        return uint256(keccak256(abi.encode(seed, teamIds[0], teamIds[1])));
+    }
+
     // In a 1st half we need to:
     //      1. applyTrainingPoints: (oldStates, userAssignment) => (newStates)
     //      2. playHalfMatch: (newStates) => (matchLog, events)
     //      3. updateStatesAfterPlayHalf: (newStates, matchLog) => finalStates
     // Output: (finalStates, matchLogsAndEvents)
     function play1stHalfAndEvolve(
-        uint256 seed,
+        bytes32 verseSeed,
         uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[2] memory teamIds,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
         bool[3] memory matchBools, // [is2ndHalf, isHomeStadium, isPlayoff]
@@ -49,7 +54,7 @@ contract PlayAndEvolve {
         
         uint256[2] memory nullLogs;
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
-            _engine.playHalfMatch(seed, matchStartTime, states, tactics, nullLogs, matchBools);
+            _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, states, tactics, nullLogs, matchBools);
 
         states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLogsAndEvents[0], tactics[0], false);
         states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLogsAndEvents[1], tactics[1], false);
@@ -64,9 +69,10 @@ contract PlayAndEvolve {
     //      3. computeTrainingPoints: (matchLogsHalf2) => (matchLogsHalf2 with TPs)
     // Output: (newStates, matchLogsAndEvents with TPs)
     function play2ndHalfAndEvolve(
-        uint256 seed,
+        bytes32 verseSeed,
         uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[2] memory teamIds,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
         bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
@@ -76,7 +82,7 @@ contract PlayAndEvolve {
         require(matchBools[IDX_IS_2ND_HALF], "play2ndHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
-            _engine.playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
+            _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, states, tactics, matchLog, matchBools);
 
         states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLogsAndEvents[0], tactics[0], true);
         states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLogsAndEvents[1], tactics[1], true);

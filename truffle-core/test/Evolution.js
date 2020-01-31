@@ -212,7 +212,7 @@ contract('Evolution', (accounts) => {
 
     
     
-    it('updateStatesAfterPlayHalf: half 1', async () => {
+    it2('updateStatesAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
         matchLog = await engine.playHalfMatch(
@@ -275,7 +275,7 @@ contract('Evolution', (accounts) => {
 
     // test test/Evolution.js
 
-    it('updateStatesAfterPlayHalf: half 2', async () => {
+    it2('updateStatesAfterPlayHalf: half 2', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
         matchLog = await engine.playHalfMatch(
@@ -307,7 +307,7 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    it('applyTrainingPoints: if assignment = 0, it works by doing absolutely nothing', async () => {
+    it2('applyTrainingPoints: if assignment = 0, it works by doing absolutely nothing', async () => {
         matchStartTime = now;
         newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, matchStartTime, TPs = 0).should.be.fulfilled;
         newSkills2 = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, matchStartTime, TPs = 1).should.be.rejected;
@@ -315,7 +315,7 @@ contract('Evolution', (accounts) => {
     });
     
     
-    it('training leading to an actual son', async () => {
+    it2('training leading to an actual son', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -362,7 +362,7 @@ contract('Evolution', (accounts) => {
         
     });
     
-    it('training leading to an academy', async () => {
+    it2('training leading to an academy', async () => {
         // all inputs are identical to the previous test, except for a +2 in matchStatTime,
         // which changes the entire randomness
         playerSkills = await engine.encodePlayerSkills(
@@ -411,7 +411,7 @@ contract('Evolution', (accounts) => {
     });
     
     
-    it('applyTrainingPoints', async () => {
+    it2('applyTrainingPoints', async () => {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
         specialPlayer = 21;
@@ -434,7 +434,7 @@ contract('Evolution', (accounts) => {
         }
     });
     
-    it('applyTrainingPoints with realistic team and zero TPs', async () => {
+    it2('applyTrainingPoints with realistic team and zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
         TPperSkill = Array.from(new Array(25), (x,i) => 0);
@@ -456,7 +456,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
     
-    it('applyTrainingPoints with realistic team and non-zero TPs', async () => {
+    it2('applyTrainingPoints with realistic team and non-zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
         TPperSkill = [ 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46 ];
@@ -478,7 +478,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
 
-    it('test evolvePlayer at zero potential', async () => {
+    it2('test evolvePlayer at zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -513,7 +513,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(res, expected, toNum = true, verbose = false);
     });
     
-    it('test evolvePlayer with TPs= 0', async () => {
+    it2('test evolvePlayer with TPs= 0', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [12, 13, 155, 242, 32], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -549,7 +549,7 @@ contract('Evolution', (accounts) => {
     });
     
     
-    it('test evolvePlayer at non-zero potential', async () => {
+    it2('test evolvePlayer at non-zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -588,7 +588,7 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expectedSumSkills);
     });
 
-    it('test evolvePlayer at non-zero potential and age', async () => {
+    it2('test evolvePlayer at non-zero potential and age', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -627,7 +627,7 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expectedSumSkills);
     });
 
-    it('test evolvePlayer with old age', async () => {
+    it2('test evolvePlayer with old age', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [1000, 2000, 3000, 4000, 5000], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -677,19 +677,21 @@ contract('Evolution', (accounts) => {
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the userAssignment:
         prev2ndHalfLog = 0;
+        teamIds = [1,2]
+        verseSeed = '0x234ab3'
         await play.play1stHalfAndEvolve(
-            123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
             [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
         ).should.be.rejected;
         
         prev2ndHalfLog = await evo.addTrainingPoints(0, TP).should.be.fulfilled;
         const {0: skills, 1: matchLogsAndEvents} = await play.play1stHalfAndEvolve(
-            123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
             [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
         ).should.be.fulfilled;
 
-        matchLogsAndEvents[0].should.be.bignumber.equal('25296342363168174040605552148442404467793220960237976659961313232274');
-        matchLogsAndEvents[1].should.be.bignumber.equal('25296342363168174040605552148442404467793220960237900098767647934114');
+        matchLogsAndEvents[0].should.be.bignumber.equal('25295519610889513437590540466545126104288118904479424056262060408929');
+        matchLogsAndEvents[1].should.be.bignumber.equal('25295519610889513437590540466545126116964624906762253999584749553538');
 
         // show that after applying the training points (before the match), the teams evolved from 250 per player to 549
         sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half1[0]).should.be.fulfilled;
@@ -707,16 +709,20 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(sumSkills1, expectedSums, toNum = true, verbose = false, isBigNumber = false);
 
         // check that the game is played, ends up in 2-2, and that there are no TPs assigned (this is 1st half)
-        expectedResult = [2, 2];
+        expectedGoals = [1, 2];
         expectedPoints = [0, 0];
+        goals = []
+        points = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodeLog.getNGoals(matchLogsAndEvents[team]);
-            nGoals.toNumber().should.be.equal(expectedResult[team]);
-            points = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
-            points.toNumber().should.be.equal(expectedPoints[team]);
+            goals.push(nGoals);
+            nPoints = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
+            points.push(nPoints);
         }
+        debug.compareArrays(goals, expectedGoals, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(points, expectedPoints, toNum = true, verbose = false, isBigNumber = false);
         // check that the events are generated, and match whatever we got once.
-        expected = [ 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 6, 0, 1, 9, 1, 5, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+        expected = [ 1, 1, 8, 1, 8, 1, 1, 7, 1, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 0, 0, 0, 0 ];
         debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, verbose = false, isBigNumber = false);
 
         // check that we set the "aligned" properties properly
@@ -743,24 +749,31 @@ contract('Evolution', (accounts) => {
     
     
     it('test that we can a 2nd half and include the training points too', async () => {
+        teamIds = [1,2]
+        verseSeed = '0x234ab3'
         const {0: skills, 1: matchLogsAndEvents} = await play.play2ndHalfAndEvolve(
-            123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
+            verseSeed, now, [teamStateAll50Half2, teamStateAll50Half2], teamIds, [tactics0, tactics1], [0, 0], 
             [is2nd = true, isHomeStadium, isPlayoff]
         ).should.be.fulfilled;
         
-        matchLogsAndEvents[0].should.be.bignumber.equal('828212031530063714068744615937802070303075264638754755319632988244805010');
-        matchLogsAndEvents[1].should.be.bignumber.equal('993853943853037244967178756632450681161901879970844032566972375950689954');
+        matchLogsAndEvents[0].should.be.bignumber.equal('828212031530063714075105071063466159803079953922332823125007509466644577');
+        matchLogsAndEvents[1].should.be.bignumber.equal('552142177658441162577714836572385141705038130336717817408834731312676993');
 
-        expectedResult = [2, 2];
-        expectedPoints = [15, 18];
+        expectedGoals = [1, 1];
+        expectedPoints = [15, 10];
+        goals = []
+        points = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodeLog.getNGoals(matchLogsAndEvents[team]);
-            nGoals.toNumber().should.be.equal(expectedResult[team]);
-            points = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
-            points.toNumber().should.be.equal(expectedPoints[team]);
+            goals.push(nGoals);
+            nPoints = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
+            points.push(nPoints);
         }
+        debug.compareArrays(goals, expectedGoals, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(points, expectedPoints, toNum = true, verbose = false, isBigNumber = false);
+
         // check that the events are generated, and match whatever we got once.
-        expected = [ 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 6, 0, 1, 9, 1, 5, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+        expected = [ 1, 1, 8, 1, 8, 1, 1, 7, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 1, 9, 0, 0 ];
         debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, verbose = false, isBigNumber = false);
         
         // test that the states did not change the intrinsics of the players:
@@ -788,7 +801,7 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    it('training points with random inputs', async () => {
+    it2('training points with random inputs', async () => {
         typeOut = [3, 0];
         outRounds = [7, 0];
         outGames = [9, 14]
@@ -813,7 +826,7 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    it('training points with no goals nor anything else', async () => {
+    it2('training points with no goals nor anything else', async () => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
@@ -828,7 +841,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals by attackers', async () => {
+    it2('training points with many goals by attackers', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 10);
         shoot   = Array.from(new Array(goals), (x,i) => 10);
@@ -848,7 +861,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals by mids', async () => {
+    it2('training points with many goals by mids', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 6);
         shoot   = Array.from(new Array(goals), (x,i) => 6);
@@ -868,7 +881,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals by defs with assists', async () => {
+    it2('training points with many goals by defs with assists', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 6);
         shoot   = Array.from(new Array(goals), (x,i) => 2);
@@ -889,7 +902,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals with a winner at home', async () => {
+    it2('training points with many goals with a winner at home', async () => {
         win = 0;
         isHome = true;
 
@@ -921,7 +934,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals with a winner away', async () => {
+    it2('training points with many goals with a winner away', async () => {
         win = 1;
         isHome = true;
 
@@ -954,7 +967,7 @@ contract('Evolution', (accounts) => {
         }
     });    
     
-    it('training points with no goals but cards', async () => {
+    it2('training points with no goals but cards', async () => {
         outGames    = [4, 6];
         types       = [RED_CARD, RED_CARD];
         yellows1    = [3, 7];
@@ -974,7 +987,7 @@ contract('Evolution', (accounts) => {
         }
     });    
     
-    it('training points with many goals by attackers... and different teamSumSkills', async () => {
+    it2('training points with many goals by attackers... and different teamSumSkills', async () => {
         // first get the resulting Traning points with teamSkills difference: [25, 25]
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 10);
