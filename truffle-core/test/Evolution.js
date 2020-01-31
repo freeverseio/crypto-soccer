@@ -675,12 +675,19 @@ contract('Evolution', (accounts) => {
             TPperSkill[5 * bucket + 4] = TP - sum4;
         }        
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the userAssignment:
+        prev2ndHalfLog = 0;
+        await play.play1stHalfAndEvolve(
+            123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
+        ).should.be.rejected;
         
+        prev2ndHalfLog = await evo.addTrainingPoints(0, TP).should.be.fulfilled;
         const {0: skills, 1: matchLogsAndEvents} = await play.play1stHalfAndEvolve(
-            123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [assignment, assignment], 
-            [is2nd = false, isHomeStadium, isPlayoff]
+            123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
         ).should.be.fulfilled;
-        
+
         matchLogsAndEvents[0].should.be.bignumber.equal('25296342363168174040605552148442404467793220960237976659961313232274');
         matchLogsAndEvents[1].should.be.bignumber.equal('25296342363168174040605552148442404467793220960237900098767647934114');
 
