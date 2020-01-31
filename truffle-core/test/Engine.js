@@ -1075,6 +1075,20 @@ contract('Engine', (accounts) => {
         }
     });
 
+    it('throws dice array11 fine grained testing for null weights', async () => {
+        // when all weights are null, we expect random results
+        weightsNull = Array.from(new Array(11), (x,i) => 0);
+        nThrows = 10;
+        expected = [ 0, 8, 6, 3, 1, 9, 7, 4, 2, 10 ];
+        results = [];
+        for (p = 0; p < nThrows; p++) {
+            r0 = Math.floor(p*MAX_RND/nThrows);
+            result = await engine.throwDiceArray(weightsNull, r0).should.be.fulfilled;
+            results.push(result)//.toNumber().should.be.equal(p);
+        }
+        debug.compareArrays(results, expected, toNum = true, verbose = false);
+    });
+
     it('throws dice array11', async () => {
         // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
         weights = Array.from(new Array(11), (x,i) => 1);
