@@ -34,12 +34,20 @@ contract EncodingTPAssignment {
     } 
 
     function decodeTP(uint256 encoded) public pure returns(uint16[25] memory TPperSkill, uint8 specialPlayer, uint16 TP) {
+        TP = uint16((encoded >> 225) & 511);
+        specialPlayer = uint8((encoded >> 234) & 31);
+        require(specialPlayer <= PLAYERS_PER_TEAM_MAX, "specialPlayer value too large");
+        uint16 minRHS = MIN_PERCENT * TP;
+        uint16 maxRHS = MAX_PERCENT * TP;
         for (uint8 bucket = 0; bucket < 5; bucket++) {
+            uint256 sum = 0;
             for (uint8 sk = 5 * bucket; sk < 5* (bucket+1); sk++) {
-                TPperSkill[sk] = uint16((encoded >> 9 * sk) & 511);
+                uint16 skill = uint16((encoded >> 9 * sk) & 511);
+                require((100*skill >= minRHS) && (100*skill <= maxRHS), "one of the assigned TPs is too large or too small");
+                TPperSkill[sk] = skill;
+                sum += skill;
             }
+            require(sum <= TP, "sum of Traning Points is too large");
         }
-        return (TPperSkill, uint8((encoded >> 234) & 31), uint16((encoded >> 225) & 511));
     } 
-        
 }

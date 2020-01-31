@@ -36,15 +36,16 @@ contract PlayAndEvolve {
         uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        uint256[2] memory userAssignment,
-        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
+        uint256[2] memory matchLog,
+        bool[3] memory matchBools, // [is2ndHalf, isHomeStadium, isPlayoff]
+        uint256[2] memory userAssignment
     )
         public view returns(uint256[PLAYERS_PER_TEAM_MAX][2] memory, uint256[2+5*ROUNDS_PER_MATCH] memory)
     {
         require(!matchBools[IDX_IS_2ND_HALF], "play1stHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
-        states[0] = _training.applyTrainingPoints(states[0], userAssignment[0], matchStartTime);
-        states[1] = _training.applyTrainingPoints(states[1], userAssignment[1], matchStartTime);
+        states[0] = _training.applyTrainingPoints(states[0], userAssignment[0], matchStartTime, _evo.getTrainingPoints(matchLog[0]));
+        states[1] = _training.applyTrainingPoints(states[1], userAssignment[1], matchStartTime, _evo.getTrainingPoints(matchLog[1]));
         
         uint256[2] memory nullLogs;
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 

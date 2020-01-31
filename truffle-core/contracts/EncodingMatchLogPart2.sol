@@ -61,8 +61,8 @@ contract EncodingMatchLogPart2  {
         return log | (uint256(points) << 235);
     }
 
-    function getTrainingPoints(uint256 log)  public pure returns (uint256) {
-        return  (log >> 235) & 4095; // 2^12-1
+    function getTrainingPoints(uint256 log)  public pure returns (uint16) {
+        return  uint16((log >> 235) & 4095); // 2^12-1
     }
     
 }

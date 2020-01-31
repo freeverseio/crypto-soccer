@@ -308,20 +308,9 @@ contract('Evolution', (accounts) => {
     });
 
     it('applyTrainingPoints: if assignment = 0, it works by doing absolutely nothing', async () => {
-        TP = 200;
-        TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
-        specialPlayer = 21;
-        // make sure they sum to TP:
-        for (bucket = 0; bucket < 5; bucket++){
-            sum4 = 0;
-            for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
-                sum4 += TPperSkill[sk];
-            }
-            TPperSkill[5 * bucket + 4] = TP - sum4;
-        }        
-        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, matchStartTime);
+        newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, matchStartTime, TPs = 0).should.be.fulfilled;
+        newSkills2 = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, matchStartTime, TPs = 1).should.be.rejected;
         debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
     });
     
@@ -436,7 +425,8 @@ contract('Evolution', (accounts) => {
         }        
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment, matchStartTime);
+        newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment, matchStartTime, TP+1).should.be.rejected;
+        newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment, matchStartTime, TP).should.be.fulfilled;
         for (p = 0; p < 25; p++) {
             result = await training.getShoot(newSkills[p]).should.be.fulfilled;
             if (p == specialPlayer) result.toNumber().should.be.equal(110);
@@ -451,7 +441,7 @@ contract('Evolution', (accounts) => {
         TP = TPperSkill.reduce((a, b) => a + b, 0);
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await training.applyTrainingPoints(teamState, assignment, matchStartTime);
+        newSkills = await training.applyTrainingPoints(teamState, assignment, matchStartTime, TP);
         initShoot = [];
         newShoot = [];
         expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
@@ -473,7 +463,7 @@ contract('Evolution', (accounts) => {
         TP = 200;
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await training.applyTrainingPoints(teamState, assignment, matchStartTime);
+        newSkills = await training.applyTrainingPoints(teamState, assignment, matchStartTime, TP);
         initShoot = [];
         newShoot = [];
         expectedNewShoot  = [ 673, 480, 869, 987, 1015, 739, 591, 772, 1009, 1506, 906, 1178, 1452, 1147, 905, 816, 603, 1120 ];

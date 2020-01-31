@@ -127,14 +127,16 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     function applyTrainingPoints(
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
         uint256 userAssignment,
-        uint256 matchStartTime
+        uint256 matchStartTime,
+        uint16 earnedTPs
     ) 
         public
         view
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
+        (uint16[25] memory TPperSkill, uint8 specialPlayer, uint16 TP) = decodeTP(userAssignment);
+        require(earnedTPs == TP, "userAssignment used an amount of TP that does not match the earned TPs in previous match");
         if (userAssignment == 0) return states;
-        (uint16[25] memory TPperSkill, uint8 specialPlayer, ) = decodeTP(userAssignment);
         uint16[5] memory singleTPperSkill;
 
         // note that if no special player was selected => specialPlayer = PLAYERS_PER_TEAM_MAX 
