@@ -26,12 +26,18 @@ func TestDefaultValues(t *testing.T) {
 func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	t.Parallel()
 	match := engine.NewMatch()
+	match.Seed = [32]byte{0x2, 0x1}
+	match.StartTime = big.NewInt(1570147200)
+	match.HomeTeam.TeamID = big.NewInt(int64(1))
+	match.VisitorTeam.TeamID = big.NewInt(int64(2))
+	match.HomeMatchLog = big.NewInt(int64(0))
+	match.VisitorMatchLog = big.NewInt(int64(0))
+	for i := 0; i < 25; i++ {
+		match.HomeTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309339445376240739796176995438")
+		match.VisitorTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309340654302060354425351701614")
+	}
 	err := match.Play1stHalf(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, match.HomeGoals, uint8(0))
-	assert.Equal(t, match.VisitorGoals, uint8(0))
-	assert.Equal(t, match.HomeMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
-	assert.Equal(t, match.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
 	golden.Assert(t, match.DumpState(), t.Name()+".golden")
 }
 

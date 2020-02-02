@@ -11,7 +11,9 @@ import (
 type MatchEvents []MatchEvent
 
 func Generate(
-	seed *big.Int,
+	verseSeed [32]byte,
+	teamId0 *big.Int,
+	teamId1 *big.Int,
 	matchLog0 [15]uint32,
 	matchLog1 [15]uint32,
 	blockchainEvents []*big.Int,
@@ -41,6 +43,8 @@ func Generate(
 	if err != nil {
 		return emptyEvents, err
 	}
+
+	seed := new(big.Int).SetUint64(int_hash(string(verseSeed[:]) + "_" + teamId0.String() + "_" + teamId1.String()))
 
 	// Compute main events: per-round, and cards & injuries
 	events, rounds2mins := addEventsInRound(seed, blockchainEvents, NULL)

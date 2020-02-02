@@ -662,6 +662,24 @@ contract('Evolution', (accounts) => {
         
     });
 
+    it('test that we can a 1st half with log = assignedTPs = 0', async () => {
+        TP = 0;
+        assignment = 0
+        prev2ndHalfLog = 0;
+        teamIds = [1,2]
+        verseSeed = '0x234ab3'
+        await play.play1stHalfAndEvolve(
+            verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
+        ).should.be.fulfilled;
+
+        prev2ndHalfLog = await evo.addTrainingPoints(0, TP = 2).should.be.fulfilled;
+        await play.play1stHalfAndEvolve(
+            verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
+        ).should.be.rejected;
+    });
+    
     it('test that we can a 1st half and include apply training points too', async () => {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
@@ -675,7 +693,7 @@ contract('Evolution', (accounts) => {
             TPperSkill[5 * bucket + 4] = TP - sum4;
         }        
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
-        // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the userAssignment:
+        // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the assignedTPs:
         prev2ndHalfLog = 0;
         teamIds = [1,2]
         verseSeed = '0x234ab3'
