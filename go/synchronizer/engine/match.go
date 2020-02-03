@@ -68,13 +68,6 @@ func NewMatchFromStorage(
 }
 
 func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
-	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
-		return err
-	}
-	if err := b.VisitorTeam.ToStorage(contracts, tx); err != nil {
-		return err
-	}
-
 	b.HomeTeam.GoalsForward += uint32(b.Match.HomeGoals)
 	b.HomeTeam.GoalsAgainst += uint32(b.Match.VisitorGoals)
 	b.VisitorTeam.GoalsForward += uint32(b.Match.VisitorGoals)
@@ -94,7 +87,12 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		b.HomeTeam.Points++
 		b.VisitorTeam.Points++
 	}
-
+	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
+		return err
+	}
+	if err := b.VisitorTeam.ToStorage(contracts, tx); err != nil {
+		return err
+	}
 	return b.Update(tx)
 }
 
