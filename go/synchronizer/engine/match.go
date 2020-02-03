@@ -67,12 +67,12 @@ func NewMatchFromStorage(
 	return match
 }
 
-func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
-	b.HomeTeam.GoalsForward += uint32(b.Match.HomeGoals)
-	b.HomeTeam.GoalsAgainst += uint32(b.Match.VisitorGoals)
-	b.VisitorTeam.GoalsForward += uint32(b.Match.VisitorGoals)
-	b.VisitorTeam.GoalsAgainst += uint32(b.Match.HomeGoals)
-	deltaGoals := int(b.Match.HomeGoals) - int(b.Match.VisitorGoals)
+func (b *Match) updateStats() {
+	b.HomeTeam.GoalsForward += uint32(b.HomeGoals)
+	b.HomeTeam.GoalsAgainst += uint32(b.VisitorGoals)
+	b.VisitorTeam.GoalsForward += uint32(b.VisitorGoals)
+	b.VisitorTeam.GoalsAgainst += uint32(b.HomeGoals)
+	deltaGoals := int(b.HomeGoals) - int(b.VisitorGoals)
 	if deltaGoals > 0 {
 		b.HomeTeam.W++
 		b.VisitorTeam.L++
@@ -87,6 +87,9 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		b.HomeTeam.Points++
 		b.VisitorTeam.Points++
 	}
+}
+
+func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
 		return err
 	}
@@ -158,8 +161,8 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
-	b.HomeTeam.SetSkills(newSkills[0])
-	b.VisitorTeam.SetSkills(newSkills[1])
+	b.HomeTeam.SetSkills(contracts, newSkills[0])
+	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeMatchLog = logsAndEvents[0]
 	b.VisitorMatchLog = logsAndEvents[1]
 	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
@@ -196,8 +199,8 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
-	b.HomeTeam.SetSkills(newSkills[0])
-	b.VisitorTeam.SetSkills(newSkills[1])
+	b.HomeTeam.SetSkills(contracts, newSkills[0])
+	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeMatchLog = logsAndEvents[0]
 	b.VisitorMatchLog = logsAndEvents[1]
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {

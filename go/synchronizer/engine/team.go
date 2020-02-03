@@ -63,9 +63,9 @@ func DefaultTactic() *big.Int {
 	return tactic
 }
 
-func (b *Team) SetSkills(skills [25]*big.Int) {
+func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 	for i := range skills {
-		b.Players[i].sto.EncodedSkills = new(big.Int).Set(skills[i])
+		b.Players[i].SetSkills(contracts, skills[i])
 	}
 }
 
