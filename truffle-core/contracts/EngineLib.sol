@@ -8,14 +8,19 @@ contract EngineLib is EncodingSkills {
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint256 private constant SECS_IN_DAY    = 86400; // 24 * 3600 
 
-    /// @dev Throws a dice that returns 0 with probability weight0/(weight0+weight1), and 1 otherwise.
-    /// @dev So, returning 0 has semantics: "the responsible for weight0 is selected".
-    /// @dev We return a uint8, not bool, to allow the return to be used as an idx in an array by the callee.
-    /// @dev The formula is derived as follows. Throw a random number R in the range [0,maxR].
-    /// @dev Then, w0 wins if (w0+w1)*(R/maxR) < w0, and w1 wins otherise. 
-    /// @dev MAX_RND controls the resolution or fine-graining of the algorithm.
+    /// Throws a dice that returns 0 with probability weight0/(weight0+weight1), and 1 otherwise.
+    /// So, returning 0 has semantics: "the responsible for weight0 is selected".
+    /// We return a uint8, not bool, to allow the return to be used as an idx in an array by the callee.
+    /// The formula is derived as follows. Consider a segment which is the union of a segment of length w0, and one of length w1.
+    //      0, 1, ... w0-1 | w0 ... w0+w1-1
+    //  We want to get a random number in that segment: (w0+w1-1) * (R/maxR)
+    //  w1 wins if (w0+w1-1) * (R/maxR) < w1 => (w0+w1-1) * R < w1 * maxR
+    //  w2 wins otherwise
+    //  MAX_RND controls the resolution or fine-graining of the algorithm.
     function throwDice(uint256 weight0, uint256 weight1, uint256 rndNum) public pure returns(uint8) {
-        if( ( (weight0 + weight1) * rndNum ) < ( weight0 * (MAX_RND-1) ) ) {
+        // if both weights are null, return approx 50% chance
+        if (weight0 == 0 && weight1 == 0) return uint8(rndNum % 2);
+        if( ( (weight0 + weight1 - 1) * rndNum ) < (weight0 * MAX_RND) ) {
             return 0;
         } else {
             return 1;
@@ -29,11 +34,13 @@ contract EngineLib is EncodingSkills {
         for (w = 0; w < weights.length; w++) {
             uniformRndInSumOfWeights += weights[w];
         }
-        uniformRndInSumOfWeights *= rndNum;
+        // if all weights are null, return uniform chance
+        if (uniformRndInSumOfWeights == 0) return uint8(rndNum % weights.length);
+        uniformRndInSumOfWeights = (uniformRndInSumOfWeights - 1) * rndNum;
         uint256 cumSum = 0;
         for (w = 0; w < weights.length-1; w++) {
             cumSum += weights[w];
-            if( uniformRndInSumOfWeights < ( cumSum * (MAX_RND-1) )) {
+            if( uniformRndInSumOfWeights < ( cumSum * MAX_RND )) {
                 return w;
             }
         }

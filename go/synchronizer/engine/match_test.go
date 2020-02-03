@@ -26,13 +26,17 @@ func TestDefaultValues(t *testing.T) {
 func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	t.Parallel()
 	match := engine.NewMatch()
+	match.Seed = [32]byte{0x2, 0x1}
+	match.StartTime = big.NewInt(1570147200)
+	match.HomeTeam.TeamID = big.NewInt(int64(1))
+	match.VisitorTeam.TeamID = big.NewInt(int64(2))
+	match.HomeMatchLog = big.NewInt(int64(0))
+	match.VisitorMatchLog = big.NewInt(int64(0))
 	err := match.Play1stHalf(*bc.Contracts)
 	assert.NilError(t, err)
+	golden.Assert(t, match.DumpState(), t.Name()+".golden")
 	assert.Equal(t, match.HomeGoals, uint8(0))
 	assert.Equal(t, match.VisitorGoals, uint8(0))
-	assert.Equal(t, match.HomeMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
-	assert.Equal(t, match.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
-	golden.Assert(t, match.DumpState(), t.Name()+".golden")
 }
 
 func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
@@ -42,8 +46,8 @@ func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, engine.HomeGoals, uint8(0))
 	assert.Equal(t, engine.VisitorGoals, uint8(0))
-	assert.Equal(t, engine.HomeMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
-	assert.Equal(t, engine.VisitorMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
+	assert.Equal(t, engine.HomeMatchLog.String(), "227812843416508434052967628183601991649333582172494969591812000541986258944")
+	assert.Equal(t, engine.VisitorMatchLog.String(), "227812843416508434052967628183601991649333582172494969591812000541986258944")
 }
 
 func TestPlayGame(t *testing.T) {
@@ -82,8 +86,8 @@ func TestPlay2ndHalf(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
-	assert.Equal(t, m.HomeMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
-	assert.Equal(t, m.VisitorMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
+	assert.Equal(t, m.HomeMatchLog.String(), "227812843416508434052967628183601991649333582172494969591812000541986258944")
+	assert.Equal(t, m.VisitorMatchLog.String(), "227812843416508434052967628183601991649333582172494969591812000541986258944")
 	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146150823695768679775892574063332082614168434901002")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
 	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730751478628129847057365940164373772237577766699058")
