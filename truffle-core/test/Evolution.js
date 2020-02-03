@@ -828,7 +828,7 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
         
         matchLogsAndEvents[0].should.be.bignumber.equal('226984636323163257900737185166157036185721018754001559462690601274921975905');
-        matchLogsAndEvents[1].should.be.bignumber.equal('552142177658441162577714836572385141705038130336717817408834731312676993');
+        matchLogsAndEvents[1].should.be.bignumber.equal('226708566469291635349239794931665955167622976930415944456974428496768008321');
 
         expectedGoals = [1, 1];
         expectedPoints = [15, 10];
