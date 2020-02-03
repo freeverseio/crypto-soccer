@@ -206,6 +206,7 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
 		return err
 	}
+	b.updateStats()
 	return nil
 }
 

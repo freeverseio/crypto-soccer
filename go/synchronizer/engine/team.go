@@ -42,6 +42,12 @@ func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 func (b Team) DumpState() string {
 	var state string
 	state += fmt.Sprintf("TeamId: %v\n", b.TeamID)
+	state += fmt.Sprintf("Points: %v\n", b.Points)
+	state += fmt.Sprintf("W: %v\n", b.W)
+	state += fmt.Sprintf("D: %v\n", b.D)
+	state += fmt.Sprintf("L: %v\n", b.L)
+	state += fmt.Sprintf("GoalsForward: %v\n", b.GoalsForward)
+	state += fmt.Sprintf("GoalsAgainst: %v\n", b.GoalsAgainst)
 	for i, player := range b.Players {
 		state += fmt.Sprintf("Players[%d]: %v\n", i, player.DumpState())
 	}
