@@ -34,20 +34,23 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
 
 
     /**
-     * @dev playHalfMatch returns the result of a match
-     * @param seed the pseudo-random number to use as a seed for the match
-     * @param states a 2-vector, each of the 2 being vector with the state of the players of team 0
-     * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
-     * @return the score of the match
+     * @dev playHalfMatch is the main function that simulates a match
+     * @param seed the pseudo-random number to use as a seed for the match; it's someone else's due to make it unique for each match.
+     * @param matchStartTime in secs, the timeStamp of inside the verse that emitted the seed 
+     * @param skills a 2-array, each of the 2 being an array with the skills of the players of the corresponding team
+     * @param tactics a 2-array with the tacticId (ex. tacticId = 0 for [4,4,2]) for each team
+     * @param matchLogs a 2-array with the matchLogs of the previous half (be it 1st half, of 2nd half of last match) for each team
+     * @param matchBools a 3-array containing: [is2ndHalf, isHomeStadium, isPlayoff]
+     * @return an array containing: [matchLogs[0], matchLogs[1], event[0],..., event[last]]
      */
     // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
     function playHalfMatch(
         uint256 seed,
-        uint256 matchStartTime, //actionsSubmissionTime,
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256 matchStartTime, 
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
+        bool[3] memory matchBools 
     )
         public
         view
@@ -60,13 +63,13 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         seedAndStartTimeAndEvents[1] = matchStartTime; 
         (matchLogs, block0, block1) = playMatchWithoutPenalties(
             seedAndStartTimeAndEvents, 
-            states,
+            skills,
             tactics,
             matchLogs,
             matchBools
         );
         if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
-            matchLogs = _precomp.computePenalties(matchLogs, states, block0, block1, uint64(seed));  // TODO seed
+            matchLogs = _precomp.computePenalties(matchLogs, skills, block0, block1, uint64(seed));  // TODO seed
         } else {
             // note that WINNER_HOME = 0, so no need to write anything if home wins.
             if (getNGoals(matchLogs[0]) == getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_DRAW);
@@ -79,14 +82,12 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     }
     
     /**
-     * @dev playHalfMatch returns the result of a match
-     * @param states a 2-vector, each of the 2 being vector with the state of the players of team 0
-     * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
-     * @return the score of the match
+     * @dev playHalfMatch same interface as playMatch, except that a couple of params are serialized inside seedAndStartTimeAndEvents,
+     * @dev ...which contains [seed, startTimeInSecs, events[0], events[1], ...]
      */
     function playMatchWithoutPenalties(
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
         bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
@@ -100,26 +101,26 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         bool[10][2] memory extraAttack;
         // uint16[ROUNDS_PER_MATCH] memory events;
 
-        (matchLogs[0], states[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
-        (matchLogs[1], states[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[0], skills[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[1], skills[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]);
 
-        matchLogs[0] = writeNDefs(matchLogs[0], states[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
-        matchLogs[1] = writeNDefs(matchLogs[1], states[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[0] = writeNDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[1] = writeNDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
-        globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTimeAndEvents[IDX_ST_TIME]);
-        globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTimeAndEvents[IDX_ST_TIME]);
+        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], playersPerZone[0], extraAttack[0], seedAndStartTimeAndEvents[IDX_ST_TIME]);
+        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], playersPerZone[1], extraAttack[1], seedAndStartTimeAndEvents[IDX_ST_TIME]);
 
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(matchLogs, seedAndStartTimeAndEvents, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        computeRounds(matchLogs, seedAndStartTimeAndEvents, skills, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
         return (matchLogs, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
     }
     
     function computeRounds(
         uint256[2] memory matchLogs,
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory skills, 
         uint8[9][2] memory playersPerZone, 
         bool[10][2] memory extraAttack, 
         uint256[5][2] memory globSkills, 
@@ -142,7 +143,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
                 uint256[4] memory scoreData = managesToScore(
                     seedAndStartTimeAndEvents[IDX_ST_TIME],
                     matchLogs[teamThatAttacks],
-                    states[teamThatAttacks],
+                    skills[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     extraAttack[teamThatAttacks],
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
@@ -162,7 +163,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
     // this function returns an array of (still) size 25, but only with the correctly linedup first 11 entries filled.
     function getLineUpAndPlayerPerZone(
-        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics,
         bool is2ndHalf,
         uint256 matchLog,
@@ -173,20 +174,20 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         returns (uint256, uint256[PLAYERS_PER_TEAM_MAX] memory outStates, uint8[9] memory) 
     {
         uint8 tacticsId;
-        (matchLog, outStates, tacticsId) = _precomp.getLinedUpStates(matchLog, tactics, states, is2ndHalf);
+        (matchLog, outStates, tacticsId) = _precomp.getLinedUpStates(matchLog, tactics, skills, is2ndHalf);
         matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, tactics, is2ndHalf, seed); 
         return (matchLog, outStates, getPlayersPerZone(tacticsId));
     }
 
     function writeNDefs(
         uint256 matchLog, 
-        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint8 nDefsInTactics, 
         bool is2ndHalf
     ) private pure returns (uint256) {
         uint8 nDefs = nDefsInTactics;
         for (uint8 p = 1; p < 1 + nDefsInTactics; p++) {
-            if (states[p] == 0) nDefs--;
+            if (skills[p] == 0) nDefs--;
         }
         return addNDefs(matchLog, nDefs, is2ndHalf);
     }
@@ -221,7 +222,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
 
     function selectAssister(
         uint256 matchStartTime,
-        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
         uint8 shooter,
@@ -234,21 +235,21 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         uint256[] memory weights = new uint256[](11);
         // if selected assister == selected shooter =>  
         //  there was no assist => individual play by shoorter
-        weights[0] = penaltyPerAge(states[0], matchStartTime);
+        weights[0] = penaltyPerAge(skills[0], matchStartTime);
         uint256 teamPassCapacity = weights[0];
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(states[p]) * penaltyPerAge(states[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(states[p]) * penaltyPerAge(states[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 200 * getPass(states[p]) * penaltyPerAge(states[p], matchStartTime);
+            weights[p] = 200 * getPass(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
@@ -258,14 +259,14 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
         // or to have a 50% change, multiply by 10, and to have say, 1/3, multiply by 10/3
         // this is to be compensated by an overall factor of about.
-        weights[shooter] = (weights[shooter] * getSumOfSkills(states[shooter]) * 8810 * penaltyPerAge(states[shooter], matchStartTime))/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
+        weights[shooter] = (weights[shooter] * getSumOfSkills(skills[shooter]) * 8810 * penaltyPerAge(skills[shooter], matchStartTime))/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
         return throwDiceArray(weights, rnd);
     }
 
 
     function selectShooter(
         uint256 matchStartTime,
-        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
         uint256 rnd
@@ -276,18 +277,18 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     {
         uint256[] memory weights = new uint256[](11);
         // GK has minimum weight, all others are relative to this.
-        weights[0] = penaltyPerAge(states[0], matchStartTime);
+        weights[0] = penaltyPerAge(skills[0], matchStartTime);
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(states[p]) * penaltyPerAge(states[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(states[p]) * penaltyPerAge(states[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 75000 * getSpeed(states[p]) * penaltyPerAge(states[p], matchStartTime);
+            weights[p] = 75000 * getSpeed(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
             p++;
         }
         return throwDiceArray(weights, rnd);
@@ -298,7 +299,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     function managesToScore(
         uint256 matchStartTime,
         uint256 matchLog,
-        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
         uint256 blockShoot,
@@ -310,20 +311,20 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     {
         scoreData[0] = matchLog;
         uint8 currentGoals = getNGoals(matchLog);
-        uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
+        uint8 shooter = selectShooter(matchStartTime, skills, playersPerZone, extraAttack, rnds[0]);
         scoreData[1] = uint256(shooter);
         // if we scored alread the max number of goals, return. Note that isGoal = 0 inside scoreData.
         if (currentGoals >= MAX_GOALS_IN_MATCH) return scoreData;
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(states[shooter], matchStartTime);
+        uint256 shootPenalty = ( getForwardness(skills[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(skills[shooter], matchStartTime);
         // penaltyPerAge is in [0, 1M] where 0 is really bad penalty, and 1M is no penalty
         // since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
         // shooter weight =  shoot * shootPenalty/(10*1M) * (7/10) = shoort * shootPenalty * 7 / 1e8 
-        bool isGoal = throwDice((getShoot(states[shooter]) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
+        bool isGoal = throwDice((getShoot(skills[shooter]) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
         scoreData[2] = uint256(isGoal ? 1: 0);
         uint8 assister;
         if (isGoal) {
-            assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
+            assister = selectAssister(matchStartTime, skills, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog = addAssister(matchLog, assister, currentGoals);
             matchLog = addShooter(matchLog, shooter, currentGoals);
             matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);
