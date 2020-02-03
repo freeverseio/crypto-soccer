@@ -310,8 +310,9 @@ contract('Evolution', (accounts) => {
     it('applyTrainingPoints: if assignment = 0, it works by doing absolutely nothing', async () => {
         matchStartTime = now;
         newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, matchStartTime, TPs = 0).should.be.fulfilled;
-        newSkills2 = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, matchStartTime, TPs = 1).should.be.rejected;
+        newSkills2 = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, matchStartTime, TPs = 1).should.be.fulfilled;
         debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills2, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
     });
     
     
@@ -662,7 +663,7 @@ contract('Evolution', (accounts) => {
         
     });
 
-    it('test that we can a 1st half with log = assignedTPs = 0', async () => {
+    it('test that we can play a 1st half with log = assignedTPs = 0', async () => {
         TP = 0;
         assignment = 0
         prev2ndHalfLog = 0;
@@ -677,7 +678,7 @@ contract('Evolution', (accounts) => {
         await play.play1stHalfAndEvolve(
             verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
             [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
-        ).should.be.rejected;
+        ).should.be.fulfilled;
     });
     
     it('test that we can a 1st half and include apply training points too', async () => {
