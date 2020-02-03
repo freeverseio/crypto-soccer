@@ -103,10 +103,10 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     
     
     
-    function computeTeamQuality(uint256[PLAYERS_PER_TEAM_MAX] memory states) public pure returns (uint256 quality) {
+    function computeTeamQuality(uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills) public pure returns (uint256 quality) {
         uint256 state;
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            state = states[p];
+            state = teamSkills[p];
             quality +=  getShoot(state) + getSpeed(state) + getPass(state)
                     +   getDefence(state) + getEndurance(state);
         }
@@ -125,7 +125,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     }
     
     function applyTrainingPoints(
-        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills, 
         uint256 assignedTPs,
         uint256 matchStartTime,
         uint16 earnedTPs
@@ -134,26 +134,26 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         view
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
+        if (assignedTPs == 0) return teamSkills;
         (uint16[25] memory TPperSkill, uint8 specialPlayer, uint16 TP) = decodeTP(assignedTPs);
         require(earnedTPs == TP, "assignedTPs used an amount of TP that does not match the earned TPs in previous match");
-        if (assignedTPs == 0) return states;
         uint16[5] memory singleTPperSkill;
 
         // note that if no special player was selected => specialPlayer = PLAYERS_PER_TEAM_MAX 
         // ==> it will never be processed in this loop
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            uint256 skills = states[p];
-            if (skills == 0) continue; 
+            uint256 thisSkills = teamSkills[p];
+            if (thisSkills == 0) continue; 
             uint8 offset = 0;
             if (p == specialPlayer) offset = 20; 
-            else if(getForwardness(skills) == IDX_GK) offset = 0;
-            else if(getForwardness(skills) == IDX_D) offset = 5;
-            else if(getForwardness(skills) == IDX_F) offset = 15;
+            else if(getForwardness(thisSkills) == IDX_GK) offset = 0;
+            else if(getForwardness(thisSkills) == IDX_D) offset = 5;
+            else if(getForwardness(thisSkills) == IDX_F) offset = 15;
             else offset = 10;
             for (uint8 s = 0; s < 5; s++) singleTPperSkill[s] = TPperSkill[offset + s];
-            states[p] = evolvePlayer(skills, singleTPperSkill, matchStartTime);
+            teamSkills[p] = evolvePlayer(skills, singleTPperSkill, matchStartTime);
         }    
-        return states;
+        return teamSkills;
     }
     
     // deltaS(i)    = max[ TP(i), TP(i) * (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*8)
