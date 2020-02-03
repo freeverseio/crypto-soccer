@@ -78,7 +78,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, relaytx *sql.Tx, delta uint64) (uin
 	}
 
 	if opts == nil {
-		log.Info("No new blocks to scan.")
+		log.Debug("No new blocks to scan.")
 		return 0, nil
 	}
 
