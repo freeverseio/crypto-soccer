@@ -32,16 +32,11 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	match.VisitorTeam.TeamID = big.NewInt(int64(2))
 	match.HomeMatchLog = big.NewInt(int64(0))
 	match.VisitorMatchLog = big.NewInt(int64(0))
-	var err error
-	for i := 0; i < 25; i++ {
-		match.HomeTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309339445376240739796176995438")
-		assert.NilError(t, err)
-		match.VisitorTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309340654302060354425351701614")
-		assert.NilError(t, err)
-	}
-	err = match.Play1stHalf(*bc.Contracts)
+	err := match.Play1stHalf(*bc.Contracts)
 	assert.NilError(t, err)
 	golden.Assert(t, match.DumpState(), t.Name()+".golden")
+	assert.Equal(t, match.HomeGoals, uint8(0))
+	assert.Equal(t, match.VisitorGoals, uint8(0))
 }
 
 func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
