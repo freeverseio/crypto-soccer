@@ -78,8 +78,8 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
             else if (getNGoals(matchLogs[0]) < getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_AWAY);
         }
         // convert seedAndStartTimeAndEvents --> matchLogsAndEvents
-        seedAndStartTimeAndEvents[0] = matchLogs[0];
-        seedAndStartTimeAndEvents[1] = matchLogs[1];
+        seedAndStartTimeAndEvents[0] = setIsHomeStadium(matchLogs[0], matchBools[IDX_IS_HOME_STADIUM]);
+        seedAndStartTimeAndEvents[1] = setIsHomeStadium(matchLogs[1], matchBools[IDX_IS_HOME_STADIUM]);
         return seedAndStartTimeAndEvents;
     }
     

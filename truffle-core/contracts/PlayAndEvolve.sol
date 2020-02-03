@@ -53,6 +53,8 @@ contract PlayAndEvolve {
         skills[1] = _training.applyTrainingPoints(skills[1], assignedTPs[1], matchStartTime, _evo.getTrainingPoints(matchLogs[1]));
         
         uint256[2] memory nullLogs;
+        // Note that the following call does not change de values of "skills" because it calls a separate contract.
+        // It would do so if playHalfMatch was part of this contract code.
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
             _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, nullLogs, matchBools);
 
@@ -81,6 +83,8 @@ contract PlayAndEvolve {
     {
         require(matchBools[IDX_IS_2ND_HALF], "play2ndHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
+        // Note that the following call does not change de values of "skills" because it calls a separate contract.
+        // It would do so if playHalfMatch was part of this contract code.
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
             _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, matchLogs, matchBools);
 

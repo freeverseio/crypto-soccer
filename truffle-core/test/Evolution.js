@@ -709,8 +709,8 @@ contract('Evolution', (accounts) => {
             [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
         ).should.be.fulfilled;
 
-        matchLogsAndEvents[0].should.be.bignumber.equal('25295519610889513437590540466545126104288118904479424056262060408929');
-        matchLogsAndEvents[1].should.be.bignumber.equal('25295519610889513437590540466545126116964624906762253999584749553538');
+        matchLogsAndEvents[0].should.be.bignumber.equal('226156449587152805076175517685634036571044043088198131118989650027515740257');
+        matchLogsAndEvents[1].should.be.bignumber.equal('226156449587152805076175517685634036571044055764704133401819593350204884866');
 
         // show that after applying the training points (before the match), the teams evolved from 250 per player to 549
         sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half1[0]).should.be.fulfilled;
@@ -827,7 +827,7 @@ contract('Evolution', (accounts) => {
             [is2nd = true, isHomeStadium, isPlayoff]
         ).should.be.fulfilled;
         
-        matchLogsAndEvents[0].should.be.bignumber.equal('828212031530063714075105071063466159803079953922332823125007509466644577');
+        matchLogsAndEvents[0].should.be.bignumber.equal('226984636323163257900737185166157036185721018754001559462690601274921975905');
         matchLogsAndEvents[1].should.be.bignumber.equal('552142177658441162577714836572385141705038130336717817408834731312676993');
 
         expectedGoals = [1, 1];

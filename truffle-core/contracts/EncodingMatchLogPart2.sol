@@ -24,12 +24,8 @@ contract EncodingMatchLogPart2  {
         return ((log >> (128 + pos)) & 1) == 1;
     }
     
-    function addIsHomeStadium(uint256 log)  public pure returns (uint256) {
-        return log | (ONE256 << 211);
-    }
-    
     function getIsHomeStadium(uint256 log)  public pure returns (bool) {
-        return ((log >> 211) & 1) == 1;
+        return ((log >> 247) & 1) == 1;
     }
     
     // recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
