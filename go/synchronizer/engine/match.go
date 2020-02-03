@@ -68,6 +68,25 @@ func NewMatchFromStorage(
 }
 
 func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
+	b.HomeTeam.GoalsForward += uint32(b.Match.HomeGoals)
+	b.HomeTeam.GoalsAgainst += uint32(b.Match.VisitorGoals)
+	b.VisitorTeam.GoalsForward += uint32(b.Match.VisitorGoals)
+	b.VisitorTeam.GoalsAgainst += uint32(b.Match.HomeGoals)
+	deltaGoals := int(b.Match.HomeGoals) - int(b.Match.VisitorGoals)
+	if deltaGoals > 0 {
+		b.HomeTeam.W++
+		b.VisitorTeam.L++
+		b.HomeTeam.Points += 3
+	} else if deltaGoals < 0 {
+		b.HomeTeam.L++
+		b.VisitorTeam.W++
+		b.VisitorTeam.Points += 3
+	} else {
+		b.HomeTeam.D++
+		b.VisitorTeam.D++
+		b.HomeTeam.Points++
+		b.VisitorTeam.Points++
+	}
 	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
 		return err
 	}
@@ -219,32 +238,4 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	}
 	b.Events = append(b.Events, generatedEvents...)
 	return nil
-}
-
-func (b *Match) updateTeamLeaderBoard() error {
-	log.Warning("TODO Match::updateTeamLeaderBoard uninplemented")
-	return nil
-
-	// b.HomeTeam.GoalsForward += uint32(*b.Match.HomeGoals)
-	// b.HomeTeam.GoalsAgainst += uint32(*b.Match.VisitorGoals)
-	// b.VisitorTeam.GoalsForward += uint32(*b.Match.VisitorGoals)
-	// b.VisitorTeam.GoalsAgainst += uint32(*b.Match.HomeGoals)
-
-	// deltaGoals := int(*b.Match.HomeGoals) - int(*b.Match.VisitorGoals)
-	// if deltaGoals > 0 {
-	// 	b.HomeTeam.W++
-	// 	b.VisitorTeam.L++
-	// 	b.HomeTeam.Points += 3
-	// } else if deltaGoals < 0 {
-	// 	b.HomeTeam.L++
-	// 	b.VisitorTeam.W++
-	// 	b.VisitorTeam.Points += 3
-	// } else {
-	// 	b.HomeTeam.D++
-	// 	b.VisitorTeam.D++
-	// 	b.HomeTeam.Points++
-	// 	b.VisitorTeam.Points++
-	// }
-
-	// return nil
 }

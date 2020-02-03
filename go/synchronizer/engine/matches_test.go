@@ -11,7 +11,7 @@ import (
 )
 
 func BenchmarkPlayer1stHalfParallel(b *testing.B) {
-	matchesCount := []int{10, 100, 200, 500, 1000, 2000}
+	matchesCount := []int{50, 100, 200, 400, 800, 1600, 3200}
 	for _, count := range matchesCount {
 		b.Run(fmt.Sprintf("%d", count), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {

@@ -83,13 +83,8 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	if actions.Verse > 960 {
-		log.Infof("Verse %v  ... skipping", actions.Verse)
-		return nil
-	}
 	var root [32]byte
 	copy(root[:], hash)
-
 	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
 	_, err = p.updatesContract.SubmitActionsRoot(p.auth, root, cid)
 	return err
