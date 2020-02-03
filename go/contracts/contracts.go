@@ -22,7 +22,7 @@ import (
 type Contracts struct {
 	Client                *ethclient.Client
 	Leagues               *leagues.Leagues
-	Assets                *assets.Assets
+	Assets                AssetsProxy
 	Evolution             *evolution.Evolution
 	Engine                *engine.Engine
 	Engineprecomp         *engineprecomp.Engineprecomp
@@ -92,10 +92,11 @@ func New(
 		log.Fatalf("failed to connect to the ethereum client: %v", err)
 	}
 	log.Debug("creating assets bindings to: ", assetsAddress)
-	contracts.Assets, err = assets.NewAssets(common.HexToAddress(assetsAddress), contracts.Client)
+	assets, err := assets.NewAssets(common.HexToAddress(assetsAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("failed to connect to the ethereum client: %v", err)
 	}
+	contracts.Assets.Assets = *assets
 	log.Debug("creating evolution bindings to: ", evolutionAddress)
 	contracts.Evolution, err = evolution.NewEvolution(common.HexToAddress(evolutionAddress), contracts.Client)
 	if err != nil {
