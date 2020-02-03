@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/engine"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
@@ -60,7 +60,9 @@ func TestTeamSkills(t *testing.T) {
 	for _, skill := range skills {
 		assert.Equal(t, skill.String(), "0")
 	}
-	team.Players[2] = engine.NewPlayerFromSkills("4544")
+	var err error
+	team.Players[2], err = engine.NewPlayerFromSkills(*bc.Contracts, "4544")
+	assert.NilError(t, err)
 	skills = team.Skills()
 	assert.Equal(t, skills[2].String(), "4544")
 }

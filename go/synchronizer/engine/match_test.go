@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/engine"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
@@ -42,15 +42,14 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 }
 
 func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
-	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	engine := engine.NewMatch()
 	err := engine.Play2ndHalf(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, engine.HomeGoals, uint8(0))
 	assert.Equal(t, engine.VisitorGoals, uint8(0))
-	assert.Equal(t, engine.HomeMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
-	assert.Equal(t, engine.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
+	assert.Equal(t, engine.HomeMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
+	assert.Equal(t, engine.VisitorMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
 }
 
 func TestPlayGame(t *testing.T) {
@@ -61,8 +60,11 @@ func TestPlayGame(t *testing.T) {
 	m.HomeTeam.TeamID = big.NewInt(int64(1))
 	m.VisitorTeam.TeamID = big.NewInt(int64(2))
 	for i := 0; i < 25; i++ {
-		m.HomeTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309339445376240739796176995438")
-		m.VisitorTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309340654302060354425351701614")
+		var err error
+		m.HomeTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309339445376240739796176995438")
+		assert.NilError(t, err)
+		m.VisitorTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309340654302060354425351701614")
+		assert.NilError(t, err)
 	}
 	golden.Assert(t, m.DumpState(), t.Name()+".starting.golden")
 	err := m.Play1stHalf(*bc.Contracts)
@@ -74,22 +76,23 @@ func TestPlayGame(t *testing.T) {
 }
 
 func TestPlay2ndHalf(t *testing.T) {
-	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	m := engine.NewMatch()
-	homePlayer := engine.NewPlayerFromSkills("146156532686539503615416807207209880594713965887498")
-	visitorPlayer := engine.NewPlayerFromSkills("730757187618900670896890173308251570218123297685554")
+	homePlayer, err := engine.NewPlayerFromSkills(*bc.Contracts, "146156532686539503615416807207209880594713965887498")
+	assert.NilError(t, err)
+	visitorPlayer, err := engine.NewPlayerFromSkills(*bc.Contracts, "730757187618900670896890173308251570218123297685554")
+	assert.NilError(t, err)
 	m.HomeTeam.Players[0] = homePlayer
 	m.VisitorTeam.Players[0] = visitorPlayer
-	err := m.Play2ndHalf(*bc.Contracts)
+	err = m.Play2ndHalf(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
-	assert.Equal(t, m.HomeMatchLog.String(), "166195960289441810257652497224293923324982848796288083926844440576")
-	assert.Equal(t, m.VisitorMatchLog.String(), "824397783217924227119640170247234125318077195049720029266288050176")
-	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146156532686539503615416807207209880594713965887498")
+	assert.Equal(t, m.HomeMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
+	assert.Equal(t, m.VisitorMatchLog.String(), "1656419124875239866305548088508421623415643372415742952246406776530927616")
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146150823695768679775892574063332082614168434901002")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
-	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730757187618900670896890173308251570218123297685554")
+	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730751478628129847057365940164373772237577766699058")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
 }
 
@@ -108,8 +111,11 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 			m.HomeTeam.TeamID = big.NewInt(int64(1))
 			m.VisitorTeam.TeamID = big.NewInt(int64(2))
 			for i := 0; i < 25; i++ {
-				m.HomeTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309339445376240739796176995438")
-				m.VisitorTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309340654302060354425351701614")
+				var err error
+				m.HomeTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309339445376240739796176995438")
+				assert.NilError(t, err)
+				m.VisitorTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309340654302060354425351701614")
+				assert.NilError(t, err)
 			}
 			golden.Assert(t, m.DumpState(), t.Name()+".starting.golden")
 			err := m.Play1stHalf(*bc.Contracts)

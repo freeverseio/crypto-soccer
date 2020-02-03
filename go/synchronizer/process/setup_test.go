@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 var universedb *sql.DB
 var relaydb *sql.DB
+var bc *testutils.BlockchainNode
 
 func TestMain(m *testing.M) {
 	var err error
@@ -22,5 +24,10 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	bc, err = testutils.NewBlockchainNode()
+	if err != nil {
+		log.Fatal(err)
+	}
+	bc.DeployContracts(bc.Owner)
 	os.Exit(m.Run())
 }
