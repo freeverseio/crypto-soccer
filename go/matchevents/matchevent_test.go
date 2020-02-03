@@ -26,7 +26,7 @@ func TestMatchEvents(t *testing.T) {
 		12, 3, 5, //outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
 		4, 14, //yellowCards1[0], yellowCards1[1],
 		1, 1, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
-		0, 0, 0} // halftimesubs
+		0, 0, 0} // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
 	var events []*big.Int
 	events64 := []int64{
 		4324,           // seed
@@ -90,7 +90,7 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 		12, 3, 5, //outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
 		4, 14, //yellowCards1[0], yellowCards1[1],
 		1, 1, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
-		0, 0, 0} // halftimesubs
+		0, 0, 0} // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
 	var events []*big.Int
 	events64 := []int64{
 		4324,           // seed
@@ -156,7 +156,7 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 		12, 3, 5, //outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
 		4, 14, //yellowCards1[0], yellowCards1[1],
 		1, 1, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
-		0, 0, 0} // halftimesubs
+		0, 0, 0} // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
 	var events []*big.Int
 	events64 := []int64{
 		4324,  // seed

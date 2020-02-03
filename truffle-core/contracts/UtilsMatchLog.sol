@@ -20,6 +20,7 @@ contract UtilsMatchLog is EncodingMatchLog{
         decodedLog[10] = uint32(getInGameSubsHappened(log, 1, is2ndHalf));
         decodedLog[11] = uint32(getInGameSubsHappened(log, 2, is2ndHalf));
 
+        // getHalfTimeSubs: recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
         if (is2ndHalf) {
             decodedLog[12]  = uint32(getHalfTimeSubs(log, 0));
             decodedLog[13]  = uint32(getHalfTimeSubs(log, 1));
