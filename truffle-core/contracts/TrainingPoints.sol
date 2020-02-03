@@ -104,11 +104,11 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     
     
     function computeTeamQuality(uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills) public pure returns (uint256 quality) {
-        uint256 state;
+        uint256 skills;
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            state = teamSkills[p];
-            quality +=  getShoot(state) + getSpeed(state) + getPass(state)
-                    +   getDefence(state) + getEndurance(state);
+            skills = teamSkills[p];
+            quality +=  getShoot(skills) + getSpeed(skills) + getPass(skills)
+                    +   getDefence(skills) + getEndurance(skills);
         }
     }
     

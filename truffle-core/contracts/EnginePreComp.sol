@@ -50,7 +50,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     function computeExceptionalEvents
     (
         uint256 matchLog,
-        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint256 tactics,
         bool is2ndHalf,
         uint256 seed
@@ -77,7 +77,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         // Build weights for players, based on their aggressiveness.
         // Legit players have > 0, but those already out in first half (teams with 10 players) have 0.
         for (uint8 p = 0; p < NO_OUT_OF_GAME_PLAYER; p++) {
-            if (states[p] != 0) weights[p] = 1 + getAggressiveness(states[p]); // weights must be > 0 to ever be selected
+            if (skills[p] != 0) weights[p] = 1 + getAggressiveness(skills[p]); // weights must be > 0 to ever be selected
         }
         
         // next: two events for yellow cards
@@ -219,7 +219,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     // TODO: avoid redCarded or outOfGame players to shoot, include changed players.
     function computePenalties(
         uint256[2] memory matchLogs, 
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory skills, 
         uint256 block0, 
         uint256 block1, 
         uint64 seed
@@ -231,11 +231,11 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         uint64[] memory rnds = getNRandsFromSeed(seed * 7, 14);
         uint8[2] memory totalGoals;
         for (uint8 round = 0; round < 6; round++) {
-            if (throwDice(block1, 3 * getShoot(states[0][10-round]), rnds[2 *round]) == 1) {
+            if (throwDice(block1, 3 * getShoot(skills[0][10-round]), rnds[2 *round]) == 1) {
                 matchLogs[0] = addScoredPenalty(matchLogs[0], round); 
                 totalGoals[0] += 1;
             }
-            if (throwDice(block0, 3 * getShoot(states[1][10-round]), rnds[2 *round + 1]) == 1) {
+            if (throwDice(block0, 3 * getShoot(skills[1][10-round]), rnds[2 *round + 1]) == 1) {
                 matchLogs[1] = addScoredPenalty(matchLogs[1], round); 
                 totalGoals[1] += 1;
             }
@@ -249,7 +249,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
                 }
             }
         }
-        if (throwDice(block0 + getShoot(states[0][4]), block1 + getShoot(states[1][4]), rnds[13]) == 0) {
+        if (throwDice(block0 + getShoot(skills[0][4]), block1 + getShoot(skills[1][4]), rnds[13]) == 0) {
             matchLogs[0] = addScoredPenalty(matchLogs[0], 6); 
         } else {
             matchLogs[1] = addScoredPenalty(matchLogs[1], 6); 
@@ -268,7 +268,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     // globSkills[IDX_DEFEND_SHOOT] =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
     function getTeamGlobSkills(
-        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint8[9] memory playersPerZone, 
         bool[10] memory extraAttack,
         uint256 matchStartTime
@@ -283,7 +283,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         // for a keeper, the 'shoot skill' is interpreted as block skill
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
-        uint256 playerSkills = states[0];
+        uint256 playerSkills = skills[0];
         if (playerSkills != 0) {
             globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
             if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
@@ -295,7 +295,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         uint256[3] memory fwdModFactors;
 
         for (uint8 p = 1; p < 11; p++){
-            playerSkills = states[p];
+            playerSkills = skills[p];
             if (playerSkills != 0) {
                 penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
                 fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
@@ -486,7 +486,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     function getLinedUpSkills(
         uint256 matchLog, 
         uint256 tactics, 
-        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         bool is2ndHalf
     )
         public 
@@ -494,7 +494,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         returns 
     (
         uint256,
-        uint256[PLAYERS_PER_TEAM_MAX] memory outStates,
+        uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills,
         uint8
     ) 
     {
@@ -505,13 +505,13 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         // Count changes during half-time, as well as not-aligned players
         // ...note: substitutions = 11 means NO_SUBS
         for (uint8 p = 0; p < 11; p++) {
-            outStates[p] = verifyCanPlay(lineup[p], states[lineup[p]], is2ndHalf, false);
-            if (outStates[p] != 0) {
-                if (is2ndHalf && !getAlignedEndOfFirstHalf(outStates[p])) {
+            linedUpSkills[p] = verifyCanPlay(lineup[p], skills[lineup[p]], is2ndHalf, false);
+            if (linedUpSkills[p] != 0) {
+                if (is2ndHalf && !getAlignedEndOfFirstHalf(linedUpSkills[p])) {
                     matchLog = addHalfTimeSubs(matchLog, p+1, changes); // for halftime subs, 0 = NO_SUBS
                     changes++;
-                    teamSkills += getSumOfSkills(outStates[p]); 
-                } else if (!is2ndHalf) teamSkills += getSumOfSkills(outStates[p]); 
+                    teamSkills += getSumOfSkills(linedUpSkills[p]); 
+                } else if (!is2ndHalf) teamSkills += getSumOfSkills(linedUpSkills[p]); 
             }
         }
 
@@ -525,26 +525,26 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
 
         if (substitutions[0] < 11) {
             changes++;
-            outStates[11] = verifyCanPlay(lineup[11], states[lineup[11]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(outStates[11]); 
+            linedUpSkills[11] = verifyCanPlay(lineup[11], skills[lineup[11]], is2ndHalf, true);
+            teamSkills += getSumOfSkills(linedUpSkills[11]); 
         }
         if (substitutions[1] < 11) { 
             changes++;
             require(substitutions[0] != substitutions[1], "changelist incorrect");
-            outStates[12] = verifyCanPlay(lineup[12], states[lineup[12]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(outStates[12]); 
+            linedUpSkills[12] = verifyCanPlay(lineup[12], skills[lineup[12]], is2ndHalf, true);
+            teamSkills += getSumOfSkills(linedUpSkills[12]); 
         }
         if (substitutions[2] < 11) {
             changes++;
             require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
-            outStates[13] = verifyCanPlay(lineup[13], states[lineup[13]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(outStates[13]); 
+            linedUpSkills[13] = verifyCanPlay(lineup[13], skills[lineup[13]], is2ndHalf, true);
+            teamSkills += getSumOfSkills(linedUpSkills[13]); 
         }
         require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
         for (uint8 p = 1; p < 11; p++) require((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1], "player appears twice in lineup!");  
         matchLog = addTeamSumSkills(matchLog, teamSkills); 
-        return (matchLog, outStates, tacticsId);      
+        return (matchLog, linedUpSkills, tacticsId);      
     }
 
     function verifyCanPlay(uint8 lineup, uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {

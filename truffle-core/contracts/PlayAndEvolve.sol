@@ -31,10 +31,10 @@ contract PlayAndEvolve {
     }
 
     // In a 1st half we need to:
-    //      1. applyTrainingPoints: (oldStates, assignedTPs) => (newStates)
-    //      2. playHalfMatch: (newStates) => (matchLogs, events)
-    //      3. updateStatesAfterPlayHalf: (newStates, matchLogs) => finalStates
-    // Output: (finalStates, matchLogsAndEvents)
+    //      1. applyTrainingPoints: (oldSkills, assignedTPs) => (newSkills)
+    //      2. playHalfMatch: (newSkills) => (matchLogs, events)
+    //      3. updateSkillsAfterPlayHalf: (newSkills, matchLogs) => finalSkills
+    // Output: (finalSkills, matchLogsAndEvents)
     function play1stHalfAndEvolve(
         bytes32 verseSeed,
         uint256 matchStartTime,
@@ -56,18 +56,18 @@ contract PlayAndEvolve {
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
             _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, nullLogs, matchBools);
 
-        skills[0] = _evo.updateStatesAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false);
-        skills[1] = _evo.updateStatesAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false);
+        skills[0] = _evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false);
+        skills[1] = _evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false);
 
         return (skills, matchLogsAndEvents);
     }
     
     
     // In a 2nd half we need to:
-    //      1. playHalfMatch: (oldStates, matchLogsHalf1) => (matchLogsHalf2, events)
-    //      2. updateStatesAfterPlayHalf: (oldStates, matchLogsHalf2) => newStates
+    //      1. playHalfMatch: (oldSkills, matchLogsHalf1) => (matchLogsHalf2, events)
+    //      2. updateSkillsAfterPlayHalf: (oldSkills, matchLogsHalf2) => newSkills
     //      3. computeTrainingPoints: (matchLogsHalf2) => (matchLogsHalf2 with TPs)
-    // Output: (newStates, matchLogsAndEvents with TPs)
+    // Output: (newSkills, matchLogsAndEvents with TPs)
     function play2ndHalfAndEvolve(
         bytes32 verseSeed,
         uint256 matchStartTime,
@@ -84,8 +84,8 @@ contract PlayAndEvolve {
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
             _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, matchLogs, matchBools);
 
-        skills[0] = _evo.updateStatesAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true);
-        skills[1] = _evo.updateStatesAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true);
+        skills[0] = _evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true);
+        skills[1] = _evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true);
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = _training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
 
