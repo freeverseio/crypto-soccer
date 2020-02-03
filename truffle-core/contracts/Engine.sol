@@ -61,6 +61,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
         seedAndStartTimeAndEvents[0] = seed; 
         seedAndStartTimeAndEvents[1] = matchStartTime; 
+        
         (matchLogs, block0, block1) = playMatchWithoutPenalties(
             seedAndStartTimeAndEvents, 
             skills,
@@ -68,6 +69,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
             matchLogs,
             matchBools
         );
+
         if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
             matchLogs = _precomp.computePenalties(matchLogs, skills, block0, block1, uint64(seed));  // TODO seed
         } else {
@@ -219,6 +221,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         pure
         returns (bool)
     {
+        if (globSkills[teamThatAttacks][IDX_CREATE_SHOOT] == 0) return false;
         return throwDice(
             globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // globSkills[IDX_DEFEND_SHOOT] of defending team against...
             (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/10,  // globSkills[IDX_CREATE_SHOOT] of attacking team.
@@ -265,6 +268,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
         // or to have a 50% change, multiply by 10, and to have say, 1/3, multiply by 10/3
         // this is to be compensated by an overall factor of about.
+        if (teamPassCapacity <= weights[shooter]) return shooter;
         weights[shooter] = (weights[shooter] * getSumOfSkills(skills[shooter]) * 8810 * penaltyPerAge(skills[shooter], matchStartTime))/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
         return throwDiceArray(weights, rnd);
     }
