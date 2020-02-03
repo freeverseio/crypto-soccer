@@ -218,7 +218,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
 
     // TODO: avoid redCarded or outOfGame players to shoot, include changed players.
     function computePenalties(
-        uint256[2] memory matchLog, 
+        uint256[2] memory matchLogs, 
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
         uint256 block0, 
         uint256 block1, 
@@ -232,31 +232,31 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         uint8[2] memory totalGoals;
         for (uint8 round = 0; round < 6; round++) {
             if (throwDice(block1, 3 * getShoot(states[0][10-round]), rnds[2 *round]) == 1) {
-                matchLog[0] = addScoredPenalty(matchLog[0], round); 
+                matchLogs[0] = addScoredPenalty(matchLogs[0], round); 
                 totalGoals[0] += 1;
             }
             if (throwDice(block0, 3 * getShoot(states[1][10-round]), rnds[2 *round + 1]) == 1) {
-                matchLog[1] = addScoredPenalty(matchLog[1], round); 
+                matchLogs[1] = addScoredPenalty(matchLogs[1], round); 
                 totalGoals[1] += 1;
             }
             if (round > 3) {
                 // note: winner = 0: home, 1: away, 2: draw (so if home wins, no need to write anything)
-                if (totalGoals[0] > totalGoals[1]) return matchLog;
+                if (totalGoals[0] > totalGoals[1]) return matchLogs;
                 if (totalGoals[0] < totalGoals[1]) {
-                    matchLog[0] = addWinner(matchLog[0], 1);
-                    matchLog[1] = addWinner(matchLog[1], 1);
-                    return matchLog;
+                    matchLogs[0] = addWinner(matchLogs[0], 1);
+                    matchLogs[1] = addWinner(matchLogs[1], 1);
+                    return matchLogs;
                 }
             }
         }
         if (throwDice(block0 + getShoot(states[0][4]), block1 + getShoot(states[1][4]), rnds[13]) == 0) {
-            matchLog[0] = addScoredPenalty(matchLog[0], 6); 
+            matchLogs[0] = addScoredPenalty(matchLogs[0], 6); 
         } else {
-            matchLog[1] = addScoredPenalty(matchLog[1], 6); 
-            matchLog[0] = addWinner(matchLog[0], 1);
-            matchLog[1] = addWinner(matchLog[1], 1);
+            matchLogs[1] = addScoredPenalty(matchLogs[1], 6); 
+            matchLogs[0] = addWinner(matchLogs[0], 1);
+            matchLogs[1] = addWinner(matchLogs[1], 1);
         }
-        return matchLog;
+        return matchLogs;
     }
 
     /// @dev Computes basic data, including globalSkills, needed during the game.

@@ -46,7 +46,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         uint256 matchStartTime, //actionsSubmissionTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        uint256[2] memory matchLog,
+        uint256[2] memory matchLogs,
         bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
@@ -58,22 +58,23 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
         seedAndStartTimeAndEvents[0] = seed; 
         seedAndStartTimeAndEvents[1] = matchStartTime; 
-        (matchLog, block0, block1) = playMatchWithoutPenalties(
+        (matchLogs, block0, block1) = playMatchWithoutPenalties(
             seedAndStartTimeAndEvents, 
             states,
             tactics,
-            matchLog,
+            matchLogs,
             matchBools
         );
-        if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLog[0]) == getNGoals(matchLog[1]))) {
-            matchLog = _precomp.computePenalties(matchLog, states, block0, block1, uint64(seed));  // TODO seed
+        if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
+            matchLogs = _precomp.computePenalties(matchLogs, states, block0, block1, uint64(seed));  // TODO seed
         } else {
             // note that WINNER_HOME = 0, so no need to write anything if home wins.
-            if (getNGoals(matchLog[0]) == getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_DRAW);
-            else if (getNGoals(matchLog[0]) < getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_AWAY);
+            if (getNGoals(matchLogs[0]) == getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_DRAW);
+            else if (getNGoals(matchLogs[0]) < getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_AWAY);
         }
-        seedAndStartTimeAndEvents[0] = matchLog[0];
-        seedAndStartTimeAndEvents[1] = matchLog[1];
+        // convert seedAndStartTimeAndEvents --> matchLogsAndEvents
+        seedAndStartTimeAndEvents[0] = matchLogs[0];
+        seedAndStartTimeAndEvents[1] = matchLogs[1];
         return seedAndStartTimeAndEvents;
     }
     
@@ -87,7 +88,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        uint256[2] memory matchLog,
+        uint256[2] memory matchLogs,
         bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
     )
         private
@@ -99,11 +100,11 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         bool[10][2] memory extraAttack;
         // uint16[ROUNDS_PER_MATCH] memory events;
 
-        (matchLog[0], states[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0], seedAndStartTimeAndEvents[IDX_SEED]);
-        (matchLog[1], states[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[0], states[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[1], states[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]);
 
-        matchLog[0] = writeNDefs(matchLog[0], states[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
-        matchLog[1] = writeNDefs(matchLog[1], states[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[0] = writeNDefs(matchLogs[0], states[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[1] = writeNDefs(matchLogs[1], states[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
         globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTimeAndEvents[IDX_ST_TIME]);
         globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTimeAndEvents[IDX_ST_TIME]);
@@ -111,12 +112,12 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(matchLog, seedAndStartTimeAndEvents, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
-        return (matchLog, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
+        computeRounds(matchLogs, seedAndStartTimeAndEvents, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        return (matchLogs, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
     }
     
     function computeRounds(
-        uint256[2] memory matchLog,
+        uint256[2] memory matchLogs,
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
         uint8[9][2] memory playersPerZone, 
@@ -140,14 +141,14 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
                 // scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
                     seedAndStartTimeAndEvents[IDX_ST_TIME],
-                    matchLog[teamThatAttacks],
+                    matchLogs[teamThatAttacks],
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     extraAttack[teamThatAttacks],
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
                     [rnds[5*round+2], rnds[5*round+3], rnds[5*round+4]]
                 );
-                matchLog[teamThatAttacks] = scoreData[0];
+                matchLogs[teamThatAttacks] = scoreData[0];
                 seedAndStartTimeAndEvents[2 + round * 5 + 2] = scoreData[1];
                 seedAndStartTimeAndEvents[2 + round * 5 + 3] = scoreData[2];
                 seedAndStartTimeAndEvents[2 + round * 5 + 4] = scoreData[3];
@@ -340,10 +341,6 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         else return 3;
     }
     
-    function generateMatchSeed(bytes32 seed, uint256 homeTeamId, uint256 visitorTeamId) public pure returns (bytes32) {
-        return keccak256(abi.encode(seed, homeTeamId, visitorTeamId));
-    }
- 
     function wasPlayerAlignedEndOfLastHalf(uint8 shirtNum, uint256 tactics, uint256 matchLog) public pure returns (bool) {
         (uint8[3] memory  substitutions,,uint8[14] memory lineup,,) = decodeTactics(tactics);
         // First check if it was in the starting eleven, and was not substituted
