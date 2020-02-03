@@ -38,7 +38,7 @@ contract PlayAndEvolve {
     function play1stHalfAndEvolve(
         bytes32 verseSeed,
         uint256 matchStartTime,
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory teamIds,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
@@ -49,17 +49,17 @@ contract PlayAndEvolve {
     {
         require(!matchBools[IDX_IS_2ND_HALF], "play1stHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
-        states[0] = _training.applyTrainingPoints(states[0], assignedTPs[0], matchStartTime, _evo.getTrainingPoints(matchLogs[0]));
-        states[1] = _training.applyTrainingPoints(states[1], assignedTPs[1], matchStartTime, _evo.getTrainingPoints(matchLogs[1]));
+        skills[0] = _training.applyTrainingPoints(skills[0], assignedTPs[0], matchStartTime, _evo.getTrainingPoints(matchLogs[0]));
+        skills[1] = _training.applyTrainingPoints(skills[1], assignedTPs[1], matchStartTime, _evo.getTrainingPoints(matchLogs[1]));
         
         uint256[2] memory nullLogs;
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
-            _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, states, tactics, nullLogs, matchBools);
+            _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, nullLogs, matchBools);
 
-        states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLogsAndEvents[0], tactics[0], false);
-        states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLogsAndEvents[1], tactics[1], false);
+        skills[0] = _evo.updateStatesAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false);
+        skills[1] = _evo.updateStatesAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false);
 
-        return (states, matchLogsAndEvents);
+        return (skills, matchLogsAndEvents);
     }
     
     
@@ -71,7 +71,7 @@ contract PlayAndEvolve {
     function play2ndHalfAndEvolve(
         bytes32 verseSeed,
         uint256 matchStartTime,
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory teamIds,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
@@ -82,14 +82,14 @@ contract PlayAndEvolve {
         require(matchBools[IDX_IS_2ND_HALF], "play2ndHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
-            _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, states, tactics, matchLogs, matchBools);
+            _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, matchLogs, matchBools);
 
-        states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLogsAndEvents[0], tactics[0], true);
-        states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLogsAndEvents[1], tactics[1], true);
+        skills[0] = _evo.updateStatesAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true);
+        skills[1] = _evo.updateStatesAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true);
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = _training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
 
-        return (states, matchLogsAndEvents);
+        return (skills, matchLogsAndEvents);
     }
     
 

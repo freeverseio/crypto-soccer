@@ -157,11 +157,16 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         }
     }
     
-    // translates from a high level tacticsId (e.g. 442) to a format that describes how many
-    // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
-    // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
-    // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    // this function returns an array of (still) size 25, but only with the correctly linedup first 11 entries filled.
+    // getLineUpAndPlayerPerZone:
+    //      1. Unpacks the tactics and lineUp, verifies validity 
+    //      2. Rewrites skills[25] so that the first [14] entries correspond to players that will actually play
+    //      3. Compute the yellow cards, red cards, injuries, and adds them to matchLog
+    // RETURNS: (matchLog, linedUpSkills, playerPerZone)
+    // On the unpacking:
+    //  - it translates from a high level tacticsId (e.g. 442) to a format that describes how many
+    //      players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
+    //  - note that we impose left-right symmetry: DR = DL, MR = ML, FR = FL,
+    //      so we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
     function getLineUpAndPlayerPerZone(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics,
@@ -171,14 +176,15 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     ) 
         public 
         view 
-        returns (uint256, uint256[PLAYERS_PER_TEAM_MAX] memory outStates, uint8[9] memory) 
+        returns (uint256, uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills, uint8[9] memory) 
     {
         uint8 tacticsId;
-        (matchLog, outStates, tacticsId) = _precomp.getLinedUpStates(matchLog, tactics, skills, is2ndHalf);
-        matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, tactics, is2ndHalf, seed); 
-        return (matchLog, outStates, getPlayersPerZone(tacticsId));
+        (matchLog, linedUpSkills, tacticsId) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
+        matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, seed); 
+        return (matchLog, linedUpSkills, getPlayersPerZone(tacticsId));
     }
 
+    // adds to the matchLog the number of defenders actually linedUp (some skills could be empty slots)
     function writeNDefs(
         uint256 matchLog, 
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 

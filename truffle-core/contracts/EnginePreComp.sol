@@ -483,7 +483,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
             else if (forwardness == IDX_D) {return 2000;}
     }
 
-    function getLinedUpStates(
+    function getLinedUpSkills(
         uint256 matchLog, 
         uint256 tactics, 
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
