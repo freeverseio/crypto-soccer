@@ -81,6 +81,7 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := false
+	assignedTPs := big.NewInt(int64(0))
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -90,7 +91,7 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
-		[2]*big.Int{big.NewInt(int64(0)), big.NewInt(int64(0))},
+		[2]*big.Int{assignedTPs, assignedTPs},
 	)
 	if err != nil {
 		return err
