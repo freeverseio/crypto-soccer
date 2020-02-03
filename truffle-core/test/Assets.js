@@ -16,7 +16,8 @@ contract('Assets', (accounts) => {
     const N_SKILLS = 5;
     const nDivsAtStart = 10;
     let initTx = null;
-
+    let N_TEAMS_AT_START;
+    
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
@@ -33,6 +34,7 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        N_TEAMS_AT_START = nDivsAtStart * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
         });
         
     it('create special players', async () => {
@@ -103,7 +105,7 @@ contract('Assets', (accounts) => {
 
     it('check teamExists for existing teams', async () =>  {
         countryIdxInTZ = 0;
-        teamIdxInCountry = nTeams - 1;
+        teamIdxInCountry = N_TEAMS_AT_START - 1;
         for (tz = 1; tz<25; tz++) {
             teamExists = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
@@ -115,7 +117,7 @@ contract('Assets', (accounts) => {
     
     it('check teamExists for not-created teams', async () =>  {
         countryIdxInTZ = 0;
-        teamIdxInCountry = nTeams;
+        teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
             teamExists = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
@@ -127,7 +129,7 @@ contract('Assets', (accounts) => {
     
     it('check teamExists for non-existing countries', async () =>  {
         countryIdxInTZ = 1;
-        teamIdxInCountry = nTeams;
+        teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
             teamExists = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.rejected;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
@@ -137,7 +139,7 @@ contract('Assets', (accounts) => {
 
     it('check playerExists and isPlayerWritten', async () =>  {
         countryIdxInTZ = 0;
-        teamIdxInCountry = nTeams;
+        teamIdxInCountry = N_TEAMS_AT_START;
         playerIdxInCountry = teamIdxInCountry * PLAYERS_PER_TEAM_INIT - 1;
         for (tz = 1; tz<25; tz++) {
             playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry);
