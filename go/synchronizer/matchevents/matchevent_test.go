@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/matchevents"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 )
 
 func int_hash(s string) uint64 {
@@ -17,7 +17,9 @@ func int_hash(s string) uint64 {
 }
 
 func TestMatchEvents(t *testing.T) {
-	seed := big.NewInt(12334234543)
+	verseSeed := [32]byte{0x2, 0x1}
+	teamId0 := big.NewInt(1)
+	teamId1 := big.NewInt(2)
 	matchLog := [15]uint32{
 		0,        //teamSumSkills,
 		0,        //winner,
@@ -49,7 +51,22 @@ func TestMatchEvents(t *testing.T) {
 	subsRounds := [3]uint8{4, 6, 7}
 
 	is2ndHalf := false
-	computedEvents, err := matchevents.Generate(seed, matchLog, matchLog, events, lineup, lineup, substitutions, substitutions, subsRounds, subsRounds, is2ndHalf)
+
+	computedEvents, err := matchevents.Generate(
+		verseSeed,
+		teamId0,
+		teamId1,
+		matchLog,
+		matchLog,
+		events,
+		lineup,
+		lineup,
+		substitutions,
+		substitutions,
+		subsRounds,
+		subsRounds,
+		is2ndHalf,
+	)
 	if err != nil {
 		t.Fatalf("error: %s", err)
 	}
@@ -71,7 +88,7 @@ func TestMatchEvents(t *testing.T) {
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[1, 0, 0, true, true, 10, 2][7, 0, 1, false, false, 7, -1][10, 0, 1, true, false, 8, 0][13, 0, 0, false, false, 9, -1][16, 0, 0, false, false, 4, -1][23, 0, 0, false, false, 3, -1][26, 0, 0, false, false, 6, -1][29, 0, 0, false, false, 5, -1][32, 0, 0, false, false, 9, -1][39, 0, 0, false, false, 8, -1][41, 0, 0, false, false, 7, -1][46, 0, 0, false, false, 8, -1][23, 2, 0, false, false, 12, -1][9, 1, 0, false, false, 4, -1][23, 2, 1, false, false, 12, -1][9, 1, 1, false, false, 4, -1][16, 5, 0, false, false, 5, 19][22, 5, 0, false, false, 1, 12][16, 5, 1, false, false, 5, 19][22, 5, 1, false, false, 1, 12]"
+	expected := "[1, 0, 0, true, true, 10, 2][6, 0, 1, false, false, 4, -1][11, 0, 1, true, false, 8, 0][12, 0, 0, false, false, 2, -1][17, 0, 0, false, false, 8, -1][22, 0, 0, false, false, 9, -1][27, 0, 0, false, false, 6, -1][28, 0, 0, false, false, 7, -1][33, 0, 0, false, false, 4, -1][38, 0, 0, false, false, 5, -1][42, 0, 0, false, false, 7, -1][45, 0, 0, false, false, 6, -1][22, 2, 0, false, false, 12, -1][30, 1, 0, false, false, 4, -1][22, 2, 1, false, false, 12, -1][30, 1, 1, false, false, 4, -1][17, 5, 0, false, false, 5, 19][21, 5, 0, false, false, 1, 12][17, 5, 1, false, false, 5, 19][21, 5, 1, false, false, 1, 12]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)
@@ -81,7 +98,9 @@ func TestMatchEvents(t *testing.T) {
 }
 
 func TestMatchEvents2ndHalf(t *testing.T) {
-	seed := big.NewInt(12334234543)
+	verseSeed := [32]byte{0x2, 0x1}
+	teamId0 := big.NewInt(1)
+	teamId1 := big.NewInt(2)
 	matchLog := [15]uint32{
 		0,        //teamSumSkills,
 		0,        //winner,
@@ -113,7 +132,21 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 	subsRounds := [3]uint8{4, 6, 7}
 
 	is2ndHalf := true
-	computedEvents, err := matchevents.Generate(seed, matchLog, matchLog, events, lineup, lineup, substitutions, substitutions, subsRounds, subsRounds, is2ndHalf)
+	computedEvents, err := matchevents.Generate(
+		verseSeed,
+		teamId0,
+		teamId1,
+		matchLog,
+		matchLog,
+		events,
+		lineup,
+		lineup,
+		substitutions,
+		substitutions,
+		subsRounds,
+		subsRounds,
+		is2ndHalf,
+	)
 	if err != nil {
 		t.Fatalf("error: %s", err)
 	}
@@ -135,7 +168,7 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[46, 0, 0, true, true, 10, 2][52, 0, 1, false, false, 7, -1][55, 0, 1, true, false, 8, 0][58, 0, 0, false, false, 9, -1][61, 0, 0, false, false, 4, -1][68, 0, 0, false, false, 3, -1][71, 0, 0, false, false, 6, -1][74, 0, 0, false, false, 5, -1][77, 0, 0, false, false, 9, -1][84, 0, 0, false, false, 8, -1][86, 0, 0, false, false, 7, -1][91, 0, 0, false, false, 8, -1][68, 2, 0, false, false, 12, -1][54, 1, 0, false, false, 4, -1][68, 2, 1, false, false, 12, -1][54, 1, 1, false, false, 4, -1][61, 5, 0, false, false, 5, 19][67, 5, 0, false, false, 1, 12][61, 5, 1, false, false, 5, 19][67, 5, 1, false, false, 1, 12]"
+	expected := "[46, 0, 0, true, true, 10, 2][51, 0, 1, false, false, 4, -1][56, 0, 1, true, false, 8, 0][57, 0, 0, false, false, 2, -1][62, 0, 0, false, false, 8, -1][67, 0, 0, false, false, 9, -1][72, 0, 0, false, false, 6, -1][73, 0, 0, false, false, 7, -1][78, 0, 0, false, false, 4, -1][83, 0, 0, false, false, 5, -1][87, 0, 0, false, false, 7, -1][90, 0, 0, false, false, 6, -1][67, 2, 0, false, false, 12, -1][75, 1, 0, false, false, 4, -1][67, 2, 1, false, false, 12, -1][75, 1, 1, false, false, 4, -1][62, 5, 0, false, false, 5, 19][66, 5, 0, false, false, 1, 12][62, 5, 1, false, false, 5, 19][66, 5, 1, false, false, 1, 12]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)
@@ -147,7 +180,9 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 	// in this test, events64 is hardcoded (coming from a set of events that once gave apparently wrong final results)
 	// so we test that team0 indeed scores 3 goals, given the hardcoded events64
-	seed := big.NewInt(12334234543)
+	verseSeed := [32]byte{0x2, 0x1}
+	teamId0 := big.NewInt(1)
+	teamId1 := big.NewInt(2)
 	matchLog := [15]uint32{
 		0,        //teamSumSkills,
 		0,        //winner,
@@ -185,7 +220,21 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 	subsRounds := [3]uint8{4, 6, 7}
 
 	is2ndHalf := true
-	computedEvents, err := matchevents.Generate(seed, matchLog, matchLog, events, lineup, lineup, substitutions, substitutions, subsRounds, subsRounds, is2ndHalf)
+	computedEvents, err := matchevents.Generate(
+		verseSeed,
+		teamId0,
+		teamId1,
+		matchLog,
+		matchLog,
+		events,
+		lineup,
+		lineup,
+		substitutions,
+		substitutions,
+		subsRounds,
+		subsRounds,
+		is2ndHalf,
+	)
 	if err != nil {
 		t.Fatalf("error: %s", err)
 	}
@@ -211,7 +260,7 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[46, 0, 1, false, false, 8, -1][52, 0, 1, false, false, 7, -1][55, 0, 0, true, true, 7, 7][58, 0, 1, false, false, 9, -1][61, 0, 0, false, false, 4, -1][68, 0, 1, false, false, 3, -1][71, 0, 1, false, false, 6, -1][74, 0, 0, true, true, 10, 10][77, 0, 0, true, true, 7, 7][84, 0, 0, false, false, 8, -1][86, 0, 1, false, false, 7, -1][91, 0, 0, false, false, 8, -1][68, 2, 0, false, false, 12, -1][54, 1, 0, false, false, 4, -1][68, 2, 1, false, false, 12, -1][54, 1, 1, false, false, 4, -1][61, 5, 0, false, false, 5, 19][67, 5, 0, false, false, 1, 12][61, 5, 1, false, false, 5, 19][67, 5, 1, false, false, 1, 12]"
+	expected := "[46, 0, 1, false, false, 3, -1][51, 0, 1, false, false, 4, -1][56, 0, 0, true, true, 7, 7][57, 0, 1, false, false, 2, -1][62, 0, 0, false, false, 8, -1][67, 0, 1, false, false, 9, -1][72, 0, 1, false, false, 6, -1][73, 0, 0, true, true, 10, 10][78, 0, 0, true, true, 7, 7][83, 0, 0, false, false, 5, -1][87, 0, 1, false, false, 7, -1][90, 0, 0, false, false, 6, -1][67, 2, 0, false, false, 12, -1][75, 1, 0, false, false, 4, -1][67, 2, 1, false, false, 12, -1][75, 1, 1, false, false, 4, -1][62, 5, 0, false, false, 5, 19][66, 5, 0, false, false, 1, 12][62, 5, 1, false, false, 5, 19][66, 5, 1, false, false, 1, 12]"
 	allOK := (concat == expected) && (nGoals[0] == 3) && (nGoals[1] == 0)
 	if !allOK {
 		fmt.Println("the obtained result is: ")

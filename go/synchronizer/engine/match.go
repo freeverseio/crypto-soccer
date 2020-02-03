@@ -182,7 +182,6 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
 	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
 
-	// toni
 	generatedEvents, err := matchevents.Generate(
 		b.Seed,
 		b.HomeTeam.TeamID,
