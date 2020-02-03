@@ -151,7 +151,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             else if(getForwardness(thisSkills) == IDX_F) offset = 15;
             else offset = 10;
             for (uint8 s = 0; s < 5; s++) singleTPperSkill[s] = TPperSkill[offset + s];
-            teamSkills[p] = evolvePlayer(skills, singleTPperSkill, matchStartTime);
+            teamSkills[p] = evolvePlayer(thisSkills, singleTPperSkill, matchStartTime);
         }    
         return teamSkills;
     }
