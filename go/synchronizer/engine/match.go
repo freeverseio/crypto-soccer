@@ -97,21 +97,29 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		return err
 	}
 	for _, computedEvent := range b.Events {
-		var teamID string
+		event := storage.MatchEvent{}
 		if computedEvent.Team == 0 {
-			teamID = b.HomeTeam.TeamID.String()
+			event.TeamID = b.HomeTeam.TeamID.String()
+			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
+			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
+				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
+				event.SecondaryPlayerID.Valid = true
+			}
 		} else if computedEvent.Team == 1 {
-			teamID = b.VisitorTeam.TeamID.String()
+			event.TeamID = b.VisitorTeam.TeamID.String()
+			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
+			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
+				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
+				event.SecondaryPlayerID.Valid = true
+			}
 		} else {
 			return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
 		}
-		event := storage.MatchEvent{}
 		event.TimezoneIdx = int(b.TimezoneIdx)
 		event.CountryIdx = int(b.CountryIdx)
 		event.LeagueIdx = int(b.LeagueIdx)
 		event.MatchDayIdx = int(b.MatchDayIdx)
 		event.MatchIdx = int(b.MatchIdx)
-		event.TeamID = teamID
 		event.Minute = int(computedEvent.Minute)
 		var err error
 		if event.Type, err = storage.MarchEventTypeByMatchEvent(computedEvent.Type); err != nil {
@@ -119,21 +127,6 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		}
 		event.ManageToShoot = computedEvent.ManagesToShoot
 		event.IsGoal = computedEvent.IsGoal
-		// primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
-		// primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
-		// if err != nil {
-		// 	return nil, err
-		// }
-		// event.PrimaryPlayerID = primaryPlayerID.String()
-		// if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
-		// 	secondaryPlayerState := states[computedEvent.Team][computedEvent.SecondaryPlayer]
-		// 	secondaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, secondaryPlayerState)
-		// 	if err != nil {
-		// 		return nil, err
-		// 	}
-		// 	event.SecondaryPlayerID.String = secondaryPlayerID.String()
-		// 	event.SecondaryPlayerID.Valid = true
-		// }
 		if err = event.Insert(tx); err != nil {
 			return err
 		}
