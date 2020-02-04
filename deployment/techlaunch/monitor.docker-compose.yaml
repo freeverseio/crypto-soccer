@@ -1,0 +1,62 @@
+version: '3.5'
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    volumes:
+      - ./monitor-config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml 
+    ports:
+      - '9090:9090'
+    dns: 1.1.1.1
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.10.1
+    logging:
+      options:
+        max-size: 10m
+        max-file: '3'
+
+  loki:
+    image: grafana/loki
+    container_name: loki  
+    restart: always
+    ports:
+      - '3100:3100'
+    dns: 1.1.1.1
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.10.2
+    logging:
+      options:
+        max-size: 10m
+        max-file: '3'
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana  
+    restart: always
+    volumes:
+      - ./monitor-config/grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./monitor-config/grafana/prometheus.yaml:/etc/grafana/provisioning/datasources/prometheus.yaml
+      - ./monitor-config/grafana/loki.yaml:/etc/grafana/provisioning/datasources/loki.yaml
+    ports:
+      - '3000:3000'
+    environment:
+     - GF_SECURITY_ADMIN_PASSWORD:secret
+    dns: 1.1.1.1
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.10.3
+    logging:
+      options:
+        max-size: 10m
+        max-file: '3'
+
+networks:
+  scnetwork:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16
+

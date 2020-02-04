@@ -24,7 +24,7 @@ app.use(
     databaseUrl,
     "public",
     {
-      watchPg: true,
+      watchPg: false,
       graphiql: true,
       enhanceGraphiql: true,
       retryOnInitFail: true,

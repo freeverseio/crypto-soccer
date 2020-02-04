@@ -1,0 +1,72 @@
+version: '3.5'
+services:
+
+  xdai.node:  
+    image: parity/parity
+    restart: always
+    ports:
+      - '8545:8545'
+      - '30303:30303'
+      - '30303:30303/udp'
+    dns: 1.1.1.1
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.2.1
+    volumes:
+      - /tmp/xdailogs:/log
+    entrypoint: /bin/parity --chain xdai --no-warp --log-file /log/xdai.log --jsonrpc-port 8545 --jsonrpc-interface all --jsonrpc-hosts all --jsonrpc-cors all
+  
+  xdai.telemetry:  
+    image: 31z4/ethereum-prometheus-exporter
+    restart: always
+    ports:
+      - '9368:9368'
+    dns: 1.1.1.1
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.2.2
+    depends_on:
+      - xdai.node
+    entrypoint: /ethereum_exporter --url http://xdai.node:8545
+
+  xdai.promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./xdaipfs-config/promtail/config.yaml:/etc/promtail/config.yaml
+      - /tmp/xdailogs:/log/xdai
+    command: -client.url=${LOKI_PUSH_URL} -config.file=/etc/promtail/config.yaml
+    dns: 1.1.1.1
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.2.3
+    depends_on:
+      - xdai.telemetry
+
+  ipfs.node:
+    image: ipfs/go-ipfs:master
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data
+    ports:
+      - "4001:4001"
+      - "127.0.0.1:5001:5001"
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.2.4
+    volumes:
+      - ipfs.node-data:/data
+
+
+
+  # since parity client uses the `parity` user internally, it will not
+  #  have by default permissions to write in the mounted volume, so,
+  #  the folder ./log/parity in the host machine should have 777 permissions 
+volumes:
+  ipfs.node-data:
+
+networks:
+  scnetwork:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16

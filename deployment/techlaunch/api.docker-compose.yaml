@@ -1,0 +1,68 @@
+version: '3'
+services:
+  authproxy:
+    build:
+      context: ../../go
+      dockerfile: Dockerfile.authproxy
+    depends_on:
+      - horizon
+    ports:
+      - "5000:5000"
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.1.10
+    command: >
+      -gqlurl http://horizon:4000/graphql
+      -serviceurl http://0.0.0.0:5000/graphql
+      -backdoor
+
+  horizon:
+    build:
+      context: ../../nodejs-horizon
+    depends_on:
+      - universe.api
+      - market.trader
+      - relay.api
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.1.11
+    command: >
+      -u http://universe.api:4000/graphql 
+      -m http://market.trader:4000/graphql 
+      -r http://relay.api:4000/graphql
+
+  universe.api:
+    build:
+      context: ../../universe.api
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.1.12
+    command: -d ${POSTGRES_CRYPTOSOCCER_URL}?ssl=1
+
+  market.trader:
+    build:
+      context: ../../market.trader
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.1.13
+    command: -d ${POSTGRES_MARKET_URL}?ssl=1 -p 4000
+
+  relay.api:
+    build:
+      context: ../../relay.api
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.1.14
+    command: >
+      -d ${POSTGRES_RELAY_URL}?ssl=1
+      --assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}" 
+      --privateKey "${RELAY_PRIVATEKEY}" 
+      --ethereum ${ETHEREUM_URL}
+
+networks:
+  scnetwork:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16
+

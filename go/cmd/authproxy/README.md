@@ -41,12 +41,12 @@ The server has the following configutation options:
 
 the `-serviceurl` parameter accepts
 
-- `http;//` on the port `8080` or
+- `http://` on the port `5000` or
 - `https://` on the port `443` (the default). Full DNS (no IP) should be specified since the TLS certificate is automatically created by using letsencrypt.org. The certificate is stored internally, and it will be created each time that the server starts and it is not found in the `cache-path` folder.
 
 ## Telemetry
 
-The server exports metrics for telemetry in the `0.0.0.0:4000` port, additionally from the exported golang metrics, also exports:
+The server exports metrics for telemetry in the `0.0.0.0:9900` port, additionally from the exported golang metrics, also exports:
 
 - `authproxy_ops_success` : the total number of processed operations
 - `authproxy_ops_failed` : the total number of failed operations

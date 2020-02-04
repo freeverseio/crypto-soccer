@@ -287,10 +287,10 @@ func startProxyServer(serviceurl *string, ratelimit *int) {
 			log.Fatal("cannot start https server: ", err)
 		}
 	} else if serviceURL.Scheme == "http" {
-		log.Info("Starting proxy server at :8080")
+		log.Info("Starting proxy server at :5000")
 		server := &http.Server{
 			Handler: proxyserver,
-			Addr:    ":8080",
+			Addr:    ":5000",
 		}
 		if err := server.ListenAndServe(); err != nil {
 			log.Fatal("cannot start http server", err)
@@ -301,13 +301,13 @@ func startProxyServer(serviceurl *string, ratelimit *int) {
 }
 
 func startMetricsServer() {
-	log.Info("Starting metrics server at :4000/metrics")
+	log.Info("Starting metrics server at :9900/metrics")
 	metricsserver := http.NewServeMux()
 	metricsserver.Handle("/metrics", promhttp.Handler())
 
 	server := &http.Server{
 		Handler: metricsserver,
-		Addr:    ":4000",
+		Addr:    ":9900",
 	}
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("cannot start metrics server", err)
@@ -317,7 +317,7 @@ func startMetricsServer() {
 func main() {
 
 	gqlurl = flag.String("gqlurl", "http://dev1.gorengine.com:4000/graphql", "graphql url")
-	serviceurl := flag.String("serviceurl", "http://localhost:8080/graphql", "service url, http or https for autocert")
+	serviceurl := flag.String("serviceurl", "http://localhost:5000/graphql", "service url, http or https for autocert")
 	debug = flag.Bool("debug", false, "debug")
 	timeout = flag.Int("timeout", 5, "max timeout")
 	ratelimit := flag.Int("ratelimit", 1000000, "max requests per second")

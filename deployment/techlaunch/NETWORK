@@ -1,0 +1,35 @@
+10.0.0.0/16 -> generic newtork
+
+subnetting
+
+frontend 10.0.1.0/24
+- 10.0.1.10 authproxy
+  port 5000 http://:5000/graphql
+  port 9900 http://:9900/metrics
+- 10.0.1.11 horizon
+- 10.0.1.12 universe.api
+- 10.0.1.13 market.trader
+- 10.0.1.14 relay.api
+
+backend  10.0.2.0/24
+- 10.0.2.1 -> xdai.node
+  port 8545
+  port 30303 tcp/ucp
+- 10.0.2.2 -> xdai.telemetry
+  port 9368
+- 10.0.2.3 -> xdai.promtail
+- 10.0.2.4 -> ipfs.node
+  port 4001
+  port 5001
+- 10.0.2.5 -> market.notary
+- 10.0.2.6 -> relay.actions 
+- 10.0.2.7 -> sync.service
+- 10.0.2.8 -> sync.ethnode
+  port 8545
+
+monitor  10.0.10.0/24
+- 10.0.10.1 -> prometheus
+- 10.0.10.2 -> loki
+  service http://10.0.10.2:3100/loki/api/v1/push
+- 10.0.10.3 -> grafana 
+

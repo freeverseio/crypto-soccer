@@ -1,0 +1,42 @@
+version: '3'
+services:
+  sync.service:
+    build:
+      context: ../../go
+      dockerfile: Dockerfile.synchronizer
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.2.7
+    depends_on:
+      - sync.ethnode
+    command: > 
+      -postgres ${POSTGRES_CRYPTOSOCCER_URL}?sslmode=require 
+      -relaydb ${POSTGRES_RELAY_URL}?sslmode=require
+      -ethereum http://sync.ethnode:8545
+      -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
+      -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
+      -enginePreCompContractAddress "${ENGINEPRECOMP_CONTRACT_ADDRESS}"
+      -marketContractAddress "${MARKET_CONTRACT_ADDRESS}"
+      -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
+      -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
+      -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
+      -matcheventsContractAddress "${MATCHEVENTS_CONTRACT_ADDRESS}"
+      -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
+  sync.ethnode: 
+    image: freeverseio/ethereum:devcontracts
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.2.8
+    command: --mine --nodiscover 
+    volumes:
+      - ethereum-data:/test
+
+networks:
+  scnetwork:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16
+
+volumes:
+  ethereum-data:
