@@ -27,8 +27,9 @@ type ConfigMap struct {
 		Market_contract_address          string `yaml:"market_contract_address"`
 		Evolution_contract_address       string `yaml:"evolution_contract_address"`
 		Engineprecomp_contract_address   string `yaml:"engineprecomp_contract_address"`
-		Matchevents_contract_address     string `yaml:"matchevents_contract_address"`
 		Utils_match_log_contract_address string `yaml:"utils_match_log_contract_address"`
+		Play_and_evolve_contract_address string `yaml:"play_and_evolve_contract_address"`
+		Training_points_contract_address string `yaml:"training_points_contract_address"`
 		Enode                            string `yaml:"enode"`
 	} `yaml:"data"`
 }
@@ -40,7 +41,16 @@ func check(e error) {
 }
 
 func main() {
-	b, err := testutils.NewBlockchainNodeDeployAndInitAt("http://ethereum:8545")
+
+	if len(os.Args) < 2 {
+		exe := os.Args[0]
+		fmt.Println("usage: \n\t./" + exe + " <ethereum_client_url> [k8s_configmap_output_filename]")
+		fmt.Println("example: ./" + exe + " http://ethereum:8545 configmap.yaml")
+		os.Exit(1)
+	}
+	url := os.Args[1]
+
+	b, err := testutils.NewBlockchainNodeDeployAndInitAt(url)
 	check(err)
 
 	c := ConfigMap{}
@@ -57,15 +67,16 @@ func main() {
 	c.Data.Market_contract_address = b.Addresses.Market
 	c.Data.Evolution_contract_address = b.Addresses.Evolution
 	c.Data.Engineprecomp_contract_address = b.Addresses.Engineprecomp
-	c.Data.Matchevents_contract_address = b.Addresses.Matchevents
 	c.Data.Utils_match_log_contract_address = b.Addresses.Utilsmatchlog
+	c.Data.Play_and_evolve_contract_address = b.Addresses.Playandevolve
+	c.Data.Training_points_contract_address = b.Addresses.Trainingpoints
 
 	data, err := yaml.Marshal(&c)
 	check(err)
 	fmt.Printf("\n\n%v\n", string(data))
 
-	if len(os.Args) > 1 {
-		outputfilename := os.Args[1]
+	if len(os.Args) > 2 {
+		outputfilename := os.Args[2]
 		fmt.Printf("writing configmap to yaml file: %v\n", outputfilename)
 		err := ioutil.WriteFile(outputfilename, data, 0644)
 		check(err)
