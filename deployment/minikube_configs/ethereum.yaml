@@ -69,12 +69,12 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8545
-        volumeMounts:
-        - name: ethereum-storage
-          mountPath: /test/data
+        #volumeMounts:
+        #- name: ethereum-storage
+        #  mountPath: /test/data
       imagePullSecrets:
       - name: docker-secret
-      volumes:
-      - name: ethereum-storage
-        persistentVolumeClaim:
-          claimName: ethereum-pvc
+      #volumes:
+      #- name: ethereum-storage
+      #  persistentVolumeClaim:
+      #    claimName: ethereum-pvc
