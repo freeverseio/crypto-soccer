@@ -202,10 +202,9 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 		if err != nil {
 			log.Warning(err)
 		}
-		name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone-1, countryIdx.Uint64())
+		name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64())
 		if err != nil {
-			return fmt.Errorf("%s playerId: %v, generation: %v, timezone: %v, countryIdx %v", err.Error(), playerId, generation, timezone-1, countryIdx.Uint64())
-			log.Warning(err)
+			return fmt.Errorf("%s playerId: %v, generation: %v, timezone: %v, countryIdx %v", err.Error(), playerId, generation, timezone, countryIdx.Uint64())
 		}
 		player := storage.Player{
 			PlayerId:          playerId,
