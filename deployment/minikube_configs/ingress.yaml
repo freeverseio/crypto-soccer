@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cryptosoccer-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    #nginx.ingress.kubernetes.io/add-base-url : "true"
+    #nginx.ingress.kubernetes.io/configuration-snippet: |
+    # rewrite ^/graphiql /graphiql break;
+spec:
+  rules:
+  - host: a09239463413211ea81740ebc52fcab1-1860104032.eu-west-3.elb.amazonaws.com
+    http:
+      paths:
+      - path: /universe(/|$)(.*)
+        backend:
+          serviceName: universeapi
+          servicePort: 4000
+      - path: /relay(/|$)(.*)
+        backend:
+          serviceName: relayapi
+          servicePort: 4000
+      - path: /eth
+        backend:
+          serviceName: ethereum
+          servicePort: 8545

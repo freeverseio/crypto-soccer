@@ -23,10 +23,24 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 )
 
+type ContractAddresses struct {
+	Leagues        string
+	Assets         string
+	Evolution      string
+	Engine         string
+	Engineprecomp  string
+	Updates        string
+	Market         string
+	Utilsmatchlog  string
+	Playandevolve  string
+	Trainingpoints string
+}
+
 type BlockchainNode struct {
 	Client    *ethclient.Client
 	Owner     *ecdsa.PrivateKey
 	Contracts *contracts.Contracts
+	Addresses ContractAddresses
 }
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -66,6 +80,7 @@ func NewBlockchainNodeAt(address string) (*BlockchainNode, error) {
 		client,
 		creatorPrivateKey,
 		nil,
+		ContractAddresses{},
 	}, nil
 }
 
@@ -196,6 +211,19 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		playandevolveAddress.String(),
 		trainingpointsAddress.String(),
 	)
+
+	b.Addresses = ContractAddresses{
+		leaguesAddress.String(),
+		assetsAddress.String(),
+		evolutionAddress.String(),
+		engineAddress.String(),
+		engineprecompAddress.String(),
+		updatesAddress.String(),
+		marketAddress.String(),
+		utilsmatchlogAddress.String(),
+		playandevolveAddress.String(),
+		trainingpointsAddress.String(),
+	}
 	return nil
 }
 

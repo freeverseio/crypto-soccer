@@ -10,12 +10,12 @@ metadata:
 spec:
   selector:
     app: relayapi
-  type: NodePort
+    #type: LoadBalancer
   ports:
   - name: http
     protocol: TCP
-    port: 4002
-    targetPort: 4002
+    port: 4000
+    targetPort: 4000
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -51,9 +51,9 @@ spec:
               name: freeverse-configmap
         args: [-d, postgres://$(freeverse_username):$(freeverse_password)@relaydb:5432/relay,
                --assetsContractAddress, "$(assets_contract_address)",
-               --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480",
+               --privateKey, "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480",
                --ethereum, http://ethereum:8545]
         ports:
-        - containerPort: 4002
+        - containerPort: 4000
       imagePullSecrets:
       - name: docker-secret
