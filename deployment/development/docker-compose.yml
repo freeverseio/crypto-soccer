@@ -17,8 +17,6 @@ services:
       - "443:443"
     command: >
       "https://dev1.gorengine.com/pippolo" "http://ethereum:8545"
-    volumes:
-      - web3proxy-data:
     depends_on:
       - ethereum
   universe.db:
