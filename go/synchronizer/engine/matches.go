@@ -11,7 +11,6 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
-	log "github.com/sirupsen/logrus"
 )
 
 type Matches []Match
@@ -98,21 +97,19 @@ func NewMatchesFromTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(
 	return &matches, nil
 }
 
-func (b Matches) Play1stHalf(ctx context.Context, contracts contracts.Contracts) error {
-	for _, match := range b {
-		if err := match.Play1stHalf(contracts); err != nil {
-			log.Error(match.DumpState())
-			return err
+func (b *Matches) Play1stHalf(contracts contracts.Contracts) error {
+	for i := 0; i < len(*b); i++ {
+		if err := (*b)[i].Play1stHalf(contracts); err != nil {
+			return fmt.Errorf("%s: %s", err.Error(), (*b)[i].DumpState())
 		}
 	}
 	return nil
 }
 
-func (b Matches) Play2ndHalf(ctx context.Context, contracts contracts.Contracts) error {
-	for _, match := range b {
-		if err := match.Play2ndHalf(contracts); err != nil {
-			log.Error(match.DumpState())
-			return err
+func (b *Matches) Play2ndHalf(contracts contracts.Contracts) error {
+	for i := 0; i < len(*b); i++ {
+		if err := (*b)[i].Play2ndHalf(contracts); err != nil {
+			return fmt.Errorf("%s: %s", err.Error(), (*b)[i].DumpState())
 		}
 	}
 	return nil

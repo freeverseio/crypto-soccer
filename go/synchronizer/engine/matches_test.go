@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"testing"
 
@@ -27,32 +28,56 @@ func BenchmarkPlayer1stHalfParallel(b *testing.B) {
 	}
 }
 
-func TestMatchesPlay1stHalf(t *testing.T) {
-	const nMatches = 10
-	var matches engine.Matches
-	for i := 0; i < nMatches; i++ {
-		matches = append(matches, *engine.NewMatch())
-	}
-	err := matches.Play1stHalf(context.Background(), *bc.Contracts)
-	assert.NilError(t, err)
-	golden.Assert(t, matches.DumpState(), t.Name()+".golden")
-}
+// func TestMatchesPlay1stHalf(t *testing.T) {
+// 	const nMatches = 10
+// 	var matches engine.Matches
+// 	for i := 0; i < nMatches; i++ {
+// 		matches = append(matches, *engine.NewMatch())
+// 	}
+// 	err := matches.Play1stHalf(*bc.Contracts)
+// 	assert.NilError(t, err)
+// 	golden.Assert(t, matches.DumpState(), t.Name()+".golden")
+// }
 
-func TestMatchesPlay1stHalfParallel(t *testing.T) {
+// func TestMatchesPlay1stHalfParallel(t *testing.T) {
+// 	t.Parallel()
+// 	const nMatches = 10
+// 	var matches engine.Matches
+// 	for i := 0; i < nMatches; i++ {
+// 		matches = append(matches, *engine.NewMatch())
+// 	}
+// 	err := matches.Play1stHalf(*bc.Contracts)
+// 	assert.NilError(t, err)
+// 	var matchesP engine.Matches
+// 	for i := 0; i < nMatches; i++ {
+// 		matchesP = append(matchesP, *engine.NewMatch())
+// 	}
+// 	err = matchesP.Play1stHalfParallel(context.Background(), *bc.Contracts)
+// 	assert.Equal(t, matches.DumpState(), matchesP.DumpState())
+// }
+
+func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 	t.Parallel()
-	const nMatches = 10
 	var matches engine.Matches
-	for i := 0; i < nMatches; i++ {
-		matches = append(matches, *engine.NewMatch())
+	for i := 0; i < 2; i++ {
+		match := engine.NewMatch()
+		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
+		for i := 0; i < 25; i++ {
+			var err error
+			match.HomeTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309339445376240739796176995438")
+			assert.NilError(t, err)
+			match.VisitorTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309340654302060354425351701614")
+			assert.NilError(t, err)
+		}
+		matches = append(matches, *match)
 	}
-	err := matches.Play1stHalf(context.Background(), *bc.Contracts)
+	golden.Assert(t, matches.DumpState(), t.Name()+".begin.golden")
+	err := matches.Play1stHalf(*bc.Contracts)
 	assert.NilError(t, err)
-	var matchesP engine.Matches
-	for i := 0; i < nMatches; i++ {
-		matchesP = append(matchesP, *engine.NewMatch())
-	}
-	err = matchesP.Play1stHalfParallel(context.Background(), *bc.Contracts)
-	assert.Equal(t, matches.DumpState(), matchesP.DumpState())
+	golden.Assert(t, matches.DumpState(), t.Name()+".half.golden")
+	err = matches.Play2ndHalf(*bc.Contracts)
+	assert.NilError(t, err)
+	golden.Assert(t, matches.DumpState(), t.Name()+".end.golden")
 }
 
 // func TestNewMatchByLeagueWithNoMatches(t *testing.T) {
