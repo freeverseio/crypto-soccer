@@ -22,7 +22,7 @@ import (
 type Contracts struct {
 	Client                *ethclient.Client
 	Leagues               *leagues.Leagues
-	Assets                AssetsProxy
+	Assets                AssetsNative
 	Evolution             *evolution.Evolution
 	Engine                *engine.Engine
 	Engineprecomp         *engineprecomp.Engineprecomp
@@ -32,7 +32,7 @@ type Contracts struct {
 	PlayAndEvolve         *playandevolve.Playandevolve
 	TrainingPoints        *trainingpoints.Trainingpoints
 	leaguesAddress        string
-	assetsAddress         string
+	AssetsAddress         string
 	evolutionAddress      string
 	engineAddress         string
 	engineprecompAddress  string
@@ -47,7 +47,7 @@ func (b Contracts) Clone() (*Contracts, error) {
 	return New(
 		b.Client,
 		b.leaguesAddress,
-		b.assetsAddress,
+		b.AssetsAddress,
 		b.evolutionAddress,
 		b.engineAddress,
 		b.engineprecompAddress,
@@ -75,7 +75,7 @@ func New(
 	var err error
 	contracts := Contracts{}
 	contracts.leaguesAddress = leaguesAddress
-	contracts.assetsAddress = assetsAddress
+	contracts.AssetsAddress = assetsAddress
 	contracts.evolutionAddress = evolutionAddress
 	contracts.engineAddress = engineAddress
 	contracts.engineprecompAddress = engineprecompAddress

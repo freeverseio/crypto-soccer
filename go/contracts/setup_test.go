@@ -1,3 +1,5 @@
+package contracts_test
+
 import (
 	"os"
 	"testing"
