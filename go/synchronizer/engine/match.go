@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/matchevents"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
 	log "github.com/sirupsen/logrus"
@@ -143,20 +143,17 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := false
-	matchSeed, err := b.generateMatchSeed(contracts)
-	if err != nil {
-		return err
-	}
-	homeUserAssignment := big.NewInt(0)
-	visitorUserAssignment := big.NewInt(0)
+	assignedTPs := big.NewInt(int64(0))
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
-		matchSeed,
+		b.Seed,
 		b.StartTime,
 		b.Skills(),
+		[2]*big.Int{b.HomeTeam.TeamID, b.VisitorTeam.TeamID},
 		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
-		[2]*big.Int{homeUserAssignment, visitorUserAssignment},
+		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
+		[2]*big.Int{assignedTPs, assignedTPs},
 	)
 	if err != nil {
 		return err
@@ -179,15 +176,12 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := true
-	matchSeed, err := b.generateMatchSeed(contracts)
-	if err != nil {
-		return err
-	}
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
-		matchSeed,
+		b.Seed,
 		b.StartTime,
 		b.Skills(),
+		[2]*big.Int{b.HomeTeam.TeamID, b.VisitorTeam.TeamID},
 		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
@@ -229,16 +223,6 @@ func (b *Match) Skills() [2][25]*big.Int {
 	return [2][25]*big.Int{b.HomeTeam.Skills(), b.VisitorTeam.Skills()}
 }
 
-func (b *Match) generateMatchSeed(contracts contracts.Contracts) (*big.Int, error) {
-	matchSeed, err := contracts.Engine.GenerateMatchSeed(&bind.CallOpts{}, b.Seed, b.HomeTeam.TeamID, b.VisitorTeam.TeamID)
-	if err != nil {
-		return nil, err
-	}
-	z := new(big.Int)
-	z.SetBytes(matchSeed[:])
-	return z, nil
-}
-
 func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents []*big.Int, is2ndHalf bool) error {
 	log0, err := contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
@@ -260,12 +244,11 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	}
 	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
 	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
-	matchSeed, err := b.generateMatchSeed(contracts)
-	if err != nil {
-		return err
-	}
+
 	generatedEvents, err := matchevents.Generate(
-		matchSeed,
+		b.Seed,
+		b.HomeTeam.TeamID,
+		b.VisitorTeam.TeamID,
 		log0,
 		log1,
 		logsAndEvents,

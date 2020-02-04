@@ -3,8 +3,8 @@ services:
   ethereum: 
     image: freeverseio/ethereum:dev
     command: --mine --nodiscover 
-    # ports: 
-      # - "8545:8545"
+    ports: 
+      - "28545:8545"
       # - "30303:30303"
       # - "30303:30303/udp"
     volumes:
@@ -112,14 +112,6 @@ services:
       - "127.0.0.1:5001:5001"
     volumes:
       - ipfs.node-data:/data
-  web3proxy:
-    image: adria0/web3proxy
-    environment:
-      - DEBUG=1
-    ports:
-      - "443:443"
-    command: >
-      "https://dev1.gorengine.com/pippolo" "http://ethereum:8545"
 volumes:
   ethereum-data:
   ipfs.node-data:

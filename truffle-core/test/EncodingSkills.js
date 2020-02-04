@@ -111,6 +111,10 @@ contract('Encoding', (accounts) => {
         result.toNumber().should.be.equal(injuryWeeksLeft);
         result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(substitutedLastHalf);
+        skills = await encodingSet.setSubstitutedFirstHalf(skills, val = !substitutedLastHalf).should.be.fulfilled;
+        result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
+        result.should.be.equal(!substitutedLastHalf);
+
         result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         result = await encoding.getGeneration(skills).should.be.fulfilled;
@@ -178,7 +182,6 @@ contract('Encoding', (accounts) => {
         skills = await encodingSet.setGeneration(skills, gen = 2).should.be.fulfilled;
         result = await encoding.getGeneration(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen);
-
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {

@@ -108,30 +108,30 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	log.Info("Starting ...")
-	log.Info("Dial the Ethereum client: ", *ethereumClient)
-	client, err := ethclient.Dial(*ethereumClient)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-	contracts, err := contracts.New(
-		client,
-		*leaguesContractAddress,
-		*assetsContractAddress,
-		*evolutionContractAddress,
-		*engineContractAddress,
-		*enginePreCompContractAddress,
-		*updatesContractAddress,
-		*marketContractAddress,
-		*utilsmatchlogContractAddress,
-		*playandevolveContractAddress,
-		*trainingpointsContractAddress,
-	)
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-
 	for {
+		log.Info("Starting ...")
+		log.Info("Dial the Ethereum client: ", *ethereumClient)
+		client, err := ethclient.Dial(*ethereumClient)
+		if err != nil {
+			log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+		}
+		contracts, err := contracts.New(
+			client,
+			*leaguesContractAddress,
+			*assetsContractAddress,
+			*evolutionContractAddress,
+			*engineContractAddress,
+			*enginePreCompContractAddress,
+			*updatesContractAddress,
+			*marketContractAddress,
+			*utilsmatchlogContractAddress,
+			*playandevolveContractAddress,
+			*trainingpointsContractAddress,
+		)
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
 		log.Info("Connecting to universe DBMS: ", *postgresURL)
 		universedb, err := storage.New(*postgresURL)
 		if err != nil {

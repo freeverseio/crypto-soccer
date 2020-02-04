@@ -19,8 +19,8 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     uint8 private constant CHG_HAPPENED        = uint8(1); 
     // uint8 constant public N_SKILLS = 5;
 
-    function updateStatesAfterPlayHalf(
-        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+    function updateSkillsAfterPlayHalf(
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint256 matchLog,
         uint256 tactics,
         bool is2ndHalf
@@ -39,29 +39,29 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         //  -  injury => 
         //      - decrease by one unless it happens in 1st or 2nd half
         if (!is2ndHalf) {
-            writeOutOfGameState(states, tactics, matchLog, false);
-            writeFirstHalfLineUp(states, tactics, matchLog);
+            writeOutOfGameInSkills(skills, tactics, matchLog, false);
+            writeFirstHalfLineUp(skills, tactics, matchLog);
         }
         else {
-            decreaseOutOfGames(states);
-            writeOutOfGameState(states, tactics, matchLog, false);
-            writeOutOfGameState(states, tactics, matchLog, true);
-            resetFirstHalfLineUp(states);
+            decreaseOutOfGames(skills);
+            writeOutOfGameInSkills(skills, tactics, matchLog, false);
+            writeOutOfGameInSkills(skills, tactics, matchLog, true);
+            resetFirstHalfLineUp(skills);
         }
-        return states;
+        return skills;
     }
 
-    function resetFirstHalfLineUp(uint256[PLAYERS_PER_TEAM_MAX] memory states) private pure {
+    function resetFirstHalfLineUp(uint256[PLAYERS_PER_TEAM_MAX] memory skills) private pure {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (states[p] != 0) {
-                states[p] = setAlignedEndOfFirstHalf(states[p], false);
-                states[p] = setSubstitutedFirstHalf(states[p], false);
+            if (skills[p] != 0) {
+                skills[p] = setAlignedEndOfFirstHalf(skills[p], false);
+                skills[p] = setSubstitutedFirstHalf(skills[p], false);
             }
         }
     }
     
     function writeFirstHalfLineUp(
-        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics, 
         uint256 matchLog 
     ) 
@@ -72,49 +72,54 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         // NO_LINEUP = 25, NO_SUBS = 11
         for (uint8 p = 0; p < 11; p++) {
             uint8 linedUp = lineUp[p];
-            if (linedUp < NO_LINEUP) {
-                states[linedUp] = setAlignedEndOfFirstHalf(states[linedUp], true);
-                states[linedUp] = setSubstitutedFirstHalf(states[linedUp], false);
+            if ((linedUp < NO_LINEUP) && (skills[linedUp] != 0)) {
+                skills[linedUp] = setAlignedEndOfFirstHalf(skills[linedUp], true);
+                skills[linedUp] = setSubstitutedFirstHalf(skills[linedUp], false);
             }
         }
         for (uint8 posInHalf = 0; posInHalf < 3; posInHalf++) {
             if (getInGameSubsHappened(matchLog, posInHalf, false) == CHG_HAPPENED) {
                 uint8 leavingFieldPlayer    = substitutions[posInHalf];
                 uint8 enteringFieldPlayer   = lineUp[11 + posInHalf];
-                states[leavingFieldPlayer]  = setAlignedEndOfFirstHalf(states[leavingFieldPlayer], false);
-                states[leavingFieldPlayer]  = setSubstitutedFirstHalf(states[leavingFieldPlayer], true);
-                states[enteringFieldPlayer] = setAlignedEndOfFirstHalf(states[enteringFieldPlayer], true);
-                states[enteringFieldPlayer] = setSubstitutedFirstHalf(states[enteringFieldPlayer], false);
+                if (skills[leavingFieldPlayer] != 0) {
+                    skills[leavingFieldPlayer]  = setAlignedEndOfFirstHalf(skills[leavingFieldPlayer], false);
+                    skills[leavingFieldPlayer]  = setSubstitutedFirstHalf(skills[leavingFieldPlayer], true);
+                }
+                if (skills[enteringFieldPlayer] != 0) {
+                    skills[enteringFieldPlayer] = setAlignedEndOfFirstHalf(skills[enteringFieldPlayer], true);
+                    skills[enteringFieldPlayer] = setSubstitutedFirstHalf(skills[enteringFieldPlayer], false);
+                }
             }
         }
     }    
     
-    function writeOutOfGameState(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 tactics, uint256 matchLog, bool is2ndHalf) private pure {
+    function writeOutOfGameInSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog, bool is2ndHalf) private pure {
         (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
         // check if there was an out of player event:
         uint8 outOfGamePlayer = uint8(getOutOfGamePlayer(matchLog, is2ndHalf));
         if (outOfGamePlayer == NO_OUT_OF_GAME_PLAYER) return;
-        // convert outOfGamePlayer [0...13] to the index that points to the state in the team [0,..24]
+        // convert outOfGamePlayer [0...13] to the index that points to the skills in the team [0,..24]
         outOfGamePlayer = lineUp[outOfGamePlayer];
+        if (skills[outOfGamePlayer] == 0) return;
         uint8 outOfGameType = lineUp[uint8(getOutOfGameType(matchLog, is2ndHalf))];
         if (outOfGameType == RED_CARD) {
-            states[outOfGamePlayer] = setRedCardLastGame(states[outOfGamePlayer], true);
+            skills[outOfGamePlayer] = setRedCardLastGame(skills[outOfGamePlayer], true);
         }
         else if (outOfGameType == HARD_INJURY) {
-            states[outOfGamePlayer] = setInjuryWeeksLeft(states[outOfGamePlayer], WEEKS_HARD_INJ);
+            skills[outOfGamePlayer] = setInjuryWeeksLeft(skills[outOfGamePlayer], WEEKS_HARD_INJ);
         }
         else if (outOfGameType == SOFT_INJURY) {
-            states[outOfGamePlayer] = setInjuryWeeksLeft(states[outOfGamePlayer], WEEKS_SOFT_INJ);
+            skills[outOfGamePlayer] = setInjuryWeeksLeft(skills[outOfGamePlayer], WEEKS_SOFT_INJ);
         }
     }
         
     // at the begining of a match, decrease the weeks left from injury and redcards.
-    function decreaseOutOfGames(uint256[PLAYERS_PER_TEAM_MAX] memory states) public pure {
+    function decreaseOutOfGames(uint256[PLAYERS_PER_TEAM_MAX] memory skills) public pure {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (states[p] != 0) {
-                states[p] = setRedCardLastGame(states[p], false);
-                if (getInjuryWeeksLeft(states[p]) != 0) {
-                    states[p] = setInjuryWeeksLeft(states[p], getInjuryWeeksLeft(states[p])-1);
+            if (skills[p] != 0) {
+                skills[p] = setRedCardLastGame(skills[p], false);
+                if (getInjuryWeeksLeft(skills[p]) != 0) {
+                    skills[p] = setInjuryWeeksLeft(skills[p], getInjuryWeeksLeft(skills[p])-1);
                 }
             }
         }

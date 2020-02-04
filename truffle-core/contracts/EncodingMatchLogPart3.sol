@@ -32,5 +32,7 @@ contract EncodingMatchLogPart3 is EncodingMatchLogPart4 {
         return log | (uint256(nDefs) << (197 + 4 * (is2ndHalf ? 1 : 0)));
     }
 
-
+    function setIsHomeStadium(uint256 log, bool val)  public pure returns (uint256) {
+        return (log & ~(uint256(1) << 247)) | (uint256(val ? 1: 0) << 247);
+    }
 }

@@ -11,7 +11,9 @@ import (
 type MatchEvents []MatchEvent
 
 func Generate(
-	seed *big.Int,
+	verseSeed [32]byte,
+	teamId0 *big.Int,
+	teamId1 *big.Int,
 	matchLog0 [15]uint32,
 	matchLog1 [15]uint32,
 	blockchainEvents []*big.Int,
@@ -41,6 +43,8 @@ func Generate(
 	if err != nil {
 		return emptyEvents, err
 	}
+
+	seed := new(big.Int).SetUint64(int_hash(string(verseSeed[:]) + "_" + teamId0.String() + "_" + teamId1.String()))
 
 	// Compute main events: per-round, and cards & injuries
 	events, rounds2mins := addEventsInRound(seed, blockchainEvents, NULL)
@@ -151,6 +155,7 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([
 
 func addSubstitutions(team int16, events []MatchEvent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, NULL int16) []MatchEvent {
 	// matchLog:	9,10,11 ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
+	// halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
 	for i := 0; i < 3; i++ {
 		subHappened := matchLog[9+i] == 1
 		if subHappened {

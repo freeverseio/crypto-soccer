@@ -52,6 +52,7 @@ jobs:
       - run: cd go/synchronizer/storage && go test ./... -v
       - run: cd go/synchronizer/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
+      - run: cd go/synchronizer/matchevents && go test ./... -v
   market-notary:
     executor: freeverse_ethereum
     steps:

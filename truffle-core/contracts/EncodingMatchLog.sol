@@ -36,7 +36,7 @@ import "./EncodingMatchLogPart3.sol";
     // NTot2ndHalf, 4b offset 205
     // teamSumSkills: 24b // offset 211
     // trainingPoints, 12b, offset 235
-    // bool isHomeStadium, // 1b each, offset 211
+    // bool isHomeStadium, // 1b each, offset 247
 
 contract EncodingMatchLog is EncodingMatchLogPart1, EncodingMatchLogPart2, EncodingMatchLogPart3 {
 

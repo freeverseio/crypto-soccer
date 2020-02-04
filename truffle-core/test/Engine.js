@@ -265,7 +265,7 @@ contract('Engine', (accounts) => {
         expectedOut = [0, 13];
         expectedOutRounds = [0, 6]; // note that it'd be 0, 9 otherwise
         expectedYellows1 = [0, 0];
-        expectedYellows2 = [14, 13];
+        expectedYellows2 = [14, 12];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -277,7 +277,7 @@ contract('Engine', (accounts) => {
     });
 
     it('computeExceptionalEvents clashing with redcards after changing player forcing last minute', async () => {
-        // note that in the first half, player 13 joined, and saw both a yellow and a red card (!!)
+        // note that in the first half, player 13 joined, and saw a red card 
         // same as previous but pushing it to the limit, so that the round is 10
         seedForRedCardInSubstitutes = seed + 357;
         substis = [2, 9, 1];
@@ -288,7 +288,7 @@ contract('Engine', (accounts) => {
         expectedOut = [0, 13];
         expectedOutRounds = [0, 10]; 
         expectedYellows1 = [0, 0];
-        expectedYellows2 = [14, 13];
+        expectedYellows2 = [14, 12];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -300,6 +300,7 @@ contract('Engine', (accounts) => {
     });
 
     it('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
+        // first half version of the previous
         // note that in the first half, player 13 joined, and saw both a yellow and a red card (!!)
         // same as previous but pushing it to the limit, so that the round is 10
         seedForRedCardInSubstitutes = seed + 357;
@@ -310,12 +311,12 @@ contract('Engine', (accounts) => {
         isHomeSt = false;
         expectedOut = [13, 0];
         expectedOutRounds = [10, 0];
-        expectedYellows1 = [14, 13,];
+        expectedYellows1 = [14, 12];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, true];
+        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
@@ -323,7 +324,7 @@ contract('Engine', (accounts) => {
     });
     
     it('check that nDefs is reduced by one when a defender misses in the 2nd half', async () => {
-        // note that in the first half, player 13 joined, and saw both a yellow and a red card (!!)
+        // note that in the first half, player 13 joined, and saw both a red card
         // same as previous but pushing it to the limit, so that the round is 10
         seedForRedCardInSubstitutes = seed + 357;
         substis = [2, 9, 1];
@@ -333,12 +334,12 @@ contract('Engine', (accounts) => {
         isHomeSt = false;
         expectedOut = [13, 0];
         expectedOutRounds = [10, 0];
-        expectedYellows1 = [14, 13];
+        expectedYellows1 = [14, 12];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, true];
+        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
@@ -1061,17 +1062,31 @@ contract('Engine', (accounts) => {
     it('throws dice array11 fine grained testing', async () => {
         // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
         weights = Array.from(new Array(11), (x,i) => 100);
-        sum = 100 * 11;
-        k = 0;
+        sum = weights.reduce((a, b) => a + b, 0) - 1;
+        r0 = 0;
         for (p = 0; p < 11; p++) {
-            k += Math.floor(MAX_RND*weights[p]/sum);
-            result = await engine.throwDiceArray(weights, k).should.be.fulfilled;
+            r0 += Math.floor(MAX_RND*weights[p]/sum);
+            result = await engine.throwDiceArray(weights, r0).should.be.fulfilled;
             result.toNumber().should.be.equal(p);
             if (p < 10) {
-                result = await engine.throwDiceArray(weights, k+p+1).should.be.fulfilled;
+                result = await engine.throwDiceArray(weights, r0+1).should.be.fulfilled;
                 result.toNumber().should.be.equal(p+1);
             }
         }
+    });
+
+    it('throws dice array11 fine grained testing for null weights', async () => {
+        // when all weights are null, we expect random results
+        weightsNull = Array.from(new Array(11), (x,i) => 0);
+        nThrows = 10;
+        expected = [ 0, 8, 6, 3, 1, 9, 7, 4, 2, 10 ];
+        results = [];
+        for (p = 0; p < nThrows; p++) {
+            r0 = Math.floor(p*MAX_RND/nThrows);
+            result = await engine.throwDiceArray(weightsNull, r0).should.be.fulfilled;
+            results.push(result)//.toNumber().should.be.equal(p);
+        }
+        debug.compareArrays(results, expected, toNum = true, verbose = false);
     });
 
     it('throws dice array11', async () => {
