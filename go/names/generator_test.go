@@ -175,3 +175,35 @@ func TestGenerateTeamName(t *testing.T) {
 		t.Fatal("result of generating names not as expected")
 	}
 }
+
+func TestGeneratePlayerNameForWrongInputs(t *testing.T) {
+	generator, err := names.New("./sql/names.db")
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
+	var countryIdxInTZ uint64
+	generation := uint8(0)
+	playerId := big.NewInt(int64(41234523))
+	countryIdxInTZ = 0
+	for tz := uint8(0); tz < 30; tz++ {
+		_, err := generator.GeneratePlayerFullName(playerId, generation, tz, countryIdxInTZ)
+		shouldFail := !(tz > 0 && tz < 25)
+		if shouldFail && err == nil {
+			t.Fatalf("test should fail, but it did not, for tz %v: %s", tz, err)
+		}
+		if !shouldFail && err != nil {
+			t.Fatalf("test should be OK, but it failed, for tz %v: %s", tz, err)
+		}
+	}
+	tz := uint8(1)
+	for g := uint8(0); g < 70; g++ {
+		_, err := generator.GeneratePlayerFullName(playerId, g, tz, countryIdxInTZ)
+		shouldFail := !(g < 64)
+		if shouldFail && err == nil {
+			t.Fatalf("test should fail, but it did not, for generation %v: %s", g, err)
+		}
+		if !shouldFail && err != nil {
+			t.Fatalf("test should be OK, but it failed, for generation %v: %s", g, err)
+		}
+	}
+}
