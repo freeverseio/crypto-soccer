@@ -212,6 +212,12 @@ func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
 
 func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
+	if timezone == 0 || timezone > 24 {
+		return "", fmt.Errorf("Timezone should be within [1, 24], but it was %v", timezone)
+	}
+	if generation >= 64 {
+		return "", fmt.Errorf("Generation should be within [0, 63], but it was %v", generation)
+	}
 	var country_id uint64
 	// country_id is an encoding of (tz, countryIdx):
 	country_id = uint64(timezone)*1000000 + countryIdxInTZ
