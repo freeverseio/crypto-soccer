@@ -2,6 +2,12 @@ Match: 0
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -30,6 +36,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -65,6 +77,12 @@ Match: 1
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -93,6 +111,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -128,6 +152,12 @@ Match: 2
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -156,6 +186,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -191,6 +227,12 @@ Match: 3
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -219,6 +261,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -254,6 +302,12 @@ Match: 4
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -282,6 +336,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -317,6 +377,12 @@ Match: 5
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -345,6 +411,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -380,6 +452,12 @@ Match: 6
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -408,6 +486,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -443,6 +527,12 @@ Match: 7
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -471,6 +561,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -506,6 +602,12 @@ Match: 8
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -534,6 +636,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -569,6 +677,12 @@ Match: 9
 Seed: 0000000000000000000000000000000000000000000000000000000000000000
 StartTime: 0
 HomeTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
@@ -597,6 +711,12 @@ Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
 VisitorTeam: TeamId: 0
+Points: 0
+W: 0
+D: 0
+L: 0
+GoalsForward: 0
+GoalsAgainst: 0
 Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0

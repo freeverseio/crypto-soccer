@@ -33,6 +33,21 @@ func TestPlayerNewPlayerFromSkills(t *testing.T) {
 	assert.Equal(t, p.BirthDayUnix(), uint16(16970))
 }
 
+func TestPlayerSetSkills(t *testing.T) {
+	t.Parallel()
+	p := engine.NewNullPlayer()
+	skills, _ := new(big.Int).SetString("14606253788909032162646379450304996475079674564248175", 10)
+	err := p.SetSkills(*bc.Contracts, skills)
+	assert.NilError(t, err)
+	assert.Equal(t, p.Defence(), uint16(955))
+	assert.Equal(t, p.Speed(), uint16(889))
+	assert.Equal(t, p.Pass(), uint16(1076))
+	assert.Equal(t, p.Endurance(), uint16(1454))
+	assert.Equal(t, p.Potential(), uint16(4))
+	assert.Equal(t, p.Shoot(), uint16(623))
+	assert.Equal(t, p.BirthDayUnix(), uint16(16970))
+}
+
 func TestNewPlayer(t *testing.T) {
 	t.Parallel()
 	defence := uint16(50)

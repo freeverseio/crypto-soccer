@@ -32,6 +32,11 @@ func (b Player) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	return b.sto.Update(tx)
 }
 
+func (b *Player) SetSkills(contracts contracts.Contracts, skills *big.Int) error {
+	b.sto.EncodedSkills = new(big.Int).Set(skills)
+	return b.decodeSkills(contracts)
+}
+
 func NewPlayer(
 	contracts contracts.Contracts,
 	playerID *big.Int,

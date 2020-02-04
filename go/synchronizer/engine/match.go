@@ -67,12 +67,12 @@ func NewMatchFromStorage(
 	return match
 }
 
-func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
-	b.HomeTeam.GoalsForward += uint32(b.Match.HomeGoals)
-	b.HomeTeam.GoalsAgainst += uint32(b.Match.VisitorGoals)
-	b.VisitorTeam.GoalsForward += uint32(b.Match.VisitorGoals)
-	b.VisitorTeam.GoalsAgainst += uint32(b.Match.HomeGoals)
-	deltaGoals := int(b.Match.HomeGoals) - int(b.Match.VisitorGoals)
+func (b *Match) updateStats() {
+	b.HomeTeam.GoalsForward += uint32(b.HomeGoals)
+	b.HomeTeam.GoalsAgainst += uint32(b.VisitorGoals)
+	b.VisitorTeam.GoalsForward += uint32(b.VisitorGoals)
+	b.VisitorTeam.GoalsAgainst += uint32(b.HomeGoals)
+	deltaGoals := int(b.HomeGoals) - int(b.VisitorGoals)
 	if deltaGoals > 0 {
 		b.HomeTeam.W++
 		b.VisitorTeam.L++
@@ -87,12 +87,55 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		b.HomeTeam.Points++
 		b.VisitorTeam.Points++
 	}
+}
+
+func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
 		return err
 	}
 	if err := b.VisitorTeam.ToStorage(contracts, tx); err != nil {
 		return err
 	}
+	// for _, computedEvent := range computedEvents {
+	// 		var teamID string
+	// 		if computedEvent.Team == 0 {
+	// 			teamID = match.HomeTeamID.String()
+	// 		} else if computedEvent.Team == 1 {
+	// 			teamID = match.VisitorTeamID.String()
+	// 		} else {
+	// 			return nil, fmt.Errorf("Wrong match event team %v", computedEvent.Team)
+	// 		}
+	// 		event := storage.MatchEvent{}
+	// 		event.TimezoneIdx = int(match.TimezoneIdx)
+	// 		event.CountryIdx = int(match.CountryIdx)
+	// 		event.LeagueIdx = int(match.LeagueIdx)
+	// 		event.MatchDayIdx = int(match.MatchDayIdx)
+	// 		event.MatchIdx = int(match.MatchIdx)
+	// 		event.TeamID = teamID
+	// 		event.Minute = int(computedEvent.Minute)
+	// 		event.Type, err = storage.MarchEventTypeByMatchEvent(computedEvent.Type)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		event.ManageToShoot = computedEvent.ManagesToShoot
+	// 		event.IsGoal = computedEvent.IsGoal
+	// 		primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
+	// 		primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		event.PrimaryPlayerID = primaryPlayerID.String()
+	// 		if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
+	// 			secondaryPlayerState := states[computedEvent.Team][computedEvent.SecondaryPlayer]
+	// 			secondaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, secondaryPlayerState)
+	// 			if err != nil {
+	// 				return nil, err
+	// 			}
+	// 			event.SecondaryPlayerID.String = secondaryPlayerID.String()
+	// 			event.SecondaryPlayerID.Valid = true
+	// 		}
+	// 		me = append(me, event)
+	// 	}
 	return b.Update(tx)
 }
 
@@ -115,8 +158,8 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
-	b.HomeTeam.SetSkills(newSkills[0])
-	b.VisitorTeam.SetSkills(newSkills[1])
+	b.HomeTeam.SetSkills(contracts, newSkills[0])
+	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeMatchLog = logsAndEvents[0]
 	b.VisitorMatchLog = logsAndEvents[1]
 	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
@@ -150,13 +193,14 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
-	b.HomeTeam.SetSkills(newSkills[0])
-	b.VisitorTeam.SetSkills(newSkills[1])
+	b.HomeTeam.SetSkills(contracts, newSkills[0])
+	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeMatchLog = logsAndEvents[0]
 	b.VisitorMatchLog = logsAndEvents[1]
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
 		return err
 	}
+	b.updateStats()
 	return nil
 }
 
