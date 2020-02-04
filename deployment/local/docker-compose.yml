@@ -13,6 +13,8 @@ services:
     build: ../../universe.db/
     ports:
       - "5432:5432"
+    volumes:
+      - universe.db-data:/var/lib/postgresql/data
   relay.db:
     build: ../../relay.db/
     ports:
@@ -32,8 +34,9 @@ services:
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
       -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
       -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
-      -matcheventsContractAddress "${MATCHEVENTS_CONTRACT_ADDRESS}"
       -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
+      -playandevolveContractAddress "${PLAYANDEVOLVE_CONTRACT_ADDRESS}"
+      -trainingpointsContractAddress "${TRAININGPOINTS_CONTRACT_ADDRESS}"
     depends_on:
       - universe.db
       - ethereum
@@ -99,7 +102,7 @@ services:
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum "http://ethereum:8545"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
-      -delay 10s
+      -delay 1s
       -ipfs ipfs.node:5001
   ipfs.node:
     image: ipfs/go-ipfs:v0.4.18
@@ -116,3 +119,4 @@ services:
 volumes:
   ethereum-data:
   ipfs.node-data:
+  universe.db-data:

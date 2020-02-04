@@ -101,7 +101,7 @@ contract('Encoding', (accounts) => {
         result.toNumber().should.be.equal(aggressiveness);
         result = await encoding.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
-        result = await encoding.getAlignedEndOfLastHalf(skills).should.be.fulfilled;
+        result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(alignedEndOfLastHalf);
         result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
@@ -109,8 +109,12 @@ contract('Encoding', (accounts) => {
         result.toNumber().should.be.equal(gamesNonStopping);
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
-        result = await encoding.getSubstitutedLastHalf(skills).should.be.fulfilled;
+        result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(substitutedLastHalf);
+        skills = await encodingSet.setSubstitutedFirstHalf(skills, val = !substitutedLastHalf).should.be.fulfilled;
+        result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
+        result.should.be.equal(!substitutedLastHalf);
+
         result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         result = await encoding.getGeneration(skills).should.be.fulfilled;
@@ -140,12 +144,12 @@ contract('Encoding', (accounts) => {
         result = await encoding.getEndurance(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[4]);
 
-        skills = await encodingSet.setAlignedEndOfLastHalf(skills, true).should.be.fulfilled;
-        result = await encoding.getAlignedEndOfLastHalf(skills).should.be.fulfilled;
+        skills = await encodingSet.setAlignedEndOfFirstHalf(skills, true).should.be.fulfilled;
+        result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(true);
 
-        skills = await encodingSet.setAlignedEndOfLastHalf(skills, false).should.be.fulfilled;
-        result = await encoding.getAlignedEndOfLastHalf(skills).should.be.fulfilled;
+        skills = await encodingSet.setAlignedEndOfFirstHalf(skills, false).should.be.fulfilled;
+        result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(false);
         
         skills = await encodingSet.setRedCardLastGame(skills, true).should.be.fulfilled;
@@ -178,7 +182,6 @@ contract('Encoding', (accounts) => {
         skills = await encodingSet.setGeneration(skills, gen = 2).should.be.fulfilled;
         result = await encoding.getGeneration(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen);
-
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {
