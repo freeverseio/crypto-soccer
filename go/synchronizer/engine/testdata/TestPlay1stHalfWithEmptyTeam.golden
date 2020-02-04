@@ -1,13 +1,13 @@
-Seed: 0000000000000000000000000000000000000000000000000000000000000000
-StartTime: 0
-HomeTeam: TeamId: 0
+Seed: 0201000000000000000000000000000000000000000000000000000000000000
+StartTime: 1570147200
+HomeTeam: TeamId: 1
 Points: 0
 W: 0
 D: 0
 L: 0
 GoalsForward: 0
 GoalsAgainst: 0
-Players[0]: skills: 5708990770823839524233143877797980545530986496
+Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
 Players[3]: skills: 0
@@ -34,14 +34,14 @@ Players[23]: skills: 0
 Players[24]: skills: 0
 tactic: 340596594427581673436941882753025
 TrainingPoints: 0
-VisitorTeam: TeamId: 0
+VisitorTeam: TeamId: 2
 Points: 0
 W: 0
 D: 0
 L: 0
 GoalsForward: 0
 GoalsAgainst: 0
-Players[0]: skills: 5708990770823839524233143877797980545530986496
+Players[0]: skills: 0
 Players[1]: skills: 0
 Players[2]: skills: 0
 Players[3]: skills: 0
