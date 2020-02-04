@@ -32,27 +32,29 @@ func TestScanningIniting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	nTZsAtStart := int(24)
+	nDivsPerTZAtStart := int(1)
+	nEventsExpected := nTZsAtStart*nDivsPerTZAtStart + 1
 	events := scanner.Events
-	if len(events) != 241 {
-		t.Fatalf("Expected 241 received %v", len(events))
+	if len(events) != nEventsExpected {
+		t.Fatalf("Expected %v received %v", nEventsExpected, len(events))
 	}
-	// the first 24 should be timezone creations
+	// the first nTZsAtStart should be timezone creations
 	// the last event is AssetsInit.
-	for i := 0; i < 24; i++ {
-		switch event := events[i].Value.(type) {
+	for tz := 0; tz < nTZsAtStart; tz++ {
+		switch event := events[tz].Value.(type) {
 		case assets.AssetsDivisionCreation:
-			// t.Log(event)
-			expected := uint8(i/10 + 1)
+			// t.Log(event.Timezone)
+			expected := uint8(tz/nDivsPerTZAtStart + 1)
 			if event.Timezone != expected {
-				t.Fatalf("Expected %v recived %v", expected, event.Timezone)
+				t.Fatalf("Expected %v recived %v for event number %v", expected, event.Timezone, tz)
 			}
 			break
 		default:
 			t.Fatalf("Wrong type %v", event)
 		}
 	}
-	switch event := events[24*10].Value.(type) {
+	switch event := events[nTZsAtStart*nDivsPerTZAtStart].Value.(type) {
 	case assets.AssetsAssetsInit:
 		break
 	default:
