@@ -23,6 +23,9 @@ type Match struct {
 	Events      matchevents.MatchEvents
 }
 
+const isHomeStadium = true
+const isPlayoff = false
+
 func (b Match) DumpState() string {
 	var state string
 	state += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))
@@ -140,8 +143,6 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
-	isHomeStadium := true
-	isPlayoff := false
 	is2ndHalf := false
 	assignedTPs := big.NewInt(int64(0))
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
@@ -173,8 +174,6 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 }
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
-	isHomeStadium := true
-	isPlayoff := false
 	is2ndHalf := true
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
@@ -201,6 +200,12 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 		return err
 	}
 	b.updateStats()
+	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog); err != nil {
+		return err
+	}
+	if b.VisitorTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.VisitorMatchLog); err != nil {
+		return err
+	}
 	return nil
 }
 
