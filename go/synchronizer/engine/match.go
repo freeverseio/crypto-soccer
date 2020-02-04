@@ -200,6 +200,12 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 		return err
 	}
 	b.updateStats()
+	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog); err != nil {
+		return err
+	}
+	if b.VisitorTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.VisitorMatchLog); err != nil {
+		return err
+	}
 	return nil
 }
 
