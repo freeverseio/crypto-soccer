@@ -115,11 +115,11 @@ func (b *Matches) Play2ndHalf(contracts contracts.Contracts) error {
 	return nil
 }
 
-func (b Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
+func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
 	numWorkers := runtime.NumCPU()
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100
 
-	matchesChannel := make(chan Match, len(b))
+	matchesChannel := make(chan *Match, len(*b))
 	g, _ := errgroup.WithContext(ctx)
 
 	for i := 0; i < numWorkers; i++ {
@@ -137,18 +137,18 @@ func (b Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Co
 		})
 	}
 
-	for i := 0; i < len(b); i++ {
-		matchesChannel <- b[i]
+	for i := 0; i < len(*b); i++ {
+		matchesChannel <- &(*b)[i]
 	}
 	close(matchesChannel)
 	return g.Wait()
 }
 
-func (b Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
+func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
 	numWorkers := runtime.NumCPU()
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100
 
-	matchesChannel := make(chan Match, len(b))
+	matchesChannel := make(chan *Match, len(*b))
 	g, _ := errgroup.WithContext(ctx)
 
 	for i := 0; i < numWorkers; i++ {
@@ -166,8 +166,8 @@ func (b Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.Co
 		})
 	}
 
-	for i := 0; i < len(b); i++ {
-		matchesChannel <- b[i]
+	for i := 0; i < len(*b); i++ {
+		matchesChannel <- &(*b)[i]
 	}
 	close(matchesChannel)
 	return g.Wait()
