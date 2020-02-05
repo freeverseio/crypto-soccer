@@ -54,8 +54,8 @@ func (b *Training) Insert(tx *sql.Tx) error {
 	_, err := tx.Exec(
 		`INSERT INTO trainings (
 			verse,
-			team_id,
 			timezone,
+			team_id,
     		special_player_shirt,
 			goalkeepers_defence,
     		goalkeepers_speed,
