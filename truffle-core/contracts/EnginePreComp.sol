@@ -373,7 +373,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
             penalty = penaltyForAttackers(forwardness);
             penalty += penaltyForRights(leftishness);
         }
-        uint256 gamesNonStop = getGamesNonStopping(playerSkills);
+        uint8 gamesNonStop = getGamesNonStopping(playerSkills);
         if (gamesNonStop > 5) {
             return 5000 - penalty;
         } else {

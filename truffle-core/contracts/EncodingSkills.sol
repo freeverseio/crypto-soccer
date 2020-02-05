@@ -226,8 +226,8 @@ contract EncodingSkills {
         return (encodedSkills >> 153 & 1) == 1;
     }
 
-    function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 154 & 7);
+    function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint8) {
+        return uint8(encodedSkills >> 154 & 7);
     }
 
     function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint8) {
