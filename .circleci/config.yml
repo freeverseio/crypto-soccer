@@ -54,7 +54,15 @@ jobs:
       - run: cd go/synchronizer/engine && go test ./... -v
       - run: cd go/synchronizer/matchevents && go test ./... -v
   go1:
-    executor: freeverse_ethereum
+    docker:
+      - image: freeverseio/circleci
+      - image: ipfs/go-ipfs:v0.4.18
+        environment:
+          - IPFS_PROFILE=server
+      - image: freeverseio/ethereum:test
+        auth:
+          username: $DOCKER_ID
+          password: $DOCKER_PASSWD
     steps:
       - checkout
       - run: make setup contracts
