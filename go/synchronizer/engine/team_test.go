@@ -60,9 +60,7 @@ func TestTeamSkills(t *testing.T) {
 	for _, skill := range skills {
 		assert.Equal(t, skill.String(), "0")
 	}
-	var err error
-	team.Players[2], err = engine.NewPlayerFromSkills(*bc.Contracts, "4544")
-	assert.NilError(t, err)
+	team.Players[2].SetSkillsString("4544")
 	skills = team.Skills()
 	assert.Equal(t, skills[2].String(), "4544")
 }

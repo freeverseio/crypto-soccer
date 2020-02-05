@@ -35,11 +35,8 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		match := engine.NewMatch()
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
 		for i := 0; i < 25; i++ {
-			var err error
-			match.HomeTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309339445376240739796176995438")
-			assert.NilError(t, err)
-			match.VisitorTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309340654302060354425351701614")
-			assert.NilError(t, err)
+			match.HomeTeam.Players[i].SetSkillsString("16573429227295117480385309339445376240739796176995438")
+			match.VisitorTeam.Players[i].SetSkillsString("16573429227295117480385309340654302060354425351701614")
 		}
 		matches = append(matches, *match)
 	}
@@ -56,11 +53,8 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		match := engine.NewMatch()
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
 		for i := 0; i < 25; i++ {
-			var err error
-			match.HomeTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309339445376240739796176995438")
-			assert.NilError(t, err)
-			match.VisitorTeam.Players[i], err = engine.NewPlayerFromSkills(*bc.Contracts, "16573429227295117480385309340654302060354425351701614")
-			assert.NilError(t, err)
+			match.HomeTeam.Players[i].SetSkillsString("16573429227295117480385309339445376240739796176995438")
+			match.VisitorTeam.Players[i].SetSkillsString("16573429227295117480385309340654302060354425351701614")
 		}
 		matches = append(matches, *match)
 	}
