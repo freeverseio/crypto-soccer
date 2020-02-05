@@ -25,6 +25,18 @@ func NewPlayerFromStorage(stoPlayer storage.Player) *Player {
 	return &player
 }
 
+func (b *Player) SetSkills(skills *big.Int) {
+	b.sto.EncodedSkills = new(big.Int).Set(skills)
+}
+
+func (b Player) DumpState() string {
+	return fmt.Sprintf("skills: %v", b.sto.EncodedSkills)
+}
+
+func (b Player) Skills() *big.Int {
+	return new(big.Int).Set(b.sto.EncodedSkills)
+}
+
 func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
 	opts := &bind.CallOpts{}
 	var err error
@@ -64,61 +76,4 @@ func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error)
 	b.sto.Potential = potential.Uint64()
 	b.sto.DayOfBirth = dayOfBirth.Uint64()
 	return b.sto, nil
-}
-
-func (b *Player) SetSkillsString(skills string) {
-	b.sto.EncodedSkills, _ = new(big.Int).SetString(skills, 10)
-}
-
-func (b *Player) SetSkills(skills *big.Int) {
-	b.sto.EncodedSkills = new(big.Int).Set(skills)
-}
-
-func (b Player) DumpState() string {
-	return fmt.Sprintf("skills: %v", b.sto.EncodedSkills)
-}
-
-func (b Player) Skills() *big.Int {
-	return new(big.Int).Set(b.sto.EncodedSkills)
-}
-
-func (b *Player) decodeSkills(contracts contracts.Contracts) error {
-	opts := &bind.CallOpts{}
-	var err error
-	defence, err := contracts.Assets.GetDefence(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return err
-	}
-	speed, err := contracts.Assets.GetSpeed(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return err
-	}
-	pass, err := contracts.Assets.GetPass(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return err
-	}
-	shoot, err := contracts.Assets.GetShoot(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return err
-	}
-	endurance, err := contracts.Assets.GetEndurance(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return err
-	}
-	potential, err := contracts.Assets.GetPotential(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return err
-	}
-	dayOfBirth, err := contracts.Assets.GetBirthDay(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return err
-	}
-	b.sto.Defence = defence.Uint64()
-	b.sto.Speed = speed.Uint64()
-	b.sto.Pass = pass.Uint64()
-	b.sto.Shoot = shoot.Uint64()
-	b.sto.Endurance = endurance.Uint64()
-	b.sto.Potential = potential.Uint64()
-	b.sto.DayOfBirth = dayOfBirth.Uint64()
-	return nil
 }

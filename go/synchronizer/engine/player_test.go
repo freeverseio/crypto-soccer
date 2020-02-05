@@ -15,7 +15,7 @@ func TestNullPlayer(t *testing.T) {
 
 func TestPlayerToStorage(t *testing.T) {
 	player := engine.NewPlayer()
-	player.SetSkillsString("14606253788909032162646379450304996475079674564248175")
+	player.SetSkills(SkillsFromString("14606253788909032162646379450304996475079674564248175"))
 	sto, err := player.ToStorage(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, sto.Defence, uint64(955))

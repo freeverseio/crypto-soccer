@@ -60,7 +60,7 @@ func TestTeamSkills(t *testing.T) {
 	for _, skill := range skills {
 		assert.Equal(t, skill.String(), "0")
 	}
-	team.Players[2].SetSkillsString("4544")
+	team.Players[2].SetSkills(SkillsFromString("4544"))
 	skills = team.Skills()
 	assert.Equal(t, skills[2].String(), "4544")
 }
