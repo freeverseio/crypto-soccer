@@ -96,3 +96,17 @@ func TestNewPlayer(t *testing.T) {
 	assert.Equal(t, p.Potential(), uint16(potential))
 	assert.Equal(t, p.BirthDayUnix(), dayOfBirthUnix)
 }
+
+func TestPlayerToStorage(t *testing.T) {
+	player, err := engine.NewPlayerFromSkills(*bc.Contracts, "14606253788909032162646379450304996475079674564248175")
+	assert.NilError(t, err)
+	sto, err := player.ToStorage(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, sto.Defence, uint64(955))
+	assert.Equal(t, sto.Speed, uint64(889))
+	assert.Equal(t, sto.Pass, uint64(1076))
+	assert.Equal(t, sto.Endurance, uint64(1454))
+	assert.Equal(t, sto.Potential, uint64(4))
+	assert.Equal(t, sto.Shoot, uint64(623))
+	assert.Equal(t, sto.DayOfBirth, uint64(16970))
+}
