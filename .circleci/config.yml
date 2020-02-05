@@ -216,7 +216,6 @@ workflows:
             branches:
               only:
                 - dev
-                - k8s
           requires:
             - synchronizer
             - market-trader
