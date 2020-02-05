@@ -1,5 +1,6 @@
 CREATE TABLE tactics (
     verse BIGINT NOT NULL DEFAULT 0,
+    timezone INT NOT NULL,
     team_id TEXT NOT NULL,
 
     tactic_id INT NOT NULL,
@@ -38,6 +39,7 @@ CREATE VIEW upcoming_tactics AS SELECT * FROM tactics WHERE verse=92233720368547
 
 CREATE TABLE trainings (
     verse BIGINT NOT NULL DEFAULT 0,
+    timezone INT NOT NULL,
     team_id TEXT NOT NULL,
 
     special_player_shirt INT NOT NULL CHECK (special_player_shirt >= -1 AND special_player_shirt <= 24),

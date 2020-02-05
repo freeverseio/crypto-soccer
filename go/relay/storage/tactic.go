@@ -49,7 +49,7 @@ func (b *Tactic) Delete(tx *sql.Tx) error {
 	return err
 }
 
-func CurrentTacticsByTimezone(tx *sql.Tx, timezone int) ([]Tactic, error) {
+func TacticsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Tactic, error) {
 	var tactics []Tactic
 	rows, err := tx.Query(
 		`SELECT
@@ -81,7 +81,7 @@ func CurrentTacticsByTimezone(tx *sql.Tx, timezone int) ([]Tactic, error) {
                 extra_attack_8,
                 extra_attack_9,
                 extra_attack_10
-		FROM tactics WHERE (verse = $1 AND timezone = $2);`, UpcomingVerse, timezone)
+		FROM tactics WHERE (verse = $1 AND timezone = $2);`, verse, timezone)
 	if err != nil {
 		return nil, err
 	}
@@ -419,6 +419,7 @@ func TacticByTeamID(tx *sql.Tx, teamID string) (*Tactic, error) {
 	rows, err := tx.Query(
 		`SELECT
 				verse,
+				timezone,
 				team_id,
 				tactic_id,
                 shirt_0,
@@ -457,6 +458,7 @@ func TacticByTeamID(tx *sql.Tx, teamID string) (*Tactic, error) {
 	var t Tactic
 	err = rows.Scan(
 		&t.Verse,
+		&t.Timezone,
 		&t.TeamID,
 		&t.TacticID,
 		&t.Shirt0,

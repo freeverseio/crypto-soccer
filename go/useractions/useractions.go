@@ -39,12 +39,12 @@ func (b *UserActions) Equal(actions *UserActions) bool {
 	return true
 }
 
-func (b *UserActions) PullFromStorage(tx *sql.Tx, verse uint64) error {
+func (b *UserActions) PullFromStorage(tx *sql.Tx, verse uint64, timezone int) error {
 	var err error
-	if b.Tactics, err = storage.TacticsByVerse(tx, verse); err != nil {
+	if b.Tactics, err = storage.TacticsByVerseAndTimezone(tx, verse, timezone); err != nil {
 		return err
 	}
-	if b.Trainings, err = storage.TrainingByVerse(tx, verse); err != nil {
+	if b.Trainings, err = storage.TrainingsByVerseAndTimezone(tx, verse, timezone); err != nil {
 		return err
 	}
 	return nil

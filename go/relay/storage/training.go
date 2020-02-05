@@ -146,6 +146,85 @@ func (b *Training) Insert(tx *sql.Tx) error {
 	return err
 }
 
+func TrainingsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Training, error) {
+	var trainings []Training
+	rows, err := tx.Query(
+		`SELECT
+			verse,
+			timezone,
+			team_id,
+    		special_player_shirt,
+			goalkeepers_defence,
+    		goalkeepers_speed,
+    		goalkeepers_pass,
+    		goalkeepers_shoot,
+    		goalkeepers_endurance,
+    		defenders_defence,
+    		defenders_speed,
+    		defenders_pass,
+    		defenders_shoot,
+    		defenders_endurance,
+    		midfielders_defence,
+    		midfielders_speed,
+    		midfielders_pass,
+    		midfielders_shoot,
+    		midfielders_endurance,
+    		attackers_defence,
+    		attackers_speed,
+    		attackers_pass,
+    		attackers_shoot,
+    		attackers_endurance,
+    		special_player_defence,
+    		special_player_speed,
+    		special_player_pass,
+    		special_player_shoot,
+			special_player_endurance
+		FROM trainings WHERE (verse = $1 AND timezone = $2);`, verse, timezone)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var t Training
+		err = rows.Scan(
+			&t.Verse,
+			&t.Timezone,
+			&t.TeamID,
+			&t.SpecialPlayerShirt,
+			&t.GoalkeepersDefence,
+			&t.GoalkeepersSpeed,
+			&t.GoalkeepersPass,
+			&t.GoalkeepersShoot,
+			&t.GoalkeepersEndurance,
+			&t.DefendersDefence,
+			&t.DefendersSpeed,
+			&t.DefendersPass,
+			&t.DefendersShoot,
+			&t.DefendersEndurance,
+			&t.MidfieldersDefence,
+			&t.MidfieldersSpeed,
+			&t.MidfieldersPass,
+			&t.MidfieldersShoot,
+			&t.MidfieldersEndurance,
+			&t.AttackersDefence,
+			&t.AttackersSpeed,
+			&t.AttackersPass,
+			&t.AttackersShoot,
+			&t.AttackersEndurance,
+			&t.SpecialPlayerDefence,
+			&t.SpecialPlayerSpeed,
+			&t.SpecialPlayerPass,
+			&t.SpecialPlayerShoot,
+			&t.SpecialPlayerEndurance,
+		)
+		if err != nil {
+			return nil, err
+		}
+		trainings = append(trainings, t)
+	}
+	return trainings, nil
+}
+
 func TrainingByVerse(tx *sql.Tx, verse uint64) ([]Training, error) {
 	var trainings []Training
 	rows, err := tx.Query(

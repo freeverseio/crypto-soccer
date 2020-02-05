@@ -72,7 +72,6 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	}
 
 	actions := useractions.UserActions{}
-	actions.Verse = currentVerse.Uint64()
 	actions.Trainings = upcomingTrainings
 	actions.Tactics = upcomingTactics
 	hash, err := actions.Hash()
