@@ -7,24 +7,19 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
+	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
 
 func TestMarshal(t *testing.T) {
 	var ua useractions.UserActions
 	data, err := ua.Marshal()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(data) != `{"verse":0,"tactics":[],"trainings":[]}` {
-		t.Fatalf("Wrong %v", string(data))
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, string(data), `{"tactics":[],"trainings":[]}`)
 	ua.Tactics = append(ua.Tactics, storage.Tactic{Verse: 3, TeamID: "ciao"})
 	ua.Trainings = append(ua.Trainings, storage.Training{Verse: 5, TeamID: "pippo"})
 	data, err = ua.Marshal()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	var out bytes.Buffer
 	json.Indent(&out, data, "", "\t")
 	golden.Assert(t, out.String(), t.Name()+".golden")
@@ -50,28 +45,16 @@ func TestIpfsPushAndPull(t *testing.T) {
 	tactic.TeamID = "ciao"
 	ua.Tactics = append(ua.Tactics, tactic)
 	cif, err := ua.PushToIpfs("localhost:5001")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if cif != "QmYnN4c9nKJijrK2RdRAVfVRjL5FW8ygAiUVWCV6bwDFBv" {
-		t.Fatalf("Wrong cif %v", cif)
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, cif, "QmS8S6a3uesR2N4sYMc18yz5yP6Wcge84L2xWxQW2EVaMJ")
 	training := storage.Training{}
 	training.TeamID = "pippo"
 	ua.Trainings = append(ua.Trainings, training)
 	cif, err = ua.PushToIpfs("localhost:5001")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if cif != "QmVLduJ2FboB1yFqMhB6UkkyMee6QWQuu6mNjPPBhXW2iW" {
-		t.Fatalf("Wrong cif %v", cif)
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, cif, "QmQgu5v92T8vD9xbxVP4tfyBEexKNDiTwgLPZYLZNhH75K")
 	var ua2 useractions.UserActions
 	err = ua2.PullFromIpfs("localhost:5001", cif)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !ua2.Equal(&ua) {
-		t.Fatalf("Expected %v but %v", ua, ua2)
-	}
+	assert.NilError(t, err)
+	assert.Assert(t, ua2.Equal(&ua))
 }
