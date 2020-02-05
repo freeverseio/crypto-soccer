@@ -692,7 +692,7 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
     });
     
-    it('test that we can a 1st half and include apply training points too', async () => {
+    it2('test that we can a 1st half and include apply training points too', async () => {
         const [TP, TPperSkill] = getDefaultTPs();
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the assignedTPs:
@@ -813,7 +813,7 @@ contract('Evolution', (accounts) => {
     });
         
     
-    it2('test that we can play a 2nd half, include the training points, and check gamesNonStopping', async () => {
+    it('test that we can play a 2nd half, include the training points, and check gamesNonStopping', async () => {
         const [TP, TPperSkill] = getDefaultTPs();
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         teamIds = [1,2]
@@ -839,26 +839,26 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
 
         // do 1 change in this half, for team1, that still has 2 remaining changes
-        lineUpNew = [...lineupConsecutive];
-        lineUpNew[5] = 16;
+        // check correct properties for team1:
+            // recall:   lineUp = consecutive,  subst = [6, NO_SUBST, NO_SUBST]
+            // So, using lineUp idx:    6 -> 11, 
+            // Same as using shirtNum:  6 -> 11,
         for (p=0; p<25; p++){ 
             result = await engine.getAlignedEndOfFirstHalf(skills0[1][p]).should.be.fulfilled;
-            console.log(result)
+            if ((p < 12) && (p!= 6)) result.should.be.equal(true);
+            else result.should.be.equal(false);
         }
-        console.log(lineupConsecutive)
-        console.log(lineUpNew)
+
+        lineUpNew = [...lineupConsecutive];
+        lineUpNew[3] = 16;
         tactics1NoChangesNew = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineUpNew, noSubstitutions), 
             extraAttackNull, tacticId433).should.be.fulfilled;
-
             
-        console.log("----++++++");
-        console.log(setNoSubstInLineUp(lineUpNew, noSubstitutions))
         const {0: skills, 1: matchLogsAndEvents} = await play.play2ndHalfAndEvolve(
             verseSeed, now, skills0, teamIds, [tactics1NoChanges, tactics1NoChangesNew], matchLogsAndEvents0.slice(0,2), 
             [is2nd = true, isHomeStadium, isPlayoff]
         ).should.be.fulfilled;
 
-        console.log("----")
         // note that we store lineUp[p] + 1 = 17
         expectedHalfTimeSubs = [17,0,0];
         halfTimeSubs = []
@@ -866,8 +866,8 @@ contract('Evolution', (accounts) => {
             result = await evo.getHalfTimeSubs(matchLogsAndEvents[1], pos).should.be.fulfilled;
             halfTimeSubs.push(result);
         }
-        debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, verbose = true, isBigNumber = false);
-    return
+        debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, verbose = false, isBigNumber = false);
+
         // check Training Points (and Goals)
         expectedGoals = [3, 5];
         expectedPoints = [23, 49];

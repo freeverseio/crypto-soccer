@@ -65,9 +65,10 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
         for (uint8 posInHalf = 0; posInHalf < 3; posInHalf++) {
             // First: those who joined at half time:
-            uint8 enteringPlayer = getHalfTimeSubs(matchLog, posInHalf); // note that getHalfTimeSubs: returns p+1 for halftime subs, 0 = NO_SUBS
+            // note that getHalfTimeSubs: returns lineUp[p]+1 for halftime subs, 0 = NO_SUBS
+            uint8 enteringPlayer = getHalfTimeSubs(matchLog, posInHalf); 
             if (enteringPlayer > 0) {
-                joinedAt2ndHalf[nJoined] = lineUp[enteringPlayer-1];
+                joinedAt2ndHalf[nJoined] = enteringPlayer-1;
                 nJoined += 1;
             }
             if (getInGameSubsHappened(matchLog, posInHalf, true) == CHG_HAPPENED) {
