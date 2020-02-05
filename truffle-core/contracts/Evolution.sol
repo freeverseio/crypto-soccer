@@ -47,13 +47,13 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
             decreaseOutOfGames(skills);
             writeOutOfGameInSkills(skills, tactics, matchLog, false);
             writeOutOfGameInSkills(skills, tactics, matchLog, true);
-            increaseGamesNonStopping2ndHalf(skills, tactics, matchLog);
+            updateGamesNonStopping2ndHalf(skills, tactics, matchLog); //TODO: rename to "update"
             updatePlayerAtEndOfMatch(skills);
         }
         return skills;
     }
 
-    function increaseGamesNonStopping2ndHalf(
+    function updateGamesNonStopping2ndHalf(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics, 
         uint256 matchLog 
@@ -125,7 +125,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         }
         for (uint8 posInHalf = 0; posInHalf < 3; posInHalf++) {
             if (getInGameSubsHappened(matchLog, posInHalf, false) == CHG_HAPPENED) {
-                uint8 leavingFieldPlayer    = substitutions[posInHalf];
+                uint8 leavingFieldPlayer    = lineUp[substitutions[posInHalf]];
                 uint8 enteringFieldPlayer   = lineUp[11 + posInHalf];
                 if (skills[leavingFieldPlayer] != 0) {
                     skills[leavingFieldPlayer]  = setAlignedEndOfFirstHalf(skills[leavingFieldPlayer], false);
