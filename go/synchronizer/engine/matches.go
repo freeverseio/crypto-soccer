@@ -55,48 +55,6 @@ func NewMatchesFromTimezoneIdxMatchdayIdx(
 	return &matches, nil
 }
 
-func NewMatchesFromTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(
-	tx *sql.Tx,
-	timezoneIdx uint8,
-	countryIdx uint32,
-	leagueIdx uint32,
-	day uint8,
-) (*Matches, error) {
-	stoMatches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
-	if err != nil {
-		return nil, err
-	}
-
-	var matches Matches
-	for _, stoMatch := range stoMatches {
-		stoHomeTeam, err := storage.TeamByTeamId(tx, stoMatch.HomeTeamID)
-		if err != nil {
-			return nil, err
-		}
-		stoVisitorTeam, err := storage.TeamByTeamId(tx, stoMatch.VisitorTeamID)
-		if err != nil {
-			return nil, err
-		}
-		stoHomePlayers, err := storage.PlayersByTeamId(tx, stoMatch.HomeTeamID)
-		if err != nil {
-			return nil, err
-		}
-		stoVisitorPlayers, err := storage.PlayersByTeamId(tx, stoMatch.VisitorTeamID)
-		if err != nil {
-			return nil, err
-		}
-		match := NewMatchFromStorage(
-			stoMatch,
-			stoHomeTeam,
-			stoVisitorTeam,
-			stoHomePlayers,
-			stoVisitorPlayers,
-		)
-		matches = append(matches, *match)
-	}
-	return &matches, nil
-}
-
 func (b *Matches) Play1stHalf(contracts contracts.Contracts) error {
 	for i := 0; i < len(*b); i++ {
 		if err := (*b)[i].Play1stHalf(contracts); err != nil {
