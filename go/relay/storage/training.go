@@ -9,6 +9,7 @@ import (
 // Training represents a row from 'public.trainings'.
 type Training struct {
 	Verse                  uint64 `json:"verse"`
+	Timezone               int    `json:"timezone"`
 	TeamID                 string `json:"team_id"`                  // team_id
 	SpecialPlayerShirt     int    `json:"special_player_shirt"`     // special_player_shirt
 	GoalkeepersDefence     int    `json:"goalkeepers_defence"`      // goalkeepers_defence
@@ -54,6 +55,7 @@ func (b *Training) Insert(tx *sql.Tx) error {
 		`INSERT INTO trainings (
 			verse,
 			team_id,
+			timezone,
     		special_player_shirt,
 			goalkeepers_defence,
     		goalkeepers_speed,
@@ -108,9 +110,11 @@ func (b *Training) Insert(tx *sql.Tx) error {
             $25,
 			$26,
 			$27,
-			$28
+			$28,
+			$29
 		);`,
 		b.Verse,
+		b.Timezone,
 		b.TeamID,
 		b.SpecialPlayerShirt,
 		b.GoalkeepersDefence,
