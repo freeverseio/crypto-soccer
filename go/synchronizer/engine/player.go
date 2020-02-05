@@ -29,12 +29,12 @@ func (b *Player) SetSkills(skills *big.Int) {
 	b.sto.EncodedSkills = new(big.Int).Set(skills)
 }
 
-func (b Player) DumpState() string {
-	return fmt.Sprintf("skills: %v", b.sto.EncodedSkills)
-}
-
 func (b Player) Skills() *big.Int {
 	return new(big.Int).Set(b.sto.EncodedSkills)
+}
+
+func (b Player) DumpState() string {
+	return fmt.Sprintf("skills: %v", b.sto.EncodedSkills)
 }
 
 func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
