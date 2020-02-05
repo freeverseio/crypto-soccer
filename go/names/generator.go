@@ -168,14 +168,17 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 		}
 	}
 	var namesInCountry uint = b.namesInCountry[final_country_code]
-	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(namesInCountry))
+
+	// idxInCountry ranges from 0 to numNamesInCountry-1
+	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(namesInCountry-1))
+
 	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, final_country_code, idxInCountry)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return "", fmt.Errorf("Rnd choice failed: final_country_code = %v, idxInCountry = %v, tableName = %v, colName = %v, in function with input params: isSurname = %v, playerId = %v, generation = %v, country_code = %v, purity = $%v",
+		return "", fmt.Errorf("Rnd choice failed: final_country_code = %v, idxInCountry = %v, tableName = %v, colName = %v, in function with input params: isSurname = %v, playerId = %v, generation = %v, country_code = %v, purity = %v",
 			final_country_code,
 			idxInCountry,
 			tableName,
@@ -212,6 +215,12 @@ func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
 
 func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
+	if timezone == 0 || timezone > 24 {
+		return "", fmt.Errorf("Timezone should be within [1, 24], but it was %v", timezone)
+	}
+	if generation >= 64 {
+		return "", fmt.Errorf("Generation should be within [0, 63], but it was %v", generation)
+	}
 	var country_id uint64
 	// country_id is an encoding of (tz, countryIdx):
 	country_id = uint64(timezone)*1000000 + countryIdxInTZ

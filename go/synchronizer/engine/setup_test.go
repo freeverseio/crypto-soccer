@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"database/sql"
+	"math/big"
 	"os"
 	"testing"
 
@@ -26,4 +27,9 @@ func TestMain(m *testing.M) {
 	}
 	bc.DeployContracts(bc.Owner)
 	os.Exit(m.Run())
+}
+
+func SkillsFromString(skills string) *big.Int {
+	result, _ := new(big.Int).SetString(skills, 10)
+	return result
 }
