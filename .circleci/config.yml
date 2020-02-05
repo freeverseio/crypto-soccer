@@ -59,6 +59,7 @@ jobs:
       - checkout
       - run: make setup contracts
       - run: cd go/contracts && go test ./...
+      - run: cd go/useractions && go test ./...
   market-notary:
     executor: freeverse_ethereum
     steps:
