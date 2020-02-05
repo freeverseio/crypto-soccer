@@ -821,45 +821,49 @@ contract('Evolution', (accounts) => {
         prev2ndHalfLog = await evo.addTrainingPoints(0, TP).should.be.fulfilled;
 
         // FIRST half:
-        // add one player who will go from 6 to 7, one that will remain at 7, and two that will reset by, since they were not linedUp
+        // add one player who will go from 6 to 7, one that will remain at 7, and two that will reset, since they were not linedUp
         teamStateAll50Half1[0] = await evo.setGamesNonStopping(teamStateAll50Half1[0], 6).should.be.fulfilled;
         teamStateAll50Half1[1] = await evo.setGamesNonStopping(teamStateAll50Half1[1], 7).should.be.fulfilled;
         teamStateAll50Half1[22] = await evo.setGamesNonStopping(teamStateAll50Half1[1], 7).should.be.fulfilled;
         teamStateAll50Half1[23] = await evo.setGamesNonStopping(teamStateAll50Half1[1], 1).should.be.fulfilled;
 
+        // for team1, besides the previous, plan only the 1st of the substitutions
         subst = [...substitutions]; // = [6, 10, 0]
         subst[1] = NO_SUBST;
         subst[2] = NO_SUBST;
         tacticsNew = await engine.encodeTactics(subst, subsRounds, setNoSubstInLineUp(lineupConsecutive, subst), 
         extraAttackNull, tacticId433).should.be.fulfilled;
 
+        // play the 1st half:
         const {0: skills0, 1: matchLogsAndEvents0} = await play.play1stHalfAndEvolve(
             verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tacticsNew], [prev2ndHalfLog, prev2ndHalfLog],
             [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
         ).should.be.fulfilled;
 
-        // do 1 change in this half, for team1, that still has 2 remaining changes
-        // check correct properties for team1:
+        // first: check correct properties for team1:
             // recall:   lineUp = consecutive,  subst = [6, NO_SUBST, NO_SUBST]
-            // So, using lineUp idx:    6 -> 11, 
-            // Same as using shirtNum:  6 -> 11,
+            // So, using lineUp idx, the sust was::     6 -> 11, 
+            // Same as using shirtNum:                  6 -> 11,
         for (p=0; p<25; p++){ 
             result = await engine.getAlignedEndOfFirstHalf(skills0[1][p]).should.be.fulfilled;
             if ((p < 12) && (p!= 6)) result.should.be.equal(true);
             else result.should.be.equal(false);
         }
 
+        // do 1 change at half time for team1, that still had 2 remaining changes.
         lineUpNew = [...lineupConsecutive];
         lineUpNew[3] = 16;
         tactics1NoChangesNew = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineUpNew, noSubstitutions), 
             extraAttackNull, tacticId433).should.be.fulfilled;
             
+        // play half 2:
         const {0: skills, 1: matchLogsAndEvents} = await play.play2ndHalfAndEvolve(
             verseSeed, now, skills0, teamIds, [tactics1NoChanges, tactics1NoChangesNew], matchLogsAndEvents0.slice(0,2), 
             [is2nd = true, isHomeStadium, isPlayoff]
         ).should.be.fulfilled;
 
-        // note that we store lineUp[p] + 1 = 17
+        // check that we find the correct halfTimeSubs in the matchLog.
+        // note that what is stored is: lineUp[p] + 1 = 17
         expectedHalfTimeSubs = [17,0,0];
         halfTimeSubs = []
         for (pos = 0; pos < 3; pos ++) {
@@ -883,8 +887,8 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(points, expectedPoints, toNum = true, verbose = false, isBigNumber = false);
 
         // test that the states did not change the intrinsics of the players:
-        sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half2[0]).should.be.fulfilled;
-        sumBeforeEvolving.toNumber().should.be.equal(250);
+        sumBeforeEvolving = await evo.getSumOfSkills(skills0[0][2]).should.be.fulfilled;
+        sumBeforeEvolving.toNumber().should.be.equal(549);
         expectedSums = Array.from(new Array(25), (x,i) => 549);
         sumSkills0 = []  // sum of skills of each player for team 0
         sumSkills1 = []  // sum of skills of each player for team 1
@@ -895,6 +899,7 @@ contract('Evolution', (accounts) => {
             sumSkills1.push(sum)
         }
         debug.compareArrays(sumSkills0, expectedSums, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(sumSkills1, expectedSums, toNum = true, verbose = false, isBigNumber = false);
 
         // check that we correctly reset the "played game" and gamesNonStopping properties
         // team0 went through subst: [6, 10, 0], so 6 -> 11, 10 -> 12, 0 -> 13
