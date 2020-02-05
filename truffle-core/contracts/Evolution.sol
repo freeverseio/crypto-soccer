@@ -82,7 +82,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
                 if (hasPlayedThisMatch(skills[p], p, joinedAt2ndHalf)) {
                     skills[p] = increaseGamesNonStopping(skills[p]);
                 } else {
-                    skills[p] = decreaseGamesNonStopping(skills[p]);
+                    skills[p] = setGamesNonStopping(skills[p], 0); 
                 }
             }
         }
@@ -147,12 +147,6 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         else return skills;
     }
 
-    function decreaseGamesNonStopping(uint256 skills) public pure returns (uint256) {
-        uint8 gamesNonStopping = getGamesNonStopping(skills);
-        if (gamesNonStopping > 0) return setGamesNonStopping(skills, gamesNonStopping - 1); 
-        else return skills;
-    }
-    
     function writeOutOfGameInSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog, bool is2ndHalf) private pure {
         (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
         // check if there was an out of player event:
