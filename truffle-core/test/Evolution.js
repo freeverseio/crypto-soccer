@@ -913,6 +913,7 @@ contract('Evolution', (accounts) => {
         // team1 particular cases:
         expectedGamesNonStopping[12] = 0;
         expectedGamesNonStopping[13] = 0;
+        expectedGamesNonStopping[16] = 1;
         expected.push([...expectedGamesNonStopping]);
         
         for (team = 0; team < 2; team++) {
@@ -925,7 +926,7 @@ contract('Evolution', (accounts) => {
                 wasSubst.should.be.equal(false);
                 nonStoppingGames.push(nGamesNonStopping);
             }
-            debug.compareArrays(nonStoppingGames, expected[team], toNum = true, verbose = true, isBigNumber = false);
+            debug.compareArrays(nonStoppingGames, expected[team], toNum = true, verbose = false, isBigNumber = false);
         }
     });
 
@@ -1026,7 +1027,6 @@ contract('Evolution', (accounts) => {
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);
-            // console.log(points.toNumber())//.should.be.equal(expected[team]);
         }
     });    
 
@@ -1091,7 +1091,6 @@ contract('Evolution', (accounts) => {
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);
-            // console.log(points.toNumber())//.should.be.equal(expected[team]);
         }
     });    
     
