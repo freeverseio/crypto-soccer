@@ -105,8 +105,14 @@ contract('Encoding', (accounts) => {
         result.should.be.equal(alignedEndOfLastHalf);
         result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
+
         result = await encoding.getGamesNonStopping(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(gamesNonStopping);
+        skills = await encodingSet.setGamesNonStopping(skills, 7).should.be.fulfilled;
+        result = await encoding.getGamesNonStopping(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(7);
+        skillsdummy = await encodingSet.setGamesNonStopping(skills, 8).should.be.rejected;
+        
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
         result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
