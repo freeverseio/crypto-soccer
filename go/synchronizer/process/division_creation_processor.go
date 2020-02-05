@@ -3,6 +3,7 @@ package process
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
@@ -203,8 +204,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 		}
 		name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64())
 		if err != nil {
-			name = "Mister Random"
-			log.Warning(err)
+			return fmt.Errorf("%s playerId: %v, generation: %v, timezone: %v, countryIdx %v", err.Error(), playerId, generation, timezone, countryIdx.Uint64())
 		}
 		player := storage.Player{
 			PlayerId:          playerId,

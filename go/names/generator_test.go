@@ -39,7 +39,7 @@ func TestGeneratePlayerName(t *testing.T) {
 		}
 		result += name
 	}
-	if int_hash(result) != uint64(1608800955005269445) {
+	if int_hash(result) != uint64(5825377024423989689) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -69,7 +69,7 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 		}
 		result += name
 	}
-	if int_hash(result) != uint64(1608800955005269445) {
+	if int_hash(result) != uint64(5825377024423989689) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -107,7 +107,7 @@ func TestGenerateChildName(t *testing.T) {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
 	name = name + " " + name2
-	if name != "Volratas Billberry Carles Billberry Jr." {
+	if name != "Marjanas Buford Alessandro Buford Jr." {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
@@ -136,7 +136,7 @@ func TestGenerateAcademyName(t *testing.T) {
 	if len(name) == 0 {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
-	if name != "Carles Sarju" {
+	if name != "Alessandro Jagdeo" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
@@ -173,5 +173,37 @@ func TestGenerateTeamName(t *testing.T) {
 		fmt.Println(int_hash(concatname))
 		fmt.Println(concatname)
 		t.Fatal("result of generating names not as expected")
+	}
+}
+
+func TestGeneratePlayerNameForWrongInputs(t *testing.T) {
+	generator, err := names.New("./sql/names.db")
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
+	var countryIdxInTZ uint64
+	generation := uint8(0)
+	playerId := big.NewInt(int64(41234523))
+	countryIdxInTZ = 0
+	for tz := uint8(0); tz < 30; tz++ {
+		_, err := generator.GeneratePlayerFullName(playerId, generation, tz, countryIdxInTZ)
+		shouldFail := !(tz > 0 && tz < 25)
+		if shouldFail && err == nil {
+			t.Fatalf("test should fail, but it did not, for tz %v: %s", tz, err)
+		}
+		if !shouldFail && err != nil {
+			t.Fatalf("test should be OK, but it failed, for tz %v: %s", tz, err)
+		}
+	}
+	tz := uint8(1)
+	for g := uint8(0); g < 70; g++ {
+		_, err := generator.GeneratePlayerFullName(playerId, g, tz, countryIdxInTZ)
+		shouldFail := !(g < 64)
+		if shouldFail && err == nil {
+			t.Fatalf("test should fail, but it did not, for generation %v: %s", g, err)
+		}
+		if !shouldFail && err != nil {
+			t.Fatalf("test should be OK, but it failed, for generation %v: %s", g, err)
+		}
 	}
 }

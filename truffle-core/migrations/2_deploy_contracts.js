@@ -46,9 +46,13 @@ module.exports = function (deployer) {
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
 
     console.log("Setting up ... done");
-
-    console.log("Initing ... TODO : only one zone actually");
-    await assets.initSingleTZ(1).should.be.fulfilled; // TODO: bootstrap od all timezone using init()
+    if (deployer.network === "prod") {
+      await assets.init().should.be.fulfilled;
+    } else {
+      const timezone = 1;
+      console.log("Initing only timezone " + timezone)
+      await assets.initSingleTZ(timezone).should.be.fulfilled; // TODO: bootstrap od all timezone using init()
+    }
     console.log("Initing ... done");
 
     console.log("");

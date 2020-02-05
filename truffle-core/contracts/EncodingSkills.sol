@@ -126,7 +126,7 @@ contract EncodingSkills {
      *      sumSkills                 = 19b (must equal sum(skills), of if each is 16b, this can be at most 5x16b => use 19b)
      *      isSpecialPlayer           = 1b (set at the left-most bit, 255)
      *      targetTeamId              = 43b
-     *      generation                = 8b 
+     *      generation                = 8b. From [0,...,31] => not-a-child, from [32,..63] => a child
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 

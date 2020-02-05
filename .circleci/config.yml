@@ -53,6 +53,12 @@ jobs:
       - run: cd go/synchronizer/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
       - run: cd go/synchronizer/matchevents && go test ./... -v
+  go1:
+    executor: freeverse_ethereum
+    steps:
+      - checkout
+      - run: make setup contracts
+      - run: cd go/contracts && go test ./...
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -182,6 +188,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - go1:
+          filters:
+            tags:
+              only: /.*/
       - market-trader:
           filters:
             tags:
@@ -209,6 +219,7 @@ workflows:
             # - relay-api
             - relay-actions
             - market-notary
+            - go1
       - dockerization-production:
           filters:
             tags:
