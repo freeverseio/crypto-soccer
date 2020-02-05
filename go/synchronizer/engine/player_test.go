@@ -22,7 +22,5 @@ func TestPlayerToStorage(t *testing.T) {
 	assert.Equal(t, sto.Speed, uint64(889))
 	assert.Equal(t, sto.Pass, uint64(1076))
 	assert.Equal(t, sto.Endurance, uint64(1454))
-	assert.Equal(t, sto.Potential, uint64(4))
 	assert.Equal(t, sto.Shoot, uint64(623))
-	assert.Equal(t, sto.DayOfBirth, uint64(16970))
 }

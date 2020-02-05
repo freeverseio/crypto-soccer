@@ -60,20 +60,10 @@ func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error)
 	if err != nil {
 		return b.sto, err
 	}
-	potential, err := contracts.Assets.GetPotential(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return b.sto, err
-	}
-	dayOfBirth, err := contracts.Assets.GetBirthDay(opts, b.sto.EncodedSkills)
-	if err != nil {
-		return b.sto, err
-	}
 	b.sto.Defence = defence.Uint64()
 	b.sto.Speed = speed.Uint64()
 	b.sto.Pass = pass.Uint64()
 	b.sto.Shoot = shoot.Uint64()
 	b.sto.Endurance = endurance.Uint64()
-	b.sto.Potential = potential.Uint64()
-	b.sto.DayOfBirth = dayOfBirth.Uint64()
 	return b.sto, nil
 }
