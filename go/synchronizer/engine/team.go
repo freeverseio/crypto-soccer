@@ -24,7 +24,7 @@ func NewTeam() *Team {
 	var team Team
 	team.TeamID = big.NewInt(0)
 	for i := range team.Players {
-		team.Players[i] = NewNullPlayer()
+		team.Players[i] = NewPlayer()
 	}
 	team.tactic = DefaultTactic()
 	return &team
@@ -32,7 +32,11 @@ func NewTeam() *Team {
 
 func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	for _, player := range b.Players {
-		if err := player.ToStorage(contracts, tx); err != nil {
+		stoPlayer, err := player.ToStorage(contracts)
+		if err != nil {
+			return err
+		}
+		if err := stoPlayer.Update(tx); err != nil {
 			return err
 		}
 	}
@@ -71,7 +75,7 @@ func DefaultTactic() *big.Int {
 
 func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 	for i := range skills {
-		b.Players[i].SetSkills(contracts, skills[i])
+		b.Players[i].SetSkills(skills[i])
 	}
 }
 
