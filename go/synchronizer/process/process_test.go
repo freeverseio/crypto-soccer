@@ -35,6 +35,7 @@ func TestSyncTeams(t *testing.T) {
 	p, err := process.NewEventProcessor(
 		bc.Contracts,
 		namesdb,
+		ipfsURL,
 	)
 	if err != nil {
 		t.Fatal(err)

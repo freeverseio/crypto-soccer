@@ -1,6 +1,7 @@
 package process
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/useractions"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,11 +22,13 @@ import (
 type LeagueProcessor struct {
 	contracts         *contracts.Contracts
 	calendarProcessor *Calendar
+	ipfsURL           string
 }
 
 func NewLeagueProcessor(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
+	ipfsURL string,
 ) (*LeagueProcessor, error) {
 	calendarProcessor, err := NewCalendar(contracts)
 	if err != nil {
@@ -33,6 +37,7 @@ func NewLeagueProcessor(
 	return &LeagueProcessor{
 		contracts,
 		calendarProcessor,
+		ipfsURL,
 	}, nil
 }
 
@@ -79,7 +84,18 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			}
 		}
 	}
-
+	log.Infof("Retriving user actions from ipfs node %v", b.ipfsURL)
+	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.Cid)
+	if err != nil {
+		return err
+	}
+	ipfsHash, err := userActions.Hash()
+	if err != nil {
+		return err
+	}
+	if bytes.Compare(ipfsHash, event.Seed[:]) != 0 {
+		return fmt.Errorf("UserActions Seed mismatch bc: %v ipfs: %v", event.Seed, ipfsHash)
+	}
 	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
 	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 	if err != nil {

@@ -28,6 +28,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
 		namesdb,
+		ipfsURL,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -90,6 +91,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
 		namesdb,
+		ipfsURL,
 	)
 	if err != nil {
 		t.Fatal(err)
