@@ -19,21 +19,18 @@ program
   .version(version)
   .option("-u, --universeUrl <url>", "graphql universe url", "http://localhost:4001/graphql")
   .option("-m, --marketUrl <url>", "graphql market url", "http://localhost:4002/graphql")
-  .option("-r, --relayUrl <url>", "graphql relay url", "http://localhost:4003/graphql")
   .parse(process.argv);
 
-const { universeUrl, marketUrl, relayUrl } = program;
+const { universeUrl, marketUrl } = program;
 
 console.log("--------------------------------------------------------");
 console.log("universeUrl       : ", universeUrl);
 console.log("marketUrl         : ", marketUrl);
-console.log("relayUrl          : ", relayUrl);
 console.log("--------------------------------------------------------");
 
 const main = async () => {
   const universeRemoteSchema = await createRemoteSchema(universeUrl);
   const marketRemoteSchema = await createRemoteSchema(marketUrl);
-  const relayRemoteSchema = await createRemoteSchema(relayUrl);
 
   const linkTypeDefs = `
     extend type Player {
@@ -46,27 +43,6 @@ const main = async () => {
         orderBy: [AuctionsOrderBy!] = [PRIMARY_KEY_ASC]
         condition: AuctionCondition
       ): AuctionsConnection!
-    }
-
-    extend type Team {
-      tacticsByTeamId(
-        first: Int
-        last: Int
-        offset: Int
-        before: Cursor
-        after: Cursor
-        orderBy: [TacticsOrderBy!] = [PRIMARY_KEY_ASC]
-        condition: TacticCondition
-      ): TacticsConnection!
-      trainingsByTeamId(
-        first: Int
-        last: Int
-        offset: Int
-        before: Cursor
-        after: Cursor
-        orderBy: [TrainingsOrderBy!] = [PRIMARY_KEY_ASC]
-        condition: TrainingCondition
-      ): TrainingsConnection!
     }
 
     extend type Auction {
@@ -90,42 +66,6 @@ const main = async () => {
             args: {
               condition: {
                 playerId: player.playerId
-              }
-            },
-            context,
-            info,
-          })
-        }
-      },
-    },
-    Team: {
-      tacticsByTeamId: {
-        fragment: `... on Team { teamId }`,
-        resolve(team, args, context, info) {
-          return info.mergeInfo.delegateToSchema({
-            schema: relayRemoteSchema,
-            operation: 'query',
-            fieldName: 'allTactics',
-            args: {
-              condition: {
-                teamId: team.teamId
-              }
-            },
-            context,
-            info,
-          })
-        }
-      },
-      trainingsByTeamId: {
-        fragment: `... on Team { teamId }`,
-        resolve(team, args, context, info) {
-          return info.mergeInfo.delegateToSchema({
-            schema: relayRemoteSchema,
-            operation: 'query',
-            fieldName: 'allTrainings',
-            args: {
-              condition: {
-                teamId: team.teamId
               }
             },
             context,
@@ -174,7 +114,6 @@ const main = async () => {
     schemas: [
       universeRemoteSchema,
       marketRemoteSchema,
-      relayRemoteSchema,
       linkTypeDefs
     ],
     resolvers

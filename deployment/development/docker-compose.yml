@@ -27,7 +27,6 @@ services:
     image: freeverseio/synchronizer:$TAG
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
-      -relaydb postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
@@ -45,47 +44,20 @@ services:
   universe.api:
     image: freeverseio/universe.api:$TAG
     depends_on:
-      - universe.db
-    command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
-  market.db:
-    image: freeverseio/market.db:$TAG
-    volumes:
-      - market.db-data:/var/lib/postgresql/data
-  market.trader:
-    image: freeverseio/market.trader:$TAG
-    command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
-  market.notary:
-    image: freeverseio/market.notary:$TAG
-    depends_on:
       - ethereum
     command: >
-      -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable  
-      -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
-      -ethereum http://ethereum:8545 
-      -market_address "${MARKET_CONTRACT_ADDRESS}" 
-  relay.api:
-    image: freeverseio/relay.api:$TAG
-    depends_on:
-      - ethereum
-    command: >
-      -d postgres://freeverse:freeverse@relay.db:5432/relay
+      -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
       --assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}" 
       --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" 
       --ethereum "http://ethereum:8545"
-  relay.db:
-    image: freeverseio/relay.db:$TAG
-    volumes:
-      - relay.db-data:/var/lib/postgresql/data
   horizon:
     image: freeverseio/horizon:$TAG
     depends_on:
       - universe.api
       - market.trader
-      - relay.api
     command: >
       -u http://universe.api:4000/graphql 
       -m http://market.trader:4000/graphql 
-      -r http://relay.api:4000/graphql
     ports:
       - "4000:4000"
   relay.actions:
@@ -94,7 +66,7 @@ services:
       - ethereum
       - ipfs.node
     command: >
-      -postgres postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable  
+      -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum "http://ethereum:8545"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
@@ -112,11 +84,28 @@ services:
       - "127.0.0.1:5001:5001"
     volumes:
       - ipfs.node-data:/data
+
+###############   MARKET ###################
+  market.db:
+    image: freeverseio/market.db:$TAG
+    volumes:
+      - market.db-data:/var/lib/postgresql/data
+  market.trader:
+    image: freeverseio/market.trader:$TAG
+    command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
+  market.notary:
+    image: freeverseio/market.notary:$TAG
+    depends_on:
+      - ethereum
+    command: >
+      -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable  
+      -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
+      -ethereum http://ethereum:8545 
+      -market_address "${MARKET_CONTRACT_ADDRESS}" 
 volumes:
   ethereum-data:
   ipfs.node-data:
   universe.db-data:
   market.db-data:
-  relay.db-data:
 
 

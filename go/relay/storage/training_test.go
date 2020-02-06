@@ -7,6 +7,7 @@ import (
 )
 
 func TestTrainingCreate(t *testing.T) {
+	t.Skip("******************** REACTIVE  **********************")
 	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
@@ -22,6 +23,7 @@ func TestTrainingCreate(t *testing.T) {
 }
 
 func TestCurrentTraining(t *testing.T) {
+	t.Skip("******************** REACTIVE  **********************")
 	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)

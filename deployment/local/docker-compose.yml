@@ -13,19 +13,12 @@ services:
     build: ../../universe.db/
     ports:
       - "5432:5432"
-    volumes:
-      - universe.db-data:/var/lib/postgresql/data
-  relay.db:
-    build: ../../relay.db/
-    ports:
-      - "5433:5432"
   synchronizer:
     build: 
       context: ../../go/
       dockerfile: Dockerfile.synchronizer
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
-      -relaydb postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
@@ -40,13 +33,6 @@ services:
     depends_on:
       - universe.db
       - ethereum
-  universe.api:
-    build: ../../universe.api
-    depends_on:
-      - universe.db
-    command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
-    ports:
-      - "4005:4000"
   market.db:
     build: ../../market.db
   market.trader:
@@ -65,29 +51,25 @@ services:
       -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
       -ethereum http://ethereum:8545 
       -market_address "${MARKET_CONTRACT_ADDRESS}" 
-  relay.api:
-    build: ../../relay.api
+  universe.api:
+    build: ../../universe.api
     depends_on:
       - ethereum
     ports:
       - "4003:4000"
     command: >
-      -d postgres://freeverse:freeverse@relay.db:5432/relay
+      -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       --assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}" 
       --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" 
       --ethereum "http://ethereum:8545"
-  relay.db:
-    build: ../../relay.db
   horizon:
     build: ../../nodejs-horizon
     depends_on:
       - universe.api
       - market.trader
-      - relay.api
     command: >
       -u http://universe.api:4000/graphql 
       -m http://market.trader:4000/graphql 
-      -r http://relay.api:4000/graphql
     ports:
       - "4000:4000"
   relay.actions:
@@ -98,7 +80,7 @@ services:
       - ethereum
       - ipfs.node
     command: >
-      -postgres postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable  
+      -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum "http://ethereum:8545"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
@@ -119,4 +101,3 @@ services:
 volumes:
   ethereum-data:
   ipfs.node-data:
-  universe.db-data:

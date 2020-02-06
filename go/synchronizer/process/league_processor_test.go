@@ -61,11 +61,6 @@ func TestLeagueProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	relaytx, err := relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaytx.Rollback()
 
 	if err != nil {
 		t.Fatal(err)
@@ -88,7 +83,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	}
 	countryIdx := big.NewInt(0)
 	divisionIdx := big.NewInt(0)
-	err = divisionCreationProcessor.Process(tx, relaytx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
+	err = divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
 	if err != nil {
 		t.Fatal(err)
 	}
