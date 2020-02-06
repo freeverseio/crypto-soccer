@@ -23,6 +23,7 @@ func TestTacticByTeamID(t *testing.T) {
 }
 
 func TestTacticCreate(t *testing.T) {
+	t.Skip("******************** REACTIVE  **********************")
 	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
@@ -54,6 +55,7 @@ func TestTacticCreate(t *testing.T) {
 }
 
 func TestTacticsByVerse(t *testing.T) {
+	t.Skip("******************** REACTIVE  **********************")
 	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
@@ -97,6 +99,7 @@ func TestTacticsByVerse(t *testing.T) {
 }
 
 func TestCurrentTactic(t *testing.T) {
+	t.Skip("******************** REACTIVE  **********************")
 	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
