@@ -316,11 +316,12 @@ func main() {
 	ratelimit := flag.Int("ratelimit", 1000000, "max requests per second")
 	backdoor = flag.Bool("backdoor", false, " allow god mode for token 'hi!'")
 	gracetime = flag.Int("gracetime", 3600, " grace time for tickets in seconds")
-	lokiPushURL := flag.String("loki.pushurl", "http://loki:3100/loki/api/v1/push"," loki url to push logs")
-	lokiJobName := flag.String("loki.jobname", "undefined", "name of the loki job")
-
 	maxchecktime := flag.Int("maxchecktime", 60, " max time waiting gql service is ok")
+	infrastructure.MustRegisterFlags()
 	flag.Parse()
+
+	infrastructure.MustRegisterLoki()
+	go infrastructure.MustStartMetrics()
 
 	log.Info("-timeout=", *timeout)
 	log.Info("-gqlurl=", *gqlurl)
@@ -329,17 +330,13 @@ func main() {
 	log.Info("-backdoor=", *backdoor, " (Bearer ", godtoken, ")")
 	log.Info("-gracetime=", *gracetime)
 	log.Info("-maxchecktime=", *maxchecktime)
-	log.Info("-loki.pushurl=", *lokiPushURL)
-	log.Info("-loki.jobname=", *lokiJobName)
 
-	infrastructure.MustRegisterPromtail(*lokiPushURL,*lokiJobName)
 
 	if err := waitGsqlReady(*maxchecktime) ; err!= nil {
 		log.Fatal(err)
 	}
 	log.Info("Success checked connection to gsql")
 
-	go infrastructure.MustStartMetrics()
 	// check gql server
 	startProxyServer(serviceurl, ratelimit)
 }

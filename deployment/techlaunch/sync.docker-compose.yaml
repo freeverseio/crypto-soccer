@@ -22,8 +22,10 @@ services:
       -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
       -matcheventsContractAddress "${MATCHEVENTS_CONTRACT_ADDRESS}"
       -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
+      -loki.pushurl ${LOKI_PUSH_URL}
+      -loki.jobname sync
   
- sync.ethnode: 
+  sync.ethnode: 
     image: freeverseio/ethereum:devcontracts
     networks:
       scnetwork:
@@ -32,7 +34,7 @@ services:
     volumes:
       - ethereum-data:/test
 
- sync.promtail:
+  sync.promtail:
     image: grafana/promtail:latest
     volumes:
       - ./xdaipfs-config/promtail/config.yaml:/etc/promtail/config.yaml
@@ -43,9 +45,8 @@ services:
       scnetwork:
         ipv4_address: 10.0.2.3
     depends_on:
-      - xdai.telemetry
+      - sync.ethnode
 
- 
 
 networks:
   scnetwork:

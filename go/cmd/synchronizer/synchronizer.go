@@ -13,6 +13,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/infrastructure"
 )
 
 func run(
@@ -50,7 +51,6 @@ func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	relayURL := flag.String("relaydb", "postgres://freeverse:freeverse@localhost:5433/relay?sslmode=disable", "relay postgres url")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
-	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
 	assetsContractAddress := flag.String("assetsContractAddress", "", "")
@@ -62,7 +62,12 @@ func main() {
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
 	utilsmatchlogContractAddress := flag.String("utilsmatchlogContractAddress", "", "")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
-	flag.Parse()
+
+        infrastructure.MustRegisterFlags()
+        flag.Parse()
+
+        infrastructure.MustRegisterLoki()
+        go infrastructure.MustStartMetrics()
 
 	if _, err := os.Stat(*namesDatabase); err != nil {
 		if os.IsNotExist(err) {
@@ -99,11 +104,6 @@ func main() {
 	}
 
 	log.Infof("ipfs URL: %v", *ipfsURL)
-
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	}
-
 	log.Info("Starting ...")
 	log.Info("Dial the Ethereum client: ", *ethereumClient)
 	client, err := ethclient.Dial(*ethereumClient)

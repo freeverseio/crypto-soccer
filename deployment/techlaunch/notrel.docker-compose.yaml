@@ -8,10 +8,13 @@ services:
       scnetwork:
         ipv4_address: 10.0.2.5
     command: >
-      -postgres ${POSTGRES_MARKET_URL}?sslmode=disable  
+      -postgres ${POSTGRES_MARKET_URL}?sslmode=require  
       -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
       -ethereum ${ETHEREUM_URL} 
       -market_address "${MARKET_CONTRACT_ADDRESS}" 
+      -loki.pushurl ${LOKI_PUSH_URL}
+      -loki.jobname notary
+
   relay.actions:
     build:
       context: ../../go
@@ -20,12 +23,14 @@ services:
       scnetwork:
         ipv4_address: 10.0.2.6
     command: >
-      -postgres ${POSTGRES_RELAY_URL}?sslmode=disable  
+      -postgres ${POSTGRES_RELAY_URL}?sslmode=require  
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum ${ETHEREUM_URL}
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
       -delay 30s
       -ipfs ${IPFS_SERVICE}
+      -loki.pushurl ${LOKI_PUSH_URL}
+      -loki.jobname relay
 
 networks:
   scnetwork:

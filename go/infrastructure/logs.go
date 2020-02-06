@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 	"os"
-	"flag"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/afiskon/promtail-client/promtail"
@@ -65,14 +64,20 @@ func (hook *promtailHook) Fire(entry *log.Entry) error {
 	return nil
 }
 
-func MustRegisterPromtail(lokiPushURL,jobName string) {
-	debug := flag.Bool("debug", false, "debug")
-        log.Info("Starting promtail with debug=",*debug)
-	if *debug {
+func MustRegisterLoki() {
+       log.Info("[INFRA] -debug=",*flagDebug)
+	if *flagDebug {
                 log.SetLevel(log.DebugLevel)
         }
+       log.Info("[INFRA] -loki.pushurl=", *flagLokiPushURL)
+        log.Info("[INFRA] -loki.jobname=", *flagLokiJobName)
 
-	hook, err := newPromtailHook(lokiPushURL,jobName)
+	if *flagLokiPushURL=="" || *flagLokiJobName=="" {
+		log.Warn("[INFRA] caution, logs will be not sent to loki")
+		return
+	} 
+
+	hook, err := newPromtailHook(*flagLokiPushURL,*flagLokiJobName)
 	if err != nil {
 		panic(err)
 	}

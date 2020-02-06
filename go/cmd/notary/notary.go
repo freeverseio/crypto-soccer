@@ -9,6 +9,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/processor"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/infrastructure"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -19,20 +20,20 @@ func main() {
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	marketContractAddress := flag.String("market_address", "", "market contract address")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
-	debug := flag.Bool("debug", false, "print debug logs")
-	flag.Parse()
+
+        infrastructure.MustRegisterFlags()
+        flag.Parse()
+
+        infrastructure.MustRegisterLoki()
+        go infrastructure.MustStartMetrics()
 
 	log.Infof("[PARAM] memory            : %v", *inMemoryDatabase)
 	log.Infof("[PARAM] postgres          : %v", *postgresURL)
 	log.Infof("[PARAM] ethereum_client   : %v", *ethereumClient)
 	log.Infof("[PARAM] market_address    : %v", *marketContractAddress)
-	log.Infof("[PARAM] debug             : %v", *debug)
 	log.Infof("[PARAM] privatekey        : %v", *privateKeyHex)
 	log.Infof("-------------------------------------------------------------------")
 
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	}
 
 	log.Info("Create the connection to DBMS")
 	var err error
