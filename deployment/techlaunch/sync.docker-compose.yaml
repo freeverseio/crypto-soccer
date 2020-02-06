@@ -22,7 +22,8 @@ services:
       -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
       -matcheventsContractAddress "${MATCHEVENTS_CONTRACT_ADDRESS}"
       -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
-  sync.ethnode: 
+  
+ sync.ethnode: 
     image: freeverseio/ethereum:devcontracts
     networks:
       scnetwork:
@@ -30,6 +31,21 @@ services:
     command: --mine --nodiscover 
     volumes:
       - ethereum-data:/test
+
+ sync.promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./xdaipfs-config/promtail/config.yaml:/etc/promtail/config.yaml
+      - /tmp/xdailogs:/log/xdai
+    command: -client.url=${LOKI_PUSH_URL} -config.file=/etc/promtail/config.yaml
+    dns: 1.1.1.1
+    networks:
+      scnetwork:
+        ipv4_address: 10.0.2.3
+    depends_on:
+      - xdai.telemetry
+
+ 
 
 networks:
   scnetwork:

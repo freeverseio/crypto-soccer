@@ -3,6 +3,7 @@ module github.com/freeverseio/crypto-soccer/go
 go 1.12
 
 require (
+	github.com/afiskon/promtail-client v0.0.0-20190305142237-506f3f921e9c
 	github.com/dgraph-io/ristretto v0.0.1
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/ethereum/go-ethereum v1.9.9

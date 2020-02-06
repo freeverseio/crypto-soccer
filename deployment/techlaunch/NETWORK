@@ -26,6 +26,7 @@ backend  10.0.2.0/24
 - 10.0.2.7 -> sync.service
 - 10.0.2.8 -> sync.ethnode
   port 8545
+- 10.0.2.9 -> sync.promtail
 
 monitor  10.0.10.0/24
 - 10.0.10.1 -> prometheus

@@ -16,15 +16,15 @@ import (
 
 	"github.com/didip/tollbooth"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/freeverseio/crypto-soccer/go/authproxy"
 	gocache "github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/acme/autocert"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"github.com/freeverseio/crypto-soccer/go/authproxy"
+	"github.com/freeverseio/crypto-soccer/go/infrastructure"
 )
 
 var (
@@ -52,14 +52,16 @@ var (
 
 const (
 	godtoken = "joshua"
+	gqlserviceretry = 5
 )
 
-var timeout *int
-var gqlurl *string
-var debug *bool
-var backdoor *bool
-var cache *gocache.Cache
-var gracetime *int
+var (
+	timeout *int
+	gqlurl *string
+	backdoor *bool
+	cache *gocache.Cache
+	gracetime *int
+)
 
 var opid uint64
 
@@ -180,7 +182,7 @@ func gqlproxy(w http.ResponseWriter, r *http.Request) {
 
 	// send the request to the gql
 	var request io.Reader
-	if *debug {
+	if log.IsLevelEnabled(log.DebugLevel) {
 		op = atomic.AddUint64(&opid, 1)
 		requestBytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -214,7 +216,7 @@ func gqlproxy(w http.ResponseWriter, r *http.Request) {
 
 	// read the response from the gql
 	var response io.Reader
-	if *debug {
+	if log.IsLevelEnabled(log.DebugLevel) {
 		responseBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			fail(err)
@@ -243,13 +245,6 @@ func assert(err error) {
 }
 
 func startProxyServer(serviceurl *string, ratelimit *int) {
-
-	// check gql server
-	_, err := checkPermissions(context.Background(), common.HexToAddress("0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"))
-	if err != nil {
-		log.Warnf("Caution, cannot access to gql service at %s: %w", gqlurl, err)
-	}
-
 	// parse service url
 	serviceURL, err := url.Parse(*serviceurl)
 	if err != nil {
@@ -300,44 +295,52 @@ func startProxyServer(serviceurl *string, ratelimit *int) {
 	}
 }
 
-func startMetricsServer() {
-	log.Info("Starting metrics server at :9900/metrics")
-	metricsserver := http.NewServeMux()
-	metricsserver.Handle("/metrics", promhttp.Handler())
-
-	server := &http.Server{
-		Handler: metricsserver,
-		Addr:    ":9900",
+func waitGsqlReady(maxSeconds int) error {
+	err := fmt.Errorf("")
+	limit := time.Now().Add(time.Duration(maxSeconds)*time.Second)
+        for err != nil && time.Now().Before(limit) {
+	_, err = checkPermissions(context.Background(), common.HexToAddress("0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"))
+        if err != nil {
+		log.Infof("Caution, cannot access to gql service at %s: %s, waiting %v seconds...", *gqlurl, err.Error(), gqlserviceretry)
+		time.Sleep(gqlserviceretry*time.Second)
 	}
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal("cannot start metrics server", err)
 	}
+	return err
 }
 
-func main() {
 
+func main() {
 	gqlurl = flag.String("gqlurl", "http://dev1.gorengine.com:4000/graphql", "graphql url")
 	serviceurl := flag.String("serviceurl", "http://localhost:5000/graphql", "service url, http or https for autocert")
-	debug = flag.Bool("debug", false, "debug")
 	timeout = flag.Int("timeout", 5, "max timeout")
 	ratelimit := flag.Int("ratelimit", 1000000, "max requests per second")
 	backdoor = flag.Bool("backdoor", false, " allow god mode for token 'hi!'")
 	gracetime = flag.Int("gracetime", 3600, " grace time for tickets in seconds")
+	lokiPushURL := flag.String("loki.pushurl", "http://loki:3100/loki/api/v1/push"," loki url to push logs")
+	lokiJobName := flag.String("loki.jobname", "undefined", "name of the loki job")
+
+	maxchecktime := flag.Int("maxchecktime", 60, " max time waiting gql service is ok")
 	flag.Parse()
 
 	log.Info("-timeout=", *timeout)
 	log.Info("-gqlurl=", *gqlurl)
 	log.Info("-serviceurl=", *serviceurl)
-	log.Info("-debug=", *debug)
 	log.Info("-ratelimit=", *ratelimit)
 	log.Info("-backdoor=", *backdoor, " (Bearer ", godtoken, ")")
 	log.Info("-gracetime=", *gracetime)
+	log.Info("-maxchecktime=", *maxchecktime)
+	log.Info("-loki.pushurl=", *lokiPushURL)
+	log.Info("-loki.jobname=", *lokiJobName)
 
-	if *debug {
-		log.SetLevel(log.DebugLevel)
+	infrastructure.MustRegisterPromtail(*lokiPushURL,*lokiJobName)
+
+	if err := waitGsqlReady(*maxchecktime) ; err!= nil {
+		log.Fatal(err)
 	}
+	log.Info("Success checked connection to gsql")
 
-	go startMetricsServer()
+	go infrastructure.MustStartMetrics()
+	// check gql server
 	startProxyServer(serviceurl, ratelimit)
 }
 

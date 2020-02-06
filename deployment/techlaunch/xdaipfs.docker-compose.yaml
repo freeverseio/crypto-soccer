@@ -40,7 +40,7 @@ services:
       scnetwork:
         ipv4_address: 10.0.2.3
     depends_on:
-      - xdai.telemetry
+      - xdai.node
 
   ipfs.node:
     image: ipfs/go-ipfs:master
