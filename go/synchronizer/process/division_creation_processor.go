@@ -151,7 +151,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, relaytx
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(tx, opts, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
-				} else if err := b.createInitialTactics(relaytx, teamId); err != nil {
+				} else if err := b.createInitialTactics(relaytx, timezone, teamId); err != nil {
 					return err
 				} else if err := b.createInitialTraining(relaytx, teamId); err != nil {
 					return err
@@ -230,8 +230,8 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 	return nil
 }
 
-func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, teamID *big.Int) error {
-	tactics := relay.DefaultTactic(teamID.String())
+func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, timezone uint8, teamID *big.Int) error {
+	tactics := relay.DefaultTactic(teamID.String(), int(timezone))
 	return tactics.Insert(tx)
 }
 

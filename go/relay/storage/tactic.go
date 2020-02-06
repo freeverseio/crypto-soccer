@@ -9,6 +9,7 @@ import (
 
 type Tactic struct {
 	Verse         uint64 `json:"verse"`
+	Timezone      int    `json:"timezone"`
 	TeamID        string `json:"team_id"`         // team_id
 	TacticID      int    `json:"tactic_id"`       // tactic_id
 	Shirt0        int    `json:"shirt_0"`         // shirt_0
@@ -37,15 +38,92 @@ type Tactic struct {
 	ExtraAttack10 bool   `json:"extra_attack_10"` // extra_attack_1
 }
 
-func DefaultTactic(teamID string) *Tactic {
+func DefaultTactic(teamID string, timezone int) *Tactic {
 	tacticId := 1
-	return &Tactic{UpcomingVerse, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
+	return &Tactic{UpcomingVerse, timezone, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
 }
 
 func (b *Tactic) Delete(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Delete tactic %v", b)
 	_, err := tx.Exec(`DELETE FROM tactics WHERE (verse=$1) AND (team_id=$2);`, b.Verse, b.TeamID)
 	return err
+}
+
+func TacticsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Tactic, error) {
+	var tactics []Tactic
+	rows, err := tx.Query(
+		`SELECT
+				verse,
+				timezone,
+				team_id,
+				tactic_id,
+                shirt_0,
+                shirt_1,
+                shirt_2,
+                shirt_3,
+                shirt_4,
+                shirt_5,
+                shirt_6,
+                shirt_7,
+                shirt_8,
+                shirt_9,
+                shirt_10,
+                shirt_11,
+                shirt_12,
+                shirt_13,
+                extra_attack_1,
+                extra_attack_2,
+                extra_attack_3,
+                extra_attack_4,
+                extra_attack_5,
+                extra_attack_6,
+                extra_attack_7,
+                extra_attack_8,
+                extra_attack_9,
+                extra_attack_10
+		FROM tactics WHERE (verse = $1 AND timezone = $2);`, verse, timezone)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var t Tactic
+		err = rows.Scan(
+			&t.Verse,
+			&t.Timezone,
+			&t.TeamID,
+			&t.TacticID,
+			&t.Shirt0,
+			&t.Shirt1,
+			&t.Shirt2,
+			&t.Shirt3,
+			&t.Shirt4,
+			&t.Shirt5,
+			&t.Shirt6,
+			&t.Shirt7,
+			&t.Shirt8,
+			&t.Shirt9,
+			&t.Shirt10,
+			&t.Shirt11,
+			&t.Shirt12,
+			&t.Shirt13,
+			&t.ExtraAttack1,
+			&t.ExtraAttack2,
+			&t.ExtraAttack3,
+			&t.ExtraAttack4,
+			&t.ExtraAttack5,
+			&t.ExtraAttack6,
+			&t.ExtraAttack7,
+			&t.ExtraAttack8,
+			&t.ExtraAttack9,
+			&t.ExtraAttack10,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tactics = append(tactics, t)
+	}
+	return tactics, nil
 }
 
 func TacticsByVerse(tx *sql.Tx, verse uint64) ([]Tactic, error) {
@@ -247,6 +325,7 @@ func (b *Tactic) Insert(tx *sql.Tx) error {
 	_, err := tx.Exec(
 		`INSERT INTO tactics (
 						verse,
+						timezone,
 						team_id,
 						tactic_id,
                         shirt_0,
@@ -300,9 +379,11 @@ func (b *Tactic) Insert(tx *sql.Tx) error {
                         $24,
                         $25,
 						$26,
-						$27
+						$27,
+						$28
 		);`,
 		b.Verse,
+		b.Timezone,
 		b.TeamID,
 		b.TacticID,
 		b.Shirt0,
@@ -338,6 +419,7 @@ func TacticByTeamID(tx *sql.Tx, teamID string) (*Tactic, error) {
 	rows, err := tx.Query(
 		`SELECT
 				verse,
+				timezone,
 				team_id,
 				tactic_id,
                 shirt_0,
@@ -376,6 +458,7 @@ func TacticByTeamID(tx *sql.Tx, teamID string) (*Tactic, error) {
 	var t Tactic
 	err = rows.Scan(
 		&t.Verse,
+		&t.Timezone,
 		&t.TeamID,
 		&t.TacticID,
 		&t.Shirt0,

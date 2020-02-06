@@ -92,7 +92,6 @@ func TestLeagueProcessMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
 		namesdb,
