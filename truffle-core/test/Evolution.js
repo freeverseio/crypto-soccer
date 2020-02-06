@@ -331,7 +331,7 @@ contract('Evolution', (accounts) => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
-            gen = 3,
+            gen = 45,
             playerId = 2132321,
             [potential = 2, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalf = true,
@@ -350,11 +350,37 @@ contract('Evolution', (accounts) => {
 
         // checks that the generation increases by 1. 
         // It sets a "32" at the beginning if it is a Academy player, otherwise it is a child
-        // In this case, the randomness leads to a Academy player
+        // In this case, the randomness leads to an Academy player
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen + 1)
 
-        expected = [ 748, 1031, 983, 742, 1496 ];
+        playerSkills = await engine.encodePlayerSkills(
+            skills = [100, 100, 100, 100, 100], 
+            dayOfBirth = 30*365, // 30 years after unix time 
+            gen = 45,
+            playerId = 3,
+            [potential = 2, forwardness, leftishness, aggr = 0],
+            alignedEndOfLastHalf = true,
+            redCardLastGame = false,
+            gamesNonStopping = 0,
+            injuryWeeksLeft = 0,
+            subLastHalf,
+            sumSkills = 5
+        ).should.be.fulfilled;
+        age = 40;
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        
+        TPs = 20;
+        TPperSkill = Array.from(new Array(5), (x,i) => TPs/5 - 3*i % 5);
+        newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
+
+        // checks that the generation increases by 1. 
+        // It sets a "32" at the beginning if it is a Academy player, otherwise it is a child
+        // In this case, the randomness leads to a son
+        result = await assets.getGeneration(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(gen - 32 + 1)
+        
+        expected = [ 531, 1506, 912, 551, 1500 ];
         results = []
         result = await engine.getShoot(newSkills).should.be.fulfilled;
         results.push(result)
