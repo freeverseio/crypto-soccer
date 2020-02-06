@@ -77,13 +77,15 @@ func main() {
 			tx, err := db.Begin()
 			if err != nil {
 				log.Error(err)
+				break
 			}
 			err = processor.Process(tx)
 			if err != nil {
 				tx.Rollback()
 				log.Error(err)
+				break
 			}
-			tx.Commit()
+			tx.Commit() // TODO handle error
 			time.Sleep(delayDuration)
 		}
 		log.Warning("Waiting 2 secs and retry ...")
