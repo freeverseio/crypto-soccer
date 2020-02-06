@@ -15,7 +15,7 @@ var bc *testutils.BlockchainNode
 
 func TestMain(m *testing.M) {
 	var err error
-	universedb, err = storage.New("postgres://freeverse:freeverse@localhost:15432/cryptosoccer?sslmode=disable")
+	universedb, err = storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
