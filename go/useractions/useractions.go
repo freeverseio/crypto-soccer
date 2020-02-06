@@ -79,6 +79,15 @@ func NewFromStorage(tx *sql.Tx, verse uint64, timezone int) (*UserActions, error
 	return &ua, nil
 }
 
+func (b *UserActions) UpdateVerse(verse uint64) {
+	for i := range b.Trainings {
+		b.Trainings[i].Verse = verse
+	}
+	for i := range b.Tactics {
+		b.Tactics[i].Verse = verse
+	}
+}
+
 func (b *UserActions) Hash() ([]byte, error) {
 	h := sha256.New()
 	buf, err := b.Marshal()

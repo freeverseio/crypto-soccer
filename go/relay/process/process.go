@@ -45,40 +45,21 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("Staring process of verse %v", currentVerse)
-	upcomingTrainings, err := storage.UpcomingTrainings(tx)
+	nextToUpdate, err := p.updatesContract.NextTimeZoneToUpdate(&bind.CallOpts{})
 	if err != nil {
 		return err
 	}
-	upcomingTactics, err := storage.UpcomingTactics(tx)
+	log.Infof("Staring process of verse %v, timezone %v", currentVerse, nextToUpdate.TimeZone)
+	upcomingUserActions, err := useractions.NewFromStorage(tx, storage.UpcomingVerse, int(nextToUpdate.TimeZone))
 	if err != nil {
 		return err
 	}
-	log.Infof("Processing %v upcoming trainings", len(upcomingTrainings))
-	for i := range upcomingTrainings {
-		upcomingTrainings[i].Delete(tx)
-		upcomingTrainings[i].Verse = currentVerse.Uint64()
-		if err = upcomingTrainings[i].Insert(tx); err != nil {
-			return err
-		}
-	}
-	log.Infof("Processing %v upcoming tactics", len(upcomingTactics))
-	for i := range upcomingTactics {
-		upcomingTactics[i].Delete(tx)
-		upcomingTactics[i].Verse = currentVerse.Uint64()
-		if err = upcomingTactics[i].Insert(tx); err != nil {
-			return err
-		}
-	}
-
-	actions := useractions.UserActions{}
-	actions.Trainings = upcomingTrainings
-	actions.Tactics = upcomingTactics
-	hash, err := actions.Hash()
+	upcomingUserActions.UpdateVerse(currentVerse.Uint64())
+	hash, err := upcomingUserActions.Hash()
 	if err != nil {
 		return err
 	}
-	cid, err := actions.PushToIpfs(p.ipfsURL)
+	cid, err := upcomingUserActions.ToIpfs(p.ipfsURL)
 	if err != nil {
 		return err
 	}
