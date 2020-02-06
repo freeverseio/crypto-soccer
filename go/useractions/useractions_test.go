@@ -12,6 +12,7 @@ import (
 )
 
 func TestMarshal(t *testing.T) {
+	t.Parallel()
 	var ua useractions.UserActions
 	data, err := ua.Marshal()
 	assert.NilError(t, err)
@@ -26,6 +27,7 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
+	t.Parallel()
 	var ua useractions.UserActions
 	err := ua.Unmarshal([]byte(`{"tactics":[],"trainings":[]}`))
 	if err != nil {
@@ -40,6 +42,7 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestIpfsPushAndPull(t *testing.T) {
+	t.Parallel()
 	var ua useractions.UserActions
 	tactic := storage.Tactic{}
 	tactic.TeamID = "ciao"
