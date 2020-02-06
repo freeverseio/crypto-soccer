@@ -122,8 +122,6 @@ jobs:
       - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
-      - run: cd relay.api && docker build -t freeverseio/relay.api:dev .
-      - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run: cd dashboard && docker build -t freeverseio/dashboard:dev .
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
@@ -137,8 +135,6 @@ jobs:
       - run: docker push freeverseio/market.db:dev
       - run: docker push freeverseio/market.trader:dev
       - run: docker push freeverseio/market.notary:dev
-      - run: docker push freeverseio/relay.api:dev
-      - run: docker push freeverseio/relay.db:dev
       - run: docker push freeverseio/universe.api:dev
       - run: docker push freeverseio/relay.actions:dev
       - run: docker push freeverseio/dashboard:dev
