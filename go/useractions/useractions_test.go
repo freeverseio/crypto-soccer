@@ -66,4 +66,10 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
+	verse := uint64(0)
+	timezone := 4
+	ua, err := useractions.NewFromStorage(tx, verse, timezone)
+	assert.NilError(t, err)
+	assert.Equal(t, len(ua.Tactics), 0)
+	assert.Equal(t, len(ua.Trainings), 0)
 }
