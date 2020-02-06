@@ -73,7 +73,6 @@ jobs:
       # - run: cd relay.db && PGPASSWORD=freeverse psql -U freeverse -d relay -h localhost -p 5432 -f *.sql
       - run: make setup contracts
       - run: cd go/contracts && go test ./...
-      - run: cd go/useractions && go test ./...
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -113,6 +112,7 @@ jobs:
       - run: make setup contracts
       - run: cd go/cmd/relay && go build ./relay.go
       - run: cd go/relay && go test ./...
+      - run: cd go/useractions && go test ./...
   market-trader:
     executor: freeverse
     steps:
