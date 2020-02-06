@@ -39,6 +39,34 @@ func (b *UserActions) Equal(actions *UserActions) bool {
 	return true
 }
 
+func NewFromIpfs(url string, cid string) (*UserActions, error) {
+	var ua UserActions
+	sh := shell.NewShell(url)
+	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Close()
+
+	if resp.Error != nil {
+		return nil, resp.Error
+	}
+
+	tr := tar.NewReader(resp.Output)
+	_, err = tr.Next()
+	if err != nil {
+		return nil, err
+	}
+	buf, err := ioutil.ReadAll(tr)
+	if err != nil {
+		return nil, err
+	}
+	if err = ua.Unmarshal(buf); err != nil {
+		return nil, err
+	}
+	return &ua, nil
+}
+
 func NewFromStorage(tx *sql.Tx, verse uint64, timezone int) (*UserActions, error) {
 	var err error
 	var ua UserActions
@@ -75,35 +103,11 @@ func (b *UserActions) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, &b)
 }
 
-func (b *UserActions) PushToIpfs(url string) (string, error) {
+func (b *UserActions) ToIpfs(url string) (string, error) {
 	sh := shell.NewShell(url)
 	buf, err := b.Marshal()
 	if err != nil {
 		return "", err
 	}
 	return sh.Add(bytes.NewReader(buf), shell.Pin(true))
-}
-
-func (b *UserActions) PullFromIpfs(url string, cid string) error {
-	sh := shell.NewShell(url)
-	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
-	if err != nil {
-		return err
-	}
-	defer resp.Close()
-
-	if resp.Error != nil {
-		return resp.Error
-	}
-
-	tr := tar.NewReader(resp.Output)
-	_, err = tr.Next()
-	if err != nil {
-		return err
-	}
-	buf, err := ioutil.ReadAll(tr)
-	if err != nil {
-		return err
-	}
-	return b.Unmarshal(buf)
 }
