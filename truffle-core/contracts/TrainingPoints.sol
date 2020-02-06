@@ -67,8 +67,6 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
                 +   ((getYellowCard(thisLog, 1, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0);
         }
         
-        // require(pointsNeg[0] == 10, "....");
-        
         // subtract points, keeping them always non-negativre
         points[0] = (points[0] > pointsNeg[0]) ? (points[0] - pointsNeg[0]) : 0;
         points[1] = (points[1] > pointsNeg[1]) ? (points[1] - pointsNeg[1]) : 0;

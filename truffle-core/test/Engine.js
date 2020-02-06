@@ -669,8 +669,15 @@ contract('Engine', (accounts) => {
         for (p = 0; p < 3; p++) teamStateAll50Half2[p] = messi; 
         result = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442NoChanges, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         // create a 2nd half using 4 players that already played in the 1st half... should fail
-        teamStateAll50Half2[5] = messi; 
-        result = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442NoChanges, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
+        half2states = [...teamStateAll50Half2]    
+        half2states[5] = messi; 
+        result = await engine.playHalfMatch(seed, now, [half2states, teamStateAll1Half2], [tactics442NoChanges, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
+        // try to lie by including it in a new lineup
+        lineUp1change = [...lineupConsecutive];
+        lineUp1change[6] = 16;
+        tactics4421change = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineUp1change, noSubstitutions), 
+            extraAttackNull, tacticId442).should.be.fulfilled;
+        result = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics4421change, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
     });
 
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected, by lying in the substitutions', async () => {

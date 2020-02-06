@@ -373,7 +373,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
             penalty = penaltyForAttackers(forwardness);
             penalty += penaltyForRights(leftishness);
         }
-        uint256 gamesNonStop = getGamesNonStopping(playerSkills);
+        uint8 gamesNonStop = getGamesNonStopping(playerSkills);
         if (gamesNonStop > 5) {
             return 5000 - penalty;
         } else {
@@ -508,13 +508,12 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
             linedUpSkills[p] = verifyCanPlay(lineup[p], skills[lineup[p]], is2ndHalf, false);
             if (linedUpSkills[p] != 0) {
                 if (is2ndHalf && !getAlignedEndOfFirstHalf(linedUpSkills[p])) {
-                    matchLog = addHalfTimeSubs(matchLog, p+1, changes); // for halftime subs, 0 = NO_SUBS
+                    matchLog = addHalfTimeSubs(matchLog, lineup[p]+1, changes); // for halftime subs, 0 = NO_SUBS
                     changes++;
                     teamSkills += getSumOfSkills(linedUpSkills[p]); 
                 } else if (!is2ndHalf) teamSkills += getSumOfSkills(linedUpSkills[p]); 
             }
         }
-
         // Count changes ingame during 1st half
         // matchLog >> 189, 190, 191 contain ingameSubsCancelled
         if (is2ndHalf) {

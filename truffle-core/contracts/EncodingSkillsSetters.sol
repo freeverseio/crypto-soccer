@@ -79,4 +79,9 @@ contract EncodingSkillsSetters {
     function setGeneration(uint256 encodedSkills, uint32 val) public pure returns (uint256) {
         return (encodedSkills & ~(uint256(255) << 223)) | (uint256(val) << 223);
     }
+
+    function setGamesNonStopping(uint256 encodedSkills, uint8 val) public pure returns (uint256) {
+        require(val < 8, "gamesNonStopping out of bound");
+        return (encodedSkills & ~(uint256(7) << 154)) | (uint256(val) << 154);
+    }
 }

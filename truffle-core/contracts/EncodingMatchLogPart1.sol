@@ -59,9 +59,9 @@ contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
         return ((log >> (153 + posInHaf)) & 1) == 1;
     }
     
-    // recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+    // recall that 0 means no subs, and we store here lineUp[p]+1 (where lineUp[p] = player shirt in the 25 that was substituted)
     function addHalfTimeSubs(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(player) << (185 + 4 * pos));
+        return log | (uint256(player) << (185 + 5 * pos));
     }
 
     function setInGameSubsHappened(uint256 log, uint8 happenedType, uint8 posInHalf, bool is2ndHalf) public pure returns (uint256) {
@@ -70,11 +70,11 @@ contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
     }
 
     function addWinner(uint256 log, uint8 winner)  public pure returns (uint256) {
-        return log | (uint256(winner) << 209);
+        return log | (uint256(winner) << 212);
     }
 
     function addTeamSumSkills(uint256 log, uint256 extraSumSkills)  public pure returns (uint256) {
-        return log | (uint256(extraSumSkills) << 211);
+        return log | (uint256(extraSumSkills) << 214);
     }
 
 }

@@ -38,6 +38,7 @@ contract EncodingSkills {
     /**
      * @dev Tactics serializes a total of 110 bits = 3 * 4 + 3 * 4 + 14*5 + 10 + 6:
      *      substitutions[3]    = 4 bit each = [3 different nums from 0 to 10], with 11 = no subs
+     *      subsRounds[3]       = 4 bit each = [3 different nums from 0 to 11], round at which subs are to happen
      *      lineup[14]          = 5 bit each = [playerIdxInTeam1, ..., ]
      *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
@@ -226,8 +227,8 @@ contract EncodingSkills {
         return (encodedSkills >> 153 & 1) == 1;
     }
 
-    function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 154 & 7);
+    function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint8) {
+        return uint8(encodedSkills >> 154 & 7);
     }
 
     function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint8) {
