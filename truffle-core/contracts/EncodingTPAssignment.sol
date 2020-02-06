@@ -2,15 +2,20 @@ pragma solidity >=0.5.12 <0.6.2;
 
 contract EncodingTPAssignment {
 
-    uint16 public constant MAX_PERCENT = 80; 
-    uint16 public constant MIN_PERCENT = 5; 
+    uint16 public constant MAX_PERCENT = 60; 
     uint8 private constant PLAYERS_PER_TEAM_MAX  = 25;
     uint8 private constant NO_PLAYER = PLAYERS_PER_TEAM_MAX; // No player chosen
+
     // We have 5 buckets: GK, D, M, A, Special
-    // We need 5 TPperSkill per bucket
-    //      that sum(TPperSkill) < TP
-    // 9 bit per TP  => max val = 511
-    // 9 bit per each of the TPperSkill
+    // We need 5 TPperSkill per bucket 
+    //      - 9 bit per each of the TPperSkill
+    //      - such that sum(TPperSkill) < TP (except for special player)
+    // assignedTP encodes a total: 5 buckets * 5 TPperSKill * 9b + 1 totalTP * 9b + 5 for specialPlId = 239
+    // offsets:
+    //      - TPperSkill: 0 --> 224
+    //      - TP: 225 --> 233
+    //      - specIf --> 234 -> 238
+    // 9 bit for TP  => max val = 511
     // 5 bit for specialPlayer
     
     function encodeTP(uint16 TP, uint16[25] memory TPperSkill, uint8 specialPlayer) public pure returns (uint256 encoded) {
@@ -19,19 +24,17 @@ contract EncodingTPAssignment {
         encoded |= uint256(TP) << 225;
         encoded |= uint256(specialPlayer) << 234;
 
-        uint16 minRHS = MIN_PERCENT * TP;
         uint16 maxRHS = MAX_PERCENT * TP;
         uint8 lastBucket = (specialPlayer == NO_PLAYER ? 4 : 5);
         for (uint8 bucket = 0; bucket < lastBucket; bucket++) {
             if (bucket == 4) {
                 TP = uint16((uint256(TP) * 11000)/10000);
-                minRHS = MIN_PERCENT * TP;
                 maxRHS = MAX_PERCENT * TP;
             }
             uint256 sum = 0;
             for (uint8 sk = 5 * bucket; sk < 5 * (bucket+1); sk++) {
                 uint16 skill = TPperSkill[sk];
-                require((100*skill >= minRHS) && (100*skill <= maxRHS), "one of the assigned TPs is too large or too small");
+                require(100*skill <= maxRHS, "one of the assigned TPs is too large");
                 sum += skill;
                 encoded |= uint256(skill) << 9 * sk;
             }
@@ -44,18 +47,16 @@ contract EncodingTPAssignment {
         uint16 TPtemp = TP;
         specialPlayer = uint8((encoded >> 234) & 31);
         require(specialPlayer <= PLAYERS_PER_TEAM_MAX, "specialPlayer value too large");
-        uint16 minRHS = MIN_PERCENT * TPtemp;
         uint16 maxRHS = MAX_PERCENT * TPtemp;
         for (uint8 bucket = 0; bucket < 5; bucket++) {
             if (bucket == 4) {
                 TPtemp = uint16((uint256(TPtemp) * 11000)/10000);
-                minRHS = MIN_PERCENT * TPtemp;
                 maxRHS = MAX_PERCENT * TPtemp;
             }
             uint256 sum = 0;
             for (uint8 sk = 5 * bucket; sk < 5* (bucket+1); sk++) {
                 uint16 skill = uint16((encoded >> 9 * sk) & 511);
-                require((100*skill >= minRHS) && (100*skill <= maxRHS), "one of the assigned TPs is too large or too small");
+                require(100*skill <= maxRHS, "one of the assigned TPs is too large or too small");
                 TPperSkill[sk] = skill;
                 sum += skill;
             }
