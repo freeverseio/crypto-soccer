@@ -59,7 +59,7 @@ func TestIpfsPushAndPull(t *testing.T) {
 	assert.Assert(t, ua2.Equal(&ua))
 }
 
-func TestUserActionsPullFromStorage(t *testing.T) {
+func TestUserActionsPullFromStorageNoUserActions(t *testing.T) {
 	t.Parallel()
 	tx, err := db.Begin()
 	if err != nil {
@@ -72,4 +72,50 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, len(ua.Tactics), 0)
 	assert.Equal(t, len(ua.Trainings), 0)
+}
+
+func TestUserActionsPullFromStorage(t *testing.T) {
+	t.Parallel()
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	verse := uint64(6)
+	timezone := 4
+	training := storage.Training{}
+	training.Verse = verse
+	training.Timezone = timezone
+	assert.NilError(t, training.Insert(tx))
+	tactic := storage.Tactic{}
+	tactic.Verse = verse
+	tactic.Timezone = timezone
+	assert.NilError(t, tactic.Insert(tx))
+	ua, err := useractions.NewFromStorage(tx, verse, timezone)
+	assert.NilError(t, err)
+	assert.Equal(t, len(ua.Tactics), 1)
+	assert.Equal(t, len(ua.Trainings), 1)
+
+	training.Verse = verse - 1
+	assert.NilError(t, training.Insert(tx))
+	tactic.Verse = verse + 1
+	assert.NilError(t, tactic.Insert(tx))
+	ua, err = useractions.NewFromStorage(tx, verse, timezone)
+	assert.NilError(t, err)
+	assert.Equal(t, len(ua.Tactics), 1)
+	assert.Equal(t, len(ua.Trainings), 1)
+
+	training.Verse = verse
+	training.Timezone = timezone + 1
+	training.TeamID = "43"
+	assert.NilError(t, training.Insert(tx))
+	tactic.Verse = verse
+	tactic.Timezone = timezone + 1
+	tactic.TeamID = "43"
+	assert.NilError(t, tactic.Insert(tx))
+	ua, err = useractions.NewFromStorage(tx, verse, timezone)
+	assert.NilError(t, err)
+	assert.Equal(t, len(ua.Tactics), 1)
+	assert.Equal(t, len(ua.Trainings), 1)
+
 }
