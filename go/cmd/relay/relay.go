@@ -33,55 +33,60 @@ func main() {
 	}
 
 	log.Info("Starting ...")
-	log.Info("Dial the Ethereum client: ", *ethereumClient)
-	client, err := ethclient.Dial(*ethereumClient)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating Updates bindings to: ", *updatesContractAddress)
-	updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Infof("ipfs URL: %v", *ipfsURL)
-
-	log.Info("Connecting to DBMS: ", *postgresURL)
-	db, err := storage.New(*postgresURL)
-	if err != nil {
-		log.Fatalf("Failed to connect to DBMS: %v", err)
-	}
-
-	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
-	if err != nil {
-		log.Fatal("Unable to obtain privateLey")
-	}
-	delayDuration, err := time.ParseDuration(*delay)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Infof("Delay of %v seconds", delayDuration.Seconds())
-
-	processor, err := relay.NewProcessor(client, privateKey, db, updatesContract, *ipfsURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Info("All is ready ... 5 seconds to start ...")
-	time.Sleep(5 * time.Second)
 
 	for {
-		tx, err := db.Begin()
+		log.Info("Dial the Ethereum client: ", *ethereumClient)
+		client, err := ethclient.Dial(*ethereumClient)
+		if err != nil {
+			log.Errorf("Failed to connect to the Ethereum client: %v", err)
+		}
+
+		log.Info("Creating Updates bindings to: ", *updatesContractAddress)
+		updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
+		if err != nil {
+			log.Errorf("Failed to connect to the Ethereum client: %v", err)
+		}
+
+		log.Infof("ipfs URL: %v", *ipfsURL)
+
+		log.Info("Connecting to DBMS: ", *postgresURL)
+		db, err := storage.New(*postgresURL)
+		if err != nil {
+			log.Errorf("Failed to connect to DBMS: %v", err)
+		}
+
+		privateKey, err := crypto.HexToECDSA(*privateKeyHex)
+		if err != nil {
+			log.Error("Unable to obtain privateLey")
+		}
+		delayDuration, err := time.ParseDuration(*delay)
 		if err != nil {
 			log.Error(err)
 		}
-		err = processor.Process(tx)
+		log.Infof("Delay of %v seconds", delayDuration.Seconds())
+
+		processor, err := relay.NewProcessor(client, privateKey, db, updatesContract, *ipfsURL)
 		if err != nil {
-			tx.Rollback()
 			log.Error(err)
 		}
-		tx.Commit()
-		time.Sleep(delayDuration)
+
+		log.Info("All is ready ... 5 seconds to start ...")
+		time.Sleep(5 * time.Second)
+
+		for {
+			tx, err := db.Begin()
+			if err != nil {
+				log.Error(err)
+			}
+			err = processor.Process(tx)
+			if err != nil {
+				tx.Rollback()
+				log.Error(err)
+			}
+			tx.Commit()
+			time.Sleep(delayDuration)
+		}
+		log.Warning("Waiting 2 secs and retry ...")
+		time.Sleep(2 * time.Second)
 	}
 }
