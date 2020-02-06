@@ -58,3 +58,12 @@ func TestIpfsPushAndPull(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Assert(t, ua2.Equal(&ua))
 }
+
+func TestUserActionsPullFromStorage(t *testing.T) {
+	t.Parallel()
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+}
