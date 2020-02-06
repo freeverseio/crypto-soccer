@@ -3,9 +3,11 @@ package useractions_test
 import (
 	"bytes"
 	"encoding/json"
+	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	sync "github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
@@ -84,14 +86,25 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 	}
 	defer tx.Rollback()
 	verse := uint64(6)
+	tz := sync.Timezone{}
+	assert.NilError(t, tz.Insert(tx))
+	country := sync.Country{}
+	assert.NilError(t, country.Insert(tx))
+	league := sync.League{}
+	assert.NilError(t, league.Insert(tx))
+	team := sync.Team{}
+	team.TeamID = big.NewInt(0)
+	assert.NilError(t, team.Insert(tx))
 	timezone := 4
 	training := storage.Training{}
+	training.TeamID = "0"
 	training.Verse = verse
 	training.Timezone = timezone
 	assert.NilError(t, training.Insert(tx))
 	tactic := storage.Tactic{}
 	tactic.Verse = verse
 	tactic.Timezone = timezone
+	tactic.TeamID = "0"
 	assert.NilError(t, tactic.Insert(tx))
 	ua, err := useractions.NewFromStorage(tx, verse, timezone)
 	assert.NilError(t, err)
@@ -107,6 +120,8 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 	assert.Equal(t, len(ua.Tactics), 1)
 	assert.Equal(t, len(ua.Trainings), 1)
 
+	team.TeamID = big.NewInt(43)
+	assert.NilError(t, team.Insert(tx))
 	training.Verse = verse
 	training.Timezone = timezone + 1
 	training.TeamID = "43"
