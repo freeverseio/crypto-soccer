@@ -10,18 +10,18 @@
 #  hostPath:
 #    path: /data/pv1/
 #---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: ethereum-pvc
-spec:
-  storageClassName: ebs-sc
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
----
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: ethereum-pvc
+#spec:
+#  storageClassName: ebs-sc
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 5Gi
+#---
 apiVersion: v1
 kind: Service
 metadata:
@@ -74,7 +74,7 @@ spec:
         #  mountPath: /test/data
       imagePullSecrets:
       - name: docker-secret
-      volumes:
-      - name: ethereum-storage
-        persistentVolumeClaim:
-          claimName: ethereum-pvc
+      #volumes:
+      #- name: ethereum-storage
+      #  persistentVolumeClaim:
+      #    claimName: ethereum-pvc

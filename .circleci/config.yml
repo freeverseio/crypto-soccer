@@ -179,7 +179,11 @@ jobs:
       - run: scp -o StrictHostKeyChecking=no ./deployment/development/.env $DROPLET_USER@$DROPLET_IP:./
       - run: scp -o StrictHostKeyChecking=no ./deployment/development/deploy.sh $DROPLET_USER@$DROPLET_IP:./
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
-
+  deployk8s:
+    docker:
+      - image: freeverseio/circleci
+    steps:
+      - run: echo "Hello World!"
 workflows:
   version: 2
   build_and_test:
@@ -244,3 +248,16 @@ workflows:
           requires:
             - dockerization-development
             - truffle_core
+      - deployk8s:
+          filters:
+           branches:
+              only:
+                - k8s
+          requires:
+            - synchronizer
+            - market-trader
+            - relay-actions
+            - market-notary
+            - go1
+            - truffle_core
+
