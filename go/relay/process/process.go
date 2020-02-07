@@ -69,10 +69,8 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	var root [32]byte
-	copy(root[:], hash)
-	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
-	transaction, err := p.updatesContract.SubmitActionsRoot(p.auth, root, cid)
+	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(hash[:]), cid)
+	transaction, err := p.updatesContract.SubmitActionsRoot(p.auth, hash, cid)
 	if err != nil {
 		return err
 	}
