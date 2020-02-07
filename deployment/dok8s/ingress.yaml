@@ -13,14 +13,6 @@ spec:
       - backend:
           serviceName: hello-kubernetes-first
           servicePort: 80
-      - path: /universe(/|$)(.*)
-        backend:
-          serviceName: universeapi
-          servicePort: 4000
-      - path: /relay(/|$)(.*)
-        backend:
-          serviceName: relayapi
-          servicePort: 4000
       - path: /eth
         backend:
           serviceName: ethereum
@@ -29,3 +21,11 @@ spec:
         backend:
           serviceName: horizon
           servicePort: 4000
+      #- path: /universe(/|$)(.*)
+      #  backend:
+      #    serviceName: universeapi
+      #    servicePort: 4000
+      #- path: /trader(/|$)(.*)
+      #  backend:
+      #    serviceName: trader
+      #    servicePort: 4000
