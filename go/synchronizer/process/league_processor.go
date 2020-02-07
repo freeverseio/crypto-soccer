@@ -47,7 +47,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	timezoneIdx := event.TimeZone
 
 	if timezoneIdx < 1 || timezoneIdx > 24 {
-		fmt.Errorf("Unexistent timezone %v", timezoneIdx)
+		return fmt.Errorf("Unexistent timezone %v", timezoneIdx)
 	}
 	if turnInDay == 2 || turnInDay == 3 {
 		return nil

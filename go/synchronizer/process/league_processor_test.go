@@ -38,9 +38,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	var event updates.UpdatesActionsSubmission
 	event.TimeZone = 25
 	err = processor.Process(tx, event)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Error(t, err, "Unexistent timezone 25")
 }
 
 // func TestMatchesToStorage(t *testing.T) {
@@ -107,8 +105,8 @@ func TestLeagueProcessMatch(t *testing.T) {
 	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
 	ua := useractions.UserActions{}
 	cid, err := ua.ToIpfs(ipfsURL)
-	seed, err := ua.Hash()
 	assert.NilError(t, err)
+	seed, err := ua.Hash()
 	assert.NilError(t, err)
 	err = processor.Process(tx, updates.UpdatesActionsSubmission{
 		big.NewInt(0),
