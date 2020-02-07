@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cryptosoccer-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - host: k8s-5f63bbd4f5b1.busyverse.com
+    http:
+      paths:
+      - backend:
+          serviceName: hello-kubernetes-first
+          servicePort: 80
+      - path: /universe(/|$)(.*)
+        backend:
+          serviceName: universeapi
+          servicePort: 4000
+      - path: /relay(/|$)(.*)
+        backend:
+          serviceName: relayapi
+          servicePort: 4000
+      - path: /eth
+        backend:
+          serviceName: ethereum
+          servicePort: 8545
