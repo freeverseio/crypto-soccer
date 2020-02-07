@@ -63,8 +63,8 @@ spec:
     spec:
       containers:
       - name: ethereum
-        image: freeverseio/ethereum:devcontracts
-        #image: freeverseio/ethereum:dev
+        #image: freeverseio/ethereum:devcontracts
+        image: freeverseio/ethereum:dev
         args: [--mine, --nodiscover]
         imagePullPolicy: Always
         ports:
