@@ -11,9 +11,12 @@ const resolvers = (sql, assets, from) => {
         return true;
       },
       setTactic: async (_, params, context) => {
+        const decodedTeamId = await assets.methods.decodeTZCountryAndVal(params.teamId).call();
+        const timezone = decodedTeamId[0];
         const query = sql.query`INSERT INTO tactics (
 						verse,
-						team_id,
+            team_id,
+            timezone,
 						tactic_id,
                         shirt_0,
                         shirt_1,
@@ -42,6 +45,7 @@ const resolvers = (sql, assets, from) => {
 		            ) VALUES (
                 ${sql.value('9223372036854775807')},
                 ${sql.value(params.teamId)},
+                ${sql.value(timezone)},
                 ${sql.value(params.tacticId)},
                 ${sql.value(params.shirt0)}, 
                 ${sql.value(params.shirt1)}, 
@@ -99,9 +103,12 @@ const resolvers = (sql, assets, from) => {
         return true;// TODO return something with sense
       },
       setTraining: async (_, params, context) => {
+        const decodedTeamId = await assets.methods.decodeTZCountryAndVal(params.teamId).call();
+        const timezone = decodedTeamId[0];
         const query = sql.query`INSERT INTO trainings (
 			verse,
-			team_id,
+      team_id,
+      timezone,
     		special_player_shirt,
 			goalkeepers_defence,
     		goalkeepers_speed,
@@ -131,6 +138,7 @@ const resolvers = (sql, assets, from) => {
 		) VALUES (
                 ${sql.value('9223372036854775807')},
                 ${sql.value(params.teamId)},
+                ${sql.value(timezone)},
                 ${sql.value(params.specialPlayerShirt)},
                 ${sql.value(params.goalkeepersDefence)},
                 ${sql.value(params.goalkeepersSpeed)},
