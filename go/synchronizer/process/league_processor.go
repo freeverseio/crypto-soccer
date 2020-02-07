@@ -1,9 +1,9 @@
 package process
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"sort"
@@ -93,8 +93,8 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if err != nil {
 		return err
 	}
-	if bytes.Compare(ipfsHash, event.Seed[:]) != 0 {
-		return fmt.Errorf("UserActions Seed mismatch bc: %v ipfs: %v", event.Seed, ipfsHash)
+	if ipfsHash != event.Seed {
+		return fmt.Errorf("UserActions Seed mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Seed[:]), hex.EncodeToString(ipfsHash[:]))
 	}
 	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
 	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
