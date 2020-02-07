@@ -94,7 +94,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return err
 	}
 	if ipfsHash != event.Seed {
-		return fmt.Errorf("UserActions Seed mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Seed[:]), hex.EncodeToString(ipfsHash[:]))
+		log.Errorf("UserActions Seed mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Seed[:]), hex.EncodeToString(ipfsHash[:]))
 	}
 	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
 	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)

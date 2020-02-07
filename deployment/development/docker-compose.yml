@@ -27,6 +27,7 @@ services:
     image: freeverseio/synchronizer:$TAG
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
+      -ipfs ipfs.node:5001
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
