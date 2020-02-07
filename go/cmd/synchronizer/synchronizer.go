@@ -133,7 +133,7 @@ func main() {
 		log.Info("All is ready ... 5 seconds to start ...")
 		time.Sleep(5 * time.Second)
 
-		processor, err := process.NewEventProcessor(contracts, namesdb)
+		processor, err := process.NewEventProcessor(contracts, namesdb, *ipfsURL)
 		if err != nil {
 			log.Fatal(err)
 		}

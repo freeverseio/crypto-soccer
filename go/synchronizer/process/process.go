@@ -35,6 +35,7 @@ type EventProcessor struct {
 func NewEventProcessor(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
+	ipfsURL string,
 ) (*EventProcessor, error) {
 	assetsInitProcessor, err := NewAssetsInitProcessor(
 		contracts,
@@ -52,6 +53,7 @@ func NewEventProcessor(
 	leagueProcessor, err := NewLeagueProcessor(
 		contracts,
 		namesdb,
+		ipfsURL,
 	)
 	if err != nil {
 		return nil, err

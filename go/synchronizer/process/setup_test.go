@@ -13,6 +13,8 @@ import (
 var universedb *sql.DB
 var bc *testutils.BlockchainNode
 
+const ipfsURL = "localhost:5001"
+
 func TestMain(m *testing.M) {
 	var err error
 	universedb, err = storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")

@@ -12,6 +12,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
+	"github.com/freeverseio/crypto-soccer/go/useractions"
+	"gotest.tools/assert"
 )
 
 func TestSyncTeams(t *testing.T) {
@@ -35,6 +37,7 @@ func TestSyncTeams(t *testing.T) {
 	p, err := process.NewEventProcessor(
 		bc.Contracts,
 		namesdb,
+		ipfsURL,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -91,13 +94,17 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	ua := useractions.UserActions{}
+	cid, err := ua.ToIpfs(ipfsURL)
+	assert.NilError(t, err)
+	seed, err := ua.Hash()
+	assert.NilError(t, err)
 	var txs []*types.Transaction
 	for i := 0; i < 24*4; i++ {
-		var root [32]byte
 		tx, err := bc.Contracts.Updates.SubmitActionsRoot(
 			bind.NewKeyedTransactor(bc.Owner),
-			root,
-			"cid",
+			seed,
+			cid,
 		)
 		if err != nil {
 			t.Fatal(err)
