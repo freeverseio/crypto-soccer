@@ -1,48 +1,49 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: trader
+  name: horizon
   labels:
-    app: trader
-    component: trader
+    app: horizon
+    component: horizon
     part-of: cryptosoccer
     version: "0.0.1"
 spec:
   ports:
   - port: 4000
   selector:
-    app: trader
+    app: horizon
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trader
+  name: horizon
   labels:
-    app: trader
-    component: trader
+    app: horizon
+    component: horizon
     part-of: cryptosoccer
     version: "0.0.1"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: trader
+      app: horizon
   template:
     metadata:
       labels:
-        app: trader
-        component: trader
+        app: horizon
+        component: horizon
         part-of: cryptosoccer
         version: "0.0.1"
     spec:
       containers:
-      - name: trader
-        image: freeverseio/market.trader:dev
+      - name: horizon
+        image: freeverseio/horizon:dev
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: freeverse-configmap
-        args: [-d, "postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market",
-               -p, "4000"]
+        args: [-u, "http://universeapi:4000/graphql",
+               -m, "http://trader:4000/graphql"]
+
       imagePullSecrets:
       - name: docker-secret
