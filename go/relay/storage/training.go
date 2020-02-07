@@ -49,7 +49,7 @@ func (b *Training) Delete(tx *sql.Tx) error {
 	return err
 }
 
-func ResetTrainings(tx *sql.Tx) error {
+func ResetTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
 	_, err := tx.Exec(
 		`UPDATE trainings SET 
 			special_player_shirt = -1,
@@ -78,7 +78,7 @@ func ResetTrainings(tx *sql.Tx) error {
     		special_player_pass = 0,
     		special_player_shoot = 0,
 			special_player_endurance = 0
-			WHERE verse = $1`, UpcomingVerse)
+			WHERE (verse = $1 AND timezone = $2)`, UpcomingVerse, timezone)
 	return err
 }
 

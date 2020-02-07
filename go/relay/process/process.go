@@ -80,7 +80,12 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	return storage.ResetTrainings(tx)
+	if nextToUpdate.TurnInDay == 0 {
+		if err = storage.ResetTrainingsByTimezone(tx, nextToUpdate.TimeZone); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uint8) (*types.Receipt, error) {

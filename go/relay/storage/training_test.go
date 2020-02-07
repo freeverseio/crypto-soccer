@@ -13,7 +13,7 @@ func TestResetTrainings(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	assert.NilError(t, storage.ResetTrainings(tx))
+	assert.NilError(t, storage.ResetTrainingsByTimezone(tx, 0))
 }
 
 func TestTrainingCreate(t *testing.T) {
