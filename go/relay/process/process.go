@@ -80,6 +80,11 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
+	if nextToUpdate.TurnInDay == 0 {
+		if err = storage.ResetTrainingsByTimezone(tx, nextToUpdate.TimeZone); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
