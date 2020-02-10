@@ -5,7 +5,7 @@ require('chai')
     .should();
 
 const Encoding = artifacts.require('EncodingSkills');
-const EncodingTact = artifacts.require('EncodingTactics');
+const EncodingTact = artifacts.require('EncodingTacticsPart1');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 
 contract('Encoding', (accounts) => {

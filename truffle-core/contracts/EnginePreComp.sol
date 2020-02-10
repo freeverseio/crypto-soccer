@@ -1,12 +1,12 @@
 pragma solidity >=0.5.12 <0.6.2;
 
 import "./EncodingSkills.sol";
-import "./EncodingTactics.sol";
+import "./EncodingTacticsPart1.sol";
 import "./EngineLib.sol";
 import "./SortValues.sol";
 import "./EncodingMatchLogPart1.sol";
 
-contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTactics, SortValues {
+contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1, SortValues {
     uint256 private constant ONE256            = uint256(1); 
     uint8 private constant CHG_HAPPENED        = uint8(1); 
     uint8 private constant CHG_CANCELLED       = uint8(2); 
