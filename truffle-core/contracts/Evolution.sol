@@ -6,8 +6,9 @@ import "./EncodingMatchLog.sol";
 import "./Engine.sol";
 import "./EncodingTPAssignment.sol";
 import "./EncodingSkillsSetters.sol";
+import "./EncodingTactics.sol";
 
-contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters {
+contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTactics {
 
     // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
