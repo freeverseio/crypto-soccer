@@ -16,7 +16,7 @@ GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 10,
 TrainingPoints: (uint16) 0,
-Tactic: (string) ""
+Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906945",
@@ -35,7 +35,7 @@ GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 10,
 TrainingPoints: (uint16) 0,
-Tactic: (string) ""
+Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906946",
@@ -54,7 +54,7 @@ GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 10,
 TrainingPoints: (uint16) 0,
-Tactic: (string) ""
+Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906947",
@@ -73,7 +73,7 @@ GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 10,
 TrainingPoints: (uint16) 0,
-Tactic: (string) ""
+Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906948",
@@ -92,7 +92,7 @@ GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 10,
 TrainingPoints: (uint16) 0,
-Tactic: (string) ""
+Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906949",
@@ -111,7 +111,7 @@ GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 10,
 TrainingPoints: (uint16) 0,
-Tactic: (string) ""
+Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906950",
@@ -130,7 +130,7 @@ GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 10,
 TrainingPoints: (uint16) 0,
-Tactic: (string) ""
+Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906951",
@@ -149,6 +149,6 @@ GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 10,
 TrainingPoints: (uint16) 0,
-Tactic: (string) ""
+Tactic: (string) (len=33) "340596594427581673436941882753025"
 }
 }
