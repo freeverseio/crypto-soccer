@@ -53,8 +53,9 @@ func (b *Team) Insert(tx *sql.Tx) error {
 			league_idx, 
 			team_idx_in_league, 
 			name,
-			ranking_points
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
+			ranking_points,
+			tactic
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
 		b.TeamID,
 		b.TimezoneIdx,
 		b.CountryIdx,
@@ -63,6 +64,7 @@ func (b *Team) Insert(tx *sql.Tx) error {
 		b.TeamIdxInLeague,
 		b.Name,
 		strconv.FormatUint(b.RankingPoints, 10),
+		b.Tactic,
 	)
 	if err != nil {
 		return err
