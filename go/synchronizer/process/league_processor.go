@@ -125,7 +125,7 @@ func (b LeagueProcessor) applyTactics(tx *sql.Tx, event updates.UpdatesActionsSu
 		return err
 	}
 	if root != event.Root {
-		log.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
+		return fmt.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
 	}
 	log.Info("Applying tactics ...")
 	for _, tactic := range userActions.Tactics {
