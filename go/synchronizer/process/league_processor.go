@@ -120,12 +120,12 @@ func (b LeagueProcessor) applyTactics(tx *sql.Tx, event updates.UpdatesActionsSu
 	if err != nil {
 		return err
 	}
-	ipfsHash, err := userActions.Hash()
+	root, err := userActions.Root()
 	if err != nil {
 		return err
 	}
-	if ipfsHash != event.Seed {
-		log.Errorf("UserActions Seed mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Seed[:]), hex.EncodeToString(ipfsHash[:]))
+	if root != event.Root {
+		log.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
 	}
 	log.Info("Applying tactics ...")
 	for _, tactic := range userActions.Tactics {

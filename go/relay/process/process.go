@@ -61,7 +61,7 @@ func (p *Processor) Process(tx *sql.Tx) error {
 		return err
 	}
 	upcomingUserActions.UpdateVerse(currentVerse.Uint64())
-	hash, err := upcomingUserActions.Hash()
+	root, err := upcomingUserActions.Root()
 	if err != nil {
 		return err
 	}
@@ -69,8 +69,8 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(hash[:]), cid)
-	transaction, err := p.updatesContract.SubmitActionsRoot(p.auth, hash, cid)
+	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
+	transaction, err := p.updatesContract.SubmitActionsRoot(p.auth, root, cid)
 	if err != nil {
 		return err
 	}

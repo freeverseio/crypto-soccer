@@ -73,6 +73,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	processor, err := process.NewLeagueProcessor(bc.Contracts, namesdb, ipfsURL)
 	assert.NilError(t, err)
 	day := uint8(0)
+	seed := [32]byte{0x2}
 	turnInDay := uint8(0)
 	gameDeployDay, err := bc.Contracts.Assets.GameDeployDay(&bind.CallOpts{})
 	assert.NilError(t, err)
@@ -80,7 +81,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	ua := useractions.UserActions{}
 	cid, err := ua.ToIpfs(ipfsURL)
 	assert.NilError(t, err)
-	seed, err := ua.Hash()
+	root, err := ua.Root()
 	assert.NilError(t, err)
 	err = processor.Process(tx, updates.UpdatesActionsSubmission{
 		big.NewInt(0),
@@ -89,6 +90,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		turnInDay,
 		seed,
 		big.NewInt(actionsSubmissionTime),
+		root,
 		cid,
 		types.Log{},
 	})
@@ -101,6 +103,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		turnInDay,
 		seed,
 		big.NewInt(actionsSubmissionTime),
+		root,
 		cid,
 		types.Log{},
 	})

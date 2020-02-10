@@ -101,6 +101,10 @@ func (b *UserActions) Hash() ([32]byte, error) {
 	return result, nil
 }
 
+func (b UserActions) Root() ([32]byte, error) {
+	return b.Hash()
+}
+
 func (b *UserActions) Marshal() ([]byte, error) {
 	if b.Tactics == nil {
 		b.Tactics = make([]storage.Tactic, 0)
