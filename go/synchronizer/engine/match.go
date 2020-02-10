@@ -195,6 +195,14 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 		return err
 	}
 	b.updateStats()
+	if err = b.updateTrainingPoints(contracts); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *Match) updateTrainingPoints(contracts contracts.Contracts) error {
+	var err error
 	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog); err != nil {
 		return err
 	}
