@@ -2,10 +2,11 @@ const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
-    .should();;
+    .should();
 
-    const Encoding = artifacts.require('EncodingSkills');
-    const EncodingSet = artifacts.require('EncodingSkillsSetters');
+const Encoding = artifacts.require('EncodingSkills');
+const EncodingTact = artifacts.require('EncodingTactics');
+const EncodingSet = artifacts.require('EncodingSkillsSetters');
 
 contract('Encoding', (accounts) => {
 
@@ -14,6 +15,7 @@ contract('Encoding', (accounts) => {
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
+        encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
     it('encodeTactics incorrect lineup', async () =>  {
@@ -23,9 +25,9 @@ contract('Encoding', (accounts) => {
         substitutions = [4,10,2];
         subsRounds = [3,7,1];
         extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
         lineup[0] = PLAYERS_PER_TEAM_MAX;
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
     })
     
     it('encodeTactics', async () =>  {
@@ -35,8 +37,8 @@ contract('Encoding', (accounts) => {
         substitutions = [4,10,2];
         subsRounds = [3,7,1];
         extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
-        decoded = await encoding.decodeTactics(encoded).should.be.fulfilled;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        decoded = await encodingTact.decodeTactics(encoded).should.be.fulfilled;
 
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
@@ -51,11 +53,11 @@ contract('Encoding', (accounts) => {
             roun[p].toNumber().should.be.equal(subsRounds[p]);
         }
         // // try to provide a tacticsId beyond range
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 64).should.be.rejected;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 64).should.be.rejected;
         // try to provide a lineup beyond range
         lineupWrong = lineup;
         lineupWrong[4] = PLAYERS_PER_TEAM_MAX + 1;
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
     });
 
    
