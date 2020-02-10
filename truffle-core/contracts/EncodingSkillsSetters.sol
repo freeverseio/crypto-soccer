@@ -53,6 +53,10 @@ contract EncodingSkillsSetters {
         return (encodedSkills & ~(uint256(65535) << 64)) | (val << 64);
     }
 
+    function setPotential(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
+        return (encodedSkills & ~(uint256(15) << 139)) | (val << 139);
+    }
+
     function setAlignedEndOfFirstHalf(uint256 encodedSkills, bool val) public pure returns (uint256) {
         if (val) return (encodedSkills & ~(uint256(1) << 152)) | (uint256(1) << 152);
         else return (encodedSkills & ~(uint256(1) << 152));

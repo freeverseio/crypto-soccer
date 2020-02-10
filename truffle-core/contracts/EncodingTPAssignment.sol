@@ -28,7 +28,7 @@ contract EncodingTPAssignment {
         uint8 lastBucket = (specialPlayer == NO_PLAYER ? 4 : 5);
         for (uint8 bucket = 0; bucket < lastBucket; bucket++) {
             if (bucket == 4) {
-                TP = uint16((uint256(TP) * 11000)/10000);
+                TP = uint16((uint256(TP) * 11)/10);
                 maxRHS = MAX_PERCENT * TP;
             }
             uint256 sum = 0;
