@@ -63,41 +63,19 @@ func TestLeagueProcessMatch(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	if err != nil {
-		t.Fatal(err)
-	}
 	timezoneIdx := uint8(1)
-	namesdb, err := names.New("../../names/sql/names.db")
-	if err != nil {
-		t.Fatal(err)
-	}
-	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(
-		bc.Contracts,
-		namesdb,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
 	countryIdx := big.NewInt(0)
 	divisionIdx := big.NewInt(0)
-	err = divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	processor, err := process.NewLeagueProcessor(
-		bc.Contracts,
-		namesdb,
-		ipfsURL,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+
+	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
+	assert.NilError(t, err)
+	assert.NilError(t, divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}}))
+	processor, err := process.NewLeagueProcessor(bc.Contracts, namesdb, ipfsURL)
+	assert.NilError(t, err)
 	day := uint8(0)
 	turnInDay := uint8(0)
 	gameDeployDay, err := bc.Contracts.Assets.GameDeployDay(&bind.CallOpts{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
 	ua := useractions.UserActions{}
 	cid, err := ua.ToIpfs(ipfsURL)
@@ -114,9 +92,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		cid,
 		types.Log{},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	turnInDay = 1
 	err = processor.Process(tx, updates.UpdatesActionsSubmission{
 		big.NewInt(1),
@@ -128,9 +104,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		cid,
 		types.Log{},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 }
 
 // func TestLeagueShuffling(t *testing.T) {
