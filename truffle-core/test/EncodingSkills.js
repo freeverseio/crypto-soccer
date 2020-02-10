@@ -113,6 +113,11 @@ contract('Encoding', (accounts) => {
         result.toNumber().should.be.equal(7);
         skillsdummy = await encodingSet.setGamesNonStopping(skills, 8).should.be.rejected;
         
+
+        skills = await encodingSet.setPotential(skills, potential+1).should.be.fulfilled;
+        result = await encoding.getPotential(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(potential+1);
+
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
         result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;

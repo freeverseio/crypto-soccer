@@ -51,8 +51,11 @@ contract('Shop', (accounts) => {
             uri =  "https://www.freeverse.io"
         ).should.be.fulfilled;
 
+        encodedBoost = await shop.encodeBoosts(boosts).should.be.fulfilled;
+        
         truffleAssert.eventEmitted(tx, "ItemOffered", (event) => {
             return event.itemId.toNumber() === 1 && 
+                event.encodedBoost.toNumber() == encodedBoost &&
                 event.countriesRoot.toNumber() === countriesRoot &&
                 event.championshipsRoot.toNumber() === championshipsRoot &&
                 event.teamsRoot.toNumber() === teamsRoot &&
@@ -61,17 +64,6 @@ contract('Shop', (accounts) => {
                 event.onlyTopInChampioniship.toNumber() === onlyTopInChampioniship &&
                 event.uri === uri;
         }, "correct");
-        // result = await shop.getSkillsBoost(id = 0).should.be.fulfilled;
-        // result.should.be.bignumber.equal(skillsBoost);
-        // result = await shop.getMatchesDuration(id).should.be.fulfilled;
-        // result.toNumber().should.be.equal(matchesDuration);
-        // result = await shop.getInitStock(id).should.be.fulfilled;
-        // result.toNumber().should.be.equal(initStock);
-        // result = await shop.getUri(id).should.be.fulfilled;
-        // result.should.be.equal(uri);
-        // result = await shop.getChampionshipsHash(id).should.be.fulfilled;
-        // result.should.be.equal("0x39b03ec0c7168a018ef8b98732d567d4a036bc1ae1ab1a6563033f2236b362e1");
-        
     });
 
 });
