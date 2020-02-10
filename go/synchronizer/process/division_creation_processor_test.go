@@ -8,6 +8,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
 
@@ -42,25 +43,17 @@ func TestDivisionCreationProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 	golden.Assert(t, dump.Sdump(player), t.Name()+".player.golden")
-	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(
-		tx,
-		1,
-		0,
-		0,
-		0,
-	)
+	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, 1, 0, 0, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".matches.1.golden")
-	matches, err = storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(
-		tx,
-		1,
-		0,
-		0,
-	)
+	matches, err = storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(tx, 1, 0, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".matches.2.golden")
+	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, 1, 0, 0)
+	assert.NilError(t, err)
+	golden.Assert(t, dump.Sdump(teams), t.Name()+".teams.golden")
 }
