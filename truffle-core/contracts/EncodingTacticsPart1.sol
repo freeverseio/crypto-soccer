@@ -59,7 +59,7 @@ contract EncodingTacticsPart1 {
         bool[10] memory extraAttack, 
         uint8 tacticsId
     ) {
-        require(tactics < 2**110, "tacticsId should fit in 98 bit");
+        require(tactics < 2**157, "tacticsId should fit in 157 bit");
         tacticsId = uint8(tactics & 63);
         for (uint8 p = 0; p < 10; p++) {
             extraAttack[p] = (((tactics >> (6 + p)) & 1) == 1 ? true : false); // 2^1 - 1

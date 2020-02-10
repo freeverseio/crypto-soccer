@@ -7,7 +7,9 @@ import "./EncodingTacticsPart1.sol";
 import "./EncodingTacticsPart2.sol";
  
 /**
-    * @dev Tactics serializes a total of 110 bits = 3 * 4 + 3 * 4 + 14*5 + 10 + 6:
+    * @dev Tactics serializes a total of 157 bits.
+    *               The first 110: 3 * 4 + 3 * 4 + 14*5 + 10 + 6:
+    *               The following ones: 2 + 13 + 32
     *      substitutions[3]    = 4 bit each = [3 different nums from 0 to 10], with 11 = no subs
     *      subsRounds[3]       = 4 bit each = [3 different nums from 0 to 11], round at which subs are to happen
     *      lineup[14]          = 5 bit each = [playerIdxInTeam1, ..., ]

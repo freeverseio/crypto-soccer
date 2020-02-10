@@ -23,14 +23,14 @@ contract('Shop', (accounts) => {
     });
 
     
-    it2('encode - decode boosts', async () => {
+    it('encode - decode boosts', async () => {
         boosts = [62,60,19,1,23,2];
         encoded = await shop.encodeBoosts(boosts).should.be.fulfilled;
         decoded = await shop.decodeBoosts(encoded).should.be.fulfilled;
         debug.compareArrays(decoded, boosts, toNum = true, verbose = false, isBigNumber = false);
     });
     
-    it2('offer item', async () => {
+    it('offer item', async () => {
         tx = await shop.offerItem(
             boosts = [62,60,19,1,23,1],
             countriesRoot = 0,
@@ -86,16 +86,32 @@ contract('Shop', (accounts) => {
         encodedBoost = await shop.encodeBoosts(boosts).should.be.fulfilled;
         
         const lineupConsecutive = Array.from(new Array(14), (x,i) => i); 
-        const extraAttackNull =  Array.from(new Array(10), (x,i) => 0);
+        const extraAttackNull =  Array.from(new Array(10), (x,i) => false);
         tactics = await encTactics.encodeTactics(substitutions = [3,4,5], subsRounds = [6,7,8], lineupConsecutive, 
-            extraAttackNull, tacticId442 = 2).should.be.fulfilled;
+            extraAttackNull, tacticsId = 2).should.be.fulfilled;
         
+        // add item effect to tactics
         tactics2 = await shop.addItemsToTactics(tactics, itemId = 1, staminaRecovery = 2).should.be.fulfilled;
         const {0: stamina, 1: id, 2: boost} = await shop.getItemsData(tactics2).should.be.fulfilled;
         stamina.toNumber().should.be.equal(staminaRecovery);
         id.toNumber().should.be.equal(itemId);
         boost.should.be.bignumber.equal(encodedBoost);
         
+        // check that previous tactics remain as expected
+        decoded = await encTactics.decodeTactics(tactics2).should.be.fulfilled;
+
+        let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
+        tact.toNumber().should.be.equal(tacticsId);
+        for (p = 0; p < 14; p++) {
+            line[p].toNumber().should.be.equal(lineupConsecutive[p]);
+        }
+        for (p = 0; p < 10; p++) {
+            attk[p].should.be.equal(extraAttackNull[p]);
+        }
+        for (p = 0; p < 3; p++) {
+            subs[p].toNumber().should.be.equal(substitutions[p]);
+            roun[p].toNumber().should.be.equal(subsRounds[p]);
+        }
         
     });
 
