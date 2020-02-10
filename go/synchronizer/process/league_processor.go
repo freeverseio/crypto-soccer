@@ -115,7 +115,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 }
 
 func (b LeagueProcessor) applyTactics(tx *sql.Tx, event updates.UpdatesActionsSubmission) error {
-	log.Infof("Retriving user actions from ipfs node %v", b.ipfsURL)
+	log.Infof("Retriving user actions %v from ipfs node %v", event.Cid, b.ipfsURL)
 	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.Cid)
 	if err != nil {
 		return err
