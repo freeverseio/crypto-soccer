@@ -115,17 +115,17 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 }
 
 func (b LeagueProcessor) applyTactics(tx *sql.Tx, event updates.UpdatesActionsSubmission) error {
-	log.Infof("Retriving user actions from ipfs node %v", b.ipfsURL)
+	log.Infof("Retriving user actions %v from ipfs node %v", event.Cid, b.ipfsURL)
 	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.Cid)
 	if err != nil {
 		return err
 	}
-	ipfsHash, err := userActions.Hash()
+	root, err := userActions.Root()
 	if err != nil {
 		return err
 	}
-	if ipfsHash != event.Seed {
-		log.Errorf("UserActions Seed mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Seed[:]), hex.EncodeToString(ipfsHash[:]))
+	if root != event.Root {
+		return fmt.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
 	}
 	log.Info("Applying tactics ...")
 	for _, tactic := range userActions.Tactics {
