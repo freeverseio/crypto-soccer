@@ -341,7 +341,7 @@ contract('Assets', (accounts) => {
         await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, BOB).should.be.fulfilled;
         tx = await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
-        truffleAssert.eventEmitted(tx, "PlayerStateChange", (event) => {
+        truffleAssert.eventEmitted(tx, "PlayerStateChange", async (event) => {
             const currentTeam = await assets.getCurrentTeamId(event.state).should.be.fulfilled;
             return event.playerId.should.be.bignumber.equal(playerId) && currentTeam.should.be.bignumber.equal(teamId2);
         });
