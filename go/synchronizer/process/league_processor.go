@@ -84,6 +84,37 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			}
 		}
 	}
+	if err := b.applyTactics(tx, event); err != nil {
+		return err
+	}
+
+	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
+	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
+	if err != nil {
+		return err
+	}
+	switch turnInDay {
+	case 0:
+		log.Infof("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
+		if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
+			return err
+		}
+	case 1:
+		log.Infof("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
+		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("Unknown turn in day %v", turnInDay)
+	}
+	log.Infof("Timezone %v save matches to storage", timezoneIdx)
+	if err = matches.ToStorage(*b.contracts, tx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b LeagueProcessor) applyTactics(tx *sql.Tx, event updates.UpdatesActionsSubmission) error {
 	log.Infof("Retriving user actions from ipfs node %v", b.ipfsURL)
 	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.Cid)
 	if err != nil {
@@ -140,29 +171,6 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		if err = storage.TeamSetTactic(tx, tactic.TeamID, encodedTactic.String()); err != nil {
 			return err
 		}
-	}
-	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
-	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
-	if err != nil {
-		return err
-	}
-	switch turnInDay {
-	case 0:
-		log.Infof("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
-		if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
-			return err
-		}
-	case 1:
-		log.Infof("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
-		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("Unknown turn in day %v", turnInDay)
-	}
-	log.Infof("Timezone %v save matches to storage", timezoneIdx)
-	if err = matches.ToStorage(*b.contracts, tx); err != nil {
-		return err
 	}
 	return nil
 }
