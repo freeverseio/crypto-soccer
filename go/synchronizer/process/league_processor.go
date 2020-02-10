@@ -168,6 +168,9 @@ func (b LeagueProcessor) applyTactics(tx *sql.Tx, event updates.UpdatesActionsSu
 			extraAttack,
 			tacticID,
 		)
+		if err != nil {
+			return fmt.Errorf("%v: %+v", err.Error(), tactic)
+		}
 		if err = storage.TeamSetTactic(tx, tactic.TeamID, encodedTactic.String()); err != nil {
 			return err
 		}
