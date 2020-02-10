@@ -3,7 +3,6 @@ package useractions_test
 import (
 	"bytes"
 	"encoding/json"
-	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
@@ -93,7 +92,7 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 	league := sync.League{}
 	assert.NilError(t, league.Insert(tx))
 	team := sync.Team{}
-	team.TeamID = big.NewInt(0)
+	team.TeamID = "0"
 	assert.NilError(t, team.Insert(tx))
 	timezone := 4
 	training := storage.Training{}
@@ -120,7 +119,7 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 	assert.Equal(t, len(ua.Tactics), 1)
 	assert.Equal(t, len(ua.Trainings), 1)
 
-	team.TeamID = big.NewInt(43)
+	team.TeamID = "43"
 	assert.NilError(t, team.Insert(tx))
 	training.Verse = verse
 	training.Timezone = timezone + 1
