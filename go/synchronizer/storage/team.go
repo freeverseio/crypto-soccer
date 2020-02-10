@@ -177,6 +177,12 @@ func TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, count
 	return result, nil
 }
 
+func TeamSetTactic(tx *sql.Tx, teamID string, tactic string) error {
+	log.Debugf("[DBMS] TeamSetTactic teamID: %v, tactic: %v", teamID, tactic)
+	_, err := tx.Exec("UPDATE teams SET tactic=$1 WHERE team_id = $2;", tactic, teamID)
+	return err
+}
+
 func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	log.Debugf("[DBMS] TeamByTeamId of teamID %v", teamID)
 	var team Team
