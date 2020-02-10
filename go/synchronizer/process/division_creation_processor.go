@@ -129,24 +129,15 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezon
 				if errname != nil {
 					return errname
 				}
-				team := storage.Team{
-					teamId,
-					timezone,
-					uint32(countryIdx.Uint64()),
-					teamName,
-					storage.BotOwner,
-					uint32(leagueIdx),
-					teamIdxInLeague,
-					0,
-					0,
-					0,
-					0,
-					0,
-					0,
-					10,
-					0,
-					0,
-				}
+				team := storage.NewTeam()
+				team.TeamID = teamId.String()
+				team.TimezoneIdx = timezone
+				team.CountryIdx = uint32(countryIdx.Uint64())
+				team.Name = teamName
+				team.Owner = storage.BotOwner
+				team.LeagueIdx = uint32(leagueIdx)
+				team.TeamIdxInLeague = teamIdxInLeague
+				team.RankingPoints = 10
 				if err := team.Insert(tx); err != nil {
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(tx, opts, teamId, timezone, countryIdx, teamIdx); err != nil {
@@ -211,7 +202,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 			PreferredPosition: preferredPosition,
 			Potential:         potential.Uint64(),
 			DayOfBirth:        dayOfBirth.Uint64(),
-			TeamId:            teamId,
+			TeamId:            teamId.String(),
 			Name:              name,
 			Defence:           defence.Uint64(), // TODO: type should be uint16
 			Speed:             speed.Uint64(),

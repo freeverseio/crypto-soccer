@@ -96,6 +96,51 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if ipfsHash != event.Seed {
 		log.Errorf("UserActions Seed mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Seed[:]), hex.EncodeToString(ipfsHash[:]))
 	}
+	log.Info("Applying tactics ...")
+	for _, tactic := range userActions.Tactics {
+		substitutions := [3]uint8{11, 11, 11}
+		substitutionsMinute := [3]uint8{2, 3, 4}
+		formation := [14]uint8{
+			uint8(tactic.Shirt0),
+			uint8(tactic.Shirt1),
+			uint8(tactic.Shirt2),
+			uint8(tactic.Shirt3),
+			uint8(tactic.Shirt4),
+			uint8(tactic.Shirt5),
+			uint8(tactic.Shirt6),
+			uint8(tactic.Shirt7),
+			uint8(tactic.Shirt8),
+			uint8(tactic.Shirt9),
+			uint8(tactic.Shirt10),
+			uint8(tactic.Shirt11),
+			uint8(tactic.Shirt12),
+			uint8(tactic.Shirt13),
+		}
+		extraAttack := [10]bool{
+			tactic.ExtraAttack1,
+			tactic.ExtraAttack2,
+			tactic.ExtraAttack3,
+			tactic.ExtraAttack4,
+			tactic.ExtraAttack5,
+			tactic.ExtraAttack6,
+			tactic.ExtraAttack7,
+			tactic.ExtraAttack8,
+			tactic.ExtraAttack9,
+			tactic.ExtraAttack10,
+		}
+		tacticID := uint8(tactic.TacticID)
+		encodedTactic, err := b.contracts.Engine.EncodeTactics(
+			&bind.CallOpts{},
+			substitutions,
+			substitutionsMinute,
+			formation,
+			extraAttack,
+			tacticID,
+		)
+		if err = storage.TeamSetTactic(tx, tactic.TeamID, encodedTactic.String()); err != nil {
+			return err
+		}
+	}
 	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
 	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 	if err != nil {
@@ -145,12 +190,13 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			}
 			if !storage.IsBotTeam(team) {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
+				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
 				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
 					uint8(position),
 					team.PrevPerfPoints,
-					team.TeamID,
+					teamID,
 				)
 				if err != nil {
 					return err
@@ -176,7 +222,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	return nil
 }
 
-func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int, error) {
+func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID string) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)

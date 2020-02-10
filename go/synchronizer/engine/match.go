@@ -102,14 +102,14 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	for _, computedEvent := range b.Events {
 		event := storage.MatchEvent{}
 		if computedEvent.Team == 0 {
-			event.TeamID = b.HomeTeam.TeamID.String()
+			event.TeamID = b.HomeTeam.TeamID
 			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else if computedEvent.Team == 1 {
-			event.TeamID = b.VisitorTeam.TeamID.String()
+			event.TeamID = b.VisitorTeam.TeamID
 			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
@@ -140,13 +140,17 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	is2ndHalf := false
 	assignedTPs := big.NewInt(int64(0))
+	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
+	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
+	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
 		b.StartTime,
 		b.Skills(),
-		[2]*big.Int{b.HomeTeam.TeamID, b.VisitorTeam.TeamID},
-		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
+		[2]*big.Int{homeTeamID, visitorTeamID},
+		[2]*big.Int{homeTactic, visitorTactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 		[2]*big.Int{assignedTPs, assignedTPs},
@@ -170,13 +174,17 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	is2ndHalf := true
+	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
+	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
+	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
 		b.StartTime,
 		b.Skills(),
-		[2]*big.Int{b.HomeTeam.TeamID, b.VisitorTeam.TeamID},
-		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
+		[2]*big.Int{homeTeamID, visitorTeamID},
+		[2]*big.Int{homeTactic, visitorTactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 	)
@@ -195,6 +203,14 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 		return err
 	}
 	b.updateStats()
+	if err = b.updateTrainingPoints(contracts); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *Match) updateTrainingPoints(contracts contracts.Contracts) error {
+	var err error
 	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog); err != nil {
 		return err
 	}
@@ -232,13 +248,15 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	if err != nil {
 		return err
 	}
+	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	log.Debugf("Full decoded match log 0: %v", log0)
 	log.Debugf("Full decoded match log 1: %v", log1)
-	decodedTactics0, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.HomeTeam.tactic)
+	decodedTactics0, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, homeTactic)
 	if err != nil {
 		return err
 	}
-	decodedTactics1, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.VisitorTeam.tactic)
+	decodedTactics1, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, visitorTactic)
 	if err != nil {
 		return err
 	}

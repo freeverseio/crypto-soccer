@@ -36,7 +36,7 @@ func TestPlayerCreate(t *testing.T) {
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = big.NewInt(10)
+	team.TeamID = "10"
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -51,7 +51,7 @@ func TestPlayerCreate(t *testing.T) {
 
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
-	player.TeamId = big.NewInt(10)
+	player.TeamId = "10"
 	err = player.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
@@ -76,7 +76,7 @@ func TestPlayerUpdate(t *testing.T) {
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = big.NewInt(10)
+	team.TeamID = "10"
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -91,7 +91,7 @@ func TestPlayerUpdate(t *testing.T) {
 
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
-	player.TeamId = big.NewInt(10)
+	player.TeamId = "10"
 	player.Name = "Iam Awesome"
 	player.EncodedSkills = big.NewInt(4)
 	err = player.Insert(tx)
@@ -143,7 +143,7 @@ func TestGetPlayer(t *testing.T) {
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = big.NewInt(10)
+	team.TeamID = "10"
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -156,7 +156,7 @@ func TestGetPlayer(t *testing.T) {
 	league.Insert(tx)
 	team.Insert(tx)
 
-	team.TeamID = big.NewInt(11)
+	team.TeamID = "11"
 	team.Insert(tx)
 	var player storage.Player
 	player.PlayerId = big.NewInt(1)
@@ -165,7 +165,7 @@ func TestGetPlayer(t *testing.T) {
 	player.Pass = 6
 	player.Shoot = 7
 	player.Speed = 8
-	player.TeamId = big.NewInt(10)
+	player.TeamId = "10"
 	player.EncodedSkills, _ = new(big.Int).SetString("3618502788692870556043062973242620158809030731543066377891708431006382948352", 10)
 	player.EncodedState, _ = new(big.Int).SetString("614878739568587161270510773682668741239185861458610514677961004951428661248", 10)
 
@@ -181,7 +181,7 @@ func TestGetPlayer(t *testing.T) {
 		t.Fatalf("Expected %v got %v", player, result)
 	}
 	player.Defence = 6
-	player.TeamId = big.NewInt(11)
+	player.TeamId = "11"
 	err = player.Update(tx)
 	if err != nil {
 		t.Fatal(err)
@@ -202,7 +202,7 @@ func TestGetPlayersOfTeam(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	players, err := storage.PlayersByTeamId(tx, big.NewInt(343))
+	players, err := storage.PlayersByTeamId(tx, "343")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,7 +213,7 @@ func TestGetPlayersOfTeam(t *testing.T) {
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = big.NewInt(10)
+	team.TeamID = "10"
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"

@@ -6,12 +6,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 var universedb *sql.DB
 var bc *testutils.BlockchainNode
+var dump spew.ConfigState
 
 const ipfsURL = "localhost:5001"
 
@@ -26,5 +28,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
+	bc.Init()
+	dump = spew.ConfigState{DisablePointerAddresses: true}
 	os.Exit(m.Run())
 }

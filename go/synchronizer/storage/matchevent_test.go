@@ -21,7 +21,7 @@ func TestMatchEventTest(t *testing.T) {
 	league := storage.League{timezone.TimezoneIdx, country.CountryIdx, uint32(0)}
 	league.Insert(tx)
 	var team storage.Team
-	team.TeamID = big.NewInt(10)
+	team.TeamID = "10"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = country.CountryIdx
 	team.Owner = "ciao"
@@ -59,7 +59,7 @@ func TestMatchEventTest(t *testing.T) {
 	matchEvent.LeagueIdx = int(league.LeagueIdx)
 	matchEvent.MatchDayIdx = int(matchDayIdx)
 	matchEvent.MatchIdx = int(matchIdx)
-	matchEvent.TeamID = team.TeamID.String()
+	matchEvent.TeamID = team.TeamID
 	matchEvent.PrimaryPlayerID = player.PlayerId.String()
 	matchEvent.Type = storage.Attack
 	if err = matchEvent.Insert(tx); err != nil {
