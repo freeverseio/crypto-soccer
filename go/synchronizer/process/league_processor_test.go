@@ -67,10 +67,6 @@ func TestLeagueProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	timezoneIdx := uint8(1)
-	err = bc.InitOneTimezone(timezoneIdx)
-	if err != nil {
-		t.Fatal(err)
-	}
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
