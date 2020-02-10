@@ -1,7 +1,6 @@
 package process_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -31,7 +30,7 @@ func TestAssetsInitProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	team, err := storage.TeamByTeamId(tx, big.NewInt(1))
+	team, err := storage.TeamByTeamId(tx, "1")
 	if err != nil {
 		t.Fatal(err)
 	}

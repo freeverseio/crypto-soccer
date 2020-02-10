@@ -28,8 +28,8 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	match := engine.NewMatch()
 	match.Seed = [32]byte{0x2, 0x1}
 	match.StartTime = big.NewInt(1570147200)
-	match.HomeTeam.TeamID = big.NewInt(int64(1))
-	match.VisitorTeam.TeamID = big.NewInt(int64(2))
+	match.HomeTeam.TeamID = "1"
+	match.VisitorTeam.TeamID = "2"
 	match.HomeMatchLog = big.NewInt(int64(0))
 	match.VisitorMatchLog = big.NewInt(int64(0))
 	err := match.Play1stHalf(*bc.Contracts)
@@ -55,8 +55,8 @@ func TestPlayGame(t *testing.T) {
 	m := engine.NewMatch()
 	m.Seed = [32]byte{0x2, 0x1}
 	m.StartTime = big.NewInt(1570147200)
-	m.HomeTeam.TeamID = big.NewInt(int64(1))
-	m.VisitorTeam.TeamID = big.NewInt(int64(2))
+	m.HomeTeam.TeamID = "1"
+	m.VisitorTeam.TeamID = "2"
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309339445376240739796176995438"))
 		m.VisitorTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309340654302060354425351701614"))
@@ -103,8 +103,8 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 			m := engine.NewMatch()
 			m.Seed = tc.Seed
 			m.StartTime = big.NewInt(1570147200)
-			m.HomeTeam.TeamID = big.NewInt(int64(1))
-			m.VisitorTeam.TeamID = big.NewInt(int64(2))
+			m.HomeTeam.TeamID = "1"
+			m.VisitorTeam.TeamID = "2"
 			for i := 0; i < 25; i++ {
 				m.HomeTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309339445376240739796176995438"))
 				m.VisitorTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309340654302060354425351701614"))

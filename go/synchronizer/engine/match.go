@@ -102,14 +102,14 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	for _, computedEvent := range b.Events {
 		event := storage.MatchEvent{}
 		if computedEvent.Team == 0 {
-			event.TeamID = b.HomeTeam.TeamID.String()
+			event.TeamID = b.HomeTeam.TeamID
 			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else if computedEvent.Team == 1 {
-			event.TeamID = b.VisitorTeam.TeamID.String()
+			event.TeamID = b.VisitorTeam.TeamID
 			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
@@ -140,12 +140,14 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	is2ndHalf := false
 	assignedTPs := big.NewInt(int64(0))
+	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
+	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
 		b.StartTime,
 		b.Skills(),
-		[2]*big.Int{b.HomeTeam.TeamID, b.VisitorTeam.TeamID},
+		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
@@ -170,12 +172,14 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	is2ndHalf := true
+	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
+	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
 		b.StartTime,
 		b.Skills(),
-		[2]*big.Int{b.HomeTeam.TeamID, b.VisitorTeam.TeamID},
+		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},

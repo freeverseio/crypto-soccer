@@ -16,7 +16,7 @@ func NewTeamTransferProcessor() (*TeamTransferProcessor, error) {
 }
 
 func (b *TeamTransferProcessor) Process(tx *sql.Tx, v assets.AssetsTeamTransfer) error {
-	teamID := v.TeamId
+	teamID := v.TeamId.String()
 	newOwner := v.To.String()
 	team, err := storage.TeamByTeamId(tx, teamID)
 	if err != nil {

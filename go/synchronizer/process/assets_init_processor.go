@@ -45,7 +45,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	}
 	teamIdxInLeague := uint32(0)
 	team := storage.Team{
-		b.ACADEMYTEAM,
+		b.ACADEMYTEAM.String(),
 		timezone.TimezoneIdx,
 		country.CountryIdx,
 		"Academy",
@@ -61,6 +61,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 		0,
 		0,
 		0,
+		"0",
 	}
 
 	if err := team.Insert(tx); err != nil {

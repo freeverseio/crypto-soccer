@@ -2,7 +2,6 @@ package storage_test
 
 import (
 	"math"
-	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -41,7 +40,7 @@ func TestGetTeam(t *testing.T) {
 	country.Insert(tx)
 	league.Insert(tx)
 	team := storage.Team{}
-	team.TeamID = big.NewInt(3)
+	team.TeamID = "3"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -54,7 +53,7 @@ func TestGetTeam(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !result.Equal(team) {
+	if result != team {
 		t.Fatalf("Expected %v but %v", team, result)
 	}
 }
@@ -76,7 +75,7 @@ func TestTeamCreate(t *testing.T) {
 	league.Insert(tx)
 
 	var team storage.Team
-	team.TeamID = big.NewInt(4)
+	team.TeamID = "4"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -111,8 +110,7 @@ func TestGetTeamOfUnexistenTeamID(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	teamID := big.NewInt(434)
-	_, err = storage.TeamByTeamId(tx, teamID)
+	_, err = storage.TeamByTeamId(tx, "434")
 	if err == nil {
 		t.Fatal("Not error on unsexistent team")
 	}
@@ -135,7 +133,7 @@ func TestGetTeamInLeague(t *testing.T) {
 	league.Insert(tx)
 
 	var team storage.Team
-	team.TeamID = big.NewInt(11)
+	team.TeamID = "11"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -148,7 +146,7 @@ func TestGetTeamInLeague(t *testing.T) {
 	if len(teams) != 1 {
 		t.Fatalf("Expected 1 received %v", len(teams))
 	}
-	assert.Equal(t, teams[0].TeamID.String(), team.TeamID.String())
+	assert.Equal(t, teams[0].TeamID, team.TeamID)
 }
 
 func TestUpdateTeamOwner(t *testing.T) {
@@ -168,7 +166,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 	league.Insert(tx)
 
 	var team storage.Team
-	team.TeamID = big.NewInt(4)
+	team.TeamID = "4"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -188,7 +186,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !team.Equal(result) {
+	if team != result {
 		t.Fatalf("expected %v but got %v", team, result)
 	}
 }

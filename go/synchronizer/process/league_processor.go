@@ -145,12 +145,13 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			}
 			if !storage.IsBotTeam(team) {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
+				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
 				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
 					uint8(position),
 					team.PrevPerfPoints,
-					team.TeamID,
+					teamID,
 				)
 				if err != nil {
 					return err
@@ -176,7 +177,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	return nil
 }
 
-func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int, error) {
+func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID string) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)

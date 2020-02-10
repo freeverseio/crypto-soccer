@@ -27,19 +27,19 @@ func NewMatchesFromTimezoneIdxMatchdayIdx(
 
 	var matches Matches
 	for _, stoMatch := range stoMatches {
-		stoHomeTeam, err := storage.TeamByTeamId(tx, stoMatch.HomeTeamID)
+		stoHomeTeam, err := storage.TeamByTeamId(tx, stoMatch.HomeTeamID.String())
 		if err != nil {
 			return nil, err
 		}
-		stoVisitorTeam, err := storage.TeamByTeamId(tx, stoMatch.VisitorTeamID)
+		stoVisitorTeam, err := storage.TeamByTeamId(tx, stoMatch.VisitorTeamID.String())
 		if err != nil {
 			return nil, err
 		}
-		stoHomePlayers, err := storage.PlayersByTeamId(tx, stoMatch.HomeTeamID)
+		stoHomePlayers, err := storage.PlayersByTeamId(tx, stoMatch.HomeTeamID.String())
 		if err != nil {
 			return nil, err
 		}
-		stoVisitorPlayers, err := storage.PlayersByTeamId(tx, stoMatch.VisitorTeamID)
+		stoVisitorPlayers, err := storage.PlayersByTeamId(tx, stoMatch.VisitorTeamID.String())
 		if err != nil {
 			return nil, err
 		}

@@ -12,7 +12,7 @@ import (
 const BotOwner = "0x0000000000000000000000000000000000000000"
 
 type Team struct {
-	TeamID          *big.Int
+	TeamID          string
 	TimezoneIdx     uint8
 	CountryIdx      uint32
 	Name            string
@@ -28,25 +28,7 @@ type Team struct {
 	PrevPerfPoints  uint64
 	RankingPoints   uint64
 	TrainingPoints  uint16
-}
-
-func (b *Team) Equal(team Team) bool {
-	return b.TeamID.Cmp(team.TeamID) == 0 &&
-		b.CountryIdx == team.CountryIdx &&
-		b.TimezoneIdx == team.TimezoneIdx &&
-		b.Owner == team.Owner &&
-		b.Name == team.Name &&
-		b.LeagueIdx == team.LeagueIdx &&
-		b.TeamIdxInLeague == team.TeamIdxInLeague &&
-		b.Points == team.Points &&
-		b.W == team.W &&
-		b.D == team.D &&
-		b.L == team.L &&
-		b.GoalsForward == team.GoalsForward &&
-		b.GoalsAgainst == team.GoalsAgainst &&
-		b.PrevPerfPoints == team.PrevPerfPoints &&
-		b.RankingPoints == team.RankingPoints &&
-		b.TrainingPoints == team.TrainingPoints
+	Tactic          string
 }
 
 func IsBotTeam(team Team) bool {
@@ -66,7 +48,7 @@ func (b *Team) Insert(tx *sql.Tx) error {
 			name,
 			ranking_points
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
-		b.TeamID.String(),
+		b.TeamID,
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.Owner,
@@ -112,8 +94,9 @@ func (b *Team) Update(tx *sql.Tx) error {
 						prev_perf_points=$10,
 						ranking_points=$11,
 						training_points=$12,
-						name=$13
-						WHERE team_id=$14`,
+						name=$13,
+						tactic=$14
+						WHERE team_id=$15`,
 		b.Owner,
 		b.LeagueIdx,
 		b.TeamIdxInLeague,
@@ -127,7 +110,8 @@ func (b *Team) Update(tx *sql.Tx) error {
 		strconv.FormatUint(b.RankingPoints, 10),
 		b.TrainingPoints,
 		b.Name,
-		b.TeamID.String(),
+		b.Tactic,
+		b.TeamID,
 	)
 	return err
 }
@@ -138,17 +122,16 @@ func TeamsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countr
 		return nil, err
 	}
 	defer rows.Close()
-	var teamsIds []*big.Int
+	var teamsIds []string
 	for rows.Next() {
-		var teamID sql.NullString
+		var teamID string
 		err = rows.Scan(
 			&teamID,
 		)
 		if err != nil {
 			return nil, err
 		}
-		id, _ := new(big.Int).SetString(teamID.String, 10)
-		teamsIds = append(teamsIds, id)
+		teamsIds = append(teamsIds, teamID)
 	}
 	rows.Close()
 	var teams []Team
@@ -185,7 +168,7 @@ func TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, count
 	return result, nil
 }
 
-func TeamByTeamId(tx *sql.Tx, teamID *big.Int) (Team, error) {
+func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	log.Debugf("[DBMS] TeamByTeamId of teamID %v", teamID)
 	var team Team
 	rows, err := tx.Query(`SELECT 
@@ -201,8 +184,9 @@ func TeamByTeamId(tx *sql.Tx, teamID *big.Int) (Team, error) {
 	prev_perf_points,
 	ranking_points,
 	name,
-	training_points
-	FROM teams WHERE (team_id = $1);`, teamID.String())
+	training_points,
+	tactic
+	FROM teams WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return team, err
 	}
@@ -227,6 +211,7 @@ func TeamByTeamId(tx *sql.Tx, teamID *big.Int) (Team, error) {
 		&team.RankingPoints,
 		&team.Name,
 		&team.TrainingPoints,
+		&team.Tactic,
 	)
 	if err != nil {
 		return team, err

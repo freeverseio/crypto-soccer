@@ -22,7 +22,7 @@ type Team struct {
 
 func NewTeam() *Team {
 	var team Team
-	team.TeamID = big.NewInt(0)
+	team.TeamID = "0"
 	for i := range team.Players {
 		team.Players[i] = NewPlayer()
 	}
