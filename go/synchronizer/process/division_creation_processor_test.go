@@ -8,10 +8,10 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"gotest.tools/golden"
 )
 
 func TestDivisionCreationProcess(t *testing.T) {
-	t.Skip("******************** REACTIVATE *********************")
 	t.Parallel()
 	tx, err := universedb.Begin()
 	if err != nil {
@@ -41,9 +41,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player.Name != "Samir Rambert" {
-		t.Fatalf("Wrong name %v", player.Name)
-	}
+	golden.Assert(t, dump.Sdump(player), t.Name()+".player.golden")
 	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(
 		tx,
 		1,
@@ -54,9 +52,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(matches) != 4 {
-		t.Fatalf("Wrong matches number %v", len(matches))
-	}
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".matches.1.golden")
 	matches, err = storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(
 		tx,
 		1,
@@ -66,7 +62,5 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(matches) != 14*4 {
-		t.Fatalf("Wrong matches number %v", len(matches))
-	}
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".matches.2.golden")
 }

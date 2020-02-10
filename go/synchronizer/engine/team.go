@@ -17,16 +17,14 @@ const HardInjury = uint8(2)
 type Team struct {
 	storage.Team
 	Players [25]*Player
-	tactic  *big.Int // TODO add to storage.Team
 }
 
 func NewTeam() *Team {
 	var team Team
-	team.TeamID = "0"
+	team.Team = *storage.NewTeam()
 	for i := range team.Players {
 		team.Players[i] = NewPlayer()
 	}
-	team.tactic = DefaultTactic()
 	return &team
 }
 
@@ -55,7 +53,7 @@ func (b Team) DumpState() string {
 	for i, player := range b.Players {
 		state += fmt.Sprintf("Players[%d]: %v\n", i, player.DumpState())
 	}
-	state += fmt.Sprintf("tactic: %v\n", b.tactic)
+	state += fmt.Sprintf("tactic: %v\n", b.Tactic)
 	state += fmt.Sprintf("TrainingPoints: %v", b.TrainingPoints)
 	return state
 }

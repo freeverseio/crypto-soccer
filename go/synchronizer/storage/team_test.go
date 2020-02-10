@@ -39,7 +39,7 @@ func TestGetTeam(t *testing.T) {
 	timezone.Insert(tx)
 	country.Insert(tx)
 	league.Insert(tx)
-	team := storage.Team{}
+	team := storage.NewTeam()
 	team.TeamID = "3"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx

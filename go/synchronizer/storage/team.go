@@ -31,6 +31,13 @@ type Team struct {
 	Tactic          string
 }
 
+func NewTeam() *Team {
+	var team Team
+	team.TeamID = "0"
+	team.Tactic = "340596594427581673436941882753025"
+	return &team
+}
+
 func IsBotTeam(team Team) bool {
 	return team.Owner == BotOwner
 }
