@@ -8,6 +8,8 @@ usage()
     echo "     ./cicd_kubectl.sh https://12345-12345-abcdefg.k8s.abc.com my_namespace get pods -n my_namespace"
 }
 
+set -e
+
 if [ $# -lt 3 ]; then usage
 else
     SERVER=$1
