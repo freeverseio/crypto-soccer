@@ -1,13 +1,14 @@
 version: '3'
 services:
   ethereum: 
-    image: freeverseio/xdai:test
+    image: freeverseio/xdai:dev
     ports: 
       - "28545:8545"
       # - "30303:30303"
       # - "30303:30303/udp"
+    command: --base-path /home/parity/.local/share/io.parity.ethereum/
     volumes:
-      - ethereum-data:/test
+      - ethereum-data:/home/parity/.local/share/io.parity.ethereum
   web3proxy:
     image: adria0/web3proxy
     environment:

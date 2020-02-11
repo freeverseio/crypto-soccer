@@ -4,6 +4,7 @@
 FROM parity/parity:v2.7.2-stable
 
 COPY ./devnet.chain /devnet.chain
+RUN mkdir -p /home/parity/.local/share/io.parity.ethereum/
 
 EXPOSE 8545
 EXPOSE 30303
