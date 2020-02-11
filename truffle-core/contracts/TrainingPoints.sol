@@ -6,8 +6,9 @@ import "./EncodingMatchLog.sol";
 import "./Engine.sol";
 import "./EncodingTPAssignment.sol";
 import "./EncodingSkillsSetters.sol";
+import "./EncodingTacticsPart2.sol";
 
-contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters {
+contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsPart2 {
 
     // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
@@ -125,6 +126,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     function applyTrainingPoints(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills, 
         uint256 assignedTPs,
+        uint256 tactics,
         uint256 matchStartTime,
         uint16 earnedTPs
     ) 
@@ -136,12 +138,14 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         (uint16[25] memory TPperSkill, uint8 specialPlayer, uint16 TP) = decodeTP(assignedTPs);
         require(earnedTPs == TP, "assignedTPs used an amount of TP that does not match the earned TPs in previous match");
         uint16[5] memory singleTPperSkill;
-
+        (uint8[PLAYERS_PER_TEAM_MAX] memory staminas,,) = getItemsData(tactics);
+                
         // note that if no special player was selected => specialPlayer = PLAYERS_PER_TEAM_MAX 
         // ==> it will never be processed in this loop
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             uint256 thisSkills = teamSkills[p];
             if (thisSkills == 0) continue; 
+            if (staminas[p] > 0) thisSkills = reduceGamesNonStopping(thisSkills, staminas[p]);
             uint8 offset = 0;
             if (p == specialPlayer) offset = 20; 
             else if(getForwardness(thisSkills) == IDX_GK) offset = 0;
@@ -150,6 +154,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             else offset = 10;
             for (uint8 s = 0; s < 5; s++) singleTPperSkill[s] = TPperSkill[offset + s];
             teamSkills[p] = evolvePlayer(thisSkills, singleTPperSkill, matchStartTime);
+            
         }    
         return teamSkills;
     }
@@ -180,6 +185,18 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         skills = setSumOfSkills(skills, uint32(getShoot(skills) + getSpeed(skills) + getPass(skills) + getDefence(skills) + getEndurance(skills)));
         return generateChildIfNeeded(skills, ageInSecs, matchStartTime);
     } 
+    
+    // stamina = 0 => do not reduce
+    // stamina = 1 => reduce 2 games
+    // stamina = 2 => reduce 4 games
+    // stamina = 3 => full recovery
+    function reduceGamesNonStopping(uint256 skills, uint8 stamina) public pure returns (uint256) {
+        require(stamina < 4, "stamina value too large");
+        uint8 gamesNonStopping = getGamesNonStopping(skills);
+        if (gamesNonStopping == 0) return skills;
+        if ((stamina == 3) || (gamesNonStopping <= 2 * stamina)) return setGamesNonStopping(skills, 0);
+        return setGamesNonStopping(skills, gamesNonStopping - 2 * stamina);
+    }
 
     function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) private pure returns (uint256) {
         uint256 term1 = (TPthisSkill*numerator) / denominator;

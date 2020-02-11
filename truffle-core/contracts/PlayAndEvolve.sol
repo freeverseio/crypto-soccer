@@ -49,8 +49,8 @@ contract PlayAndEvolve {
     {
         require(!matchBools[IDX_IS_2ND_HALF], "play1stHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
-        skills[0] = _training.applyTrainingPoints(skills[0], assignedTPs[0], matchStartTime, _evo.getTrainingPoints(matchLogs[0]));
-        skills[1] = _training.applyTrainingPoints(skills[1], assignedTPs[1], matchStartTime, _evo.getTrainingPoints(matchLogs[1]));
+        skills[0] = _training.applyTrainingPoints(skills[0], assignedTPs[0], tactics[0], matchStartTime, _evo.getTrainingPoints(matchLogs[0]));
+        skills[1] = _training.applyTrainingPoints(skills[1], assignedTPs[1], tactics[1], matchStartTime, _evo.getTrainingPoints(matchLogs[1]));
         
         uint256[2] memory nullLogs;
         // Note that the following call does not change de values of "skills" because it calls a separate contract.
