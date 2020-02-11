@@ -108,7 +108,6 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         uint256[5][2] memory globSkills;
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
-        // uint16[ROUNDS_PER_MATCH] memory events;
 
         (matchLogs[0], skills[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
         (matchLogs[1], skills[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]);
@@ -256,17 +255,17 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         uint256 teamPassCapacity = weights[0];
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getSkill(skills[p], SK_PAS) * penaltyPerAge(skills[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getSkill(skills[p], SK_PAS) * penaltyPerAge(skills[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 200 * getPass(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = 200 * getSkill(skills[p], SK_PAS) * penaltyPerAge(skills[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
@@ -298,15 +297,15 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         weights[0] = penaltyPerAge(skills[0], matchStartTime);
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSkill(skills[p], SK_SPE) * penaltyPerAge(skills[p], matchStartTime);
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSkill(skills[p], SK_SPE) * penaltyPerAge(skills[p], matchStartTime);
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 75000 * getSpeed(skills[p]) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = 75000 * getSkill(skills[p], SK_SPE) * penaltyPerAge(skills[p], matchStartTime);
             p++;
         }
         return throwDiceArray(weights, rnd);
@@ -338,7 +337,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         // penaltyPerAge is in [0, 1M] where 0 is really bad penalty, and 1M is no penalty
         // since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
         // shooter weight =  shoot * shootPenalty/(10*1M) * (7/10) = shoort * shootPenalty * 7 / 1e8 
-        bool isGoal = throwDice((getShoot(skills[shooter]) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
+        bool isGoal = throwDice((getSkill(skills[shooter], SK_SHO) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
         scoreData[2] = uint256(isGoal ? 1: 0);
         uint8 assister;
         if (isGoal) {

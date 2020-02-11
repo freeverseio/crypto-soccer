@@ -232,11 +232,11 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         uint64[] memory rnds = getNRandsFromSeed(seed * 7, 14);
         uint8[2] memory totalGoals;
         for (uint8 round = 0; round < 6; round++) {
-            if (throwDice(block1, 3 * getShoot(skills[0][10-round]), rnds[2 *round]) == 1) {
+            if (throwDice(block1, 3 * getSkill(skills[0][10-round], SK_SHO), rnds[2 *round]) == 1) {
                 matchLogs[0] = addScoredPenalty(matchLogs[0], round); 
                 totalGoals[0] += 1;
             }
-            if (throwDice(block0, 3 * getShoot(skills[1][10-round]), rnds[2 *round + 1]) == 1) {
+            if (throwDice(block0, 3 * getSkill(skills[1][10-round], SK_SHO), rnds[2 *round + 1]) == 1) {
                 matchLogs[1] = addScoredPenalty(matchLogs[1], round); 
                 totalGoals[1] += 1;
             }
@@ -250,7 +250,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
                 }
             }
         }
-        if (throwDice(block0 + getShoot(skills[0][4]), block1 + getShoot(skills[1][4]), rnds[13]) == 0) {
+        if (throwDice(block0 + getSkill(skills[0][4], SK_SHO), block1 + getSkill(skills[1][4], SK_SHO), rnds[13]) == 0) {
             matchLogs[0] = addScoredPenalty(matchLogs[0], 6); 
         } else {
             matchLogs[1] = addScoredPenalty(matchLogs[1], 6); 
@@ -286,11 +286,11 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         uint256 penalty;
         uint256 playerSkills = skills[0];
         if (playerSkills != 0) {
-            globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
+            globSkills[IDX_ENDURANCE] = getSkill(playerSkills, SK_END);
             if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
                 globSkills[IDX_BLOCK_SHOOT] = (10 * penaltyPerAge(playerSkills, matchStartTime))/1000000;
             }
-            else globSkills[IDX_BLOCK_SHOOT] = (getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime))/1000000;
+            else globSkills[IDX_BLOCK_SHOOT] = (getSkill(playerSkills, SK_SHO) * penaltyPerAge(playerSkills, matchStartTime))/1000000;
         }
                 
         uint256[3] memory fwdModFactors;
@@ -398,10 +398,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         private 
         pure
     {
-        if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TEN_TO_10;
+        if (penalty != 0) { 
+            globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
+            globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
+            globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_10;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 30;
             globSkills[IDX_DEFEND_SHOOT] += 20;
@@ -420,8 +420,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         pure
     {
         if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TEN_TO_10;
+            globSkills[IDX_MOVE2ATTACK] += ((2*getSkill(playerSkills, SK_DEF) + 2*getSkill(playerSkills, SK_SPE) + 3*getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
+            globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_10;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 50;
             globSkills[IDX_ENDURANCE]   += 10;
@@ -439,9 +439,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         pure
     {
         if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TEN_TO_10;
+            globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
+            globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
+            globSkills[IDX_ENDURANCE] += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_10;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 10;
             globSkills[IDX_CREATE_SHOOT] += 20;

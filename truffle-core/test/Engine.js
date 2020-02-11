@@ -174,12 +174,7 @@ contract('Engine', (accounts) => {
         for (p = 0; p < 5; p++) {
             for (sk = 0; sk < 5; sk++) {
                 // shoot, speed, pass, defence, endurance
-                var playerSkills;
-                if (sk == 0) playerSkills = await assets.getShoot(newSkills[p]).should.be.fulfilled;
-                if (sk == 1) playerSkills = await assets.getSpeed(newSkills[p]).should.be.fulfilled;
-                if (sk == 2) playerSkills = await assets.getPass(newSkills[p]).should.be.fulfilled;
-                if (sk == 3) playerSkills = await assets.getDefence(newSkills[p]).should.be.fulfilled;
-                if (sk == 4) playerSkills = await assets.getEndurance(newSkills[p]).should.be.fulfilled;
+                playerSkills = await assets.getSkill(newSkills[p], sk).should.be.fulfilled;
                 expected = Math.floor(initSkill * (boost[sk]+100)/100);
                 playerSkills.toNumber().should.be.equal(expected);
             }

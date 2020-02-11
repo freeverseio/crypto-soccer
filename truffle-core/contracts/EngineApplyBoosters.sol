@@ -13,26 +13,14 @@ contract EngineApplyBoosters is EncodingSkillsSetters, EncodingSkills, EncodingT
         uint8[N_SKILLS+1] memory skillsBoost = decodeBoosts(boost);
         for (uint8 p = 0; p < 14; p++) {
             uint256 skills = linedUpSkills[p];
-            skills = setShoot(
-                skills, 
-                (getShoot(skills) * (100 + skillsBoost[0])) / 100
-            );
-            skills = setSpeed(
-                skills, 
-                (getSpeed(skills) * (100 + skillsBoost[1])) / 100
-            );
-            skills = setPass(
-                skills, 
-                (getPass(skills) * (100 + skillsBoost[2])) / 100
-            );
-            skills = setDefence(
-                skills, 
-                (getDefence(skills) * (100 + skillsBoost[3])) / 100
-            );
-            linedUpSkills[p] = setEndurance(
-                skills, 
-                (getEndurance(skills) * (100 + skillsBoost[4])) / 100
-            );
+            for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+                skills = setSkill(
+                    skills, 
+                    (getSkill(skills, sk) * (100 + skillsBoost[sk])) / 100,
+                    sk
+                );
+            }
+            linedUpSkills[p] = skills;
         }
         return linedUpSkills;
     }

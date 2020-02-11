@@ -15,11 +15,6 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     uint8 public constant RED_CARD = 3;   // noone saw a card
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
     // uint8 constant public N_SKILLS = 5;
-    uint8 constant private SK_SHO = 0;
-    uint8 constant private SK_SPE = 1;
-    uint8 constant private SK_PAS = 2;
-    uint8 constant private SK_DEF = 3;
-    uint8 constant private SK_END = 4;
 
     Assets private _assets;
 
@@ -106,8 +101,9 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         uint256 skills;
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             skills = teamSkills[p];
-            quality +=  getShoot(skills) + getSpeed(skills) + getPass(skills)
-                    +   getDefence(skills) + getEndurance(skills);
+            if (skills != 0) {
+                for (uint8 sk = 0; sk < N_SKILLS; sk++) quality += getSkill(skills, sk); 
+            }
         }
     }
     
@@ -177,12 +173,13 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         } else {
             numerator = 0;
         }
-        skills = setShoot(skills, getNewSkill(getShoot(skills), TPperSkill[SK_SHO], numerator, 189216000, deltaNeg));
-        skills = setSpeed(skills, getNewSkill(getSpeed(skills), TPperSkill[SK_SPE], numerator, 189216000, deltaNeg));
-        skills = setPass(skills, getNewSkill(getPass(skills), TPperSkill[SK_PAS], numerator, 189216000, deltaNeg));
-        skills = setDefence(skills, getNewSkill(getDefence(skills), TPperSkill[SK_DEF], numerator, 189216000, deltaNeg));
-        skills = setEndurance(skills, getNewSkill(getEndurance(skills), TPperSkill[SK_END], numerator, 189216000, deltaNeg));
-        skills = setSumOfSkills(skills, uint32(getShoot(skills) + getSpeed(skills) + getPass(skills) + getDefence(skills) + getEndurance(skills)));
+        uint256 sum;
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+            uint256 newSkill = getNewSkill(getSkill(skills, sk), TPperSkill[sk], numerator, 189216000, deltaNeg);
+            skills = setSkill(skills, newSkill, sk);
+            sum += newSkill;
+        }
+        skills = setSumOfSkills(skills, uint32(sum));
         return generateChildIfNeeded(skills, ageInSecs, matchStartTime);
     } 
     

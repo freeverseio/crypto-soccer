@@ -9,6 +9,13 @@ contract EncodingSkills {
     uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
 
+    // Skills: shoot, speed, pass, defence, endurance
+    uint8 constant public SK_SHO = 0;
+    uint8 constant public SK_SPE = 1;
+    uint8 constant public SK_PAS = 2;
+    uint8 constant public SK_DEF = 3;
+    uint8 constant public SK_END = 4;
+
     // Birth Traits: potential, forwardness, leftishness, aggressiveness
     uint8 constant private IDX_POT = 0;
     uint8 constant private IDX_FWD = 1;
@@ -91,25 +98,9 @@ contract EncodingSkills {
         encoded |= uint256(sumSkills) << 161;
         return (encoded | uint256(generation) << 223);
     }
-    
-    function getShoot(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills & 65535); // 65535 = 2**16 - 1
-    }
-    
-    function getSpeed(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 16 & 65535);
-    }
 
-    function getPass(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 32 & 65535);
-    }
-
-    function getDefence(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 48 & 65535);
-    }
-
-    function getEndurance(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 64 & 65535);
+    function getSkill(uint256 encodedSkills, uint8 skillIdx) public pure returns (uint256) {
+        return (encodedSkills >> (skillIdx * 16)) & 65535; // 65535 = 2**16 - 1
     }
 
     function getBirthDay(uint256 encodedSkills) public pure returns (uint256) {
