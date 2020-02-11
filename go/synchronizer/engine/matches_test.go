@@ -83,3 +83,20 @@ func TestMatchesSetTactics(t *testing.T) {
 	assert.NilError(t, matches.SetTactics(*bc.Contracts, tactics))
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
 }
+
+func TestMatchesSetTrainings(t *testing.T) {
+	t.Parallel()
+	var matches engine.Matches
+	teamID := "3"
+	matches = append(matches, *engine.NewMatch())
+	matches = append(matches, *engine.NewMatch())
+	matches[0].HomeTeam.TeamID = teamID
+	matches[1].VisitorTeam.TeamID = teamID
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
+	trainings := []storage.Training{}
+	training := storage.Training{}
+	training.TeamID = teamID
+	trainings = append(trainings, training)
+	assert.NilError(t, matches.SetTrainings(*bc.Contracts, trainings))
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
+}

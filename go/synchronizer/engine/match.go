@@ -124,7 +124,6 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	is2ndHalf := false
-	assignedTPs := big.NewInt(int64(0))
 	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
@@ -138,7 +137,7 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTactic, visitorTactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
-		[2]*big.Int{assignedTPs, assignedTPs},
+		[2]*big.Int{b.HomeTeam.AssignedTP, b.VisitorTeam.AssignedTP},
 	)
 	if err != nil {
 		return err
