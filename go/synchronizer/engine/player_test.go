@@ -5,12 +5,13 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"gotest.tools/assert"
+	"gotest.tools/golden"
 )
 
 func TestNullPlayer(t *testing.T) {
 	t.Parallel()
 	p := engine.NewPlayer()
-	assert.Equal(t, p.DumpState(), "skills: 0")
+	golden.Assert(t, dump.Sdump(p), t.Name()+".golden")
 }
 
 func TestPlayerToStorage(t *testing.T) {

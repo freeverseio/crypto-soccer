@@ -2,7 +2,6 @@ package engine
 
 import (
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -25,20 +24,6 @@ type Match struct {
 
 const isHomeStadium = true
 const isPlayoff = false
-
-func (b Match) DumpState() string {
-	var state string
-	state += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))
-	state += fmt.Sprintf("StartTime: %v\n", b.StartTime)
-	state += fmt.Sprintf("HomeTeam: %v\n", b.HomeTeam.DumpState())
-	state += fmt.Sprintf("VisitorTeam: %v\n", b.VisitorTeam.DumpState())
-	state += fmt.Sprintf("HomeGoals: %v\n", b.HomeGoals)
-	state += fmt.Sprintf("VisitorGoals: %v\n", b.VisitorGoals)
-	state += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
-	state += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
-	state += b.Events.DumpState()
-	return state
-}
 
 func NewMatch() *Match {
 	var mp Match

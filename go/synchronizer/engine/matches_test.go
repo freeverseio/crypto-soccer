@@ -40,15 +40,15 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		}
 		matches = append(matches, *match)
 	}
-	golden.Assert(t, matches.DumpState(), t.Name()+".begin.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
 	for i := 0; i < len(matches); i++ {
 		assert.NilError(t, matches[i].Play1stHalf(*bc.Contracts))
 	}
-	golden.Assert(t, matches.DumpState(), t.Name()+".half.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".half.golden")
 	for i := 0; i < len(matches); i++ {
 		assert.NilError(t, matches[i].Play2ndHalf(*bc.Contracts))
 	}
-	golden.Assert(t, matches.DumpState(), t.Name()+".end.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
 
 	matches = nil
 	for i := 0; i < 2; i++ {
@@ -60,9 +60,9 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		}
 		matches = append(matches, *match)
 	}
-	golden.Assert(t, matches.DumpState(), t.Name()+".begin.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
 	assert.NilError(t, matches.Play1stHalfParallel(context.Background(), *bc.Contracts))
-	golden.Assert(t, matches.DumpState(), t.Name()+".half.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".half.golden")
 	assert.NilError(t, matches.Play2ndHalfParallel(context.Background(), *bc.Contracts))
-	golden.Assert(t, matches.DumpState(), t.Name()+".end.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
 }
