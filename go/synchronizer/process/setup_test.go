@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
-	bc.Init()
+	bc.InitOneTimezone(1)
 	dump = spew.ConfigState{DisablePointerAddresses: true}
 	os.Exit(m.Run())
 }
