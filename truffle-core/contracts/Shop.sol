@@ -61,7 +61,7 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsPart2{
     function setMaxMatchesDuration(uint8 newVal) public { maxMatchesDuration = newVal; } 
     function setMaxItemsInOneOffering(uint16 newVal) public { maxItemsInOneOffering = newVal; } 
 
-    function init() public {
+    constructor() public {
         _shopItems.push(ShopItem(0, 0, 0, 0, 0, 0, 0, ""));
     }
 
@@ -124,5 +124,11 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsPart2{
         uint16 prevItemsRemaining = _shopItems[itemId].itemsRemaining;
         require(newItemsRemaining < prevItemsRemaining, "new value for itemsRemaining is larger than previous value, yet calling it reduce?");
         _shopItems[itemId].itemsRemaining = newItemsRemaining;
+    }
+    
+    function validateItemsInTactics(uint256 tactics) public view {
+        ( , uint16 itemId, uint32 boost) = getItemsData(tactics);
+        require(itemId < _shopItems.length, "item not found in shop");
+        require(_shopItems[itemId].encodedBoost == boost, "tactics refer to an item with mismatching boost properties");
     }
 }

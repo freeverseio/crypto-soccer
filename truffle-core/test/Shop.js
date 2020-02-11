@@ -18,7 +18,6 @@ contract('Shop', (accounts) => {
 
     beforeEach(async () => {
         shop = await Shop.new().should.be.fulfilled;
-        await shop.init().should.be.fulfilled;
         encTactics = await EncodingTactics.new().should.be.fulfilled;
     });
 

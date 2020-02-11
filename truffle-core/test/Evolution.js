@@ -15,6 +15,7 @@ const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
+const Shop = artifacts.require('Shop');
 
 
 contract('Evolution', (accounts) => {
@@ -196,6 +197,7 @@ contract('Evolution', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.init().should.be.fulfilled;
+        shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
@@ -205,6 +207,7 @@ contract('Evolution', (accounts) => {
         await play.setEngineAddress(engine.address).should.be.fulfilled;
         await play.setTrainingAddress(training.address).should.be.fulfilled;
         await play.setEvolutionAddress(evo.address).should.be.fulfilled;
+        await play.setShopAddress(shop.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
@@ -291,8 +294,6 @@ contract('Evolution', (accounts) => {
             } 
         }
     });
-    
-    return;
     
     it('updateSkillsAfterPlayHalf: half 2', async () => {
         // note: substitutions = [6, 10, 0];

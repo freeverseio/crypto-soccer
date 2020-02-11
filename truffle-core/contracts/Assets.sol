@@ -52,14 +52,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
     
-   
-    // skills idxs: Defence, Speed, Pass, Shoot, Endurance
-    uint8 constant public SK_SHO = 0;
-    uint8 constant public SK_SPE = 1;
-    uint8 constant public SK_PAS = 2;
-    uint8 constant public SK_DEF = 3;
-    uint8 constant public SK_END = 4;
-    
     mapping(uint256 => uint256) private _playerIdToState;
 
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].

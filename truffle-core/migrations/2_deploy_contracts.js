@@ -47,6 +47,7 @@ module.exports = function (deployer) {
     await playAndEvolve.setTrainingAddress(trainingPoints.address);
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
+    await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
     console.log("Setting up ... done");
     if (deployer.network === "prod") {
