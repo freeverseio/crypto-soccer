@@ -15,7 +15,8 @@ const HardInjury = uint8(2)
 
 type Team struct {
 	storage.Team
-	Players [25]*Player
+	Players    [25]*Player
+	AssignedTP *big.Int
 }
 
 func NewTeam() *Team {
@@ -24,6 +25,7 @@ func NewTeam() *Team {
 	for i := range team.Players {
 		team.Players[i] = NewPlayer()
 	}
+	team.AssignedTP = big.NewInt(0)
 	return &team
 }
 

@@ -564,7 +564,8 @@
 						InjuryMatchesLeft: (uint8) 0
 					}
 				})
-			}
+			},
+			AssignedTP: (*big.Int)(0)
 		},
 		VisitorTeam: (engine.Team) {
 			Team: (storage.Team) {
@@ -1112,7 +1113,8 @@
 						InjuryMatchesLeft: (uint8) 0
 					}
 				})
-			}
+			},
+			AssignedTP: (*big.Int)(0)
 		},
 		Events: (matchevents.MatchEvents) (len=28 cap=29) {
 			(matchevents.MatchEvent) {
@@ -1934,7 +1936,8 @@
 						InjuryMatchesLeft: (uint8) 0
 					}
 				})
-			}
+			},
+			AssignedTP: (*big.Int)(0)
 		},
 		VisitorTeam: (engine.Team) {
 			Team: (storage.Team) {
@@ -2482,7 +2485,8 @@
 						InjuryMatchesLeft: (uint8) 0
 					}
 				})
-			}
+			},
+			AssignedTP: (*big.Int)(0)
 		},
 		Events: (matchevents.MatchEvents) (len=28 cap=29) {
 			(matchevents.MatchEvent) {

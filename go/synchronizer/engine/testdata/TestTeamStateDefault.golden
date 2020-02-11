@@ -544,5 +544,6 @@
 				InjuryMatchesLeft: (uint8) 0
 			}
 		})
-	}
+	},
+	AssignedTP: (*big.Int)(0)
 })
