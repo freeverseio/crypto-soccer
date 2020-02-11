@@ -30,8 +30,6 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	match.StartTime = big.NewInt(1570147200)
 	match.HomeTeam.TeamID = "1"
 	match.VisitorTeam.TeamID = "2"
-	match.HomeMatchLog = big.NewInt(int64(0))
-	match.VisitorMatchLog = big.NewInt(int64(0))
 	err := match.Play1stHalf(*bc.Contracts)
 	assert.NilError(t, err)
 	golden.Assert(t, match.DumpState(), t.Name()+".golden")

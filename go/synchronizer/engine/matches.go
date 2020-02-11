@@ -55,24 +55,6 @@ func NewMatchesFromTimezoneIdxMatchdayIdx(
 	return &matches, nil
 }
 
-func (b *Matches) Play1stHalf(contracts contracts.Contracts) error {
-	for i := 0; i < len(*b); i++ {
-		if err := (*b)[i].Play1stHalf(contracts); err != nil {
-			return fmt.Errorf("%s: %s", err.Error(), (*b)[i].DumpState())
-		}
-	}
-	return nil
-}
-
-func (b *Matches) Play2ndHalf(contracts contracts.Contracts) error {
-	for i := 0; i < len(*b); i++ {
-		if err := (*b)[i].Play2ndHalf(contracts); err != nil {
-			return fmt.Errorf("%s: %s", err.Error(), (*b)[i].DumpState())
-		}
-	}
-	return nil
-}
-
 func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
 	numWorkers := runtime.NumCPU()
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100

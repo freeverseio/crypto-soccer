@@ -8,48 +8,25 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/helper"
-	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
 	"gotest.tools/assert"
 )
 
 func TestSyncTeams(t *testing.T) {
-	t.Skip("******************************* ACTIVATE **********************************")
+	t.Parallel()
 	tx, err := universedb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	defer tx.Rollback()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-	namesdb, err := names.New("../../names/sql/names.db")
-	if err != nil {
-		t.Fatal(err)
-	}
 	p, err := process.NewEventProcessor(
 		bc.Contracts,
 		namesdb,
 		ipfsURL,
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := p.Process(tx, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count == 0 {
-		t.Fatal("processed 0 blocks")
-	}
+	assert.NilError(t, err)
+	_, err = p.Process(tx, 0)
+	assert.NilError(t, err)
 
 	// the null timezone (0) is only used by the Academy Team
 	if count, err := storage.TimezoneCount(tx); err != nil {
