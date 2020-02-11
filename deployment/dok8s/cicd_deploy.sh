@@ -56,3 +56,5 @@ echo -- deploying relayactions, synchronizer and horizon
 echo $KUBECTL apply -f ${MY_DIR}/relayactions.yaml -n ${NAMESPACE} | bash
 echo $KUBECTL apply -f ${MY_DIR}/synchronizer.yaml -n ${NAMESPACE} | bash
 echo $KUBECTL apply -f ${MY_DIR}/horizon.yaml      -n ${NAMESPACE} | bash
+
+rm cert.crt
