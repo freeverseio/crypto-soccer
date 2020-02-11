@@ -472,6 +472,36 @@ contract('Evolution', (accounts) => {
         }
     });
     
+    it('applyTrainingPoints with recovery stamina', async () => {
+        const [TP, TPperSkill] = getDefaultTPs();
+        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        matchStartTime = now;
+        staminas = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => i % 4); 
+        gamesNonStopping = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => i % 7); 
+        skills = [...teamStateAll50Half2];
+        for (p = 0; p < PLAYERS_PER_TEAM_MAX; p++){
+            skills[p] = await evo.setGamesNonStopping(skills[p], gamesNonStopping[p]).should.be.fulfilled;
+        }
+        tactics = await training.setStaminaRecovery(initTactics = 0, staminas);
+        newSkills = await training.applyTrainingPoints(skills, assignment, tactics, matchStartTime, TP+1).should.be.rejected;
+        newSkills = await training.applyTrainingPoints(skills, assignment, tactics, matchStartTime, TP).should.be.fulfilled;
+        newGamesNonStopping = [];
+        expectedGamesNonStopping = [];
+        for (p = 0; p < 25; p++) {
+            result = await training.getShoot(newSkills[p]).should.be.fulfilled;
+            if (p == specialPlayer) result.toNumber().should.be.equal(110);
+            else result.toNumber().should.be.equal(105);
+            result = await evo.getGamesNonStopping(newSkills[p]).should.be.fulfilled;
+            newGamesNonStopping.push(result);
+            expected = 0;
+            if (staminas[p] == 0) { expected = gamesNonStopping[p] }
+            else if (staminas[p] == 3 || gamesNonStopping[p] <= 2*staminas[p] ) { expected = 0 }
+            else { expected = gamesNonStopping[p] - 2 * staminas[p]}
+            expectedGamesNonStopping.push(expected)
+        }
+        debug.compareArrays(newGamesNonStopping, expectedGamesNonStopping, toNum = true, verbose = false);
+    });
+    
     it('applyTrainingPoints with realistic team and zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
