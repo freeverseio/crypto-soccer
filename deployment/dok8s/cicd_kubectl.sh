@@ -1,3 +1,4 @@
+#! /bin/bash
 usage()
 {
     echo this script runs a kubectl command on behalf of cicd service account
