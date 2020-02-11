@@ -66,3 +66,13 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 	assert.NilError(t, matches.Play2ndHalfParallel(context.Background(), *bc.Contracts))
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
 }
+
+func TestMatchesApplyUserActions(t *testing.T) {
+	t.Parallel()
+	var matches engine.Matches
+	for i := 0; i < 2; i++ {
+		match := engine.NewMatch()
+		matches = append(matches, *match)
+	}
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
+}

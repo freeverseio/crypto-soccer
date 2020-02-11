@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
-	dump = spew.ConfigState{DisablePointerAddresses: true}
+	dump = spew.ConfigState{DisablePointerAddresses: true, Indent: "\t"}
 	os.Exit(m.Run())
 }
 

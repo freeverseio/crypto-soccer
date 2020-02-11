@@ -10,6 +10,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/useractions"
 )
 
 type Matches []Match
@@ -110,6 +111,10 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 	}
 	close(matchesChannel)
 	return g.Wait()
+}
+
+func (b *Matches) SetUserActions(ua useractions.UserActions) {
+
 }
 
 func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
