@@ -75,6 +75,13 @@ contract('Evolution', (accounts) => {
     const teamSumSkillsDefault = 0;
     const trainingPointsInit = 0;
     
+    // Skills: shoot, speed, pass, defence, endurance
+    const SK_SHO = 0;
+    const SK_SPE = 1;
+    const SK_PAS = 2;
+    const SK_DEF = 3;
+    const SK_END = 4;
+    
     const it2 = async(text, f) => {};
 
     function setNoSubstInLineUp(lineup, substitutions) {
@@ -334,8 +341,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
         debug.compareArrays(newSkills2, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
     });
-    
-    
+
     it('training leading to an actual son', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
@@ -393,7 +399,7 @@ contract('Evolution', (accounts) => {
         N_SKILLS = 5;
         results = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
-            result = await encoding.getSkill(skills, sk).should.be.fulfilled;
+            result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
         debug.compareArrays(results, expected, toNum = true, verbose = false);
@@ -435,7 +441,7 @@ contract('Evolution', (accounts) => {
         expected = [ 755, 920, 1455, 762, 1107 ];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
-            result = await encoding.getSkill(newSkills, sk).should.be.fulfilled;
+            result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
         debug.compareArrays(results, expected, toNum = true, verbose = false);
@@ -464,7 +470,7 @@ contract('Evolution', (accounts) => {
         newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment, tactics = 0, matchStartTime, TP+1).should.be.rejected;
         newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment, tactics = 0, matchStartTime, TP).should.be.fulfilled;
         for (p = 0; p < 25; p++) {
-            result = await training.getShoot(newSkills[p]).should.be.fulfilled;
+            result = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
             if (p == specialPlayer) result.toNumber().should.be.equal(110);
             else result.toNumber().should.be.equal(105);
         }
@@ -486,7 +492,7 @@ contract('Evolution', (accounts) => {
         newGamesNonStopping = [];
         expectedGamesNonStopping = [];
         for (p = 0; p < 25; p++) {
-            result = await training.getShoot(newSkills[p]).should.be.fulfilled;
+            result = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
             if (p == specialPlayer) result.toNumber().should.be.equal(110);
             else result.toNumber().should.be.equal(105);
             result = await evo.getGamesNonStopping(newSkills[p]).should.be.fulfilled;
@@ -513,8 +519,8 @@ contract('Evolution', (accounts) => {
         expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
         for (p = 0; p < 18; p++) {
-            result0 = await training.getShoot(teamState[p]).should.be.fulfilled;
-            result1 = await training.getShoot(newSkills[p]).should.be.fulfilled;
+            result0 = await training.getSkill(teamState[p], SK_SHO).should.be.fulfilled;
+            result1 = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
             initShoot.push(result0)
             newShoot.push(result1)
         }
@@ -535,8 +541,8 @@ contract('Evolution', (accounts) => {
         expectedNewShoot  = [ 673, 480, 869, 987, 1015, 739, 591, 772, 1009, 1506, 906, 1178, 1452, 1147, 905, 816, 603, 1120 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554,  751,  815, 1474, 680,  930, 1181, 1103, 697, 622, 566,  931 ];
         for (p = 0; p < 18; p++) {
-            result0 = await training.getShoot(teamState[p]);
-            result1 = await training.getShoot(newSkills[p]);
+            result0 = await training.getSkill(teamState[p], SK_SHO);
+            result1 = await training.getSkill(newSkills[p], SK_SHO);
             initShoot.push(result0)
             newShoot.push(result1)
         }
@@ -567,7 +573,7 @@ contract('Evolution', (accounts) => {
         expected = [110,120,130,140,150]; // at zero potential, it's easy
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
-            result = await encoding.getSkill(newSkills, sk).should.be.fulfilled;
+            result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
         debug.compareArrays(results, expected, toNum = true, verbose = false);
@@ -596,7 +602,7 @@ contract('Evolution', (accounts) => {
         expected = skills;
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
-            result = await encoding.getSkill(newSkills, sk).should.be.fulfilled;
+            result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
         debug.compareArrays(results, expected, toNum = true, verbose = false);
@@ -626,7 +632,7 @@ contract('Evolution', (accounts) => {
         expected = [ 113, 126, 140, 153, 166 ];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
-            result = await encoding.getSkill(newSkills, sk).should.be.fulfilled;
+            result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
         debug.compareArrays(results, expected, toNum = true, verbose = false);
@@ -660,7 +666,7 @@ contract('Evolution', (accounts) => {
         expected = [121, 143, 165, 186, 208];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
-            result = await encoding.getSkill(newSkills, sk).should.be.fulfilled;
+            result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
         debug.compareArrays(results, expected, toNum = true, verbose = false);
@@ -693,7 +699,7 @@ contract('Evolution', (accounts) => {
         expected = [968, 1968, 2968, 3968, 4968]; // -32 per game
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
-            result = await encoding.getSkill(newSkills, sk).should.be.fulfilled;
+            result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
         debug.compareArrays(results, expected, toNum = true, verbose = false);
