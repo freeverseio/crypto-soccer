@@ -33,7 +33,7 @@ contract EncodingSkillsSetters {
     uint8 constant private IDX_LCR = 7;
 
     function setSkill(uint256 encodedSkills, uint256 val, uint8 skillIdx) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(65535) << (16 * skillIdx))) | (val << (16 * skillIdx));
+        return (encodedSkills & ~(uint256(65535) << (16 * uint256(skillIdx)))) | (val << (16 * uint256(skillIdx)));
     }
 
     function setPotential(uint256 encodedSkills, uint256 val) public pure returns (uint256) {

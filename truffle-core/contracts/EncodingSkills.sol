@@ -81,7 +81,7 @@ contract EncodingSkills {
         require(playerId > 0 && playerId < 2**43, "playerId out of bound");
 
         // start encoding:
-        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+        for (uint32 sk = 0; sk < N_SKILLS; sk++) {
             encoded |= uint256(skills[sk]) << 16 * sk;
         }
         encoded |= dayOfBirth << 80;
@@ -100,7 +100,7 @@ contract EncodingSkills {
     }
 
     function getSkill(uint256 encodedSkills, uint8 skillIdx) public pure returns (uint256) {
-        return (encodedSkills >> (skillIdx * 16)) & 65535; // 65535 = 2**16 - 1
+        return (encodedSkills >> (uint256(skillIdx) * 16)) & 65535; // 65535 = 2**16 - 1
     }
 
     function getBirthDay(uint256 encodedSkills) public pure returns (uint256) {

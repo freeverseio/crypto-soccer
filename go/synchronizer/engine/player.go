@@ -40,23 +40,28 @@ func (b Player) DumpState() string {
 func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
 	opts := &bind.CallOpts{}
 	var err error
-	defence, err := contracts.Assets.GetDefence(opts, b.sto.EncodedSkills)
+	SK_SHO := uint8(0)
+	SK_SPE := uint8(1)
+	SK_PAS := uint8(2)
+	SK_DEF := uint8(3)
+	SK_END := uint8(4)
+	defence, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_DEF)
 	if err != nil {
 		return b.sto, err
 	}
-	speed, err := contracts.Assets.GetSpeed(opts, b.sto.EncodedSkills)
+	speed, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_SPE)
 	if err != nil {
 		return b.sto, err
 	}
-	pass, err := contracts.Assets.GetPass(opts, b.sto.EncodedSkills)
+	pass, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_PAS)
 	if err != nil {
 		return b.sto, err
 	}
-	shoot, err := contracts.Assets.GetShoot(opts, b.sto.EncodedSkills)
+	shoot, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_SHO)
 	if err != nil {
 		return b.sto, err
 	}
-	endurance, err := contracts.Assets.GetEndurance(opts, b.sto.EncodedSkills)
+	endurance, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_END)
 	if err != nil {
 		return b.sto, err
 	}

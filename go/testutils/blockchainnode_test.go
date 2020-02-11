@@ -25,5 +25,6 @@ func TestConctactsDeploy(t *testing.T) {
 	assert.Assert(t, bc.Contracts.Market != nil)
 	assert.Assert(t, bc.Contracts.Utilsmatchlog != nil)
 	assert.Assert(t, bc.Contracts.PlayAndEvolve != nil)
+	assert.Assert(t, bc.Contracts.Shop != nil)
 	assert.Assert(t, bc.Contracts.TrainingPoints != nil)
 }

@@ -75,6 +75,7 @@ if __name__ == "__main__":
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Evolution.json'), 'evolution', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'TrainingPoints.json'), 'trainingpoints', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'PlayAndEvolve.json'), 'playandevolve', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'Shop.json'), 'shop', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'UtilsMatchLog.json'), 'utilsmatchlog', dests)
 
 

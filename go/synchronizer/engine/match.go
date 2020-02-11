@@ -234,11 +234,11 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	}
 	log.Debugf("Full decoded match log 0: %v", log0)
 	log.Debugf("Full decoded match log 1: %v", log1)
-	decodedTactics0, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.HomeTeam.tactic)
+	decodedTactics0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, b.HomeTeam.tactic)
 	if err != nil {
 		return err
 	}
-	decodedTactics1, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.VisitorTeam.tactic)
+	decodedTactics1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, b.VisitorTeam.tactic)
 	if err != nil {
 		return err
 	}
