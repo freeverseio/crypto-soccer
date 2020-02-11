@@ -11,7 +11,7 @@ executors:
   freeverse_ethereum:
     docker:
       - image: freeverseio/circleci
-      - image: freeverseio/ethereum:test
+      - image: freeverseio/xdai:test
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
@@ -64,7 +64,7 @@ jobs:
       - image: ipfs/go-ipfs:v0.4.18
         environment:
           - IPFS_PROFILE=server
-      - image: freeverseio/ethereum:test
+      - image: freeverseio/xdai:test
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
