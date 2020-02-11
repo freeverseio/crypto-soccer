@@ -27,6 +27,7 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsPart2{
     uint8 constant public SK_DEF = 3;
     uint8 constant public SK_END = 4;
     uint8 constant public N_SKILLS = 5;
+    uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
 
     struct ShopItem {
         // boosts from [0,..4] -> in percentage, order: shoot, speed, pass, defence, endurance
@@ -121,8 +122,8 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsPart2{
         }
     }
     
-    function addItemsToTactics(uint256 tactics, uint16 itemId, uint8 staminaRecovery) public view returns(uint256) {
-        if (staminaRecovery > 0) tactics = setStaminaRecovery(tactics, staminaRecovery);
+    function addItemsToTactics(uint256 tactics, uint16 itemId, uint8[PLAYERS_PER_TEAM_MAX] memory staminaRecovery) public view returns(uint256) {
+        tactics = setStaminaRecovery(tactics, staminaRecovery);
         if (itemId > 0) {
             require(itemId < _shopItems.length, "item not found in shop");
             tactics = setItemId(tactics, itemId);

@@ -91,9 +91,13 @@ contract('Shop', (accounts) => {
             extraAttackNull, tacticsId = 2).should.be.fulfilled;
         
         // add item effect to tactics
-        tactics2 = await shop.addItemsToTactics(tactics, itemId = 1, staminaRecovery = 2).should.be.fulfilled;
+        // stamina recovery items:
+        PLAYERS_PER_TEAM_MAX = 25;
+        staminas = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => i % 4); 
+        // shop items:
+        tactics2 = await shop.addItemsToTactics(tactics, itemId = 1, staminas).should.be.fulfilled;
         const {0: stamina, 1: id, 2: boost} = await shop.getItemsData(tactics2).should.be.fulfilled;
-        stamina.toNumber().should.be.equal(staminaRecovery);
+        debug.compareArrays(stamina, staminas, toNum = true, verbose = false, isBigNumber = false);
         id.toNumber().should.be.equal(itemId);
         boost.should.be.bignumber.equal(encodedBoost);
         
