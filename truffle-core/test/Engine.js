@@ -11,6 +11,7 @@ const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const EnginePreComp = artifacts.require('EnginePreComp');
+const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 
 contract('Engine', (accounts) => {
@@ -136,7 +137,9 @@ contract('Engine', (accounts) => {
         await assets.init().should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
+        applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
         await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
+        await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
@@ -160,10 +163,34 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
     
+    
+    
+    it('test apply boosters', async () => {
+        tact = await applyBoosters.setItemId(tacticId442, itemId = 1).should.be.fulfilled;
+        encodedBoost = await applyBoosters.encodeBoosts(boost = [10,15,20,25,30,1]).should.be.fulfilled;
+        tact = await applyBoosters.setItemBoost(tact, encodedBoost).should.be.fulfilled;
+        newSkills = await applyBoosters.applyItemBoost(teamStateAll50Half1, tact).should.be.fulfilled;
+        initSkill = 50;
+        for (p = 0; p < 5; p++) {
+            for (sk = 0; sk < 5; sk++) {
+                // shoot, speed, pass, defence, endurance
+                var playerSkills;
+                if (sk == 0) playerSkills = await assets.getShoot(newSkills[p]).should.be.fulfilled;
+                if (sk == 1) playerSkills = await assets.getSpeed(newSkills[p]).should.be.fulfilled;
+                if (sk == 2) playerSkills = await assets.getPass(newSkills[p]).should.be.fulfilled;
+                if (sk == 3) playerSkills = await assets.getDefence(newSkills[p]).should.be.fulfilled;
+                if (sk == 4) playerSkills = await assets.getEndurance(newSkills[p]).should.be.fulfilled;
+                expected = Math.floor(initSkill * (boost[sk]+100)/100);
+                playerSkills.toNumber().should.be.equal(expected);
+            }
+        }
+    });
+    
     it('wasPlayerAlignedEndOfLastHalf', async () => {
         seedForRedCard = seed + 83;
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
+        
         // as seen in a test below, there is a redCard for player 9 at round 1
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0).should.be.fulfilled;
         newLog = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics, tactics], [0, 0], [is2nd = false, isHomeStadium,  playoff = false]).should.be.fulfilled;
@@ -171,6 +198,7 @@ contract('Engine', (accounts) => {
         expected[2] = false; 
         expected[1] = false; 
         expected[12] = false; 
+        
         for (p = 0; p < 14; p++) {
             result = await engine.wasPlayerAlignedEndOfLastHalf(p, tactics, newLog[0]).should.be.fulfilled;
             result.should.be.equal(expected[p]);

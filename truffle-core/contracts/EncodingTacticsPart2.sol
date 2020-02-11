@@ -6,6 +6,7 @@ pragma solidity >=0.5.12 <0.6.2;
 contract EncodingTacticsPart2 {
 
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
+    uint8 constant private N_SKILLS = 5;
 
     function setStaminaRecovery(uint256 tactics, uint8[PLAYERS_PER_TEAM_MAX] memory vals) public pure returns(uint256) {
 
@@ -35,5 +36,21 @@ contract EncodingTacticsPart2 {
             uint32((tactics >> 173) & 4294967295)
         );
     }
+    
+    // bits: 5 skills * 6b per skill (max 64) + 2b for potential = 32b
+    function encodeBoosts(uint8[N_SKILLS+1] memory skillsBoost) public pure returns(uint32 encoded) {
+        require(skillsBoost[N_SKILLS] < 4, "cannot offer items that boost potential so much");
+        for (uint8 sk = 0; sk <= N_SKILLS; sk++) {
+            encoded |= (uint32(skillsBoost[sk]) << 6*sk);
+        }
+    }
+
+    function decodeBoosts(uint32 encoded) public pure returns(uint8[N_SKILLS+1] memory skillsBoost) {
+        for (uint8 sk = 0; sk <= N_SKILLS; sk++) {
+            skillsBoost[sk] = uint8((encoded >> 6*sk) & 63);
+        }
+    }
+    
+
 
 }

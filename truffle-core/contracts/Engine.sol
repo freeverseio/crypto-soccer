@@ -3,9 +3,10 @@ pragma solidity >=0.5.12 <0.6.2;
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLogPart3.sol";
-import "./EncodingTacticsPart1.sol";
+import "./EncodingTactics.sol";
+import "./EngineApplyBoosters.sol";
 
-contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTacticsPart1  {
+contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 public constant MAX_GOALS_IN_MATCH  = 15;   // Max number of goals that one single team in an entire match (no restriction on which half)
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
@@ -28,9 +29,14 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTacticsPart1  {
     uint8 private constant WINNER_DRAW = 2;
 
     EnginePreComp private _precomp;
+    EngineApplyBoosters private _applyBoosters;
 
     function setPreCompAddr(address addr) public {
         _precomp = EnginePreComp(addr);
+    }
+
+    function setApplyBoostersAddr(address addr) public {
+        _applyBoosters = EngineApplyBoosters(addr);
     }
 
 
@@ -183,10 +189,11 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTacticsPart1  {
     {
         uint8 tacticsId;
         (matchLog, linedUpSkills, tacticsId) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
+        linedUpSkills = _applyBoosters.applyItemBoost(linedUpSkills, tactics);
         matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, seed); 
         return (matchLog, linedUpSkills, getPlayersPerZone(tacticsId));
     }
-
+    
     // adds to the matchLog the number of defenders actually linedUp (some skills could be empty slots)
     function writeNDefs(
         uint256 matchLog, 
