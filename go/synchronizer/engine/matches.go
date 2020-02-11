@@ -8,9 +8,10 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	sto "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go/useractions"
 )
 
 type Matches []Match
@@ -113,8 +114,60 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 	return g.Wait()
 }
 
-func (b *Matches) SetUserActions(ua useractions.UserActions) {
-
+func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic) error {
+	for _, tactic := range tactics {
+		substitutions := [3]uint8{11, 11, 11}
+		substitutionsMinute := [3]uint8{2, 3, 4}
+		formation := [14]uint8{
+			uint8(tactic.Shirt0),
+			uint8(tactic.Shirt1),
+			uint8(tactic.Shirt2),
+			uint8(tactic.Shirt3),
+			uint8(tactic.Shirt4),
+			uint8(tactic.Shirt5),
+			uint8(tactic.Shirt6),
+			uint8(tactic.Shirt7),
+			uint8(tactic.Shirt8),
+			uint8(tactic.Shirt9),
+			uint8(tactic.Shirt10),
+			uint8(tactic.Shirt11),
+			uint8(tactic.Shirt12),
+			uint8(tactic.Shirt13),
+		}
+		extraAttack := [10]bool{
+			tactic.ExtraAttack1,
+			tactic.ExtraAttack2,
+			tactic.ExtraAttack3,
+			tactic.ExtraAttack4,
+			tactic.ExtraAttack5,
+			tactic.ExtraAttack6,
+			tactic.ExtraAttack7,
+			tactic.ExtraAttack8,
+			tactic.ExtraAttack9,
+			tactic.ExtraAttack10,
+		}
+		tacticID := uint8(tactic.TacticID)
+		encodedTactic, err := contracts.Engine.EncodeTactics(
+			&bind.CallOpts{},
+			substitutions,
+			substitutionsMinute,
+			formation,
+			extraAttack,
+			tacticID,
+		)
+		if err != nil {
+			return err
+		}
+		for i := range *b {
+			if tactic.TeamID == (*b)[i].HomeTeam.TeamID {
+				(*b)[i].HomeTeam.Tactic = encodedTactic.String()
+			}
+			if tactic.TeamID == (*b)[i].VisitorTeam.TeamID {
+				(*b)[i].VisitorTeam.Tactic = encodedTactic.String()
+			}
+		}
+	}
+	return nil
 }
 
 func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
