@@ -38,11 +38,10 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	player, err := storage.PlayerByPlayerId(tx, big.NewInt(274877906944))
-	if err != nil {
-		t.Fatal(err)
-	}
-	golden.Assert(t, dump.Sdump(player), t.Name()+".player.golden")
+	// player, err := storage.PlayerByPlayerId(tx, big.NewInt(274877906944))
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, 1, 0, 0, 0)
 	if err != nil {
 		t.Fatal(err)
