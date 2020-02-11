@@ -15,7 +15,7 @@ import (
 func TestDefaultMatch(t *testing.T) {
 	t.Parallel()
 	match := engine.NewMatch()
-	golden.Assert(t, match.DumpState(), t.Name()+".golden")
+	golden.Assert(t, dump.Sdump(match), t.Name()+".golden")
 }
 func TestDefaultValues(t *testing.T) {
 	t.Parallel()
@@ -32,7 +32,7 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	match.VisitorTeam.TeamID = "2"
 	err := match.Play1stHalf(*bc.Contracts)
 	assert.NilError(t, err)
-	golden.Assert(t, match.DumpState(), t.Name()+".golden")
+	golden.Assert(t, dump.Sdump(match), t.Name()+".golden")
 	assert.Equal(t, match.HomeGoals, uint8(0))
 	assert.Equal(t, match.VisitorGoals, uint8(0))
 }
@@ -59,13 +59,13 @@ func TestPlayGame(t *testing.T) {
 		m.HomeTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309339445376240739796176995438"))
 		m.VisitorTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309340654302060354425351701614"))
 	}
-	golden.Assert(t, m.DumpState(), t.Name()+".starting.golden")
+	golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
 	err := m.Play1stHalf(*bc.Contracts)
 	assert.NilError(t, err)
-	golden.Assert(t, m.DumpState(), t.Name()+".half.golden")
+	golden.Assert(t, dump.Sdump(m), t.Name()+".half.golden")
 	err = m.Play2ndHalf(*bc.Contracts)
 	assert.NilError(t, err)
-	golden.Assert(t, m.DumpState(), t.Name()+".ended.golden")
+	golden.Assert(t, dump.Sdump(m), t.Name()+".ended.golden")
 }
 
 func TestPlay2ndHalf(t *testing.T) {
@@ -107,15 +107,15 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 				m.HomeTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309339445376240739796176995438"))
 				m.VisitorTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309340654302060354425351701614"))
 			}
-			golden.Assert(t, m.DumpState(), t.Name()+".starting.golden")
+			golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
 			err := m.Play1stHalf(*bc.Contracts)
 			assert.NilError(t, err)
-			golden.Assert(t, m.DumpState(), t.Name()+".half.golden")
+			golden.Assert(t, dump.Sdump(m), t.Name()+".half.golden")
 			assert.Equal(t, m.HomeGoals, m.Events.HomeGoals())
 			assert.Equal(t, m.VisitorGoals, m.Events.VisitorGoals())
 			err = m.Play2ndHalf(*bc.Contracts)
 			assert.NilError(t, err)
-			golden.Assert(t, m.DumpState(), t.Name()+".ended.golden")
+			golden.Assert(t, dump.Sdump(m), t.Name()+".ended.golden")
 			assert.Equal(t, m.HomeGoals, m.Events.HomeGoals())
 			assert.Equal(t, m.VisitorGoals, m.Events.VisitorGoals())
 		})

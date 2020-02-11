@@ -2,7 +2,6 @@ package engine
 
 import (
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -25,20 +24,6 @@ type Match struct {
 
 const isHomeStadium = true
 const isPlayoff = false
-
-func (b Match) DumpState() string {
-	var state string
-	state += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))
-	state += fmt.Sprintf("StartTime: %v\n", b.StartTime)
-	state += fmt.Sprintf("HomeTeam: %v\n", b.HomeTeam.DumpState())
-	state += fmt.Sprintf("VisitorTeam: %v\n", b.VisitorTeam.DumpState())
-	state += fmt.Sprintf("HomeGoals: %v\n", b.HomeGoals)
-	state += fmt.Sprintf("VisitorGoals: %v\n", b.VisitorGoals)
-	state += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
-	state += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
-	state += b.Events.DumpState()
-	return state
-}
 
 func NewMatch() *Match {
 	var mp Match
@@ -139,7 +124,6 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	is2ndHalf := false
-	assignedTPs := big.NewInt(int64(0))
 	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
@@ -153,7 +137,7 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTactic, visitorTactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
-		[2]*big.Int{assignedTPs, assignedTPs},
+		[2]*big.Int{b.HomeTeam.AssignedTP, b.VisitorTeam.AssignedTP},
 	)
 	if err != nil {
 		return err

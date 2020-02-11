@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
@@ -40,15 +41,15 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		}
 		matches = append(matches, *match)
 	}
-	golden.Assert(t, matches.DumpState(), t.Name()+".begin.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
 	for i := 0; i < len(matches); i++ {
 		assert.NilError(t, matches[i].Play1stHalf(*bc.Contracts))
 	}
-	golden.Assert(t, matches.DumpState(), t.Name()+".half.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".half.golden")
 	for i := 0; i < len(matches); i++ {
 		assert.NilError(t, matches[i].Play2ndHalf(*bc.Contracts))
 	}
-	golden.Assert(t, matches.DumpState(), t.Name()+".end.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
 
 	matches = nil
 	for i := 0; i < 2; i++ {
@@ -60,9 +61,42 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		}
 		matches = append(matches, *match)
 	}
-	golden.Assert(t, matches.DumpState(), t.Name()+".begin.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
 	assert.NilError(t, matches.Play1stHalfParallel(context.Background(), *bc.Contracts))
-	golden.Assert(t, matches.DumpState(), t.Name()+".half.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".half.golden")
 	assert.NilError(t, matches.Play2ndHalfParallel(context.Background(), *bc.Contracts))
-	golden.Assert(t, matches.DumpState(), t.Name()+".end.golden")
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
+}
+
+func TestMatchesSetTactics(t *testing.T) {
+	t.Parallel()
+	var matches engine.Matches
+	teamID := "3"
+	matches = append(matches, *engine.NewMatch())
+	matches = append(matches, *engine.NewMatch())
+	matches[0].HomeTeam.TeamID = teamID
+	matches[1].VisitorTeam.TeamID = teamID
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
+	tactics := []storage.Tactic{}
+	tactic := storage.Tactic{0, 0, teamID, 1, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
+	tactics = append(tactics, tactic)
+	assert.NilError(t, matches.SetTactics(*bc.Contracts, tactics))
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
+}
+
+func TestMatchesSetTrainings(t *testing.T) {
+	t.Parallel()
+	var matches engine.Matches
+	teamID := "3"
+	matches = append(matches, *engine.NewMatch())
+	matches = append(matches, *engine.NewMatch())
+	matches[0].HomeTeam.TeamID = teamID
+	matches[1].VisitorTeam.TeamID = teamID
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
+	trainings := []storage.Training{}
+	training := storage.Training{}
+	training.TeamID = teamID
+	trainings = append(trainings, training)
+	assert.NilError(t, matches.SetTrainings(*bc.Contracts, trainings))
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
 }
