@@ -158,6 +158,7 @@ func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic
 		)
 		if err != nil {
 			log.Errorf("%v %v", err.Error(), tactic)
+			continue
 		}
 		for i := range *b {
 			if tactic.TeamID == (*b)[i].HomeTeam.TeamID {
@@ -213,6 +214,7 @@ func (b *Matches) SetTrainings(contracts contracts.Contracts, trainings []sto.Tr
 				)
 				if err != nil {
 					log.Errorf("%v %v", err.Error(), training)
+					continue
 				}
 				(*b)[i].HomeTeam.AssignedTP = encodedTraining
 			}
@@ -225,6 +227,7 @@ func (b *Matches) SetTrainings(contracts contracts.Contracts, trainings []sto.Tr
 				)
 				if err != nil {
 					log.Errorf("%v %v", err.Error(), training)
+					continue
 				}
 				(*b)[i].VisitorTeam.AssignedTP = encodedTraining
 			}
