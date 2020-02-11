@@ -11,7 +11,7 @@ const version = require("../package.json").version;
 program
   .version(version)
   .option("-p, --port <port>", "server port", "4000")
-  .option("-d, --databaseUrl <url>", "set the database url")
+  .option("-d, --databaseUrl <url>", "set the database url", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
   .option("-e, --ethereum <url>", "Ethereum node url", "http://localhost:8545")
   .option("-k, --privateKey <pk>", "private key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
   .option("-a, --assetsContractAddress <address>", "assets contract address")
