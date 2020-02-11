@@ -55,10 +55,12 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("Staring process of verse %v, timezone %v", currentVerse, nextToUpdate.TimeZone)
-	upcomingUserActions, err := useractions.NewFromStorage(tx, storage.UpcomingVerse, int(nextToUpdate.TimeZone))
-	if err != nil {
-		return err
+	log.Infof("Staring process of verse %v, timezone %v, day %v, turn %v", currentVerse, nextToUpdate.TimeZone, nextToUpdate.Day, nextToUpdate.TurnInDay)
+	upcomingUserActions := useractions.New()
+	if nextToUpdate.TurnInDay <= 1 {
+		if upcomingUserActions, err = useractions.NewFromStorage(tx, storage.UpcomingVerse, int(nextToUpdate.TimeZone)); err != nil {
+			return err
+		}
 	}
 	upcomingUserActions.UpdateVerse(currentVerse.Uint64())
 	root, err := upcomingUserActions.Root()

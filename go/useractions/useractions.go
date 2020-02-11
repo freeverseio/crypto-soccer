@@ -39,6 +39,10 @@ func (b *UserActions) Equal(actions *UserActions) bool {
 	return true
 }
 
+func New() *UserActions {
+	return &UserActions{}
+}
+
 func NewFromIpfs(url string, cid string) (*UserActions, error) {
 	var ua UserActions
 	sh := shell.NewShell(url)
