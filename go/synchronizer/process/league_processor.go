@@ -84,13 +84,28 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			}
 		}
 	}
-	if err := b.applyTactics(tx, event); err != nil {
+	log.Infof("Retriving user actions %v from ipfs node %v", event.Cid, b.ipfsURL)
+	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.Cid)
+	if err != nil {
 		return err
+	}
+	root, err := userActions.Root()
+	if err != nil {
+		return err
+	}
+	if root != event.Root {
+		return fmt.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
 	}
 
 	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
 	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 	if err != nil {
+		return err
+	}
+	if err := matches.SetTactics(*b.contracts, userActions.Tactics); err != nil {
+		return err
+	}
+	if err := matches.SetTrainings(*b.contracts, userActions.Trainings); err != nil {
 		return err
 	}
 	switch turnInDay {
@@ -110,71 +125,6 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	log.Infof("Timezone %v save matches to storage", timezoneIdx)
 	if err = matches.ToStorage(*b.contracts, tx); err != nil {
 		return err
-	}
-	return nil
-}
-
-func (b LeagueProcessor) applyTactics(tx *sql.Tx, event updates.UpdatesActionsSubmission) error {
-	log.Infof("Retriving user actions %v from ipfs node %v", event.Cid, b.ipfsURL)
-	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.Cid)
-	if err != nil {
-		return err
-	}
-	root, err := userActions.Root()
-	if err != nil {
-		return err
-	}
-	if root != event.Root {
-		return fmt.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
-	}
-	log.Info("Applying tactics ...")
-	for _, tactic := range userActions.Tactics {
-		substitutions := [3]uint8{11, 11, 11}
-		substitutionsMinute := [3]uint8{2, 3, 4}
-		formation := [14]uint8{
-			uint8(tactic.Shirt0),
-			uint8(tactic.Shirt1),
-			uint8(tactic.Shirt2),
-			uint8(tactic.Shirt3),
-			uint8(tactic.Shirt4),
-			uint8(tactic.Shirt5),
-			uint8(tactic.Shirt6),
-			uint8(tactic.Shirt7),
-			uint8(tactic.Shirt8),
-			uint8(tactic.Shirt9),
-			uint8(tactic.Shirt10),
-			uint8(tactic.Shirt11),
-			uint8(tactic.Shirt12),
-			uint8(tactic.Shirt13),
-		}
-		extraAttack := [10]bool{
-			tactic.ExtraAttack1,
-			tactic.ExtraAttack2,
-			tactic.ExtraAttack3,
-			tactic.ExtraAttack4,
-			tactic.ExtraAttack5,
-			tactic.ExtraAttack6,
-			tactic.ExtraAttack7,
-			tactic.ExtraAttack8,
-			tactic.ExtraAttack9,
-			tactic.ExtraAttack10,
-		}
-		tacticID := uint8(tactic.TacticID)
-		encodedTactic, err := b.contracts.Engine.EncodeTactics(
-			&bind.CallOpts{},
-			substitutions,
-			substitutionsMinute,
-			formation,
-			extraAttack,
-			tacticID,
-		)
-		if err != nil {
-			log.Errorf("%v: %+v", err.Error(), tactic)
-			continue
-		}
-		if err = storage.TeamSetTactic(tx, tactic.TeamID, encodedTactic.String()); err != nil {
-			return err
-		}
 	}
 	return nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	sto "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type Matches []Match
@@ -156,7 +157,7 @@ func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic
 			tacticID,
 		)
 		if err != nil {
-			return err
+			log.Errorf("%v %v", err.Error(), tactic)
 		}
 		for i := range *b {
 			if tactic.TeamID == (*b)[i].HomeTeam.TeamID {
@@ -211,7 +212,7 @@ func (b *Matches) SetTrainings(contracts contracts.Contracts, trainings []sto.Tr
 					specialPlayer,
 				)
 				if err != nil {
-					return err
+					log.Errorf("%v %v", err.Error(), training)
 				}
 				(*b)[i].HomeTeam.AssignedTP = encodedTraining
 			}
@@ -223,7 +224,7 @@ func (b *Matches) SetTrainings(contracts contracts.Contracts, trainings []sto.Tr
 					specialPlayer,
 				)
 				if err != nil {
-					return err
+					log.Errorf("%v %v", err.Error(), training)
 				}
 				(*b)[i].VisitorTeam.AssignedTP = encodedTraining
 			}
