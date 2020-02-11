@@ -598,7 +598,7 @@ contract('Evolution', (accounts) => {
         
         TPperSkill = [0, 0, 0, 0, 00];
         newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
-        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        result = await engine.getSkill(newSkills, SK_SHO).should.be.fulfilled;
         expected = skills;
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
@@ -628,7 +628,7 @@ contract('Evolution', (accounts) => {
         
         TPperSkill = [10, 20, 30, 40, 50];
         newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
-        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        result = await engine.getSkill(newSkills, SK_SHO).should.be.fulfilled;
         expected = [ 113, 126, 140, 153, 166 ];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
@@ -662,7 +662,7 @@ contract('Evolution', (accounts) => {
         
         TPperSkill = [10, 20, 30, 40, 50];
         newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
-        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        result = await engine.getSkill(newSkills, SK_SHO).should.be.fulfilled;
         expected = [121, 143, 165, 186, 208];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
