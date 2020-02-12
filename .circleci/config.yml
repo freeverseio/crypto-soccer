@@ -25,6 +25,16 @@ executors:
         environment:
           - IPFS_PROFILE=server
 
+commands:
+  submit_universe_db_schema:
+    description: "Submit cryptosoccer schema in database"
+    steps:
+      - run: cd universe.db && PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f *.sql
+  generate_contracts_code:
+    description: "Compile and generate code for the services that need to communicate with them"
+    steps:
+      - run: make setup contracts
+
 jobs:
   truffle_core:
     executor: freeverse
@@ -66,8 +76,8 @@ jobs:
     executor: freeverse_ethereum
     steps:
       - checkout
-      - run: cd universe.db && PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f *.sql
-      - run: make setup contracts
+      - generate_contracts_code
+      - submit_universe_db_schema
       - run: cd go/contracts && go test ./...
       - run: cd go/useractions && go test ./...
       - run: cd go/marketpay/v1 && go test ./...
