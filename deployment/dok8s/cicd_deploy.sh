@@ -26,7 +26,7 @@ KUBECTL="kubectl --kubeconfig=/dev/null --server=${KUBERNETES_SERVER} --certific
 #  get pods -n ${NAMESPACE}
 
 echo -- deploying ingress,configmap,universedb,universeapi,ipsnode,marketdb,trader,notary
-echo $KUBECTL apply -f ${MY_DIR}/ingress.yaml      -n ${NAMESPACE} | bash
+#echo $KUBECTL apply -f ${MY_DIR}/ingress.yaml      -n ${NAMESPACE} | bash
 echo $KUBECTL apply -f ${MY_DIR}/configmap.yaml    -n ${NAMESPACE} | bash
 echo $KUBECTL apply -f ${MY_DIR}/universedb.yaml   -n ${NAMESPACE} | bash
 echo $KUBECTL apply -f ${MY_DIR}/universeapi.yaml  -n ${NAMESPACE} | bash
