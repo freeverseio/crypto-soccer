@@ -255,11 +255,11 @@ workflows:
            branches:
               only:
                 - k8s
-          #requires:
-          #  - synchronizer
-          #  - market-trader
-          #  - relay-actions
-          #  - market-notary
-          #  - go1
-          #  - truffle_core
+          requires:
+            - synchronizer
+            - market-trader
+            - relay-actions
+            - market-notary
+            - go1
+            - truffle_core
 
