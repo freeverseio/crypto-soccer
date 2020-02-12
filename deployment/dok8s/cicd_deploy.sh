@@ -59,3 +59,4 @@ deploy()
 
 clean
 deploy
+kubectl get pods -n ${NAMESPACE}
