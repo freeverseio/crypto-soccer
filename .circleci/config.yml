@@ -176,8 +176,8 @@ jobs:
       - run: scp -o StrictHostKeyChecking=no ./deployment/development/deploy.sh $DROPLET_USER@$DROPLET_IP:./
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
   deployk8s:
-    executor: freeverse
     steps:
+      - checkout
       - run: cd deployment/dok8s && ./cicd_deploy.sh
 workflows:
   version: 2
