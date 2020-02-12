@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 
@@ -14,10 +15,11 @@ import (
 
 var db *sql.DB
 var bc *testutils.BlockchainNode
+var dump spew.ConfigState
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = storage.New("postgres://freeverse:freeverse@localhost:15432/cryptosoccer?sslmode=disable")
+	db, err = storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,6 +28,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
+	dump = spew.ConfigState{DisablePointerAddresses: true, Indent: "\t"}
 	os.Exit(m.Run())
 }
 

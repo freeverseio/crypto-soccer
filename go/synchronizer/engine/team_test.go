@@ -50,7 +50,7 @@ func TestTeamStateDefault(t *testing.T) {
 			t.Fatalf("Wrong %v", state)
 		}
 	}
-	golden.Assert(t, team.DumpState(), t.Name()+".golden")
+	golden.Assert(t, dump.Sdump(team), t.Name()+".golden")
 }
 
 func TestTeamSkills(t *testing.T) {

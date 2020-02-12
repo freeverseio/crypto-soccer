@@ -1,5 +1,5 @@
 {
-  "name": "nodejs-horizon",
+  "name": "universe.api",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -10,11 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "commander": "^2.20.0",
     "express": "^4.17.1",
-    "graphile-utils": "^4.5.6",
-    "graphql": "^14.3.1",
-    "postgraphile": "^4.5.5"
+    "postgraphile": "^4.5.5",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "web3": "^1.2.6"
   },
   "devDependencies": {
     "mocha": "^6.2.2"

@@ -15,12 +15,12 @@ kind: PersistentVolumeClaim
 metadata:
   name: ethereum-pvc
 spec:
-  storageClassName: pv1-gp2
+  storageClassName: ebs-sc
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
@@ -63,8 +63,8 @@ spec:
     spec:
       containers:
       - name: ethereum
-        image: freeverseio/ethereum:devcontracts
-        #image: freeverseio/ethereum:dev
+        #image: freeverseio/ethereum:devcontracts
+        image: freeverseio/ethereum:dev
         args: [--mine, --nodiscover]
         imagePullPolicy: Always
         ports:
@@ -74,7 +74,7 @@ spec:
         #  mountPath: /test/data
       imagePullSecrets:
       - name: docker-secret
-      #volumes:
-      #- name: ethereum-storage
-      #  persistentVolumeClaim:
-      #    claimName: ethereum-pvc
+      volumes:
+      - name: ethereum-storage
+        persistentVolumeClaim:
+          claimName: ethereum-pvc

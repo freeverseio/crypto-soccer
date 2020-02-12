@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -31,10 +30,6 @@ func (b *Player) SetSkills(skills *big.Int) {
 
 func (b Player) Skills() *big.Int {
 	return new(big.Int).Set(b.sto.EncodedSkills)
-}
-
-func (b Player) DumpState() string {
-	return fmt.Sprintf("skills: %v", b.sto.EncodedSkills)
 }
 
 func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {

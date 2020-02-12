@@ -2,7 +2,6 @@ package storage_test
 
 import (
 	"math"
-	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -40,8 +39,8 @@ func TestGetTeam(t *testing.T) {
 	timezone.Insert(tx)
 	country.Insert(tx)
 	league.Insert(tx)
-	team := storage.Team{}
-	team.TeamID = big.NewInt(3)
+	team := storage.NewTeam()
+	team.TeamID = "3"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -54,9 +53,40 @@ func TestGetTeam(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !result.Equal(team) {
+	if result != *team {
 		t.Fatalf("Expected %v but %v", team, result)
 	}
+}
+
+func TestTeamSetTactic(t *testing.T) {
+	tx, err := s.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
+	timezone := storage.Timezone{uint8(1)}
+	country := storage.Country{timezone.TimezoneIdx, countryIdx}
+	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
+
+	team := storage.NewTeam()
+	team.TeamID = "3"
+	team.TimezoneIdx = timezone.TimezoneIdx
+	team.CountryIdx = countryIdx
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
+	team.RankingPoints = math.MaxUint64
+	assert.NilError(t, team.Insert(tx))
+	tactic := "3243"
+	assert.NilError(t, storage.TeamSetTactic(tx, team.TeamID, tactic))
+	result, err := storage.TeamByTeamId(tx, team.TeamID)
+	assert.NilError(t, err)
+	assert.Equal(t, result.Tactic, tactic)
 }
 
 func TestTeamCreate(t *testing.T) {
@@ -76,7 +106,7 @@ func TestTeamCreate(t *testing.T) {
 	league.Insert(tx)
 
 	var team storage.Team
-	team.TeamID = big.NewInt(4)
+	team.TeamID = "4"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -111,8 +141,7 @@ func TestGetTeamOfUnexistenTeamID(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	teamID := big.NewInt(434)
-	_, err = storage.TeamByTeamId(tx, teamID)
+	_, err = storage.TeamByTeamId(tx, "434")
 	if err == nil {
 		t.Fatal("Not error on unsexistent team")
 	}
@@ -135,7 +164,7 @@ func TestGetTeamInLeague(t *testing.T) {
 	league.Insert(tx)
 
 	var team storage.Team
-	team.TeamID = big.NewInt(11)
+	team.TeamID = "11"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -148,7 +177,7 @@ func TestGetTeamInLeague(t *testing.T) {
 	if len(teams) != 1 {
 		t.Fatalf("Expected 1 received %v", len(teams))
 	}
-	assert.Equal(t, teams[0].TeamID.String(), team.TeamID.String())
+	assert.Equal(t, teams[0].TeamID, team.TeamID)
 }
 
 func TestUpdateTeamOwner(t *testing.T) {
@@ -168,7 +197,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 	league.Insert(tx)
 
 	var team storage.Team
-	team.TeamID = big.NewInt(4)
+	team.TeamID = "4"
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -188,7 +217,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !team.Equal(result) {
+	if team != result {
 		t.Fatalf("expected %v but got %v", team, result)
 	}
 }

@@ -17,6 +17,8 @@ contract EncodingTPAssignment {
     //      - specIf --> 234 -> 238
     // 9 bit for TP  => max val = 511
     // 5 bit for specialPlayer
+    // TP: all the available Training point earned in the previous match log
+    // specialPlayer: no specialPlayer if == 25
     
     function encodeTP(uint16 TP, uint16[25] memory TPperSkill, uint8 specialPlayer) public pure returns (uint256 encoded) {
         require(specialPlayer <= PLAYERS_PER_TEAM_MAX, "specialPlayer value too large");

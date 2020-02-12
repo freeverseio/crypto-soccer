@@ -12,7 +12,7 @@ type Player struct {
 	PreferredPosition  string
 	Potential          uint64
 	DayOfBirth         uint64
-	TeamId             *big.Int
+	TeamId             string
 	Name               string
 	Defence            uint64
 	Speed              uint64
@@ -31,7 +31,7 @@ func (b *Player) Equal(player Player) bool {
 	return b.PlayerId.String() == player.PlayerId.String() &&
 		b.PreferredPosition == player.PreferredPosition &&
 		b.Potential == player.Potential &&
-		b.TeamId.String() == player.TeamId.String() &&
+		b.TeamId == player.TeamId &&
 		b.Defence == player.Defence &&
 		b.Speed == player.Speed &&
 		b.Pass == player.Pass &&
@@ -63,7 +63,7 @@ func (b *Player) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create player %v", b)
 	_, err := tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
 		b.PlayerId.String(),
-		b.TeamId.String(),
+		b.TeamId,
 		b.Defence,
 		b.Speed,
 		b.Pass,
@@ -101,7 +101,7 @@ func (b *Player) Update(tx *sql.Tx) error {
 	injury_matches_left=$11,
 	name=$12
 	WHERE player_id=$13;`,
-		b.TeamId.String(),
+		b.TeamId,
 		b.Defence,
 		b.Speed,
 		b.Pass,
@@ -146,11 +146,10 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	}
 
 	player := Player{}
-	var teamID sql.NullString
 	var encodedSkills sql.NullString
 	var encodedState sql.NullString
 	err = rows.Scan(
-		&teamID,
+		&player.TeamId,
 		&player.Defence,
 		&player.Speed,
 		&player.Pass,
@@ -168,15 +167,14 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 		&player.InjuryMatchesLeft,
 	)
 	player.PlayerId = playerID
-	player.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
 	player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
 	player.EncodedState, _ = new(big.Int).SetString(encodedState.String, 10)
 	return &player, nil
 }
 
-func PlayersByTeamId(tx *sql.Tx, teamID *big.Int) ([]*Player, error) {
+func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	var players []*Player
-	rows, err := tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID.String())
+	rows, err := tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID)
 	if err != nil {
 		return players, err
 	}

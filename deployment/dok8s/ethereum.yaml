@@ -1,0 +1,80 @@
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: pv1
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  capacity:
+#    storage: 5Gi
+#  hostPath:
+#    path: /data/pv1/
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: ethereum-pvc
+#spec:
+#  storageClassName: ebs-sc
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 5Gi
+#---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ethereum 
+  labels:
+    app: ethereum
+    component: ethereum
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+#  type: NodePort
+  ports:
+   - port: 8545
+     targetPort: 8545
+  selector:
+   app: ethereum
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ethereum
+  labels:
+    app: ethereum
+    component: ethereum
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ethereum
+  template:
+    metadata:
+      labels:
+        app: ethereum
+        component: ethereum
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: ethereum
+        #image: freeverseio/ethereum:devcontracts
+        image: freeverseio/ethereum:dev
+        args: [--mine, --nodiscover]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8545
+        #volumeMounts:
+        #- name: ethereum-storage
+        #  mountPath: /test/data
+      imagePullSecrets:
+      - name: docker-secret
+      #volumes:
+      #- name: ethereum-storage
+      #  persistentVolumeClaim:
+      #    claimName: ethereum-pvc

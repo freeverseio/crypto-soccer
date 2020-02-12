@@ -21,7 +21,7 @@ func TestNewSpecialPlayer(t *testing.T) {
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = big.NewInt(274877906944)
+	team.TeamID = "274877906944"
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"

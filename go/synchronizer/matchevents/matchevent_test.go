@@ -18,8 +18,8 @@ func int_hash(s string) uint64 {
 
 func TestMatchEvents(t *testing.T) {
 	verseSeed := [32]byte{0x2, 0x1}
-	teamId0 := big.NewInt(1)
-	teamId1 := big.NewInt(2)
+	teamId0 := "1"
+	teamId1 := "2"
 	matchLog := [15]uint32{
 		0,        //teamSumSkills,
 		0,        //winner,
@@ -99,8 +99,8 @@ func TestMatchEvents(t *testing.T) {
 
 func TestMatchEvents2ndHalf(t *testing.T) {
 	verseSeed := [32]byte{0x2, 0x1}
-	teamId0 := big.NewInt(1)
-	teamId1 := big.NewInt(2)
+	teamId0 := "1"
+	teamId1 := "2"
 	matchLog := [15]uint32{
 		0,        //teamSumSkills,
 		0,        //winner,
@@ -181,8 +181,8 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 	// in this test, events64 is hardcoded (coming from a set of events that once gave apparently wrong final results)
 	// so we test that team0 indeed scores 3 goals, given the hardcoded events64
 	verseSeed := [32]byte{0x2, 0x1}
-	teamId0 := big.NewInt(1)
-	teamId1 := big.NewInt(2)
+	teamId0 := "1"
+	teamId1 := "2"
 	matchLog := [15]uint32{
 		0,        //teamSumSkills,
 		0,        //winner,

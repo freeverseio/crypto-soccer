@@ -21,6 +21,9 @@ contract EncodingIDs {
         return (encoded | val);            // 28 - 28
     }
 
+    /**
+    @return timezone, countryIdxInTZ, val
+     */
     function decodeTZCountryAndVal(uint256 encoded) public pure returns (uint8, uint256, uint256)
     {
         // 2**14 - 1 = 31;  2**10 - 1 = 1023; 2**28 - 1 = 268435455;

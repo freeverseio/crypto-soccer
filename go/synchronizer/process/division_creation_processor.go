@@ -85,7 +85,7 @@ func NewDivisionCreationProcessor(
 	}, nil
 }
 
-func (b *DivisionCreationProcessor) Process(tx *sql.Tx, relaytx *sql.Tx, event assets.AssetsDivisionCreation) error {
+func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 && event.DivisionIdxInCountry.Uint64() == 0 {
 		timezone := storage.Timezone{event.Timezone}
@@ -103,12 +103,12 @@ func (b *DivisionCreationProcessor) Process(tx *sql.Tx, relaytx *sql.Tx, event a
 			return err
 		}
 	}
-	if err := b.storeTeamsForNewDivision(tx, relaytx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+	if err := b.storeTeamsForNewDivision(tx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
 		return err
 	}
 	return nil
 }
-func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, relaytx *sql.Tx, timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
+func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
 
 	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(b.LEAGUES_PER_DIV)
@@ -129,31 +129,22 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, relaytx
 				if errname != nil {
 					return errname
 				}
-				team := storage.Team{
-					teamId,
-					timezone,
-					uint32(countryIdx.Uint64()),
-					teamName,
-					storage.BotOwner,
-					uint32(leagueIdx),
-					teamIdxInLeague,
-					0,
-					0,
-					0,
-					0,
-					0,
-					0,
-					10,
-					0,
-					0,
-				}
+				team := storage.NewTeam()
+				team.TeamID = teamId.String()
+				team.TimezoneIdx = timezone
+				team.CountryIdx = uint32(countryIdx.Uint64())
+				team.Name = teamName
+				team.Owner = storage.BotOwner
+				team.LeagueIdx = uint32(leagueIdx)
+				team.TeamIdxInLeague = teamIdxInLeague
+				team.RankingPoints = 10
 				if err := team.Insert(tx); err != nil {
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(tx, opts, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
-				} else if err := b.createInitialTactics(relaytx, timezone, teamId); err != nil {
+				} else if err := b.createInitialTactics(tx, timezone, teamId); err != nil {
 					return err
-				} else if err := b.createInitialTraining(relaytx, teamId); err != nil {
+				} else if err := b.createInitialTraining(tx, teamId); err != nil {
 					return err
 				}
 
@@ -211,7 +202,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 			PreferredPosition: preferredPosition,
 			Potential:         potential.Uint64(),
 			DayOfBirth:        dayOfBirth.Uint64(),
-			TeamId:            teamId,
+			TeamId:            teamId.String(),
 			Name:              name,
 			Defence:           defence.Uint64(), // TODO: type should be uint16
 			Speed:             speed.Uint64(),

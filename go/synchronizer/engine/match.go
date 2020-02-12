@@ -2,7 +2,6 @@ package engine
 
 import (
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -25,20 +24,6 @@ type Match struct {
 
 const isHomeStadium = true
 const isPlayoff = false
-
-func (b Match) DumpState() string {
-	var state string
-	state += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))
-	state += fmt.Sprintf("StartTime: %v\n", b.StartTime)
-	state += fmt.Sprintf("HomeTeam: %v\n", b.HomeTeam.DumpState())
-	state += fmt.Sprintf("VisitorTeam: %v\n", b.VisitorTeam.DumpState())
-	state += fmt.Sprintf("HomeGoals: %v\n", b.HomeGoals)
-	state += fmt.Sprintf("VisitorGoals: %v\n", b.VisitorGoals)
-	state += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
-	state += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
-	state += b.Events.DumpState()
-	return state
-}
 
 func NewMatch() *Match {
 	var mp Match
@@ -102,14 +87,14 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	for _, computedEvent := range b.Events {
 		event := storage.MatchEvent{}
 		if computedEvent.Team == 0 {
-			event.TeamID = b.HomeTeam.TeamID.String()
+			event.TeamID = b.HomeTeam.TeamID
 			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else if computedEvent.Team == 1 {
-			event.TeamID = b.VisitorTeam.TeamID.String()
+			event.TeamID = b.VisitorTeam.TeamID
 			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
@@ -139,17 +124,20 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	is2ndHalf := false
-	assignedTPs := big.NewInt(int64(0))
+	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
+	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
+	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
 		b.StartTime,
 		b.Skills(),
-		[2]*big.Int{b.HomeTeam.TeamID, b.VisitorTeam.TeamID},
-		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
+		[2]*big.Int{homeTeamID, visitorTeamID},
+		[2]*big.Int{homeTactic, visitorTactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
-		[2]*big.Int{assignedTPs, assignedTPs},
+		[2]*big.Int{b.HomeTeam.AssignedTP, b.VisitorTeam.AssignedTP},
 	)
 	if err != nil {
 		return err
@@ -170,13 +158,17 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	is2ndHalf := true
+	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
+	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
+	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
 		b.StartTime,
 		b.Skills(),
-		[2]*big.Int{b.HomeTeam.TeamID, b.VisitorTeam.TeamID},
-		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
+		[2]*big.Int{homeTeamID, visitorTeamID},
+		[2]*big.Int{homeTactic, visitorTactic},
 		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 	)
@@ -195,6 +187,14 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 		return err
 	}
 	b.updateStats()
+	if err = b.updateTrainingPoints(contracts); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *Match) updateTrainingPoints(contracts contracts.Contracts) error {
+	var err error
 	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog); err != nil {
 		return err
 	}
@@ -232,13 +232,15 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	if err != nil {
 		return err
 	}
+	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	log.Debugf("Full decoded match log 0: %v", log0)
 	log.Debugf("Full decoded match log 1: %v", log1)
-	decodedTactics0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, b.HomeTeam.tactic)
+	decodedTactics0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, homeTactic)
 	if err != nil {
 		return err
 	}
-	decodedTactics1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, b.VisitorTeam.tactic)
+	decodedTactics1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, visitorTactic)
 	if err != nil {
 		return err
 	}

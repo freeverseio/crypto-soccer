@@ -39,6 +39,10 @@ func (b *UserActions) Equal(actions *UserActions) bool {
 	return true
 }
 
+func New() *UserActions {
+	return &UserActions{}
+}
+
 func NewFromIpfs(url string, cid string) (*UserActions, error) {
 	var ua UserActions
 	sh := shell.NewShell(url)
@@ -88,14 +92,21 @@ func (b *UserActions) UpdateVerse(verse uint64) {
 	}
 }
 
-func (b *UserActions) Hash() ([]byte, error) {
+func (b *UserActions) Hash() ([32]byte, error) {
 	h := sha256.New()
 	buf, err := b.Marshal()
 	if err != nil {
-		return nil, err
+		return [32]byte{}, err
 	}
 	h.Write(buf)
-	return h.Sum(nil), nil
+	hash := h.Sum(nil)
+	var result [32]byte
+	copy(result[:], hash)
+	return result, nil
+}
+
+func (b UserActions) Root() ([32]byte, error) {
+	return b.Hash()
 }
 
 func (b *UserActions) Marshal() ([]byte, error) {

@@ -11,9 +11,12 @@ const resolvers = (sql, assets, from) => {
         return true;
       },
       setTactic: async (_, params, context) => {
+        const decodedTeamId = await assets.methods.decodeTZCountryAndVal(params.teamId).call();
+        const timezone = decodedTeamId[0];
         const query = sql.query`INSERT INTO tactics (
 						verse,
-						team_id,
+            team_id,
+            timezone,
 						tactic_id,
                         shirt_0,
                         shirt_1,
@@ -42,6 +45,7 @@ const resolvers = (sql, assets, from) => {
 		            ) VALUES (
                 ${sql.value('9223372036854775807')},
                 ${sql.value(params.teamId)},
+                ${sql.value(timezone)},
                 ${sql.value(params.tacticId)},
                 ${sql.value(params.shirt0)}, 
                 ${sql.value(params.shirt1)}, 
@@ -99,9 +103,12 @@ const resolvers = (sql, assets, from) => {
         return true;// TODO return something with sense
       },
       setTraining: async (_, params, context) => {
+        const decodedTeamId = await assets.methods.decodeTZCountryAndVal(params.teamId).call();
+        const timezone = decodedTeamId[0];
         const query = sql.query`INSERT INTO trainings (
 			verse,
-			team_id,
+      team_id,
+      timezone,
     		special_player_shirt,
 			goalkeepers_defence,
     		goalkeepers_speed,
@@ -131,6 +138,7 @@ const resolvers = (sql, assets, from) => {
 		) VALUES (
                 ${sql.value('9223372036854775807')},
                 ${sql.value(params.teamId)},
+                ${sql.value(timezone)},
                 ${sql.value(params.specialPlayerShirt)},
                 ${sql.value(params.goalkeepersDefence)},
                 ${sql.value(params.goalkeepersSpeed)},
@@ -185,6 +193,54 @@ const resolvers = (sql, assets, from) => {
     		special_player_shoot=${sql.value(params.specialPlayerShoot)},
     		special_player_endurance=${sql.value(params.specialPlayerEndurance)}
         `;
+        const { text, values } = sql.compile(query);
+        await context.pgClient.query(text, values);
+        return true;// TODO return something with sense
+      },
+      createSpecialPlayer: async (_, params, context) => {
+        const { playerId, name, defence, speed, pass, shoot, endurance, preferredPosition, potential, dayOfBirth } = params;
+        const query = sql.query`INSERT INTO players (
+              name,
+              player_id,
+              team_id, 
+              defence, 
+              speed, 
+              pass, 
+              shoot, 
+              endurance, 
+              shirt_number, 
+              preferred_position, 
+              potential,
+              day_of_birth,
+              encoded_skills,
+              encoded_state,
+              frozen,
+              red_card_matches_left,
+              injury_matches_left) VALUES (
+                ${sql.value(name)},
+                ${sql.value(playerId)},
+                ${sql.value('1')}, 
+                ${sql.value(defence)}, 
+                ${sql.value(speed)},
+                ${sql.value(pass)},
+                ${sql.value(shoot)},
+                ${sql.value(endurance)},
+                ${sql.value(0)},
+                ${sql.value(preferredPosition)},
+                ${sql.value(potential)},
+                ${sql.value(dayOfBirth)},
+                ${sql.value('')},
+                ${sql.value('')},
+                ${sql.value(false)},
+                ${sql.value(0)},
+                ${sql.value(0)}
+            )`;
+        const { text, values } = sql.compile(query);
+        await context.pgClient.query(text, values);
+        return true;// TODO return something with sense
+      },
+      deleteSpecialPlayer: async (_, { playerId }, context) => {
+        const query = sql.query`DELETE FROM players WHERE team_id=${sql.value('1')} AND player_id=${sql.value(playerId)};`;
         const { text, values } = sql.compile(query);
         await context.pgClient.query(text, values);
         return true;// TODO return something with sense

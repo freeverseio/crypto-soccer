@@ -6,21 +6,26 @@ import (
 	"os"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 var universedb *sql.DB
-var relaydb *sql.DB
 var bc *testutils.BlockchainNode
+var dump spew.ConfigState
+var namesdb *names.Generator
+
+const ipfsURL = "localhost:5001"
 
 func TestMain(m *testing.M) {
 	var err error
-	universedb, err = storage.New("postgres://freeverse:freeverse@localhost:15432/cryptosoccer?sslmode=disable")
+	namesdb, err = names.New("../../names/sql/names.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	relaydb, err = storage.New("postgres://freeverse:freeverse@localhost:15433/relay?sslmode=disable")
+	universedb, err = storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,5 +34,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
+	bc.InitOneTimezone(1)
+	dump = spew.ConfigState{DisablePointerAddresses: true}
 	os.Exit(m.Run())
 }

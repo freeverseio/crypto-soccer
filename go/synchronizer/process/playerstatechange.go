@@ -39,7 +39,7 @@ func PlayerStateChangeProcess(
 	if err != nil {
 		return err
 	}
-	player.TeamId = teamID
+	player.TeamId = teamID.String()
 	player.ShirtNumber = uint8(shirtNumber.Uint64())
 	return player.Update(tx)
 }
@@ -71,7 +71,7 @@ func GeneratePlayerByPlayerIdAndState(
 			PreferredPosition: preferredPosition,
 			Potential:         potential.Uint64(),
 			DayOfBirth:        dayOfBirth.Uint64(),
-			TeamId:            teamId,
+			TeamId:            teamId.String(),
 			Name:              name,
 			Defence:           defence.Uint64(), // TODO: type should be uint16
 			Speed:             speed.Uint64(),

@@ -8,21 +8,17 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"gotest.tools/assert"
+	"gotest.tools/golden"
 )
 
 func TestDivisionCreationProcess(t *testing.T) {
-	t.Skip("******************** REACTIVATE *********************")
 	t.Parallel()
 	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	relaytx, err := relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaytx.Rollback()
 
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
@@ -38,40 +34,25 @@ func TestDivisionCreationProcess(t *testing.T) {
 		CountryIdxInTZ:       big.NewInt(0),
 		DivisionIdxInCountry: big.NewInt(0),
 	}
-	err = process.Process(tx, relaytx, event)
+	err = process.Process(tx, event)
 	if err != nil {
 		t.Fatal(err)
 	}
-	player, err := storage.PlayerByPlayerId(tx, big.NewInt(274877906944))
+	// player, err := storage.PlayerByPlayerId(tx, big.NewInt(274877906944))
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, 1, 0, 0, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player.Name != "Samir Rambert" {
-		t.Fatalf("Wrong name %v", player.Name)
-	}
-	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(
-		tx,
-		1,
-		0,
-		0,
-		0,
-	)
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".matches.1.golden")
+	matches, err = storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(tx, 1, 0, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(matches) != 4 {
-		t.Fatalf("Wrong matches number %v", len(matches))
-	}
-	matches, err = storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(
-		tx,
-		1,
-		0,
-		0,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(matches) != 14*4 {
-		t.Fatalf("Wrong matches number %v", len(matches))
-	}
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".matches.2.golden")
+	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, 1, 0, 0)
+	assert.NilError(t, err)
+	golden.Assert(t, dump.Sdump(teams), t.Name()+".teams.golden")
 }

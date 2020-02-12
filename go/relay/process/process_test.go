@@ -9,7 +9,6 @@ import (
 	//"github.com/ethereum/go-ethereum/crypto"
 
 	relay "github.com/freeverseio/crypto-soccer/go/relay/process"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestSubmitActionRoot(t *testing.T) {
@@ -21,11 +20,6 @@ func TestSubmitActionRoot(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	p, err := relay.NewProcessor(bc.Client, bc.Owner, db, bc.Contracts.Updates, "localhost:5001")
 	if err != nil {
 		t.Fatal(err)

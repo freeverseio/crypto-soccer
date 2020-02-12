@@ -3,6 +3,7 @@ package process
 import (
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"sort"
@@ -13,6 +14,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/useractions"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,11 +22,13 @@ import (
 type LeagueProcessor struct {
 	contracts         *contracts.Contracts
 	calendarProcessor *Calendar
+	ipfsURL           string
 }
 
 func NewLeagueProcessor(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
+	ipfsURL string,
 ) (*LeagueProcessor, error) {
 	calendarProcessor, err := NewCalendar(contracts)
 	if err != nil {
@@ -33,6 +37,7 @@ func NewLeagueProcessor(
 	return &LeagueProcessor{
 		contracts,
 		calendarProcessor,
+		ipfsURL,
 	}, nil
 }
 
@@ -42,7 +47,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	timezoneIdx := event.TimeZone
 
 	if timezoneIdx < 1 || timezoneIdx > 24 {
-		fmt.Errorf("Unexistent timezone %v", timezoneIdx)
+		return fmt.Errorf("Unexistent timezone %v", timezoneIdx)
 	}
 	if turnInDay == 2 || turnInDay == 3 {
 		return nil
@@ -79,10 +84,28 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			}
 		}
 	}
+	log.Infof("Retriving user actions %v from ipfs node %v", event.Cid, b.ipfsURL)
+	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.Cid)
+	if err != nil {
+		return err
+	}
+	root, err := userActions.Root()
+	if err != nil {
+		return err
+	}
+	if root != event.Root {
+		return fmt.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
+	}
 
 	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
 	matches, err := engine.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 	if err != nil {
+		return err
+	}
+	if err := matches.SetTactics(*b.contracts, userActions.Tactics); err != nil {
+		return err
+	}
+	if err := matches.SetTrainings(*b.contracts, userActions.Trainings); err != nil {
 		return err
 	}
 	switch turnInDay {
@@ -129,12 +152,13 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			}
 			if !storage.IsBotTeam(team) {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
+				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
 				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
 					uint8(position),
 					team.PrevPerfPoints,
-					team.TeamID,
+					teamID,
 				)
 				if err != nil {
 					return err
@@ -160,7 +184,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	return nil
 }
 
-func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int, error) {
+func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID string) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)
