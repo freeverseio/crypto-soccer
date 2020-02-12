@@ -177,7 +177,7 @@ jobs:
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
   deployk8s:
     docker:
-      - image: 'alpine:latest'
+      - image: 'cimg/base:stable'
     steps:
       - checkout
       - kube-orb/install-kubectl
