@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go/matchevents"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 )
 
 type MatchEventType string

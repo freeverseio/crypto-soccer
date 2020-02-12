@@ -39,7 +39,7 @@ func PlayerStateChangeProcess(
 	if err != nil {
 		return err
 	}
-	player.TeamId = teamID
+	player.TeamId = teamID.String()
 	player.ShirtNumber = uint8(shirtNumber.Uint64())
 	return player.Update(tx)
 }
@@ -52,7 +52,7 @@ func GeneratePlayerByPlayerIdAndState(
 	opts := &bind.CallOpts{}
 	if encodedSkills, err := contracts.Assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
 		return nil, err
-	} else if defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := utils.DecodeSkills(contracts.Assets, encodedSkills); err != nil {
+	} else if defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := contracts.DecodeSkills(encodedSkills); err != nil {
 		return nil, err
 	} else if preferredPosition, err := GetPlayerPreferredPosition(contracts, encodedSkills); err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func GeneratePlayerByPlayerIdAndState(
 			PreferredPosition: preferredPosition,
 			Potential:         potential.Uint64(),
 			DayOfBirth:        dayOfBirth.Uint64(),
-			TeamId:            teamId,
+			TeamId:            teamId.String(),
 			Name:              name,
 			Defence:           defence.Uint64(), // TODO: type should be uint16
 			Speed:             speed.Uint64(),

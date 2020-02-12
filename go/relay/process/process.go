@@ -1,11 +1,15 @@
 package relay
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"database/sql"
 	"encoding/hex"
+	"errors"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
@@ -15,6 +19,7 @@ import (
 )
 
 type Processor struct {
+	client          *ethclient.Client
 	updatesContract *updates.Updates
 	auth            *bind.TransactOpts
 	ipfsURL         string
@@ -34,6 +39,7 @@ func NewProcessor(
 	auth := bind.NewKeyedTransactor(privateKey)
 
 	return &Processor{
+		client,
 		updatesContract,
 		auth,
 		ipfsURL,
@@ -45,52 +51,55 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("Staring process of verse %v", currentVerse)
-	upcomingTrainings, err := storage.UpcomingTrainings(tx)
+	nextToUpdate, err := p.updatesContract.NextTimeZoneToUpdate(&bind.CallOpts{})
 	if err != nil {
 		return err
 	}
-	upcomingTactics, err := storage.UpcomingTactics(tx)
-	if err != nil {
-		return err
-	}
-	log.Infof("Processing %v upcoming trainings", len(upcomingTrainings))
-	for i := range upcomingTrainings {
-		upcomingTrainings[i].Delete(tx)
-		upcomingTrainings[i].Verse = currentVerse.Uint64()
-		if err = upcomingTrainings[i].Insert(tx); err != nil {
+	log.Infof("Staring process of verse %v, timezone %v, day %v, turn %v", currentVerse, nextToUpdate.TimeZone, nextToUpdate.Day, nextToUpdate.TurnInDay)
+	upcomingUserActions := useractions.New()
+	if nextToUpdate.TurnInDay <= 1 {
+		if upcomingUserActions, err = useractions.NewFromStorage(tx, storage.UpcomingVerse, int(nextToUpdate.TimeZone)); err != nil {
 			return err
 		}
 	}
-	log.Infof("Processing %v upcoming tactics", len(upcomingTactics))
-	for i := range upcomingTactics {
-		upcomingTactics[i].Delete(tx)
-		upcomingTactics[i].Verse = currentVerse.Uint64()
-		if err = upcomingTactics[i].Insert(tx); err != nil {
-			return err
-		}
-	}
-
-	actions := useractions.UserActions{}
-	actions.Verse = currentVerse.Uint64()
-	actions.Trainings = upcomingTrainings
-	actions.Tactics = upcomingTactics
-	hash, err := actions.Hash()
+	upcomingUserActions.UpdateVerse(currentVerse.Uint64())
+	root, err := upcomingUserActions.Root()
 	if err != nil {
 		return err
 	}
-	cid, err := actions.PushToIpfs(p.ipfsURL)
+	cid, err := upcomingUserActions.ToIpfs(p.ipfsURL)
 	if err != nil {
 		return err
 	}
-	if actions.Verse > 960 {
-		log.Infof("Verse %v  ... skipping", actions.Verse)
-		return nil
-	}
-	var root [32]byte
-	copy(root[:], hash)
-
 	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
-	_, err = p.updatesContract.SubmitActionsRoot(p.auth, root, cid)
-	return err
+	transaction, err := p.updatesContract.SubmitActionsRoot(p.auth, root, cid)
+	if err != nil {
+		return err
+	}
+	_, err = WaitReceipt(p.client, transaction, 10)
+	if err != nil {
+		return err
+	}
+	if nextToUpdate.TurnInDay == 0 {
+		if err = storage.ResetTrainingsByTimezone(tx, nextToUpdate.TimeZone); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uint8) (*types.Receipt, error) {
+	receiptTimeout := time.Second * time.Duration(timeoutSec)
+	start := time.Now()
+	ctx := context.TODO()
+	var receipt *types.Receipt
+
+	for receipt == nil && time.Now().Sub(start) < receiptTimeout {
+		receipt, err := client.TransactionReceipt(ctx, tx.Hash())
+		if err == nil && receipt != nil {
+			return receipt, nil
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+	return nil, errors.New("Timeout waiting for receipt")
 }

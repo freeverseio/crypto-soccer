@@ -3,6 +3,7 @@ package names
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"math/big"
 	"strconv"
@@ -140,6 +141,7 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 	tableName := "names"
 	colName := "name"
 	codes := b.countryCodes4Names
+	final_country_code := country_code
 	// ensure that names are always different for all generations
 	seedTemp := b.GenerateRnd(playerId, "aa", 0) + uint64(generation)
 	if isSurname {
@@ -160,24 +162,35 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 		var nCountryCodes = len(codes)
 		var rnd_idx int = int(b.GenerateRnd(seed, salt+"dd", uint64(nCountryCodes)))
 		if country_code == codes[rnd_idx] {
-			country_code = codes[(rnd_idx+1)%nCountryCodes]
+			final_country_code = codes[(rnd_idx+1)%nCountryCodes]
 		} else {
-			country_code = codes[rnd_idx]
+			final_country_code = codes[rnd_idx]
 		}
 	}
-	var namesInCountry uint = b.namesInCountry[country_code]
-	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(namesInCountry))
-	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, country_code, idxInCountry)
+	var namesInCountry uint = b.namesInCountry[final_country_code]
+
+	// idxInCountry ranges from 0 to numNamesInCountry-1
+	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(namesInCountry-1))
+
+	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, final_country_code, idxInCountry)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		var str string = "Rnd choice failed, country_code = " + strconv.FormatInt(int64(country_code), 10) +
-			", idxInCountry = " + strconv.FormatInt(int64(idxInCountry), 10) +
-			", tableName = " + tableName
-		return "", errors.New(str)
+		return "", fmt.Errorf("Rnd choice failed: final_country_code = %v, idxInCountry = %v, tableName = %v, colName = %v, in function with input params: isSurname = %v, playerId = %v, generation = %v, country_code = %v, purity = %v",
+			final_country_code,
+			idxInCountry,
+			tableName,
+			colName,
+			isSurname,
+			playerId,
+			generation,
+			country_code,
+			purity,
+		)
 	}
+
 	var name string
 	rows.Scan(&name)
 	return name, nil
@@ -202,6 +215,12 @@ func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
 
 func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
+	if timezone == 0 || timezone > 24 {
+		return "", fmt.Errorf("Timezone should be within [1, 24], but it was %v", timezone)
+	}
+	if generation >= 64 {
+		return "", fmt.Errorf("Generation should be within [0, 63], but it was %v", generation)
+	}
 	var country_id uint64
 	// country_id is an encoding of (tz, countryIdx):
 	country_id = uint64(timezone)*1000000 + countryIdxInTZ
@@ -266,10 +285,14 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		var str string = "Rnd choice failed, teamId = " + teamId.String() +
-			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
-			", tableName = " + tableName
-		return "", errors.New(str)
+		return "", fmt.Errorf("Rnd choice failed in GenerateTeamName Part1: teamId = %v, tableName = %v, nameIdx = %v, in function with input params: teamId = %v, timezone = %v, countryIdxInTZ = %v",
+			teamId,
+			tableName,
+			nameIdx,
+			teamId,
+			timezone,
+			countryIdxInTZ,
+		)
 	}
 	var name string
 	rows.Scan(&name)
@@ -299,10 +322,15 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		var str string = "Rnd choice failed, teamId = " + teamId.String() +
-			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
-			", tableName = " + tableName
-		return "", errors.New(str)
+		return "", fmt.Errorf("Rnd choice failed in GenerateTeamName Part2: teamId = %v, tableName = %v, nameIdx = %v, in function with input params: teamId = %v, timezone = %v, countryIdxInTZ = %v",
+			teamId,
+			tableName,
+			nameIdx,
+			teamId,
+			timezone,
+			countryIdxInTZ,
+		)
+
 	}
 	var extraname string
 	rows.Scan(&extraname)

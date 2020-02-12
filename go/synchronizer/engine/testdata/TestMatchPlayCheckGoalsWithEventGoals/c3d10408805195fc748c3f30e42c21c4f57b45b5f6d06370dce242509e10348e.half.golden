@@ -1,0 +1,1246 @@
+(*engine.Match)({
+	Match: (storage.Match) {
+		TimezoneIdx: (uint8) 0,
+		CountryIdx: (uint32) 0,
+		LeagueIdx: (uint32) 0,
+		MatchDayIdx: (uint8) 0,
+		MatchIdx: (uint8) 0,
+		HomeTeamID: (*big.Int)(<nil>),
+		VisitorTeamID: (*big.Int)(<nil>),
+		HomeGoals: (uint8) 0,
+		VisitorGoals: (uint8) 1,
+		HomeMatchLog: (*big.Int)(1809253036421563448390736347182490311957870529185624786829470839599760670720),
+		VisitorMatchLog: (*big.Int)(1809253036421563448390736347182490311957870532988576587514204080086143991921)
+	},
+	Seed: ([32]uint8) (len=32 cap=32) {
+		00000000  c3 d1 04 08 80 51 95 fc  74 8c 3f 30 e4 2c 21 c4  |.....Q..t.?0.,!.|
+		00000010  f5 7b 45 b5 f6 d0 63 70  dc e2 42 50 9e 10 34 8e  |.{E...cp..BP..4.|
+	},
+	StartTime: (*big.Int)(1570147200),
+	HomeTeam: (engine.Team) {
+		Team: (storage.Team) {
+			TeamID: (string) (len=1) "1",
+			TimezoneIdx: (uint8) 0,
+			CountryIdx: (uint32) 0,
+			Name: (string) "",
+			Owner: (string) "",
+			LeagueIdx: (uint32) 0,
+			TeamIdxInLeague: (uint32) 0,
+			Points: (uint32) 0,
+			W: (uint32) 0,
+			D: (uint32) 0,
+			L: (uint32) 0,
+			GoalsForward: (uint32) 0,
+			GoalsAgainst: (uint32) 0,
+			PrevPerfPoints: (uint64) 0,
+			RankingPoints: (uint64) 0,
+			TrainingPoints: (uint16) 0,
+			Tactic: (string) (len=33) "340596594427581673436941882753025"
+		},
+		Players: ([25]*engine.Player) (len=25 cap=25) {
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833572589254038720341707981934),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309339445376240739796176995438),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			})
+		},
+		AssignedTP: (*big.Int)(0)
+	},
+	VisitorTeam: (engine.Team) {
+		Team: (storage.Team) {
+			TeamID: (string) (len=1) "2",
+			TimezoneIdx: (uint8) 0,
+			CountryIdx: (uint32) 0,
+			Name: (string) "",
+			Owner: (string) "",
+			LeagueIdx: (uint32) 0,
+			TeamIdxInLeague: (uint32) 0,
+			Points: (uint32) 0,
+			W: (uint32) 0,
+			D: (uint32) 0,
+			L: (uint32) 0,
+			GoalsForward: (uint32) 0,
+			GoalsAgainst: (uint32) 0,
+			PrevPerfPoints: (uint64) 0,
+			RankingPoints: (uint64) 0,
+			TrainingPoints: (uint16) 0,
+			Tactic: (string) (len=33) "340596594427581673436941882753025"
+		},
+		Players: ([25]*engine.Player) (len=25 cap=25) {
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573434936285888304224833573798179858334970882688110),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			}),
+			(*engine.Player)({
+				sto: (storage.Player) {
+					PlayerId: (*big.Int)(<nil>),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 0,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 0,
+					Speed: (uint64) 0,
+					Pass: (uint64) 0,
+					Shoot: (uint64) 0,
+					Endurance: (uint64) 0,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(16573429227295117480385309340654302060354425351701614),
+					EncodedState: (*big.Int)(<nil>),
+					Frozen: (bool) false,
+					RedCardMatchesLeft: (uint8) 0,
+					InjuryMatchesLeft: (uint8) 0
+				}
+			})
+		},
+		AssignedTP: (*big.Int)(0)
+	},
+	Events: (matchevents.MatchEvents) (len=14 cap=14) {
+		(matchevents.MatchEvent) {
+			Minute: (int16) 1,
+			Type: (int16) 0,
+			Team: (int16) 0,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 8,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 6,
+			Type: (int16) 0,
+			Team: (int16) 0,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 9,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 11,
+			Type: (int16) 0,
+			Team: (int16) 1,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 6,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 12,
+			Type: (int16) 0,
+			Team: (int16) 1,
+			ManagesToShoot: (bool) true,
+			IsGoal: (bool) true,
+			PrimaryPlayer: (int16) 10,
+			SecondaryPlayer: (int16) 7
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 17,
+			Type: (int16) 0,
+			Team: (int16) 1,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 4,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 22,
+			Type: (int16) 0,
+			Team: (int16) 1,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 5,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 27,
+			Type: (int16) 0,
+			Team: (int16) 1,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 2,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 28,
+			Type: (int16) 0,
+			Team: (int16) 0,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 3,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 33,
+			Type: (int16) 0,
+			Team: (int16) 0,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 9,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 38,
+			Type: (int16) 0,
+			Team: (int16) 1,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 1,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 42,
+			Type: (int16) 0,
+			Team: (int16) 0,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 2,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 45,
+			Type: (int16) 0,
+			Team: (int16) 1,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 1,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 27,
+			Type: (int16) 1,
+			Team: (int16) 0,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 4,
+			SecondaryPlayer: (int16) -1
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 27,
+			Type: (int16) 1,
+			Team: (int16) 1,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 4,
+			SecondaryPlayer: (int16) -1
+		}
+	}
+})

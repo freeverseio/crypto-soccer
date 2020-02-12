@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity >=0.5.12 <0.6.2;
 
 import "./EncodingSkills.sol";
 import "./EncodingIDs.sol";
@@ -89,7 +89,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     function _initTimeZone(uint8 tz) private {
         Country memory country;
-        country.nDivisions = 10;
+        country.nDivisions = 1;
         _timeZones[tz].countries.push(country);
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
         for (uint8 division = 0 ; division < country.nDivisions ; division++){

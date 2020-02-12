@@ -13,7 +13,7 @@ var s *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
-	s, err = storage.New("postgres://freeverse:freeverse@localhost:15432/cryptosoccer?sslmode=disable")
+	s, err = storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

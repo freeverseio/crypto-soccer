@@ -56,16 +56,17 @@ func newEventList(count int) *eventList {
 	return &l
 }
 
-func TestList(test *testing.T) {
+func TestList(t *testing.T) {
+	t.Parallel()
 	eventList := newEventList(10)
 	genericEvents := []*AbstractEvent{}
-	test.Log("========= creating events ==========")
+	t.Log("========= creating events ==========")
 	for i, v := range eventList.Array {
-		test.Logf("adding event %v is %v", i, v)
-		if e, ok := cast(v, test); ok {
+		t.Logf("adding event %v is %v", i, v)
+		if e, ok := cast(v, t); ok {
 			genericEvents = append(genericEvents, e)
 		} else {
-			test.Fatal("Unknown event type")
+			t.Fatal("Unknown event type")
 		}
 	}
 
@@ -79,16 +80,16 @@ func TestList(test *testing.T) {
 
 	byFunction(time).Sort(genericEvents)
 
-	test.Log("========= sorted events ===========")
+	t.Log("========= sorted events ===========")
 	for i, v := range genericEvents {
 		// casting back to original type
 		switch v := v.Value.(type) {
 		case *testEvent1:
-			test.Logf("event %v is %v", i, *v)
+			t.Logf("event %v is %v", i, *v)
 		case *testEvent2:
-			test.Logf("event %v is %v", i, *v)
+			t.Logf("event %v is %v", i, *v)
 		default:
-			test.Fatalf("Could not cast type %v:", v)
+			t.Fatalf("Could not cast type %v:", v)
 		}
 	}
 }

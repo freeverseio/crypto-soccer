@@ -18,7 +18,7 @@ func TestSetMatchLogs(t *testing.T) {
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = big.NewInt(10)
+	team.TeamID = "10"
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -32,15 +32,14 @@ func TestSetMatchLogs(t *testing.T) {
 	team.Insert(tx)
 	matchDayIdx := uint8(3)
 	matchIdx := uint8(4)
-	match := storage.Match{
-		TimezoneIdx:   timezoneIdx,
-		CountryIdx:    countryIdx,
-		LeagueIdx:     leagueIdx,
-		MatchDayIdx:   matchDayIdx,
-		MatchIdx:      matchIdx,
-		HomeTeamID:    big.NewInt(10),
-		VisitorTeamID: big.NewInt(10),
-	}
+	match := storage.NewMatch()
+	match.TimezoneIdx = timezoneIdx
+	match.CountryIdx = countryIdx
+	match.LeagueIdx = leagueIdx
+	match.MatchDayIdx = matchDayIdx
+	match.MatchIdx = matchIdx
+	match.HomeTeamID = big.NewInt(10)
+	match.VisitorTeamID = big.NewInt(10)
 	err = match.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
@@ -84,7 +83,7 @@ func TestMatchReset(t *testing.T) {
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = big.NewInt(10)
+	team.TeamID = "10"
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"

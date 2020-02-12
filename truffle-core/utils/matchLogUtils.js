@@ -22,7 +22,7 @@ async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterFor
             log = await encoding.setYellowedDidNotFinished1stHalf(log, p).should.be.fulfilled;
         }
     }
-    if (isHomeStadium) log = await encoding.addIsHomeStadium(log).should.be.fulfilled;
+    log = await encoding.setIsHomeStadium(log, isHomeStadium).should.be.fulfilled;
     for (p = 0; p <ingameSubs1.length; p++) log = await encoding.setInGameSubsHappened(log, ingameSubs1[p], p, is2nd = false).should.be.fulfilled;
     for (p = 0; p <ingameSubs2.length; p++) log = await encoding.setInGameSubsHappened(log, ingameSubs2[p], p, is2nd = true).should.be.fulfilled;
     for (p = 0; p <yellowCards1.length; p++) log = await encoding.addYellowCard(log, yellowCards1[p], p, is2nd = false).should.be.fulfilled;
@@ -75,10 +75,12 @@ async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx
     if (outOfGames != UNDEF) {
         is2ndHalfs = [false, true];
         for (p = 0; p <outOfGames.length; p++) {
-            result = await encoding.getOutOfGame(log, is2ndHalfs[p]).should.be.fulfilled;
-            result.player.toNumber().should.be.equal(outOfGames[p]);
-            result.round.toNumber().should.be.equal(outOfGameRounds[p]);
-            result.typeOfOutOfGame.toNumber().should.be.equal(typesOutOfGames[p]);
+            player = await encoding.getOutOfGamePlayer(log, is2ndHalfs[p]).should.be.fulfilled;
+            round = await encoding.getOutOfGameRound(log, is2ndHalfs[p]).should.be.fulfilled;
+            typeOf = await encoding.getOutOfGameType(log, is2ndHalfs[p]).should.be.fulfilled;
+            player.toNumber().should.be.equal(outOfGames[p]);
+            round.toNumber().should.be.equal(outOfGameRounds[p]);
+            typeOf.toNumber().should.be.equal(typesOutOfGames[p]);
         }
     }        
     if (yellowCardedDidNotFinish1stHalf != UNDEF) {

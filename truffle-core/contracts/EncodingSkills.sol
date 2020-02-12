@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity >=0.5.12 <0.6.2;
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */
@@ -38,6 +38,7 @@ contract EncodingSkills {
     /**
      * @dev Tactics serializes a total of 110 bits = 3 * 4 + 3 * 4 + 14*5 + 10 + 6:
      *      substitutions[3]    = 4 bit each = [3 different nums from 0 to 10], with 11 = no subs
+     *      subsRounds[3]       = 4 bit each = [3 different nums from 0 to 11], round at which subs are to happen
      *      lineup[14]          = 5 bit each = [playerIdxInTeam1, ..., ]
      *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
@@ -125,7 +126,7 @@ contract EncodingSkills {
      *      sumSkills                 = 19b (must equal sum(skills), of if each is 16b, this can be at most 5x16b => use 19b)
      *      isSpecialPlayer           = 1b (set at the left-most bit, 255)
      *      targetTeamId              = 43b
-     *      generation                = 8b 
+     *      generation                = 8b. From [0,...,31] => not-a-child, from [32,..63] => a child
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
@@ -218,7 +219,7 @@ contract EncodingSkills {
         return uint256(encodedSkills >> 149 & 7);
     }
 
-    function getAlignedEndOfLastHalf(uint256 encodedSkills) public pure returns (bool) {
+    function getAlignedEndOfFirstHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 152 & 1) == 1;
     }
 
@@ -226,15 +227,15 @@ contract EncodingSkills {
         return (encodedSkills >> 153 & 1) == 1;
     }
 
-    function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 154 & 7);
+    function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint8) {
+        return uint8(encodedSkills >> 154 & 7);
     }
 
-    function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 157 & 7);
+    function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint8) {
+        return uint8(encodedSkills >> 157 & 7);
     }
 
-    function getSubstitutedLastHalf(uint256 encodedSkills) public pure returns (bool) {
+    function getSubstitutedFirstHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 160 & 1) == 1;
     }
 
