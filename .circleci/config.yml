@@ -178,6 +178,7 @@ jobs:
   deployk8s:
     executor: freeverse
     steps:
+      - checkout
       - run: git branch && cd deployment/dok8s && ls -alsh && ./cicd_deploy.sh
 workflows:
   version: 2
