@@ -185,7 +185,7 @@ jobs:
         kubeconfig: KUBECONFIG_DATA
       - run: kubectl config get-contexts
       - run: kubectl config view
-      - run: cd deployment/dok8s && /bin/bash cicd_deploy.sh
+      - run: cd deployment/dok8s &&  /bin/bash cicd_deploy.sh
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
 workflows:
