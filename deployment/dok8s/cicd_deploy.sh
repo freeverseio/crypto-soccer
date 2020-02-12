@@ -1,7 +1,8 @@
 #! /bin/bash
 # you must set the following environmental variables (take values from your kube/config):
-# KUBERNETES_CLUSTER_CERTIFICATE
-# KUBERNETES_SERVER
+#KUBERNETES_CLUSTER_CERTIFICATE
+#KUBERNETES_SERVER
+#KUBERNETES_TOKEN
 
 set -e
 
@@ -11,12 +12,9 @@ MY_DIR=`cd "$MY_DIR" ; pwd`
 NAMESPACE=freeverse # TODO: pass as argument so we can use the same script to deploy to testing namespace or production namespace
 #KUBERNETES_TOKEN=$(kubectl get secret -n ${NAMESPACE} $(kubectl get secret -n ${NAMESPACE} | grep cicd-token | awk '{print $1}') -o jsonpath='{.data.token}' | base64 --decode)
 
-
 #echo "${KUBERNETES_CLUSTER_CERTIFICATE}" | base64 --decode > cert.crt
 echo "${KUBERNETES_CLUSTER_CERTIFICATE}" | base64 -d > cert.crt
 KUBECTL="kubectl --kubeconfig=/dev/null --server=${KUBERNETES_SERVER} --certificate-authority=cert.crt --token=${KUBERNETES_TOKEN}"
-
-KUBERNETES_TOKEN=`echo $(${KUBECTL} get secret -n ${NAMESPACE} $(${KUBECTL} get secret -n ${NAMESPACE} |bash | grep cicd-token | awk '{print $1}') -o jsonpath='{.data.token}'  | bash | base64 -d)
 
 # example from https://www.digitalocean.com/community/tutorials/how-to-automate-deployments-to-digitalocean-kubernetes-with-circleci
 #envsubst <./kube/do-sample-deployment.yml >./kube/do-sample-deployment.yml.out
@@ -37,18 +35,18 @@ KUBERNETES_TOKEN=`echo $(${KUBECTL} get secret -n ${NAMESPACE} $(${KUBECTL} get 
 ##echo $KUBECTL apply -f ${MY_DIR}/trader.yaml       -n ${NAMESPACE} | bash
 ##echo $KUBECTL apply -f ${MY_DIR}/notary.yaml       -n ${NAMESPACE} | bash
 ##
-##echo -- waiting for pods to be ready...
-##echo $KUBECTL wait --for=condition=available --timeout=600s deployment/universedb -n ${NAMESPACE} | bash
-##UNIVERSEDB_POD=$(echo $KUBECTL get pod -l app=universedb -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
-##
-##echo $KUBECTL wait --for=condition=available --timeout=600s deployment/universeapi -n ${NAMESPACE} | bash
-##UNIVERSEAPI_POD=$(echo $KUBECTL get pod -l app=universeapi -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
-##
-##echo $KUBECTL wait --for=condition=available --timeout=600s deployment/ipfsnode -n ${NAMESPACE} | bash
-##IPFSNODE_POD=$(echo $KUBECTL get pod -l app=ipfsnode -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
-##
-##echo $KUBECTL wait --for=condition=available --timeout=600s deployment/trader -n ${NAMESPACE} | bash
-##TRADER_POD=$(echo $KUBECTL get pod -l app=trader -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
+echo -- waiting for pods to be ready...
+echo $KUBECTL wait --for=condition=available --timeout=600s deployment/universedb -n ${NAMESPACE} | bash
+UNIVERSEDB_POD=$(echo $KUBECTL get pod -l app=universedb -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
+
+echo $KUBECTL wait --for=condition=available --timeout=600s deployment/universeapi -n ${NAMESPACE} | bash
+UNIVERSEAPI_POD=$(echo $KUBECTL get pod -l app=universeapi -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
+
+echo $KUBECTL wait --for=condition=available --timeout=600s deployment/ipfsnode -n ${NAMESPACE} | bash
+IPFSNODE_POD=$(echo $KUBECTL get pod -l app=ipfsnode -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
+
+echo $KUBECTL wait --for=condition=available --timeout=600s deployment/trader -n ${NAMESPACE} | bash
+TRADER_POD=$(echo $KUBECTL get pod -l app=trader -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
 
 echo $KUBECTL wait --for=condition=Ready --timeout=600s pod/${UNIVERSEDB_POD}  -n ${NAMESPACE} | bash
 echo $KUBECTL wait --for=condition=Ready --timeout=600s pod/${UNIVERSEAPI_POD} -n ${NAMESPACE} | bash
