@@ -176,11 +176,12 @@ jobs:
       - run: scp -o StrictHostKeyChecking=no ./deployment/development/deploy.sh $DROPLET_USER@$DROPLET_IP:./
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
   deployk8s:
-    executor: freeverse
+    docker:
+      - image: 'bash:latest'
     steps:
       - checkout
       - kube-orb/install-kubectl
-      - run: cd deployment/dok8s && /bin/sh cicd_deploy.sh
+      - run: cd deployment/dok8s && /bin/bash cicd_deploy.sh
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
 workflows:
