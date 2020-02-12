@@ -117,8 +117,16 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 
 func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic) error {
 	for _, tactic := range tactics {
-		substitutions := [3]uint8{11, 11, 11}
-		substitutionsMinute := [3]uint8{2, 3, 4}
+		substitutions := [3]uint8{
+			uint8(tactic.Substitution0Target),
+			uint8(tactic.Substitution1Target),
+			uint8(tactic.Substitution2Target),
+		}
+		substitutionsMinute := [3]uint8{
+			uint8(tactic.Substitution0Minute),
+			uint8(tactic.Substitution1Minute),
+			uint8(tactic.Substitution2Minute),
+		}
 		formation := [14]uint8{
 			uint8(tactic.Shirt0),
 			uint8(tactic.Shirt1),
@@ -131,9 +139,9 @@ func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic
 			uint8(tactic.Shirt8),
 			uint8(tactic.Shirt9),
 			uint8(tactic.Shirt10),
-			uint8(tactic.Shirt11),
-			uint8(tactic.Shirt12),
-			uint8(tactic.Shirt13),
+			uint8(tactic.Substitution0Shirt),
+			uint8(tactic.Substitution1Shirt),
+			uint8(tactic.Substitution2Shirt),
 		}
 		extraAttack := [10]bool{
 			tactic.ExtraAttack1,
