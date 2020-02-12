@@ -25,16 +25,16 @@ KUBECTL="kubectl --kubeconfig=/dev/null --server=${KUBERNETES_SERVER} --certific
 #  --token=${KUBERNETES_TOKEN} \
 #  get pods -n ${NAMESPACE}
 
-##echo -- deploying ingress,configmap,universedb,universeapi,ipsnode,marketdb,trader,notary
-##echo $KUBECTL apply -f ${MY_DIR}/ingress.yaml      -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/configmap.yaml    -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/universedb.yaml   -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/universeapi.yaml  -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/ipfsnode.yaml     -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/marketdb.yaml     -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/trader.yaml       -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/notary.yaml       -n ${NAMESPACE} | bash
-##
+echo -- deploying ingress,configmap,universedb,universeapi,ipsnode,marketdb,trader,notary
+echo $KUBECTL apply -f ${MY_DIR}/ingress.yaml      -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/configmap.yaml    -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/universedb.yaml   -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/universeapi.yaml  -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/ipfsnode.yaml     -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/marketdb.yaml     -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/trader.yaml       -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/notary.yaml       -n ${NAMESPACE} | bash
+
 echo -- waiting for pods to be ready...
 echo $KUBECTL wait --for=condition=available --timeout=600s deployment/universedb -n ${NAMESPACE} | bash
 UNIVERSEDB_POD=$(echo $KUBECTL get pod -l app=universedb -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}" | bash)
@@ -54,10 +54,10 @@ echo $KUBECTL wait --for=condition=Ready --timeout=600s pod/${IPFSNODE_POD}    -
 echo $KUBECTL wait --for=condition=Ready --timeout=600s pod/${TRADER_POD}      -n ${NAMESPACE} | bash
 
 
-##echo -- deploying relayactions, synchronizer and horizon
-##echo $KUBECTL apply -f ${MY_DIR}/relayactions.yaml -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/synchronizer.yaml -n ${NAMESPACE} | bash
-##echo $KUBECTL apply -f ${MY_DIR}/horizon.yaml      -n ${NAMESPACE} | bash
+echo -- deploying relayactions, synchronizer and horizon
+echo $KUBECTL apply -f ${MY_DIR}/relayactions.yaml -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/synchronizer.yaml -n ${NAMESPACE} | bash
+echo $KUBECTL apply -f ${MY_DIR}/horizon.yaml      -n ${NAMESPACE} | bash
 
 echo $KUBECTL get pods -n ${NAMESPACE} | bash
 
