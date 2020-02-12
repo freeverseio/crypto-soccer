@@ -8,6 +8,10 @@ const debug = require('../utils/debugUtils.js');
 
 const Shop = artifacts.require('Shop');
 const EncodingTactics = artifacts.require('EncodingTactics');
+// in test mode, we place a test item in contruction (with itemId = 1)
+// (recall that itemId = 0 is NULL)
+// so a new item will be assigned itemId = 2
+const expectedNewItemId = 2;
 
 contract('Shop', (accounts) => {
     const ALICE = accounts[1];
@@ -55,7 +59,7 @@ contract('Shop', (accounts) => {
         encodedBoost = await shop.encodeBoosts(boosts).should.be.fulfilled;
         
         truffleAssert.eventEmitted(tx, "ItemOffered", (event) => {
-            return event.itemId.toNumber() === 1 && 
+            return event.itemId.toNumber() === expectedNewItemId && 
                 event.encodedBoost.toNumber() == encodedBoost &&
                 event.countriesRoot.toNumber() === countriesRoot &&
                 event.championshipsRoot.toNumber() === championshipsRoot &&
@@ -66,7 +70,7 @@ contract('Shop', (accounts) => {
                 event.uri === uri;
         }, "correct");
         
-        await shop.reduceItemsRemaining(itemId = 1, itemsRemaining - 3).should.be.fulfilled;
+        await shop.reduceItemsRemaining(itemId = expectedNewItemId, itemsRemaining - 3).should.be.fulfilled;
         result = await shop.getItemsRemaining(itemId).should.be.fulfilled;
         result.toNumber().should.be.equal(itemsRemaining - 3);
     });
@@ -94,7 +98,7 @@ contract('Shop', (accounts) => {
         PLAYERS_PER_TEAM_MAX = 25;
         staminas = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => i % 4); 
         // shop items:
-        tactics2 = await shop.addItemsToTactics(tactics, itemId = 1, staminas).should.be.fulfilled;
+        tactics2 = await shop.addItemsToTactics(tactics, itemId = expectedNewItemId, staminas).should.be.fulfilled;
         const {0: stamina, 1: id, 2: boost} = await shop.getItemsData(tactics2).should.be.fulfilled;
         debug.compareArrays(stamina, staminas, toNum = true, verbose = false, isBigNumber = false);
         id.toNumber().should.be.equal(itemId);

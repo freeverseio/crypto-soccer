@@ -63,6 +63,11 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsPart2{
 
     constructor() public {
         _shopItems.push(ShopItem(0, 0, 0, 0, 0, 0, 0, ""));
+        // Adding one item for testing only. TODO: remove from production.
+        uint8[N_SKILLS+1] memory skillsBoost;
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) skillsBoost[sk] = 20;
+        skillsBoost[N_SKILLS] = 1;
+        _shopItems.push(ShopItem(0, 0, 0, 300, encodeBoosts(skillsBoost), 7, 0, "www.freeverse.io"));
     }
 
     function offerItem(
