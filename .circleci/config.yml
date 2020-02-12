@@ -16,6 +16,15 @@ executors:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
 
+      - image: postgres:11.6-alpine
+        environment:
+          - POSTGRES_USER=freeverse
+          - POSTGRES_PASSWORD=freeverse
+          - POSTGRES_DB=cryptosoccer
+      - image: ipfs/go-ipfs:v0.4.18
+        environment:
+          - IPFS_PROFILE=server
+
 jobs:
   truffle_core:
     executor: freeverse
@@ -54,20 +63,7 @@ jobs:
       - run: cd go/synchronizer/engine && go test ./... -v
       - run: cd go/synchronizer/matchevents && go test ./... -v
   go1:
-    docker:
-      - image: freeverseio/circleci
-      - image: postgres:11.6-alpine
-        environment:
-          - POSTGRES_USER=freeverse
-          - POSTGRES_PASSWORD=freeverse
-          - POSTGRES_DB=cryptosoccer
-      - image: ipfs/go-ipfs:v0.4.18
-        environment:
-          - IPFS_PROFILE=server
-      - image: freeverseio/xdai:test
-        auth:
-          username: $DOCKER_ID
-          password: $DOCKER_PASSWD
+    executor: freeverse_ethereum
     steps:
       - checkout
       - run: cd universe.db && PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f *.sql
