@@ -50,7 +50,7 @@ module.exports = function (deployer) {
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
     console.log("Setting up ... done");
-    if (deployer.network === "prod") {
+    if (deployer.network === "production") {
       await assets.init().should.be.fulfilled;
     } else {
       const timezone = 1;
