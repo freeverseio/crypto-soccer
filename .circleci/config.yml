@@ -176,10 +176,9 @@ jobs:
       - run: scp -o StrictHostKeyChecking=no ./deployment/development/deploy.sh $DROPLET_USER@$DROPLET_IP:./
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
   deployk8s:
-    docker:
-      - image: freeverseio/circleci
+    executor: freeverse
     steps:
-      - run: echo "Hello World!"
+      - run: cd deployment/dok8s && ./cicd_deploy.sh
 workflows:
   version: 2
   build_and_test:
