@@ -1,7 +1,4 @@
-:#: Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
+:#: Javascript Node CircleCI 2.1 configuration file
 version: 2.1
 
 executors:
@@ -70,7 +67,7 @@ jobs:
     executor: freeverse_ethereum
     steps:
       - checkout
-      - run: make setup contracts
+      - generate_contracts_code
       - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/notary && go test ./... -p 1
   relay-actions:
@@ -93,7 +90,7 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: make setup contracts
+      - generate_contracts_code
       - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
@@ -119,7 +116,7 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: make setup contracts
+      - generate_contracts_code
       - run: cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} .
       - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
@@ -179,10 +176,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      # - relay-api:
-      #     filters:
-      #       tags:
-      #         only: /.*/
       - market-notary:
           filters:
             tags:
@@ -195,7 +188,6 @@ workflows:
           requires:
             - synchronizer
             - market-trader
-            # - relay-api
             - relay-actions
             - market-notary
             - go1
@@ -208,7 +200,6 @@ workflows:
           requires:
             - synchronizer
             - market-trader
-            # - relay-api
             - relay-actions
             - market-notary
       - deploy:
