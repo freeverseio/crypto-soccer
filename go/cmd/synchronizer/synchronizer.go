@@ -61,6 +61,7 @@ func main() {
 	marketContractAddress := flag.String("marketContractAddress", "", "")
 	utilsmatchlogContractAddress := flag.String("utilsmatchlogContractAddress", "", "")
 	playandevolveContractAddress := flag.String("playandevolveContractAddress", "", "")
+	shopContractAddress := flag.String("shopContractAddress", "", "")
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
@@ -98,6 +99,9 @@ func main() {
 	if *playandevolveContractAddress == "" {
 		log.Fatal("no playandevolve contract address")
 	}
+	if *shopContractAddress == "" {
+		log.Fatal("no shop contract address")
+	}
 	if *trainingpointsContractAddress == "" {
 		log.Fatal("no trainingpoints contract address")
 	}
@@ -126,6 +130,7 @@ func main() {
 			*marketContractAddress,
 			*utilsmatchlogContractAddress,
 			*playandevolveContractAddress,
+			*shopContractAddress,
 			*trainingpointsContractAddress,
 		)
 		if err != nil {
