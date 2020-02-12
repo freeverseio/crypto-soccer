@@ -11,36 +11,9 @@ type AssetsNative struct {
 	assets.Assets
 }
 
-func (b *AssetsNative) GetSpeed(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
+func (b *AssetsNative) GetSkill(opts *bind.CallOpts, encodedSkills *big.Int, skillIdx uint8) (*big.Int, error) {
 	result := new(big.Int).Set(encodedSkills)
-	result.Rsh(result, 16)
-	result.And(result, big.NewInt(0xffff))
-	return result, nil
-}
-
-func (b *AssetsNative) GetPass(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
-	result := new(big.Int).Set(encodedSkills)
-	result.Rsh(result, 32)
-	result.And(result, big.NewInt(0xffff))
-	return result, nil
-}
-
-func (b *AssetsNative) GetShoot(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
-	result := new(big.Int).Set(encodedSkills)
-	result.And(result, big.NewInt(0xffff))
-	return result, nil
-}
-
-func (b *AssetsNative) GetDefence(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
-	result := new(big.Int).Set(encodedSkills)
-	result.Rsh(result, 48)
-	result.And(result, big.NewInt(0xffff))
-	return result, nil
-}
-
-func (b *AssetsNative) GetEndurance(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
-	result := new(big.Int).Set(encodedSkills)
-	result.Rsh(result, 64)
+	result.Rsh(result, uint(skillIdx)*16)
 	result.And(result, big.NewInt(0xffff))
 	return result, nil
 }

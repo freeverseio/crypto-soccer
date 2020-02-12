@@ -32,25 +32,12 @@ contract EncodingSkillsSetters {
     uint8 constant private IDX_LC = 6;
     uint8 constant private IDX_LCR = 7;
 
-    
-    function setShoot(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return ((encodedSkills & ~(uint256(65535))) | val);
-    }
-    
-    function setSpeed(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(65535) << 16)) | (val << 16);
-    }
-    
-    function setPass(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(65535) << 32)) | (val << 32);
-    }
-    
-    function setDefence(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(65535) << 48)) | (val << 48);
+    function setSkill(uint256 encodedSkills, uint256 val, uint8 skillIdx) public pure returns (uint256) {
+        return (encodedSkills & ~(uint256(65535) << (16 * uint256(skillIdx)))) | (val << (16 * uint256(skillIdx)));
     }
 
-    function setEndurance(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(65535) << 64)) | (val << 64);
+    function setPotential(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
+        return (encodedSkills & ~(uint256(15) << 139)) | (val << 139);
     }
 
     function setAlignedEndOfFirstHalf(uint256 encodedSkills, bool val) public pure returns (uint256) {

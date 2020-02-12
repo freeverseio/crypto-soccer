@@ -1,5 +1,6 @@
 const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
+const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
@@ -21,6 +22,7 @@ module.exports = function (deployer) {
   deployer.then(async () => {
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
+    const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
     const trainingPoints= await deployer.deploy(TrainingPoints).should.be.fulfilled;
     const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
     const assets = await deployer.deploy(Assets).should.be.fulfilled;
@@ -40,10 +42,12 @@ module.exports = function (deployer) {
     await updates.initUpdates(assets.address).should.be.fulfilled;
     await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
+    await engine.setApplyBoostersAddr(engineApplyBoosters.address).should.be.fulfilled;
     await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
     await playAndEvolve.setTrainingAddress(trainingPoints.address);
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
+    await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
     console.log("Setting up ... done");
     if (deployer.network === "prod") {
@@ -60,6 +64,7 @@ module.exports = function (deployer) {
     console.log("------------------------");
     console.log("ENGINE_CONTRACT_ADDRESS=" + engine.address);
     console.log("ENGINEPRECOMP_CONTRACT_ADDRESS=" + enginePreComp.address);
+    console.log("ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS=" + engineApplyBoosters.address);
     console.log("LEAGUES_CONTRACT_ADDRESS=" + leagues.address);
     console.log("MARKET_CONTRACT_ADDRESS=" + market.address);
     console.log("UPDATES_CONTRACT_ADDRESS=" + updates.address);

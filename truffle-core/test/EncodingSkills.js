@@ -2,10 +2,13 @@ const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
-    .should();;
+    .should();
 
-    const Encoding = artifacts.require('EncodingSkills');
-    const EncodingSet = artifacts.require('EncodingSkillsSetters');
+const debug = require('../utils/debugUtils.js');
+
+const Encoding = artifacts.require('EncodingSkills');
+const EncodingTact = artifacts.require('EncodingTacticsPart1');
+const EncodingSet = artifacts.require('EncodingSkillsSetters');
 
 contract('Encoding', (accounts) => {
 
@@ -14,6 +17,7 @@ contract('Encoding', (accounts) => {
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
+        encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
     it('encodeTactics incorrect lineup', async () =>  {
@@ -23,9 +27,9 @@ contract('Encoding', (accounts) => {
         substitutions = [4,10,2];
         subsRounds = [3,7,1];
         extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
         lineup[0] = PLAYERS_PER_TEAM_MAX;
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
     })
     
     it('encodeTactics', async () =>  {
@@ -35,8 +39,8 @@ contract('Encoding', (accounts) => {
         substitutions = [4,10,2];
         subsRounds = [3,7,1];
         extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
-        decoded = await encoding.decodeTactics(encoded).should.be.fulfilled;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        decoded = await encodingTact.decodeTactics(encoded).should.be.fulfilled;
 
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
@@ -51,11 +55,11 @@ contract('Encoding', (accounts) => {
             roun[p].toNumber().should.be.equal(subsRounds[p]);
         }
         // // try to provide a tacticsId beyond range
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 64).should.be.rejected;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 64).should.be.rejected;
         // try to provide a lineup beyond range
         lineupWrong = lineup;
         lineupWrong[4] = PLAYERS_PER_TEAM_MAX + 1;
-        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
+        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
     });
 
    
@@ -79,16 +83,15 @@ contract('Encoding', (accounts) => {
             substitutedLastHalf = true,
             sumSkills
         ).should.be.fulfilled;
-        result = await encoding.getShoot(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[0]);
-        result = await encoding.getSpeed(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[1]);
-        result = await encoding.getPass(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[2]);
-        result = await encoding.getDefence(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[3]);
-        result = await encoding.getEndurance(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[4]);
+        
+        N_SKILLS = 5;
+        resultSkills = [];
+        for (s = 0; s < N_SKILLS; s++) {
+            result = await encoding.getSkill(skills, s).should.be.fulfilled;
+            resultSkills.push(result);
+        }
+        debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
+
         result = await encoding.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
         result = await encoding.getPotential(skills).should.be.fulfilled;
@@ -113,6 +116,11 @@ contract('Encoding', (accounts) => {
         result.toNumber().should.be.equal(7);
         skillsdummy = await encodingSet.setGamesNonStopping(skills, 8).should.be.rejected;
         
+
+        skills = await encodingSet.setPotential(skills, potential+1).should.be.fulfilled;
+        result = await encoding.getPotential(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(potential+1);
+
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
         result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
@@ -134,21 +142,15 @@ contract('Encoding', (accounts) => {
         
         sk = [2**16 - 43, 2**16 - 567, 0, 2**16 - 356, 2**16 - 4556]
         sumSkills = sk.reduce((a, b) => a + b, 0);
-        skills = await encodingSet.setShoot(skills, sk[0]).should.be.fulfilled;
-        skills = await encodingSet.setSpeed(skills, sk[1]).should.be.fulfilled;
-        skills = await encodingSet.setPass(skills, sk[2]).should.be.fulfilled;
-        skills = await encodingSet.setDefence(skills, sk[3]).should.be.fulfilled;
-        skills = await encodingSet.setEndurance(skills, sk[4]).should.be.fulfilled;
-        result = await encoding.getShoot(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[0]);
-        result = await encoding.getSpeed(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[1]);
-        result = await encoding.getPass(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[2]);
-        result = await encoding.getDefence(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[3]);
-        result = await encoding.getEndurance(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(sk[4]);
+        for (s = 0; s < N_SKILLS; s++) {
+            skills = await encodingSet.setSkill(skills, sk[s], s).should.be.fulfilled;
+        }
+        resultSkills = [];
+        for (s = 0; s < N_SKILLS; s++) {
+            result = await encoding.getSkill(skills, s).should.be.fulfilled;
+            resultSkills.push(result);
+        }
+        debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
 
         skills = await encodingSet.setAlignedEndOfFirstHalf(skills, true).should.be.fulfilled;
         result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;

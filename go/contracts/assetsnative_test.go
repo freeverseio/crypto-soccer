@@ -13,6 +13,7 @@ import (
 )
 
 func TestAssetsProxyGetSpeed(t *testing.T) {
+	SK_SPE := uint8(1)
 	tcs := []uint16{0, 2, 0xffff - 1, 0xffff}
 	assets, err := assets.NewAssets(common.HexToAddress(bc.Contracts.AssetsAddress), bc.Contracts.Client)
 	assert.NilError(t, err)
@@ -35,9 +36,9 @@ func TestAssetsProxyGetSpeed(t *testing.T) {
 				0,
 			)
 			assert.NilError(t, err)
-			result, err := assets.GetSpeed(&bind.CallOpts{}, skills)
+			result, err := assets.GetSkill(&bind.CallOpts{}, skills, SK_SPE)
 			assert.NilError(t, err)
-			nativeResult, err := native.GetSpeed(&bind.CallOpts{}, skills)
+			nativeResult, err := native.GetSkill(&bind.CallOpts{}, skills, SK_SPE)
 			assert.NilError(t, err)
 			assert.Equal(t, result.String(), nativeResult.String())
 			assert.Equal(t, uint16(result.Uint64()), tc)
@@ -46,6 +47,7 @@ func TestAssetsProxyGetSpeed(t *testing.T) {
 }
 
 func TestAssetsProxyGetPass(t *testing.T) {
+	SK_PAS := uint8(2)
 	tcs := []uint16{0, 2, 0xffff - 1, 0xffff}
 	assets, err := assets.NewAssets(common.HexToAddress(bc.Contracts.AssetsAddress), bc.Contracts.Client)
 	assert.NilError(t, err)
@@ -68,9 +70,9 @@ func TestAssetsProxyGetPass(t *testing.T) {
 				0,
 			)
 			assert.NilError(t, err)
-			result, err := assets.GetPass(&bind.CallOpts{}, skills)
+			result, err := assets.GetSkill(&bind.CallOpts{}, skills, SK_PAS)
 			assert.NilError(t, err)
-			nativeResult, err := native.GetPass(&bind.CallOpts{}, skills)
+			nativeResult, err := native.GetSkill(&bind.CallOpts{}, skills, SK_PAS)
 			assert.NilError(t, err)
 			assert.Equal(t, result.String(), nativeResult.String())
 			assert.Equal(t, uint16(result.Uint64()), tc)
