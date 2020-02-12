@@ -179,7 +179,7 @@ jobs:
     executor: freeverse
     steps:
       - checkout
-      - run: git branch && cd deployment/dok8s && ls -alsh && /bin/bash cicd_deploy.sh
+      - run: git branch && cd deployment/dok8s && ls -alsh && /bin/sh cicd_deploy.sh
 workflows:
   version: 2
   build_and_test:
