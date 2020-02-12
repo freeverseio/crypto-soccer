@@ -133,6 +133,7 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsPart2{
     
     function validateItemsInTactics(uint256 tactics) public view {
         ( , uint16 itemId, uint32 boost) = getItemsData(tactics);
+        if (itemId == 0) return;
         require(itemId < _shopItems.length, "item not found in shop");
         require(_shopItems[itemId].encodedBoost == boost, "tactics refer to an item with mismatching boost properties");
     }
