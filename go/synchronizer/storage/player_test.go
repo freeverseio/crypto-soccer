@@ -106,7 +106,7 @@ func TestPlayerUpdate(t *testing.T) {
 		t.Fatal("Skills are different")
 	}
 	player2.EncodedSkills = big.NewInt(3)
-	player2. = 1
+	player2.RedCard = true
 	player2.InjuryMatchesLeft = 3
 	player2.Name = "Iam Sad"
 	err = player2.Update(tx)
@@ -117,7 +117,7 @@ func TestPlayerUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player2. != player3. {
+	if player2.RedCard != player3.RedCard {
 		t.Fatal("Wrong RedCard")
 	}
 	if player2.InjuryMatchesLeft != player3.InjuryMatchesLeft {

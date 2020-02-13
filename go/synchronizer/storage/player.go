@@ -22,7 +22,6 @@ type Player struct {
 	ShirtNumber       uint8
 	EncodedSkills     *big.Int
 	EncodedState      *big.Int
-	Frozen            bool
 	RedCard           bool
 	InjuryMatchesLeft uint8
 }
@@ -40,7 +39,6 @@ func (b *Player) Equal(player Player) bool {
 		b.ShirtNumber == player.ShirtNumber &&
 		b.EncodedSkills.String() == player.EncodedSkills.String() &&
 		b.EncodedState.String() == player.EncodedState.String() &&
-		b.Frozen == player.Frozen &&
 		b.RedCard == player.RedCard &&
 		b.InjuryMatchesLeft == player.InjuryMatchesLeft &&
 		b.Name == player.Name &&
@@ -61,7 +59,7 @@ func PlayerCount(tx *sql.Tx) (uint64, error) {
 
 func (b *Player) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create player %v", b)
-	_, err := tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
+	_, err := tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
 		b.PlayerId.String(),
 		b.TeamId,
 		b.Defence,
@@ -74,7 +72,6 @@ func (b *Player) Insert(tx *sql.Tx) error {
 		b.EncodedSkills.String(),
 		b.EncodedState.String(),
 		b.Potential,
-		b.Frozen,
 		b.Name,
 		b.DayOfBirth,
 	)
@@ -95,12 +92,11 @@ func (b *Player) Update(tx *sql.Tx) error {
 	shoot=$5,
 	endurance=$6,
 	shirt_number=$7,
-	frozen=$8, 
-	encoded_skills=$9,
-	red_card=$10,
-	injury_matches_left=$11,
-	name=$12
-	WHERE player_id=$13;`,
+	encoded_skills=$8,
+	red_card=$9,
+	injury_matches_left=$10,
+	name=$11
+	WHERE player_id=$12;`,
 		b.TeamId,
 		b.Defence,
 		b.Speed,
@@ -108,7 +104,6 @@ func (b *Player) Update(tx *sql.Tx) error {
 		b.Shoot,
 		b.Endurance,
 		b.ShirtNumber,
-		b.Frozen,
 		b.EncodedSkills.String(),
 		b.RedCard,
 		b.InjuryMatchesLeft,
@@ -130,7 +125,6 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	encoded_skills, 
 	encoded_state, 
 	potential, 
-	frozen, 
 	name, 
 	day_of_birth, 
 	red_card,
@@ -160,7 +154,6 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 		&encodedSkills,
 		&encodedState,
 		&player.Potential,
-		&player.Frozen,
 		&player.Name,
 		&player.DayOfBirth,
 		&player.RedCard,
