@@ -9,6 +9,7 @@ const debug = require('../utils/debugUtils.js');
 const Encoding = artifacts.require('EncodingSkills');
 const EncodingTact = artifacts.require('EncodingTacticsPart1');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
+const Utils = artifacts.require('Utils');
 
 contract('Encoding', (accounts) => {
 
@@ -16,6 +17,7 @@ contract('Encoding', (accounts) => {
 
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;
+        utils = await Utils.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
@@ -76,11 +78,11 @@ contract('Encoding', (accounts) => {
             forwardness = 3,
             leftishness = 4,
             aggressiveness = 1],
-            alignedEndOfLastHalf = true,
+            alignedEndOfFirstHalf = true,
             redCardLastGame = true,
             gamesNonStopping = 2,
             injuryWeeksLeft = 6,
-            substitutedLastHalf = true,
+            substitutedFirstHalf = true,
             sumSkills
         ).should.be.fulfilled;
         
@@ -105,29 +107,33 @@ contract('Encoding', (accounts) => {
         result = await encoding.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
         result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
-        result.should.be.equal(alignedEndOfLastHalf);
+        result.should.be.equal(alignedEndOfFirstHalf);
         result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
 
         result = await encoding.getGamesNonStopping(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(gamesNonStopping);
-        skills = await encodingSet.setGamesNonStopping(skills, 7).should.be.fulfilled;
+        gamesNonStopping = 7;        
+        skills = await encodingSet.setGamesNonStopping(skills, gamesNonStopping).should.be.fulfilled;
         result = await encoding.getGamesNonStopping(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(7);
+        result.toNumber().should.be.equal(gamesNonStopping);
         skillsdummy = await encodingSet.setGamesNonStopping(skills, 8).should.be.rejected;
         
 
         skills = await encodingSet.setPotential(skills, potential+1).should.be.fulfilled;
         result = await encoding.getPotential(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(potential+1);
+        potential = potential + 1;
+        result.toNumber().should.be.equal(potential);
 
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
+
         result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
-        result.should.be.equal(substitutedLastHalf);
-        skills = await encodingSet.setSubstitutedFirstHalf(skills, val = !substitutedLastHalf).should.be.fulfilled;
+        result.should.be.equal(substitutedFirstHalf);
+        substitutedFirstHalf = !substitutedFirstHalf;
+        skills = await encodingSet.setSubstitutedFirstHalf(skills, substitutedFirstHalf).should.be.fulfilled;
         result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
-        result.should.be.equal(!substitutedLastHalf);
+        result.should.be.equal(substitutedFirstHalf);
 
         result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
@@ -152,29 +158,35 @@ contract('Encoding', (accounts) => {
         }
         debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
 
-        skills = await encodingSet.setAlignedEndOfFirstHalf(skills, true).should.be.fulfilled;
+        alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
+        skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
         result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
-        result.should.be.equal(true);
+        result.should.be.equal(alignedEndOfFirstHalf);
 
-        skills = await encodingSet.setAlignedEndOfFirstHalf(skills, false).should.be.fulfilled;
+        alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
+        skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
         result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
-        result.should.be.equal(false);
+        result.should.be.equal(alignedEndOfFirstHalf);
         
-        skills = await encodingSet.setRedCardLastGame(skills, true).should.be.fulfilled;
+        redCardLastGame = !redCardLastGame;
+        skills = await encodingSet.setRedCardLastGame(skills, redCardLastGame).should.be.fulfilled;
         result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
-        result.should.be.equal(true);
+        result.should.be.equal(redCardLastGame);
 
-        skills = await encodingSet.setRedCardLastGame(skills, false).should.be.fulfilled;
+        redCardLastGame = !redCardLastGame;
+        skills = await encodingSet.setRedCardLastGame(skills, redCardLastGame).should.be.fulfilled;
         result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
-        result.should.be.equal(false);
+        result.should.be.equal(redCardLastGame);
         
-        skills = await encodingSet.setInjuryWeeksLeft(skills, 3).should.be.fulfilled;
+        injuryWeeksLeft -= 2;
+        skills = await encodingSet.setInjuryWeeksLeft(skills, injuryWeeksLeft).should.be.fulfilled;
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(3);
+        result.toNumber().should.be.equal(injuryWeeksLeft);
 
-        skills = await encodingSet.setInjuryWeeksLeft(skills, 4).should.be.fulfilled;
+        injuryWeeksLeft += 1;
+        skills = await encodingSet.setInjuryWeeksLeft(skills, injuryWeeksLeft).should.be.fulfilled;
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(4);
+        result.toNumber().should.be.equal(injuryWeeksLeft);
 
         skills = await encodingSet.setSumOfSkills(skills, sumSkills);
         result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
@@ -187,9 +199,22 @@ contract('Encoding', (accounts) => {
         result = await encoding.getTargetTeamId(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(targetTeamId);
 
-        skills = await encodingSet.setGeneration(skills, gen = 2).should.be.fulfilled;
+        generation += 2;
+        skills = await encodingSet.setGeneration(skills, generation).should.be.fulfilled;
         result = await encoding.getGeneration(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(gen);
+        result.toNumber().should.be.equal(generation);
+        
+        // testing full decode
+        const {0: _skills, 1: _day, 2: _traits, 3: _playerId, 4: _alignedSubstRed, 5: _genNonstopInj} = await utils.fullDecodeSkills(skills).should.be.fulfilled     
+        _day.toNumber().should.be.equal(dayOfBirth);
+        _playerId.toNumber().should.be.equal(playerId);
+        debug.compareArrays(_skills, sk, toNum = true, verbose = false);
+        expectedTraits = [potential, forwardness, leftishness, aggressiveness];
+        debug.compareArrays(_traits, expectedTraits, toNum = true, verbose = false);
+        expectedBools = [alignedEndOfFirstHalf, substitutedFirstHalf, redCardLastGame];
+        debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false, verbose = false);
+        expectedGenGameInj = [generation, gamesNonStopping, injuryWeeksLeft];
+        debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true, verbose = false);
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {
@@ -199,27 +224,27 @@ contract('Encoding', (accounts) => {
         playerId = 143;
         potential = 5;
         aggr = 2;
-        alignedEndOfLastHalf = true;
+        alignedEndOfFirstHalf = true;
         redCardLastGame = true;
         gamesNonStopping = 2;
         injuryWeeksLeft = 6;
-        substitutedLastHalf = true;
+        substitutedFirstHalf = true;
         sumSkills = sk.reduce((a, b) => a + b, 0);
         // leftishness = 0 only possible for goalkeepers:
         await encoding.encodePlayerSkills(sk, dayOfBirth, generation, playerId, [potential, forwardness = 0, leftishness = 0, aggr],
-            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedLastHalf, sumSkills).should.be.fulfilled;
+            alignedEndOfFirstHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedFirstHalf, sumSkills).should.be.fulfilled;
         await encoding.encodePlayerSkills(sk, dayOfBirth, generation, playerId, [potential, forwardness = 1, leftishness = 0, aggr],
-            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedLastHalf, sumSkills).should.be.rejected;
+            alignedEndOfFirstHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedFirstHalf, sumSkills).should.be.rejected;
         // forwardness is 5 at max:
         await encoding.encodePlayerSkills(sk, dayOfBirth, generation, playerId, [potential, forwardness = 5, leftishness = 1, aggr],
-            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedLastHalf, sumSkills).should.be.fulfilled;
+            alignedEndOfFirstHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedFirstHalf, sumSkills).should.be.fulfilled;
         await encoding.encodePlayerSkills(sk, dayOfBirth, generation, playerId, [potential, forwardness = 6, leftishness = 1, aggr],
-            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedLastHalf, sumSkills).should.be.rejected;
+            alignedEndOfFirstHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedFirstHalf, sumSkills).should.be.rejected;
         // leftishness is 7 at max:
         await encoding.encodePlayerSkills(sk, dayOfBirth, generation, playerId, [potential, forwardness = 5, leftishness = 7, aggr],
-            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedLastHalf, sumSkills).should.be.fulfilled;
+            alignedEndOfFirstHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedFirstHalf, sumSkills).should.be.fulfilled;
         await encoding.encodePlayerSkills(sk, dayOfBirth, generation, playerId, [potential, forwardness = 5, leftishness = 8, aggr],
-            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedLastHalf, sumSkills).should.be.rejected;
+            alignedEndOfFirstHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft, substitutedFirstHalf, sumSkills).should.be.rejected;
     });
     
 });

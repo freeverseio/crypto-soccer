@@ -5,7 +5,7 @@ require('chai')
     .should();;
 
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
-const UtilsMatchLog = artifacts.require('UtilsMatchLog');
+const Utils = artifacts.require('Utils');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
 

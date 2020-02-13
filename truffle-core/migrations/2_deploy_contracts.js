@@ -10,7 +10,7 @@ const Updates = artifacts.require('Updates');
 const Friendlies = artifacts.require('Friendlies');
 const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
-const UtilsMatchLog = artifacts.require('UtilsMatchLog');
+const Utils = artifacts.require('Utils');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 
 
@@ -32,7 +32,7 @@ module.exports = function (deployer) {
     const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
     const shop = await deployer.deploy(Shop).should.be.fulfilled;
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
-    const utilsMatchLog = await deployer.deploy(UtilsMatchLog).should.be.fulfilled;
+    const utilsMatchLog = await deployer.deploy(Utils).should.be.fulfilled;
     const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
     
     console.log("Setting up ...");
