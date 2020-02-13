@@ -6,6 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const NoSubstitution = 11
+
 type Tactic struct {
 	Verse               uint64 `json:"verse"`
 	Timezone            int    `json:"timezone"`
@@ -41,11 +43,6 @@ type Tactic struct {
 	ExtraAttack8        bool   `json:"extra_attack_8"`  // extra_attack_8
 	ExtraAttack9        bool   `json:"extra_attack_9"`  // extra_attack_9
 	ExtraAttack10       bool   `json:"extra_attack_10"` // extra_attack_1
-}
-
-func DefaultTactic(teamID string, timezone int) *Tactic {
-	tacticId := 1
-	return &Tactic{UpcomingVerse, timezone, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 11, 0, 25, 11, 0, 25, 11, 0, false, false, true, false, false, true, false, false, false, false}
 }
 
 func (b *Tactic) Delete(tx *sql.Tx) error {
