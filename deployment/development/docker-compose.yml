@@ -20,8 +20,6 @@ services:
       - ethereum
   universe.db:
     image: freeverseio/universe.db:$TAG
-    volumes:
-      - universe.db-data:/var/lib/postgresql/data
   synchronizer:
     image: freeverseio/synchronizer:$TAG
     command: > 
@@ -106,7 +104,6 @@ services:
 volumes:
   ethereum-data:
   ipfs.node-data:
-  universe.db-data:
   market.db-data:
 
 

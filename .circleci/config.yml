@@ -93,39 +93,33 @@ jobs:
     executor: freeverse
     steps:
       - checkout
+      - generate_contracts_code
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - generate_contracts_code
       - docker-cache/with-save-restore-images:
-          parallelism: 4
+          parallelism: 8
           repository: freeverseio
-          images: 'market.trader:dev universe.db:dev relay.actions:dev'
+          images: 'relay.actions:dev synchronizer:dev market.notary:dev dashboard:dev'
           steps:
             - docker-cache/build:
-                # command: 'docker build -t myapp:${CIRCLE_BRANCH/\//-} .'
                 command: cd market.trader && docker build -t freeverseio/market.trader:dev .
             - docker-cache/build:
                 command: cd universe.db && docker build -t freeverseio/universe.db:dev .
             - docker-cache/build:
                 command: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
-#
-
-      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd dashboard && docker build -t freeverseio/dashboard:dev .
-      - run: cd market.db && docker build -t freeverseio/market.db:dev .
-      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
-      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
-      - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
-      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      # - run: docker push freeverseio/synchronizer:dev
-      - run: docker push freeverseio/horizon:dev
-      # - run: docker push freeverseio/universe.db:dev
-      - run: docker push freeverseio/market.db:dev
-      - run: docker push freeverseio/market.trader:dev
-      - run: docker push freeverseio/market.notary:dev
-      - run: docker push freeverseio/universe.api:dev
-      # - run: docker push freeverseio/relay.actions:dev
-      - run: docker push freeverseio/dashboard:dev
+            - docker-cache/build:
+                command: cd nodejs-horizon && docker build -t freeverseio/horizon:dev . 
+            - docker-cache/build:
+                command: cd dashboard && docker build -t freeverseio/dashboard:dev .
+            - docker-cache/build:
+                command: cd market.db && docker build -t freeverseio/market.db:dev .
+            - docker-cache/build:
+                command: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
+            - docker-cache/build:
+                command: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
+            - docker-cache/build:
+                command: cd universe.api && docker build -t freeverseio/universe.api:dev .
   dockerization-production:
     executor: freeverse
     steps:
