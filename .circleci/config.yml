@@ -31,6 +31,11 @@ commands:
     description: "Compile and generate code for the services that need to communicate with them"
     steps:
       - run: make setup contracts
+  dockerhub_init:
+    steps:
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
 
 jobs:
   truffle_core:
@@ -44,8 +49,6 @@ jobs:
     executor: freeverse_ethereum
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - generate_contracts_code
       - submit_universe_db_schema
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
@@ -54,6 +57,7 @@ jobs:
       - run: cd go/synchronizer/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
       - run: cd go/synchronizer/matchevents && go test ./... -v
+      - dockerhub_init
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:$CIRCLE_SHA1 .
       - run: docker push freeverseio/synchronizer:$CIRCLE_SHA1
   go1:
@@ -86,10 +90,9 @@ jobs:
     executor: freeverse
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: cd market.trader && npm install
       - run: cd market.trader && npm test
+      - dockerhub_init
       - run: cd market.trader && docker build -t freeverseio/market.trader:$CIRCLE_SHA1 .
       - run: docker push freeverseio/market.trader:$CIRCLE_SHA1
   dockerization-development:
