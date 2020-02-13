@@ -220,12 +220,8 @@ workflows:
           filters:
            branches:
               only:
-                - k8s
+                - dev
           requires:
-            - synchronizer
-            - market-trader
-            - relay-actions
-            - market-notary
-            - go1
+            - dockerization-development
             - truffle_core
 
