@@ -3,7 +3,7 @@ version: 2.1
 
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
-  docker-registry-image-cache: cci-x/docker-registry-image-cache@0.2.10
+  docker-cache: cci-x/docker-registry-image-cache@0.2.10
 
 executors:
   freeverse:
