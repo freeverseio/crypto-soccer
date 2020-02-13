@@ -47,7 +47,7 @@ contract EncodingSkills {
      *      redCardLastGame           = 1b (bool)
      *      gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6.
      *      injuryWeeksLeft           = 3b 
-     *      substitutedDuringLastHalf = 1b (bool) 
+     *      substitutedFirstHalf      = 1b (bool) 
      *      sumSkills                 = 19b (must equal sum(skills), of if each is 16b, this can be at most 5x16b => use 19b)
      *      isSpecialPlayer           = 1b (set at the left-most bit, 255)
      *      targetTeamId              = 43b
@@ -63,7 +63,7 @@ contract EncodingSkills {
         bool redCardLastGame, 
         uint8 gamesNonStopping, 
         uint8 injuryWeeksLeft,
-        bool substitutedLastHalf,
+        bool substitutedFirstHalf,
         uint32 sumSkills
     )
         public
@@ -94,7 +94,7 @@ contract EncodingSkills {
         encoded |= uint256(redCardLastGame ? 1 : 0) << 153;
         encoded |= uint256(gamesNonStopping) << 154;
         encoded |= uint256(injuryWeeksLeft) << 157;
-        encoded |= uint256(substitutedLastHalf ? 1 : 0) << 160;
+        encoded |= uint256(substitutedFirstHalf ? 1 : 0) << 160;
         encoded |= uint256(sumSkills) << 161;
         return (encoded | uint256(generation) << 223);
     }
