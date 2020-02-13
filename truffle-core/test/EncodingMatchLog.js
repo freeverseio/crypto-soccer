@@ -16,7 +16,7 @@ contract('EncodingMatchLog', (accounts) => {
     
     beforeEach(async () => {
         encoding = await EncodingMatchLog.new().should.be.fulfilled;
-        utilsML = await UtilsMatchLog.new().should.be.fulfilled;
+        utils = await Utils.new().should.be.fulfilled;
     });
     
     it('encode and decode matchlog', async () =>  {
@@ -66,7 +66,7 @@ contract('EncodingMatchLog', (accounts) => {
         result.toNumber().should.be.equal(teamSumSkills)
         
         // HALF 1
-        result = await utilsML.fullDecodeMatchLog(log, is2ndHalf = false).should.be.fulfilled;
+        result = await utils.fullDecodeMatchLog(log, is2ndHalf = false).should.be.fulfilled;
         expected = [
             teamSumSkills,
             winner,
@@ -80,7 +80,7 @@ contract('EncodingMatchLog', (accounts) => {
         debug.compareArrays(result, expected, toNum = true, verbose = false);
 
         // HALF 2
-        result = await utilsML.fullDecodeMatchLog(log, is2ndHalf = true).should.be.fulfilled;
+        result = await utils.fullDecodeMatchLog(log, is2ndHalf = true).should.be.fulfilled;
         expected = [
             teamSumSkills,
             winner,

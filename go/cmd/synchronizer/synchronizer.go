@@ -46,7 +46,7 @@ func main() {
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
 	marketContractAddress := flag.String("marketContractAddress", "", "")
-	utilsmatchlogContractAddress := flag.String("utilsmatchlogContractAddress", "", "")
+	utilsContractAddress := flag.String("utilsContractAddress", "", "")
 	playandevolveContractAddress := flag.String("playandevolveContractAddress", "", "")
 	shopContractAddress := flag.String("shopContractAddress", "", "")
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
@@ -80,8 +80,8 @@ func main() {
 	if *enginePreCompContractAddress == "" {
 		log.Fatal("no enginePreComp contract address")
 	}
-	if *utilsmatchlogContractAddress == "" {
-		log.Fatal("no utilsmatchlog contract address")
+	if *utilsContractAddress == "" {
+		log.Fatal("no utils contract address")
 	}
 	if *playandevolveContractAddress == "" {
 		log.Fatal("no playandevolve contract address")
@@ -115,7 +115,7 @@ func main() {
 			*enginePreCompContractAddress,
 			*updatesContractAddress,
 			*marketContractAddress,
-			*utilsmatchlogContractAddress,
+			*utilsContractAddress,
 			*playandevolveContractAddress,
 			*shopContractAddress,
 			*trainingpointsContractAddress,

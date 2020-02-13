@@ -32,7 +32,7 @@ module.exports = function (deployer) {
     const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
     const shop = await deployer.deploy(Shop).should.be.fulfilled;
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
-    const utilsMatchLog = await deployer.deploy(Utils).should.be.fulfilled;
+    const utils = await deployer.deploy(Utils).should.be.fulfilled;
     const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
     
     console.log("Setting up ...");
@@ -74,7 +74,7 @@ module.exports = function (deployer) {
     console.log("FRIENDLIES_CONTRACT_ADDRESS=" + friendlies.address);
     console.log("SHOP_CONTRACT_ADDRESS=" + shop.address);
     console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
-    console.log("UTILS_MATCH_LOG_CONTRACT_ADDRESS=" + utilsMatchLog.address);
+    console.log("UTILS_CONTRACT_ADDRESS=" + utils.address);
     console.log("PLAYANDEVOLVE_CONTRACT_ADDRESS=" + playAndEvolve.address);
   });
 };

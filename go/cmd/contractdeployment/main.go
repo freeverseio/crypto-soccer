@@ -27,7 +27,7 @@ type ConfigMap struct {
 		Market_contract_address          string `yaml:"market_contract_address"`
 		Evolution_contract_address       string `yaml:"evolution_contract_address"`
 		Engineprecomp_contract_address   string `yaml:"engineprecomp_contract_address"`
-		Utils_match_log_contract_address string `yaml:"utils_match_log_contract_address"`
+		Utils_contract_address           string `yaml:"utils_contract_address"`
 		Play_and_evolve_contract_address string `yaml:"play_and_evolve_contract_address"`
 		Training_points_contract_address string `yaml:"training_points_contract_address"`
 		Enode                            string `yaml:"enode"`
@@ -67,7 +67,7 @@ func main() {
 	c.Data.Market_contract_address = b.Addresses.Market
 	c.Data.Evolution_contract_address = b.Addresses.Evolution
 	c.Data.Engineprecomp_contract_address = b.Addresses.Engineprecomp
-	c.Data.Utils_match_log_contract_address = b.Addresses.Utilsmatchlog
+	c.Data.Utils_contract_address = b.Addresses.Utils
 	c.Data.Play_and_evolve_contract_address = b.Addresses.Playandevolve
 	c.Data.Training_points_contract_address = b.Addresses.Trainingpoints
 
