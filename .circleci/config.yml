@@ -1,6 +1,10 @@
 :#: Javascript Node CircleCI 2.1 configuration file
 version: 2.1
 
+orbs:
+  kube-orb: circleci/kubernetes@0.11.0
+  docker-registry-image-cache: cci-x/docker-registry-image-cache@0.2.10
+
 executors:
   freeverse:
     docker:
@@ -92,9 +96,18 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - generate_contracts_code
-      - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
-      - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
+      - docker-cache/with-save-restore-images:
+          parallelism: 4
+          repository: freeverseio
+          images: 'market.trader:dev universe.db:dev relay.actions:dev'
+          steps:
+            - docker-cache/build:
+                # command: 'docker build -t myapp:${CIRCLE_BRANCH/\//-} .'
+                command: cd market.trader && docker build -t freeverseio/market.trader:dev .
+                command: cd universe.db && docker build -t freeverseio/universe.db:dev .
+                command: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
+
+
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run: cd dashboard && docker build -t freeverseio/dashboard:dev .
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
@@ -102,14 +115,14 @@ jobs:
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/synchronizer:dev
+      # - run: docker push freeverseio/synchronizer:dev
       - run: docker push freeverseio/horizon:dev
-      - run: docker push freeverseio/universe.db:dev
+      # - run: docker push freeverseio/universe.db:dev
       - run: docker push freeverseio/market.db:dev
       - run: docker push freeverseio/market.trader:dev
       - run: docker push freeverseio/market.notary:dev
       - run: docker push freeverseio/universe.api:dev
-      - run: docker push freeverseio/relay.actions:dev
+      # - run: docker push freeverseio/relay.actions:dev
       - run: docker push freeverseio/dashboard:dev
   dockerization-production:
     executor: freeverse
@@ -157,8 +170,6 @@ jobs:
       - kube-orb/install-kubeconfig:
         kubeconfig: KUBECONFIG_DATA
       - run: cd deployment/dok8s &&  /bin/bash cicd_deploy.sh
-orbs:
-  kube-orb: circleci/kubernetes@0.11.0
 workflows:
   version: 2
   build_and_test:
@@ -192,6 +203,7 @@ workflows:
             branches:
               only:
                 - dev
+                - refactoring/ci_org
           requires:
             - synchronizer
             - market-trader
