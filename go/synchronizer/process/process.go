@@ -139,7 +139,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		if err != nil {
 			return err
 		}
-		player.Frozen = v.Frozen
+		// player.Frozen = v.Frozen // TODO ractive
 		return player.Update(tx)
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
