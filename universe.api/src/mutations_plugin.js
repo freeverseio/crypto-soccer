@@ -28,9 +28,15 @@ const MyPlugin = (assets, from) => {
           shirt8: Int!
           shirt9: Int!
           shirt10: Int!
-          shirt11: Int!
-          shirt12: Int!
-          shirt13: Int!
+          substitution0Shirt: Int!
+          substitution0Target: Int!
+          substitution0Minute: Int!
+          substitution1Shirt: Int!
+          substitution1Target: Int!
+          substitution1Minute: Int!
+          substitution2Shirt: Int!
+          substitution2Target: Int!
+          substitution2Minute: Int!
           extraAttack1: Boolean!
           extraAttack2: Boolean!
           extraAttack3: Boolean!
