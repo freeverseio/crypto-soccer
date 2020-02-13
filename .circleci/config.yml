@@ -98,7 +98,7 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - docker-cache/with-save-restore-images:
-          parallelism: 8
+          parallelism: 10
           repository: freeverseio
           images: 'relay.actions:dev synchronizer:dev market.notary:dev dashboard:dev'
           steps:
