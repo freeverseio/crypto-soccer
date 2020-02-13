@@ -164,9 +164,17 @@ CREATE TABLE tactics (
     shirt_9 INT NOT NULL CHECK (shirt_9 >= 0),
     shirt_10 INT NOT NULL CHECK (shirt_10 >= 0),
 
-    shirt_11 INT NOT NULL CHECK (shirt_11 >= 0),
-    shirt_12 INT NOT NULL CHECK (shirt_12 >= 0),
-    shirt_13 INT NOT NULL CHECK (shirt_13 >= 0),
+    substitution_0_shirt INT NOT NULL CHECK (substitution_0_shirt >= 0 AND substitution_0_shirt <= 25),
+    substitution_0_target INT NOT NULL CHECK (substitution_0_target >= 0 AND substitution_0_target <= 11),
+    substitution_0_minute INT NOT NULL CHECK (substitution_0_minute >= 0 AND substitution_0_minute <= 90),
+
+    substitution_1_shirt INT NOT NULL CHECK (substitution_1_shirt >= 0 AND substitution_1_shirt <= 25),
+    substitution_1_target INT NOT NULL CHECK (substitution_1_target >= 0 AND substitution_1_target <= 11),
+    substitution_1_minute INT NOT NULL CHECK (substitution_1_minute >= 0 AND substitution_1_minute <= 90),
+
+    substitution_2_shirt INT NOT NULL CHECK (substitution_2_shirt >= 0 AND substitution_2_shirt <= 25),
+    substitution_2_target INT NOT NULL CHECK (substitution_2_target >= 0 AND substitution_2_target <= 11),
+    substitution_2_minute INT NOT NULL CHECK (substitution_2_minute >= 0 AND substitution_2_minute <= 90),
 
     extra_attack_1  BOOLEAN NOT NULL,
     extra_attack_2  BOOLEAN NOT NULL,

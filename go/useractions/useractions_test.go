@@ -50,13 +50,13 @@ func TestIpfsPushAndPull(t *testing.T) {
 	ua.Tactics = append(ua.Tactics, tactic)
 	cif, err := ua.ToIpfs("localhost:5001")
 	assert.NilError(t, err)
-	assert.Equal(t, cif, "QmRo9oYwcfJ8BbYJCZKX3JPv7j6izWi2pqePfNpCVfvmYw")
+	assert.Equal(t, cif, "QmRrkSTVeoU3qyoKHiVKkCipWaGNwaBJFQY2HFw8ygzezv")
 	training := storage.Training{}
 	training.TeamID = "pippo"
 	ua.Trainings = append(ua.Trainings, training)
 	cif, err = ua.ToIpfs("localhost:5001")
 	assert.NilError(t, err)
-	assert.Equal(t, cif, "QmWeiipZSst2SKyaM35W7Gc4oTqcYWVBMSu3BtfpPE6eKy")
+	assert.Equal(t, cif, "QmaW7ZEjanu67W2rmobnpB2qTCCtrjX7Jwzqkqnc5emTfA")
 	ua2, err := useractions.NewFromIpfs("localhost:5001", cif)
 	assert.NilError(t, err)
 	assert.Assert(t, ua2.Equal(&ua))
