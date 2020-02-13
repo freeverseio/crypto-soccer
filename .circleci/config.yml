@@ -149,9 +149,15 @@ jobs:
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
   deployk8s:
     docker:
-      - image: freeverseio/circleci
+      - image: 'cimg/base:stable'
     steps:
-      - run: echo "Hello World!"
+      - checkout
+      - kube-orb/install-kubectl
+      - kube-orb/install-kubeconfig:
+        kubeconfig: KUBECONFIG_DATA
+      - run: cd deployment/dok8s &&  /bin/bash cicd_deploy.sh
+orbs:
+  kube-orb: circleci/kubernetes@0.11.0
 workflows:
   version: 2
   build_and_test:
