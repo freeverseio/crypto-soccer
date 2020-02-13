@@ -18,9 +18,9 @@ spec:
       - backend:
           serviceName: hello-kubernetes-first
           servicePort: 80
-      - path: /eth
+      - path: /xdai
         backend:
-          serviceName: ethereum
+          serviceName: xdai
           servicePort: 8545
       - path: /horizon(/|$)(.*)
         backend:

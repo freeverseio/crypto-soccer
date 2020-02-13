@@ -28,7 +28,7 @@ spec:
           - configMapRef:
               name: freeverse-configmap
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable",
-               -ethereum, http://ethereum:8545,
+               -ethereum, http://xdai:8545,
                -private_key, "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54",
                -market_address, "$(MARKET_CONTRACT_ADDRESS)"]
 
