@@ -81,7 +81,6 @@ func GeneratePlayerByPlayerIdAndState(
 			ShirtNumber:       uint8(shirtNumber.Uint64()),
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
-			Frozen:            false,
 		}
 		return &player, nil
 	}

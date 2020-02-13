@@ -63,8 +63,7 @@ CREATE TABLE players (
     day_of_birth INT NOT NULL, 
     encoded_skills TEXT NOT NULL,
     encoded_state TEXT NOT NULL,
-    frozen BOOLEAN NOT NULL DEFAULT FALSE,
-    red_card_matches_left INT NOT NULL DEFAULT 0,
+    red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
     PRIMARY KEY(player_id)
 );
