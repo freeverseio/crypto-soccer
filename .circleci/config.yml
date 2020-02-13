@@ -104,7 +104,9 @@ jobs:
             - docker-cache/build:
                 # command: 'docker build -t myapp:${CIRCLE_BRANCH/\//-} .'
                 command: cd market.trader && docker build -t freeverseio/market.trader:dev .
+            - docker-cache/build:
                 command: cd universe.db && docker build -t freeverseio/universe.db:dev .
+            - docker-cache/build:
                 command: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
 
 
