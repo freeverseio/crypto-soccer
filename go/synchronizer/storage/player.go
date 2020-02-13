@@ -8,23 +8,23 @@ import (
 )
 
 type Player struct {
-	PlayerId           *big.Int
-	PreferredPosition  string
-	Potential          uint64
-	DayOfBirth         uint64
-	TeamId             string
-	Name               string
-	Defence            uint64
-	Speed              uint64
-	Pass               uint64
-	Shoot              uint64
-	Endurance          uint64
-	ShirtNumber        uint8
-	EncodedSkills      *big.Int
-	EncodedState       *big.Int
-	Frozen             bool
-	RedCardMatchesLeft uint8
-	InjuryMatchesLeft  uint8
+	PlayerId          *big.Int
+	PreferredPosition string
+	Potential         uint64
+	DayOfBirth        uint64
+	TeamId            string
+	Name              string
+	Defence           uint64
+	Speed             uint64
+	Pass              uint64
+	Shoot             uint64
+	Endurance         uint64
+	ShirtNumber       uint8
+	EncodedSkills     *big.Int
+	EncodedState      *big.Int
+	Frozen            bool
+	RedCard           bool
+	InjuryMatchesLeft uint8
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -41,7 +41,7 @@ func (b *Player) Equal(player Player) bool {
 		b.EncodedSkills.String() == player.EncodedSkills.String() &&
 		b.EncodedState.String() == player.EncodedState.String() &&
 		b.Frozen == player.Frozen &&
-		b.RedCardMatchesLeft == player.RedCardMatchesLeft &&
+		b.RedCard == player.RedCard &&
 		b.InjuryMatchesLeft == player.InjuryMatchesLeft &&
 		b.Name == player.Name &&
 		b.DayOfBirth == player.DayOfBirth
@@ -97,7 +97,7 @@ func (b *Player) Update(tx *sql.Tx) error {
 	shirt_number=$7,
 	frozen=$8, 
 	encoded_skills=$9,
-	red_card_matches_left=$10,
+	red_card=$10,
 	injury_matches_left=$11,
 	name=$12
 	WHERE player_id=$13;`,
@@ -110,7 +110,7 @@ func (b *Player) Update(tx *sql.Tx) error {
 		b.ShirtNumber,
 		b.Frozen,
 		b.EncodedSkills.String(),
-		b.RedCardMatchesLeft,
+		b.RedCard,
 		b.InjuryMatchesLeft,
 		b.Name,
 		b.PlayerId.String(),
@@ -133,7 +133,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	frozen, 
 	name, 
 	day_of_birth, 
-	red_card_matches_left,
+	red_card,
 	injury_matches_left
 	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
@@ -163,7 +163,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 		&player.Frozen,
 		&player.Name,
 		&player.DayOfBirth,
-		&player.RedCardMatchesLeft,
+		&player.RedCard,
 		&player.InjuryMatchesLeft,
 	)
 	player.PlayerId = playerID

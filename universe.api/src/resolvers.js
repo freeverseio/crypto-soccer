@@ -233,7 +233,7 @@ const resolvers = (sql, assets, from) => {
               encoded_skills,
               encoded_state,
               frozen,
-              red_card_matches_left,
+              red_card,
               injury_matches_left) VALUES (
                 ${sql.value(name)},
                 ${sql.value(playerId)},

@@ -40,30 +40,16 @@ func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error)
 	SK_PAS := uint8(2)
 	SK_DEF := uint8(3)
 	SK_END := uint8(4)
-	defence, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_DEF)
+	decodedSkills, err := contracts.Utils.FullDecodeSkills(opts, b.sto.EncodedSkills)
 	if err != nil {
 		return b.sto, err
 	}
-	speed, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_SPE)
-	if err != nil {
-		return b.sto, err
-	}
-	pass, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_PAS)
-	if err != nil {
-		return b.sto, err
-	}
-	shoot, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_SHO)
-	if err != nil {
-		return b.sto, err
-	}
-	endurance, err := contracts.Assets.GetSkill(opts, b.sto.EncodedSkills, SK_END)
-	if err != nil {
-		return b.sto, err
-	}
-	b.sto.Defence = defence.Uint64()
-	b.sto.Speed = speed.Uint64()
-	b.sto.Pass = pass.Uint64()
-	b.sto.Shoot = shoot.Uint64()
-	b.sto.Endurance = endurance.Uint64()
+	b.sto.Defence = uint64(decodedSkills.Skills[SK_DEF])
+	b.sto.Speed = uint64(decodedSkills.Skills[SK_SPE])
+	b.sto.Pass = uint64(decodedSkills.Skills[SK_PAS])
+	b.sto.Shoot = uint64(decodedSkills.Skills[SK_SHO])
+	b.sto.Endurance = uint64(decodedSkills.Skills[SK_END])
+	b.sto.RedCard = decodedSkills.Aligned1stSubst1stRedCardLastGame[2]
+	b.sto.InjuryMatchesLeft = decodedSkills.GenerationGamesNonStopInjuryWeeks[2]
 	return b.sto, nil
 }
