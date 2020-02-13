@@ -89,6 +89,9 @@ jobs:
       - submit_universe_db_schema
       - run: cd go/cmd/relay && go build ./relay.go
       - run: cd go/relay && go test ./...
+      - dockerhub_init
+      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:latest_$CIRCLE_BRANCH .
+      - run: docker push freeverseio/relay.actions:latest_$CIRCLE_BRANCH
   market-trader:
     executor: freeverse
     steps:
@@ -104,11 +107,11 @@ jobs:
       - checkout
       - dockerhub_init
       - run: docker tag freeverseio/synchronizer:latest_$CIRCLE_BRANCH freeverseio/synchronizer:dev && docker push freeverseio/synchronizer:dev
+      - run: docker tag freeverseio/relay.actions:latest_$CIRCLE_BRANCH freeverseio/relay.actions:dev && docker push freeverseio/relay.actions:dev
       - run: docker tag freeverseio/market.notary:latest_$CIRCLE_BRANCH freeverseio/market.notary:dev && docker push freeverseio/market.notary:dev
       - run: docker tag freeverseio/market.trader:latest_$CIRCLE_BRANCH freeverseio/market.trader:dev && docker push freeverseio/market.trader:dev
       - generate_contracts_code
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run: cd dashboard && docker build -t freeverseio/dashboard:dev .
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
@@ -118,7 +121,6 @@ jobs:
       - run: docker push freeverseio/universe.db:dev
       - run: docker push freeverseio/market.db:dev
       - run: docker push freeverseio/universe.api:dev
-      - run: docker push freeverseio/relay.actions:dev
       - run: docker push freeverseio/dashboard:dev
   dockerization-production:
     executor: freeverse
