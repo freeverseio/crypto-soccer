@@ -222,8 +222,44 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 }
 
 func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, timezone uint8, teamID *big.Int) error {
-	tactics := relay.DefaultTactic(teamID.String(), int(timezone))
-	return tactics.Insert(tx)
+	tacticId := 1
+	tactic := &relay.Tactic{
+		relay.UpcomingVerse,
+		int(timezone),
+		teamID.String(),
+		tacticId,
+		0,
+		3,
+		4,
+		5,
+		6,
+		7,
+		8,
+		9,
+		10,
+		relay.NoSubstitution,
+		12,
+		25,
+		relay.NoSubstitution,
+		0,
+		25,
+		relay.NoSubstitution,
+		0,
+		25,
+		11,
+		0,
+		false,
+		false,
+		true,
+		false,
+		false,
+		true,
+		false,
+		false,
+		false,
+		false,
+	}
+	return tactic.Insert(tx)
 }
 
 func (b *DivisionCreationProcessor) createInitialTraining(tx *sql.Tx, teamID *big.Int) error {
