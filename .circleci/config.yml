@@ -87,30 +87,31 @@ jobs:
       - run: cd market.trader && npm test
   dockerization-development:
     executor: freeverse
+    resource_class: xlarge
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - generate_contracts_code
-      - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
-      - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
-      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd dashboard && docker build -t freeverseio/dashboard:dev .
-      - run: cd market.db && docker build -t freeverseio/market.db:dev .
-      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
-      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
-      - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
-      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/synchronizer:dev
-      - run: docker push freeverseio/horizon:dev
-      - run: docker push freeverseio/universe.db:dev
-      - run: docker push freeverseio/market.db:dev
-      - run: docker push freeverseio/market.trader:dev
-      - run: docker push freeverseio/market.notary:dev
-      - run: docker push freeverseio/universe.api:dev
-      - run: docker push freeverseio/relay.actions:dev
-      - run: docker push freeverseio/dashboard:dev
+      - run: docker build -t market.trader/freeverseio/market.trader:dev .
+      - run: docker build -t universe.db/freeverseio/universe.db:dev .
+      - run: docker build -f go/Dockerfile.relay -t freeverseio/relay.actions:dev .
+      - run: docker build -f nodejs-horizon/Dockerfile -t freeverseio/horizon:dev .
+      - run: docker build -f dashboard/Dockerfile -t freeverseio/dashboard:dev .
+      - run: docker build -f market.db/Dockerfile -t freeverseio/market.db:dev .
+      - run: docker build -f go/Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
+      - run: docker build -f go/Dockerfile.notary -t freeverseio/market.notary:dev .
+      - run: docker build -f universe.api/Dockerfile -t freeverseio/universe.api:dev .
+      # - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      # - run: docker push freeverseio/synchronizer:dev
+      # - run: docker push freeverseio/horizon:dev
+      # - run: docker push freeverseio/universe.db:dev
+      # - run: docker push freeverseio/market.db:dev
+      # - run: docker push freeverseio/market.trader:dev
+      # - run: docker push freeverseio/market.notary:dev
+      # - run: docker push freeverseio/universe.api:dev
+      # - run: docker push freeverseio/relay.actions:dev
+      # - run: docker push freeverseio/dashboard:dev
   dockerization-production:
     executor: freeverse
     steps:
@@ -192,6 +193,7 @@ workflows:
             branches:
               only:
                 - dev
+                - refactroing/ciBrute
           requires:
             - synchronizer
             - market-trader
