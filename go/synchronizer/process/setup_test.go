@@ -3,6 +3,7 @@ package process_test
 import (
 	"database/sql"
 	"log"
+	"math/big"
 	"os"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
+	"gotest.tools/assert"
 )
 
 var universedb *sql.DB
@@ -37,4 +39,10 @@ func TestMain(m *testing.M) {
 	bc.InitOneTimezone(1)
 	dump = spew.ConfigState{DisablePointerAddresses: true}
 	os.Exit(m.Run())
+}
+
+func SkillsFromString(t *testing.T, skills string) *big.Int {
+	result, ok := new(big.Int).SetString(skills, 10)
+	assert.Equal(t, ok, true)
+	return result
 }
