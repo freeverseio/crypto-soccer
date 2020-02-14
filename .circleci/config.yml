@@ -93,16 +93,17 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - generate_contracts_code
-      - run: docker build -t market.trader/freeverseio/market.trader:dev .
-      - run: docker build -t universe.db/freeverseio/universe.db:dev .
-      - run: docker build -f go/Dockerfile.relay -t freeverseio/relay.actions:dev .
-      - run: docker build -f nodejs-horizon/Dockerfile -t freeverseio/horizon:dev .
-      - run: docker build -f dashboard/Dockerfile -t freeverseio/dashboard:dev .
-      - run: docker build -f market.db/Dockerfile -t freeverseio/market.db:dev .
-      - run: docker build -f go/Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
-      - run: docker build -f go/Dockerfile.notary -t freeverseio/market.notary:dev .
-      - run: docker build -f universe.api/Dockerfile -t freeverseio/universe.api:dev .
-      # - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: |
+          docker build -t market.trader/freeverseio/market.trader:dev . &
+          docker build -t universe.db/freeverseio/universe.db:dev . &
+          docker build -f go/Dockerfile.relay -t freeverseio/relay.actions:dev . &
+          docker build -f nodejs-horizon/Dockerfile -t freeverseio/horizon:dev . &
+          docker build -f dashboard/Dockerfile -t freeverseio/dashboard:dev . &
+          docker build -f market.db/Dockerfile -t freeverseio/market.db:dev . &
+          docker build -f go/Dockerfile.synchronizer -t freeverseio/synchronizer:dev . &
+          docker build -f go/Dockerfile.notary -t freeverseio/market.notary:dev . &
+          docker build -f universe.api/Dockerfile -t freeverseio/universe.api:dev . 
+      #  echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       # - run: docker push freeverseio/synchronizer:dev
       # - run: docker push freeverseio/horizon:dev
       # - run: docker push freeverseio/universe.db:dev
