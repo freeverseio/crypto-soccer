@@ -16,7 +16,7 @@ func TestNullPlayer(t *testing.T) {
 
 func TestPlayerToStorage(t *testing.T) {
 	player := engine.NewPlayer()
-	player.SetSkills(SkillsFromString(t, "14606253788909032162646379450304996475079674564248175"))
+	player.SetSkills(*bc.Contracts, SkillsFromString(t, "14606253788909032162646379450304996475079674564248175"))
 	sto, err := player.ToStorage(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, sto.Defence, uint64(955))
@@ -28,7 +28,7 @@ func TestPlayerToStorage(t *testing.T) {
 
 func TestPlayerRedCard(t *testing.T) {
 	player := engine.NewPlayer()
-	player.SetSkills(SkillsFromString(t, "40439920000726868070503716865792521545121682176182486071370780491777"))
+	player.SetSkills(*bc.Contracts, SkillsFromString(t, "40439920000726868070503716865792521545121682176182486071370780491777"))
 	sto, err := player.ToStorage(*bc.Contracts)
 	assert.NilError(t, err)
 	golden.Assert(t, dump.Sdump(sto), t.Name()+".golden")

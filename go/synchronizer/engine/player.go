@@ -28,26 +28,20 @@ func NewPlayerFromStorage(stoPlayer storage.Player) *Player {
 	return &player
 }
 
-func (b *Player) SetSkills(skills *big.Int) {
+func (b *Player) SetSkills(contracts contracts.Contracts, skills *big.Int) {
 	b.EncodedSkills = new(big.Int).Set(skills)
-}
-
-func (b Player) Skills() *big.Int {
-	return new(big.Int).Set(b.EncodedSkills)
-}
-
-func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
 	opts := &bind.CallOpts{}
-	var err error
+
+	// var err error
 	SK_SHO := uint8(0)
 	SK_SPE := uint8(1)
 	SK_PAS := uint8(2)
 	SK_DEF := uint8(3)
 	SK_END := uint8(4)
-	decodedSkills, err := contracts.Utils.FullDecodeSkills(opts, b.EncodedSkills)
-	if err != nil {
-		return b.Player, err
-	}
+	decodedSkills, _ := contracts.Utils.FullDecodeSkills(opts, b.EncodedSkills)
+	// if err != nil {
+	// 	return err
+	// }
 	b.Potential = uint64(decodedSkills.BirthTraits[0])
 	b.Defence = uint64(decodedSkills.Skills[SK_DEF])
 	b.Speed = uint64(decodedSkills.Skills[SK_SPE])
@@ -56,5 +50,13 @@ func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error)
 	b.Endurance = uint64(decodedSkills.Skills[SK_END])
 	b.RedCard = decodedSkills.Aligned1stSubst1stRedCardLastGame[2]
 	b.InjuryMatchesLeft = decodedSkills.GenerationGamesNonStopInjuryWeeks[2]
+}
+
+func (b Player) Skills() *big.Int {
+	return new(big.Int).Set(b.EncodedSkills)
+}
+
+func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
+
 	return b.Player, nil
 }
