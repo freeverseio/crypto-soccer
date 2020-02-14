@@ -56,8 +56,8 @@ func TestPlayGame(t *testing.T) {
 	m.HomeTeam.TeamID = "1"
 	m.VisitorTeam.TeamID = "2"
 	for i := 0; i < 25; i++ {
-		m.HomeTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309339445376240739796176995438"))
-		m.VisitorTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309340654302060354425351701614"))
+		m.HomeTeam.Players[i].SetSkills(SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
+		m.VisitorTeam.Players[i].SetSkills(SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
 	}
 	golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
 	err := m.Play1stHalf(*bc.Contracts)
@@ -72,9 +72,9 @@ func TestPlay2ndHalf(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
 	homePlayer := engine.NewPlayer()
-	homePlayer.SetSkills(SkillsFromString("146156532686539503615416807207209880594713965887498"))
+	homePlayer.SetSkills(SkillsFromString(t, "146156532686539503615416807207209880594713965887498"))
 	visitorPlayer := engine.NewPlayer()
-	visitorPlayer.SetSkills(SkillsFromString("730757187618900670896890173308251570218123297685554"))
+	visitorPlayer.SetSkills(SkillsFromString(t, "730757187618900670896890173308251570218123297685554"))
 	m.HomeTeam.Players[0] = homePlayer
 	m.VisitorTeam.Players[0] = visitorPlayer
 	err := m.Play2ndHalf(*bc.Contracts)
@@ -104,8 +104,8 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 			m.HomeTeam.TeamID = "1"
 			m.VisitorTeam.TeamID = "2"
 			for i := 0; i < 25; i++ {
-				m.HomeTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309339445376240739796176995438"))
-				m.VisitorTeam.Players[i].SetSkills(SkillsFromString("16573429227295117480385309340654302060354425351701614"))
+				m.HomeTeam.Players[i].SetSkills(SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
+				m.VisitorTeam.Players[i].SetSkills(SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
 			}
 			golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
 			err := m.Play1stHalf(*bc.Contracts)

@@ -9,6 +9,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
+	"gotest.tools/assert"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -32,7 +33,13 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func SkillsFromString(skills string) *big.Int {
-	result, _ := new(big.Int).SetString(skills, 10)
+func SkillsFromString(t *testing.T, skills string) *big.Int {
+	result, ok := new(big.Int).SetString(skills, 10)
+	assert.Equal(t, ok, true)
 	return result
+}
+
+func TestSkillsFromString(t *testing.T) {
+	skills := SkillsFromString(t, "40439920000726868070503716865792521545121682176182486071370780491777")
+	assert.Equal(t, skills.String(), "40439920000726868070503716865792521545121682176182486071370780491777")
 }
