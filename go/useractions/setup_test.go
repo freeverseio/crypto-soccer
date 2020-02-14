@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 
 	log "github.com/sirupsen/logrus"
 )

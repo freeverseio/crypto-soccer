@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
 var s *sql.DB

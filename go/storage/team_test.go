@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	"gotest.tools/assert"
 )
 

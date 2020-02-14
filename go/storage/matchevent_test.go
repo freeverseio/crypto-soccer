@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
 func TestMatchEventTest(t *testing.T) {
