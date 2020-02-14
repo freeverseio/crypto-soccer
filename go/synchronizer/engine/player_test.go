@@ -38,4 +38,6 @@ func TestPlayerRedCard(t *testing.T) {
 	assert.Equal(t, sto.Shoot, uint64(49153))
 	assert.Equal(t, sto.RedCard, true)
 	assert.Equal(t, sto.InjuryMatchesLeft, uint8(6))
+	assert.Equal(t, sto.PlayerId.String(), "143")
+	golden.Assert(t, dump.Sdump(sto), t.Name()+".golden")
 }
