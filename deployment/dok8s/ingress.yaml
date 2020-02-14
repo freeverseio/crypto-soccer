@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - k8s-5f63bbd4f5b1.busyverse.com
+    - k8s.gorengine.com
     secretName: cryptosoccer-tls
   rules:
-  - host: k8s-5f63bbd4f5b1.busyverse.com
+  - host: k8s.gorengine.com
     http:
       paths:
       - backend:
