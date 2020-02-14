@@ -65,6 +65,7 @@ contract('Championships', (accounts) => {
         champs = await Championships.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
+        await storage.setAssetsOwner(assets.address).should.be.fulfilled;
         await assets.initSingleTZ(INIT_TZ, storage.address).should.be.fulfilled;
         await champs.setEngineAdress(engine.address).should.be.fulfilled;
         await champs.setAssetsAdress(assets.address).should.be.fulfilled;

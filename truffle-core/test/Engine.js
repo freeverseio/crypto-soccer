@@ -136,6 +136,7 @@ contract('Engine', (accounts) => {
         encodingSet = await EncodingSkillsSetters.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
+        await storage.setAssetsOwner(assets.address).should.be.fulfilled;
         await assets.init(storage.address).should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;

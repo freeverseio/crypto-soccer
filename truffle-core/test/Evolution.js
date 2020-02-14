@@ -205,6 +205,7 @@ contract('Evolution', (accounts) => {
         play = await PlayAndEvolve.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
+        await storage.setAssetsOwner(assets.address).should.be.fulfilled;
         await assets.init(storage.address).should.be.fulfilled;
         shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;

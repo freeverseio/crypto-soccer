@@ -8,7 +8,6 @@ const debug = require('../utils/debugUtils.js');
 
 const Storage = artifacts.require('Storage');
 const Assets = artifacts.require('Assets');
-const Updates = artifacts.require('Updates');
 
 contract('Assets', (accounts) => {
     const ALICE = accounts[1];
@@ -32,8 +31,8 @@ contract('Assets', (accounts) => {
     beforeEach(async () => {
         storage = await Storage.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
+        await storage.setAssetsOwner(assets.address).should.be.fulfilled;
         initTx = await assets.init(storage.address).should.be.fulfilled;
-        updates = await Updates.new().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;

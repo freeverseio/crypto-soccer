@@ -245,6 +245,7 @@ contract("Market", accounts => {
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     storage = await Storage.new().should.be.fulfilled;
     assets = await Assets.new().should.be.fulfilled;
+    await storage.setAssetsOwner(assets.address).should.be.fulfilled;
     await assets.init(storage.address).should.be.fulfilled;
     market = await Market.new().should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;

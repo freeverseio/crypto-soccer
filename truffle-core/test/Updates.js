@@ -37,11 +37,12 @@ contract('Updates', (accounts) => {
     };
     
     beforeEach(async () => {
-        assets = await Assets.new().should.be.fulfilled;
-        encoding = assets;
         storage = await Storage.new().should.be.fulfilled;
+        assets = await Assets.new().should.be.fulfilled;
+        await storage.setAssetsOwner(assets.address).should.be.fulfilled;
         await assets.init(storage.address).should.be.fulfilled;
         updates = await Updates.new().should.be.fulfilled;
+        await storage.setUpdatesOwner(updates.address).should.be.fulfilled;
         await updates.initUpdates(storage.address).should.be.fulfilled;
         NULL_TIMEZONE = await updates.NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
