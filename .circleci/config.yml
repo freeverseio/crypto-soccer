@@ -42,6 +42,7 @@ jobs:
       - run: cd truffle-core && ./node_modules/.bin/truffle test
   synchronizer:
     executor: freeverse_ethereum
+    resource_class: xlarge
     steps:
       - checkout
       - generate_contracts_code
@@ -94,8 +95,8 @@ jobs:
           docker_layer_caching: true # (3)
       - generate_contracts_code
       - run: |
-          docker build -t market.trader/freeverseio/market.trader:dev . &
-          docker build -t universe.db/freeverseio/universe.db:dev . &
+          docker build -f market.trader/Dockerfile -t freeverseio/market.trader:dev . &
+          docker build -f universe.db/Dockerfile -t freeverseio/universe.db:dev . &
           docker build -f go/Dockerfile.relay -t freeverseio/relay.actions:dev . &
           docker build -f nodejs-horizon/Dockerfile -t freeverseio/horizon:dev . &
           docker build -f dashboard/Dockerfile -t freeverseio/dashboard:dev . &
