@@ -39,23 +39,24 @@ contract Storage {
         bytes32 actionsRoot;
     }    
 
-    // Internal Storage Security:
+    // Storage data:
+    // ...Internal Storage Security:
     address public _storageOwner;
     address public _assetsOwner;
     address public _updatesOwner;
     
-    // Storage for other DApps:
+    // ...Storage for other DApps:
     TimeZone[25] public _timeZones;  // note: _timeZone[0] is a dummy one, without any country
     uint256 public _gameDeployDay;
     mapping(uint256 => uint256) private _playerIdToState;
 
+    // Contructor and Storage Security modifiers:
     constructor() public { _storageOwner = msg.sender; }
 
     modifier onlyOwner {
         require(msg.sender == _storageOwner, "only owner of Storage can set a new Storage owner");
         _;
     }
-
     modifier onlyAssets {
         require(msg.sender == _assetsOwner, "only owner of Storage can set a new Assets owner");
         _;
