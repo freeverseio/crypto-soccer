@@ -64,7 +64,6 @@ contract('Encoding', (accounts) => {
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
     });
 
-   
     it('encoding and decoding skills', async () => {
         sk = [2**16 - 16383, 2**16 - 13, 2**16 - 4, 2**16 - 56, 2**16 - 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
@@ -85,7 +84,9 @@ contract('Encoding', (accounts) => {
             substitutedFirstHalf = true,
             sumSkills
         ).should.be.fulfilled;
-        
+
+        skills.should.be.bignumber.equal('40439920000726868070503716865792521545121682176182486071370780491777');
+
         N_SKILLS = 5;
         resultSkills = [];
         for (s = 0; s < N_SKILLS; s++) {

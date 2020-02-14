@@ -18,6 +18,10 @@ func NewPlayer() *Player {
 	return &player
 }
 
+func (b Player) IsNil() bool {
+	return b.sto.EncodedSkills.Cmp(big.NewInt(0)) == 0
+}
+
 func NewPlayerFromStorage(stoPlayer storage.Player) *Player {
 	player := Player{}
 	player.sto = stoPlayer
@@ -32,7 +36,7 @@ func (b Player) Skills() *big.Int {
 	return new(big.Int).Set(b.sto.EncodedSkills)
 }
 
-func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
+func (b *Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
 	opts := &bind.CallOpts{}
 	var err error
 	SK_SHO := uint8(0)
@@ -44,6 +48,7 @@ func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error)
 	if err != nil {
 		return b.sto, err
 	}
+	b.sto.Potential = uint64(decodedSkills.BirthTraits[0])
 	b.sto.Defence = uint64(decodedSkills.Skills[SK_DEF])
 	b.sto.Speed = uint64(decodedSkills.Skills[SK_SPE])
 	b.sto.Pass = uint64(decodedSkills.Skills[SK_PAS])

@@ -8,11 +8,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
-const NoOutOfGamePlayer = uint8(14)
-const RedCard = uint8(3)
-const SoftInjury = uint8(1)
-const HardInjury = uint8(2)
-
 type Team struct {
 	storage.Team
 	Players    [25]*Player
@@ -31,6 +26,9 @@ func NewTeam() *Team {
 
 func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	for _, player := range b.Players {
+		if player.IsNil() {
+			continue
+		}
 		stoPlayer, err := player.ToStorage(contracts)
 		if err != nil {
 			return err
