@@ -10,34 +10,6 @@ import (
 	"gotest.tools/golden"
 )
 
-func TestNoOutOfGamePlayer(t *testing.T) {
-	t.Parallel()
-	result, err := bc.Contracts.Engineprecomp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
-	assert.NilError(t, err)
-	assert.Equal(t, result, engine.NoOutOfGamePlayer)
-}
-
-func TestHardInjury(t *testing.T) {
-	t.Parallel()
-	result, err := bc.Contracts.Engineprecomp.HARDINJURY(&bind.CallOpts{})
-	assert.NilError(t, err)
-	assert.Equal(t, result, engine.HardInjury)
-}
-
-func TestRedCard(t *testing.T) {
-	t.Parallel()
-	result, err := bc.Contracts.Engineprecomp.REDCARD(&bind.CallOpts{})
-	assert.NilError(t, err)
-	assert.Equal(t, result, engine.RedCard)
-}
-
-func TestSoftInjury(t *testing.T) {
-	t.Parallel()
-	result, err := bc.Contracts.Engineprecomp.SOFTINJURY(&bind.CallOpts{})
-	assert.NilError(t, err)
-	assert.Equal(t, result, engine.SoftInjury)
-}
-
 func TestTeamStateDefault(t *testing.T) {
 	t.Parallel()
 	team := engine.NewTeam()
@@ -60,7 +32,7 @@ func TestTeamSkills(t *testing.T) {
 	for _, skill := range skills {
 		assert.Equal(t, skill.String(), "0")
 	}
-	team.Players[2].SetSkills(SkillsFromString(t,"4544"))
+	team.Players[2].SetSkills(SkillsFromString(t, "4544"))
 	skills = team.Skills()
 	assert.Equal(t, skills[2].String(), "4544")
 }
