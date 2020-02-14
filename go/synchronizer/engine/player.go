@@ -18,6 +18,10 @@ func NewPlayer() *Player {
 	return &player
 }
 
+func (b Player) IsNil() bool {
+	return b.sto.EncodedSkills.Cmp(big.NewInt(0)) == 0
+}
+
 func NewPlayerFromStorage(stoPlayer storage.Player) *Player {
 	player := Player{}
 	player.sto = stoPlayer
