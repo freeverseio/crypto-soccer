@@ -7,8 +7,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -47,10 +47,10 @@ func NewMatchFromStorage(
 	match.HomeTeam.Team = sHomeTeam
 	match.VisitorTeam.Team = sVisitorTeam
 	for _, player := range sHomePlayers {
-		match.HomeTeam.Players[player.ShirtNumber].sto = *player
+		match.HomeTeam.Players[player.ShirtNumber].Player = *player
 	}
 	for _, player := range sVisitorPlayers {
-		match.VisitorTeam.Players[player.ShirtNumber].sto = *player
+		match.VisitorTeam.Players[player.ShirtNumber].Player = *player
 	}
 	return match
 }
@@ -88,16 +88,16 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		event := storage.MatchEvent{}
 		if computedEvent.Team == 0 {
 			event.TeamID = b.HomeTeam.TeamID
-			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
+			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
-				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
+				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else if computedEvent.Team == 1 {
 			event.TeamID = b.VisitorTeam.TeamID
-			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
+			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
-				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
+				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else {

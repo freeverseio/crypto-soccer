@@ -121,17 +121,15 @@ func TestMatchesFromToStorage(t *testing.T) {
 	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 	match := (*matches)[0]
 	match.Seed = [32]byte{0x4}
-	// golden.Assert(t, dump.Sdump(match), t.Name()+".start.golden")
 	assert.NilError(t, err)
+	golden.Assert(t, dump.Sdump(match), t.Name()+".start.golden")
 	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
-	// golden.Assert(t, dump.Sdump(match), t.Name()+".end.golden")
+	golden.Assert(t, dump.Sdump(match), t.Name()+".half.golden")
 
 	beginPlayer, err := storage.PlayerByPlayerId(tx, big.NewInt(274877906944))
 	assert.NilError(t, err)
-	assert.NilError(t, matches.ToStorage(*bc.Contracts, tx))
+	assert.NilError(t, match.ToStorage(*bc.Contracts, tx))
 	halfPlayer, err := storage.PlayerByPlayerId(tx, big.NewInt(274877906944))
 	assert.NilError(t, err)
-	t.Log(beginPlayer)
-
-	t.Log(halfPlayer)
+	assert.Assert(t, beginPlayer.Defence != halfPlayer.Defence)
 }
