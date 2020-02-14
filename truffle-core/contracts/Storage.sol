@@ -42,13 +42,18 @@ contract Storage {
     function getGameDeployDay() external view returns (uint256) { return _gameDeployDay; }
     function setGameDeployDay(uint256 val) external { _gameDeployDay = val; }
 
-    function pushCountryToTZ(uint8 tz) external { 
+    function pushCountryToTZ(uint8 tz, uint256 nDivisions) external { 
         Country memory country;
-        country.nDivisions = 1;
+        country.nDivisions = nDivisions;
         _timeZones[tz].countries.push(country); 
         for (uint8 division = 0 ; division < country.nDivisions ; division++){
             _timeZones[tz].countries[0].divisonIdxToRound[division] = 1;
         }
+    }
+
+
+    function getDivisonIdxToRound(uint8 tz, uint256 countryIdxInTZ, uint256 division) external view returns(uint256) {
+        return _timeZones[tz].countries[countryIdxInTZ].divisonIdxToRound[division] ;
     }
 
     function getLastUpdateTime(uint8 tz) external view returns(uint256) {
@@ -74,13 +79,17 @@ contract Storage {
         return _timeZones[tz].countries.length;
     }
 
-    function getNDivisionsInCountry(uint8 tz, uint256 countryIdxInTZ) public view returns(uint256) {
+    function getNDivisionsInCountry(uint8 tz, uint256 countryIdxInTZ) external view returns(uint256) {
         return _timeZones[tz].countries[countryIdxInTZ].nDivisions;
     }
 
     // returns NULL_ADDR if team is bot
-    function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
+    function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) external view returns(address) {
         return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner;
+    }
+
+    function setOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address newOwner) external {
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = newOwner;
     }
 
     function getNHumanTeamsInCountry(uint8 tz, uint256 countryIdxInTZ) external view returns(uint256) {
@@ -89,6 +98,10 @@ contract Storage {
 
     function setNHumanTeamsInCountry(uint8 tz, uint256 countryIdxInTZ, uint256 val) external {
         _timeZones[tz].countries[countryIdxInTZ].nHumanTeams = val;
+    }
+    
+    function incrementNHumanTeamsInCountry(uint8 tz, uint256 countryIdxInTZ) external {
+        _timeZones[tz].countries[countryIdxInTZ].nHumanTeams++;
     }
     
     function assignBotToAddr(uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) external {
@@ -105,6 +118,14 @@ contract Storage {
 
     function getPlayerIdsInTeam(uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) external view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
         return _timeZones[tz].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds;
+    }
+
+    function getPlayerIdFromShirt(uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry, uint8 shirtNum) external view returns (uint256) {
+        return _timeZones[tz].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+    }
+
+    function setPlayerIdFromShirt(uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry, uint8 shirtNum, uint256 newPlayerId) external {
+        _timeZones[tz].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum] = newPlayerId;
     }
 
     function getPlayerState(uint256 playerId) external view returns (uint256) { return _playerIdToState[playerId]; }

@@ -55,8 +55,8 @@ contract EncodingState {
         return state;
     }
 
-    function getCurrentShirtNum(uint256 playerState) public pure returns (uint256) {
-        return uint256(playerState >> 165 & (2**5-1));
+    function getCurrentShirtNum(uint256 playerState) public pure returns (uint8) {
+        return uint8(playerState >> 165 & (2**5-1));
     }
     
     function setPrevPlayerTeamId(uint256 state, uint256 value) public pure returns (uint256) {

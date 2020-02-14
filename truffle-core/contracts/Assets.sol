@@ -1,11 +1,12 @@
 pragma solidity >=0.5.12 <0.6.2;
 
+import "./Storage.sol";
 import "./EncodingSkills.sol";
 import "./EncodingIDs.sol";
 import "./EncodingState.sol";
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions
- * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
+ * @dev Timezones range from 1 to 24, with tz = 0 being null.
  */
 
 contract Assets is EncodingSkills, EncodingState, EncodingIDs {
@@ -15,34 +16,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     event PlayerStateChange(uint256 playerId, uint256 state);
 
-    struct Team {
-        uint256[PLAYERS_PER_TEAM_MAX] playerIds; 
-        address owner;
-    }
-
-    struct Country {
-        uint256 nDivisions;
-        uint8 nDivisionsToAddNextRound;
-        mapping (uint256 => uint256) divisonIdxToRound;
-        mapping (uint256 => Team) teamIdxInCountryToTeam;
-        uint256 nHumanTeams;
-    }
-
-    struct TimeZone {
-        Country[] countries;
-        uint8 nCountriesToAdd;
-        bytes32[2] orgMapHash;
-        bytes32[2] skillsHash;
-        uint8 newestOrgMapIdx;
-        uint8 newestSkillsIdx;
-        bytes32 scoresRoot;
-        uint8 updateCycleIdx;
-        uint256 lastActionsSubmissionTime;
-        uint256 lastUpdateTime;
-        bytes32 actionsRoot;
-        uint256 lastMarketClosureBlockNum;
-    }    
-    
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
@@ -50,18 +23,20 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     uint256 constant public DAYS_PER_ROUND = 16;
     uint256 constant public ACADEMY_TEAM = 1;
     address constant public NULL_ADDR = address(0);
-    bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
-    
-    mapping(uint256 => uint256) private _playerIdToState;
+    uint256 constant public NDIVISONS_AT_START  = 1;
 
-    TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
-    uint256 public gameDeployDay;
+    Storage private _sto;
     uint256 public currentRound;
     bool private _needsInit = true;
 
-    function init() public {
+    function setStorageAddress(address addr) public {
+        _sto = Storage(addr);
+    }
+
+    function init(address storageAddr) public {
         require(_needsInit == true, "cannot initialize twice");
-        gameDeployDay = secsToDays(now);
+        setStorageAddress(storageAddr);
+        _sto.setGameDeployDay(secsToDays(now));
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
@@ -71,95 +46,73 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     // hack for testing: we can init only one timezone
     // at some point, remove this option
-    function initSingleTZ(uint8 tz) public {
+    function initSingleTZ(uint8 tz, address storageAddr) public {
         require(_needsInit == true, "cannot initialize twice");
-        gameDeployDay = secsToDays(now);
+        setStorageAddress(storageAddr);
+        _sto.setGameDeployDay(secsToDays(now));
         _initTimeZone(tz);
         _needsInit = false;
         emit AssetsInit(msg.sender);
     }
 
     function _initTimeZone(uint8 tz) private {
-        Country memory country;
-        country.nDivisions = 1;
-        _timeZones[tz].countries.push(country);
-        _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
-        for (uint8 division = 0 ; division < country.nDivisions ; division++){
-            _timeZones[tz].countries[0].divisonIdxToRound[division] = 1;
+        _sto.pushCountryToTZ(tz, NDIVISONS_AT_START);
+        for (uint8 division = 0 ; division < NDIVISONS_AT_START ; division++){
             emit DivisionCreation(tz, 0, division);
         }
     }
 
-    function getLastUpdateTime(uint8 timeZone) external view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].lastUpdateTime;
+    // TODO: move to Utils
+    function getNCountriesInTZ(uint8 tz) public view returns(uint256) {
+        _assertTZExists(tz);
+        return _sto.getNCountriesInTZ(tz);
     }
 
-    function getLastActionsSubmissionTime(uint8 timeZone) external view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].lastActionsSubmissionTime;
+    // TODO: move to Utils
+    function getNDivisionsInCountry(uint8 tz, uint256 countryIdxInTZ) public view returns(uint256) {
+        _assertTZExists(tz);
+        _assertCountryInTZExists(tz, countryIdxInTZ);
+        return _sto.getNDivisionsInCountry(tz, countryIdxInTZ);
     }
 
-    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) external returns(uint256) {
-        if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
-        _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
-        _timeZones[tz].lastUpdateTime = now;
+    // TODO: move to Utils
+    function getNLeaguesInCountry(uint8 tz, uint256 countryIdxInTZ) public view returns(uint256) {
+        return getNDivisionsInCountry(tz, countryIdxInTZ) * LEAGUES_PER_DIV;
     }
 
-    function setActionsRoot(uint8 timeZone, bytes32 root) external returns(uint256) {
-        _assertTZExists(timeZone);
-        _timeZones[timeZone].actionsRoot = root;
-        _timeZones[timeZone].lastActionsSubmissionTime = now;
+    function getNTeamsInCountry(uint8 tz, uint256 countryIdxInTZ) public view returns(uint256) {
+        return getNLeaguesInCountry(tz, countryIdxInTZ) * TEAMS_PER_LEAGUE;
     }
 
-    function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].countries.length;
-    }
-
-    function getNDivisionsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
-        _assertTZExists(timeZone);
-        _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions;
-    }
-
-    function getNLeaguesInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
-        return getNDivisionsInCountry(timeZone, countryIdxInTZ) * LEAGUES_PER_DIV;
-    }
-
-    function getNTeamsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
-        return getNLeaguesInCountry(timeZone, countryIdxInTZ) * TEAMS_PER_LEAGUE;
-    }
-
-    function _teamExistsInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
-        return (teamIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ));
+    function _teamExistsInCountry(uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
+        return (teamIdxInCountry < getNTeamsInCountry(tz, countryIdxInTZ));
     }
 
     function teamExists(uint256 teamId) public view returns (bool) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        return _teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry);
     }
 
-    function isBotTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
-        return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry) == NULL_ADDR;
+    function isBotTeamInCountry(uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
+        return getOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry) == NULL_ADDR;
     }
 
     function isBotTeam(uint256 teamId) public view returns(bool) {
         if (teamId == ACADEMY_TEAM) return false;
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        return isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry);
     }
 
     // returns NULL_ADDR if team is bot
-    function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
-        _assertTZExists(timeZone);
-        _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner;
+    function getOwnerTeamInCountry(uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
+        _assertTZExists(tz);
+        _assertCountryInTZExists(tz, countryIdxInTZ);
+        return _sto.getOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry);
     }
-
+    
     function getOwnerTeam(uint256 teamId) public view returns(address) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        return getOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry);
     }
 
     // returns NULL_ADDR if team is bot
@@ -172,58 +125,54 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         return getCurrentTeamId(getPlayerState(playerId));
     }
 
-    function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
-        return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
+    function _wasPlayerCreatedInCountry(uint8 tz, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
+        return (playerIdxInCountry < getNTeamsInCountry(tz, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
     }
 
-    function _assertTZExists(uint8 timeZone) private pure {
-        require(timeZone > 0 && timeZone < 25, "timeZone does not exist");
+    function _assertTZExists(uint8 tz) private pure {
+        require(tz > 0 && tz < 25, "tz does not exist");
     }
 
-    function _assertCountryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) private view {
-        require(countryIdxInTZ < _timeZones[timeZone].countries.length, "country does not exist in this timeZone");
+    function _assertCountryInTZExists(uint8 tz, uint256 countryIdxInTZ) private view {
+        require(countryIdxInTZ < _sto.getNCountriesInTZ(tz), "country does not exist in this tz");
     }
 
     function playerExists(uint256 playerId) public view returns (bool) {
         if (playerId == 0) return false;
-        if (getIsSpecial(playerId)) return (_playerIdToState[playerId] != 0);
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
-        return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
+        if (getIsSpecial(playerId)) return (_sto.getPlayerState(playerId) != 0);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
+        return _wasPlayerCreatedInCountry(tz, countryIdxInTZ, playerIdxInCountry);
     }
 
-    function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_playerIdToState[playerId] != 0); }       
+    function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_sto.getPlayerState(playerId) != 0); }       
 
-    function transferFirstBotToAddr(uint8 timeZone, uint256 countryIdxInTZ, address addr) external {
-        uint256 firstBotIdx = _timeZones[timeZone].countries[countryIdxInTZ].nHumanTeams;
-        require(isBotTeamInCountry(timeZone, countryIdxInTZ, firstBotIdx), "cannot transfer a non-bot team");
+    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) external {
+        uint256 firstBotIdx = _sto.getNHumanTeamsInCountry(tz, countryIdxInTZ);
+        require(isBotTeamInCountry(tz, countryIdxInTZ, firstBotIdx), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
-        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
-        for (uint p = PLAYERS_PER_TEAM_INIT; p < PLAYERS_PER_TEAM_MAX; p++) {
-            playerIds[p] = FREE_PLAYER_ID;
-        }
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[firstBotIdx] = Team(playerIds, addr);
-        _timeZones[timeZone].countries[countryIdxInTZ].nHumanTeams++;
-        uint256 teamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, firstBotIdx);
+        _sto.assignBotToAddr(tz, countryIdxInTZ, firstBotIdx, addr);
+        _sto.incrementNHumanTeamsInCountry(tz, countryIdxInTZ);
+        uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
         emit TeamTransfer(teamId, addr);
     }
 
-    function transferTeamInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
-        _assertTZExists(timeZone);
-        _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a bot team");
+    function transferTeamInCountryToAddr(uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
+        _assertTZExists(tz);
+        _assertCountryInTZExists(tz, countryIdxInTZ);
+        require(!isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry), "cannot transfer a bot team");
         require(addr != NULL_ADDR, "cannot transfer to a null address");
-        require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner != addr, "buyer and seller are the same addr");
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
+        require(_sto.getOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry) != addr, "buyer and seller are the same addr");
+        _sto.setOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry, addr); 
     }
 
     function transferTeam(uint256 teamId, address addr) public {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        transferTeamInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        transferTeamInCountryToAddr(tz, countryIdxInTZ, teamIdxInCountry, addr);
         emit TeamTransfer(teamId, addr);
     }
 
     function getDefaultPlayerIdForTeamInCountry(
-        uint8 timeZone,
+        uint8 tz,
         uint256 countryIdxInTZ,
         uint256 teamIdxInCountry,
         uint8 shirtNum
@@ -235,23 +184,23 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
             return FREE_PLAYER_ID;
         } else {
-            return encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
+            return encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
         }
     }
 
     // TODO: we really don't need this function. Only for external use. Consider removal
     function getPlayerIdsInTeam(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
-        if (isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry)) {
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        require(_teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+        if (isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry)) {
             for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
-                playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
+                playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry, shirtNum);
             }
         } else {
             for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
-                uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+                uint256 writtenId = _sto.getPlayerIdFromShirt(tz, countryIdxInTZ, teamIdxInCountry, shirtNum);
                 if (writtenId == 0) {
-                    playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
+                    playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry, shirtNum);
                 } else {
                     playerIds[shirtNum] = writtenId;
                 }
@@ -261,13 +210,13 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
         if (getIsSpecial(playerId)) return getSpecialPlayerSkillsAtBirth(playerId);
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
-        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+        require(_teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         // compute a dna that is unique to this player, since it is made of a unique playerId:
-        uint256 playerCreationDay = gameDeployDay + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND;
+        uint256 playerCreationDay = _sto.getGameDeployDay() + _sto.getDivisonIdxToRound(tz, countryIdxInTZ, division) * DAYS_PER_ROUND;
         return computeSkillsAndEncode(shirtNum, playerCreationDay, playerId);
     }
 
@@ -286,15 +235,15 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
         if (getIsSpecial(playerId)) return encodePlayerState(playerId, ACADEMY_TEAM, 0, 0, 0);
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
-        uint256 currentTeamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
+        uint256 currentTeamId = encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         return encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
-        return (isPlayerWritten(playerId) ? _playerIdToState[playerId] : getPlayerStateAtBirth(playerId));
+        return (isPlayerWritten(playerId) ? _sto.getPlayerState(playerId) : getPlayerStateAtBirth(playerId));
     }
 
     /// Compute a random age between 16 and 35
@@ -388,9 +337,9 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry),"cannot query about the shirt of a Bot Team");
-        uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        require(!isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry),"cannot query about the shirt of a Bot Team");
+        uint256 writtenId = _sto.getPlayerIdFromShirt(tz, countryIdxInTZ, teamIdxInCountry, shirtNum);
         if (shirtNum > PLAYERS_PER_TEAM_INIT - 1) {
             return (writtenId == 0 || writtenId == FREE_PLAYER_ID);
         } else {
@@ -435,27 +384,27 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         newState = setCurrentTeamId(newState, teamIdTarget);
         newState = setCurrentShirtNum(newState, shirtTarget);
         newState = setLastSaleBlock(newState, block.number);
-        _playerIdToState[playerId] = newState;
+        _sto.setPlayerState(playerId, newState);
 
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
+        _sto.setPlayerIdFromShirt(tz, countryIdxInTZ, teamIdxInCountry, shirtTarget, playerId);
         if (teamIdOrigin != ACADEMY_TEAM) {
-            uint256 shirtOrigin = getCurrentShirtNum(state);
-            (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
-            _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
+            uint8 shirtOrigin = getCurrentShirtNum(state);
+            (tz, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
+            _sto.setPlayerIdFromShirt(tz, countryIdxInTZ, teamIdxInCountry, shirtOrigin, FREE_PLAYER_ID);
         }
         emit PlayerStateChange(playerId, newState);
     }
 
-    function countCountries(uint8 timeZone) public view returns (uint256){
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].countries.length;
+    function countCountries(uint8 tz) public view returns (uint256){
+        _assertTZExists(tz);
+        return _sto.countCountries(tz);
     }
 
-    function countTeams(uint8 timeZone, uint256 countryIdxInTZ) public view returns (uint256){
-        _assertTZExists(timeZone);
-        _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions * TEAMS_PER_DIVISION;
+    function countTeams(uint8 tz, uint256 countryIdxInTZ) public view returns (uint256){
+        _assertTZExists(tz);
+        _assertCountryInTZExists(tz, countryIdxInTZ);
+        return _sto.getNDivisionsInCountry(tz, countryIdxInTZ) * TEAMS_PER_DIVISION;
     }
     
 }

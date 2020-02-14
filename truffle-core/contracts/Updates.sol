@@ -1,6 +1,6 @@
 pragma solidity >=0.5.12 <0.6.2;
 
-import "./Assets.sol";
+import "./Storage.sol";
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
  */
@@ -22,11 +22,15 @@ contract Updates {
     bytes32 private _currentVerseSeed;
     bool private _needsInitUpdates = true;
 
-    Assets private _assets;
+    Storage private _sto;
+
+    function _setStorageAdress(address addr) private {
+        _sto = Storage(addr);
+    }
 
     function initUpdates(address addr) public {
         require(_needsInitUpdates == true, "cannot initialize twice");
-        _setAssetsAdress(addr);
+        _setStorageAdress(addr);
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         // that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
         // the call to the contract init() function.
@@ -45,9 +49,6 @@ contract Updates {
         _needsInitUpdates = false;
     }
  
-    function _setAssetsAdress(address addr) private {
-        _assets = Assets(addr);
-    }
 
     function getNow() public view returns(uint256) {
         return now;
@@ -64,9 +65,9 @@ contract Updates {
         // (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
         // if (prevTz != NULL_TIMEZONE) {
-        //     require(now > _assets.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
+        //     require(now > _sto.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
         // }
-        _assets.setActionsRoot(newTZ, actionsRoot);
+        setActionsRoot(newTZ, actionsRoot);
         incrementVerse();
         setCurrentVerseSeed(blockhash(block.number-1));
         emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, cid);
@@ -75,14 +76,14 @@ contract Updates {
     function updateTZ(bytes32 root) public {
         (uint8 tz,,) = prevTimeZoneToUpdate();
         require(tz != NULL_TIMEZONE, "nothing to update in the current timeZone");
-        uint256 lastUpdate = _assets.getLastUpdateTime(tz);
-        uint256 lastActionsSubmissionTime = _assets.getLastActionsSubmissionTime(tz);
+        uint256 lastUpdate = _sto.getLastUpdateTime(tz);
+        uint256 lastActionsSubmissionTime = _sto.getLastActionsSubmissionTime(tz);
         if (lastUpdate > lastActionsSubmissionTime) {
             require(now < lastUpdate + CHALLENGE_TIME, "challenging period is already over for this timezone");
-            _assets.setSkillsRoot(tz, root, false); // this is a challenge to a previous update
+            setSkillsRoot(tz, root, false); // this is a challenge to a previous update
         } else {
             require(now < lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
-            _assets.setSkillsRoot(tz, root, true); // first time that we update this TZ
+            setSkillsRoot(tz, root, true); // first time that we update this TZ
         }
         emit TimeZoneUpdate(tz, root, now);
     }
@@ -122,6 +123,16 @@ contract Updates {
         
     function getCurrentVerseSeed() public view returns (bytes32) {
         return _currentVerseSeed;
+    }
+    
+    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) private returns(uint256) {
+        require(tz > 0 && tz < 25, "tz does not exist");
+        _sto.setSkillsRoot(tz, root, newTZ); // this is a challenge to a previous update
+    }
+
+    function setActionsRoot(uint8 tz, bytes32 root) private returns(uint256) {
+        require(tz > 0 && tz < 25, "tz does not exist");
+        _sto.setActionsRoot(tz, root, now);
     }
 
 }

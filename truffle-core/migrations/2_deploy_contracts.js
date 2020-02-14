@@ -1,3 +1,4 @@
+const Storage = artifacts.require('Storage');
 const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
@@ -20,6 +21,7 @@ require('chai')
 
 module.exports = function (deployer) {
   deployer.then(async () => {
+    const storage = await deployer.deploy(Storage).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -39,7 +41,7 @@ module.exports = function (deployer) {
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
-    await updates.initUpdates(assets.address).should.be.fulfilled;
+    await updates.initUpdates(storage.address).should.be.fulfilled;
     await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await engine.setApplyBoostersAddr(engineApplyBoosters.address).should.be.fulfilled;
@@ -51,17 +53,18 @@ module.exports = function (deployer) {
 
     console.log("Setting up ... done");
     if (deployer.network === "production") {
-      await assets.init().should.be.fulfilled;
+      await assets.init(storage.address).should.be.fulfilled;
     } else {
       const timezone = 1;
       console.log("Initing only timezone " + timezone)
-      await assets.initSingleTZ(timezone).should.be.fulfilled; // TODO: bootstrap od all timezone using init()
+      await assets.initSingleTZ(timezone, storage.address).should.be.fulfilled; // TODO: bootstrap od all timezone using init()
     }
     console.log("Initing ... done");
 
     console.log("");
     console.log("🚀  Deployed on:", deployer.network)
     console.log("------------------------");
+    console.log("STORAGE_CONTRACT_ADDRESS=" + storage.address);
     console.log("ENGINE_CONTRACT_ADDRESS=" + engine.address);
     console.log("ENGINEPRECOMP_CONTRACT_ADDRESS=" + enginePreComp.address);
     console.log("ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS=" + engineApplyBoosters.address);

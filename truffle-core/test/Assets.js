@@ -6,6 +6,7 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 
+const Storage = artifacts.require('Storage');
 const Assets = artifacts.require('Assets');
 const Updates = artifacts.require('Updates');
 
@@ -30,7 +31,8 @@ contract('Assets', (accounts) => {
 
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
-        initTx = await assets.init().should.be.fulfilled;
+        storage = await Storage.new().should.be.fulfilled;
+        initTx = await assets.init(storage.address).should.be.fulfilled;
         updates = await Updates.new().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
@@ -237,7 +239,7 @@ contract('Assets', (accounts) => {
     });
 
     it('gameDeployDay', async () => {
-        const gameDeployDay =  await assets.gameDeployDay().should.be.fulfilled;
+        const gameDeployDay =  await storage.getGameDeployDay().should.be.fulfilled;
         currentBlockNum = await web3.eth.getBlockNumber()
         currentBlock = await web3.eth.getBlock(currentBlockNum)
         currentDay = Math.floor(currentBlock.timestamp / (3600 * 24));
@@ -259,7 +261,7 @@ contract('Assets', (accounts) => {
 
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
-        gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
+        gameDeployDay = await storage.getGameDeployDay().should.be.fulfilled;
         dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
         (Math.abs(ageInDays.toNumber() - 11455) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1

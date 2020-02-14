@@ -211,7 +211,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         uint256 dayOfBirth = (matchStartTime - ageInSecs / 7)/86400; // 86400 = 24 * 3600
         dna >>= 13; // log2(7300) = 12.8
         uint256 playerId = getPlayerIdFromSkills(skills);
-        uint8 shirtNum = uint8(_assets.getCurrentShirtNum(_assets.getPlayerStateAtBirth(playerId)));
+        uint8 shirtNum = _assets.getCurrentShirtNum(_assets.getPlayerStateAtBirth(playerId));
         (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(dna, shirtNum);
         // if dna is even => leads to child, if odd => leads to academy player
         uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (dna % 2 == 0 ? 0 : 32));
