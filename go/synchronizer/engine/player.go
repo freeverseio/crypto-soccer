@@ -48,7 +48,6 @@ func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error)
 	if err != nil {
 		return b.sto, err
 	}
-	b.sto.PlayerId = new(big.Int).Set(decodedSkills.PlayerId)
 	b.sto.Potential = uint64(decodedSkills.BirthTraits[0])
 	b.sto.Defence = uint64(decodedSkills.Skills[SK_DEF])
 	b.sto.Speed = uint64(decodedSkills.Skills[SK_SPE])

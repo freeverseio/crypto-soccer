@@ -121,3 +121,14 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 		})
 	}
 }
+
+func TestMatchToStorage(t *testing.T) {
+	t.Parallel()
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	match := engine.NewMatch()
+	err = match.ToStorage(*bc.Contracts, tx)
+	assert.NilError(t, err)
+}
