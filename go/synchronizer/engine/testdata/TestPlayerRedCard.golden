@@ -1,7 +1,7 @@
 (storage.Player) {
 	PlayerId: (*big.Int)(143),
 	PreferredPosition: (string) "",
-	Potential: (uint64) 0,
+	Potential: (uint64) 5,
 	DayOfBirth: (uint64) 0,
 	TeamId: (string) "",
 	Name: (string) "",

@@ -31,13 +31,5 @@ func TestPlayerRedCard(t *testing.T) {
 	player.SetSkills(SkillsFromString(t, "40439920000726868070503716865792521545121682176182486071370780491777"))
 	sto, err := player.ToStorage(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, sto.Defence, uint64(65480))
-	assert.Equal(t, sto.Speed, uint64(65523))
-	assert.Equal(t, sto.Pass, uint64(65532))
-	assert.Equal(t, sto.Endurance, uint64(65080))
-	assert.Equal(t, sto.Shoot, uint64(49153))
-	assert.Equal(t, sto.RedCard, true)
-	assert.Equal(t, sto.InjuryMatchesLeft, uint8(6))
-	assert.Equal(t, sto.PlayerId.String(), "143")
 	golden.Assert(t, dump.Sdump(sto), t.Name()+".golden")
 }
