@@ -8,6 +8,7 @@ const debug = require('../utils/debugUtils.js');
 const timeTravel = require('../utils/TimeTravel.js');
 const marketUtils = require('../utils/marketUtils.js');
 
+const Storage = artifacts.require('Storage');
 const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
 const Privileged = artifacts.require('Privileged');
@@ -242,8 +243,9 @@ contract("Market", accounts => {
   
   beforeEach(async () => {
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
+    storage = await Storage.new().should.be.fulfilled;
     assets = await Assets.new().should.be.fulfilled;
-    await assets.init().should.be.fulfilled;
+    await assets.init(storage.address).should.be.fulfilled;
     market = await Market.new().should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;

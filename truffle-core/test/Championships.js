@@ -6,6 +6,7 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 
+const Storage = artifacts.require('Storage');
 const Championships = artifacts.require('Championships');
 const Assets = artifacts.require('Assets');
 const Engine = artifacts.require('Engine');
@@ -60,10 +61,11 @@ contract('Championships', (accounts) => {
     }
     
     beforeEach(async () => {
+        storage = await Storage.new().should.be.fulfilled;
         champs = await Championships.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
-        await assets.initSingleTZ(INIT_TZ).should.be.fulfilled;
+        await assets.initSingleTZ(INIT_TZ, storage.address).should.be.fulfilled;
         await champs.setEngineAdress(engine.address).should.be.fulfilled;
         await champs.setAssetsAdress(assets.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await champs.TEAMS_PER_LEAGUE().should.be.fulfilled;

@@ -30,8 +30,8 @@ contract('Assets', (accounts) => {
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
-        assets = await Assets.new().should.be.fulfilled;
         storage = await Storage.new().should.be.fulfilled;
+        assets = await Assets.new().should.be.fulfilled;
         initTx = await assets.init(storage.address).should.be.fulfilled;
         updates = await Updates.new().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;

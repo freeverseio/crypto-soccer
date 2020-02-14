@@ -7,6 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
 
+const Storage = artifacts.require('Storage');
 const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
@@ -198,12 +199,13 @@ contract('Evolution', (accounts) => {
     };
     
     beforeEach(async () => {
+        storage = await Storage.new().should.be.fulfilled;
         training = await TrainingPoints.new().should.be.fulfilled;
         evo = await Evolution.new().should.be.fulfilled;
         play = await PlayAndEvolve.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
+        await assets.init(storage.address).should.be.fulfilled;
         shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;

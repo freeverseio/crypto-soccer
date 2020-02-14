@@ -7,6 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const logUtils = require('../utils/matchLogUtils.js');
 
+const Storage = artifacts.require('Storage');
 const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
@@ -131,10 +132,11 @@ contract('Engine', (accounts) => {
     };
 
     beforeEach(async () => {
+        storage = await Storage.new().should.be.fulfilled;
         encodingSet = await EncodingSkillsSetters.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
+        await assets.init(storage.address).should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
