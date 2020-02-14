@@ -36,7 +36,7 @@ func (b Player) Skills() *big.Int {
 	return new(big.Int).Set(b.sto.EncodedSkills)
 }
 
-func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
+func (b *Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
 	opts := &bind.CallOpts{}
 	var err error
 	SK_SHO := uint8(0)
