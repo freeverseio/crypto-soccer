@@ -43,12 +43,18 @@ contract Storage {
     // ...Internal Storage Security:
     address public _storageOwner;
     address public _assetsOwner;
+    address public _marketOwner;
     address public _updatesOwner;
     
-    // ...Storage for other DApps:
+    // ...Storage for other Assets and Updates:
     TimeZone[25] public _timeZones;  // note: _timeZone[0] is a dummy one, without any country
     uint256 public _gameDeployDay;
     mapping(uint256 => uint256) private _playerIdToState;
+    
+    // ...Storage for other Market:
+    mapping (uint256 => uint256) private _playerIdToAuctionData;
+    mapping (uint256 => uint256) private _teamIdToAuctionData;
+    mapping (uint256 => uint256) private _teamIdToAcqConstraints;
 
     // Contructor and Storage Security modifiers:
     constructor() public { _storageOwner = msg.sender; }
@@ -61,6 +67,10 @@ contract Storage {
         require(msg.sender == _assetsOwner, "only owner of Storage can set a new Assets owner");
         _;
     }
+    modifier onlyMarket {
+        require(msg.sender == _marketOwner, "only owner of Storage can set a new Market owner");
+        _;
+    }
     modifier onlyUpdates {
         require(msg.sender == _updatesOwner, "only owner of Storage can set a new Updates owner");
         _;
@@ -69,6 +79,7 @@ contract Storage {
     // Internal Storage Security Functions:
     function setStorageOwner(address newOwner) external onlyOwner { _storageOwner = newOwner; }
     function setAssetsOwner(address newOwner) external onlyOwner { _assetsOwner = newOwner; }
+    function setMarketOwner(address newOwner) external onlyOwner { _marketOwner = newOwner; }
     function setUpdatesOwner(address newOwner) external onlyOwner { _updatesOwner = newOwner; }
 
     // Assets Setters:
@@ -103,6 +114,16 @@ contract Storage {
         _timeZones[tz].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry] = Team(playerIds, addr);
     }    
 
+    // Market Setters:
+    function setAcquisitionConstraint(uint256 teamId, uint256 constraint) external onlyMarket returns(uint256) {
+        _teamIdToAcqConstraints[teamId] = constraint;
+    }
+    function setPlayerIdToAuctionData(uint256 playerId, uint256 auctionData) external onlyMarket returns(uint256) {
+        _playerIdToAuctionData[playerId] = auctionData;
+    }
+    function setTeamIdToAuctionData(uint256 teamId, uint256 auctionData) external onlyMarket returns(uint256) {
+        _teamIdToAuctionData[teamId] = auctionData;
+    }
 
     // Updates Setters:
     function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) external onlyUpdates returns(uint256) {
@@ -114,8 +135,7 @@ contract Storage {
         _timeZones[tz].actionsRoot = root;
         _timeZones[tz].lastActionsSubmissionTime = time;
     }
-
-
+    
     // Assets Getters:
     function getPlayerState(uint256 playerId) external view returns (uint256) { return _playerIdToState[playerId]; }
     function getGameDeployDay() external view returns (uint256) { return _gameDeployDay; }
@@ -144,6 +164,17 @@ contract Storage {
         return _timeZones[tz].countries[countryIdxInTZ].nHumanTeams;
     }
     
+    // Market Getters:
+    function getAcquisitionConstraint(uint256 teamId) external view returns(uint256) {
+        return _teamIdToAcqConstraints[teamId];
+    }
+    function getAuctionDataForTeam(uint256 teamId) external view returns(uint256) {
+        return _teamIdToAuctionData[teamId];
+    }
+    function getAuctionDataForPlayer(uint256 playerId) external view returns(uint256) {
+        return _playerIdToAuctionData[playerId];
+    }
+    
     // Updates Getters:
     function getLastUpdateTime(uint8 tz) external view returns(uint256) {
         return _timeZones[tz].lastUpdateTime;
@@ -151,5 +182,7 @@ contract Storage {
     function getLastActionsSubmissionTime(uint8 tz) external view returns(uint256) {
         return _timeZones[tz].lastActionsSubmissionTime;
     }
+    
+
 
 }

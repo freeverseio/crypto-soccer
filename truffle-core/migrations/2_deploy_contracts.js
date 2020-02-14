@@ -40,8 +40,10 @@ module.exports = function (deployer) {
     console.log("Setting up ...");
     await storage.setAssetsOwner(assets.address).should.be.fulfilled;
     await storage.setUpdatesOwner(updates.address).should.be.fulfilled;
+    await storage.setMarketOwner(market.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
+    await market.setStorageAddress(storage.address).should.be.fulfilled;
     await updates.initUpdates(storage.address).should.be.fulfilled;
     await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;

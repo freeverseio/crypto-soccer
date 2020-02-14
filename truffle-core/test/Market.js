@@ -248,6 +248,8 @@ contract("Market", accounts => {
     await storage.setAssetsOwner(assets.address).should.be.fulfilled;
     await assets.init(storage.address).should.be.fulfilled;
     market = await Market.new().should.be.fulfilled;
+    await storage.setMarketOwner(market.address).should.be.fulfilled;
+    await market.setStorageAddress(storage.address).should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;
     encoding = assets;
@@ -282,7 +284,8 @@ contract("Market", accounts => {
       acq = c;
       isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
       isIt.should.be.equal(true);
-      remainingAcqs = await market.setAcquisitionConstraint(remainingAcqs, valUnt = now.toNumber() + c * 4400, numRemain = c, acq).should.be.fulfilled;
+      await market.setAcquisitionConstraint(teamId = 1, remainingAcqs, valUnt = now.toNumber() + c * 4400, numRemain = c, acq).should.be.fulfilled;
+      remainingAcqs = await storage.getAcquisitionConstraint(teamId).should.be.fulfilled;
       isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
       isIt.should.be.equal(false);
       valid = await market.getAcquisitionConstraintValidUntil(remainingAcqs, acq = c).should.be.fulfilled;
@@ -313,7 +316,8 @@ contract("Market", accounts => {
     acq = 5;
     isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
     isIt.should.be.equal(true);
-    remainingAcqs = await market.setAcquisitionConstraint(remainingAcqs, valUnt = now.toNumber() - 10, numRemain = c, acq).should.be.fulfilled;
+    await market.setAcquisitionConstraint(teamId = 1, remainingAcqs, valUnt = now.toNumber() - 10, numRemain = c, acq).should.be.fulfilled;
+    remainingAcqs = await storage.getAcquisitionConstraint(teamId).should.be.fulfilled;
     isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
     isIt.should.be.equal(true);
   });
