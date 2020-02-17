@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -35,6 +36,7 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 	var matches process.Matches
 	for i := 0; i < 2; i++ {
 		match := engine.NewMatch()
+		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
 		for i := 0; i < 25; i++ {
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
@@ -55,6 +57,7 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 	matches = nil
 	for i := 0; i < 2; i++ {
 		match := engine.NewMatch()
+		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
 		for i := 0; i < 25; i++ {
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))

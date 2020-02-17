@@ -239,7 +239,25 @@ contract('Evolution', (accounts) => {
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
-    
+    it('show that a red card is stored in skills after playing 1st half', async () => {
+        TP = 0;
+        assignment = 0
+        prev2ndHalfLog = 0;
+        teamIds = [1,2]
+        vSeed = '0x234a2b366'
+        var {0: skills, 1: matchLogsAndEvents} =  await play.play1stHalfAndEvolve(
+            vSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
+        ).should.be.fulfilled;
+        outType = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        outType.toNumber().should.be.equal(3); // RED_CARD = 3
+        // with this seed, player p = 8 sees the red card
+        outPlayer = await training.getOutOfGamePlayer(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        outPlayer.toNumber().should.be.equal(8);
+        p = 8;    
+        red = await assets.getRedCardLastGame(skills[0][p]).should.be.fulfilled;
+        red.should.be.equal(true)
+    });
     
     it('updateSkillsAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
@@ -511,18 +529,27 @@ contract('Evolution', (accounts) => {
         for (p = 18; p < 25; p++) teamState.push(0);
         TPperSkill = Array.from(new Array(25), (x,i) => 0);
         TP = TPperSkill.reduce((a, b) => a + b, 0);
-        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
+        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 0).should.be.fulfilled;
         matchStartTime = now;
         newSkills = await training.applyTrainingPoints(teamState, assignment, tactics = 0, matchStartTime, TP);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
+        expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
+        // check that if skills are different, then:
+        // - the new ones are worse than the init ones,
+        // - it happened because of age (older than 31 y.o.)
         for (p = 0; p < 18; p++) {
-            result0 = await training.getSkill(teamState[p], SK_SHO).should.be.fulfilled;
-            result1 = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
-            initShoot.push(result0)
-            newShoot.push(result1)
+            resultInit = await training.getSkill(teamState[p], SK_SHO).should.be.fulfilled;
+            resultNew = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
+            if (resultNew.toNumber() != resultInit.toNumber()) {
+                resultId = await assets.getPlayerIdFromSkills(newSkills[p]).should.be.fulfilled;
+                resultAge = await assets.getPlayerAgeInDays(resultId).should.be.fulfilled;
+                (resultAge.toNumber() >= 31 * 365).should.be.equal(true);
+                (resultNew.toNumber() < resultInit.toNumber()).should.be.equal(true);
+            }
+            initShoot.push(resultInit)
+            newShoot.push(resultNew)
         }
         debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);

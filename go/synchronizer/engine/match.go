@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math/big"
+	"encoding/hex"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -267,4 +268,15 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	}
 	b.Events = append(b.Events, generatedEvents...)
 	return nil
+}
+
+func (b Match) ToString() string {
+	var result string
+	result += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))
+	result += fmt.Sprintf("StartTime: %v\n", b.StartTime)
+	result += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
+	result += b.HomeTeam.ToString()
+	result += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
+	result += b.VisitorTeam.ToString()
+	return result
 }

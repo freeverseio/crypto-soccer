@@ -3,6 +3,7 @@ package engine
 import (
 	"database/sql"
 	"math/big"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -57,4 +58,15 @@ func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 	for i := range skills {
 		b.Players[i].SetSkills(contracts, skills[i])
 	}
+}
+
+func (b Team) ToString() string {
+	var result string
+	result += fmt.Sprintf("TeamId: %v\n", b.TeamID)
+	result += fmt.Sprintf("Tactic: %v\n", b.Tactic)
+	result += fmt.Sprintf("AssignedTP: %v\n", b.AssignedTP)
+	for i, player := range b.Players {
+		result += fmt.Sprintf("Player[%v]: %v\n", i, player.EncodedSkills)
+	}
+	return result
 }
