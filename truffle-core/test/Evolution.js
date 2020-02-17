@@ -511,18 +511,27 @@ contract('Evolution', (accounts) => {
         for (p = 18; p < 25; p++) teamState.push(0);
         TPperSkill = Array.from(new Array(25), (x,i) => 0);
         TP = TPperSkill.reduce((a, b) => a + b, 0);
-        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
+        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 0).should.be.fulfilled;
         matchStartTime = now;
         newSkills = await training.applyTrainingPoints(teamState, assignment, tactics = 0, matchStartTime, TP);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
+        expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
+        // check that if skills are different, then:
+        // - the new ones are worse than the init ones,
+        // - it happened because of age (older than 31 y.o.)
         for (p = 0; p < 18; p++) {
-            result0 = await training.getSkill(teamState[p], SK_SHO).should.be.fulfilled;
-            result1 = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
-            initShoot.push(result0)
-            newShoot.push(result1)
+            resultInit = await training.getSkill(teamState[p], SK_SHO).should.be.fulfilled;
+            resultNew = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
+            if (resultNew.toNumber() != resultInit.toNumber()) {
+                resultId = await assets.getPlayerIdFromSkills(newSkills[p]).should.be.fulfilled;
+                resultAge = await assets.getPlayerAgeInDays(resultId).should.be.fulfilled;
+                (resultAge.toNumber() >= 31 * 365).should.be.equal(true);
+                (resultNew.toNumber() < resultInit.toNumber()).should.be.equal(true);
+            }
+            initShoot.push(resultInit)
+            newShoot.push(resultNew)
         }
         debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
