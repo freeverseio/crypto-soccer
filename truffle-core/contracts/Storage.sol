@@ -1,22 +1,19 @@
-pragma solidity ^0.6.0;
-// pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <0.6.2;
 
 /**
 * @title Manages the state variables of a DelegateProxy
 */
-contract DelegateProxySlotStorage {
+contract Storage {
 
     // MAGIC=keccac256("freeverse.proxy.rnd")
-    bytes32 constant private MAGIC = 0x5f91a51f585f2d4491bce3e4c2d81799aa0dfc271c36675dbd936650723b29b9;
+    // bytes32 constant private MAGIC = 0x5f91a51f585f2d4491bce3e4c2d81799aa0dfc271c36675dbd936650723b29b9;
     uint256 constant private FWD_GAS_LIMIT = 10000;
 
     uint256[2**10] _slotReserve;
-    // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
-    address private _storageOwner;
+    address private _storageOwner;     // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
     bytes4[] private _allFunctions;
-    uint256[] private _allContracts;
+    ContractInfo[] private _contractIdToInfo;
     mapping (bytes32 => uint256) private _functionToContractId;
-    mapping (uint256 => ContractInfo) private _contractIdToInfo;
 
     // ContractInfo: address & name
     //      It's good to store the name of the contract to keep track (and query from outside)
@@ -36,11 +33,10 @@ contract DelegateProxySlotStorage {
         _;
     }
 
-
     /**
     * @dev execute a delegate call via fallback function
     */
-    fallback () external payable {
+    function () external payable {
         address contractAddress = _contractIdToInfo[_functionToContractId[msg.sig]].addr;
         require(contractAddress != address(0), "function is non-declared or not assigned to a valid contract");
         delegate(contractAddress, msg.data);
@@ -84,15 +80,13 @@ contract DelegateProxySlotStorage {
         _functionToContractId[selector] = 0;
     }
     
-    function addNewContract(uint256 contractId, address addr, string memory name) public {
-        require(!_contractExists(contractId), "contractId already exists");
+    function addNewContract(address addr, string memory name) public {
         require(!_stringIsEmpty(name), "cannot create a contract without name");
         require(addr != address(0), "cannot create a contract with null address");
         ContractInfo memory info;
         info.addr = addr;
         info.name = name;
-        _contractIdToInfo[contractId] = info;
-        _allContracts.push(contractId);
+        _contractIdToInfo.push(info);
     }
 
     function changeContractAddr(uint256 contractId, address addr) public {
@@ -109,13 +103,6 @@ contract DelegateProxySlotStorage {
         delete _contractIdToInfo[contractId];
     }
 
-    function getContractInfo(uint256 contractId) public view returns (address, string memory) {
-        return (
-            _contractIdToInfo[contractId].addr,
-            _contractIdToInfo[contractId].name
-        );
-    }
-
     function _contractExists(uint256 contractId) internal view returns (bool) {
         return _contractIdToInfo[contractId].addr != address(0);
     }
@@ -124,7 +111,14 @@ contract DelegateProxySlotStorage {
         return bytes(str).length == 0;
     }
 
-  
-
+    function countFunctions() external view returns(uint256) { return _allFunctions.length; }
+    function countContracts() external view returns(uint256) { return _contractIdToInfo.length; }
+    function getContractIdForFunction(bytes4 selector) external view returns(uint256) { return _functionToContractId[selector]; }
+    function getContractInfo(uint256 contractId) public view returns (address, string memory) {
+        return (
+            _contractIdToInfo[contractId].addr,
+            _contractIdToInfo[contractId].name
+        );
+    }
 
 }
