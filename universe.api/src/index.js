@@ -3,7 +3,7 @@ const { postgraphile } = require("postgraphile");
 const MutationsPlugin = require("./mutations_plugin");
 const Web3 = require("web3");
 const assetsJSON = require("../contracts/Assets.json");
-const HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 const program = require("commander");
 const version = require("../package.json").version;
 
