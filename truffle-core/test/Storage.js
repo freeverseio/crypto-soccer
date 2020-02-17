@@ -45,5 +45,15 @@ contract('Storage', (accounts) => {
         result.toNumber().should.be.equal(1);
     });
 
+    it('autorizations check', async () => {
+        await sto.setStorageOwner(addr = ALICE, {from: ALICE}).should.be.rejected;
+        await sto.setStorageOwner(addr = ALICE, {from: FREEVERSE}).should.be.fulfilled;
+        await sto.addNewContract(addr = assets.address, name = "Assets", {from: FREEVERSE}).should.be.rejected;
+        await sto.addNewContract(addr = assets.address, name = "Assets", {from: ALICE}).should.be.fulfilled;
+        selector = web3.eth.abi.encodeFunctionSignature('setNewAsset(uint256,string)')
+        await sto.addNewFunction(selector, contractId = 0, {from: FREEVERSE}).should.be.rejected;
+        await sto.addNewFunction(selector, contractId = 0, {from: ALICE}).should.be.fulfilled;
+    });
+
 
 });

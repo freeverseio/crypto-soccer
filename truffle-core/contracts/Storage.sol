@@ -69,18 +69,18 @@ contract Storage {
         _storageOwner = newOwner;
     }
     
-    function addNewFunction(bytes4 selector, uint256 contractId) public {
+    function addNewFunction(bytes4 selector, uint256 contractId) public onlyOwner {
         require(_functionToContractId[selector] == 0, "function with same selector already exists");
         require(_contractExists(contractId), "function cannot point to a non-specified contract");
         _functionToContractId[selector] = contractId;
         _allFunctions.push(selector);
     }
 
-    function deleteFunction(bytes4 selector) public {
+    function deleteFunction(bytes4 selector) public onlyOwner {
         _functionToContractId[selector] = 0;
     }
     
-    function addNewContract(address addr, string memory name) public {
+    function addNewContract(address addr, string memory name) public onlyOwner {
         require(!_stringIsEmpty(name), "cannot create a contract without name");
         require(addr != address(0), "cannot create a contract with null address");
         ContractInfo memory info;
@@ -89,17 +89,17 @@ contract Storage {
         _contractIdToInfo.push(info);
     }
 
-    function changeContractAddr(uint256 contractId, address addr) public {
+    function changeContractAddr(uint256 contractId, address addr) public onlyOwner {
         require(addr != address(0), "cannot set a contract with null address");
         _contractIdToInfo[contractId].addr = addr;
     }
 
-    function changeContractName(uint256 contractId, string memory name) public {
+    function changeContractName(uint256 contractId, string memory name) public onlyOwner {
         require(!_stringIsEmpty(name), "cannot set a contract without name");
         _contractIdToInfo[contractId].name = name;
     }
     
-    function deleteContract(uint256 contractId) public {
+    function deleteContract(uint256 contractId) public onlyOwner {
         delete _contractIdToInfo[contractId];
     }
 
