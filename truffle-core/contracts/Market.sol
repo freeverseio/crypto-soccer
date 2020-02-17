@@ -45,6 +45,8 @@ contract Market {
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }
     
+    // getIsSpecial -> EncodingSkills
+    // 
     function isAcademyPlayer(uint256 playerId) public view returns(bool) {
         return (_assets.getIsSpecial(playerId) && !_assets.isPlayerWritten(playerId));
     }
@@ -364,9 +366,6 @@ contract Market {
             ok = ok && (validUntil == (_sto.getAuctionDataForPlayer(playerId) & VALID_UNTIL_MASK));
         } 
     }
-
-
-    
     
     // this function is not used in the contract. It's only for external helps
     function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) external pure returns (bytes32) {
