@@ -30,7 +30,7 @@ contract('Storage', (accounts) => {
         result.toNumber().should.be.equal(0);
     });
 
-    it('add contract info', async () => {
+    it('add contract info and one function', async () => {
         await sto.addNewContract(addr = assets.address, name = "Assets").should.be.fulfilled;
         result = await sto.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
@@ -39,6 +39,10 @@ contract('Storage', (accounts) => {
             ad.should.be.equal(addr);
             nom.should.be.equal(name);
         }
+        selector = web3.eth.abi.encodeFunctionSignature('setNewAsset(uint256,string)')
+        await sto.addNewFunction(selector, contractId = 0).should.be.fulfilled;
+        result = await sto.countFunctions().should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
     });
 
 
