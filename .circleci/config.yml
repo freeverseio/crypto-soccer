@@ -18,7 +18,7 @@ executors:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
           - POSTGRES_DB=cryptosoccer
-      - image: ipfs/go-ipfs:v0.4.18
+      - image: ipfs/go-ipfs:v0.4.23
         environment:
           - IPFS_PROFILE=server
 
