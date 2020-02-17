@@ -12,7 +12,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
 func run(

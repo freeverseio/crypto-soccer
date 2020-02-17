@@ -1,4 +1,4 @@
-package engine
+package process
 
 import (
 	"context"
@@ -10,12 +10,13 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	sto "github.com/freeverseio/crypto-soccer/go/relay/storage"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
+	sto "github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	log "github.com/sirupsen/logrus"
 )
 
-type Matches []Match
+type Matches []engine.Match
 
 func NewMatchesFromTimezoneIdxMatchdayIdx(
 	tx *sql.Tx,
@@ -45,7 +46,7 @@ func NewMatchesFromTimezoneIdxMatchdayIdx(
 		if err != nil {
 			return nil, err
 		}
-		match := NewMatchFromStorage(
+		match := engine.NewMatchFromStorage(
 			stoMatch,
 			stoHomeTeam,
 			stoVisitorTeam,
@@ -61,7 +62,7 @@ func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.C
 	numWorkers := runtime.NumCPU()
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100
 
-	matchesChannel := make(chan *Match, len(*b))
+	matchesChannel := make(chan *engine.Match, len(*b))
 	g, _ := errgroup.WithContext(ctx)
 
 	for i := 0; i < numWorkers; i++ {
@@ -90,7 +91,7 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 	numWorkers := runtime.NumCPU()
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100
 
-	matchesChannel := make(chan *Match, len(*b))
+	matchesChannel := make(chan *engine.Match, len(*b))
 	g, _ := errgroup.WithContext(ctx)
 
 	for i := 0; i < numWorkers; i++ {
@@ -113,6 +114,12 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 	}
 	close(matchesChannel)
 	return g.Wait()
+}
+
+func (b *Matches) SetSeed(seed [32]byte) {
+	for i := range *b {
+		(*b)[i].Seed = seed
+	}
 }
 
 func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic) error {

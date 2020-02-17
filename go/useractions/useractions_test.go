@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
-	sync "github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
+	sync "github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
 	"gotest.tools/assert"
 	"gotest.tools/golden"

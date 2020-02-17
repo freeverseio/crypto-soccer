@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	"gotest.tools/assert"
 )
 

@@ -18,7 +18,7 @@ executors:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
           - POSTGRES_DB=cryptosoccer
-      - image: ipfs/go-ipfs:v0.4.18
+      - image: ipfs/go-ipfs:v0.4.23
         environment:
           - IPFS_PROFILE=server
 
@@ -48,7 +48,6 @@ jobs:
       - submit_universe_db_schema
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
-      - run: cd go/synchronizer/storage && go test ./... -v
       - run: cd go/synchronizer/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
       - run: cd go/synchronizer/matchevents && go test ./... -v
@@ -61,6 +60,7 @@ jobs:
       - run: cd go/contracts && go test ./...
       - run: cd go/useractions && go test ./...
       - run: cd go/marketpay/v1 && go test ./...
+      - run: cd go/storage && go test ./...
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
   market-notary:
@@ -77,8 +77,7 @@ jobs:
       - generate_contracts_code
       - submit_universe_db_schema
       - run: cd go/cmd/relay && go build ./relay.go
-      - run: cd go/relay/storage && go test ./...
-      - run: cd go/relay/process && go test ./...
+      - run: cd go/relay && go test ./...
   market-trader:
     executor: freeverse
     steps:

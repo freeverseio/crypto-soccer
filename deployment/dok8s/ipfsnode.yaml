@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
       - name: ipfsnode
-        image: ipfs/go-ipfs:master
+        image: ipfs/go-ipfs:v0.4.23
         env:
         - name: IPFS_PROFILE
           value: server

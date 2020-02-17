@@ -5,7 +5,7 @@ import (
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
 type Team struct {
@@ -55,6 +55,6 @@ func DefaultTactic() *big.Int {
 
 func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 	for i := range skills {
-		b.Players[i].SetSkills(skills[i])
+		b.Players[i].SetSkills(contracts, skills[i])
 	}
 }

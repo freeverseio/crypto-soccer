@@ -3,12 +3,12 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	"gotest.tools/assert"
 )
 
 func TestResetTrainings(t *testing.T) {
-	tx, err := db.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func TestResetTrainings(t *testing.T) {
 
 func TestTrainingCreate(t *testing.T) {
 	t.Skip("******************** REACTIVE  **********************")
-	tx, err := db.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestTrainingCreate(t *testing.T) {
 
 func TestCurrentTraining(t *testing.T) {
 	t.Skip("******************** REACTIVE  **********************")
-	tx, err := db.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}

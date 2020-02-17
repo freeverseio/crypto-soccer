@@ -1,4 +1,4 @@
-package storage_test
+package relay_test
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 

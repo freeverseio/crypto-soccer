@@ -1,4 +1,4 @@
-package relay_test
+package storage_test
 
 import (
 	"database/sql"
@@ -6,16 +6,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
-var db *sql.DB
+var s *sql.DB
 var bc *testutils.BlockchainNode
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	s, err = storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,5 +24,6 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
+
 	os.Exit(m.Run())
 }
