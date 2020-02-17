@@ -239,7 +239,25 @@ contract('Evolution', (accounts) => {
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
-    
+    it('show that a red card is stored in skills after playing 1st half', async () => {
+        TP = 0;
+        assignment = 0
+        prev2ndHalfLog = 0;
+        teamIds = [1,2]
+        vSeed = '0x234a2b366'
+        var {0: skills, 1: matchLogsAndEvents} =  await play.play1stHalfAndEvolve(
+            vSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
+        ).should.be.fulfilled;
+        outType = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        outType.toNumber().should.be.equal(3); // RED_CARD = 3
+        // with this seed, player p = 8 sees the red card
+        outPlayer = await training.getOutOfGamePlayer(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        outPlayer.toNumber().should.be.equal(8);
+        p = 8;    
+        red = await assets.getRedCardLastGame(skills[0][p]).should.be.fulfilled;
+        red.should.be.equal(true)
+    });
     
     it('updateSkillsAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
