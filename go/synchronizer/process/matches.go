@@ -3,6 +3,8 @@ package process
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"math/big"
 	"net/http"
 	"runtime"
 
@@ -73,7 +75,7 @@ func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.C
 			}
 			for match := range matchesChannel {
 				if err := match.Play1stHalf(*c); err != nil {
-					return err
+					return fmt.Errorf("%v\n%v", err.Error(), match.ToString())
 				}
 			}
 			return nil
@@ -102,7 +104,7 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 			}
 			for match := range matchesChannel {
 				if err := match.Play2ndHalf(*c); err != nil {
-					return err
+					return fmt.Errorf("%v\n%v", err.Error(), match.ToString())
 				}
 			}
 			return nil
@@ -119,6 +121,12 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 func (b *Matches) SetSeed(seed [32]byte) {
 	for i := range *b {
 		(*b)[i].Seed = seed
+	}
+}
+
+func (b *Matches) SetStartTime(startTime *big.Int) {
+	for i := range *b {
+		(*b)[i].StartTime = startTime
 	}
 }
 
@@ -256,7 +264,6 @@ func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		if err := match.ToStorage(contracts, tx); err != nil {
 			return err
 		}
-
 	}
 	return nil
 }

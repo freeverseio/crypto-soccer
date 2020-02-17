@@ -138,6 +138,12 @@ func TestMatchPlayerEvolution(t *testing.T) {
 	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(892))
 }
 
+func TestDumpMatch(t *testing.T) {
+	t.Parallel()
+	match := engine.NewMatch()
+	golden.Assert(t, match.ToString(), t.Name()+".golden")
+}
+
 // func TestMatchFromStorage(t *testing.T) {
 // 	t.Parallel()
 // 	tx, err := db.Begin()
