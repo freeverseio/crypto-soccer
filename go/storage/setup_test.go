@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 var s *sql.DB
+var bc *testutils.BlockchainNode
 
 func TestMain(m *testing.M) {
 	var err error
@@ -17,6 +19,11 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	bc, err = testutils.NewBlockchainNode()
+	if err != nil {
+		log.Fatal(err)
+	}
+	bc.DeployContracts(bc.Owner)
 
 	os.Exit(m.Run())
 }
