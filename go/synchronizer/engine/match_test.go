@@ -122,6 +122,25 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 	}
 }
 
+func TestMatchPlayerEvolution(t *testing.T) {
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200)
+	m.HomeTeam.TeamID = "274877906944"
+	m.VisitorTeam.TeamID = "274877906945"
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+	}
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(955))
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "14606248079918261338806855269144928920528183545627247")
+	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(955))
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "14606253788909032162646379502288806718508729076613743")
+	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(955))
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "14606270915881344634164952201720440112450365669573231")
+}
+
 // func TestMatchFromStorage(t *testing.T) {
 // 	t.Parallel()
 // 	tx, err := db.Begin()
