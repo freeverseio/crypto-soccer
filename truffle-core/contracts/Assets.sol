@@ -3,45 +3,19 @@ pragma solidity >=0.5.12 <0.6.2;
 import "./EncodingSkills.sol";
 import "./EncodingIDs.sol";
 import "./EncodingState.sol";
+import "./Storage.sol";
+import "./StorageProxy.sol";
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions
  * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
  */
 
-contract Assets is EncodingSkills, EncodingState, EncodingIDs {
+contract Assets is EncodingSkills, EncodingState, EncodingIDs, Storage {
 
     event AssetsInit(address creatorAddr);
     event TeamTransfer(uint256 teamId, address to);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     event PlayerStateChange(uint256 playerId, uint256 state);
-
-    struct Team {
-        uint256[PLAYERS_PER_TEAM_MAX] playerIds; 
-        address owner;
-    }
-
-    struct Country {
-        uint256 nDivisions;
-        uint8 nDivisionsToAddNextRound;
-        mapping (uint256 => uint256) divisonIdxToRound;
-        mapping (uint256 => Team) teamIdxInCountryToTeam;
-        uint256 nHumanTeams;
-    }
-
-    struct TimeZone {
-        Country[] countries;
-        uint8 nCountriesToAdd;
-        bytes32[2] orgMapHash;
-        bytes32[2] skillsHash;
-        uint8 newestOrgMapIdx;
-        uint8 newestSkillsIdx;
-        bytes32 scoresRoot;
-        uint8 updateCycleIdx;
-        uint256 lastActionsSubmissionTime;
-        uint256 lastUpdateTime;
-        bytes32 actionsRoot;
-        uint256 lastMarketClosureBlockNum;
-    }    
     
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint8 constant public LEAGUES_PER_DIV = 16;
@@ -51,13 +25,14 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     uint256 constant public ACADEMY_TEAM = 1;
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
-    
-    mapping(uint256 => uint256) private _playerIdToState;
 
-    TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
-    uint256 public gameDeployDay;
-    uint256 public currentRound;
-    bool private _wasInited;
+    StorageProxy private _sto;
+    
+    function setStorageProxyAddress(address addr) public {
+        _sto = StorageProxy(addr);
+    }
+
+    function getIsInit() public view returns (bool) { return _wasInited; }
 
     function init() public {
         require(_wasInited == false, "cannot initialize twice");
@@ -79,7 +54,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         emit AssetsInit(msg.sender);
     }
     
-    function getIsInit() public view returns (bool) { return _wasInited; }
 
     function _initTimeZone(uint8 tz) private {
         Country memory country;

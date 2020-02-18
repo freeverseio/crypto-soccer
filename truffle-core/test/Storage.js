@@ -34,6 +34,7 @@ contract('StorageProxy', (accounts) => {
     beforeEach(async () => {
         sto = await StorageProxy.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
+        await assets.setStorageProxyAddress(sto.address).should.be.fulfilled;
     });
     
     it('call a function inside Assets via delegate call', async () => {

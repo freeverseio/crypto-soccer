@@ -1,28 +1,13 @@
 pragma solidity >=0.5.12 <0.6.2;
 
+import "./Storage.sol";
+
 /**
 * @title Manages the state variables of a DelegateProxy
 */
-contract StorageProxy {
+contract StorageProxy is Storage {
 
-    // MAGIC=keccac256("freeverse.proxy.rnd")
-    // bytes32 constant private MAGIC = 0x5f91a51f585f2d4491bce3e4c2d81799aa0dfc271c36675dbd936650723b29b9;
-    uint256 constant private FWD_GAS_LIMIT = 10000;
-
-    uint256[2**16] _slotReserve;
-    address private _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
-    bytes4[] private _allFunctions;
-    
-    ContractInfo[] private _contractIdToInfo;
-    mapping (bytes4 => uint256) private _functionToContractId;
-
-    // ContractInfo: address & name
-    //      It's good to store the name of the contract to keep track (and query from outside)
-    //      about what they are supposed to fulfil. Examples: name = "Market".
-    struct ContractInfo {
-        address addr;
-        string name;
-    }
+    uint256 constant private FWD_GAS_LIMIT = 10000; 
 
     constructor() public {
         _storageOwner = msg.sender;
@@ -37,7 +22,7 @@ contract StorageProxy {
     /**
     * @dev execute a delegate call via fallback function
     */
-    function () external payable {
+    function () external {
         address contractAddress = _contractIdToInfo[_functionToContractId[msg.sig]].addr;
         require(contractAddress != address(0), "function is non-declared or not assigned to a valid contract");
         delegate(contractAddress, msg.data);
