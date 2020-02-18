@@ -75,7 +75,7 @@ func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.C
 			}
 			for match := range matchesChannel {
 				if err := match.Play1stHalf(*c); err != nil {
-					return fmt.Errorf("%v\n%v", err.Error(), match.ToString())
+					return fmt.Errorf("%v %v", err.Error(), match.ToString())
 				}
 			}
 			return nil
@@ -104,7 +104,7 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 			}
 			for match := range matchesChannel {
 				if err := match.Play2ndHalf(*c); err != nil {
-					return fmt.Errorf("%v\n%v", err.Error(), match.ToString())
+					return fmt.Errorf("%v %v", err.Error(), match.ToString())
 				}
 			}
 			return nil
