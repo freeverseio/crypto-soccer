@@ -11,6 +11,7 @@ contract StorageProxy is Storage {
 
     constructor() public {
         _storageOwner = msg.sender;
+        _contractIdToInfo.push(ContractInfo(address(0),"Dummy"));
     }
     
     modifier onlyOwner() 

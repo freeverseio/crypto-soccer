@@ -26,14 +26,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs, Storage {
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
 
-    StorageProxy private _sto;
-    
-    function setStorageProxyAddress(address addr) public {
-        _sto = StorageProxy(addr);
-    }
-
-    function getIsInit() public view returns (bool) { return _sto._wasInited(); }
-
     function init() public {
         require(_wasInited == false, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
