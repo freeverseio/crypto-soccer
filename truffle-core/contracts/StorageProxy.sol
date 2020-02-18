@@ -56,11 +56,13 @@ contract StorageProxy is Storage {
         _storageOwner = newOwner;
     }
     
-    function addNewFunction(bytes4 selector, uint256 contractId) public onlyOwner {
-        require(_functionToContractId[selector] == 0, "function with same selector already exists");
+    function addNewFunctions(bytes4[] memory selector, uint256 contractId) public onlyOwner {
         require(_contractExists(contractId), "function cannot point to a non-specified contract");
-        _functionToContractId[selector] = contractId;
-        _allFunctions.push(selector);
+        for (uint256 s = 0; s < selector.length; s++) {
+            require(_functionToContractId[selector[s]] == 0, "function with same selector already exists");
+            _functionToContractId[selector[s]] = contractId;
+            _allFunctions.push(selector[s]);
+        }
     }
 
     function deleteFunction(bytes4 selector) public onlyOwner {

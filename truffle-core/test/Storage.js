@@ -26,24 +26,36 @@ contract('StorageProxy', (accounts) => {
         assetsIndependent = await Assets.new().should.be.fulfilled;
     });
     
+    // it('add all functions from contract Assets', async () => {
+    //     functions = [];
+    //     for (i = 0; i < Assets.abi.length; i++) { 
+    //         if (Assets.abi[i].type == "function") {
+    //             functions.push(Assets.abi[i]);
+    //         }
+    //     }
+        
+    
+    // });
+    // return
+    
     it('call init() function inside Assets via delegate call', async () => {
         // for (i=0; i < Assets.abi.length; i++) console.log(i, Assets.abi[i].name);
         await sto.addNewContract(addr = assetsIndependent.address, name = "Assets").should.be.fulfilled;
         initPosInAbi = 60;
         // we first add a function different from init(), and show that we cannot call assets.init()
         selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[initPosInAbi - 1])
-        await sto.addNewFunction(selector, contractId = 1).should.be.fulfilled;
+        await sto.addNewFunctions(selector, contractId = 1).should.be.fulfilled;
         await assets.init().should.be.rejected;
         // we add the correct function and show that we can call it now:
         selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[initPosInAbi])
-        await sto.addNewFunction(selector, contractId = 1).should.be.fulfilled;
+        await sto.addNewFunctions(selector, contractId = 1).should.be.fulfilled;
         await assets.init().should.be.fulfilled;
         // we show that storage in StorageProxy has been updated (wasInit = true), so we cannot init twice:
         await assets.init().should.be.rejected ;
         // we show that the getter in assets works well when called from storageProxy:
         wasInitPosInAbi = 26;
         selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[wasInitPosInAbi])
-        await sto.addNewFunction(selector, contractId = 1).should.be.fulfilled;
+        await sto.addNewFunctions(selector, contractId = 1).should.be.fulfilled;
         isInit = await assets._wasInited().should.be.fulfilled;
         isInit.should.be.equal(true);
     });
@@ -65,7 +77,7 @@ contract('StorageProxy', (accounts) => {
             nom.should.be.equal(name);
         }
         selector = web3.eth.abi.encodeFunctionSignature('setNewAsset(uint256,string)')
-        await sto.addNewFunction(selector, contractId = 1).should.be.fulfilled;
+        await sto.addNewFunctions(selector, contractId = 1).should.be.fulfilled;
         result = await sto.countFunctions().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
     });
@@ -76,8 +88,8 @@ contract('StorageProxy', (accounts) => {
         await sto.addNewContract(addr = assets.address, name = "Assets", {from: FREEVERSE}).should.be.rejected;
         await sto.addNewContract(addr = assets.address, name = "Assets", {from: ALICE}).should.be.fulfilled;
         selector = web3.eth.abi.encodeFunctionSignature('setNewAsset(uint256,string)')
-        await sto.addNewFunction(selector, contractId = 1, {from: FREEVERSE}).should.be.rejected;
-        await sto.addNewFunction(selector, contractId = 1, {from: ALICE}).should.be.fulfilled;
+        await sto.addNewFunctions(selector, contractId = 1, {from: FREEVERSE}).should.be.rejected;
+        await sto.addNewFunctions(selector, contractId = 1, {from: ALICE}).should.be.fulfilled;
     });
 
 
