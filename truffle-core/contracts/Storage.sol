@@ -9,8 +9,8 @@ contract Storage {
     // bytes32 constant private MAGIC = 0x5f91a51f585f2d4491bce3e4c2d81799aa0dfc271c36675dbd936650723b29b9;
     uint256 constant private FWD_GAS_LIMIT = 10000;
 
-    uint256[2**10] _slotReserve;
-    address private _storageOwner;     // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
+    uint256[2**128] _slotReserve;
+    address private _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
     bytes4[] private _allFunctions;
     ContractInfo[] private _contractIdToInfo;
     mapping (bytes32 => uint256) private _functionToContractId;

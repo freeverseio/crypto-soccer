@@ -22,6 +22,15 @@ contract('Storage', (accounts) => {
         sto = await Storage.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
     });
+    
+    it('call a function inside Assets via delegate call', async () => {
+        await sto.addNewContract(addr = assets.address, name = "Assets").should.be.fulfilled;
+        selector = web3.eth.abi.encodeFunctionSignature('init()')
+        await sto.addNewFunction(selector, contractId = 0).should.be.fulfilled;
+        await sto.sendTransaction({data: selector}).should.be.fulfilled;
+        // show that you cannot init twice:
+        await sto.sendTransaction({data: selector}).should.be.rejected;
+    });
 
     it('deploy correctly', async () => {
         result = await sto.countContracts().should.be.fulfilled;

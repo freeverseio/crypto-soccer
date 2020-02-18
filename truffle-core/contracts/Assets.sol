@@ -57,25 +57,25 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
     uint256 public gameDeployDay;
     uint256 public currentRound;
-    bool private _needsInit = true;
+    bool private _wasInited;
 
     function init() public {
-        require(_needsInit == true, "cannot initialize twice");
+        require(_wasInited == false, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
-        _needsInit = false;
+        _wasInited = true;
         emit AssetsInit(msg.sender);
     }
 
     // hack for testing: we can init only one timezone
     // at some point, remove this option
     function initSingleTZ(uint8 tz) public {
-        require(_needsInit == true, "cannot initialize twice");
+        require(_wasInited == false, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
-        _needsInit = false;
+        _wasInited = true;
         emit AssetsInit(msg.sender);
     }
 
