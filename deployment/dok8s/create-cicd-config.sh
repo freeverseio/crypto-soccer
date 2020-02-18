@@ -1,5 +1,6 @@
 #!/bin/sh
 set -E
+output_filename=cicd.kubeconfig.yaml
 server=https://365763e3-86ce-4576-8628-d6eebca12dab.k8s.ondigitalocean.com
 cluster_name=do-ams3-k8s-1-16-6-do-0-ams3-cryptosoccer-test2
 username=cicd
@@ -30,4 +31,6 @@ users:
 - name: ${username}
   user:
     token: ${token}
-" > cicd.kubeconfig.yaml
+" > ${output_filename}
+
+cat ${output_filename} | base64
