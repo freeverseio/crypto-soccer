@@ -71,6 +71,6 @@ deploy()
 }
 
 clean
-namespace_and_secret
+#namespace_and_secret # circle-ci does not have access to do this
 deploy
 kubectl get pods -n ${NAMESPACE}
