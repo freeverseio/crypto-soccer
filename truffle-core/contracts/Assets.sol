@@ -32,7 +32,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs, Storage {
         _sto = StorageProxy(addr);
     }
 
-    function getIsInit() public view returns (bool) { return _wasInited; }
+    function getIsInit() public view returns (bool) { return _sto._wasInited(); }
 
     function init() public {
         require(_wasInited == false, "cannot initialize twice");

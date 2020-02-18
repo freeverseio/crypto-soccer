@@ -20,34 +20,26 @@ contract('StorageProxy', (accounts) => {
     const marketId = 1;
     const updatesId = 2;
     
-    // const assetsFunctions = [
-    //     ["init()", assetsId],
-    //     ["initSingleTZ(uint8)", assetsId],
-    //     ["init()", assetsId],
-    //     ["init()", assetsId],
-    //     ["init()", assetsId],
-    //     ["init()", assetsId],
-    //     ["init()", assetsId],
-    //     ["init()", assetsId],
-    // ]
-    
     beforeEach(async () => {
         sto = await StorageProxy.new().should.be.fulfilled;
-        assets = await Assets.new().should.be.fulfilled;
-        await assets.setStorageProxyAddress(sto.address).should.be.fulfilled;
+        assets = await Assets.at(sto.address).should.be.fulfilled;
+        assetsIndependent = await Assets.new().should.be.fulfilled;
     });
     
     it('call a function inside Assets via delegate call', async () => {
-        await sto.addNewContract(addr = assets.address, name = "Assets").should.be.fulfilled;
+        await sto.addNewContract(addr = assetsIndependent.address, name = "Assets").should.be.fulfilled;
         selector = web3.eth.abi.encodeFunctionSignature('init()')
         await sto.addNewFunction(selector, contractId = 0).should.be.fulfilled;
-        isInit = await assets.getIsInit().should.be.fulfilled;
-        isInit.should.be.equal(false);
-        await sto.sendTransaction({data: selector}).should.be.fulfilled;
-        isInit = await assets.getIsInit().should.be.fulfilled;
-        isInit.should.be.equal(false);
-        // show that you cannot init twice:
-        await sto.sendTransaction({data: selector}).should.be.rejected;
+        await assets.init().should.be.fulfilled;
+        await assets.init().should.be.rejected ;
+        
+        // isInit = await assets.getIsInit().should.be.fulfilled;
+        // isInit.should.be.equal(false);
+        // await sto.sendTransaction({data: selector}).should.be.fulfilled;
+        // isInit = await assets.getIsInit().should.be.fulfilled;
+        // isInit.should.be.equal(true);
+        // // show that you cannot init twice:
+        // await sto.sendTransaction({data: selector}).should.be.rejected;
     });
 return
     it('deploy correctly', async () => {
