@@ -1,4 +1,16 @@
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: xdai-pvc
+spec:
+  storageClassName: do-block-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: xdai 
@@ -38,18 +50,23 @@ spec:
     spec:
       containers:
       - name: xdai
-        #image: freeverseio/xdai:devcontracts
         image: freeverseio/xdai:dev
-        # args: [--mine, --nodiscover]
         imagePullPolicy: Always
         ports:
         - containerPort: 8545
-        #volumeMounts:
-        #- name: xdai-storage
-        #  mountPath: /test/data
+        volumeMounts:
+        - name: xdai-storage
+          mountPath: /home
+      initContainers:
+      - name: xdai-storage-permission-fix
+        image: busybox
+        command: ["/bin/chmod","-R","777", "/data"]
+        volumeMounts:
+        - name: xdai-storage
+          mountPath: /data
       imagePullSecrets:
       - name: docker-secret
-      #volumes:
-      #- name: xdai-storage
-      #  persistentVolumeClaim:
-      #    claimName: xdai-pvc
+      volumes:
+      - name: xdai-storage
+        persistentVolumeClaim:
+          claimName: xdai-pvc
