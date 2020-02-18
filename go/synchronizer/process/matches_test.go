@@ -105,6 +105,40 @@ func TestMatchesSetTrainings(t *testing.T) {
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
 }
 
+func TestMinute2Round(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		Minute int
+		Round  uint8
+	}{
+		{0, 0},
+		{1, 0},
+		{4, 0},
+		{5, 1},
+		{9, 1},
+		{10, 2},
+		{14, 2},
+		{15, 3},
+		{19, 3},
+		{20, 5},
+		{44, 10},
+		{45, 11},
+		{46, 0},
+		{49, 0},
+		{50, 1},
+		{89, 10},
+		{90, 11},
+		{91, 11},
+		{100, 11},
+	}
+
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
+			assert.Equal(t, process.Minute2Round(tc.Minute), tc.Round)
+		})
+	}
+}
+
 // func TestMatchesFromToStorage(t *testing.T) {
 // 	t.Parallel()
 // 	tx, err := universedb.Begin()
