@@ -130,6 +130,18 @@ func (b *Matches) SetStartTime(startTime *big.Int) {
 	}
 }
 
+func Minute2Round(minute int) uint8 {
+	if minute >= 90 {
+		return 11
+	}
+	if minute > 45 {
+		minute -= 45
+	}
+	mapping := [10]uint8{0, 1, 2, 3, 5, 6, 7, 8, 10, 11}
+	idx := int(float32(minute) / 5)
+	return uint8(mapping[idx])
+}
+
 func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic) error {
 	for _, tactic := range tactics {
 		substitutions := [3]uint8{
@@ -138,9 +150,9 @@ func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic
 			uint8(tactic.Substitution2Target),
 		}
 		substitutionsMinute := [3]uint8{
-			uint8(tactic.Substitution0Minute),
-			uint8(tactic.Substitution1Minute),
-			uint8(tactic.Substitution2Minute),
+			Minute2Round(tactic.Substitution0Minute),
+			Minute2Round(tactic.Substitution1Minute),
+			Minute2Round(tactic.Substitution2Minute),
 		}
 		formation := [14]uint8{
 			uint8(tactic.Shirt0),
