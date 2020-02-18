@@ -1,4 +1,4 @@
-const Storage = artifacts.require('Storage');
+const StorageProxy = artifacts.require('StorageProxy');
 const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
@@ -21,7 +21,7 @@ require('chai')
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-    const storage = await deployer.deploy(Storage).should.be.fulfilled;
+    const storage = await deployer.deploy(StorageProxy).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;

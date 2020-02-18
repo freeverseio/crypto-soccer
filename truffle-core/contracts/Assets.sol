@@ -78,6 +78,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         _wasInited = true;
         emit AssetsInit(msg.sender);
     }
+    
+    function getIsInit() public view returns (bool) { return _wasInited; }
 
     function _initTimeZone(uint8 tz) private {
         Country memory country;
