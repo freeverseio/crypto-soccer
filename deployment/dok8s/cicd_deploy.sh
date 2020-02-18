@@ -9,11 +9,11 @@ NAMESPACE=freeverse # TODO: pass as argument so we can use the same script to de
 
 namespace_and_secret()
 {
-    NS=`kubectl get pods --all-namespaces | awk '{print $1;}' | uniq | grep ${NAMESPACE}`
+    #NS=`kubectl get pods --all-namespaces | awk '{print $1;}' | uniq | grep ${NAMESPACE}`
 
-    if [ $NS != $NAMESPACE ]; then kubectl create ns ${NAMESPACE}
-    else echo "namespace $NAMESPACE already exist. Omitting creation."
-    fi
+    #if [ $NS != $NAMESPACE ]; then kubectl create ns ${NAMESPACE}
+    #else echo "namespace $NAMESPACE already exist. Omitting creation."
+    #fi
     SECRET=`kubectl get secret -n ${NAMESPACE} | grep docker-secret | awk '{print $1}'`
     if [ $SECRET != 'docker-secret' ]; then kubectl create secret docker-registry docker-secret --docker-server=${DOCKER_REGISTRY_SERVER} --docker-username=${DROPLET_DOCKER_ID} --docker-password=${DROPLET_DOCKER_PASSWD} --docker-email=freeversedigitalocean@freeverse.io -n ${NAMESPACE}
     else echo "docker secret already exist. Omitting creation."
