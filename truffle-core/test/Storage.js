@@ -46,16 +46,11 @@ contract('StorageProxy', (accounts) => {
         await sto.addNewFunction(selector, contractId = 1).should.be.fulfilled;
         isInit = await assets._wasInited().should.be.fulfilled;
         isInit.should.be.equal(true);
-        // await sto.sendTransaction({data: selector}).should.be.fulfilled;
-        // isInit = await assets.getIsInit().should.be.fulfilled;
-        // isInit.should.be.equal(true);
-        // // show that you cannot init twice:
-        // await sto.sendTransaction({data: selector}).should.be.rejected;
     });
-return
+
     it('deploy correctly', async () => {
         result = await sto.countContracts().should.be.fulfilled;
-        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(1);
         result = await sto.countFunctions().should.be.fulfilled;
         result.toNumber().should.be.equal(0);
     });
@@ -63,14 +58,14 @@ return
     it('add contract info and one function', async () => {
         await sto.addNewContract(addr = assets.address, name = "Assets").should.be.fulfilled;
         result = await sto.countContracts().should.be.fulfilled;
-        result.toNumber().should.be.equal(1);
-        for (c = 0; c < result.toNumber(); c++) { 
+        result.toNumber().should.be.equal(2);
+        for (c = 1; c < result.toNumber(); c++) { 
             let {0: ad, 1: nom} = await sto.getContractInfo(c).should.be.fulfilled;
             ad.should.be.equal(addr);
             nom.should.be.equal(name);
         }
         selector = web3.eth.abi.encodeFunctionSignature('setNewAsset(uint256,string)')
-        await sto.addNewFunction(selector, contractId = 0).should.be.fulfilled;
+        await sto.addNewFunction(selector, contractId = 1).should.be.fulfilled;
         result = await sto.countFunctions().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
     });
@@ -81,8 +76,8 @@ return
         await sto.addNewContract(addr = assets.address, name = "Assets", {from: FREEVERSE}).should.be.rejected;
         await sto.addNewContract(addr = assets.address, name = "Assets", {from: ALICE}).should.be.fulfilled;
         selector = web3.eth.abi.encodeFunctionSignature('setNewAsset(uint256,string)')
-        await sto.addNewFunction(selector, contractId = 0, {from: FREEVERSE}).should.be.rejected;
-        await sto.addNewFunction(selector, contractId = 0, {from: ALICE}).should.be.fulfilled;
+        await sto.addNewFunction(selector, contractId = 1, {from: FREEVERSE}).should.be.rejected;
+        await sto.addNewFunction(selector, contractId = 1, {from: ALICE}).should.be.fulfilled;
     });
 
 
