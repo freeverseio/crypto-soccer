@@ -12,6 +12,7 @@ const delgateUtils = require('../utils/delegateCallUtils.js');
 const StorageProxy = artifacts.require('StorageProxy');
 const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
+const Privileged = artifacts.require('Privileged');
 
 async function createPromoPlayer(targetTeamId, internalId = 144321433) {
   sk = [16383, 13, 4, 56, 456];
@@ -260,6 +261,7 @@ contract("Market", accounts => {
     // done with delegate calls
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     await assets.init().should.be.fulfilled;
+    privileged = await Privileged.new().should.be.fulfilled;
     sellerAccount = await web3.eth.accounts.create("iamaseller");
     buyerAccount = await web3.eth.accounts.create("iamabuyer");
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
@@ -268,7 +270,7 @@ contract("Market", accounts => {
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address).should.be.fulfilled;
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
-    
+
     AUCTION_TIME = await market.AUCTION_TIME().should.be.fulfilled;
     AUCTION_TIME = AUCTION_TIME.toNumber();
     
@@ -284,7 +286,7 @@ contract("Market", accounts => {
 
   });
 
-  it('setAcquisitionConstraint of constraints in friendlies)', async () => {
+  it('setAcquisitionConstraint of constraints in friendlies', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
     for (c = 0; c < maxNumConstraints; c++) {

@@ -10,7 +10,7 @@ const Assets = artifacts.require('Assets');
 // const Updates = artifacts.require('Updates');
 // const Friendlies = artifacts.require('Friendlies');
 // const Shop = artifacts.require('Shop');
-// const Privileged = artifacts.require('Privileged');
+const Privileged = artifacts.require('Privileged');
 // const Utils = artifacts.require('Utils');
 // const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 
@@ -33,7 +33,7 @@ module.exports = function (deployer) {
     // const updates = await deployer.deploy(Updates).should.be.fulfilled;
     // const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
     // const shop = await deployer.deploy(Shop).should.be.fulfilled;
-    // const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
+    const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
     // const utils = await deployer.deploy(Utils).should.be.fulfilled;
     // const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
     
@@ -74,7 +74,7 @@ module.exports = function (deployer) {
     // console.log("EVOLUTION_CONTRACT_ADDRESS=" + evolution.address);
     // console.log("FRIENDLIES_CONTRACT_ADDRESS=" + friendlies.address);
     // console.log("SHOP_CONTRACT_ADDRESS=" + shop.address);
-    // console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
+    console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
     // console.log("UTILS_CONTRACT_ADDRESS=" + utils.address);
     // console.log("PLAYANDEVOLVE_CONTRACT_ADDRESS=" + playAndEvolve.address);
   });
