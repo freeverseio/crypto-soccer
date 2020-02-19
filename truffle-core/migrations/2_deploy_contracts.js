@@ -38,7 +38,7 @@ module.exports = function (deployer) {
     // const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
     
     console.log("Setting up ...");
-    await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
+    // await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
     // await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     // await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     // await updates.initUpdates(assets.address).should.be.fulfilled;

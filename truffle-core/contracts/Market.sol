@@ -12,27 +12,21 @@ import "./EncodingSkillsSetters.sol";
 contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
-    event TeamTransfer(uint256 teamId, address to);
     event PlayerStateChange(uint256 playerId, uint256 state);
 
     uint8 constant internal IDX_MSG = 0;
     uint8 constant internal IDX_r   = 1;
     uint8 constant internal IDX_s   = 2;
-    uint8 constant internal PUT_FOR_SALE  = 1;
-    uint8 constant internal MAKE_AN_OFFER = 2;
     // POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.
     //  ...it includes time to ask for a 2nd-best bidder, or 3rd-best.
     uint256 constant public POST_AUCTION_TIME   = 6 hours; 
     uint256 constant public AUCTION_TIME        = 24 hours; 
     uint256 constant public MAX_VALID_UNTIL     = 30 hours; // the sum of the previous two
     uint256 constant private VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
-    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
-    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
-    uint256 constant public ACADEMY_TEAM = 1;
     uint8 constant public MAX_ACQUISITON_CONSTAINTS  = 7;
     
     function setAcademyAddr(address addr) public {
-        academyAddr = addr;
+        _academyAddr = addr;
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }
     
@@ -128,7 +122,7 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
      ) public {
         require(validUntil > now, "validUntil is in the past");
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-         uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
+        uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
         require(!isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
         uint256 targetTeamId = getTargetTeamId(playerId);
         // require that team does not have any constraint from friendlies
@@ -141,7 +135,7 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         require(getOwnerTeam(targetTeamId) == 
                     recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
          
-        require(academyAddr == 
+        require(_academyAddr == 
                     recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
          
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
@@ -294,7 +288,7 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         view 
         returns (bool)
     {
-        address prevOwner = isAcademyPlayer(playerId) ? academyAddr : getOwnerPlayer(playerId);
+        address prevOwner = isAcademyPlayer(playerId) ? _academyAddr : getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
         return (
             // check validUntil has not expired
             (now < validUntil) &&
@@ -429,10 +423,14 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
         
-        newState = setCurrentTeamId(newState, teamIdTarget);
-        newState = setCurrentShirtNum(newState, shirtTarget);
-        newState = setLastSaleBlock(newState, block.number);
-        _playerIdToState[playerId] = newState;
+        _playerIdToState[playerId] = 
+            setLastSaleBlock(
+                setCurrentShirtNum(
+                    setCurrentTeamId(
+                        newState, teamIdTarget
+                    ), shirtTarget
+                ), block.number
+            );
 
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
@@ -444,21 +442,11 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         emit PlayerStateChange(playerId, newState);
     }
     
-    
     function getOwnerTeam(uint256 teamId) public view returns(address) {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
-    
-
-    // returns NULL_ADDR if team is bot
-    function getOwnerPlayer(uint256 playerId) public view returns(address) {
-        require(playerExists(playerId), "unexistent player");
-        return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
-    }
-    
-        
     function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
         if (getIsSpecial(playerId)) return encodePlayerState(playerId, ACADEMY_TEAM, 0, 0, 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);

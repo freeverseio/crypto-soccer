@@ -15,16 +15,10 @@ import "./AssetsLib.sol";
 contract Assets is AssetsLib, EncodingSkills, EncodingState {
 
     event AssetsInit(address creatorAddr);
-    event TeamTransfer(uint256 teamId, address to);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     
-    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
-    uint8 constant public LEAGUES_PER_DIV = 16;
-    uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     uint256 constant public DAYS_PER_ROUND = 16;
-    uint256 constant public ACADEMY_TEAM = 1;
-    address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
 
     function init() public {
