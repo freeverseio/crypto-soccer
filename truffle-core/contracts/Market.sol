@@ -118,38 +118,38 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
-    // function transferPromoPlayer(
-    //     uint256 playerId,
-    //     uint256 validUntil,
-    //     bytes32[3] memory sigSel,
-    //     bytes32[3] memory sigBuy,
-    //     uint8 sigVSel,
-    //     uint8 sigVBuy
-    //  ) public {
-    //     require(validUntil > now, "validUntil is in the past");
-    //     require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-    //      uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
-    //     require(!_assets.isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
-    //     uint256 targetTeamId = getTargetTeamId(playerId);
-    //     // require that team does not have any constraint from friendlies
-    //     (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
-    //     require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
-    //     // testing about the target team is already done in _assets.transferPlayer
-    //     require(_assets.teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
-    //     require(!_assets.isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
+    function transferPromoPlayer(
+        uint256 playerId,
+        uint256 validUntil,
+        bytes32[3] memory sigSel,
+        bytes32[3] memory sigBuy,
+        uint8 sigVSel,
+        uint8 sigVBuy
+     ) public {
+        require(validUntil > now, "validUntil is in the past");
+        require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
+         uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
+        require(!isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
+        uint256 targetTeamId = getTargetTeamId(playerId);
+        // require that team does not have any constraint from friendlies
+        (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
+        require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
+        // testing about the target team is already done in _assets.transferPlayer
+        require(teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
+        require(!isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
                 
-    //     require(_assets.getOwnerTeam(targetTeamId) == 
-    //                 recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
+        require(getOwnerTeam(targetTeamId) == 
+                    recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
          
-    //     require(academyAddr == 
-    //                 recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
+        require(academyAddr == 
+                    recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
          
-    //     bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
-    //     require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
-    //     require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
-    //     _assets.transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
-    //     decreaseMaxAllowedAcquisitions(targetTeamId);
-    // }
+        bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
+        require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
+        require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
+        transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
+        decreaseMaxAllowedAcquisitions(targetTeamId);
+    }
 
     function completePlayerAuction(
         bytes32 sellerHiddenPrice,
