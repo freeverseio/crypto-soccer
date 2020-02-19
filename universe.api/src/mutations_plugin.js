@@ -1,6 +1,7 @@
 const { makeExtendSchemaPlugin, gql } = require("graphile-utils");
+const Resolvers = require("./resolvers");
 
-const MyPlugin = () => {
+const MyPlugin = (assets, from) => {
   return makeExtendSchemaPlugin(build => {
     // Get any helpers we need from `build`
     const { pgSql: sql, inflection } = build;
@@ -8,6 +9,74 @@ const MyPlugin = () => {
     return {
       typeDefs: gql`
       extend type Mutation {
+        transferFirstBotToAddr(
+          timezone: Int,
+          countryIdxInTimezone: ID!,
+          address: String!
+        ): Boolean
+        setTactic(
+          teamId: String!
+          tacticId: Int!
+          shirt0: Int!
+          shirt1: Int!
+          shirt2: Int!
+          shirt3: Int!
+          shirt4: Int!
+          shirt5: Int!
+          shirt6: Int!
+          shirt7: Int!
+          shirt8: Int!
+          shirt9: Int!
+          shirt10: Int!
+          substitution0Shirt: Int!
+          substitution0Target: Int!
+          substitution0Minute: Int!
+          substitution1Shirt: Int!
+          substitution1Target: Int!
+          substitution1Minute: Int!
+          substitution2Shirt: Int!
+          substitution2Target: Int!
+          substitution2Minute: Int!
+          extraAttack1: Boolean!
+          extraAttack2: Boolean!
+          extraAttack3: Boolean!
+          extraAttack4: Boolean!
+          extraAttack5: Boolean!
+          extraAttack6: Boolean!
+          extraAttack7: Boolean!
+          extraAttack8: Boolean!
+          extraAttack9: Boolean!
+          extraAttack10: Boolean!
+        ): Boolean
+        setTraining(
+          teamId: String!
+          specialPlayerShirt: Int!
+          goalkeepersDefence: Int!
+          goalkeepersSpeed: Int!
+          goalkeepersPass: Int!
+          goalkeepersShoot: Int!
+          goalkeepersEndurance: Int!
+          defendersDefence: Int!
+          defendersSpeed: Int!
+          defendersPass: Int!
+          defendersShoot: Int!
+          defendersEndurance: Int!
+          midfieldersDefence: Int!
+          midfieldersSpeed: Int!
+          midfieldersPass: Int!
+          midfieldersShoot: Int!
+          midfieldersEndurance: Int!
+          attackersDefence: Int!
+          attackersSpeed: Int!
+          attackersPass: Int!
+          attackersShoot: Int!
+          attackersEndurance: Int!
+          specialPlayerDefence: Int!
+          specialPlayerSpeed: Int!
+          specialPlayerPass: Int!
+          specialPlayerShoot: Int!
+          specialPlayerEndurance: Int!
+        ): Boolean
         createSpecialPlayer(
           playerId: String!,
           name: String!,
@@ -24,58 +93,7 @@ const MyPlugin = () => {
           playerId: String!
         ): Boolean
       }`,
-      resolvers: {
-        Mutation: {
-          createSpecialPlayer: async (_, params, context) => {
-            const { playerId, name, defence, speed, pass, shoot, endurance, preferredPosition, potential, dayOfBirth } = params;
-            const query = sql.query`INSERT INTO players (
-              name,
-              player_id,
-              team_id, 
-              defence, 
-              speed, 
-              pass, 
-              shoot, 
-              endurance, 
-              shirt_number, 
-              preferred_position, 
-              potential,
-              day_of_birth,
-              encoded_skills,
-              encoded_state,
-              frozen,
-              red_card_matches_left,
-              injury_matches_left) VALUES (
-                ${sql.value(name)},
-                ${sql.value(playerId)},
-                ${sql.value('1')}, 
-                ${sql.value(defence)}, 
-                ${sql.value(speed)},
-                ${sql.value(pass)},
-                ${sql.value(shoot)},
-                ${sql.value(endurance)},
-                ${sql.value(0)},
-                ${sql.value(preferredPosition)},
-                ${sql.value(potential)},
-                ${sql.value(dayOfBirth)},
-                ${sql.value('')},
-                ${sql.value('')},
-                ${sql.value(false)},
-                ${sql.value(0)},
-                ${sql.value(0)}
-            )`;
-            const { text, values } = sql.compile(query);
-            await context.pgClient.query(text, values);
-            return true;// TODO return something with sense
-          },
-          deleteSpecialPlayer: async (_, { playerId }, context) => {
-            const query = sql.query`DELETE FROM players WHERE team_id=${sql.value('1')} AND player_id=${sql.value(playerId)};`;
-            const { text, values } = sql.compile(query);
-            await context.pgClient.query(text, values);
-            return true;// TODO return something with sense
-          },
-        },
-      },
+      resolvers: Resolvers(sql, assets, from),
     }
   });
 };

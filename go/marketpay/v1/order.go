@@ -12,7 +12,7 @@ type Order struct {
 	ConditionsInsurance string      `json:"conditions_insurance"`
 	Status              string      `json:"status"`
 	Tag                 interface{} `json:"tag"`
-	ID                  int         `json:"id"`
+	ID                  string      `json:"id"`
 	FormatAmount        string      `json:"format_amount"`
 	FormatFee           string      `json:"format_fee"`
 	FormatFeeShipping   string      `json:"format_fee_shipping"`

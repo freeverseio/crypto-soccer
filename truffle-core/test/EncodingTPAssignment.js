@@ -12,26 +12,34 @@ contract('EncodingTPAssignment', (accounts) => {
         encoding = await EncodingTPAssignment.new().should.be.fulfilled;
         MAX_PERCENT = await encoding.MAX_PERCENT().should.be.fulfilled;
         MAX_PERCENT = MAX_PERCENT.toNumber();
-        MIN_PERCENT = await encoding.MIN_PERCENT().should.be.fulfilled;
-        MIN_PERCENT = MIN_PERCENT.toNumber();
     });
+    
     it('encode fails if sum is not correct', async () =>  {
         specialPlayer = 21;
         TP = 40;
         TPperSkill =  Array.from(new Array(25), (x,i) => Math.floor(TP/5));
         result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
-        // value too small:
-        TPperSkill[2] = 1;
-        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.rejected;
         // sum too large:
         TPperSkill =  Array.from(new Array(25), (x,i) => 1 + Math.floor(TP/5));
         result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.rejected;
+        // special player can have extra 10 percent:
+        TPperSkill =  Array.from(new Array(25), (x,i) => Math.floor(TP/5));
+        // special player belongs to idx: 20, 21, 22, 23, 24
+        // having an extra 10% he should be able to reach 44 points => (8,8,8,8,8) -> 9,8,9,9,9
+        TPperSkill[20] = 9;
+        TPperSkill[21] = 8;
+        TPperSkill[22] = 9;
+        TPperSkill[23] = 9;
+        TPperSkill[24] = 9;
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        TPperSkill[24] = 10;
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.rejected;
     });
 
-    it('encode and decode matchlog', async () =>  {
+    it('encode and decode TP assignment', async () =>  {
         specialPlayer = 21;
         TP = 40;
-        TPperSkill = Array.from(new Array(25), (x,i) => 2 + 3*i % 5);
+        TPperSkill = Array.from(new Array(25), (x,i) => 3 + 3*i % 5);
         // make sure they sum to TP:
         for (bucket = 0; bucket < 5; bucket++){
             sum4 = 0;

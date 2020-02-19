@@ -1,0 +1,54 @@
+([]storage.Match) (len=4 cap=4) {
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 0,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(274877906944),
+VisitorTeamID: (*big.Int)(274877906945),
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeMatchLog: (*big.Int)(0),
+VisitorMatchLog: (*big.Int)(0)
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 0,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(274877906951),
+VisitorTeamID: (*big.Int)(274877906946),
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeMatchLog: (*big.Int)(0),
+VisitorMatchLog: (*big.Int)(0)
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 0,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(274877906950),
+VisitorTeamID: (*big.Int)(274877906947),
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeMatchLog: (*big.Int)(0),
+VisitorMatchLog: (*big.Int)(0)
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 0,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(274877906949),
+VisitorTeamID: (*big.Int)(274877906948),
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeMatchLog: (*big.Int)(0),
+VisitorMatchLog: (*big.Int)(0)
+}
+}

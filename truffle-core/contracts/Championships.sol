@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity >=0.5.12 <0.6.2;
 
 import "./Assets.sol";
 import "./Engine.sol";
@@ -11,8 +11,6 @@ import "./EncodingIDs.sol";
  */
 
 contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
-    
-    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
@@ -132,7 +130,7 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     }
 
     function computeTeamRankingPoints(
-        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8 leagueRanking,
         uint64 prevPerfPoints,
         uint256 teamId
@@ -141,7 +139,7 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
         view
         returns (uint64 rankingPoints, uint64)
     {
-        (rankingPoints, prevPerfPoints) = computeTeamRankingPointsPure(states, leagueRanking, prevPerfPoints);
+        (rankingPoints, prevPerfPoints) = computeTeamRankingPointsPure(skills, leagueRanking, prevPerfPoints);
         (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         if (_assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry)) {
             return (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry), uint64(0));
@@ -151,7 +149,7 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
 
 
     function computeTeamRankingPointsPure(
-        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8 leagueRanking,
         uint64 prevPerfPoints
     ) 
@@ -161,8 +159,8 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     {
         uint64 teamSkills;
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (states[p] != 0)
-                teamSkills += uint64(getSumOfSkills(states[p]));
+            if (skills[p] != 0)
+                teamSkills += uint64(getSumOfSkills(skills[p]));
         }
         
         // Nomenclature:    R = rankingPoints, W = Weight_Skills, SK = TeamSkills, SK0 = TeamSkillsAtStart, I = 

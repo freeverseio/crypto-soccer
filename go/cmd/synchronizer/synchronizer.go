@@ -12,12 +12,11 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
 func run(
 	universedb *sql.DB,
-	relaydb *sql.DB,
 	processor *process.EventProcessor,
 	delta uint64,
 ) (uint64, error) {
@@ -32,35 +31,25 @@ func run(
 		}
 		err = tx.Commit()
 	}()
-	relaytx, err := relaydb.Begin()
-	if err != nil {
-		return 0, err
-	}
-	defer func() {
-		if err != nil {
-			relaytx.Rollback()
-			return
-		}
-		err = relaytx.Commit()
-	}()
-	return processor.Process(tx, relaytx, delta)
+	return processor.Process(tx, delta)
 }
 
 func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
-	relayURL := flag.String("relaydb", "postgres://freeverse:freeverse@localhost:5433/relay?sslmode=disable", "relay postgres url")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
 	assetsContractAddress := flag.String("assetsContractAddress", "", "")
 	evolutionContractAddress := flag.String("evolutionContractAddress", "", "")
-	marketContractAddress := flag.String("marketContractAddress", "", "")
-	updatesContractAddress := flag.String("updatesContractAddress", "", "")
 	engineContractAddress := flag.String("engineContractAddress", "", "")
-	matcheventsContractAddress := flag.String("matcheventsContractAddress", "", "")
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
-	utilsmatchlogContractAddress := flag.String("utilsmatchlogContractAddress", "", "")
+	updatesContractAddress := flag.String("updatesContractAddress", "", "")
+	marketContractAddress := flag.String("marketContractAddress", "", "")
+	utilsContractAddress := flag.String("utilsContractAddress", "", "")
+	playandevolveContractAddress := flag.String("playandevolveContractAddress", "", "")
+	shopContractAddress := flag.String("shopContractAddress", "", "")
+	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
 
@@ -91,11 +80,17 @@ func main() {
 	if *enginePreCompContractAddress == "" {
 		log.Fatal("no enginePreComp contract address")
 	}
-	if *matcheventsContractAddress == "" {
-		log.Fatal("no matchevents contract address")
+	if *utilsContractAddress == "" {
+		log.Fatal("no utils contract address")
 	}
-	if *utilsmatchlogContractAddress == "" {
-		log.Fatal("no utilsmatchlog contract address")
+	if *playandevolveContractAddress == "" {
+		log.Fatal("no playandevolve contract address")
+	}
+	if *shopContractAddress == "" {
+		log.Fatal("no shop contract address")
+	}
+	if *trainingpointsContractAddress == "" {
+		log.Fatal("no trainingpoints contract address")
 	}
 
 	log.Infof("ipfs URL: %v", *ipfsURL)
@@ -104,62 +99,63 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	log.Info("Starting ...")
-	log.Info("Dial the Ethereum client: ", *ethereumClient)
-	client, err := ethclient.Dial(*ethereumClient)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-	contracts, err := contracts.New(
-		client,
-		*leaguesContractAddress,
-		*assetsContractAddress,
-		*evolutionContractAddress,
-		*engineContractAddress,
-		*enginePreCompContractAddress,
-		*updatesContractAddress,
-		*marketContractAddress,
-		*matcheventsContractAddress,
-		*utilsmatchlogContractAddress,
-	)
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-
-	log.Info("Connecting to universe DBMS: ", *postgresURL)
-	universedb, err := storage.New(*postgresURL)
-	if err != nil {
-		log.Fatalf("Failed to connect to universe DBMS: %v", err)
-	}
-
-	log.Info("Connecting to relay DBMS: ", *relayURL)
-	relaydb, err := storage.New(*relayURL)
-	if err != nil {
-		log.Fatalf("Failed to connect to universe DBMS: %v", err)
-	}
-
-	namesdb, err := names.New(*namesDatabase)
-	if err != nil {
-		log.Fatalf("Failed to connect to names DBMS: %v", err)
-	}
-
-	log.Info("All is ready ... 5 seconds to start ...")
-	time.Sleep(5 * time.Second)
-
-	processor, err := process.NewEventProcessor(contracts, namesdb)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Info("On Going ...")
-	delta := uint64(10)
 	for {
-		processedBlocks, err := run(universedb, relaydb, processor, delta)
+		log.Info("Starting ...")
+		log.Info("Dial the Ethereum client: ", *ethereumClient)
+		client, err := ethclient.Dial(*ethereumClient)
 		if err != nil {
-			log.Error(err)
+			log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 		}
-		if processedBlocks == 0 {
-			time.Sleep(2 * time.Second)
+		contracts, err := contracts.New(
+			client,
+			*leaguesContractAddress,
+			*assetsContractAddress,
+			*evolutionContractAddress,
+			*engineContractAddress,
+			*enginePreCompContractAddress,
+			*updatesContractAddress,
+			*marketContractAddress,
+			*utilsContractAddress,
+			*playandevolveContractAddress,
+			*shopContractAddress,
+			*trainingpointsContractAddress,
+		)
+		if err != nil {
+			log.Fatalf(err.Error())
 		}
+
+		log.Info("Connecting to universe DBMS: ", *postgresURL)
+		universedb, err := storage.New(*postgresURL)
+		if err != nil {
+			log.Fatalf("Failed to connect to universe DBMS: %v", err)
+		}
+
+		namesdb, err := names.New(*namesDatabase)
+		if err != nil {
+			log.Fatalf("Failed to connect to names DBMS: %v", err)
+		}
+
+		log.Info("All is ready ... 5 seconds to start ...")
+		time.Sleep(5 * time.Second)
+
+		processor, err := process.NewEventProcessor(contracts, namesdb, *ipfsURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Info("On Going ...")
+		delta := uint64(10)
+		for {
+			processedBlocks, err := run(universedb, processor, delta)
+			if err != nil {
+				log.Error(err)
+				break
+			}
+			if processedBlocks == 0 {
+				time.Sleep(2 * time.Second)
+			}
+		}
+		log.Warning("Waiting 2 secs and retry ...")
+		time.Sleep(2 * time.Second)
 	}
 }

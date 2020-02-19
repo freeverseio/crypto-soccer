@@ -9,13 +9,12 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 
 	shell "github.com/ipfs/go-ipfs-api"
 )
 
 type UserActions struct {
-	Verse     uint64             `json:"verse"`
 	Tactics   []storage.Tactic   `json:"tactics"`
 	Trainings []storage.Training `json:"trainings"`
 }
@@ -40,25 +39,74 @@ func (b *UserActions) Equal(actions *UserActions) bool {
 	return true
 }
 
-func (b *UserActions) PullFromStorage(tx *sql.Tx, verse uint64) error {
-	var err error
-	if b.Tactics, err = storage.TacticsByVerse(tx, verse); err != nil {
-		return err
-	}
-	if b.Trainings, err = storage.TrainingByVerse(tx, verse); err != nil {
-		return err
-	}
-	return nil
+func New() *UserActions {
+	return &UserActions{}
 }
 
-func (b *UserActions) Hash() ([]byte, error) {
-	h := sha256.New()
-	buf, err := b.Marshal()
+func NewFromIpfs(url string, cid string) (*UserActions, error) {
+	var ua UserActions
+	sh := shell.NewShell(url)
+	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Close()
+
+	if resp.Error != nil {
+		return nil, resp.Error
+	}
+
+	tr := tar.NewReader(resp.Output)
+	_, err = tr.Next()
+	if err != nil {
+		return nil, err
+	}
+	buf, err := ioutil.ReadAll(tr)
+	if err != nil {
+		return nil, err
+	}
+	if err = ua.Unmarshal(buf); err != nil {
+		return nil, err
+	}
+	return &ua, nil
+}
+
+func NewFromStorage(tx *sql.Tx, verse uint64, timezone int) (*UserActions, error) {
+	var err error
+	var ua UserActions
+	if ua.Tactics, err = storage.TacticsByVerseAndTimezone(tx, verse, timezone); err != nil {
+		return nil, err
+	}
+	if ua.Trainings, err = storage.TrainingsByVerseAndTimezone(tx, verse, timezone); err != nil {
+		return nil, err
+	}
+	return &ua, nil
+}
+
+func (b *UserActions) UpdateVerse(verse uint64) {
+	for i := range b.Trainings {
+		b.Trainings[i].Verse = verse
+	}
+	for i := range b.Tactics {
+		b.Tactics[i].Verse = verse
+	}
+}
+
+func (b *UserActions) Hash() ([32]byte, error) {
+	h := sha256.New()
+	buf, err := b.Marshal()
+	if err != nil {
+		return [32]byte{}, err
+	}
 	h.Write(buf)
-	return h.Sum(nil), nil
+	hash := h.Sum(nil)
+	var result [32]byte
+	copy(result[:], hash)
+	return result, nil
+}
+
+func (b UserActions) Root() ([32]byte, error) {
+	return b.Hash()
 }
 
 func (b *UserActions) Marshal() ([]byte, error) {
@@ -75,35 +123,11 @@ func (b *UserActions) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, &b)
 }
 
-func (b *UserActions) PushToIpfs(url string) (string, error) {
+func (b *UserActions) ToIpfs(url string) (string, error) {
 	sh := shell.NewShell(url)
 	buf, err := b.Marshal()
 	if err != nil {
 		return "", err
 	}
 	return sh.Add(bytes.NewReader(buf), shell.Pin(true))
-}
-
-func (b *UserActions) PullFromIpfs(url string, cid string) error {
-	sh := shell.NewShell(url)
-	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
-	if err != nil {
-		return err
-	}
-	defer resp.Close()
-
-	if resp.Error != nil {
-		return resp.Error
-	}
-
-	tr := tar.NewReader(resp.Output)
-	_, err = tr.Next()
-	if err != nil {
-		return err
-	}
-	buf, err := ioutil.ReadAll(tr)
-	if err != nil {
-		return err
-	}
-	return b.Unmarshal(buf)
 }

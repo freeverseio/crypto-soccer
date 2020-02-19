@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity >=0.5.12 <0.6.2;
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */
@@ -21,6 +21,9 @@ contract EncodingIDs {
         return (encoded | val);            // 28 - 28
     }
 
+    /**
+    @return timezone, countryIdxInTZ, val
+     */
     function decodeTZCountryAndVal(uint256 encoded) public pure returns (uint8, uint256, uint256)
     {
         // 2**14 - 1 = 31;  2**10 - 1 = 1023; 2**28 - 1 = 268435455;

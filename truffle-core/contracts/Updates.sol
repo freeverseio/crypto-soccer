@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity >=0.5.12 <0.6.2;
 
 import "./Assets.sol";
  /**
@@ -7,7 +7,7 @@ import "./Assets.sol";
 
 contract Updates {
     event TeamTransfer(uint256 teamId, address to);
-    event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, string cid);
+    event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string cid);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
 
     uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
@@ -69,7 +69,7 @@ contract Updates {
         _assets.setActionsRoot(newTZ, actionsRoot);
         incrementVerse();
         setCurrentVerseSeed(blockhash(block.number-1));
-        emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, cid);
+        emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, cid);
     }
 
     function updateTZ(bytes32 root) public {

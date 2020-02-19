@@ -7,6 +7,11 @@ const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 
 const Shop = artifacts.require('Shop');
+const EncodingTactics = artifacts.require('EncodingTactics');
+// in test mode, we place a test item in contruction (with itemId = 1)
+// (recall that itemId = 0 is NULL)
+// so a new item will be assigned itemId = 2
+const expectedNewItemId = 2;
 
 contract('Shop', (accounts) => {
     const ALICE = accounts[1];
@@ -17,28 +22,103 @@ contract('Shop', (accounts) => {
 
     beforeEach(async () => {
         shop = await Shop.new().should.be.fulfilled;
+        encTactics = await EncodingTactics.new().should.be.fulfilled;
     });
 
+    
+    it('encode - decode boosts', async () => {
+        boosts = [62,60,19,1,23,2];
+        encoded = await shop.encodeBoosts(boosts).should.be.fulfilled;
+        decoded = await shop.decodeBoosts(encoded).should.be.fulfilled;
+        debug.compareArrays(decoded, boosts, toNum = true, verbose = false, isBigNumber = false);
+    });
+    
     it('offer item', async () => {
-        skillsBoost = await shop.encodeSkillsBoost([5,7,8,11,23]).should.be.fulfilled;
-        leagueIds = Array.from(new Array(32), (x,i) => 312312321+i);
-        tx = await shop.offerItem(skillsBoost, initStock = 32, matchesDuration = 8, uri =  "https://www.freeverse.io", leagueIds).should.be.fulfilled;
-        truffleAssert.eventEmitted(tx, "ItemOffered", async (event) => {
-            var ok = event.itemId.toNumber() === 0;
-            for (l = 0; l < leagueIds.length; l++) ok = ok && (leagueIds[l] === event.leagueIds[l].toNumber());
-            if (ok) return true;
-            return event.itemId.toNumber().should.be.equal(-1);
-        });
-        result = await shop.getSkillsBoost(id = 0).should.be.fulfilled;
-        result.should.be.bignumber.equal(skillsBoost);
-        result = await shop.getMatchesDuration(id).should.be.fulfilled;
-        result.toNumber().should.be.equal(matchesDuration);
-        result = await shop.getInitStock(id).should.be.fulfilled;
-        result.toNumber().should.be.equal(initStock);
-        result = await shop.getUri(id).should.be.fulfilled;
-        result.should.be.equal(uri);
-        result = await shop.getChampionshipsHash(id).should.be.fulfilled;
-        result.should.be.equal("0x39b03ec0c7168a018ef8b98732d567d4a036bc1ae1ab1a6563033f2236b362e1");
+        tx = await shop.offerItem(
+            boosts = [62,60,19,1,23,1],
+            countriesRoot = 0,
+            championshipsRoot = 0,
+            teamsRoot = 0,
+            itemsRemaining = 5432,
+            matchesDuration = 7,
+            onlyTopInChampioniship = 3,
+            uri =  "https://www.freeverse.io"
+        ).should.be.rejected;
+
+        tx = await shop.offerItem(
+            boosts = [32,30,19,1,23,1],
+            countriesRoot = 0,
+            championshipsRoot = 0,
+            teamsRoot = 0,
+            itemsRemaining = 5432,
+            matchesDuration = 7,
+            onlyTopInChampioniship = 3,
+            uri =  "https://www.freeverse.io"
+        ).should.be.fulfilled;
+
+        encodedBoost = await shop.encodeBoosts(boosts).should.be.fulfilled;
+        
+        truffleAssert.eventEmitted(tx, "ItemOffered", (event) => {
+            return event.itemId.toNumber() === expectedNewItemId && 
+                event.encodedBoost.toNumber() == encodedBoost &&
+                event.countriesRoot.toNumber() === countriesRoot &&
+                event.championshipsRoot.toNumber() === championshipsRoot &&
+                event.teamsRoot.toNumber() === teamsRoot &&
+                event.itemsRemaining.toNumber() === itemsRemaining &&
+                event.matchesDuration.toNumber() === matchesDuration &&
+                event.onlyTopInChampioniship.toNumber() === onlyTopInChampioniship &&
+                event.uri === uri;
+        }, "correct");
+        
+        await shop.reduceItemsRemaining(itemId = expectedNewItemId, itemsRemaining - 3).should.be.fulfilled;
+        result = await shop.getItemsRemaining(itemId).should.be.fulfilled;
+        result.toNumber().should.be.equal(itemsRemaining - 3);
+    });
+    
+    it('add items to tactics', async () => {
+        tx = await shop.offerItem(
+            boosts = [32,30,19,1,23,1],
+            countriesRoot = 0,
+            championshipsRoot = 0,
+            teamsRoot = 0,
+            itemsRemaining = 5432,
+            matchesDuration = 7,
+            onlyTopInChampioniship = 3,
+            uri =  "https://www.freeverse.io"
+        ).should.be.fulfilled;
+        encodedBoost = await shop.encodeBoosts(boosts).should.be.fulfilled;
+        
+        const lineupConsecutive = Array.from(new Array(14), (x,i) => i); 
+        const extraAttackNull =  Array.from(new Array(10), (x,i) => false);
+        tactics = await encTactics.encodeTactics(substitutions = [3,4,5], subsRounds = [6,7,8], lineupConsecutive, 
+            extraAttackNull, tacticsId = 2).should.be.fulfilled;
+        
+        // add item effect to tactics
+        // stamina recovery items:
+        PLAYERS_PER_TEAM_MAX = 25;
+        staminas = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => i % 4); 
+        // shop items:
+        tactics2 = await shop.addItemsToTactics(tactics, itemId = expectedNewItemId, staminas).should.be.fulfilled;
+        const {0: stamina, 1: id, 2: boost} = await shop.getItemsData(tactics2).should.be.fulfilled;
+        debug.compareArrays(stamina, staminas, toNum = true, verbose = false, isBigNumber = false);
+        id.toNumber().should.be.equal(itemId);
+        boost.should.be.bignumber.equal(encodedBoost);
+        
+        // check that previous tactics remain as expected
+        decoded = await encTactics.decodeTactics(tactics2).should.be.fulfilled;
+
+        let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
+        tact.toNumber().should.be.equal(tacticsId);
+        for (p = 0; p < 14; p++) {
+            line[p].toNumber().should.be.equal(lineupConsecutive[p]);
+        }
+        for (p = 0; p < 10; p++) {
+            attk[p].should.be.equal(extraAttackNull[p]);
+        }
+        for (p = 0; p < 3; p++) {
+            subs[p].toNumber().should.be.equal(substitutions[p]);
+            roun[p].toNumber().should.be.equal(subsRounds[p]);
+        }
         
     });
 
