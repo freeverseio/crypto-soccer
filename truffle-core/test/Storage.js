@@ -5,6 +5,7 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
+const delgateUtils = require('../utils/delegateCallUtils.js');
 
 const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
@@ -26,18 +27,14 @@ contract('StorageProxy', (accounts) => {
         assetsIndependent = await Assets.new().should.be.fulfilled;
     });
     
-    // it('add all functions from contract Assets', async () => {
-    //     functions = [];
-    //     for (i = 0; i < Assets.abi.length; i++) { 
-    //         if (Assets.abi[i].type == "function") {
-    //             functions.push(Assets.abi[i]);
-    //         }
-    //     }
-        
-    
-    // });
-    // return
-    
+    it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
+        await sto.addNewContract(addr = assetsIndependent.address, name = "Assets").should.be.fulfilled;
+        selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
+        await assets.init().should.be.rejected;
+        await sto.addNewFunctions(selectors, contractId = 1).should.be.fulfilled;
+        await assets.init().should.be.fulfilled;
+    });
+
     it('call init() function inside Assets via delegate call', async () => {
         // for (i=0; i < Assets.abi.length; i++) console.log(i, Assets.abi[i].name);
         await sto.addNewContract(addr = assetsIndependent.address, name = "Assets").should.be.fulfilled;
