@@ -12,6 +12,8 @@ import "./EncodingSkillsSetters.sol";
 contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
+    event TeamTransfer(uint256 teamId, address to);
+    event PlayerStateChange(uint256 playerId, uint256 state);
 
     uint8 constant internal IDX_MSG = 0;
     uint8 constant internal IDX_r   = 1;
@@ -29,14 +31,6 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
     uint256 constant public ACADEMY_TEAM = 1;
     uint8 constant public MAX_ACQUISITON_CONSTAINTS  = 7;
     
-    mapping (uint256 => uint256) private _playerIdToAuctionData;
-    mapping (uint256 => uint256) private _teamIdToAuctionData;
-    mapping (uint256 => uint256) private _teamIdToRemainingAcqs;
-
-    event TeamTransfer(uint256 teamId, address to);
-    event PlayerStateChange(uint256 playerId, uint256 state);
-
-
     function setAcademyAddr(address addr) public {
         academyAddr = addr;
         emit TeamTransfer(ACADEMY_TEAM, addr);        
@@ -421,11 +415,6 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         require(teamExists(teamId), "unexistent team");
         return (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
-    
-
-
-
-
     
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function

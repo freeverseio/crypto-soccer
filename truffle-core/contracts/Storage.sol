@@ -14,8 +14,11 @@ contract Storage {
        
     ContractInfo[] internal _contractIdToInfo;
     mapping (bytes4 => uint256) internal _selectorToContractId;
-
     mapping(uint256 => uint256) internal _playerIdToState;
+    mapping (uint256 => uint256) internal _playerIdToAuctionData;
+    mapping (uint256 => uint256) internal _teamIdToAuctionData;
+    mapping (uint256 => uint256) internal _teamIdToRemainingAcqs;
+
 
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
     uint256 public gameDeployDay;

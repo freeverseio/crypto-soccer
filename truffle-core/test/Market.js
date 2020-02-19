@@ -84,6 +84,7 @@ async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sell
     sigSellerMsgRS,
     sigSeller.v
   ).should.be.fulfilled;
+  
   return tx;
 };
 
@@ -259,13 +260,11 @@ contract("Market", accounts => {
     // done with delegate calls
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     await assets.init().should.be.fulfilled;
-    market = await Market.new().should.be.fulfilled;
-    encoding = assets;
     sellerAccount = await web3.eth.accounts.create("iamaseller");
     buyerAccount = await web3.eth.accounts.create("iamabuyer");
-    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sellerTeamId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
-    buyerTeamId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
+    buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address).should.be.fulfilled;
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
@@ -566,7 +565,6 @@ contract("Market", accounts => {
     //          tells the buyer to forget about this player
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
-
     tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
@@ -583,7 +581,7 @@ contract("Market", accounts => {
       return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(false);
     });
 
-    let finalOwner = await assets.getOwnerTeam(sellerTeamId.toNumber()).should.be.fulfilled;
+    let finalOwner = await market.getOwnerTeam(sellerTeamId.toNumber()).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
@@ -737,14 +735,14 @@ contract("Market", accounts => {
   it2("players: tests constraints on players", async () => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
     // first acquisition works:
-    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     tx = await completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
     // second acquisition should fail:
-    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     tx = await completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
