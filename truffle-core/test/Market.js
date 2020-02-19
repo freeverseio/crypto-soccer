@@ -382,7 +382,7 @@ contract("Market", accounts => {
   it('players: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
-    sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+    sellerTeamPlayerIds = await market.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
     const playerIdToSell = sellerTeamPlayerIds[0];
     playerIdToSell.should.be.bignumber.equal('274877906944');
 
@@ -602,7 +602,7 @@ contract("Market", accounts => {
   it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because one of its players already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
-    teamId = await assets.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
+    teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
     teamId.should.be.bignumber.equal(sellerTeamId);
     
     // put player:
@@ -629,7 +629,7 @@ contract("Market", accounts => {
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because his team is already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
-    teamId = await assets.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
+    teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
     teamId.should.be.bignumber.equal(sellerTeamId);
 
     // put team:
@@ -933,7 +933,7 @@ contract("Market", accounts => {
   it('players: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
-    sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+    sellerTeamPlayerIds = await market.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
     const playerIdToSell = sellerTeamPlayerIds[0];
     playerIdToSell.should.be.bignumber.equal('274877906944');
 

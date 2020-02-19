@@ -1,9 +1,7 @@
 pragma solidity >=0.5.12 <0.6.2;
 
 import "./AssetsLib.sol";
-import "./EncodingIDs.sol";
 import "./EncodingState.sol";
-import "./EncodingSkillsGetters.sol";
 import "./EncodingSkillsSetters.sol";
 /**
  * @title Entry point for changing ownership of assets, and managing bids and auctions.
@@ -24,11 +22,6 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
     uint256 constant public MAX_VALID_UNTIL     = 30 hours; // the sum of the previous two
     uint256 constant private VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
     uint8 constant public MAX_ACQUISITON_CONSTAINTS  = 7;
-    
-    function setAcademyAddr(address addr) public {
-        _academyAddr = addr;
-        emit TeamTransfer(ACADEMY_TEAM, addr);        
-    }
     
     function isAcademyPlayer(uint256 playerId) public view returns(bool) {
         return (getIsSpecial(playerId) && _playerIdToState[playerId] == 0);
@@ -499,10 +492,6 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         return getCurrentTeamId(getPlayerState(playerId));
     }
 
-
-
-
-
     function isBotTeam(uint256 teamId) public view returns(bool) {
         if (teamId == ACADEMY_TEAM) return false;
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
@@ -517,8 +506,6 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         }
         return PLAYERS_PER_TEAM_MAX;
     }
-    
-
 
     function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_playerIdToState[playerId] != 0); }       
 
@@ -548,6 +535,11 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         } else {
             return writtenId == FREE_PLAYER_ID;
         }
+    }
+
+    function getOwnerPlayer(uint256 playerId) public view returns(address) {
+        require(playerExists(playerId), "unexistent player");
+        return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
 
 

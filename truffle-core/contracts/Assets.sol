@@ -21,6 +21,11 @@ contract Assets is AssetsLib, EncodingSkills, EncodingState {
     uint256 constant public DAYS_PER_ROUND = 16;
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
 
+    function setAcademyAddr(address addr) public {
+        _academyAddr = addr;
+        emit TeamTransfer(ACADEMY_TEAM, addr);        
+    }
+    
     function init() public {
         require(_wasInited == false, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
