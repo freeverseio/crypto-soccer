@@ -241,6 +241,21 @@ contract("Market", accounts => {
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
+    sto = await StorageProxy.new().should.be.fulfilled;
+    // setting up StorageProxy delegate calls to Assets
+    assets = await Assets.at(sto.address).should.be.fulfilled;
+    assetsAsLib = await Assets.new().should.be.fulfilled;
+    await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
+    selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
+    await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
+    // setting up StorageProxy delegate calls to Market
+    market = await Market.at(sto.address).should.be.fulfilled;
+    marketAsLib = await Market.new().should.be.fulfilled;
+    await sto.addNewContract(addr = marketAsLib.address, name = "Market").should.be.fulfilled;
+    selectors = delgateUtils.extractSelectorsFromAbi(Market.abi);
+    await sto.addNewSelectors(selectors, contractId = 2).should.be.fulfilled;
+
+    // done with delegate calls
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     assets = await Assets.new().should.be.fulfilled;
     await assets.init().should.be.fulfilled;

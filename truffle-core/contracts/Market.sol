@@ -1,11 +1,15 @@
 pragma solidity >=0.5.12 <0.6.2;
 
-import "./Assets.sol";
+import "./AssetsLib.sol";
+import "./EncodingIDs.sol";
+import "./EncodingState.sol";
+import "./EncodingSkillsGetters.sol";
+import "./EncodingSkillsSetters.sol";
 /**
  * @title Entry point for changing ownership of assets, and managing bids and auctions.
  */
 
-contract Market {
+contract Market is Storage, AssetsLib, EncodingSkillsSetters, EncodingState {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
 
@@ -24,27 +28,23 @@ contract Market {
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant public ACADEMY_TEAM = 1;
     uint8 constant public MAX_ACQUISITON_CONSTAINTS  = 7;
-
-    Assets private _assets;
-
+    
     mapping (uint256 => uint256) private _playerIdToAuctionData;
     mapping (uint256 => uint256) private _teamIdToAuctionData;
     mapping (uint256 => uint256) private _teamIdToRemainingAcqs;
 
     event TeamTransfer(uint256 teamId, address to);
+    event PlayerStateChange(uint256 playerId, uint256 state);
 
     address public academyAddr;
 
-    function setAssetsAddress(address addr) public {
-        _assets = Assets(addr);
-    }
     function setAcademyAddr(address addr) public {
         academyAddr = addr;
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }
     
     function isAcademyPlayer(uint256 playerId) public view returns(bool) {
-        return (_assets.getIsSpecial(playerId) && !_assets.isPlayerWritten(playerId));
+        return (getIsSpecial(playerId) && _playerIdToState[playerId] == 0);
     }
 
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
@@ -125,38 +125,38 @@ contract Market {
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
-    function transferPromoPlayer(
-        uint256 playerId,
-        uint256 validUntil,
-        bytes32[3] memory sigSel,
-        bytes32[3] memory sigBuy,
-        uint8 sigVSel,
-        uint8 sigVBuy
-     ) public {
-        require(validUntil > now, "validUntil is in the past");
-        require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-         uint256 playerIdWithoutTargetTeam = _assets.setTargetTeamId(playerId, 0);
-        require(!_assets.isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
-        uint256 targetTeamId = _assets.getTargetTeamId(playerId);
-        // require that team does not have any constraint from friendlies
-        (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
-        require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
-        // testing about the target team is already done in _assets.transferPlayer
-        require(_assets.teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
-        require(!_assets.isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
+    // function transferPromoPlayer(
+    //     uint256 playerId,
+    //     uint256 validUntil,
+    //     bytes32[3] memory sigSel,
+    //     bytes32[3] memory sigBuy,
+    //     uint8 sigVSel,
+    //     uint8 sigVBuy
+    //  ) public {
+    //     require(validUntil > now, "validUntil is in the past");
+    //     require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
+    //      uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
+    //     require(!_assets.isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
+    //     uint256 targetTeamId = getTargetTeamId(playerId);
+    //     // require that team does not have any constraint from friendlies
+    //     (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
+    //     require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
+    //     // testing about the target team is already done in _assets.transferPlayer
+    //     require(_assets.teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
+    //     require(!_assets.isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
                 
-        require(_assets.getOwnerTeam(targetTeamId) == 
-                    recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
+    //     require(_assets.getOwnerTeam(targetTeamId) == 
+    //                 recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
          
-        require(academyAddr == 
-                    recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
+    //     require(academyAddr == 
+    //                 recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
          
-        bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
-        require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
-        require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
-        _assets.transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
-        decreaseMaxAllowedAcquisitions(targetTeamId);
-    }
+    //     bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
+    //     require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
+    //     require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
+    //     _assets.transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
+    //     decreaseMaxAllowedAcquisitions(targetTeamId);
+    // }
 
     function completePlayerAuction(
         bytes32 sellerHiddenPrice,
@@ -179,7 +179,7 @@ contract Market {
             isOffer2StartAuction)
             , "requirements to complete auction are not met"    
         );
-        _assets.transferPlayer(playerId, buyerTeamId);
+        transferPlayer(playerId, buyerTeamId);
         _playerIdToAuctionData[playerId] = 1;
         decreaseMaxAllowedAcquisitions(buyerTeamId);
         emit PlayerFreeze(playerId, 1, false);
@@ -218,7 +218,7 @@ contract Market {
             isOffer2StartAuction
         );
         require(ok, "requirements to complete auction are not met");
-        _assets.transferTeam(teamId, buyerAddress);
+        transferTeam(teamId, buyerAddress);
         _teamIdToAuctionData[teamId] = 1;
         emit TeamFreeze(teamId, 1, false);
     }
@@ -234,7 +234,7 @@ contract Market {
         view 
         returns (bool ok)
     {
-        address teamOwner = _assets.getOwnerTeam(teamId);
+        address teamOwner = getOwnerTeam(teamId);
         ok =    // check validUntil has not expired
                 (now < validUntil) &&
                 // check player is not already frozen
@@ -248,10 +248,10 @@ contract Market {
                 // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
                 (validUntil < now + MAX_VALID_UNTIL);
         if (!ok) return false;
-        if (teamId == _assets.ACADEMY_TEAM()) return true;
+        if (teamId == ACADEMY_TEAM) return true;
         
         // check that the team itself does not have players already for sale:   
-        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = _assets.getPlayerIdsInTeam(teamId);
+        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = getPlayerIdsInTeam(teamId);
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if ((playerIds[p] != FREE_PLAYER_ID) && isPlayerFrozen(playerIds[p])) return false;
         }
@@ -301,14 +301,14 @@ contract Market {
         view 
         returns (bool)
     {
-        address prevOwner = isAcademyPlayer(playerId) ? academyAddr : _assets.getOwnerPlayer(playerId);
+        address prevOwner = isAcademyPlayer(playerId) ? academyAddr : getOwnerPlayer(playerId);
         return (
             // check validUntil has not expired
             (now < validUntil) &&
             // check player is not already frozen
             (!isPlayerFrozen(playerId)) &&  
             // check that the team it belongs to not already frozen
-            !isTeamFrozen(_assets.getCurrentTeamIdFromPlayerId(playerId)) &&
+            !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
             // check asset is owned by legit address
             (prevOwner != address(0)) && 
             // check signatures are valid by requiring that they own the asset:
@@ -341,11 +341,11 @@ contract Market {
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(buyerTeamId);
         if (isConstrained && nRemain == 0) return false;
         ok =    // check asset is owned by buyer
-                (_assets.getOwnerTeam(buyerTeamId) != address(0)) && 
+                (getOwnerTeam(buyerTeamId) != address(0)) && 
                 // check buyer and seller refer to the exact same auction
                 ((uint256(sellerHiddenPrice) % 2**(256-34)) == (_playerIdToAuctionData[playerId] >> 34)) &&
                 // check signatures are valid by requiring that they own the asset:
-                (_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
+                (getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
                 isPlayerFrozen(playerId) &&
                 // check that they signed what they input data says they signed:
@@ -413,13 +413,179 @@ contract Market {
     }
 
     function isPlayerFrozen(uint256 playerId) public view returns (bool) {
-        require(_assets.getIsSpecial(playerId) || _assets.playerExists(playerId), "player does not exist");
+        require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
         return (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
     function isTeamFrozen(uint256 teamId) public view returns (bool) {
-        if (teamId == _assets.ACADEMY_TEAM()) return false;
-        require(_assets.teamExists(teamId), "unexistent team");
+        if (teamId == ACADEMY_TEAM) return false;
+        require(teamExists(teamId), "unexistent team");
         return (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
+    
+
+
+
+
+    
+    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+        // warning: check of ownership of players and teams should be done before calling this function
+        // TODO: checking if they are bots should be done outside this function
+        require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
+        require(teamExists(teamIdTarget), "unexistent target team");
+        uint256 state = getPlayerState(playerId);
+        uint256 newState = state;
+        uint256 teamIdOrigin = getCurrentTeamId(state);
+        require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
+        require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
+        uint8 shirtTarget = getFreeShirt(teamIdTarget);
+        require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
+        
+        newState = setCurrentTeamId(newState, teamIdTarget);
+        newState = setCurrentShirtNum(newState, shirtTarget);
+        newState = setLastSaleBlock(newState, block.number);
+        _playerIdToState[playerId] = newState;
+
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
+        if (teamIdOrigin != ACADEMY_TEAM) {
+            uint256 shirtOrigin = getCurrentShirtNum(state);
+            (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
+            _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
+        }
+        emit PlayerStateChange(playerId, newState);
+    }
+    
+    
+    function getOwnerTeam(uint256 teamId) public view returns(address) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+    }
+
+    
+
+    // returns NULL_ADDR if team is bot
+    function getOwnerPlayer(uint256 playerId) public view returns(address) {
+        require(playerExists(playerId), "unexistent player");
+        return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
+    }
+    
+    function playerExists(uint256 playerId) public view returns (bool) {
+        if (playerId == 0) return false;
+        if (getIsSpecial(playerId)) return (_playerIdToState[playerId] != 0);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
+        return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
+    }
+        
+    function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
+        if (getIsSpecial(playerId)) return encodePlayerState(playerId, ACADEMY_TEAM, 0, 0, 0);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
+        uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
+        uint256 currentTeamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
+        uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
+        return encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
+    }
+
+    function getPlayerState(uint256 playerId) public view returns (uint256) {
+        return (isPlayerWritten(playerId) ? _playerIdToState[playerId] : getPlayerStateAtBirth(playerId));
+    }
+    
+    function transferTeamInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
+        _assertTZExists(timeZone);
+        _assertCountryInTZExists(timeZone, countryIdxInTZ);
+        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a bot team");
+        require(addr != NULL_ADDR, "cannot transfer to a null address");
+        require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner != addr, "buyer and seller are the same addr");
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
+    }
+
+    function transferTeam(uint256 teamId, address addr) public {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        transferTeamInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+        emit TeamTransfer(teamId, addr);
+    }
+    
+        // TODO: we really don't need this function. Only for external use. Consider removal
+    function getPlayerIdsInTeam(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+        if (isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry)) {
+            for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
+                playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
+            }
+        } else {
+            for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
+                uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+                if (writtenId == 0) {
+                    playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
+                } else {
+                    playerIds[shirtNum] = writtenId;
+                }
+            }
+        }
+    }
+    
+    function getCurrentTeamIdFromPlayerId(uint256 playerId) public view returns(uint256) {
+        return getCurrentTeamId(getPlayerState(playerId));
+    }
+
+
+    function teamExists(uint256 teamId) public view returns (bool) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+    }
+    
+    function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
+        return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
+    }
+
+
+    function isBotTeam(uint256 teamId) public view returns(bool) {
+        if (teamId == ACADEMY_TEAM) return false;
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+    }
+
+    function getFreeShirt(uint256 teamId) public view returns(uint8) {
+        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
+            if (isFreeShirt(teamId, shirtNum)) {
+                return shirtNum;
+            }
+        }
+        return PLAYERS_PER_TEAM_MAX;
+    }
+    
+
+
+    function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_playerIdToState[playerId] != 0); }       
+
+    function getDefaultPlayerIdForTeamInCountry(
+        uint8 timeZone,
+        uint256 countryIdxInTZ,
+        uint256 teamIdxInCountry,
+        uint8 shirtNum
+    )
+        public
+        pure
+        returns(uint256)
+    {
+        if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
+            return FREE_PLAYER_ID;
+        } else {
+            return encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
+        }
+    }
+       
+    function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry),"cannot query about the shirt of a Bot Team");
+        uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+        if (shirtNum > PLAYERS_PER_TEAM_INIT - 1) {
+            return (writtenId == 0 || writtenId == FREE_PLAYER_ID);
+        } else {
+            return writtenId == FREE_PLAYER_ID;
+        }
+    }
+
+
 }
