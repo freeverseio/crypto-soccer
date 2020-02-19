@@ -9,6 +9,7 @@ import "./EncodingState.sol";
  */
 
 contract Assets is EncodingSkills, EncodingState, EncodingIDs {
+
     event AssetsInit(address creatorAddr);
     event TeamTransfer(uint256 teamId, address to);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
@@ -43,7 +44,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }    
     
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
-    uint8 constant public N_SKILLS = 5;
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
@@ -51,14 +51,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     uint256 constant public ACADEMY_TEAM = 1;
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
-    
-   
-    // skills idxs: Defence, Speed, Pass, Shoot, Endurance
-    uint8 constant public SK_SHO = 0;
-    uint8 constant public SK_SPE = 1;
-    uint8 constant public SK_PAS = 2;
-    uint8 constant public SK_DEF = 3;
-    uint8 constant public SK_END = 4;
     
     mapping(uint256 => uint256) private _playerIdToState;
 

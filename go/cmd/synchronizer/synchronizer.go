@@ -12,7 +12,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
 func run(
@@ -46,8 +46,9 @@ func main() {
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
 	marketContractAddress := flag.String("marketContractAddress", "", "")
-	utilsmatchlogContractAddress := flag.String("utilsmatchlogContractAddress", "", "")
+	utilsContractAddress := flag.String("utilsContractAddress", "", "")
 	playandevolveContractAddress := flag.String("playandevolveContractAddress", "", "")
+	shopContractAddress := flag.String("shopContractAddress", "", "")
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
@@ -79,11 +80,14 @@ func main() {
 	if *enginePreCompContractAddress == "" {
 		log.Fatal("no enginePreComp contract address")
 	}
-	if *utilsmatchlogContractAddress == "" {
-		log.Fatal("no utilsmatchlog contract address")
+	if *utilsContractAddress == "" {
+		log.Fatal("no utils contract address")
 	}
 	if *playandevolveContractAddress == "" {
 		log.Fatal("no playandevolve contract address")
+	}
+	if *shopContractAddress == "" {
+		log.Fatal("no shop contract address")
 	}
 	if *trainingpointsContractAddress == "" {
 		log.Fatal("no trainingpoints contract address")
@@ -111,8 +115,9 @@ func main() {
 			*enginePreCompContractAddress,
 			*updatesContractAddress,
 			*marketContractAddress,
-			*utilsmatchlogContractAddress,
+			*utilsContractAddress,
 			*playandevolveContractAddress,
+			*shopContractAddress,
 			*trainingpointsContractAddress,
 		)
 		if err != nil {

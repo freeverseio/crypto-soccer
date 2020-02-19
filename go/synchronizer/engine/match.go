@@ -2,13 +2,14 @@ package engine
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -47,10 +48,10 @@ func NewMatchFromStorage(
 	match.HomeTeam.Team = sHomeTeam
 	match.VisitorTeam.Team = sVisitorTeam
 	for _, player := range sHomePlayers {
-		match.HomeTeam.Players[player.ShirtNumber].sto = *player
+		match.HomeTeam.Players[player.ShirtNumber].Player = *player
 	}
 	for _, player := range sVisitorPlayers {
-		match.VisitorTeam.Players[player.ShirtNumber].sto = *player
+		match.VisitorTeam.Players[player.ShirtNumber].Player = *player
 	}
 	return match
 }
@@ -88,16 +89,16 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		event := storage.MatchEvent{}
 		if computedEvent.Team == 0 {
 			event.TeamID = b.HomeTeam.TeamID
-			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
+			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
-				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
+				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else if computedEvent.Team == 1 {
 			event.TeamID = b.VisitorTeam.TeamID
-			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].sto.PlayerId.String()
+			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
-				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].sto.PlayerId.String()
+				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else {
@@ -224,11 +225,11 @@ func (b *Match) Skills() [2][25]*big.Int {
 }
 
 func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents []*big.Int, is2ndHalf bool) error {
-	log0, err := contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	log0, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
 		return err
 	}
-	log1, err := contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
+	log1, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
 	if err != nil {
 		return err
 	}
@@ -236,11 +237,11 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	log.Debugf("Full decoded match log 0: %v", log0)
 	log.Debugf("Full decoded match log 1: %v", log1)
-	decodedTactics0, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, homeTactic)
+	decodedTactics0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, homeTactic)
 	if err != nil {
 		return err
 	}
-	decodedTactics1, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, visitorTactic)
+	decodedTactics1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, visitorTactic)
 	if err != nil {
 		return err
 	}
@@ -267,4 +268,29 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 	}
 	b.Events = append(b.Events, generatedEvents...)
 	return nil
+}
+
+func (b Match) ToString() string {
+	var result string
+	result += fmt.Sprintf("seed = '0x%v';", hex.EncodeToString(b.Seed[:]))
+	result += fmt.Sprintf("startTime = '%v';", b.StartTime)
+	result += fmt.Sprintf("matchLog0 = '%v';", b.HomeMatchLog)
+	result += fmt.Sprintf("teamId0 = '%v';", b.HomeTeam.TeamID)
+	result += fmt.Sprintf("tactic0 = '%v';", b.HomeTeam.Tactic)
+	result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
+	result += "players0 = ["
+	for _, player := range b.HomeTeam.Players {
+		result += fmt.Sprintf("'%v',", player.EncodedSkills)
+	}
+	result += "];"
+	result += fmt.Sprintf("matchLog1 = '%v';", b.VisitorMatchLog)
+	result += fmt.Sprintf("teamId1 = '%v';", b.VisitorTeam.TeamID)
+	result += fmt.Sprintf("tactic1 = '%v';", b.VisitorTeam.Tactic)
+	result += fmt.Sprintf("assignedTP1 = '%v';", b.VisitorTeam.AssignedTP)
+	result += "players1 = ["
+	for _, player := range b.VisitorTeam.Players {
+		result += fmt.Sprintf("'%v',", player.EncodedSkills)
+	}
+	result += "];"
+	return result
 }

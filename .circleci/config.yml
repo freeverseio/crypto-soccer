@@ -1,7 +1,4 @@
-:#: Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
+:#: Javascript Node CircleCI 2.1 configuration file
 version: 2.1
 
 executors:
@@ -21,9 +18,19 @@ executors:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
           - POSTGRES_DB=cryptosoccer
-      - image: ipfs/go-ipfs:v0.4.18
+      - image: ipfs/go-ipfs:v0.4.23
         environment:
           - IPFS_PROFILE=server
+
+commands:
+  submit_universe_db_schema:
+    description: "Submit cryptosoccer schema in database"
+    steps:
+      - run: cd universe.db && PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f *.sql
+  generate_contracts_code:
+    description: "Compile and generate code for the services that need to communicate with them"
+    steps:
+      - run: make setup contracts
 
 jobs:
   truffle_core:
@@ -34,31 +41,13 @@ jobs:
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
   synchronizer:
-    machine:
-      image: ubuntu-1604:201903-01
+    executor: freeverse_ethereum
     steps:
       - checkout
-      - run: |
-          echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-          echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-      - run: |
-          sudo add-apt-repository -y ppa:ethereum/ethereum
-          sudo apt-get update
-          sudo apt-get install abigen
-      - run: |
-          wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
-          tar -xvf go1.13.3.linux-amd64.tar.gz -C /tmp
-          echo 'export GOROOT="/tmp/go"' >> $BASH_ENV
-          echo 'export PATH=$GOROOT/bin:$PATH' >> $BASH_ENV
-      - run: |
-          nvm install v10.15.1
-          nvm alias default v10.15.1
-          npm update -g
-      - run: cd go/testutils && docker-compose up -d 
-      - run: make setup contracts
+      - generate_contracts_code
+      - submit_universe_db_schema
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
-      - run: cd go/synchronizer/storage && go test ./... -v
       - run: cd go/synchronizer/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
       - run: cd go/synchronizer/matchevents && go test ./... -v
@@ -66,43 +55,27 @@ jobs:
     executor: freeverse_ethereum
     steps:
       - checkout
-      - run: cd universe.db && PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f *.sql
-      - run: make setup contracts
+      - generate_contracts_code
+      - submit_universe_db_schema
       - run: cd go/contracts && go test ./...
       - run: cd go/useractions && go test ./...
       - run: cd go/marketpay/v1 && go test ./...
+      - run: cd go/storage && go test ./...
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
   market-notary:
     executor: freeverse_ethereum
     steps:
       - checkout
-      - run: make setup contracts
+      - generate_contracts_code
       - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/notary && go test ./... -p 1
   relay-actions:
-    machine:
-      image: ubuntu-1604:201903-01
+    executor: freeverse_ethereum
     steps:
       - checkout
-      - run: |
-          echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-          echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-      - run: |
-          sudo add-apt-repository -y ppa:ethereum/ethereum
-          sudo apt-get update
-          sudo apt-get install abigen
-      - run: |
-          wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
-          tar -xvf go1.13.3.linux-amd64.tar.gz -C /tmp
-          echo 'export GOROOT="/tmp/go"' >> $BASH_ENV
-          echo 'export PATH=$GOROOT/bin:$PATH' >> $BASH_ENV
-      - run: |
-          nvm install v10.15.1
-          nvm alias default v10.15.1
-          npm update -g
-      - run: cd go/testutils && docker-compose up -d 
-      - run: make setup contracts
+      - generate_contracts_code
+      - submit_universe_db_schema
       - run: cd go/cmd/relay && go build ./relay.go
       - run: cd go/relay && go test ./...
   market-trader:
@@ -117,7 +90,7 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: make setup contracts
+      - generate_contracts_code
       - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
@@ -143,7 +116,7 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: make setup contracts
+      - generate_contracts_code
       - run: cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} .
       - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
@@ -176,9 +149,15 @@ jobs:
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
   deployk8s:
     docker:
-      - image: freeverseio/circleci
+      - image: 'cimg/base:stable'
     steps:
-      - run: echo "Hello World!"
+      - checkout
+      - kube-orb/install-kubectl
+      - kube-orb/install-kubeconfig:
+        kubeconfig: KUBECONFIG_DATA
+      - run: cd deployment/dok8s &&  /bin/bash cicd_deploy.sh
+orbs:
+  kube-orb: circleci/kubernetes@0.11.0
 workflows:
   version: 2
   build_and_test:
@@ -203,10 +182,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      # - relay-api:
-      #     filters:
-      #       tags:
-      #         only: /.*/
       - market-notary:
           filters:
             tags:
@@ -219,7 +194,6 @@ workflows:
           requires:
             - synchronizer
             - market-trader
-            # - relay-api
             - relay-actions
             - market-notary
             - go1
@@ -232,7 +206,6 @@ workflows:
           requires:
             - synchronizer
             - market-trader
-            # - relay-api
             - relay-actions
             - market-notary
       - deploy:
@@ -247,12 +220,9 @@ workflows:
           filters:
            branches:
               only:
+                - dev
                 - k8s
           requires:
-            - synchronizer
-            - market-trader
-            - relay-actions
-            - market-notary
-            - go1
+            - dockerization-development
             - truffle_core
 

@@ -18,6 +18,14 @@ contract('Assets', (accounts) => {
     let initTx = null;
     let N_TEAMS_AT_START;
     
+    // Skills: shoot, speed, pass, defence, endurance
+    const SK_SHO = 0;
+    const SK_SPE = 1;
+    const SK_PAS = 2;
+    const SK_DEF = 3;
+    const SK_END = 4;
+    
+    
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
@@ -38,7 +46,7 @@ contract('Assets', (accounts) => {
         N_DIVS_AT_START = await assets.getNDivisionsInCountry(1,0).should.be.fulfilled;;
         N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
-        });
+    });
         
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
@@ -62,7 +70,7 @@ contract('Assets', (accounts) => {
         result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.rejected;
         specialPlayerId = await assets.addIsSpecial(specialPlayerId).should.be.fulfilled;
         skills = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
-        result = await assets.getShoot(skills).should.be.fulfilled;
+        result = await assets.getSkill(skills, SK_SHO).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
 
@@ -244,11 +252,9 @@ contract('Assets', (accounts) => {
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
         expectedSkills = [ 440, 1068, 1284, 826, 1378 ];
         resultSkills = [];
-        resultSkills.push(await assets.getShoot(encodedSkills).should.be.fulfilled);
-        resultSkills.push(await assets.getSpeed(encodedSkills).should.be.fulfilled);
-        resultSkills.push(await assets.getPass(encodedSkills).should.be.fulfilled);
-        resultSkills.push(await assets.getDefence(encodedSkills).should.be.fulfilled);
-        resultSkills.push(await assets.getEndurance(encodedSkills).should.be.fulfilled);
+        for (sk = 0; sk < N_SKILLS; sk++) {
+            resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
+        }
         debug.compareArrays(resultSkills, expectedSkills, toNum = true, verbose = false);
 
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 

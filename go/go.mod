@@ -19,5 +19,6 @@ require (
 	github.com/urfave/cli v1.22.2
 	github.com/y0ssar1an/q v1.0.8
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4
+	gopkg.in/yaml.v2 v2.2.4
 	gotest.tools v2.2.0+incompatible
 )

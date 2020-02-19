@@ -23,7 +23,8 @@ func TestConctactsDeploy(t *testing.T) {
 	assert.Assert(t, bc.Contracts.Engineprecomp != nil)
 	assert.Assert(t, bc.Contracts.Updates != nil)
 	assert.Assert(t, bc.Contracts.Market != nil)
-	assert.Assert(t, bc.Contracts.Utilsmatchlog != nil)
+	assert.Assert(t, bc.Contracts.Utils != nil)
 	assert.Assert(t, bc.Contracts.PlayAndEvolve != nil)
+	assert.Assert(t, bc.Contracts.Shop != nil)
 	assert.Assert(t, bc.Contracts.TrainingPoints != nil)
 }

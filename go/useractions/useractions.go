@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 
 	shell "github.com/ipfs/go-ipfs-api"
 )

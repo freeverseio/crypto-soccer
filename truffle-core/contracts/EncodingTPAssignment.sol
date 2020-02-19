@@ -4,7 +4,7 @@ contract EncodingTPAssignment {
 
     uint16 public constant MAX_PERCENT = 60; 
     uint8 private constant PLAYERS_PER_TEAM_MAX  = 25;
-    uint8 private constant NO_PLAYER = PLAYERS_PER_TEAM_MAX; // No player chosen
+    uint8 public constant NO_PLAYER = PLAYERS_PER_TEAM_MAX; // No player chosen
 
     // We have 5 buckets: GK, D, M, A, Special
     // We need 5 TPperSkill per bucket 
@@ -30,7 +30,7 @@ contract EncodingTPAssignment {
         uint8 lastBucket = (specialPlayer == NO_PLAYER ? 4 : 5);
         for (uint8 bucket = 0; bucket < lastBucket; bucket++) {
             if (bucket == 4) {
-                TP = uint16((uint256(TP) * 11000)/10000);
+                TP = uint16((uint256(TP) * 11)/10);
                 maxRHS = MAX_PERCENT * TP;
             }
             uint256 sum = 0;

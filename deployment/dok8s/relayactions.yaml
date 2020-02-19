@@ -44,7 +44,7 @@ spec:
           - configMapRef:
               name: freeverse-configmap
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
-               -ethereum, http://ethereum:8545,
+               -ethereum, http://xdai:8545,
                -private_key, "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27",
                -updatesContractAddress, "$(UPDATES_CONTRACT_ADDRESS)",
                -delay, "30s",

@@ -15,13 +15,13 @@ help()
     echo
     echo "Option list:"
     echo "    secret           create namespace and docker credentials"
-    echo "    ethereum         start ethereum node"
+    echo "    xdai             start xdai node"
     echo "    freeverse        deploy all freeverse pods"
     echo "    clean            remove everything"
     echo
     echo "The usual workflow would be:"
     echo "1. ./run.sh secret"
-    echo "2. ./run.sh ethereum"
+    echo "2. ./run.sh xdai"
     echo "3. ./run.sh freeverse"
 }
 
@@ -32,12 +32,12 @@ namespace_and_secret()
     kubectl apply -f ${MY_DIR}/helloworld.yaml -n ${NAMESPACE}
 }
 
-ethereum()
+xdai()
 {
-    kubectl apply -f ${MY_DIR}/ethereum.yaml -n ${NAMESPACE}
-    echo -- waiting until ethereum POD is running
-    kubectl wait --for=condition=available --timeout=600s deployment/ethereum -n ${NAMESPACE}
-    POD=$(kubectl get pod -l app=ethereum -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}")
+    kubectl apply -f ${MY_DIR}/xdai.yaml -n ${NAMESPACE}
+    echo -- waiting until xdai POD is running
+    kubectl wait --for=condition=available --timeout=600s deployment/xdai -n ${NAMESPACE}
+    POD=$(kubectl get pod -l app=xdai -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}")
     kubectl wait --for=condition=Ready --timeout=600s pod/${POD} -n ${NAMESPACE}
 }
 
@@ -82,7 +82,7 @@ until [ $# -eq 0 ]
 do
     arg=$1
     if   [ $arg == 'secret' ];    then namespace_and_secret
-    elif [ $arg == 'ethereum' ];  then ethereum
+    elif [ $arg == 'xdai' ];  then xdai
     elif [ $arg == 'freeverse' ]; then freeverse
     else help
     fi

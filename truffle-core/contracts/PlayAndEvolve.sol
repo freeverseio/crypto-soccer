@@ -3,6 +3,7 @@ pragma solidity >=0.5.12 <0.6.2;
 import "./TrainingPoints.sol";
 import "./Evolution.sol";
 import "./Engine.sol";
+import "./Shop.sol";
 
 contract PlayAndEvolve {
 
@@ -13,6 +14,7 @@ contract PlayAndEvolve {
     TrainingPoints private _training;
     Evolution private _evo;
     Engine private _engine;
+    Shop private _shop;
 
     function setTrainingAddress(address addr) public {
         _training = TrainingPoints(addr);
@@ -24,6 +26,10 @@ contract PlayAndEvolve {
  
     function setEngineAddress(address addr) public {
         _engine = Engine(addr);
+    }
+
+    function setShopAddress(address addr) public {
+        _shop = Shop(addr);
     }
 
     function generateMatchSeed(bytes32 seed, uint256[2] memory teamIds) public pure returns (uint256) {
@@ -49,12 +55,16 @@ contract PlayAndEvolve {
     {
         require(!matchBools[IDX_IS_2ND_HALF], "play1stHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
-        skills[0] = _training.applyTrainingPoints(skills[0], assignedTPs[0], matchStartTime, _evo.getTrainingPoints(matchLogs[0]));
-        skills[1] = _training.applyTrainingPoints(skills[1], assignedTPs[1], matchStartTime, _evo.getTrainingPoints(matchLogs[1]));
+        skills[0] = _training.applyTrainingPoints(skills[0], assignedTPs[0], tactics[0], matchStartTime, _evo.getTrainingPoints(matchLogs[0]));
+        skills[1] = _training.applyTrainingPoints(skills[1], assignedTPs[1], tactics[1], matchStartTime, _evo.getTrainingPoints(matchLogs[1]));
         
         uint256[2] memory nullLogs;
         // Note that the following call does not change de values of "skills" because it calls a separate contract.
         // It would do so if playHalfMatch was part of this contract code.
+
+        _shop.validateItemsInTactics(tactics[0]);
+        _shop.validateItemsInTactics(tactics[1]);
+        
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
             _engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, nullLogs, matchBools);
 
@@ -82,6 +92,9 @@ contract PlayAndEvolve {
         public view returns(uint256[PLAYERS_PER_TEAM_MAX][2] memory, uint256[2+5*ROUNDS_PER_MATCH] memory)
     {
         require(matchBools[IDX_IS_2ND_HALF], "play2ndHalfAndEvolve was called with the wrong is2ndHalf boolean!");
+
+        _shop.validateItemsInTactics(tactics[0]);
+        _shop.validateItemsInTactics(tactics[1]);
 
         // Note that the following call does not change de values of "skills" because it calls a separate contract.
         // It would do so if playHalfMatch was part of this contract code.

@@ -33,7 +33,7 @@ services:
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
       -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
       -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
-      -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
+      -utilsContractAddress "${UTILS_CONTRACT_ADDRESS}"
       -playandevolveContractAddress "${PLAYANDEVOLVE_CONTRACT_ADDRESS}"
       -trainingpointsContractAddress "${TRAININGPOINTS_CONTRACT_ADDRESS}"
     depends_on:

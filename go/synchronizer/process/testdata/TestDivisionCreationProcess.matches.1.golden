@@ -9,8 +9,8 @@ HomeTeamID: (*big.Int)(274877906944),
 VisitorTeamID: (*big.Int)(274877906945),
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(<nil>),
-VisitorMatchLog: (*big.Int)(<nil>)
+HomeMatchLog: (*big.Int)(0),
+VisitorMatchLog: (*big.Int)(0)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -22,8 +22,8 @@ HomeTeamID: (*big.Int)(274877906951),
 VisitorTeamID: (*big.Int)(274877906946),
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(<nil>),
-VisitorMatchLog: (*big.Int)(<nil>)
+HomeMatchLog: (*big.Int)(0),
+VisitorMatchLog: (*big.Int)(0)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -35,8 +35,8 @@ HomeTeamID: (*big.Int)(274877906950),
 VisitorTeamID: (*big.Int)(274877906947),
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(<nil>),
-VisitorMatchLog: (*big.Int)(<nil>)
+HomeMatchLog: (*big.Int)(0),
+VisitorMatchLog: (*big.Int)(0)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -48,7 +48,7 @@ HomeTeamID: (*big.Int)(274877906949),
 VisitorTeamID: (*big.Int)(274877906948),
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(<nil>),
-VisitorMatchLog: (*big.Int)(<nil>)
+HomeMatchLog: (*big.Int)(0),
+VisitorMatchLog: (*big.Int)(0)
 }
 }
