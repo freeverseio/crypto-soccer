@@ -470,12 +470,6 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
     
-    function playerExists(uint256 playerId) public view returns (bool) {
-        if (playerId == 0) return false;
-        if (getIsSpecial(playerId)) return (_playerIdToState[playerId] != 0);
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
-        return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
-    }
         
     function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
         if (getIsSpecial(playerId)) return encodePlayerState(playerId, ACADEMY_TEAM, 0, 0, 0);
@@ -530,14 +524,7 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
 
 
-    function teamExists(uint256 teamId) public view returns (bool) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
-    }
-    
-    function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
-        return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
-    }
+
 
 
     function isBotTeam(uint256 teamId) public view returns(bool) {

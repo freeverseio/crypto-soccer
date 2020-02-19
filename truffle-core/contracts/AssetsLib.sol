@@ -38,6 +38,11 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         return (teamIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ));
     }
 
+    function teamExists(uint256 teamId) public view returns (bool) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+    }
+    
     function getNDivisionsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
@@ -50,6 +55,17 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
 
     function getNTeamsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
         return getNLeaguesInCountry(timeZone, countryIdxInTZ) * TEAMS_PER_LEAGUE;
+    }
+    
+    function playerExists(uint256 playerId) public view returns (bool) {
+        if (playerId == 0) return false;
+        if (getIsSpecial(playerId)) return (_playerIdToState[playerId] != 0);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
+        return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
+    }
+
+    function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
+        return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
     }
     
 }
