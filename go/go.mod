@@ -3,6 +3,7 @@ module github.com/freeverseio/crypto-soccer/go
 go 1.12
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/ethereum/go-ethereum v1.9.11
 	github.com/fatih/color v1.9.0
@@ -20,4 +21,6 @@ require (
 	github.com/stretchr/testify v1.5.0
 	github.com/urfave/cli v1.22.2
 	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	gotest.tools v2.2.0+incompatible
 )
