@@ -5,7 +5,9 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
+const delgateUtils = require('../utils/delegateCallUtils.js');
 
+const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
 const Updates = artifacts.require('Updates');
 
@@ -29,7 +31,12 @@ contract('Assets', (accounts) => {
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
-        assets = await Assets.new().should.be.fulfilled;
+        sto = await StorageProxy.new().should.be.fulfilled;
+        assets = await Assets.at(sto.address).should.be.fulfilled;
+        assetsAsLib = await Assets.new().should.be.fulfilled;
+        await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
+        selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
+        await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
         initTx = await assets.init().should.be.fulfilled;
         updates = await Updates.new().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;

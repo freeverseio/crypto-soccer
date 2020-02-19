@@ -24,11 +24,11 @@ contract('StorageProxy', (accounts) => {
     beforeEach(async () => {
         sto = await StorageProxy.new().should.be.fulfilled;
         assets = await Assets.at(sto.address).should.be.fulfilled;
-        assetsIndependent = await Assets.new().should.be.fulfilled;
+        assetsAsLib = await Assets.new().should.be.fulfilled;
     });
     
     it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
-        await sto.addNewContract(addr = assetsIndependent.address, name = "Assets").should.be.fulfilled;
+        await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
         selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
         await assets.init().should.be.rejected;
         await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
@@ -36,7 +36,7 @@ contract('StorageProxy', (accounts) => {
     });
 
     it('deleteSelectors', async () => {
-        await sto.addNewContract(addr = assetsIndependent.address, name = "Assets").should.be.fulfilled;
+        await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
         selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
         await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
         await sto.deleteSelectors(selectors).should.be.fulfilled;
@@ -45,7 +45,7 @@ contract('StorageProxy', (accounts) => {
 
     it('call init() function inside Assets via delegate call', async () => {
         // for (i=0; i < Assets.abi.length; i++) console.log(i, Assets.abi[i].name);
-        await sto.addNewContract(addr = assetsIndependent.address, name = "Assets").should.be.fulfilled;
+        await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
         initPosInAbi = 60;
         // we first add a function different from init(), and show that we cannot call assets.init()
         selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[initPosInAbi - 1])
