@@ -24,8 +24,8 @@ contract StorageProxy is Storage {
     * @dev execute a delegate call via fallback function
     */
     function () external {
-        address contractAddress = _contractIdToInfo[_functionToContractId[msg.sig]].addr;
-        require(contractAddress != address(0), "function is non-declared or not assigned to a valid contract");
+        address contractAddress = _contractIdToInfo[_selectorToContractId[msg.sig]].addr;
+        require(contractAddress != address(0), "function selector is non-declared or not assigned to a valid contract");
         delegate(contractAddress, msg.data);
     } 
     
@@ -56,17 +56,20 @@ contract StorageProxy is Storage {
         _storageOwner = newOwner;
     }
     
-    function addNewFunctions(bytes4[] memory selector, uint256 contractId) public onlyOwner {
-        require(_contractExists(contractId), "function cannot point to a non-specified contract");
+    function addNewSelectors(bytes4[] memory selector, uint256 contractId) public onlyOwner {
+        require(_contractExists(contractId), "selector cannot point to a non-specified contract");
         for (uint256 s = 0; s < selector.length; s++) {
-            require(_functionToContractId[selector[s]] == 0, "function with same selector already exists");
-            _functionToContractId[selector[s]] = contractId;
-            _allFunctions.push(selector[s]);
+            // If selector has never been declared before, add to _allSelectors to keep track.
+            if(_selectorToContractId[selector[s]] == 0) { _allSelectors.push(selector[s]); }
+            _selectorToContractId[selector[s]] = contractId;
+           
         }
     }
 
-    function deleteFunction(bytes4 selector) public onlyOwner {
-        _functionToContractId[selector] = 0;
+    function deleteSelectors(bytes4[] memory selectors) public onlyOwner {
+        for (uint256 s = 0; s < selectors.length; s++) {
+            _selectorToContractId[selectors[s]] = 0;
+        }
     }
     
     function addNewContract(address addr, string memory name) public onlyOwner {
@@ -100,9 +103,9 @@ contract StorageProxy is Storage {
         return bytes(str).length == 0;
     }
 
-    function countFunctions() external view returns(uint256) { return _allFunctions.length; }
+    function countFunctions() external view returns(uint256) { return _allSelectors.length; }
     function countContracts() external view returns(uint256) { return _contractIdToInfo.length; }
-    function getContractIdForFunction(bytes4 selector) external view returns(uint256) { return _functionToContractId[selector]; }
+    function getContractIdForFunction(bytes4 selector) external view returns(uint256) { return _selectorToContractId[selector]; }
     function getContractInfo(uint256 contractId) public view returns (address, string memory) {
         return (
             _contractIdToInfo[contractId].addr,

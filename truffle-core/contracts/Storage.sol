@@ -9,10 +9,10 @@ contract Storage {
 
     uint256[2**16] _slotReserve;
     address internal _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
-    bytes4[] internal _allFunctions;
+    bytes4[] internal _allSelectors;
        
     ContractInfo[] internal _contractIdToInfo;
-    mapping (bytes4 => uint256) internal _functionToContractId;
+    mapping (bytes4 => uint256) internal _selectorToContractId;
 
     mapping(uint256 => uint256) internal _playerIdToState;
 
