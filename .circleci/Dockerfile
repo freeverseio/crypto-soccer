@@ -1,4 +1,4 @@
-FROM alpine:3.10.3
+FROM alpine:3.11.3
 RUN apk update
 RUN apk upgrade
 RUN apk add --no-cache nodejs nodejs-npm go lsof python3 python git alpine-sdk openssh docker py-pip python-dev libffi-dev openssl-dev gcc libc-dev make geth postgresql-client
