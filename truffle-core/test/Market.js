@@ -667,7 +667,7 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
 
-    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
@@ -728,7 +728,7 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
 
-    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
@@ -754,7 +754,7 @@ contract("Market", accounts => {
     playerId = await createSpecialPlayerId();
 
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
-    tx = await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
       return event.teamId.toNumber() == 1 && event.to == freeverseAccount.address;
     });
@@ -776,7 +776,7 @@ contract("Market", accounts => {
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
-    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
 
     // test that Freeverse cannot put the same player again in the market
@@ -809,25 +809,25 @@ contract("Market", accounts => {
     exists.should.be.equal(false);
 
     // it currently has no owner:
-    owner = await assets.getOwnerPlayer(playerId).should.be.rejected;
+    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
     // this will fail because we still haven't said that Freeverse owns the academy:
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.rejected;
     // let's fix it:
-    await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
     // change of academy address immediately reflects in change of who owns the academy players
-    owner = await assets.getOwnerPlayer(playerId).should.be.rejected;
+    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
     // when transferred, the "targetTeamId" is erased (set to zero)
     finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
     exists = await assets.playerExists(finalPlayerId).should.be.fulfilled;
     exists.should.be.equal(true);
-    owner = await assets.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
+    owner = await market.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
     owner.should.be.equal(buyerAccount.address);
   });
 
   it("promo players: effect of constraints", async () => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
-    await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     // first acquisition works:
     playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
     sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
@@ -845,7 +845,7 @@ contract("Market", accounts => {
   });
 
   it("promo players: a promo player cannot be acquired by any team other than targetTeam", async () => {
-    await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
     sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await sellerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil])); // note the signer is not the targetTeam owner
@@ -855,7 +855,7 @@ contract("Market", accounts => {
   });
   
   it("promo players: cannot offer a promo player that already exists", async () => {
-    await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
     sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
@@ -863,7 +863,7 @@ contract("Market", accounts => {
     sigBuyerMsgRS  = [sigBuyer.messageHash, sigBuyer.r, sigBuyer.s];
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
     finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
-    owner = await assets.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
+    owner = await market.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
     owner.should.be.equal(buyerAccount.address);
 
     // try to offer it again to the same buyer (literal copy-paste of previous paragraph)
