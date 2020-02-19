@@ -12,7 +12,7 @@ import "./AssetsLib.sol";
  * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
  */
 
-contract Assets is EncodingSkills, EncodingState, AssetsLib {
+contract Assets is AssetsLib, EncodingSkills, EncodingState {
 
     event AssetsInit(address creatorAddr);
     event TeamTransfer(uint256 teamId, address to);

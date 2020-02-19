@@ -9,7 +9,7 @@ import "./EncodingSkillsSetters.sol";
  * @title Entry point for changing ownership of assets, and managing bids and auctions.
  */
 
-contract Market is Storage, AssetsLib, EncodingSkillsSetters, EncodingState {
+contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
 
