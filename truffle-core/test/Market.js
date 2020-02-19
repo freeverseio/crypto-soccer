@@ -12,7 +12,6 @@ const delgateUtils = require('../utils/delegateCallUtils.js');
 const StorageProxy = artifacts.require('StorageProxy');
 const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
-const Privileged = artifacts.require('Privileged');
 
 async function createPromoPlayer(targetTeamId, internalId = 144321433) {
   sk = [16383, 13, 4, 56, 456];
@@ -261,8 +260,6 @@ contract("Market", accounts => {
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     await assets.init().should.be.fulfilled;
     market = await Market.new().should.be.fulfilled;
-    await market.setAssetsAddress(assets.address).should.be.fulfilled;
-    privileged = await Privileged.new().should.be.fulfilled;
     encoding = assets;
     sellerAccount = await web3.eth.accounts.create("iamaseller");
     buyerAccount = await web3.eth.accounts.create("iamabuyer");

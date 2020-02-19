@@ -36,7 +36,6 @@ contract Market is AssetsLib, EncodingSkillsSetters, EncodingState {
     event TeamTransfer(uint256 teamId, address to);
     event PlayerStateChange(uint256 playerId, uint256 state);
 
-    address public academyAddr;
 
     function setAcademyAddr(address addr) public {
         academyAddr = addr;
