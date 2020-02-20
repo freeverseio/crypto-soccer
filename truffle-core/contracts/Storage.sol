@@ -7,6 +7,9 @@ contract Storage {
 
     uint8 constant private PLAYERS_PER_TEAM_MAX  = 25;
 
+    
+
+
     uint256[2**8] _slotReserve;
     address internal _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
     bytes4[] internal _allSelectors;

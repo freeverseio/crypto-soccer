@@ -7,6 +7,8 @@ import "./Storage.sol";
 */
 contract StorageProxy is Storage {
 
+    event AddContract(uint256 contactId, string name);
+
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
     constructor() public {
@@ -79,6 +81,7 @@ contract StorageProxy is Storage {
         info.addr = addr;
         info.name = name;
         _contractIdToInfo.push(info);
+        emit AddContract(_contractIdToInfo.length - 1, name);
     }
 
     function changeContractAddr(uint256 contractId, address addr) public onlyOwner {

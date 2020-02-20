@@ -35,6 +35,17 @@ contract('StorageProxy', (accounts) => {
         assetsAsLib = await Assets.new().should.be.fulfilled;
     });
     
+    it('emit contract event', async () => {
+        tx = await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
+        // note that contractId = 0 is the null one
+        truffleAssert.eventEmitted(tx, "AddContract", async (event) => { return event.contractId === 1 && event.name === "Assets" });
+        tx = await sto.addNewContract(addr = assetsAsLib.address, name = "AssetsAgain").should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "AddContract", async (event) => { return event.contractId === 2 && event.name === "AssetsAgain" });
+    });
+    
+    return
+
+    
     it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
         await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
         selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
