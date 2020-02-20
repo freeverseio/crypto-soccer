@@ -18,6 +18,14 @@ services:
       "https://dev1.gorengine.com/pippolo" "http://ethereum:8545"
     depends_on:
       - ethereum
+  authproxy:
+    image: freeverseio/authproxy:$TAG
+    command: >
+      -debug
+      -gqlurl "http://horizon:4000"
+      -serviceurl "http://localhost"
+    ports:
+      - "10000:8080"
   universe.db:
     image: freeverseio/universe.db:$TAG
     volumes:
