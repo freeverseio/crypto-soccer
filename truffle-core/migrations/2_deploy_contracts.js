@@ -43,6 +43,7 @@ module.exports = function (deployer) {
     // await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     // await updates.initUpdates(assets.address).should.be.fulfilled;
     // await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
+    // await trainingPoints.setMarketAddress(market.address).should.be.fulfilled;
     // await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     // await engine.setApplyBoostersAddr(engineApplyBoosters.address).should.be.fulfilled;
     // await playAndEvolve.setTrainingAddress(trainingPoints.address);

@@ -1,14 +1,16 @@
 pragma solidity >=0.5.12 <0.6.2;
 
 import "./Assets.sol";
+import "./Market.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLog.sol";
 import "./Engine.sol";
 import "./EncodingTPAssignment.sol";
+import "./EncodingSkills.sol";
 import "./EncodingSkillsSetters.sol";
 import "./EncodingTacticsPart2.sol";
 
-contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsPart2 {
+contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsPart2 {
 
     // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
@@ -17,9 +19,13 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     // uint8 constant public N_SKILLS = 5;
 
     Assets private _assets;
+    Market private _market;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
+    }
+    function setMarketAddress(address addr) public {
+        _market = Market(addr);
     }
 
     function computeTrainingPoints(uint256 matchLog0, uint256 matchLog1) public pure returns (uint256, uint256)
@@ -211,7 +217,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         uint256 dayOfBirth = (matchStartTime - ageInSecs / 7)/86400; // 86400 = 24 * 3600
         dna >>= 13; // log2(7300) = 12.8
         uint256 playerId = getPlayerIdFromSkills(skills);
-        uint8 shirtNum = uint8(_assets.getCurrentShirtNum(_assets.getPlayerStateAtBirth(playerId)));
+        uint8 shirtNum = uint8(_assets.getCurrentShirtNum(_market.getPlayerStateAtBirth(playerId)));
         (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(dna, shirtNum);
         // if dna is even => leads to child, if odd => leads to academy player
         uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (dna % 2 == 0 ? 0 : 32));

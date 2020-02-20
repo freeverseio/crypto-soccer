@@ -3,14 +3,14 @@ pragma solidity >=0.5.12 <0.6.2;
 import "./Assets.sol";
 import "./Engine.sol";
 import "./SortIdxs.sol";
-import "./EncodingSkills.sol";
+import "./EncodingSkillsGetters.sol";
 import "./EncodingIDs.sol";
 
 /**
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
 
-contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
+contract Championships is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;

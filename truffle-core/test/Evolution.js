@@ -10,6 +10,7 @@ const debug = require('../utils/debugUtils.js');
 const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
@@ -128,13 +129,13 @@ contract('Evolution', (accounts) => {
         injuryWeeksLeft = 0;
         sumSkills = forceSkills.reduce((a, b) => a + b, 0);
         for (p = 0; p < 11; p++) {
-            pSkills = await engine.encodePlayerSkills(forceSkills, dayOfBirth21, gen = 0, playerId + p, [pot, fwd442[p], left442[p], aggr],
+            pSkills = await assets.encodePlayerSkills(forceSkills, dayOfBirth21, gen = 0, playerId + p, [pot, fwd442[p], left442[p], aggr],
                 alignedEndOfLastHalfTwoVec[0], redCardLastGame, gamesNonStopping, 
                 injuryWeeksLeft, subLastHalf, sumSkills).should.be.fulfilled 
             teamState.push(pSkills)
         }
         p = 10;
-        pSkills = await engine.encodePlayerSkills(forceSkills, dayOfBirth21, gen = 0, playerId + p, [pot, fwd442[p], left442[p], aggr],
+        pSkills = await assets.encodePlayerSkills(forceSkills, dayOfBirth21, gen = 0, playerId + p, [pot, fwd442[p], left442[p], aggr],
                 alignedEndOfLastHalfTwoVec[1], redCardLastGame, gamesNonStopping, 
                 injuryWeeksLeft, subLastHalf, sumSkills).should.be.fulfilled 
         for (p = 11; p < PLAYERS_PER_TEAM_MAX; p++) {
@@ -146,7 +147,7 @@ contract('Evolution', (accounts) => {
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false]) => {
         teamState = []
         sumSkills = skills.reduce((a, b) => a + b, 0);
-        var playerStateTemp = await engine.encodePlayerSkills(
+        var playerStateTemp = await assets.encodePlayerSkills(
             skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills
@@ -155,7 +156,7 @@ contract('Evolution', (accounts) => {
             teamState.push(playerStateTemp)
         }
 
-        playerStateTemp = await engine.encodePlayerSkills(
+        playerStateTemp = await assets.encodePlayerSkills(
             skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills
@@ -204,6 +205,7 @@ contract('Evolution', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.init().should.be.fulfilled;
+        market = await Market.new().should.be.fulfilled;
         shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
@@ -211,6 +213,7 @@ contract('Evolution', (accounts) => {
         await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
         await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
         await training.setAssetsAddress(assets.address).should.be.fulfilled;
+        await training.setMarketAddress(market.address).should.be.fulfilled;
         await play.setEngineAddress(engine.address).should.be.fulfilled;
         await play.setTrainingAddress(training.address).should.be.fulfilled;
         await play.setEvolutionAddress(evo.address).should.be.fulfilled;
@@ -343,7 +346,7 @@ contract('Evolution', (accounts) => {
     });
 
     it('training leading to an actual son', async () => {
-        playerSkills = await engine.encodePlayerSkills(
+        playerSkills = await assets.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 45,
@@ -369,7 +372,7 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen + 1)
 
-        playerSkills = await engine.encodePlayerSkills(
+        playerSkills = await assets.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 45,
@@ -413,7 +416,7 @@ contract('Evolution', (accounts) => {
     it('training leading to an academy', async () => {
         // all inputs are identical to the previous test, except for a +2 in matchStatTime,
         // which changes the entire randomness
-        playerSkills = await engine.encodePlayerSkills(
+        playerSkills = await assets.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 3,
@@ -551,7 +554,7 @@ contract('Evolution', (accounts) => {
     });
 
     it('test evolvePlayer at zero potential', async () => {
-        playerSkills = await engine.encodePlayerSkills(
+        playerSkills = await assets.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 0,
@@ -580,7 +583,7 @@ contract('Evolution', (accounts) => {
     });
     
     it('test evolvePlayer with TPs= 0', async () => {
-        playerSkills = await engine.encodePlayerSkills(
+        playerSkills = await assets.encodePlayerSkills(
             skills = [12, 13, 155, 242, 32], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 0,
@@ -610,7 +613,7 @@ contract('Evolution', (accounts) => {
     
     
     it('test evolvePlayer at non-zero potential', async () => {
-        playerSkills = await engine.encodePlayerSkills(
+        playerSkills = await assets.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 0,
@@ -644,7 +647,7 @@ contract('Evolution', (accounts) => {
     });
 
     it('test evolvePlayer at non-zero potential and age', async () => {
-        playerSkills = await engine.encodePlayerSkills(
+        playerSkills = await assets.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 0,
@@ -678,7 +681,7 @@ contract('Evolution', (accounts) => {
     });
 
     it('test evolvePlayer with old age', async () => {
-        playerSkills = await engine.encodePlayerSkills(
+        playerSkills = await assets.encodePlayerSkills(
             skills = [1000, 2000, 3000, 4000, 5000], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 0,
