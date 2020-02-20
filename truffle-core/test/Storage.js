@@ -21,6 +21,14 @@ contract('StorageProxy', (accounts) => {
     const marketId = 1;
     const updatesId = 2;
     
+    function getIdxInABI(abi, name) {
+        for (i = 0; i < abi.length; i++) { 
+            if (abi[i].name == name) {
+                return i;
+            }
+        }    
+    }
+    
     beforeEach(async () => {
         sto = await StorageProxy.new().should.be.fulfilled;
         assets = await Assets.at(sto.address).should.be.fulfilled;
@@ -44,9 +52,8 @@ contract('StorageProxy', (accounts) => {
     });
 
     it('call init() function inside Assets via delegate call', async () => {
-        // for (i=0; i < Assets.abi.length; i++) console.log(i, Assets.abi[i].name);
         await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
-        initPosInAbi = 60;
+        initPosInAbi = getIdxInABI(Assets.abi, "init");
         // we first add a function different from init(), and show that we cannot call assets.init()
         selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[initPosInAbi - 1])
         await sto.addNewSelectors([selector], contractId = 1).should.be.fulfilled;
@@ -58,7 +65,7 @@ contract('StorageProxy', (accounts) => {
         // we show that storage in StorageProxy has been updated (wasInit = true), so we cannot init twice:
         await assets.init().should.be.rejected ;
         // we show that the getter in assets works well when called from storageProxy:
-        wasInitPosInAbi = 26;
+        wasInitPosInAbi = getIdxInABI(Assets.abi, "_wasInited");
         selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[wasInitPosInAbi])
         await sto.addNewSelectors([selector], contractId = 1).should.be.fulfilled;
         isInit = await assets._wasInited().should.be.fulfilled;

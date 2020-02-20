@@ -9,7 +9,6 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const StorageProxy = artifacts.require('StorageProxy');
 const Updates = artifacts.require('Updates');
-const Assets = artifacts.require('Assets');
 
 contract('Updates', (accounts) => {
     const VERSES_PER_DAY = 96;
@@ -39,21 +38,14 @@ contract('Updates', (accounts) => {
     
     beforeEach(async () => {
         sto = await StorageProxy.new().should.be.fulfilled;
-        // setting up StorageProxy delegate calls to Assets
-        assets = await Assets.at(sto.address).should.be.fulfilled;
-        assetsAsLib = await Assets.new().should.be.fulfilled;
-        await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
-        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-        await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
         // setting up StorageProxy delegate calls to Updates
         updates = await Updates.at(sto.address).should.be.fulfilled;
         updatesAsLib = await Updates.new().should.be.fulfilled;
         await sto.addNewContract(addr = updatesAsLib.address, name = "Updates").should.be.fulfilled;
         selectors = delegateUtils.extractSelectorsFromAbi(Updates.abi);
-        await sto.addNewSelectors(selectors, contractId = 2).should.be.fulfilled;
+        await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
 
         // // done with delegate calls
-        await assets.init().should.be.fulfilled;
         await updates.initUpdates().should.be.fulfilled;
         NULL_TIMEZONE = await updates.NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
@@ -84,6 +76,7 @@ contract('Updates', (accounts) => {
         // require less than 20 sec
         (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 20*1000).should.be.equal(true);
     });
+    
     it('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.nextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.timeZoneForRound1().should.be.fulfilled;

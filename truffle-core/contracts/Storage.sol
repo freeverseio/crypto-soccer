@@ -19,11 +19,11 @@ contract Storage {
     mapping (uint256 => uint256) internal _teamIdToAuctionData;
     mapping (uint256 => uint256) internal _teamIdToRemainingAcqs;
 
+// todo: add NULL_TZ = 0 and use it
 
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
     uint256 public gameDeployDay;
     uint256 public currentRound;
-    bool public _wasInited;
 
     struct ContractInfo {
         address addr;
