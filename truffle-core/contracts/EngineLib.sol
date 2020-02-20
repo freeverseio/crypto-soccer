@@ -1,8 +1,8 @@
 pragma solidity >=0.5.12 <0.6.2;
 
-import "./EncodingSkills.sol";
+import "./EncodingSkillsGetters.sol";
 
-contract EngineLib is EncodingSkills {
+contract EngineLib is EncodingSkillsGetters {
     uint8 private constant BITS_PER_RND     = 36;   // Number of bits allowed for random numbers inside match decisisons
     uint256 public constant MAX_RND         = 68719476735; // Max random number allowed inside match decisions: 2^36-1
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
