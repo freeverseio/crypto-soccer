@@ -5,7 +5,7 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
-const delgateUtils = require('../utils/delegateCallUtils.js');
+const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
@@ -29,7 +29,7 @@ contract('StorageProxy', (accounts) => {
     
     it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
         await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
-        selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
+        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
         await assets.init().should.be.rejected;
         await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
         await assets.init().should.be.fulfilled;
@@ -37,7 +37,7 @@ contract('StorageProxy', (accounts) => {
 
     it('deleteSelectors', async () => {
         await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
-        selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
+        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
         await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
         await sto.deleteSelectors(selectors).should.be.fulfilled;
         await assets.init().should.be.rejected;

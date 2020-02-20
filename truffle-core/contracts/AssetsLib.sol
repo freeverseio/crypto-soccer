@@ -2,9 +2,7 @@ pragma solidity >=0.5.12 <0.6.2;
 
 import "./Storage.sol";
 import "./EncodingIDs.sol";
-// import "./EncodingState.sol";
 import "./EncodingSkillsGetters.sol";
-// import "./EncodingSkillsSetters.sol";
 /**
  * @title Entry point for changing ownership of assets, and managing bids and auctions.
  */

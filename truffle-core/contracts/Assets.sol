@@ -4,7 +4,6 @@ import "./EncodingSkills.sol";
 import "./EncodingIDs.sol";
 import "./EncodingState.sol";
 import "./Storage.sol";
-import "./StorageProxy.sol";
 import "./AssetsLib.sol";
 
 /**
@@ -56,28 +55,6 @@ contract Assets is AssetsLib, EncodingSkills, EncodingState {
             _timeZones[tz].countries[0].divisonIdxToRound[division] = 1;
             emit DivisionCreation(tz, 0, division);
         }
-    }
-
-    function getLastUpdateTime(uint8 timeZone) external view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].lastUpdateTime;
-    }
-
-    function getLastActionsSubmissionTime(uint8 timeZone) external view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].lastActionsSubmissionTime;
-    }
-
-    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) external returns(uint256) {
-        if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
-        _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
-        _timeZones[tz].lastUpdateTime = now;
-    }
-
-    function setActionsRoot(uint8 timeZone, bytes32 root) external returns(uint256) {
-        _assertTZExists(timeZone);
-        _timeZones[timeZone].actionsRoot = root;
-        _timeZones[timeZone].lastActionsSubmissionTime = now;
     }
 
     function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
@@ -227,10 +204,6 @@ contract Assets is AssetsLib, EncodingSkills, EncodingState {
     function getPlayerAgeInDays(uint256 playerId) public view returns (uint256) {
         return secsToDays(7 * (now - daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId)))));
     }
-
-
-
-
 
     function countCountries(uint8 timeZone) public view returns (uint256){
         _assertTZExists(timeZone);

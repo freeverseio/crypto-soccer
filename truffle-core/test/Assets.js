@@ -5,7 +5,7 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
-const delgateUtils = require('../utils/delegateCallUtils.js');
+const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
@@ -36,14 +36,14 @@ contract('Assets', (accounts) => {
         assets = await Assets.at(sto.address).should.be.fulfilled;
         assetsAsLib = await Assets.new().should.be.fulfilled;
         await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
-        selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
+        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
         await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
 
         // setting up StorageProxy delegate calls to Market
         market = await Market.at(sto.address).should.be.fulfilled;
         marketAsLib = await Market.new().should.be.fulfilled;
         await sto.addNewContract(addr = marketAsLib.address, name = "Market").should.be.fulfilled;
-        selectors = delgateUtils.extractSelectorsFromAbi(Market.abi);
+        selectors = delegateUtils.extractSelectorsFromAbi(Market.abi);
         await sto.addNewSelectors(selectors, contractId = 2).should.be.fulfilled;
 
         initTx = await assets.init().should.be.fulfilled;

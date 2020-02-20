@@ -7,7 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const timeTravel = require('../utils/TimeTravel.js');
 const marketUtils = require('../utils/marketUtils.js');
-const delgateUtils = require('../utils/delegateCallUtils.js');
+const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const StorageProxy = artifacts.require('StorageProxy');
 const Market = artifacts.require("Market");
@@ -249,13 +249,13 @@ contract("Market", accounts => {
     assets = await Assets.at(sto.address).should.be.fulfilled;
     assetsAsLib = await Assets.new().should.be.fulfilled;
     await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
-    selectors = delgateUtils.extractSelectorsFromAbi(Assets.abi);
+    selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
     await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
     // setting up StorageProxy delegate calls to Market
     market = await Market.at(sto.address).should.be.fulfilled;
     marketAsLib = await Market.new().should.be.fulfilled;
     await sto.addNewContract(addr = marketAsLib.address, name = "Market").should.be.fulfilled;
-    selectors = delgateUtils.extractSelectorsFromAbi(Market.abi);
+    selectors = delegateUtils.extractSelectorsFromAbi(Market.abi);
     await sto.addNewSelectors(selectors, contractId = 2).should.be.fulfilled;
 
     // done with delegate calls
@@ -286,7 +286,7 @@ contract("Market", accounts => {
 
   });
 
-  it('setAcquisitionConstraint of constraints in friendlies', async () => {
+  it('setAcquisitionConstraint of constraints in friendliess', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
     for (c = 0; c < maxNumConstraints; c++) {

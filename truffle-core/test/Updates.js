@@ -5,9 +5,11 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const timeTravel = require('../utils/TimeTravel.js');
+const delegateUtils = require('../utils/delegateCallUtils.js');
 
-const Assets = artifacts.require('Assets');
+const StorageProxy = artifacts.require('StorageProxy');
 const Updates = artifacts.require('Updates');
+const Assets = artifacts.require('Assets');
 
 contract('Updates', (accounts) => {
     const VERSES_PER_DAY = 96;
@@ -36,21 +38,33 @@ contract('Updates', (accounts) => {
     };
     
     beforeEach(async () => {
-        assets = await Assets.new().should.be.fulfilled;
-        encoding = assets;
+        sto = await StorageProxy.new().should.be.fulfilled;
+        // setting up StorageProxy delegate calls to Assets
+        assets = await Assets.at(sto.address).should.be.fulfilled;
+        assetsAsLib = await Assets.new().should.be.fulfilled;
+        await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
+        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
+        await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
+        // setting up StorageProxy delegate calls to Updates
+        updates = await Updates.at(sto.address).should.be.fulfilled;
+        updatesAsLib = await Updates.new().should.be.fulfilled;
+        await sto.addNewContract(addr = updatesAsLib.address, name = "Updates").should.be.fulfilled;
+        selectors = delegateUtils.extractSelectorsFromAbi(Updates.abi);
+        await sto.addNewSelectors(selectors, contractId = 2).should.be.fulfilled;
+
+        // // done with delegate calls
         await assets.init().should.be.fulfilled;
-        updates = await Updates.new().should.be.fulfilled;
-        await updates.initUpdates(assets.address).should.be.fulfilled;
+        await updates.initUpdates().should.be.fulfilled;
         NULL_TIMEZONE = await updates.NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
         snapshotId = snapShot['result'];
         });
 
-    afterEach(async() => {
-        await timeTravel.revertToSnapShot(snapshotId);
+    it('test that cannot initialize updates twice', async () =>  {
+        await updates.initUpdates().should.be.rejected;
     });
-            
+    
     it('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await updates.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
@@ -142,9 +156,10 @@ contract('Updates', (accounts) => {
         // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
         const cif = "ciao2";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
-        submissionTime = await assets.getLastActionsSubmissionTime(timeZoneToUpdateBefore[0].toNumber()).should.be.fulfilled;
+        submissionTime = await updates.getLastActionsSubmissionTime(timeZoneToUpdateBefore[0].toNumber()).should.be.fulfilled;
         timeZoneToUpdateAfter = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         isCloseEnough(timeZoneToUpdate[0].toNumber(), timeZoneToUpdateBefore[0].toNumber()).should.be.equal(true)
         isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
