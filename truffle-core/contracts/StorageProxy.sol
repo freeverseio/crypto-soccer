@@ -13,8 +13,6 @@ contract StorageProxy is Storage {
 
     constructor() public {
         _storageOwner = msg.sender;
-        bytes4[] memory selectors;
-        _contractsInfo.push(ContractInfo(address(0), false, bytes32("Dummy"), selectors));
     }
     
     modifier onlyOwner() 
@@ -28,10 +26,10 @@ contract StorageProxy is Storage {
     */
     function () external {
         address contractAddress = _selectorToContractInfo[msg.sig].addr;
+        require(contractAddress != address(0), "function selector is not assigned to a valid contract");
         if (_selectorToContractInfo[msg.sig].requiresPermission) {
             require(msg.sender == _storageOwner, "Only owner is authorized for this selector.");
         }
-        require(contractAddress != address(0), "function selector is not assigned to a valid contract");
         delegate(contractAddress, msg.data);
     } 
     
