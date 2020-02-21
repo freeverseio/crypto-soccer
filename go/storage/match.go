@@ -203,7 +203,8 @@ func MatchesByTimezoneIdxAndMatchDay(tx *sql.Tx, timezoneIdx uint8, matchDayIdx 
 		home_goals, 
 		visitor_goals, 
 		home_match_log, 
-		visitor_match_log 
+		visitor_match_log,
+		state
 		FROM matches WHERE (timezone_idx = $1 AND match_day_idx = $2);`,
 		timezoneIdx,
 		matchDayIdx,
@@ -231,6 +232,7 @@ func MatchesByTimezoneIdxAndMatchDay(tx *sql.Tx, timezoneIdx uint8, matchDayIdx 
 			&match.VisitorGoals,
 			&homeMatchLog,
 			&visitorMatchLog,
+			&match.State,
 		)
 		if err != nil {
 			return nil, err

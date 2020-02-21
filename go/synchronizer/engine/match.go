@@ -33,6 +33,7 @@ func NewMatch() *Match {
 	mp.VisitorTeam = *NewTeam()
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
+	mp.State = storage.MatchBegin
 	return &mp
 }
 
@@ -154,6 +155,7 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
 		return err
 	}
+	b.State = storage.MatchHalf
 	return nil
 }
 
@@ -191,6 +193,7 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err = b.updateTrainingPoints(contracts); err != nil {
 		return err
 	}
+	b.State = storage.MatchEnd
 	return nil
 }
 
