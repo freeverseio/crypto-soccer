@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"gotest.tools/assert"
 )
 
 func TestSetMatchLogs(t *testing.T) {
@@ -24,12 +25,12 @@ func TestSetMatchLogs(t *testing.T) {
 	team.Owner = "ciao"
 	team.LeagueIdx = leagueIdx
 	timezone := storage.Timezone{timezoneIdx}
-	timezone.Insert(tx)
+	assert.NilError(t, timezone.Insert(tx))
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	country.Insert(tx)
+	assert.NilError(t, country.Insert(tx))
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.Insert(tx)
-	team.Insert(tx)
+	assert.NilError(t, league.Insert(tx))
+	assert.NilError(t, team.Insert(tx))
 	matchDayIdx := uint8(3)
 	matchIdx := uint8(4)
 	match := storage.NewMatch()
@@ -40,6 +41,7 @@ func TestSetMatchLogs(t *testing.T) {
 	match.MatchIdx = matchIdx
 	match.HomeTeamID = big.NewInt(10)
 	match.VisitorTeamID = big.NewInt(10)
+	match.State = storage.MatchBegin
 	err = match.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
@@ -106,6 +108,7 @@ func TestMatchReset(t *testing.T) {
 		HomeTeamID:    big.NewInt(10),
 		VisitorTeamID: big.NewInt(10),
 	}
+	match.State = storage.MatchBegin
 	err = match.Insert(tx)
 	if err != nil {
 		t.Fatal(err)

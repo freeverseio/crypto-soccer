@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"gotest.tools/assert"
 )
 
 func TestMatchEventTest(t *testing.T) {
@@ -38,7 +39,8 @@ func TestMatchEventTest(t *testing.T) {
 		HomeTeamID:    big.NewInt(10),
 		VisitorTeamID: big.NewInt(10),
 	}
-	match.Insert(tx)
+	match.State = storage.MatchBegin
+	assert.NilError(t, match.Insert(tx))
 	player := storage.Player{}
 	player.PlayerId = big.NewInt(4)
 	player.TeamId = team.TeamID

@@ -2,9 +2,9 @@ package engine
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"math/big"
-	"encoding/hex"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -33,6 +33,7 @@ func NewMatch() *Match {
 	mp.VisitorTeam = *NewTeam()
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
+	mp.State = storage.MatchBegin
 	return &mp
 }
 
@@ -124,6 +125,15 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
+	err := b.play1stHalf(contracts)
+	if err != nil {
+		b.State = storage.MatchCancelled
+	}
+	b.State = storage.MatchHalf
+	return err
+}
+
+func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	is2ndHalf := false
 	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
@@ -154,10 +164,20 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
 		return err
 	}
+	b.State = storage.MatchHalf
 	return nil
 }
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
+	err := b.play2ndHalf(contracts)
+	if err != nil {
+		b.State = storage.MatchCancelled
+	}
+	b.State = storage.MatchEnd
+	return err
+}
+
+func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	is2ndHalf := true
 	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
@@ -272,11 +292,25 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 
 func (b Match) ToString() string {
 	var result string
-	result += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))
-	result += fmt.Sprintf("StartTime: %v\n", b.StartTime)
-	result += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
-	result += b.HomeTeam.ToString()
-	result += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
-	result += b.VisitorTeam.ToString()
+	result += fmt.Sprintf("seed = '0x%v';", hex.EncodeToString(b.Seed[:]))
+	result += fmt.Sprintf("startTime = '%v';", b.StartTime)
+	result += fmt.Sprintf("matchLog0 = '%v';", b.HomeMatchLog)
+	result += fmt.Sprintf("teamId0 = '%v';", b.HomeTeam.TeamID)
+	result += fmt.Sprintf("tactic0 = '%v';", b.HomeTeam.Tactic)
+	result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
+	result += "players0 = ["
+	for _, player := range b.HomeTeam.Players {
+		result += fmt.Sprintf("'%v',", player.EncodedSkills)
+	}
+	result += "];"
+	result += fmt.Sprintf("matchLog1 = '%v';", b.VisitorMatchLog)
+	result += fmt.Sprintf("teamId1 = '%v';", b.VisitorTeam.TeamID)
+	result += fmt.Sprintf("tactic1 = '%v';", b.VisitorTeam.Tactic)
+	result += fmt.Sprintf("assignedTP1 = '%v';", b.VisitorTeam.AssignedTP)
+	result += "players1 = ["
+	for _, player := range b.VisitorTeam.Players {
+		result += fmt.Sprintf("'%v',", player.EncodedSkills)
+	}
+	result += "];"
 	return result
 }
