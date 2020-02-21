@@ -8,6 +8,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type MatchState string
+
+const (
+	MatchBegin     MatchState = "begin"
+	MatchHalf      MatchState = "half"
+	MatchEnd       MatchState = "end"
+	MatchCancelled MatchState = "cancelled"
+)
+
 type Match struct {
 	TimezoneIdx     uint8
 	CountryIdx      uint32
@@ -20,6 +29,7 @@ type Match struct {
 	VisitorGoals    uint8
 	HomeMatchLog    *big.Int
 	VisitorMatchLog *big.Int
+	State           MatchState
 }
 
 func NewMatch() *Match {
@@ -33,7 +43,7 @@ func NewMatch() *Match {
 
 func (b *Match) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create Match Day %v", b)
-	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_match_log, visitor_match_log) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_match_log, visitor_match_log, state) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.LeagueIdx,
@@ -41,6 +51,7 @@ func (b *Match) Insert(tx *sql.Tx) error {
 		b.MatchIdx,
 		b.HomeMatchLog.String(),
 		b.VisitorMatchLog.String(),
+		b.State,
 	)
 	if err != nil {
 		return err
@@ -49,7 +60,7 @@ func (b *Match) Insert(tx *sql.Tx) error {
 }
 
 func MatchReset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8, matchIdx uint8) error {
-	_, err := tx.Exec("UPDATE matches SET home_team_id = NULL, visitor_team_id = NULL, home_goals = 0, visitor_goals = 0, home_match_log = '0', visitor_match_log = '0' WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);",
+	_, err := tx.Exec("UPDATE matches SET home_team_id = NULL, visitor_team_id = NULL, home_goals = 0, visitor_goals = 0, home_match_log = '0', visitor_match_log = '0', state = 'begin' WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);",
 		timezoneIdx,
 		countryIdx,
 		leagueIdx,
@@ -86,14 +97,16 @@ func (b Match) Update(tx *sql.Tx) error {
 		home_goals = $3,
 		visitor_goals = $4,
 		home_match_log = $5,
-		visitor_match_log = $6
-		WHERE (timezone_idx = $7 AND country_idx = $8 AND league_idx = $9 AND match_day_idx = $10 AND match_idx = $11);`,
+		visitor_match_log = $6,
+		state = $7
+		WHERE (timezone_idx = $8 AND country_idx = $9 AND league_idx = $10 AND match_day_idx = $11 AND match_idx = $12);`,
 		b.HomeTeamID.String(),
 		b.VisitorTeamID.String(),
 		b.HomeGoals,
 		b.VisitorGoals,
 		b.HomeMatchLog.String(),
 		b.VisitorMatchLog.String(),
+		b.State,
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.LeagueIdx,
