@@ -11,7 +11,7 @@
 		VisitorGoals: (uint8) 4,
 		HomeMatchLog: (*big.Int)(1817645559979389328999808897235303282022774084093613330920837419605090674851),
 		VisitorMatchLog: (*big.Int)(1834430607094783980130850223492361007923135326893750737413979931073479084676),
-		State: (storage.MatchState) (len=4) "half"
+		State: (storage.MatchState) (len=3) "end"
 	},
 	Seed: ([32]uint8) (len=32 cap=32) {
 		00000000  a2 24 2e ad 55 c9 4c 3d  eb 7c f2 34 0b fe f9 d5  |.$..U.L=.|.4....|
