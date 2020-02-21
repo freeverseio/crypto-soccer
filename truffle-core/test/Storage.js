@@ -57,6 +57,17 @@ contract('StorageProxy', (accounts) => {
         await assets.init().should.be.fulfilled;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
+
+        // I can redeploy, and, because storage is preserved, I cannot init again, but nCountries is still OK
+        tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
+        await assets.init().should.be.rejected;
+        result = await assets.countCountries(tz = 1).should.be.fulfilled;
+        (result.toNumber() > 0).should.be.equal(true);
+        
+        // If I redeploy but removing the functions in assets, even the getter fails
+        tx = await sto.deployNewStorageProxies([], [], [], [], []).should.be.fulfilled;
+        result = await assets.countCountries(tz = 1).should.be.rejected;
+        
     });
 
     return
