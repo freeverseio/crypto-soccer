@@ -7,16 +7,14 @@ contract Storage {
 
     uint8 constant private PLAYERS_PER_TEAM_MAX  = 25;
 
-    
-
-
     uint256[2**8] _slotReserve;
     address internal _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
-    bytes4[] internal _allSelectors;
     address internal _academyAddr;
        
-    ContractInfo[] internal _contractIdToInfo;
-    mapping (bytes4 => uint256) internal _selectorToContractId;
+    ContractInfo[] internal _contractsInfo;
+    mapping (bytes4 => ContractInfo) internal _selectorToContractInfo;
+    
+    
     mapping(uint256 => uint256) internal _playerIdToState;
     mapping (uint256 => uint256) internal _playerIdToAuctionData;
     mapping (uint256 => uint256) internal _teamIdToAuctionData;
@@ -30,7 +28,9 @@ contract Storage {
 
     struct ContractInfo {
         address addr;
-        string name;
+        bool requiresPermission;
+        bytes32 name;
+        bytes4[] selectors;
     }
 
     struct Team {
