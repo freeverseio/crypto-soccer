@@ -68,18 +68,24 @@ contract('StorageProxy', (accounts) => {
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
 
+        // test that deleteContracts destroys all calls to assets functions
         tx1 = await sto.deleteContracts(contractIds = [contractId]).should.be.fulfilled;
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.rejected;
 
-        // // I can redeploy, and, because storage is preserved, I cannot init again, but nCountries is still OK
-        // tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
-        // await assets.init().should.be.rejected;
-        // result = await assets.countCountries(tz = 1).should.be.fulfilled;
-        // (result.toNumber() > 0).should.be.equal(true);
-        
-        // // If I redeploy but removing the functions in assets, even the getter fails
-        // tx = await sto.deployNewStorageProxies([], [], [], [], []).should.be.fulfilled;
-        // result = await assets.countCountries(tz = 1).should.be.rejected;
+        // I can re-activate, and, because storage is preserved, I cannot init again, but nCountries is still OK
+        tx0 = await sto.addContract(assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        contractId = 2;
+        tx1 = await sto.activateContracts(contractIds = [contractId]).should.be.fulfilled;
+        await assets.init().should.be.rejected;
+        result = await assets.countCountries(tz = 1).should.be.fulfilled;
+        (result.toNumber() > 0).should.be.equal(true);
+
+        // I can do the same thing in one atomic TX:
+        tx0 = await sto.addContract(assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        tx1 = await sto.deleteAndActivateContracts(deactivate = [2], activate = [3]).should.be.fulfilled;
+        await assets.init().should.be.rejected;
+        result = await assets.countCountries(tz = 1).should.be.fulfilled;
+        (result.toNumber() > 0).should.be.equal(true);
     });
 });
