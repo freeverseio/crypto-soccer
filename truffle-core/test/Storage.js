@@ -21,6 +21,7 @@ contract('StorageProxy', (accounts) => {
     const marketId = 1;
     const updatesId = 2;
 
+
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     function getIdxInABI(abi, name) {
@@ -38,40 +39,47 @@ contract('StorageProxy', (accounts) => {
     });
     
     it('deploy storage by adding Assets selectors', async () => {
+        // contact[0] is the NULL contract
         result = await sto.countContracts().should.be.fulfilled;
-        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(1);
         selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
         tx0 = await sto.addContract(assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
-        contractId = 0;
+        contractId = 1;
         truffleAssert.eventEmitted(tx0, "ContractAdded", async (event) => { return event.contractId === contractId && event.name === name});
         
         tx1 = await sto.activateContracts(contractIds = [contractId]).should.be.fulfilled;
         truffleAssert.eventEmitted(tx1, "ContractsActivated", async (event) => { return event.contractId === contractId });
 
         result = await sto.countContracts().should.be.fulfilled;
-        result.toNumber().should.be.equal(1);
+        result.toNumber().should.be.equal(2);
     });
-return
+
     it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
-        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-        nSelectorsPerContract = [selectors.length];
-        addresses = [assetsAsLib.address];
-        requiresPermission = [false];
-        names = [web3.utils.utf8ToHex('Assets')];
         await assets.init().should.be.rejected;
-        tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
+
+        // add function (still not enough to call assets):
+        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
+        tx0 = await sto.addContract(assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        await assets.init().should.be.rejected;
+        // activate function, now, enough to call assets:
+        contractId = 1;
+        tx1 = await sto.activateContracts(contractIds = [contractId]).should.be.fulfilled;
         await assets.init().should.be.fulfilled;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
 
-        // I can redeploy, and, because storage is preserved, I cannot init again, but nCountries is still OK
-        tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
+        tx1 = await sto.deleteContracts(contractIds = [contractId]).should.be.fulfilled;
         await assets.init().should.be.rejected;
-        result = await assets.countCountries(tz = 1).should.be.fulfilled;
-        (result.toNumber() > 0).should.be.equal(true);
-        
-        // If I redeploy but removing the functions in assets, even the getter fails
-        tx = await sto.deployNewStorageProxies([], [], [], [], []).should.be.fulfilled;
         result = await assets.countCountries(tz = 1).should.be.rejected;
+
+        // // I can redeploy, and, because storage is preserved, I cannot init again, but nCountries is still OK
+        // tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
+        // await assets.init().should.be.rejected;
+        // result = await assets.countCountries(tz = 1).should.be.fulfilled;
+        // (result.toNumber() > 0).should.be.equal(true);
+        
+        // // If I redeploy but removing the functions in assets, even the getter fails
+        // tx = await sto.deployNewStorageProxies([], [], [], [], []).should.be.fulfilled;
+        // result = await assets.countCountries(tz = 1).should.be.rejected;
     });
 });

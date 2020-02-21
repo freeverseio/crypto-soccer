@@ -11,10 +11,13 @@ contract StorageProxy is Storage {
     event ContractsActivated(uint256[] contactIds);
     event ContractsDeleted(uint256[] contactIds);
 
+    // TODO: is this future-proof? shall we have it re-settable?
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
     constructor() public {
         _storageOwner = msg.sender;
+        // _contractsInfo[0] is the NULL contract:
+        _contractsInfo.push(ContractInfo(address(0), false, new bytes4[](0), "")); 
     }
     
     modifier onlyOwner() 
@@ -28,8 +31,8 @@ contract StorageProxy is Storage {
     */
     fallback () external {
         ContractInfo memory info = _contractsInfo[_selectorToContractId[msg.sig]];
+        require(info.selectors.length != 0, "function selector is not assigned to a valid contract");
         address contractAddress = info.addr;
-        require(contractAddress != address(0), "function selector is not assigned to a valid contract");
         if (info.requiresPermission) {
             require(msg.sender == _storageOwner, "Only owner is authorized for this selector.");
         }
@@ -73,6 +76,11 @@ contract StorageProxy is Storage {
             _contractsInfo.push(info);
             emit ContractAdded(contractId, requiresPermission, name, selectors);        
     }
+    
+    function deleteAndActivateContracts(uint256[] memory deactContractIds, uint256[] memory actContractIds) public onlyOwner {
+        deleteContracts(deactContractIds);
+        activateContracts(actContractIds);
+    }
         
     function activateContracts(uint256[] memory contractIds) public onlyOwner {
         for (uint256 c = 0; c < contractIds.length; c++) {
@@ -87,11 +95,12 @@ contract StorageProxy is Storage {
 
     function deleteContracts(uint256[] memory contractIds) public onlyOwner {
         for (uint256 c = 0; c < contractIds.length; c++) {
-            bytes4[] memory selectors = _contractsInfo[c].selectors;
+            uint256 contractId = contractIds[c];
+            bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             for (uint256 s = 0; s < selectors.length; s++) {
-                delete _selectorToContractId[_contractsInfo[c].selectors[s]];
+                delete _selectorToContractId[selectors[s]];
             }
-            delete _contractsInfo[c];
+            delete _contractsInfo[contractId];
         }
         emit ContractsDeleted(contractIds);        
     }
