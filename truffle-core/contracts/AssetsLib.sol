@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./Storage.sol";
 import "./EncodingIDs.sol";
@@ -10,6 +10,7 @@ import "./EncodingSkillsGetters.sol";
 contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     
     address constant public NULL_ADDR = address(0);
+    uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;

@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 /**
 * @title Storage common to all project, with setters managed by StorageProxy.

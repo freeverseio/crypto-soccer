@@ -9,7 +9,18 @@ function extractSelectorsFromAbi(abi) {
     }    
     return functions;
 }
+
+function removeDuplicatesFromFirstContract(selectors1, selectors2) {
+    selectors1_filtered = [];
+    for (s = 0; s < selectors1.length; s++) {
+        if (!selectors2.includes(selectors1[s])) {
+            selectors1_filtered.push(selectors1[s]);
+        }
+    }
+    return selectors1_filtered;
+}
   
 module.exports = {
-    extractSelectorsFromAbi
+    extractSelectorsFromAbi,
+    removeDuplicatesFromFirstContract
 }

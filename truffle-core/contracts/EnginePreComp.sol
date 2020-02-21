@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./EncodingSkills.sol";
 import "./EncodingTacticsPart1.sol";
@@ -7,6 +7,22 @@ import "./SortValues.sol";
 import "./EncodingMatchLogPart1.sol";
 
 contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1, SortValues {
+    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
+    // Skills: shoot, speed, pass, defence, endurance
+    uint8 constant public SK_SHO = 0;
+    uint8 constant public SK_SPE = 1;
+    uint8 constant public SK_PAS = 2;
+    uint8 constant public SK_DEF = 3;
+    uint8 constant public SK_END = 4;    
+    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
+    uint8 constant public IDX_GK = 0;
+    uint8 constant public IDX_D  = 1;
+    uint8 constant public IDX_M  = 2;
+    uint8 constant public IDX_F  = 3;
+    uint8 constant public IDX_MD = 4;
+    uint8 constant public IDX_MF = 5;
+    
+    
     uint256 private constant ONE256            = uint256(1); 
     uint8 private constant CHG_HAPPENED        = uint8(1); 
     uint8 private constant CHG_CANCELLED       = uint8(2); 

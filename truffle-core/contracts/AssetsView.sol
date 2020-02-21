@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./EncodingSkills.sol";
 import "./EncodingIDs.sol";
@@ -12,6 +12,27 @@ import "./AssetsLib.sol";
  */
 
 contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
+    
+    // Skills: shoot, speed, pass, defence, endurance
+    uint8 constant public SK_SHO = 0;
+    uint8 constant public SK_SPE = 1;
+    uint8 constant public SK_PAS = 2;
+    uint8 constant public SK_DEF = 3;
+    uint8 constant public SK_END = 4;
+
+    // Birth Traits: potential, forwardness, leftishness, aggressiveness
+    uint8 constant private IDX_POT = 0;
+    uint8 constant private IDX_FWD = 1;
+    uint8 constant private IDX_LEF = 2;
+    uint8 constant private IDX_AGG = 3;
+    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
+    uint8 constant public IDX_GK = 0;
+    uint8 constant public IDX_D  = 1;
+    uint8 constant public IDX_M  = 2;
+    uint8 constant public IDX_F  = 3;
+    uint8 constant public IDX_MD = 4;
+    uint8 constant public IDX_MF = 5;
+
 
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     uint256 constant public DAYS_PER_ROUND = 16;

@@ -10,6 +10,10 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
+const AssetsView = artifacts.require('AssetsView');
+const MarketView = artifacts.require('MarketView');
+
+
 
 contract('Assets', (accounts) => {
     const ALICE = accounts[1];
@@ -29,40 +33,80 @@ contract('Assets', (accounts) => {
     
     
     const it2 = async(text, f) => {};
-
+    function toBytes32(name) { return web3.utils.utf8ToHex(name); }
+    
     beforeEach(async () => {
         sto = await StorageProxy.new().should.be.fulfilled;
         // setting up StorageProxy delegate calls to Assets
         assets = await Assets.at(sto.address).should.be.fulfilled;
         assetsAsLib = await Assets.new().should.be.fulfilled;
-        await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
-        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-        await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
-
-        // setting up StorageProxy delegate calls to Market
+        assetsView = await AssetsView.at(sto.address).should.be.fulfilled;
+        assetsViewAsLib = await AssetsView.new().should.be.fulfilled;
         market = await Market.at(sto.address).should.be.fulfilled;
         marketAsLib = await Market.new().should.be.fulfilled;
-        await sto.addNewContract(addr = marketAsLib.address, name = "Market").should.be.fulfilled;
-        selectors = delegateUtils.extractSelectorsFromAbi(Market.abi);
-        await sto.addNewSelectors(selectors, contractId = 2).should.be.fulfilled;
-
-        initTx = await assets.init().should.be.fulfilled;
-        PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
-        PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
-        LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
-        TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
-        FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
-        NULL_ADDR = await assets.NULL_ADDR().should.be.fulfilled;
-        PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
-        PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
-        LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
-        TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        marketView = await MarketView.at(sto.address).should.be.fulfilled;
+        marketViewAsLib = await MarketView.new().should.be.fulfilled;
         
-        N_DIVS_AT_START = await assets.getNDivisionsInCountry(1,0).should.be.fulfilled;;
-        N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
-        N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
+        selectorsAssets = delegateUtils.extractSelectorsFromAbi(Assets.abi);
+        selectorsAssetsView = delegateUtils.extractSelectorsFromAbi(AssetsView.abi);
+        selectorsAssets = delegateUtils.removeDuplicatesFromFirstContract(selectorsAssets, selectorsAssetsView);
+        
+        selectorsMarket = delegateUtils.extractSelectorsFromAbi(Market.abi);
+        selectorsMarketView = delegateUtils.extractSelectorsFromAbi(MarketView.abi);
+        selectorsMarket = delegateUtils.removeDuplicatesFromFirstContract(selectorsMarket, selectorsMarketView);
+        
+        namesStr            = ['Assets',            'AssetsView',           'Market',           'MarketView'];
+        contractsAsLib      = [assetsAsLib,         assetsViewAsLib,        marketAsLib,        marketViewAsLib];
+        allSelectors        = [selectorsAssets,     selectorsAssetsView,    selectorsMarket,    selectorsMarketView];
+        requiresPermission  = [true,                false,                  true,               false];
+
+        selectors = [];
+        nSelectorsPerContract = [];    
+        addresses = [];                 
+        names = [];
+        addresses = [];
+
+        nContracts = requiresPermission.length;
+        for (c = 0; c < nContracts; c++) {
+            selectors = selectors.concat(allSelectors[c]);
+            nSelectorsPerContract.push(allSelectors[c].length);
+            names.push(toBytes32(namesStr[c]));
+            // names.push(toBytes32(""));
+            addresses.push(contractsAsLib[c].address);
+        }
+
+        console.log(nSelectorsPerContract)
+        console.log(names)
+        console.log(addresses)
+        console.log("---")
+        console.log(selectors)
+        console.log(selectors.length)
+        
+        tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
+
+        // initTx = await assets.init().should.be.fulfilled;
+        // PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
+        // PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        // LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
+        // TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
+        // FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
+        // NULL_ADDR = await assets.NULL_ADDR().should.be.fulfilled;
+        // PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
+        // PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
+        // LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
+        // TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        
+        // N_DIVS_AT_START = await assets.getNDivisionsInCountry(1,0).should.be.fulfilled;;
+        // N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
+        // N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
         
+    it('teeeest', async () => {
+        console.log("2")
+    });
+return
+    
+    
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);

@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./Storage.sol";
 
@@ -24,7 +24,7 @@ contract StorageProxy is Storage {
     /**
     * @dev execute a delegate call via fallback function
     */
-    function () external {
+    fallback () external {
         address contractAddress = _selectorToContractInfo[msg.sig].addr;
         require(contractAddress != address(0), "function selector is not assigned to a valid contract");
         if (_selectorToContractInfo[msg.sig].requiresPermission) {
@@ -74,21 +74,28 @@ contract StorageProxy is Storage {
         
         uint256 nSelectorsAssigned;
         for (uint256 c = 0; c < nContracts; c++) {
-            ContractInfo memory info;
-            info.addr = addresses[c];
-            info.name = names[c];
-            info.requiresPermission = requiresPermission[c];
             bytes4[] memory thisContractSelectors = new bytes4[](nSelectorsPerContract[c]); 
-            _contractsInfo.push(info);
             for (uint256 s = 0; s < nSelectorsPerContract[c]; s++) {
-                _selectorToContractInfo[selectors[nSelectorsAssigned]] = _contractsInfo[c];
                 thisContractSelectors[s] = selectors[nSelectorsAssigned];
                 nSelectorsAssigned++;
             }
-            _contractsInfo[c].selectors = thisContractSelectors;
-            emit ContractSet(c, requiresPermission[c], names[c], thisContractSelectors);
+            addContract(addresses[c], requiresPermission[c], names[c], thisContractSelectors);
         }
         require(nSelectorsAssigned == selectors.length, "the entries in nSelectorsPerContract do not add to the amount of provided selectors");
+    }
+    
+    function addContract(address addr, bool requiresPermission, bytes32 name, bytes4[] memory selectors) public onlyOwner {
+            ContractInfo memory info;
+            info.addr = addr;
+            info.name = name;
+            info.requiresPermission = requiresPermission;
+            info.selectors = selectors;
+            uint256 contractId = _contractsInfo.length;
+            _contractsInfo.push(info);
+            for (uint256 s = 0; s < selectors.length; s++) {
+                _selectorToContractInfo[selectors[s]] = _contractsInfo[contractId];
+            }
+            emit ContractSet(contractId, requiresPermission, name, selectors);        
     }
         
     function deletePreviousDeploy() private {

@@ -1,33 +1,9 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */
 
 contract EncodingSkillsGetters {
-
-    uint8 constant public N_SKILLS = 5;
-    uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
-    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
-
-    // Skills: shoot, speed, pass, defence, endurance
-    uint8 constant public SK_SHO = 0;
-    uint8 constant public SK_SPE = 1;
-    uint8 constant public SK_PAS = 2;
-    uint8 constant public SK_DEF = 3;
-    uint8 constant public SK_END = 4;
-
-    // Birth Traits: potential, forwardness, leftishness, aggressiveness
-    uint8 constant private IDX_POT = 0;
-    uint8 constant private IDX_FWD = 1;
-    uint8 constant private IDX_LEF = 2;
-    uint8 constant private IDX_AGG = 3;
-    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
-    uint8 constant public IDX_GK = 0;
-    uint8 constant public IDX_D  = 1;
-    uint8 constant public IDX_M  = 2;
-    uint8 constant public IDX_F  = 3;
-    uint8 constant public IDX_MD = 4;
-    uint8 constant public IDX_MF = 5;
 
     /**
      * @dev PlayerSkills serializes a total of 148 bits:  6*14 + 4 + 3+ 3 + 43 + 1 + 1 + 3 + 3 + 3
