@@ -7,7 +7,9 @@ import "./Storage.sol";
 */
 contract StorageProxy is Storage {
 
-    event ContractSet(uint256 contactId, bool requiresPermission, bytes32 name, bytes4[] selectors);
+    event ContractAdded(uint256 contactId, bool requiresPermission, bytes32 name, bytes4[] selectors);
+    event ContractsActivated(uint256[] contactIds);
+    event ContractsDeleted(uint256[] contactIds);
 
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
@@ -25,9 +27,10 @@ contract StorageProxy is Storage {
     * @dev execute a delegate call via fallback function
     */
     fallback () external {
-        address contractAddress = _selectorToContractInfo[msg.sig].addr;
+        ContractInfo memory info = _contractsInfo[_selectorToContractId[msg.sig]];
+        address contractAddress = info.addr;
         require(contractAddress != address(0), "function selector is not assigned to a valid contract");
-        if (_selectorToContractInfo[msg.sig].requiresPermission) {
+        if (info.requiresPermission) {
             require(msg.sender == _storageOwner, "Only owner is authorized for this selector.");
         }
         delegate(contractAddress, msg.data);
@@ -59,32 +62,8 @@ contract StorageProxy is Storage {
     function setStorageOwner(address newOwner) public onlyOwner {
         _storageOwner = newOwner;
     }
-    
-    function deployNewStorageProxies(
-        uint16[] memory nSelectorsPerContract,
-        bytes4[] memory selectors, 
-        address[] memory addresses,
-        bool[]  memory requiresPermission,
-        bytes32[] memory names
-    ) public onlyOwner {
-        uint256 nContracts = nSelectorsPerContract.length;
-        require(nContracts == addresses.length && nContracts == addresses.length && nContracts == names.length, "incorrect lengths of inputs");
 
-        deletePreviousDeploy();
-        
-        uint256 nSelectorsAssigned;
-        for (uint256 c = 0; c < nContracts; c++) {
-            bytes4[] memory thisContractSelectors = new bytes4[](nSelectorsPerContract[c]); 
-            for (uint256 s = 0; s < nSelectorsPerContract[c]; s++) {
-                thisContractSelectors[s] = selectors[nSelectorsAssigned];
-                nSelectorsAssigned++;
-            }
-            addContract(addresses[c], requiresPermission[c], names[c], thisContractSelectors);
-        }
-        require(nSelectorsAssigned == selectors.length, "the entries in nSelectorsPerContract do not add to the amount of provided selectors");
-    }
-    
-    function addContract(address addr, bool requiresPermission, bytes32 name, bytes4[] memory selectors) public onlyOwner {
+    function addContract(address addr, bool requiresPermission, bytes4[] memory selectors, bytes32 name) public onlyOwner {
             ContractInfo memory info;
             info.addr = addr;
             info.name = name;
@@ -92,26 +71,45 @@ contract StorageProxy is Storage {
             info.selectors = selectors;
             uint256 contractId = _contractsInfo.length;
             _contractsInfo.push(info);
-            for (uint256 s = 0; s < selectors.length; s++) {
-                _selectorToContractInfo[selectors[s]] = _contractsInfo[contractId];
-            }
-            emit ContractSet(contractId, requiresPermission, name, selectors);        
+            emit ContractAdded(contractId, requiresPermission, name, selectors);        
     }
         
-    function deletePreviousDeploy() private {
-        // First delete all entries in the selectors mapping _selectorToContractAddr:
-        for (uint256 contractId = 0; contractId < _contractsInfo.length; contractId++) {
-            deleteAllSelectorsInContract(contractId);
+    function activateContracts(uint256[] memory contractIds) public onlyOwner {
+        for (uint256 c = 0; c < contractIds.length; c++) {
+            uint256 contractId = contractIds[c];
+            bytes4[] memory selectors = _contractsInfo[contractId].selectors;
+            for (uint256 s = 0; s < selectors.length; s++) {
+                _selectorToContractId[selectors[s]] = contractId;
+            }
         }
-        // Finally delete the arrays:
-        delete _contractsInfo;
+        emit ContractsActivated(contractIds);        
     }
+
+    function deleteContracts(uint256[] memory contractIds) public onlyOwner {
+        for (uint256 c = 0; c < contractIds.length; c++) {
+            bytes4[] memory selectors = _contractsInfo[c].selectors;
+            for (uint256 s = 0; s < selectors.length; s++) {
+                delete _selectorToContractId[_contractsInfo[c].selectors[s]];
+            }
+            delete _contractsInfo[c];
+        }
+        emit ContractsDeleted(contractIds);        
+    }
+
+    // function deletePreviousDeploy() private {
+    //     // First delete all entries in the selectors mapping _selectorToContractAddr:
+    //     for (uint256 contractId = 0; contractId < _contractsInfo.length; contractId++) {
+    //         deleteAllSelectorsInContract(contractId);
+    //     }
+    //     // Finally delete the arrays:
+    //     delete _contractsInfo;
+    // }
     
-    function deleteAllSelectorsInContract(uint256 contractId) private {
-        for (uint256 s = 0; s < _contractsInfo[contractId].selectors.length; s++) {
-            delete _selectorToContractInfo[_contractsInfo[contractId].selectors[s]];
-        }
-    }
+    // function deleteAllSelectorsInContract(uint256 contractId) private {
+    //     for (uint256 s = 0; s < _contractsInfo[contractId].selectors.length; s++) {
+    //         delete _selectorToContractId[_contractsInfo[contractId].selectors[s]];
+    //     }
+    // }
 
     // function addSelectors(bytes4[] memory selectors, uint256 contractId) public onlyOwner {
     //     require(_contractExists(contractId), "selectors cannot point to a non-specified contract");
@@ -187,7 +185,9 @@ contract StorageProxy is Storage {
     // function countFunctions() external view returns(uint256) { return _allSelectorsInContract.length; }
     function countContracts() external view returns(uint256) { return _contractsInfo.length; }
     function countAddressesInContract(uint256 contractId) external view returns(uint256) { return _contractsInfo[contractId].selectors.length; }
-    function getContractAddressForSelector(bytes4 selector) external view returns(address) { return _selectorToContractInfo[selector].addr; }
+    function getContractAddressForSelector(bytes4 selector) external view returns(address) { 
+        return _contractsInfo[_selectorToContractId[selector]].addr; 
+    }
     function getContractInfo(uint256 contractId) public view returns (address, bool, bytes32, bytes4[] memory) {
         return (
             _contractsInfo[contractId].addr,

@@ -12,7 +12,7 @@ contract Storage {
     address internal _academyAddr;
        
     ContractInfo[] internal _contractsInfo;
-    mapping (bytes4 => ContractInfo) internal _selectorToContractInfo;
+    mapping (bytes4 => uint256) internal _selectorToContractId;
     
     
     mapping(uint256 => uint256) internal _playerIdToState;
@@ -29,8 +29,8 @@ contract Storage {
     struct ContractInfo {
         address addr;
         bool requiresPermission;
-        bytes32 name;
         bytes4[] selectors;
+        bytes32 name;
     }
 
     struct Team {
