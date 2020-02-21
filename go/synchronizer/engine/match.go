@@ -125,6 +125,15 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
+	err := b.play1stHalf(contracts)
+	if err != nil {
+		b.State = storage.MatchCancelled
+	}
+	b.State = storage.MatchHalf
+	return err
+}
+
+func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	is2ndHalf := false
 	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
@@ -160,6 +169,15 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 }
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
+	err := b.play2ndHalf(contracts)
+	if err != nil {
+		b.State = storage.MatchCancelled
+	}
+	b.State = storage.MatchEnd
+	return err
+}
+
+func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	is2ndHalf := true
 	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
@@ -193,7 +211,6 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err = b.updateTrainingPoints(contracts); err != nil {
 		return err
 	}
-	b.State = storage.MatchEnd
 	return nil
 }
 
