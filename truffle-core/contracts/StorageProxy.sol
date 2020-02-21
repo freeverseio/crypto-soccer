@@ -7,7 +7,7 @@ import "./Storage.sol";
 */
 contract StorageProxy is Storage {
 
-    event ContractSet(uint256 contactId, bool isSetter, bytes32 name, bytes4[] selectors);
+    event ContractSet(uint256 contactId, bool requiresPermission, bytes32 name, bytes4[] selectors);
 
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
@@ -88,7 +88,9 @@ contract StorageProxy is Storage {
                 nSelectorsAssigned++;
             }
             _contractsInfo[c].selectors = thisContractSelectors;
+            emit ContractSet(c, requiresPermission[c], names[c], thisContractSelectors);
         }
+        require(nSelectorsAssigned == selectors.length, "the entries in nSelectorsPerContract do not add to the amount of provided selectors");
     }
         
     function deletePreviousDeploy() private {
@@ -179,6 +181,7 @@ contract StorageProxy is Storage {
 
     // function countFunctions() external view returns(uint256) { return _allSelectorsInContract.length; }
     function countContracts() external view returns(uint256) { return _contractsInfo.length; }
+    function countAddressesInContract(uint256 contractId) external view returns(uint256) { return _contractsInfo[contractId].selectors.length; }
     function getContractAddressForSelector(bytes4 selector) external view returns(address) { return _selectorToContractInfo[selector].addr; }
     function getContractInfo(uint256 contractId) public view returns (address, bool, bytes32, bytes4[] memory) {
         return (

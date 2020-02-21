@@ -35,19 +35,32 @@ contract('StorageProxy', (accounts) => {
         assetsAsLib = await Assets.new().should.be.fulfilled;
     });
     
+    it('deploy storage by adding Assets selectors', async () => {
+        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
+        nSelectorsPerContract = [selectors.length];
+        addresses = [assetsAsLib.address];
+        requiresPermission = [false];
+        names = [web3.utils.utf8ToHex('Assets')];
+        web3.ut
+        tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
+        // note that contractId = 0 is the null one
+        truffleAssert.eventEmitted(tx, "ContractSet", async (event) => { return event.contractId === 1 && event.names === names });
+    });
+
+    return
+    
     it('emit contract event', async () => {
-        initPosInAbi = getIdxInABI(Assets.abi, "init");
-        // we first add a function different from init(), and show that we cannot call assets.init()
-        selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[initPosInAbi - 1])
-        console.log(selector)
-        tx = await sto.setContract(contractId = 1, addr = assetsAsLib.address, isSet = false, name = "Assets", [selector]).should.be.fulfilled;
+        // initPosInAbi = getIdxInABI(Assets.abi, "init");
+        // // we first add a function different from init(), and show that we cannot call assets.init()
+        // selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[initPosInAbi - 1])
+        // console.log(selector)
+        // tx = await sto.setContract(contractId = 1, addr = assetsAsLib.address, isSet = false, name = "Assets", [selector]).should.be.fulfilled;
         // note that contractId = 0 is the null one
         // truffleAssert.eventEmitted(tx, "AddContract", async (event) => { return event.contractId === contractId && event.name === "Assets" });
         // tx = await sto.setContract(contractId = 2, addr = assetsAsLib.address, isSet = false, name = "AssetsAgain", [selector]).should.be.fulfilled;
         // truffleAssert.eventEmitted(tx, "AddContract", async (event) => { return event.contractId === contractId && event.name === "AssetsAgain" });
     });
-    
-    return
+
     
     it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
         await sto.addNewContract(addr = assetsAsLib.address, isSet = false, name = "Assets").should.be.fulfilled;
