@@ -1,0 +1,22 @@
+# this service has no selector because it is referencing a service in another namespace. That is service monitoring-grafana in namespace monitoring: monitoring-grafana.monitoring.svc.cluster.local
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ExternalName
+  externalName: monitoring-grafana.monitoring.svc.cluster.local
+  #externalName: banana-service.test.svc.cluster.local
+
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: banana
+#spec:
+#  type: ExternalName
+#  externalName: banana-service.test.svc.cluster.local
