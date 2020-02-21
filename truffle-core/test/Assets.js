@@ -60,52 +60,46 @@ contract('Assets', (accounts) => {
         allSelectors        = [selectorsAssets,     selectorsAssetsView,    selectorsMarket,    selectorsMarketView];
         requiresPermission  = [true,                false,                  true,               false];
 
-        selectors = [];
-        nSelectorsPerContract = [];    
         addresses = [];                 
         names = [];
         addresses = [];
 
         nContracts = requiresPermission.length;
         for (c = 0; c < nContracts; c++) {
-            selectors = selectors.concat(allSelectors[c]);
-            nSelectorsPerContract.push(allSelectors[c].length);
             names.push(toBytes32(namesStr[c]));
-            // names.push(toBytes32(""));
             addresses.push(contractsAsLib[c].address);
         }
-
-        console.log(nSelectorsPerContract)
-        console.log(names)
-        console.log(addresses)
-        console.log("---")
-        console.log(selectors)
-        console.log(selectors.length)
         
-        tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
+        // Add all contracts to predicted Ids: [1, 2, ...]
+        contractIds = [];
+        for (c = 0; c < nContracts; c++) {
+            contractIds.push(c+1);
+            tx0 = await sto.addContract(contractIds[c], addresses[c], requiresPermission[c], allSelectors[c], names[c]).should.be.fulfilled;
+        }
 
-        // initTx = await assets.init().should.be.fulfilled;
-        // PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
-        // PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
-        // LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
-        // TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
-        // FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
-        // NULL_ADDR = await assets.NULL_ADDR().should.be.fulfilled;
-        // PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
-        // PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
-        // LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
-        // TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        // Activate all contracts atomically
+        tx1 = await sto.deleteAndActivateContracts(deactivate = [], activate = contractIds).should.be.fulfilled;
+
+        initTx = await assets.init().should.be.fulfilled;
+        PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
+        TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
+        FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
+        NULL_ADDR = await assets.NULL_ADDR().should.be.fulfilled;
+        PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
+        PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
+        LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
+        TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
         
-        // N_DIVS_AT_START = await assets.getNDivisionsInCountry(1,0).should.be.fulfilled;;
-        // N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
-        // N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
+        N_DIVS_AT_START = await assets.getNDivisionsInCountry(1,0).should.be.fulfilled;;
+        N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
+        N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
         
     it('teeeest', async () => {
         console.log("2")
     });
-return
-    
     
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]

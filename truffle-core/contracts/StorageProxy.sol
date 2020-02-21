@@ -66,13 +66,15 @@ contract StorageProxy is Storage {
         _storageOwner = newOwner;
     }
 
-    function addContract(address addr, bool requiresPermission, bytes4[] memory selectors, bytes32 name) public onlyOwner {
+    function addContract(uint256 contractId, address addr, bool requiresPermission, bytes4[] memory selectors, bytes32 name) public onlyOwner {
+            // we require that the contract gets assigned an Id that is as specified from outside, 
+            // to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
+            require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
             ContractInfo memory info;
             info.addr = addr;
             info.name = name;
             info.requiresPermission = requiresPermission;
             info.selectors = selectors;
-            uint256 contractId = _contractsInfo.length;
             _contractsInfo.push(info);
             emit ContractAdded(contractId, requiresPermission, name, selectors);        
     }
@@ -100,6 +102,7 @@ contract StorageProxy is Storage {
             for (uint256 s = 0; s < selectors.length; s++) {
                 delete _selectorToContractId[selectors[s]];
             }
+            // TODO: do we really want to get rid of this entry? Nothing points to it anymore...
             delete _contractsInfo[contractId];
         }
         emit ContractsDeleted(contractIds);        

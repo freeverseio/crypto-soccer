@@ -43,8 +43,10 @@ contract('StorageProxy', (accounts) => {
         result = await sto.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
         selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-        tx0 = await sto.addContract(assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        tx0 = await sto.addContract(contractId = 0, assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.rejected;
+        tx0 = await sto.addContract(contractId = 2, assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.rejected;
         contractId = 1;
+        tx0 = await sto.addContract(contractId, assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         truffleAssert.eventEmitted(tx0, "ContractAdded", async (event) => { return event.contractId === contractId && event.name === name});
         
         tx1 = await sto.activateContracts(contractIds = [contractId]).should.be.fulfilled;
@@ -59,10 +61,10 @@ contract('StorageProxy', (accounts) => {
 
         // add function (still not enough to call assets):
         selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-        tx0 = await sto.addContract(assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        contractId = 1;
+        tx0 = await sto.addContract(contractId, assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         await assets.init().should.be.rejected;
         // activate function, now, enough to call assets:
-        contractId = 1;
         tx1 = await sto.activateContracts(contractIds = [contractId]).should.be.fulfilled;
         await assets.init().should.be.fulfilled;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
@@ -74,15 +76,16 @@ contract('StorageProxy', (accounts) => {
         result = await assets.countCountries(tz = 1).should.be.rejected;
 
         // I can re-activate, and, because storage is preserved, I cannot init again, but nCountries is still OK
-        tx0 = await sto.addContract(assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         contractId = 2;
+        tx0 = await sto.addContract(contractId, assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         tx1 = await sto.activateContracts(contractIds = [contractId]).should.be.fulfilled;
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
 
         // I can do the same thing in one atomic TX:
-        tx0 = await sto.addContract(assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        contractId = 3;
+        tx0 = await sto.addContract(contractId, assetsAsLib.address, requiresPermission = false, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         tx1 = await sto.deleteAndActivateContracts(deactivate = [2], activate = [3]).should.be.fulfilled;
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
