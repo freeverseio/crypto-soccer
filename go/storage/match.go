@@ -38,6 +38,7 @@ func NewMatch() *Match {
 		VisitorTeamID:   big.NewInt(0),
 		HomeMatchLog:    big.NewInt(0),
 		VisitorMatchLog: big.NewInt(0),
+		State:           MatchBegin,
 	}
 }
 

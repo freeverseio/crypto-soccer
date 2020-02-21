@@ -3,7 +3,6 @@ package process
 import (
 	"database/sql"
 	"errors"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -40,16 +39,13 @@ func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
-			match := storage.Match{
-				TimezoneIdx:     timezoneIdx,
-				CountryIdx:      countryIdx,
-				LeagueIdx:       leagueIdx,
-				MatchDayIdx:     matchDay,
-				MatchIdx:        match,
-				HomeMatchLog:    big.NewInt(0),
-				VisitorMatchLog: big.NewInt(0),
-			}
-			err = match.Insert(tx)
+			m := storage.NewMatch()
+			m.TimezoneIdx = timezoneIdx
+			m.CountryIdx = countryIdx
+			m.LeagueIdx = leagueIdx
+			m.MatchDayIdx = matchDay
+			m.MatchIdx = match
+			err = m.Insert(tx)
 			if err != nil {
 				return err
 			}
