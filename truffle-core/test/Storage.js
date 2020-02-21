@@ -41,35 +41,26 @@ contract('StorageProxy', (accounts) => {
         addresses = [assetsAsLib.address];
         requiresPermission = [false];
         names = [web3.utils.utf8ToHex('Assets')];
-        web3.ut
         tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
         // note that contractId = 0 is the null one
         truffleAssert.eventEmitted(tx, "ContractSet", async (event) => { return event.contractId === 1 && event.names === names });
     });
 
+    it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
+        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
+        nSelectorsPerContract = [selectors.length];
+        addresses = [assetsAsLib.address];
+        requiresPermission = [false];
+        names = [web3.utils.utf8ToHex('Assets')];
+        await assets.init().should.be.rejected;
+        tx = await sto.deployNewStorageProxies(nSelectorsPerContract, selectors, addresses, requiresPermission, names).should.be.fulfilled;
+        await assets.init().should.be.fulfilled;
+        result = await assets.countCountries(tz = 1).should.be.fulfilled;
+        (result.toNumber() > 0).should.be.equal(true);
+    });
+
     return
     
-    it('emit contract event', async () => {
-        // initPosInAbi = getIdxInABI(Assets.abi, "init");
-        // // we first add a function different from init(), and show that we cannot call assets.init()
-        // selector = web3.eth.abi.encodeFunctionSignature(Assets.abi[initPosInAbi - 1])
-        // console.log(selector)
-        // tx = await sto.setContract(contractId = 1, addr = assetsAsLib.address, isSet = false, name = "Assets", [selector]).should.be.fulfilled;
-        // note that contractId = 0 is the null one
-        // truffleAssert.eventEmitted(tx, "AddContract", async (event) => { return event.contractId === contractId && event.name === "Assets" });
-        // tx = await sto.setContract(contractId = 2, addr = assetsAsLib.address, isSet = false, name = "AssetsAgain", [selector]).should.be.fulfilled;
-        // truffleAssert.eventEmitted(tx, "AddContract", async (event) => { return event.contractId === contractId && event.name === "AssetsAgain" });
-    });
-
-    
-    it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
-        await sto.addNewContract(addr = assetsAsLib.address, isSet = false, name = "Assets").should.be.fulfilled;
-        selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-        await assets.init().should.be.rejected;
-        await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
-    });
-
     it('deleteSelectors', async () => {
         await sto.addNewContract(addr = assetsAsLib.address, isSet = false, name = "Assets").should.be.fulfilled;
         selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
