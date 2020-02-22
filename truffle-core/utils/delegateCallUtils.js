@@ -50,23 +50,19 @@ const deployDelegate = async (StorageProxy, Assets, AssetsView, Market, MarketVi
     addresses = [];                 
     names = [];
     addresses = [];
+    contractIds = [];
 
     nContracts = requiresPermission.length;
     for (c = 0; c < nContracts; c++) {
         names.push(toBytes32(namesStr[c]));
         addresses.push(contractsAsLib[c].address);
+        contractIds.push(c+1);
     }
     
     // Add all contracts to predicted Ids: [1, 2, ...]
-    contractIds = [];
-    console.log("start")
     for (c = 0; c < nContracts; c++) {
-        console.log(c, nContracts)
-        contractIds.push(c+1);
         tx0 = await sto.addContract(contractIds[c], addresses[c], requiresPermission[c], allSelectors[c], names[c]).should.be.fulfilled;
     }
-    console.log("done. Now activating...")
-
 
     // Activate all contracts atomically
     tx1 = await sto.deleteAndActivateContracts(deactivate = [], activate = contractIds).should.be.fulfilled;
