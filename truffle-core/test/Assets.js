@@ -62,10 +62,6 @@ contract('Assets', (accounts) => {
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
         
-    it('teeeest', async () => {
-        console.log("2")
-    });
-    
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);

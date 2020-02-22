@@ -66,7 +66,6 @@ const deployDelegate = async (StorageProxy, Assets, AssetsView, Market, MarketVi
 
     // Activate all contracts atomically
     tx1 = await sto.deleteAndActivateContracts(deactivate = [], activate = contractIds).should.be.fulfilled;
-    console.log("done activating...")
 
     return [assets, market];
 
