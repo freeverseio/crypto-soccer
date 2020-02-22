@@ -12,7 +12,6 @@ contract Assets is AssetsView {
     event AssetsInit(address creatorAddr);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     
-    bool public _wasInited;
 
     function setAcademyAddr(address addr) public {
         _academyAddr = addr;

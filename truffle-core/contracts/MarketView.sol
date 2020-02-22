@@ -9,16 +9,6 @@ import "./EncodingSkillsSetters.sol";
 
 contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
-    uint8 constant internal IDX_MSG = 0;
-    uint8 constant internal IDX_r   = 1;
-    uint8 constant internal IDX_s   = 2;
-    // POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.
-    //  ...it includes time to ask for a 2nd-best bidder, or 3rd-best.
-    uint256 constant public POST_AUCTION_TIME   = 6 hours; 
-    uint256 constant public AUCTION_TIME        = 24 hours; 
-    uint256 constant public MAX_VALID_UNTIL     = 30 hours; // the sum of the previous two
-    uint256 constant internal VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
-    uint8 constant public MAX_ACQUISITON_CONSTAINTS  = 7;
     
     function isAcademyPlayer(uint256 playerId) public view returns(bool) {
         return (getIsSpecial(playerId) && _playerIdToState[playerId] == 0);

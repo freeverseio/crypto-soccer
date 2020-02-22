@@ -17,11 +17,6 @@ contract('StorageProxy', (accounts) => {
     const CAROL = accounts[3];
     const it2 = async(text, f) => {};
 
-    const assetsId = 0;
-    const marketId = 1;
-    const updatesId = 2;
-
-
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     function getIdxInABI(abi, name) {

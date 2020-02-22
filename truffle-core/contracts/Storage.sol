@@ -1,11 +1,11 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
+import "./Constants.sol";
+
 /**
 * @title Storage common to all project, with setters managed by StorageProxy.
 */
-contract Storage {
-
-    uint8 constant private PLAYERS_PER_TEAM_MAX  = 25;
+contract Storage is Constants {
 
     uint256[2**8] _slotReserve;
     address internal _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
@@ -13,6 +13,7 @@ contract Storage {
        
     ContractInfo[] internal _contractsInfo;
     mapping (bytes4 => uint256) internal _selectorToContractId;
+    bool public _wasInited;
     
     
     mapping(uint256 => uint256) internal _playerIdToState;
