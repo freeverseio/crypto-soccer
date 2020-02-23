@@ -10,8 +10,10 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
+const Updates = artifacts.require('Updates');
 const AssetsView = artifacts.require('AssetsView');
 const MarketView = artifacts.require('MarketView');
+const UpdatesView = artifacts.require('UpdatesView');
 
 contract('StorageProxy', (accounts) => {
     const FREEVERSE = accounts[0];
@@ -42,7 +44,9 @@ contract('StorageProxy', (accounts) => {
             Assets, 
             AssetsView, 
             Market, 
-            MarketView
+            MarketView,
+            Updates,
+            UpdatesView
         );
         assets = depl[0]
         // ALICE can execute any view function (in AssetsView)
