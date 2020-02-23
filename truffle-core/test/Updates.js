@@ -8,12 +8,19 @@ const timeTravel = require('../utils/TimeTravel.js');
 const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const StorageProxy = artifacts.require('StorageProxy');
+const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
+const AssetsView = artifacts.require('AssetsView');
+const MarketView = artifacts.require('MarketView');
+const UpdatesView = artifacts.require('UpdatesView');
+
+
 
 contract('Updates', (accounts) => {
     const VERSES_PER_DAY = 96;
     const VERSES_PER_ROUND = 96*14;
-
+    
     const it2 = async(text, f) => {};
 
     function normalizeTZ(tz) {
@@ -38,20 +45,23 @@ contract('Updates', (accounts) => {
     
     beforeEach(async () => {
         sto = await StorageProxy.new().should.be.fulfilled;
-        // setting up StorageProxy delegate calls to Updates
-        updates = await Updates.at(sto.address).should.be.fulfilled;
-        updatesAsLib = await Updates.new().should.be.fulfilled;
-        await sto.addNewContract(addr = updatesAsLib.address, name = "Updates").should.be.fulfilled;
-        selectors = delegateUtils.extractSelectorsFromAbi(Updates.abi);
-        await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
-
+        result = await delegateUtils.deployDelegate(
+            StorageProxy, 
+            Assets, 
+            AssetsView, 
+            Market, 
+            MarketView,
+            Updates,
+            UpdatesView
+        );
+        updates = result[2];
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
         NULL_TIMEZONE = await updates.NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
         snapshotId = snapShot['result'];
-        });
+    });
 
     it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
