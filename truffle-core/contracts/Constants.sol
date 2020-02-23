@@ -50,5 +50,12 @@ contract Constants {
     uint256 constant internal VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
     uint8 constant public MAX_ACQUISITON_CONSTAINTS  = 7;
 
+    uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
+    uint8 constant VERSES_PER_DAY = 96; // 24 * 4
+    uint16 constant VERSES_PER_ROUND = 1344; // 96 * 14
+    uint8 constant public NULL_TIMEZONE = 0;
+    uint8 constant CHALLENGE_TIME = 60; // in secs
+    
+
 
 }

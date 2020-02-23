@@ -1,22 +1,19 @@
+const deployPair = async (sto, Contr, ContrView) => {
+    contr = await Contr.at(sto.address).should.be.fulfilled;
+    contrAsLib = await Contr.new().should.be.fulfilled;
+    contrView = await ContrView.at(sto.address).should.be.fulfilled;
+    contrViewAsLib = await ContrView.new().should.be.fulfilled;
+    selectors = extractSelectorsFromAbi(Contr.abi);
+    selectorsView = extractSelectorsFromAbi(ContrView.abi);
+    selectors = removeDuplicatesFromFirstContract(selectors, selectorsView);
+    return [contr, contrAsLib, contrViewAsLib, selectors, selectorsView]
+};
+
 const deployDelegate = async (StorageProxy, Assets, AssetsView, Market, MarketView) => {
     sto = await StorageProxy.new().should.be.fulfilled;
     // setting up StorageProxy delegate calls to Assets
-    assets = await Assets.at(sto.address).should.be.fulfilled;
-    assetsAsLib = await Assets.new().should.be.fulfilled;
-    assetsView = await AssetsView.at(sto.address).should.be.fulfilled;
-    assetsViewAsLib = await AssetsView.new().should.be.fulfilled;
-    market = await Market.at(sto.address).should.be.fulfilled;
-    marketAsLib = await Market.new().should.be.fulfilled;
-    marketView = await MarketView.at(sto.address).should.be.fulfilled;
-    marketViewAsLib = await MarketView.new().should.be.fulfilled;
-    
-    selectorsAssets = extractSelectorsFromAbi(Assets.abi);
-    selectorsAssetsView = extractSelectorsFromAbi(AssetsView.abi);
-    selectorsAssets = removeDuplicatesFromFirstContract(selectorsAssets, selectorsAssetsView);
-    
-    selectorsMarket = extractSelectorsFromAbi(Market.abi);
-    selectorsMarketView = extractSelectorsFromAbi(MarketView.abi);
-    selectorsMarket = removeDuplicatesFromFirstContract(selectorsMarket, selectorsMarketView);
+    const {0: assets, 1: assetsAsLib, 2: assetsViewAsLib, 3: selectorsAssets, 4: selectorsAssetsView} = await deployPair(sto, Assets, AssetsView);
+    const {0: market, 1: marketAsLib, 2: marketViewAsLib, 3: selectorsMarket, 4: selectorsMarketView} = await deployPair(sto, Market, MarketView);
     
     namesStr            = ['Assets',            'AssetsView',           'Market',           'MarketView'];
     contractsAsLib      = [assetsAsLib,         assetsViewAsLib,        marketAsLib,        marketViewAsLib];

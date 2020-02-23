@@ -1,29 +1,17 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
-import "./AssetsLib.sol";
+import "./UpdatesView.sol";
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
  */
 
-contract Updates is Storage, AssetsLib {
+contract Updates is UpdatesView {
     event TeamTransfer(uint256 teamId, address to);
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string cid);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
 
-    uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
-    uint8 constant VERSES_PER_DAY = 96; // 24 * 4
-    uint16 constant VERSES_PER_ROUND = 1344; // 96 * 14
-    uint8 constant public NULL_TIMEZONE = 0;
-    uint8 constant CHALLENGE_TIME = 60; // in secs
-    
-    uint256 public nextVerseTimestamp;
-    uint8 public timeZoneForRound1;
-    uint256 public currentVerse;
-    bytes32 private _currentVerseSeed;
-    bool private _wasUpdatesInited;
-
     function initUpdates() public {
-        require(_wasUpdatesInited == false, "cannot initialize updates twice");
+        require(timeZoneForRound1 == 0, "cannot initialize updates twice");
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         // that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
         // the call to the contract init() function.
@@ -39,13 +27,8 @@ contract Updates is Storage, AssetsLib {
             timeZoneForRound1 = normalizeTZ(2+uint8(hour));
             nextVerseTimestamp = now + (59-minute)*60 + (60 - secs) + 3600;
         }
-        _wasUpdatesInited = true;
     }
  
-    function getNow() public view returns(uint256) {
-        return now;
-    }
-
     function incrementVerse() private {
         currentVerse += 1;
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
@@ -86,58 +69,14 @@ contract Updates is Storage, AssetsLib {
         emit TimeZoneUpdate(tz, root, now);
     }
     
-    function getLastUpdateTime(uint8 timeZone) internal view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].lastUpdateTime;
-    }
-    
-    function getLastActionsSubmissionTime(uint8 timeZone) public view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].lastActionsSubmissionTime;
-    }
-
     function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) internal returns(uint256) {
         if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
         _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
         _timeZones[tz].lastUpdateTime = now;
     }
 
-    
-    // each day has 24 hours, each with 4 verses => 96 verses per day.
-    // day = 0,..13
-    // turnInDay = 0, 1, 2, 3
-    // so for each TZ, we go from (day, turn) = (0, 0) ... (13,3) => a total of 14*4 = 56 turns per timeZone
-    // from these, all map easily to timeZones
-    function nextTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
-        return _timeZoneToUpdatePure(currentVerse, timeZoneForRound1);
-    }
-
-    function prevTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
-        if (currentVerse == 0) {
-            return (NULL_TIMEZONE, 0, 0);
-        }
-        return _timeZoneToUpdatePure(currentVerse - 1, timeZoneForRound1);
-    }
-
-    function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
-        // if currentVerse = 0, we should be updating timeZoneForRound1
-        // recall that timeZones range from 1...24 (not from 0...24)
-        uint16 verseInRound = uint16(verse % VERSES_PER_ROUND);
-        timeZone = normalizeTZ(TZForRound1 + verseInRound/4);
-        day = uint8(verseInRound / VERSES_PER_DAY);
-        turnInDay = uint8(verseInRound % 4);
-    }
-    
-    function normalizeTZ(uint16 tz) public pure returns (uint8) {
-        return uint8(1 + ((tz - 1)% 24));
-    }
-
     function setCurrentVerseSeed(bytes32 seed) public {
-        _currentVerseSeed = seed;
-    }
-        
-    function getCurrentVerseSeed() public view returns (bytes32) {
-        return _currentVerseSeed;
+        currentVerseSeed = seed;
     }
 
 }

@@ -20,6 +20,12 @@ contract Storage is Constants {
     mapping (uint256 => uint256) internal _teamIdToAuctionData;
     mapping (uint256 => uint256) internal _teamIdToRemainingAcqs;
 
+    uint256 internal nextVerseTimestamp;
+    uint8 internal timeZoneForRound1;
+    uint256 internal currentVerse;
+    bytes32 internal currentVerseSeed;
+
+
 // todo: add NULL_TZ = 0 and use it
 
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
