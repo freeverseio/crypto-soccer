@@ -9,6 +9,9 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
+const AssetsView = artifacts.require('AssetsView');
+const MarketView = artifacts.require('MarketView');
 
 contract('StorageProxy', (accounts) => {
     const FREEVERSE = accounts[0];
@@ -33,6 +36,28 @@ contract('StorageProxy', (accounts) => {
         assetsAsLib = await Assets.new().should.be.fulfilled;
     });
     
+    it('permissions check on full deploy', async () => {
+        depl = await delegateUtils.deployDelegate(
+            StorageProxy, 
+            Assets, 
+            AssetsView, 
+            Market, 
+            MarketView
+        );
+        assets = depl[0]
+        // ALICE can execute any view function (in AssetsView)
+        await assets.init({from: ALICE}).should.be.rejected;
+        await assets.init({from: FREEVERSE}).should.be.fulfilled;
+        await assets.getNCountriesInTZ(tz = 1, {from: ALICE}).should.be.fulfilled;
+        // ALICE cannot execute any write function (in Assets), FREEVERSE can
+        tz = 1;
+        countryIdxInTZ = 0;
+        teamIdxInCountry = 0;
+        teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: BOB}).should.be.rejected;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: FREEVERSE}).should.be.fulfilled;
+    });
+
     it('deploy storage by adding Assets selectors', async () => {
         // contact[0] is the NULL contract
         result = await sto.countContracts().should.be.fulfilled;
@@ -86,4 +111,6 @@ contract('StorageProxy', (accounts) => {
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
     });
+    
+    
 });

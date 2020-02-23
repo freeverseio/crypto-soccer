@@ -41,9 +41,15 @@ contract('Assets', (accounts) => {
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
-        result = await delegateUtils.deployDelegate(StorageProxy, Assets, AssetsView, Market, MarketView);
-        assets = result[0]
-        market = result[1]
+        depl = await delegateUtils.deployDelegate(
+            StorageProxy, 
+            Assets, 
+            AssetsView, 
+            Market, 
+            MarketView
+        );
+        assets = depl[0]
+        market = depl[1]
         
         initTx = await assets.init().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
