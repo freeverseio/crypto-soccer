@@ -1,3 +1,6 @@
+var Web3 = require('web3');
+var web3 = new Web3(Web3.givenProvider);
+
 const deployPair = async (sto, Contr, ContrView) => {
     if (Contr == "") return ["", "", "", [], []];
     contr = await Contr.at(sto.address).should.be.fulfilled;
