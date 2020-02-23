@@ -11,7 +11,7 @@ import "./EncodingIDs.sol";
  */
 
 contract Championships is SortIdxs, EncodingSkillsGetters, EncodingIDs {
-    uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
+    uint8 constant public PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
