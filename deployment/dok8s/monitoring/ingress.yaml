@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-freeverse
+spec:
+  tls:
+  - hosts:
+    - monitoring.gorengine.com
+    secretName: cryptosoccer-monitoring-tls
+  rules:
+  - host: monitoring.gorengine.com
+    http:
+      paths:
+      - backend:
+          serviceName: monitoring-grafana
+          servicePort: 80

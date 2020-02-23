@@ -3,8 +3,9 @@ kind: Ingress
 metadata:
   name: cryptosoccer-ingress
   annotations:
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     cert-manager.io/cluster-issuer: letsencrypt-freeverse
 spec:
   tls:
@@ -26,14 +27,6 @@ spec:
         backend:
           serviceName: horizon
           servicePort: 4000
-      - path: /monitoring(/|$)(.*)
-        backend:
-          serviceName: monitoring
-          servicePort: 80
-      - path: /banana
-        backend:
-          serviceName: banana
-          servicePort: 80
       #- path: /universe(/|$)(.*)
       #  backend:
       #    serviceName: universeapi
