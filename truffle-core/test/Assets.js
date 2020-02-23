@@ -34,7 +34,6 @@ contract('Assets', (accounts) => {
     var assets;
     var market;
     
-    var oldBalance = 100000000000000000000;
 
     
     const it2 = async(text, f) => {};

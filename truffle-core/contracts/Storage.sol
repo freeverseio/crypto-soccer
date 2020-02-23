@@ -13,7 +13,6 @@ contract Storage is Constants {
        
     ContractInfo[] internal _contractsInfo;
     mapping (bytes4 => uint256) internal _selectorToContractId;
-    bool public _wasInited;
     
     
     mapping(uint256 => uint256) internal _playerIdToState;

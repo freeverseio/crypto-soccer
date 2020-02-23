@@ -10,8 +10,10 @@ const marketUtils = require('../utils/marketUtils.js');
 const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const StorageProxy = artifacts.require('StorageProxy');
-const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
+const AssetsView = artifacts.require('AssetsView');
+const MarketView = artifacts.require('MarketView');
 const Privileged = artifacts.require('Privileged');
 
 async function createPromoPlayer(targetTeamId, internalId = 144321433) {
@@ -244,20 +246,16 @@ contract("Market", accounts => {
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
-    sto = await StorageProxy.new().should.be.fulfilled;
-    // setting up StorageProxy delegate calls to Assets
-    assets = await Assets.at(sto.address).should.be.fulfilled;
-    assetsAsLib = await Assets.new().should.be.fulfilled;
-    await sto.addNewContract(addr = assetsAsLib.address, name = "Assets").should.be.fulfilled;
-    selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-    await sto.addNewSelectors(selectors, contractId = 1).should.be.fulfilled;
-    // setting up StorageProxy delegate calls to Market
-    market = await Market.at(sto.address).should.be.fulfilled;
-    marketAsLib = await Market.new().should.be.fulfilled;
-    await sto.addNewContract(addr = marketAsLib.address, name = "Market").should.be.fulfilled;
-    selectors = delegateUtils.extractSelectorsFromAbi(Market.abi);
-    await sto.addNewSelectors(selectors, contractId = 2).should.be.fulfilled;
-
+    depl = await delegateUtils.deployDelegate(
+      StorageProxy, 
+      Assets, 
+      AssetsView, 
+      Market, 
+      MarketView
+    );
+    assets = depl[0]
+    market = depl[1]
+    
     // done with delegate calls
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     await assets.init().should.be.fulfilled;

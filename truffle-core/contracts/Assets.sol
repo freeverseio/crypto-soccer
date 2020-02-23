@@ -19,22 +19,20 @@ contract Assets is AssetsView {
     }
     
     function init() public {
-        require(_wasInited == false, "cannot initialize twice");
+        require(gameDeployDay == 0, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
-        _wasInited = true;
         emit AssetsInit(msg.sender);
     }
 
     // hack for testing: we can init only one timezone
     // at some point, remove this option
     function initSingleTZ(uint8 tz) public {
-        require(_wasInited == false, "cannot initialize twice");
+        require(gameDeployDay == 0, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
-        _wasInited = true;
         emit AssetsInit(msg.sender);
     }
     
