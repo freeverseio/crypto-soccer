@@ -12,15 +12,10 @@ const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
-const AssetsView = artifacts.require('AssetsView');
-const MarketView = artifacts.require('MarketView');
-const UpdatesView = artifacts.require('UpdatesView');
 
 
 
 contract('Updates', (accounts) => {
-    const VERSES_PER_DAY = 96;
-    const VERSES_PER_ROUND = 96*14;
     
     const it2 = async(text, f) => {};
 
@@ -29,11 +24,11 @@ contract('Updates', (accounts) => {
     }
 
     const moveToNextVerse = async (updates, extraSecs = 0) => {
+        constants = await ConstantsGetters.new().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         await timeTravel.advanceTime(nextTime - now + extraSecs);
         await timeTravel.advanceBlock().should.be.fulfilled;
-        
     };
 
     function isCloseEnough(timeResult, timeExpected) {
@@ -55,23 +50,29 @@ contract('Updates', (accounts) => {
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
         snapshotId = snapShot['result'];
+        VERSES_PER_DAY = await constants.get_VERSES_PER_DAY().should.be.fulfilled;
+        VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
+
     });
 
-    it('test that cannot initialize updates twice', async () =>  {
-        await updates.initUpdates().should.be.rejected;
-    });
+    // it('test that cannot initialize updates twice', async () =>  {
+    //     await updates.initUpdates().should.be.rejected;
+    // });
     
     it('check BC is set up in agreement with the local time', async () =>  {
-        // getTimeZonesPlayingInNextRound
-        timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
-        localTimeMs = Date.now();
-        now = new Date(localTimeMs);
-        if (now.getUTCMinutes() < 57) {
-            expectedHour = now.getUTCHours() + 1;
-        } else {
-            expectedHour = now.getUTCHours() + 2;
+        TZForRound1 = 2;
+        for (verse = 0; verse < VERSES_PER_ROUND.toNumber()+20; verse ++) {
+            var {0: tz, 1: matchday, 2: turn} = await updates._timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
+            day = Math.floor(0.25 * verse / 24);        
+            console.log(
+                "verse = ", verse, 
+                "day = ", day,
+                "hour = ", (TZForRound1+ 0.5 + 0.25 * verse - day * 24) % 24,
+                ", tz = ", tz.toNumber(), 
+                ", matchday = ", matchday.toNumber(), 
+                ", turn = ", turn.toNumber()
+            )
         }
-        timeZoneForRound1.toNumber().should.be.equal(expectedHour);
     });
     
     return

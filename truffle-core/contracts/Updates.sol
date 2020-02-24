@@ -20,12 +20,12 @@ contract Updates is UpdatesView {
         uint256 hour        = secsOfDay / 3600;  // 0, ..., 23
         uint256 minute      = (secsOfDay - hour * 3600) / 60; // 0, ..., 59
         uint256 secs        = (secsOfDay - hour * 3600 - minute * 60); // 0, ..., 59
-        if (minute < 57) {
+        if (minute < 27) {
             timeZoneForRound1 = 1 + uint8(hour);
-            nextVerseTimestamp = now + (59-minute)*60 + (60 - secs);
+            nextVerseTimestamp = now + (29-minute)*60 + (60 - secs);
         } else {
             timeZoneForRound1 = normalizeTZ(2+uint8(hour));
-            nextVerseTimestamp = now + (59-minute)*60 + (60 - secs) + 3600;
+            nextVerseTimestamp = now + (29-minute)*60 + (60 - secs) + 3600;
         }
     }
  

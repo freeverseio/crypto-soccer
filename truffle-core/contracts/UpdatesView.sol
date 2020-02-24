@@ -43,11 +43,13 @@ contract UpdatesView is Storage, AssetsLib {
         // recall that timeZones range from 1...24 (not from 0...24)
         uint16 verseInRound = uint16(verse % VERSES_PER_ROUND);
         turnInDay = uint8(verseInRound % 4);
+        if (turnInDay >=2 && verse < 9*4+2) return (NULL_TIMEZONE, 0, 0);
+        
         if (turnInDay < 2) {
             timeZone = normalizeTZ(TZForRound1 + verseInRound/4);
             day = 2 * uint8(verseInRound / VERSES_PER_DAY);
         } else {
-            timeZone = normalizeTZ(TZForRound1 + 9 + verseInRound/4);
+            timeZone = normalizeTZ(TZForRound1 + verseInRound/4 + (24-9));
             day = 1 + 2 * uint8(verseInRound / VERSES_PER_DAY);
             turnInDay -= 2;
         }
