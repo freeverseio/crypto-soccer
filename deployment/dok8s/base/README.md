@@ -1,6 +1,6 @@
 - to build and deploy
 ```bash
-kustomaize build . > output.yaml
+kustomize build . > output.yaml
 kubectl apply -f output.yaml
 ```
 
