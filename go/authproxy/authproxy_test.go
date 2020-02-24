@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )
@@ -71,4 +72,14 @@ func BenchmarkSignatureVerification(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		VerifyToken(token, time.Hour)
 	}
+}
+
+func TestPhoenixAuthIsValid(t *testing.T) {
+	address := common.HexToAddress("12890D2cce102216644c59daE5baed380d84830c")
+	token := "1579870008:Wic7VnPY+w4HwIGDvxpoDhXUyFBEJodyGsIOoN7iKmYZXa+lk3Zji5EfJtabXGnNblQOUl9bLPsFITSBqfNWawA="
+
+	addr, _, err := VerifyToken(token, time.Hour*10000)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, address, addr)
 }

@@ -25,13 +25,14 @@ clean()
     echo -- removing deployments
     kubectl delete -f ${MY_DIR}/ingress.yaml      -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/configmap.yaml    -n ${NAMESPACE}
-    kubectl delete -f ${MY_DIR}/universedb.yaml   -n ${NAMESPACE}
+    # kubectl delete -f ${MY_DIR}/universedb.yaml   -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/universeapi.yaml  -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/marketdb.yaml     -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/trader.yaml       -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/notary.yaml       -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/synchronizer.yaml -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/relayactions.yaml -n ${NAMESPACE}
+    kubectl delete -f ${MY_DIR}/authproxy.yaml    -n ${NAMESPACE}
 }
 
 deploy()
@@ -39,7 +40,7 @@ deploy()
     echo -- deploying ingress,configmap,universedb,universeapi,ipsnode,marketdb,trader,notary
     kubectl apply -f ${MY_DIR}/ingress.yaml      -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/configmap.yaml    -n ${NAMESPACE}
-    kubectl apply -f ${MY_DIR}/universedb.yaml   -n ${NAMESPACE}
+    # kubectl apply -f ${MY_DIR}/universedb.yaml   -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/universeapi.yaml  -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/ipfsnode.yaml     -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/marketdb.yaml     -n ${NAMESPACE}
@@ -48,6 +49,7 @@ deploy()
     kubectl apply -f ${MY_DIR}/relayactions.yaml -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/synchronizer.yaml -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/horizon.yaml      -n ${NAMESPACE}
+    kubectl apply -f ${MY_DIR}/authproxy.yaml      -n ${NAMESPACE}
 }
 
 clean

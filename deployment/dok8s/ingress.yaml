@@ -27,6 +27,10 @@ spec:
         backend:
           serviceName: horizon
           servicePort: 4000
+      - path: /auth(/|$)(.*)
+        backend:
+          serviceName: authproxy
+          servicePort: 8080
       #- path: /universe(/|$)(.*)
       #  backend:
       #    serviceName: universeapi

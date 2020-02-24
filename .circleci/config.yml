@@ -70,7 +70,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - run: cd go/cmd/notary && go build ./notary.go
-      - run: cd go/notary && go test ./... -p 1
+      # - run: cd go/notary && go test ./... -p 1
   relay-actions:
     executor: freeverse_ethereum
     steps:
