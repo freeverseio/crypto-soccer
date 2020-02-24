@@ -14,7 +14,7 @@ func TestConctactsDeploy(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc.DeployContracts(bc.Owner)
+	assert.NilError(t, bc.DeployContracts(bc.Owner))
 	assert.Assert(t, bc.Contracts.Client != nil)
 	assert.Assert(t, bc.Contracts.Leagues != nil)
 	assert.Assert(t, bc.Contracts.Assets != nil)
