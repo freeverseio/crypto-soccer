@@ -16,7 +16,7 @@ kustomize create
 kustomize edit add label 'app.kubernetes.io/part-of':${APP_NAME},'app.kubernetes.io/version':${APP_VERSION}
 
 kustomize edit add base ${BASE_DIR}
-kustomize edit set namespace ${NAMESPACE}
+#kustomize edit set namespace ${NAMESPACE}
 
 # set image tags 
 kustomize edit set image ipfs/go-ipfs:${IPFS_TAG}
