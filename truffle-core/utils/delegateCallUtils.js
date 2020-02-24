@@ -1,36 +1,30 @@
 var Web3 = require('web3');
 var web3 = new Web3(Web3.givenProvider);
 
-const deployPair = async (sto, Contr, ContrView) => {
-    if (Contr == "") return ["", "", "", [], []];
+const deployPair = async (sto, Contr) => {
+    if (Contr == "") return ["", "", []];
     contr = await Contr.at(sto.address).should.be.fulfilled;
     contrAsLib = await Contr.new().should.be.fulfilled;
-    contrView = await ContrView.at(sto.address).should.be.fulfilled;
-    contrViewAsLib = await ContrView.new().should.be.fulfilled;
     selectors = extractSelectorsFromAbi(Contr.abi);
-    selectorsView = extractSelectorsFromAbi(ContrView.abi);
-    selectors = removeDuplicatesFromFirstContract(selectors, selectorsView);
-    return [contr, contrAsLib, contrViewAsLib, selectors, selectorsView]
+    return [contr, contrAsLib, selectors];
 };
 
-const deployDelegate = async (StorageProxy, Assets, AssetsView, Market = "", MarketView = "", Updates = "", UpdatesView = "") => {
-    sto = await StorageProxy.new().should.be.fulfilled;
+const deployDelegate = async (sto, Assets, Market = "", Updates = "") => {
     // setting up StorageProxy delegate calls to Assets
-    const {0: assets, 1: assetsAsLib, 2: assetsViewAsLib, 3: selectorsAssets, 4: selectorsAssetsView} = await deployPair(sto, Assets, AssetsView);
-    const {0: market, 1: marketAsLib, 2: marketViewAsLib, 3: selectorsMarket, 4: selectorsMarketView} = await deployPair(sto, Market, MarketView);
-    const {0: updates, 1: updatesAsLib, 2: updatesViewAsLib, 3: selectorsUpdates, 4: selectorsUpdatesView} = await deployPair(sto, Updates, UpdatesView);
+    const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(sto, Assets);
+    const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(sto, Market);
+    const {0: updates, 1: updatesAsLib, 2: selectorsUpdates} = await deployPair(sto, Updates);
     
-    namesStr            = ['Assets',            'AssetsView',           'Market',           'MarketView',           'Updates',           'UpdatesView'];
-    contractsAsLib      = [assetsAsLib,         assetsViewAsLib,        marketAsLib,        marketViewAsLib,        updatesAsLib,        updatesViewAsLib,];
-    allSelectors        = [selectorsAssets,     selectorsAssetsView,    selectorsMarket,    selectorsMarketView,    selectorsUpdates,    selectorsUpdatesView];
-    requiresPermission  = [true,                false,                  true,               false,                  true,               false];
+    namesStr            = ['Assets', 'Market', 'Updates'];
+    contractsAsLib      = [assetsAsLib, marketAsLib, updatesAsLib];
+    allSelectors        = [selectorsAssets, selectorsMarket, selectorsUpdates];
 
     addresses = [];                 
     names = [];
     addresses = [];
     contractIds = [];
 
-    nContracts = requiresPermission.length;
+    nContracts = namesStr.length;
     for (c = 0; c < nContracts; c++) {
         if (allSelectors[c].length > 0) {
             names.push(toBytes32(namesStr[c]));
@@ -42,7 +36,7 @@ const deployDelegate = async (StorageProxy, Assets, AssetsView, Market = "", Mar
     // Add all contracts to predicted Ids: [1, 2, ...]
     for (c = 0; c < nContracts; c++) {
         if (allSelectors[c].length > 0) {
-            tx0 = await sto.addContract(contractIds[c], addresses[c], requiresPermission[c], allSelectors[c], names[c]).should.be.fulfilled;
+            tx0 = await sto.addContract(contractIds[c], addresses[c], allSelectors[c], names[c]).should.be.fulfilled;
         }
     }
 

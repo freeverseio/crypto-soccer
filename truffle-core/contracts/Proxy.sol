@@ -5,9 +5,9 @@ import "./Storage.sol";
 /**
 * @title Manages the state variables of a DelegateProxy
 */
-contract StorageProxy is Storage {
+contract Proxy is ProxyStorage {
 
-    event ContractAdded(uint256 contactId, bool requiresPermission, bytes32 name, bytes4[] selectors);
+    event ContractAdded(uint256 contactId, bytes32 name, bytes4[] selectors);
     event ContractsActivated(uint256[] contactIds);
     event ContractsDeleted(uint256[] contactIds);
 
@@ -16,8 +16,8 @@ contract StorageProxy is Storage {
 
     constructor() public {
         _storageOwner = msg.sender;
-        // _contractsInfo[0] is the NULL contract:
-        _contractsInfo.push(ContractInfo(address(0), false, new bytes4[](0), "")); 
+        // set _contractsInfo[0] as the NULL contract:
+        _contractsInfo.push(ContractInfo(address(0), new bytes4[](0), "")); 
     }
     
     modifier onlyOwner() 
@@ -32,11 +32,7 @@ contract StorageProxy is Storage {
     fallback () external {
         ContractInfo memory info = _contractsInfo[_selectorToContractId[msg.sig]];
         require(info.selectors.length != 0, "function selector is not assigned to a valid contract");
-        address contractAddress = info.addr;
-        if (info.requiresPermission) {
-            require(msg.sender == _storageOwner, "Only owner is authorized for this selector.");
-        }
-        delegate(contractAddress, msg.data);
+        delegate(info.addr, msg.data);
     } 
     
     /**
@@ -66,17 +62,16 @@ contract StorageProxy is Storage {
         _storageOwner = newOwner;
     }
 
-    function addContract(uint256 contractId, address addr, bool requiresPermission, bytes4[] memory selectors, bytes32 name) public onlyOwner {
+    function addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) public onlyOwner {
             // we require that the contract gets assigned an Id that is as specified from outside, 
             // to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
             require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
             ContractInfo memory info;
             info.addr = addr;
             info.name = name;
-            info.requiresPermission = requiresPermission;
             info.selectors = selectors;
             _contractsInfo.push(info);
-            emit ContractAdded(contractId, requiresPermission, name, selectors);        
+            emit ContractAdded(contractId, name, selectors);        
     }
     
     function deleteAndActivateContracts(uint256[] memory deactContractIds, uint256[] memory actContractIds) public onlyOwner {
@@ -200,10 +195,9 @@ contract StorageProxy is Storage {
     function getContractAddressForSelector(bytes4 selector) external view returns(address) { 
         return _contractsInfo[_selectorToContractId[selector]].addr; 
     }
-    function getContractInfo(uint256 contractId) public view returns (address, bool, bytes32, bytes4[] memory) {
+    function getContractInfo(uint256 contractId) public view returns (address, bytes32, bytes4[] memory) {
         return (
             _contractsInfo[contractId].addr,
-            _contractsInfo[contractId].requiresPermission,
             _contractsInfo[contractId].name,
             _contractsInfo[contractId].selectors
         );

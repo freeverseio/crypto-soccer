@@ -1,19 +1,16 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
+import "./ProxyStorage.sol";
 import "./Constants.sol";
 
 /**
 * @title Storage common to all project, with setters managed by StorageProxy.
 */
-contract Storage is Constants {
+contract Storage is ProxyStorage, Constants{
 
     uint256[2**8] _slotReserve;
-    address internal _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
+   
     address internal _academyAddr;
-       
-    ContractInfo[] internal _contractsInfo;
-    mapping (bytes4 => uint256) internal _selectorToContractId;
-    
     
     mapping(uint256 => uint256) internal _playerIdToState;
     mapping (uint256 => uint256) internal _playerIdToAuctionData;
@@ -31,13 +28,6 @@ contract Storage is Constants {
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
     uint256 public gameDeployDay;
     uint256 public currentRound;
-
-    struct ContractInfo {
-        address addr;
-        bool requiresPermission;
-        bytes4[] selectors;
-        bytes32 name;
-    }
 
     struct Team {
         uint256[PLAYERS_PER_TEAM_MAX] playerIds; 
