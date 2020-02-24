@@ -14,25 +14,12 @@ import (
 )
 
 func TestScanningIniting(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.Init()
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	scanner := process.NewEventScanner(bc.Contracts)
-	err = scanner.Process(nil)
+	err := scanner.Process(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	nTZsAtStart := int(24)
+	nTZsAtStart := int(1)
 	nDivsPerTZAtStart := int(1)
 	nEventsExpected := nTZsAtStart*nDivsPerTZAtStart + 1
 	events := scanner.Events
