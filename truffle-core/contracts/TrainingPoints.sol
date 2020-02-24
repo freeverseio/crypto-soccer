@@ -144,9 +144,18 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         view
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
-        if (assignedTPs == 0) return teamSkills;
-        (uint16[25] memory TPperSkill, uint8 specialPlayer, uint16 TP) = decodeTP(assignedTPs);
-        require(earnedTPs == TP, "assignedTPs used an amount of TP that does not match the earned TPs in previous match");
+        uint16[25] memory TPperSkill;
+        uint8 specialPlayer; 
+        uint16 TP; 
+        
+        // even if assignedTPs = 0, players can get older, and use stamina pills to reduce nGamesNonStopping
+        if (assignedTPs != 0) {
+            (TPperSkill, specialPlayer, TP )= decodeTP(assignedTPs);
+            require(earnedTPs == TP, "assignedTPs used an amount of TP that does not match the earned TPs in previous match");
+        } else {
+            specialPlayer = NO_PLAYER;
+        }
+        
         uint16[5] memory singleTPperSkill;
         (uint8[PLAYERS_PER_TEAM_MAX] memory staminas,,) = getItemsData(tactics);
                 

@@ -61,6 +61,7 @@ jobs:
       - run: cd go/useractions && go test ./...
       - run: cd go/marketpay/v1 && go test ./...
       - run: cd go/storage && go test ./...
+      - run: cd go/authproxy && go test ./...
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
   market-notary:
@@ -99,6 +100,7 @@ jobs:
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
+      - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:dev .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:dev
@@ -109,6 +111,7 @@ jobs:
       - run: docker push freeverseio/market.notary:dev
       - run: docker push freeverseio/universe.api:dev
       - run: docker push freeverseio/relay.actions:dev
+      - run: docker push freeverseio/authproxy:dev
       - run: docker push freeverseio/dashboard:dev
   dockerization-production:
     executor: freeverse

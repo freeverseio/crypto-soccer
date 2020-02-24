@@ -18,12 +18,21 @@ services:
       "https://dev1.gorengine.com/pippolo" "http://ethereum:8545"
     depends_on:
       - ethereum
+  authproxy:
+    image: freeverseio/authproxy:$TAG
+    command: >
+      -debug
+      -gqlurl "http://horizon:4000"
+      -serviceurl "http://localhost"
+    ports:
+      - "10000:8080"
   universe.db:
     image: freeverseio/universe.db:$TAG
     volumes:
       - universe.db-data:/var/lib/postgresql/data
   synchronizer:
     image: freeverseio/synchronizer:$TAG
+    restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       -ipfs ipfs.node:5001
@@ -63,6 +72,7 @@ services:
       - "4000:4000"
   relay.actions:
     image: freeverseio/relay.actions:$TAG
+    restart: always
     depends_on:
       - ethereum
       - ipfs.node
@@ -71,7 +81,6 @@ services:
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum "http://ethereum:8545"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
-      -delay 30s
       -ipfs ipfs.node:5001
   ipfs.node:
     image: ipfs/go-ipfs:v0.4.23

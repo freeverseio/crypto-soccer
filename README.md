@@ -4,3 +4,4 @@ When deploying new contracts:
 * make contracts
 * in go/testutils/blockchain_node.go:
   * add to ContractAddresses all contracts that you want to call from Go code
+  * 

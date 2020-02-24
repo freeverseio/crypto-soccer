@@ -1,0 +1,12 @@
+FROM golang:latest as builder
+
+WORKDIR /app
+COPY . /app
+WORKDIR /app/cmd/authproxy
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o authproxy
+
+FROM scratch
+COPY --from=builder /app/cmd/authproxy/authproxy /authproxy
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ENTRYPOINT ["/authproxy"]

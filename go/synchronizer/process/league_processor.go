@@ -102,6 +102,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return err
 	}
 	matches.SetSeed(event.Seed)
+	matches.SetStartTime(event.SubmissionTime)
 	if err := matches.SetTactics(*b.contracts, userActions.Tactics); err != nil {
 		return err
 	}

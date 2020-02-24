@@ -4,7 +4,7 @@ contract EncodingTPAssignment {
 
     uint16 public constant MAX_PERCENT = 60; 
     uint8 private constant PLAYERS_PER_TEAM_MAX  = 25;
-    uint8 private constant NO_PLAYER = PLAYERS_PER_TEAM_MAX; // No player chosen
+    uint8 public constant NO_PLAYER = PLAYERS_PER_TEAM_MAX; // No player chosen
 
     // We have 5 buckets: GK, D, M, A, Special
     // We need 5 TPperSkill per bucket 

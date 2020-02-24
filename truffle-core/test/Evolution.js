@@ -243,6 +243,32 @@ contract('Evolution', (accounts) => {
     });
 
     
+    it('test that used to fail because skills[lineUp[p]] would query skills[25]', async () => {
+        seed = '0x6c94aa1a7eea1de18637d1145b6d4bd41cf5f6f8412aae446c2c699d7580ac1f';startTime = '1581951774';matchLog0 = '0';teamId0 = '274877906944';tactic0 = '232408266334649167582215536641';assignedTP0 = '0';players0 = ['14606248079918261338806855269144928920528183545627247','14603325075249802958062362770259847568953042673598904','14615017086954653606499907545237767084325338845938493','14609171184243174825485386707807678037701064871052075','14615017461189033969342085988364404867542322815173331','14603325891317697566792670026694092366945297476616921','14606249873734453245614329194914044263381734393971242','14603324461979309998470701597095731425930881024328431','14606248281321866413037179626743594105804510651548463','14606249082057998697777445242442714345874030104085954','14603327085801362263089568887183207415342272698974888','14612095382001501327618929766528609401264661864121250','14603326117112742701915784438422215461700315946878109','14612093787498219632679532984082491830230891888182351','14609173081200313275497388967190849348658309539234489','14603326360330245023390631074601982170339882110616174','14606249807529115937477334114560996043185291177165366','14603326808435843856365497756482947008181618635572131','0','0','0','0','0','0','0',];matchLog1 = '0';teamId1 = '274877906951';tactic1 = '232408266302079135077072109569';assignedTP1 = '0';players1 = ['14615016376815298690800201649220184280315730971132558','14609172511834412425521368984185260418865566827283036','14609171084586719719561567913262331453334268194587406','14609172165475963560842787370746505659732178042290961','14612094897657191547041386733102280708157489908351780','14609171364042932988648677202799875053042440135311897','14606248714792601209485990362067212005781000358003188','14609173055415076639705784028918284727348393612411594','14609171905532902340470607391083606114650385692034077','14609172622641240130721037564311250677507995239581185','14603325390944727174772193097761782592653101121733224','14603324761645573603736249750401919269415400293270169','14603324774189742777909804362708129945470638967817654','14609171585656588399047378013534405380348672917505319','14609173082594109850415535128877508619287877366448825','14612096081687381931527530703691145228948441982501521','14612093676691391927490720233815463751121253833769674','14606249096692862734323783960084670624419958191030946','0','0','0','0','0','0','0',];
+        var {0: skills, 1: matchLogsAndEvents} =  await play.play1stHalfAndEvolve(
+            seed, startTime, [players0, players1], [teamId0, teamId1], [tactic0, tactic1], [matchLog0, matchLog1],
+            [is2nd = false, isHom = true, isPlay = false], [assignedTP0, assignedTP1]).should.be.fulfilled;
+    });
+    
+    it('show that a red card is stored in skills after playing 1st half', async () => {
+        TP = 0;
+        assignment = 0
+        prev2ndHalfLog = 0;
+        teamIds = [1,2]
+        vSeed = '0x234a2b366'
+        var {0: skills, 1: matchLogsAndEvents} =  await play.play1stHalfAndEvolve(
+            vSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
+        ).should.be.fulfilled;
+        outType = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        outType.toNumber().should.be.equal(3); // RED_CARD = 3
+        // with this seed, player p = 8 sees the red card
+        outPlayer = await training.getOutOfGamePlayer(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        outPlayer.toNumber().should.be.equal(8);
+        p = 8;    
+        red = await assets.getRedCardLastGame(skills[0][p]).should.be.fulfilled;
+        red.should.be.equal(true)
+    });
     
     it('updateSkillsAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
@@ -514,18 +540,27 @@ contract('Evolution', (accounts) => {
         for (p = 18; p < 25; p++) teamState.push(0);
         TPperSkill = Array.from(new Array(25), (x,i) => 0);
         TP = TPperSkill.reduce((a, b) => a + b, 0);
-        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
+        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 0).should.be.fulfilled;
         matchStartTime = now;
         newSkills = await training.applyTrainingPoints(teamState, assignment, tactics = 0, matchStartTime, TP);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
+        expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
+        // check that if skills are different, then:
+        // - the new ones are worse than the init ones,
+        // - it happened because of age (older than 31 y.o.)
         for (p = 0; p < 18; p++) {
-            result0 = await training.getSkill(teamState[p], SK_SHO).should.be.fulfilled;
-            result1 = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
-            initShoot.push(result0)
-            newShoot.push(result1)
+            resultInit = await training.getSkill(teamState[p], SK_SHO).should.be.fulfilled;
+            resultNew = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
+            if (resultNew.toNumber() != resultInit.toNumber()) {
+                resultId = await assets.getPlayerIdFromSkills(newSkills[p]).should.be.fulfilled;
+                resultAge = await assets.getPlayerAgeInDays(resultId).should.be.fulfilled;
+                (resultAge.toNumber() >= 31 * 365).should.be.equal(true);
+                (resultNew.toNumber() < resultInit.toNumber()).should.be.equal(true);
+            }
+            initShoot.push(resultInit)
+            newShoot.push(resultNew)
         }
         debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);

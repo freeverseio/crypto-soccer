@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -35,6 +36,7 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 	var matches process.Matches
 	for i := 0; i < 2; i++ {
 		match := engine.NewMatch()
+		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
 		for i := 0; i < 25; i++ {
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
@@ -55,6 +57,7 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 	matches = nil
 	for i := 0; i < 2; i++ {
 		match := engine.NewMatch()
+		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
 		for i := 0; i < 25; i++ {
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
@@ -100,6 +103,40 @@ func TestMatchesSetTrainings(t *testing.T) {
 	trainings = append(trainings, training)
 	assert.NilError(t, matches.SetTrainings(*bc.Contracts, trainings))
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
+}
+
+func TestMinute2Round(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		Minute int
+		Round  uint8
+	}{
+		{0, 0},
+		{1, 0},
+		{4, 0},
+		{5, 1},
+		{9, 1},
+		{10, 2},
+		{14, 2},
+		{15, 3},
+		{19, 3},
+		{20, 5},
+		{44, 10},
+		{45, 11},
+		{46, 0},
+		{49, 0},
+		{50, 1},
+		{89, 10},
+		{90, 11},
+		{91, 11},
+		{100, 11},
+	}
+
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
+			assert.Equal(t, process.Minute2Round(tc.Minute), tc.Round)
+		})
+	}
 }
 
 // func TestMatchesFromToStorage(t *testing.T) {

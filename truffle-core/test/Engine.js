@@ -738,10 +738,6 @@ contract('Engine', (accounts) => {
         result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
 
-        NO_LINEUP = await precomp.NO_LINEUP().should.be.fulfilled;
-        result = await precomp.verifyCanPlay(linedUp = NO_LINEUP, teamStateAll50Half2[0], is2nd = true, isSubst = false).should.be.fulfilled;
-        result.should.be.bignumber.equal('0');
-        
         // injured fails
         teamStateAll50Half2[5] = await assets.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
