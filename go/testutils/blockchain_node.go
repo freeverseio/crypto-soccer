@@ -2,10 +2,8 @@ package testutils
 
 import (
 	"crypto/ecdsa"
-	"errors"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -101,23 +99,25 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 }
 
 func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
-	var cryptoRoot string
-	for _, e := range os.Environ() {
-		pair := strings.SplitN(e, "=", 2)
-		if pair[0] == "CRYPTOSOCCER_ROOT" {
-			log.Info(pair)
-			cryptoRoot = pair[1]
-		}
+	cryptoRoot, err := exec.Command("/usr/bin/git", "rev-parse", "--show-toplevel").Output()
+	if err != nil {
+		log.Fatal(err)
 	}
-	if cryptoRoot == "" {
-		return errors.New("Environment CRYPTOSOCCER_ROOT is not set")
+	log.Infof("Cryptosoccer root at: %s", cryptoRoot)
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return err
 	}
-	log.Infof("Cryptosoccer root at: %v", cryptoRoot)
-	os.Chdir(cryptoRoot + "/truffle-core")
+	if err = os.Chdir(string(cryptoRoot[:len(cryptoRoot)-1]) + "/truffle-core"); err != nil {
+		return err
+	}
 	cmd := exec.Command("./node_modules/.bin/truffle", "migrate", "--network", "local", "--reset")
 	log.Infof("Running command and waiting for it to finish... %v", cmd.String())
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
+		return err
+	}
+	if err = os.Chdir(workingDir); err != nil {
 		return err
 	}
 	auth := bind.NewKeyedTransactor(owner)
