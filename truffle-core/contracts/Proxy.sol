@@ -14,9 +14,12 @@ contract Proxy is ProxyStorage {
     // TODO: is this future-proof? shall we have it re-settable?
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
+    /**
+    * @dev Sets owner of proxy to whoever deployed it
+    * @dev And sets _contractsInfo[0] as the NULL contract
+    */
     constructor() public {
         _proxyOwner = msg.sender;
-        // set _contractsInfo[0] as the NULL contract:
         _contractsInfo.push(ContractInfo(address(0), new bytes4[](0), "")); 
     }
     
@@ -58,16 +61,33 @@ contract Proxy is ProxyStorage {
         }
     }
     
+    /**
+    * @dev Proposes a new proxy owner, who needs to later accept it
+    */
     function proposeProxyOwner(address proposedOwner) public onlyOwner {
         _proposedProxyOwner = proposedOwner;
     }
 
+    /**
+    * @dev The proposed owner can call this function to become the owner
+    */
     function acceptProxyOwner() public  {
         require(msg.sender == _proposedProxyOwner, "only proposed owner can become owner");
         _proxyOwner = _proposedProxyOwner;
         _proposedProxyOwner = address(0);
     }
 
+    /**
+    * @dev Stores the info about a contract to be later called via delegate call,
+    * @dev by pushing to the _contractsInfo array, and emits an event with all the info.
+    * @dev NOTE: it does not activate it until "activateContracts" is invoked
+    * @param contractId The index in the array _contractsInfo where this contract should be placed
+    *   It must be equal to the next available idx in the array. Although not strictly necessary, 
+    *   it allows the external caller to ensure that the idx is as expected without parsing the event.
+    * @param addr Address of the contract that will be used in the delegate call
+    * @param selectors An array of all selectors needed inside the contract
+    * @param name The name of the added contract, only for reference
+    */
     function addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) public onlyOwner {
         // we require that the contract gets assigned an Id that is as specified from outside, 
         // to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
@@ -80,11 +100,23 @@ contract Proxy is ProxyStorage {
         emit ContractAdded(contractId, name, selectors);        
     }
     
-    function deleteAndActivateContracts(uint256[] memory deactContractIds, uint256[] memory actContractIds) public onlyOwner {
-        deleteContracts(deactContractIds);
+    /**
+    * @dev  Deactivates a set of contracts, and then activates another set,
+    *       in one single atomic transaction. 
+    *       Note: it only removes the mapped selectors, not the contract info. 
+    * @param deactContractIds The ids of the contracts to be de-activated
+    * @param actContractIds The ids of the contracts to be activated
+    */
+    function deactivateAndActivateContracts(uint256[] memory deactContractIds, uint256[] memory actContractIds) public onlyOwner {
+        deactivateContracts(deactContractIds);
         activateContracts(actContractIds);
     }
         
+    /**
+    * @dev  Activates a set of contracts, by adding an entry in the 
+    *       _selectorToContractId mapping for each selector of the contract. 
+    * @param contractIds The ids of the contracts to be activated
+    */
     function activateContracts(uint256[] memory contractIds) public onlyOwner {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
@@ -96,112 +128,32 @@ contract Proxy is ProxyStorage {
         emit ContractsActivated(contractIds);        
     }
 
-    function deleteContracts(uint256[] memory contractIds) public onlyOwner {
+    /**
+    * @dev  De-activates a set of contracts, by adding an entry in the 
+    *       _selectorToContractId mapping for each selector of the contract. 
+    * @param contractIds The ids of the contracts to be activated
+    */
+    function deactivateContracts(uint256[] memory contractIds) public onlyOwner {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             for (uint256 s = 0; s < selectors.length; s++) {
                 delete _selectorToContractId[selectors[s]];
             }
-            // TODO: do we really want to get rid of this entry? Nothing points to it anymore...
-            delete _contractsInfo[contractId];
         }
         emit ContractsDeleted(contractIds);        
     }
 
-    // function deletePreviousDeploy() private {
-    //     // First delete all entries in the selectors mapping _selectorToContractAddr:
-    //     for (uint256 contractId = 0; contractId < _contractsInfo.length; contractId++) {
-    //         deleteAllSelectorsInContract(contractId);
-    //     }
-    //     // Finally delete the arrays:
-    //     delete _contractsInfo;
-    // }
-    
-    // function deleteAllSelectorsInContract(uint256 contractId) private {
-    //     for (uint256 s = 0; s < _contractsInfo[contractId].selectors.length; s++) {
-    //         delete _selectorToContractId[_contractsInfo[contractId].selectors[s]];
-    //     }
-    // }
 
-    // function addSelectors(bytes4[] memory selectors, uint256 contractId) public onlyOwner {
-    //     require(_contractExists(contractId), "selectors cannot point to a non-specified contract");
-    //     for (uint256 s = 0; s < selectors.length; s++) {
-    //         // If selectors has never been declared before, add to _allSelectorsInContract to keep track.
-    //         if(_selectorToContractAddr[selectors[s]] == 0) { 
-    //             _allSelectorsInContract[contractId].push(selectors[s]); 
-    //         }
-    //         _selectorToContractAddr[selectors[s]] = contractId;
-           
-    //     }
-    // }
-
-
-    // function deleteSelectors(bytes4[] memory selectors) public onlyOwner {
-    //     for (uint256 s = 0; s < selectors.length; s++) {
-    //         _selectorToContractAddr[selectors[s]] = 0;
-    //     }
-    // }
-    
-    // function setContract(uint256 contractId, address addr, bool isSetter, string memory name, bytes4[] memory selectors) public onlyOwner {
-    //     require(contractId != 0, "contractId = 0 is reserved for NULL contract");
-    //     require(!_stringIsEmpty(name), "cannot create a contract without name");
-    //     require(addr != address(0), "cannot create a contract with null address");
-    //     bool contractExists = contractId < _contractIdToInfo.length;
-    //     require(contractExists || contractId == _contractIdToInfo.length, "contractId does not exist, and it is neither the next Id available");
-
-    //     ContractInfo memory info;
-    //     info.addr = addr;
-    //     info.name = name;
-    //     info.isSetter = isSetter;
-    
-    //     if (contractExists) { 
-    //         deleteContract(contractId);
-    //         _contractIdToInfo[contractId] = info;
-    //     } else {
-    //         _contractIdToInfo.push(info);
-    //     }
-    //     addSelectors(selectors, contractId);
-    //     require(false,"--");
-    //     emit ContractSet(_contractIdToInfo.length - 1, isSetter, name, selectors);
-    // }
-
-    // function changeContractAddr(uint256 contractId, address addr) public onlyOwner {
-    //     require(addr != address(0), "cannot set a contract with null address");
-    //     _contractIdToInfo[contractId].addr = addr;
-    // }
-
-    // function changeContractName(uint256 contractId, string memory name) public onlyOwner {
-    //     require(!_stringIsEmpty(name), "cannot set a contract without name");
-    //     _contractIdToInfo[contractId].name = name;
-    // }
-
-    // function changeContractIsSetter(uint256 contractId, bool isSetter) public onlyOwner {
-    //     _contractIdToInfo[contractId].isSetter = isSetter;
-    // }
-    
-    // function deleteContract(uint256 contractId) public onlyOwner {
-    //     delete _contractIdToInfo[contractId];
-    //     for (uint256 s = 0; s < _allSelectorsInContract[contractId].length; s++) {
-    //         delete _selectorToContractAddr[_allSelectorsInContract[contractId][s]];
-    //     }
-    // }
-
-    // function _contractExists(uint256 contractId) internal view returns (bool) {
-    //     return _contractIdToInfo[contractId].addr != address(0);
-    // }
-    
-    function _stringIsEmpty(string memory str) internal pure returns (bool) {
-        return bytes(str).length == 0;
-    }
-
-    // function countFunctions() external view returns(uint256) { return _allSelectorsInContract.length; }
+    /**
+    * @dev  Standard getters
+    */
     function countContracts() external view returns(uint256) { return _contractsInfo.length; }
     function countAddressesInContract(uint256 contractId) external view returns(uint256) { return _contractsInfo[contractId].selectors.length; }
     function getContractAddressForSelector(bytes4 selector) external view returns(address) { 
         return _contractsInfo[_selectorToContractId[selector]].addr; 
     }
-    function getContractInfo(uint256 contractId) public view returns (address, bytes32, bytes4[] memory) {
+    function getContractInfo(uint256 contractId) external view returns (address, bytes32, bytes4[] memory) {
         return (
             _contractsInfo[contractId].addr,
             _contractsInfo[contractId].name,

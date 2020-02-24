@@ -1,7 +1,5 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
-import "./Constants.sol";
-
 /**
 * @title Storage required by Proxy
 */

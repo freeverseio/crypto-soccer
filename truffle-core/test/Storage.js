@@ -115,8 +115,8 @@ contract('Proxy', (accounts) => {
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
 
-        // test that deleteContracts destroys all calls to assets functions
-        tx1 = await proxy.deleteContracts(contractIds = [contractId]).should.be.fulfilled;
+        // test that deactivateContracts destroys all calls to assets functions
+        tx1 = await proxy.deactivateContracts(contractIds = [contractId]).should.be.fulfilled;
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.rejected;
 
@@ -131,7 +131,7 @@ contract('Proxy', (accounts) => {
         // I can do the same thing in one atomic TX:
         contractId = 3;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
-        tx1 = await proxy.deleteAndActivateContracts(deactivate = [2], activate = [3]).should.be.fulfilled;
+        tx1 = await proxy.deactivateAndActivateContracts(deactivate = [2], activate = [3]).should.be.fulfilled;
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);

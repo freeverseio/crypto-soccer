@@ -41,7 +41,7 @@ const deployDelegate = async (sto, Assets, Market = "", Updates = "") => {
     }
 
     // Activate all contracts atomically
-    tx1 = await sto.deleteAndActivateContracts(deactivate = [], activate = contractIds).should.be.fulfilled;
+    tx1 = await sto.deactivateAndActivateContracts(deactivate = [], activate = contractIds).should.be.fulfilled;
 
     return [assets, market, updates, allSelectors];
 
