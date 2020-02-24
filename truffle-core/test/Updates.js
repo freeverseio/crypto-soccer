@@ -7,6 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const timeTravel = require('../utils/TimeTravel.js');
 const delegateUtils = require('../utils/delegateCallUtils.js');
 
+const ConstantsGetters = artifacts.require('ConstantsGetters');
 const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
@@ -44,6 +45,7 @@ contract('Updates', (accounts) => {
     };
     
     beforeEach(async () => {
+        constants = await ConstantsGetters.new().should.be.fulfilled;
         sto = await StorageProxy.new().should.be.fulfilled;
         result = await delegateUtils.deployDelegate(
             StorageProxy, 
@@ -57,7 +59,7 @@ contract('Updates', (accounts) => {
         updates = result[2];
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
-        NULL_TIMEZONE = await updates.NULL_TIMEZONE().should.be.fulfilled;
+        NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
         snapshotId = snapShot['result'];

@@ -9,6 +9,7 @@ const timeTravel = require('../utils/TimeTravel.js');
 const marketUtils = require('../utils/marketUtils.js');
 const delegateUtils = require('../utils/delegateCallUtils.js');
 
+const ConstantsGetters = artifacts.require('ConstantsGetters');
 const StorageProxy = artifacts.require('StorageProxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
@@ -246,6 +247,8 @@ contract("Market", accounts => {
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
+    constants = await ConstantsGetters.new().should.be.fulfilled;
+
     depl = await delegateUtils.deployDelegate(
       StorageProxy, 
       Assets, 
@@ -269,10 +272,10 @@ contract("Market", accounts => {
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
 
-    AUCTION_TIME = await market.AUCTION_TIME().should.be.fulfilled;
+    AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
     AUCTION_TIME = AUCTION_TIME.toNumber();
     
-    POST_AUCTION_TIME = await market.POST_AUCTION_TIME().should.be.fulfilled;
+    POST_AUCTION_TIME = await constants.get_POST_AUCTION_TIME().should.be.fulfilled;
     POST_AUCTION_TIME = POST_AUCTION_TIME.toNumber();
     
     validUntil = now.toNumber() + AUCTION_TIME;

@@ -16,6 +16,7 @@ const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const AssetsView = artifacts.require('AssetsView');
 const MarketView = artifacts.require('MarketView');
 const UpdatesView = artifacts.require('UpdatesView');
+const ConstantsGetters = artifacts.require('ConstantsGetters');
 
 
 require('chai')
@@ -48,6 +49,7 @@ module.exports = function (deployer) {
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
     const utils = await deployer.deploy(Utils).should.be.fulfilled;
     const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
+    const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     
     console.log("Setting up ...");
     await assets.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
@@ -91,6 +93,7 @@ module.exports = function (deployer) {
     console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
     console.log("UTILS_CONTRACT_ADDRESS=" + utils.address);
     console.log("PLAYANDEVOLVE_CONTRACT_ADDRESS=" + playAndEvolve.address);
+    console.log("CONSTANTSGETTERS_CONTRACT_ADDRESS=" + constantsGetters.address);
   });
 };
 

@@ -25,7 +25,7 @@ contract('Encoding', (accounts) => {
     });
 
     it('encodeTactics incorrect lineup', async () =>  {
-        PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await encoding.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
         substitutions = [4,10,2];
@@ -37,7 +37,7 @@ contract('Encoding', (accounts) => {
     })
     
     it('encodeTactics', async () =>  {
-        PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await encoding.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
         substitutions = [4,10,2];
