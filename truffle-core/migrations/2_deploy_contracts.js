@@ -30,7 +30,7 @@ module.exports = function (deployer) {
   deployer.then(async () => {
     const sto = await deployer.deploy(StorageProxy).should.be.fulfilled;
     const {0: assets, 1: market, 2: updates} = await delegateUtils.deployDelegate(
-      StorageProxy, 
+      sto, 
       Assets, 
       AssetsView, 
       Market, 
