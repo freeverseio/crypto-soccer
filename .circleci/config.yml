@@ -227,5 +227,5 @@ workflows:
                 - k8s
           requires:
             - dockerization-development
-            - truffle_core
+              #- truffle_core
 
