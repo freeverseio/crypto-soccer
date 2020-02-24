@@ -1,4 +1,6 @@
 const BN = require('bn.js');
+var fs = require('fs');
+
 require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
@@ -33,6 +35,31 @@ contract('Proxy', (accounts) => {
         proxy = await Proxy.new().should.be.fulfilled;
         assets = await Assets.at(proxy.address).should.be.fulfilled;
         assetsAsLib = await Assets.new().should.be.fulfilled;
+    });
+    
+    it('full deploy and tests selectors against expected hardcoded selectors', async () => {
+        const {0: ass, 1: mkt, 2: updt, 3: allSelectors} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
+        var result = JSON.stringify(allSelectors);
+        var fs = require('fs');
+        var expected;
+        var expectedFile = 'migrations/selectors.json'
+        fs.readFile(expectedFile, 'utf8', function (err, data) {
+            if (err) throw err;
+            try {
+                expected = JSON.stringify(JSON.parse(data));
+                if (expected != result) {
+                    console.log("Selelector files have changed! Please enable the next lines to overwrite hardcoded file");
+                    // fs.writeFile(expectedFile, result, function(err) {
+                    //     if (err) {
+                    //         console.log(err);
+                    //     }
+                    // });
+                    mkt.address.should.be.equal('0x02223');
+                }
+            } catch (e) {
+                console.error( e );
+            }
+        });
     });
     
     it('permissions check on full deploy: everyone can, currently, until we set restrictions inside Assets contract', async () => {
