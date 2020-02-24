@@ -42,9 +42,9 @@ spec:
         envFrom:
           - configMapRef:
               name: freeverse-configmap
-        args: [-debug,
+        args: [-debug, -backdoor=true,
                -gqlurl, "http://horizon:4000",
-               -serviceurl, "http://localhost"]
+               -serviceurl, "http://localhost/"]
 
       imagePullSecrets:
       - name: docker-secret
