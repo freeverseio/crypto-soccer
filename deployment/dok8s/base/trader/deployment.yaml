@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trader
+  labels:
+    app: trader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trader
+  template:
+    metadata:
+      labels:
+        app: trader
+    spec:
+      containers:
+      - name: trader
+        image: freeverseio/market.trader:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        args: [-d, "postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market",
+               -p, "4000"]
+      imagePullSecrets:
+      - name: docker-secret
