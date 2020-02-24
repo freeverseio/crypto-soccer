@@ -30,7 +30,7 @@ contract('Updates', (accounts) => {
 
     const moveToNextVerse = async (updates, extraSecs = 0) => {
         now = await updates.getNow().should.be.fulfilled;
-        nextTime = await updates.nextVerseTimestamp().should.be.fulfilled;
+        nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         await timeTravel.advanceTime(nextTime - now + extraSecs);
         await timeTravel.advanceBlock().should.be.fulfilled;
         
@@ -90,8 +90,8 @@ contract('Updates', (accounts) => {
     });
     
     it('check BC is set up in agreement with the local time', async () =>  {
-        nextVerseTimestamp = await updates.nextVerseTimestamp().should.be.fulfilled;
-        timeZoneForRound1 = await updates.timeZoneForRound1().should.be.fulfilled;
+        nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
+        timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
         localTimeMs = Date.now();
         now = new Date(localTimeMs);
         nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000);
@@ -172,7 +172,7 @@ contract('Updates', (accounts) => {
 
     it('moveToNextVerse', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
-        nextTime = await updates.nextVerseTimestamp().should.be.fulfilled;
+        nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
         await moveToNextVerse(updates, extraSecs = 0);
         now = await updates.getNow().should.be.fulfilled;

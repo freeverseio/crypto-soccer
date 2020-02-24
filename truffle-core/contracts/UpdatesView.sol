@@ -51,8 +51,9 @@ contract UpdatesView is Storage, AssetsLib {
         return uint8(1 + ((tz - 1)% 24));
     }
 
-    function getCurrentVerseSeed() public view returns (bytes32) {
-        return currentVerseSeed;
-    }
+    function getNextVerseTimestamp() public view returns (uint256) { return nextVerseTimestamp; }
+    function getTimeZoneForRound1() public view returns (uint8) { return timeZoneForRound1; }
+    function getCurrentVerse() public view returns (uint256) { return currentVerse; }
+    function getCurrentVerseSeed() public view returns (bytes32) { return currentVerseSeed; }
 
 }
