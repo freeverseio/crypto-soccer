@@ -13,8 +13,7 @@ const deployPair = async (sto, Contr, ContrView) => {
     return [contr, contrAsLib, contrViewAsLib, selectors, selectorsView]
 };
 
-const deployDelegate = async (StorageProxy, Assets, AssetsView, Market = "", MarketView = "", Updates = "", UpdatesView = "") => {
-    sto = await StorageProxy.new().should.be.fulfilled;
+const deployDelegate = async (sto, Assets, AssetsView, Market = "", MarketView = "", Updates = "", UpdatesView = "") => {
     // setting up StorageProxy delegate calls to Assets
     const {0: assets, 1: assetsAsLib, 2: assetsViewAsLib, 3: selectorsAssets, 4: selectorsAssetsView} = await deployPair(sto, Assets, AssetsView);
     const {0: market, 1: marketAsLib, 2: marketViewAsLib, 3: selectorsMarket, 4: selectorsMarketView} = await deployPair(sto, Market, MarketView);
