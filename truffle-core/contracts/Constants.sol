@@ -53,7 +53,7 @@ contract Constants {
     // Updates related:
     uint16 constant internal SECS_BETWEEN_VERSES = 900; // 15 mins
     uint8 constant VERSES_PER_DAY = 96; // 24 * 4
-    uint16 constant VERSES_PER_ROUND = 1344; // 96 * 14
+    uint16 constant VERSES_PER_ROUND = 672; // 96 * 14
     uint8 constant internal NULL_TIMEZONE = 0;
     uint8 constant CHALLENGE_TIME = 60; // in secs
 

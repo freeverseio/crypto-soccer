@@ -42,9 +42,16 @@ contract UpdatesView is Storage, AssetsLib {
         // if currentVerse = 0, we should be updating timeZoneForRound1
         // recall that timeZones range from 1...24 (not from 0...24)
         uint16 verseInRound = uint16(verse % VERSES_PER_ROUND);
-        timeZone = normalizeTZ(TZForRound1 + verseInRound/4);
-        day = uint8(verseInRound / VERSES_PER_DAY);
         turnInDay = uint8(verseInRound % 4);
+        if (turnInDay < 2) {
+            timeZone = normalizeTZ(TZForRound1 + verseInRound/4);
+            day = 2 * uint8(verseInRound / VERSES_PER_DAY);
+        } else {
+            timeZone = normalizeTZ(TZForRound1 + 9 + verseInRound/4);
+            day = 1 + 2 * uint8(verseInRound / VERSES_PER_DAY);
+            turnInDay -= 2;
+        }
+        
     }
     
     function normalizeTZ(uint16 tz) public pure returns (uint8) {
@@ -55,5 +62,14 @@ contract UpdatesView is Storage, AssetsLib {
     function getTimeZoneForRound1() public view returns (uint8) { return timeZoneForRound1; }
     function getCurrentVerse() public view returns (uint256) { return currentVerse; }
     function getCurrentVerseSeed() public view returns (bytes32) { return currentVerseSeed; }
+
+    // function getTimeZonesPlayingInNextRound() public view returns (uint8[] memory) {
+    //     // morning 11am - evening 20 pm
+    //     // so if the first match is in the morning => 11am, then the next one is at +9h
+    //     uint8[] memory tzs = new uint8[](2);
+    //     (tzs[0], , ) = nextTimeZoneToUpdate();
+    //     tzs[1] = normalizeTZ(tzs[0] - 9);
+    //     return tzs; 
+    // }
 
 }

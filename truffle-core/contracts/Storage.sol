@@ -6,14 +6,15 @@ import "./Constants.sol";
 * @title Storage common to all project, with setters managed by StorageProxy.
 */
 contract Storage is Constants {
-
-    uint256[2**8] _slotReserve;
     address internal _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
-    address internal _academyAddr;
-       
     ContractInfo[] internal _contractsInfo;
     mapping (bytes4 => uint256) internal _selectorToContractId;
+
+    uint256[2**8] _slotReserve;
     
+    address internal isSpecialAddr;
+    
+    address internal _academyAddr;
     
     mapping(uint256 => uint256) internal _playerIdToState;
     mapping (uint256 => uint256) internal _playerIdToAuctionData;

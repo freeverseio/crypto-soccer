@@ -69,6 +69,23 @@ contract('Updates', (accounts) => {
         await updates.initUpdates().should.be.rejected;
     });
     
+    it('check BC is set up in agreement with the local time', async () =>  {
+        // getTimeZonesPlayingInNextRound
+        timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
+        localTimeMs = Date.now();
+        now = new Date(localTimeMs);
+        if (now.getUTCMinutes() < 57) {
+            expectedHour = now.getUTCHours() + 1;
+        } else {
+            expectedHour = now.getUTCHours() + 2;
+        }
+        timeZoneForRound1.toNumber().should.be.equal(expectedHour);
+    });
+    
+    return
+    
+    
+    
     it('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await updates.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
