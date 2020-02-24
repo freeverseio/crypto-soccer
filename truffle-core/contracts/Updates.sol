@@ -21,10 +21,10 @@ contract Updates is UpdatesView {
         uint256 minute      = (secsOfDay - hour * 3600) / 60; // 0, ..., 59
         uint256 secs        = (secsOfDay - hour * 3600 - minute * 60); // 0, ..., 59
         if (minute < 27) {
-            timeZoneForRound1 = 1 + uint8(hour);
+            timeZoneForRound1 = normalizeTZ(uint8(hour));
             nextVerseTimestamp = now + (29-minute)*60 + (60 - secs);
         } else {
-            timeZoneForRound1 = normalizeTZ(2+uint8(hour));
+            timeZoneForRound1 = normalizeTZ(1+uint8(hour));
             nextVerseTimestamp = now + (29-minute)*60 + (60 - secs) + 3600;
         }
     }
@@ -35,14 +35,16 @@ contract Updates is UpdatesView {
     }
     
     function submitActionsRoot(bytes32 actionsRoot, string memory cid) public {
-        // require(now > nextVerseTimestamp, "too early to accept actions root");
+        require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
         // (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
         // if (prevTz != NULL_TIMEZONE) {
         //     require(now > _storageProxy.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
         // }
-        setActionsRoot(newTZ, actionsRoot);
+        if(newTZ != NULL_TIMEZONE) {
+            setActionsRoot(newTZ, actionsRoot);
+        }
         incrementVerse();
         setCurrentVerseSeed(blockhash(block.number-1));
         emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, cid);
@@ -56,15 +58,16 @@ contract Updates is UpdatesView {
 
     function updateTZ(bytes32 root) public {
         (uint8 tz,,) = prevTimeZoneToUpdate();
-        require(tz != NULL_TIMEZONE, "nothing to update in the current timeZone");
-        uint256 lastUpdate = getLastUpdateTime(tz);
-        uint256 lastActionsSubmissionTime = getLastActionsSubmissionTime(tz);
-        if (lastUpdate > lastActionsSubmissionTime) {
-            require(now < lastUpdate + CHALLENGE_TIME, "challenging period is already over for this timezone");
-            setSkillsRoot(tz, root, false); // this is a challenge to a previous update
-        } else {
-            require(now < lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
-            setSkillsRoot(tz, root, true); // first time that we update this TZ
+        if(tz != NULL_TIMEZONE) {
+            uint256 lastUpdate = getLastUpdateTime(tz);
+            uint256 lastActionsSubmissionTime = getLastActionsSubmissionTime(tz);
+            if (lastUpdate > lastActionsSubmissionTime) {
+                require(now < lastUpdate + CHALLENGE_TIME, "challenging period is already over for this timezone");
+                setSkillsRoot(tz, root, false); // this is a challenge to a previous update
+            } else {
+                require(now < lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
+                setSkillsRoot(tz, root, true); // first time that we update this TZ
+            }
         }
         emit TimeZoneUpdate(tz, root, now);
     }

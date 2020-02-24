@@ -6,6 +6,7 @@ pragma solidity >=0.5.12 <=0.6.3;
 
 contract Constants {
     
+    uint8 constant internal N_SKILLS = 5;
     address constant internal NULL_ADDR = address(0);
     uint8 constant internal PLAYERS_PER_TEAM_INIT = 18;
     uint8 constant internal LEAGUES_PER_DIV = 16;
@@ -22,10 +23,10 @@ contract Constants {
     uint8 constant internal SK_END = 4;
 
     // Birth Traits: potential, forwardness, leftishness, aggressiveness
-    uint8 constant private IDX_POT = 0;
-    uint8 constant private IDX_FWD = 1;
-    uint8 constant private IDX_LEF = 2;
-    uint8 constant private IDX_AGG = 3;
+    uint8 constant internal IDX_POT = 0;
+    uint8 constant internal IDX_FWD = 1;
+    uint8 constant internal IDX_LEF = 2;
+    uint8 constant internal IDX_AGG = 3;
     // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
     uint8 constant internal IDX_GK = 0;
     uint8 constant internal IDX_D  = 1;
@@ -42,6 +43,12 @@ contract Constants {
     uint8 constant internal IDX_MSG = 0;
     uint8 constant internal IDX_r   = 1;
     uint8 constant internal IDX_s   = 2;
+ 
+    uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
+    uint8 public constant RED_CARD = 3;   // noone saw a card
+    uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
+
+ 
     // POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.
     //  ...it includes time to ask for a 2nd-best bidder, or 3rd-best.
     uint256 constant internal POST_AUCTION_TIME   = 6 hours; 
@@ -52,9 +59,9 @@ contract Constants {
 
     // Updates related:
     uint16 constant internal SECS_BETWEEN_VERSES = 900; // 15 mins
-    uint8 constant VERSES_PER_DAY = 96; // 24 * 4
-    uint16 constant VERSES_PER_ROUND = 672; // 96 * 7days
+    uint8 constant internal VERSES_PER_DAY = 96; // 24 * 4
+    uint16 constant internal VERSES_PER_ROUND = 672; // 96 * 7days
     uint8 constant internal NULL_TIMEZONE = 0;
-    uint8 constant CHALLENGE_TIME = 60; // in secs
+    uint8 constant internal CHALLENGE_TIME = 60; // in secs
 
 }

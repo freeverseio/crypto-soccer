@@ -57,7 +57,7 @@ contract UpdatesView is Storage, AssetsLib {
     }
     
     function normalizeTZ(uint16 tz) public pure returns (uint8) {
-        return uint8(1 + ((tz - 1)% 24));
+        return uint8(1 + ((24 + tz - 1)% 24));
     }
 
     function getNextVerseTimestamp() public view returns (uint256) { return nextVerseTimestamp; }

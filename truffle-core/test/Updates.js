@@ -24,7 +24,6 @@ contract('Updates', (accounts) => {
     }
 
     const moveToNextVerse = async (updates, extraSecs = 0) => {
-        constants = await ConstantsGetters.new().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         await timeTravel.advanceTime(nextTime - now + extraSecs);
@@ -55,9 +54,9 @@ contract('Updates', (accounts) => {
 
     });
 
-    // it('test that cannot initialize updates twice', async () =>  {
-    //     await updates.initUpdates().should.be.rejected;
-    // });
+    it('test that cannot initialize updates twice', async () =>  {
+        await updates.initUpdates().should.be.rejected;
+    });
     
     it('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
@@ -103,16 +102,16 @@ contract('Updates', (accounts) => {
         localTimeMs = Date.now();
         now = new Date(localTimeMs);
         nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000);
-        if (now.getUTCMinutes() < 57) {
-            expectedHour = now.getUTCHours() + 1;
+        if (now.getUTCMinutes() < 27) {
+            expectedHour = now.getUTCHours();
         } else {
-            expectedHour = now.getUTCHours() + 2;
+            expectedHour = now.getUTCHours() + 1;
         }
         nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear());
         nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth());
         nextVerse.getUTCDate().should.be.equal(now.getUTCDate());
         nextVerse.getUTCHours().should.be.equal(expectedHour);
-        nextVerse.getUTCMinutes().should.be.equal(0);
+        nextVerse.getUTCMinutes().should.be.equal(30);
         nextVerse.getUTCSeconds().should.be.equal(0);
         timeZoneForRound1.toNumber().should.be.equal(expectedHour);
     });
@@ -192,57 +191,42 @@ contract('Updates', (accounts) => {
         console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        const cif = "ciao3";
         for (verse = 0; verse < 110; verse++) {
-            timeZoneToUpdateAfter = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-            diff = timeZoneToUpdateAfter[0].toNumber() - timeZoneToUpdateBefore[0].toNumber();
-            // timezone number wraps around: tz = 23, 24, 1, 2...
-            if (diff < 0) diff += 24;
-            // you change timezone every 4 verses
-            diff.should.be.equal(Math.floor(verse / 4) % 24);
-            const cif = "ciao3";
+            console.log(verse)
             await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
-            await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
+            // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
             await moveToNextVerse(updates, extraSecs = 10);
         }
     });
 
-    it('timeZoneToUpdate selected edge choices', async () =>  {
-        result = await updates._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(1)
-        result.day.toNumber().should.be.equal(0);
-        result.turnInDay.toNumber().should.be.equal(0);
-        result = await updates._timeZoneToUpdatePure.call(verse = 3, TZ1 = 1).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(1)
-        result.day.toNumber().should.be.equal(0);
-        result = await updates._timeZoneToUpdatePure.call(verse = 4, TZ1 = 1).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(2)
-        result.day.toNumber().should.be.equal(0);
-        result.turnInDay.toNumber().should.be.equal(0);
-        result = await updates._timeZoneToUpdatePure.call(verse = 95, TZ1 = 4).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(3);
-        result.day.toNumber().should.be.equal(0);
-        result.turnInDay.toNumber().should.be.equal(3);
-        result = await updates._timeZoneToUpdatePure.call(verse = 96, TZ1 = 2).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(2);
-        result = await updates._timeZoneToUpdatePure.call(verse = 97, TZ1 = 24).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(24);
-        result.day.toNumber().should.be.equal(1);
-        result.turnInDay.toNumber().should.be.equal(1);
-        result = await updates._timeZoneToUpdatePure.call(verse = 1343, TZ1 = 24).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(23);
-        result.day.toNumber().should.be.equal(13);
-        result.turnInDay.toNumber().should.be.equal(3);
-    });
+    // it('timeZoneToUpdate selected edge choices', async () =>  {
+    //     result = await updates._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(1)
+    //     result.day.toNumber().should.be.equal(0);
+    //     result.turnInDay.toNumber().should.be.equal(0);
+    //     result = await updates._timeZoneToUpdatePure.call(verse = 3, TZ1 = 1).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(1)
+    //     result.day.toNumber().should.be.equal(0);
+    //     result = await updates._timeZoneToUpdatePure.call(verse = 4, TZ1 = 1).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(2)
+    //     result.day.toNumber().should.be.equal(0);
+    //     result.turnInDay.toNumber().should.be.equal(0);
+    //     result = await updates._timeZoneToUpdatePure.call(verse = 95, TZ1 = 4).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(3);
+    //     result.day.toNumber().should.be.equal(0);
+    //     result.turnInDay.toNumber().should.be.equal(3);
+    //     result = await updates._timeZoneToUpdatePure.call(verse = 96, TZ1 = 2).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(2);
+    //     result = await updates._timeZoneToUpdatePure.call(verse = 97, TZ1 = 24).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(24);
+    //     result.day.toNumber().should.be.equal(1);
+    //     result.turnInDay.toNumber().should.be.equal(1);
+    //     result = await updates._timeZoneToUpdatePure.call(verse = 1343, TZ1 = 24).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(23);
+    //     result.day.toNumber().should.be.equal(13);
+    //     result.turnInDay.toNumber().should.be.equal(3);
+    // });
 
-    it('timeZoneToUpdate exhaustive', async () =>  {
-        console.log("warning: the next test lasts about 5 sec")
-        TZ1 = 3;
-        for (verse = 0; verse < VERSES_PER_ROUND; verse+=7){
-            result = await updates._timeZoneToUpdatePure.call(verse, TZ1).should.be.fulfilled;
-            result.timeZone.toNumber().should.be.equal(normalizeTZ(TZ1 + Math.floor(verse/4)) )
-            result.day.toNumber().should.be.equal(Math.floor(verse/VERSES_PER_DAY));
-            result.turnInDay.toNumber().should.be.equal(verse % 4)
-        } 
-    });
 
 });
