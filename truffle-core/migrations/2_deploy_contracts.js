@@ -1,4 +1,3 @@
-const StorageProxy = artifacts.require('StorageProxy');
 const Market = artifacts.require('Market');
 const Assets = artifacts.require('Assets');
 const Engine = artifacts.require('Engine');
@@ -13,11 +12,9 @@ const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
 const Utils = artifacts.require('Utils');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
-const AssetsView = artifacts.require('AssetsView');
-const MarketView = artifacts.require('MarketView');
-const UpdatesView = artifacts.require('UpdatesView');
-const ConstantsGetters = artifacts.require('ConstantsGetters');
 
+const ConstantsGetters = artifacts.require('ConstantsGetters');
+const Proxy = artifacts.require('Proxy');
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -27,16 +24,8 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-    const sto = await deployer.deploy(StorageProxy).should.be.fulfilled;
-    const {0: assets, 1: market, 2: updates} = await delegateUtils.deployDelegate(
-      StorageProxy, 
-      Assets, 
-      AssetsView, 
-      Market, 
-      MarketView,
-      Updates,
-      UpdatesView
-  );
+    const proxy = await deployer.deploy(Proxy).should.be.fulfilled;
+    const {0: assets, 1: market, 2: updates} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
 
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
@@ -78,7 +67,7 @@ module.exports = function (deployer) {
     console.log("");
     console.log("🚀  Deployed on:", deployer.network)
     console.log("------------------------");
-    console.log("STORAGEPROXY_CONTRACT_ADDRESS=" + sto.address);
+    console.log("PROXY_CONTRACT_ADDRESS=" + proxy.address);
     console.log("ASSETS_CONTRACT_ADDRESS=" + assets.address);
     console.log("MARKET_CONTRACT_ADDRESS=" + market.address);
     console.log("ENGINE_CONTRACT_ADDRESS=" + engine.address);

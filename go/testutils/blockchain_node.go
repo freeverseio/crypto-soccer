@@ -33,7 +33,7 @@ type ContractAddresses struct {
 	Engineprecomp  string
 	Updates        string
 	Market         string
-	Utils  string
+	Utils          string
 	Playandevolve  string
 	Shop           string
 	Trainingpoints string
@@ -108,7 +108,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	txs = append(txs, tx)
-	updatesAddress, tx, updatesContract, err := updates.DeployUpdates(auth, b.Client)
+	updatesAddress, tx, _, err := updates.DeployUpdates(auth, b.Client)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	txs = append(txs, tx)
-	marketAddress, tx, marketContract, err := market.DeployMarket(auth, b.Client)
+	marketAddress, tx, _, err := market.DeployMarket(auth, b.Client)
 	if err != nil {
 		return err
 	}
@@ -174,16 +174,16 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	txs = append(txs, tx)
-	tx, err = marketContract.SetAssetsAddress(auth, assetsAddress)
-	if err != nil {
-		return err
-	}
-	txs = append(txs, tx)
-	tx, err = updatesContract.InitUpdates(auth, assetsAddress)
-	if err != nil {
-		return err
-	}
-	txs = append(txs, tx)
+	// tx, err = marketContract.SetAssetsAddress(auth, assetsAddress)
+	// if err != nil {
+	// 	return err
+	// }
+	// txs = append(txs, tx)
+	// tx, err = updatesContract.InitUpdates(auth, assetsAddress)
+	// if err != nil {
+	// 	return err
+	// }
+	// txs = append(txs, tx)
 	if tx, err = trainingpointsContract.SetAssetsAddress(auth, assetsAddress); err != nil {
 		return err
 	}

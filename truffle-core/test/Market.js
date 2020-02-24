@@ -10,11 +10,9 @@ const marketUtils = require('../utils/marketUtils.js');
 const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
-const StorageProxy = artifacts.require('StorageProxy');
+const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
-const AssetsView = artifacts.require('AssetsView');
-const MarketView = artifacts.require('MarketView');
 const Privileged = artifacts.require('Privileged');
 
 async function createPromoPlayer(targetTeamId, internalId = 144321433) {
@@ -248,14 +246,8 @@ contract("Market", accounts => {
   
   beforeEach(async () => {
     constants = await ConstantsGetters.new().should.be.fulfilled;
-
-    depl = await delegateUtils.deployDelegate(
-      StorageProxy, 
-      Assets, 
-      AssetsView, 
-      Market, 
-      MarketView
-    );
+    proxy = await Proxy.new().should.be.fulfilled;
+    depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
     assets = depl[0]
     market = depl[1]
     

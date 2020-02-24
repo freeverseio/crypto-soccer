@@ -8,7 +8,7 @@ const timeTravel = require('../utils/TimeTravel.js');
 const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
-const StorageProxy = artifacts.require('StorageProxy');
+const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
@@ -46,17 +46,9 @@ contract('Updates', (accounts) => {
     
     beforeEach(async () => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        sto = await StorageProxy.new().should.be.fulfilled;
-        result = await delegateUtils.deployDelegate(
-            StorageProxy, 
-            Assets, 
-            AssetsView, 
-            Market, 
-            MarketView,
-            Updates,
-            UpdatesView
-        );
-        updates = result[2];
+        proxy = await Proxy.new().should.be.fulfilled;
+        depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
+        updates = depl[2];
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
