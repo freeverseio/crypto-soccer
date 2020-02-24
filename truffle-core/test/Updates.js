@@ -59,24 +59,22 @@ contract('Updates', (accounts) => {
     //     await updates.initUpdates().should.be.rejected;
     // });
     
-    it('check BC is set up in agreement with the local time', async () =>  {
+    it('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
-        for (verse = 0; verse < VERSES_PER_ROUND.toNumber()+20; verse ++) {
+        result = "";
+        for (verse = 0; verse < VERSES_PER_ROUND.toNumber()+20; verse += 13) {
             var {0: tz, 1: matchday, 2: turn} = await updates._timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
             day = Math.floor(0.25 * verse / 24);        
-            console.log(
-                "verse = ", verse, 
-                "day = ", day,
-                "hour = ", (TZForRound1+ 0.5 + 0.25 * verse - day * 24) % 24,
-                ", tz = ", tz.toNumber(), 
-                ", matchday = ", matchday.toNumber(), 
-                ", turn = ", turn.toNumber()
-            )
+            result += " | verse = " + verse + 
+                ", day = " + day,
+                ", hour = " + (TZForRound1+ 0.5 + 0.25 * verse - day * 24) % 24,
+                ", tz = " + tz.toNumber(), 
+                ", matchday = " + matchday.toNumber(), 
+                ", turn = " + turn.toNumber();
         }
+        expected = " | verse = 0, day = 0 | verse = 13, day = 0 | verse = 26, day = 0 | verse = 39, day = 0 | verse = 52, day = 0 | verse = 65, day = 0 | verse = 78, day = 0 | verse = 91, day = 0 | verse = 104, day = 1 | verse = 117, day = 1 | verse = 130, day = 1 | verse = 143, day = 1 | verse = 156, day = 1 | verse = 169, day = 1 | verse = 182, day = 1 | verse = 195, day = 2 | verse = 208, day = 2 | verse = 221, day = 2 | verse = 234, day = 2 | verse = 247, day = 2 | verse = 260, day = 2 | verse = 273, day = 2 | verse = 286, day = 2 | verse = 299, day = 3 | verse = 312, day = 3 | verse = 325, day = 3 | verse = 338, day = 3 | verse = 351, day = 3 | verse = 364, day = 3 | verse = 377, day = 3 | verse = 390, day = 4 | verse = 403, day = 4 | verse = 416, day = 4 | verse = 429, day = 4 | verse = 442, day = 4 | verse = 455, day = 4 | verse = 468, day = 4 | verse = 481, day = 5 | verse = 494, day = 5 | verse = 507, day = 5 | verse = 520, day = 5 | verse = 533, day = 5 | verse = 546, day = 5 | verse = 559, day = 5 | verse = 572, day = 5 | verse = 585, day = 6 | verse = 598, day = 6 | verse = 611, day = 6 | verse = 624, day = 6 | verse = 637, day = 6 | verse = 650, day = 6 | verse = 663, day = 6 | verse = 676, day = 7 | verse = 689, day = 7";
+        result.should.be.equal(expected);
     });
-    
-    return
-    
     
     
     it('require that BC and local time are less than 15 sec out of sync', async () =>  {
