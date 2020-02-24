@@ -1,6 +1,6 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
-import "./Storage.sol";
+import "./ProxyStorage.sol";
 
 /**
 * @title Manages the state variables of a DelegateProxy
@@ -15,14 +15,14 @@ contract Proxy is ProxyStorage {
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
     constructor() public {
-        _storageOwner = msg.sender;
+        _proxyOwner = msg.sender;
         // set _contractsInfo[0] as the NULL contract:
         _contractsInfo.push(ContractInfo(address(0), new bytes4[](0), "")); 
     }
     
     modifier onlyOwner() 
     {
-        require(msg.sender == _storageOwner, "Only owner is authorized.");
+        require(msg.sender == _proxyOwner, "Only owner is authorized.");
         _;
     }
 
@@ -58,20 +58,26 @@ contract Proxy is ProxyStorage {
         }
     }
     
-    function setStorageOwner(address newOwner) public onlyOwner {
-        _storageOwner = newOwner;
+    function proposeProxyOwner(address proposedOwner) public onlyOwner {
+        _proposedProxyOwner = proposedOwner;
+    }
+
+    function acceptProxyOwner() public  {
+        require(msg.sender == _proposedProxyOwner, "only proposed owner can become owner");
+        _proxyOwner = _proposedProxyOwner;
+        _proposedProxyOwner = address(0);
     }
 
     function addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) public onlyOwner {
-            // we require that the contract gets assigned an Id that is as specified from outside, 
-            // to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
-            require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
-            ContractInfo memory info;
-            info.addr = addr;
-            info.name = name;
-            info.selectors = selectors;
-            _contractsInfo.push(info);
-            emit ContractAdded(contractId, name, selectors);        
+        // we require that the contract gets assigned an Id that is as specified from outside, 
+        // to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
+        require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
+        ContractInfo memory info;
+        info.addr = addr;
+        info.name = name;
+        info.selectors = selectors;
+        _contractsInfo.push(info);
+        emit ContractAdded(contractId, name, selectors);        
     }
     
     function deleteAndActivateContracts(uint256[] memory deactContractIds, uint256[] memory actContractIds) public onlyOwner {

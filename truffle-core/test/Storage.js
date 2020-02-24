@@ -37,6 +37,16 @@ contract('Proxy', (accounts) => {
         assetsAsLib = await Assets.new().should.be.fulfilled;
     });
     
+    it('permissions check to change owner of proxy', async () => {
+        await proxy.proposeProxyOwner(BOB, {from: ALICE}).should.be.rejected;
+        await proxy.proposeProxyOwner(BOB, {from: FREEVERSE}).should.be.fulfilled;
+        await proxy.proposeProxyOwner(ALICE, {from: ALICE}).should.be.rejected;
+        await proxy.acceptProxyOwner({from: ALICE}).should.be.rejected;
+        await proxy.acceptProxyOwner({from: BOB}).should.be.fulfilled;
+        await proxy.proposeProxyOwner(ALICE, {from: FREEVERSE}).should.be.rejected;
+        await proxy.proposeProxyOwner(ALICE, {from: BOB}).should.be.fulfilled;
+    });
+
     it('full deploy and tests selectors against expected hardcoded selectors', async () => {
         const {0: ass, 1: mkt, 2: updt, 3: allSelectors} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
         var result = JSON.stringify(allSelectors);
@@ -54,7 +64,6 @@ contract('Proxy', (accounts) => {
                     //         console.log(err);
                     //     }
                     // });
-                    mkt.address.should.be.equal('0x02223');
                 }
             } catch (e) {
                 console.error( e );
@@ -62,7 +71,7 @@ contract('Proxy', (accounts) => {
         });
     });
     
-    it('permissions check on full deploy: everyone can, currently, until we set restrictions inside Assets contract', async () => {
+    it('permissions check on full deploy: everyone can call delegates, currently, until we set restrictions inside Assets contract', async () => {
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
         assets = depl[0]
         await assets.init({from: ALICE}).should.be.fulfilled;

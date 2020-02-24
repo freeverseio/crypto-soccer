@@ -7,7 +7,8 @@ import "./Constants.sol";
 */
 contract ProxyStorage {
 
-    address internal _storageOwner; // TODO: move to a "proposed new owner" + "accept" instead of stright "set net owner"
+    address internal _proxyOwner; 
+    address internal _proposedProxyOwner;
     ContractInfo[] internal _contractsInfo;
     mapping (bytes4 => uint256) internal _selectorToContractId;
 
