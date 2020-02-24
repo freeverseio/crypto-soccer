@@ -55,7 +55,7 @@ module.exports = function (deployer) {
 
     console.log("");
     console.log("🚀  Deployed on:", deployer.network)
-    console.log("------------------------");
+    console.log("-----------AddressesStart-----------");
     console.log("ENGINE_CONTRACT_ADDRESS=" + engine.address);
     console.log("ENGINEPRECOMP_CONTRACT_ADDRESS=" + enginePreComp.address);
     console.log("ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS=" + engineApplyBoosters.address);
@@ -70,6 +70,7 @@ module.exports = function (deployer) {
     console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
     console.log("UTILS_CONTRACT_ADDRESS=" + utils.address);
     console.log("PLAYANDEVOLVE_CONTRACT_ADDRESS=" + playAndEvolve.address);
+    console.log("-----------AddressesEnd-----------");
   });
 };
 
