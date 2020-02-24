@@ -112,7 +112,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	cmd := exec.Command("./node_modules/.bin/truffle", "migrate", "--network", "local", "--reset")
-	log.Infof("Running command and waiting for it to finish... %v", cmd.String())
+	log.Infof("Deploy by truffle: %v", cmd.String())
 	err = cmd.Run()
 	if err != nil {
 		return err
