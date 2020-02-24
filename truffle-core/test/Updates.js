@@ -130,7 +130,7 @@ contract('Updates', (accounts) => {
 
     it('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        verseBefore = await updates.currentVerse().should.be.fulfilled;
+        verseBefore = await updates.getCurrentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraTime = -10)        
         // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
@@ -139,7 +139,7 @@ contract('Updates', (accounts) => {
         const cif = "ciao";
         tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), cif).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        verse = await updates.currentVerse().should.be.fulfilled;
+        verse = await updates.getCurrentVerse().should.be.fulfilled;
         verse.toNumber().should.be.equal(verseBefore.toNumber() + 1); 
         timeZoneToUpdate[0].toNumber().should.be.equal(timeZoneToUpdateBefore[0].toNumber()); // tz to update does not change during the first 4 verses
         seed1 = await updates.getCurrentVerseSeed().should.be.fulfilled;
