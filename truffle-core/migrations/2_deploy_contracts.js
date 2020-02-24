@@ -1,4 +1,3 @@
-const StorageProxy = artifacts.require('StorageProxy');
 const Market = artifacts.require('Market');
 const Assets = artifacts.require('Assets');
 const Engine = artifacts.require('Engine');
@@ -13,11 +12,13 @@ const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
 const Utils = artifacts.require('Utils');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
+
+const ConstantsGetters = artifacts.require('ConstantsGetters');
+
 const AssetsView = artifacts.require('AssetsView');
 const MarketView = artifacts.require('MarketView');
 const UpdatesView = artifacts.require('UpdatesView');
-const ConstantsGetters = artifacts.require('ConstantsGetters');
-
+const StorageProxy = artifacts.require('StorageProxy');
 
 require('chai')
     .use(require('chai-as-promised'))
