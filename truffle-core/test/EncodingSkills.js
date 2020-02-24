@@ -6,6 +6,7 @@ require('chai')
 
 const debug = require('../utils/debugUtils.js');
 
+const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Encoding = artifacts.require('EncodingSkills');
 const EncodingTact = artifacts.require('EncodingTacticsPart1');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
@@ -17,6 +18,7 @@ contract('Encoding', (accounts) => {
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
+        constants = await ConstantsGetters.new().should.be.fulfilled;
         encoding = await Encoding.new().should.be.fulfilled;
         utils = await Utils.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
@@ -25,7 +27,7 @@ contract('Encoding', (accounts) => {
     });
 
     it('encodeTactics incorrect lineup', async () =>  {
-        PLAYERS_PER_TEAM_MAX = await encoding.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
         substitutions = [4,10,2];
@@ -37,7 +39,7 @@ contract('Encoding', (accounts) => {
     })
     
     it('encodeTactics', async () =>  {
-        PLAYERS_PER_TEAM_MAX = await encoding.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
         substitutions = [4,10,2];
