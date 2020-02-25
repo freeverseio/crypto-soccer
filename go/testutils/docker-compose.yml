@@ -1,7 +1,7 @@
 version: '3'
 services:
   ethereum: 
-    build: ../../docker/ethereum-xdai-test
+    build: ../../docker/ethereum-xdai-dev
     ports: 
       - "8545:8545"
   universe.db:
