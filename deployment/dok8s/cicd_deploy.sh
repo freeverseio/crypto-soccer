@@ -42,7 +42,7 @@ deploy()
     kubectl apply -f ${MY_DIR}/configmap.yaml    -n ${NAMESPACE}
     # kubectl apply -f ${MY_DIR}/universedb.yaml   -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/universeapi.yaml  -n ${NAMESPACE}
-    kubectl apply -f ${MY_DIR}/ipfsnode.yaml     -n ${NAMESPACE}
+    # kubectl apply -f ${MY_DIR}/ipfsnode.yaml     -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/marketdb.yaml     -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/trader.yaml       -n ${NAMESPACE}
     kubectl apply -f ${MY_DIR}/notary.yaml       -n ${NAMESPACE}
