@@ -52,10 +52,13 @@ module.exports = function (deployer) {
     console.log("Setting up ... done");
     if (deployer.network === "production") {
       await assets.init().should.be.fulfilled;
+    } else if (deployer.network === "local") {
+      console.log("WARNING ... only timezone 1")
+      await assets.initSingleTZ(1).should.be.fulfilled;
     } else {
       console.log("WARNING ... only timezone 10")
       await assets.initSingleTZ(10).should.be.fulfilled;
-    } 
+    }
     console.log("Initing ... done");
 
     console.log("");
