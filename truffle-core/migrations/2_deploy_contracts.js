@@ -50,7 +50,11 @@ module.exports = function (deployer) {
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
     console.log("Setting up ... done");
-    await assets.init().should.be.fulfilled;
+    if (deployer.network === "local") {
+      await assets.initSingleTZ(1).should.be.fulfilled;
+    } else {
+      await assets.init().should.be.fulfilled;
+    }
     console.log("Initing ... done");
 
     console.log("");
