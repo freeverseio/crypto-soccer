@@ -8,8 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/helper"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
 	"gotest.tools/assert"
 )
@@ -102,7 +102,7 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	owner, err := bc.Contracts.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerID)
+	owner, err := bc.Contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +129,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	owner, err = bc.Contracts.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerID)
+	owner, err = bc.Contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerID)
 	if err != nil {
 		t.Fatal(err)
 	}

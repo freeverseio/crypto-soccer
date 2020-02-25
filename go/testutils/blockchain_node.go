@@ -105,6 +105,7 @@ func deplyByTruffle() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	// log.Infof("%s", o)
 	output := string(o)
 	startIdx := strings.Index(output, "-----------AddressesStart-----------") + len("-----------AddressesStart-----------")
 	endIdx := strings.Index(output, "-----------AddressesEnd-----------")

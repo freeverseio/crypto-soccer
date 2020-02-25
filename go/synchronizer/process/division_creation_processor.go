@@ -177,7 +177,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 		if err != nil {
 			log.Warning(err)
 		}
-		encodedState, err := b.contracts.Assets.GetPlayerStateAtBirth(opts, playerId)
+		encodedState, err := b.contracts.Market.GetPlayerStateAtBirth(opts, playerId)
 		if err != nil {
 			log.Warning(err)
 		}

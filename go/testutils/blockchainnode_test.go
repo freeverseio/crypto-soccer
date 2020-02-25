@@ -27,4 +27,5 @@ func TestConctactsDeploy(t *testing.T) {
 	assert.Assert(t, bc.Contracts.PlayAndEvolve != nil)
 	assert.Assert(t, bc.Contracts.Shop != nil)
 	assert.Assert(t, bc.Contracts.TrainingPoints != nil)
+	assert.Assert(t, bc.Contracts.ConstantsGetters != nil)
 }
