@@ -32,6 +32,7 @@ clean()
     kubectl delete -f ${MY_DIR}/notary.yaml       -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/synchronizer.yaml -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/relayactions.yaml -n ${NAMESPACE}
+    kubectl delete -f ${MY_DIR}/horizon.yaml      -n ${NAMESPACE}
     kubectl delete -f ${MY_DIR}/authproxy.yaml    -n ${NAMESPACE}
 }
 
