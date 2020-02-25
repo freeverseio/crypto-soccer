@@ -32,21 +32,17 @@ After this, the AuthProxy will send the recieved body to the GraphQL backend, re
 The server has the following configutation options:
 
 - `-gqlurl` the URL of the GraphQL backend
-- `-serviceurl` the URL where this service is going to be published
+- `-serviceport` the port for the proxy service (defaults to 8080)
+- `-metricsport` the port for telemetry service (defaults to 4000)
 - `-debug` to activate verboose 
 - `-timeout` maximum timeout in seconds for a request to be processed
 - `-ratelimit` maximum amount of requests per second
 - `-backdoor` to activate an especial token `joshua` that bypasses token security checks
 - `-gracetime` to define the grace time in seconds between the ticket claimed time and the local proxy time
 
-the `-serviceurl` parameter accepts
-
-- `http;//` on the port `8080` or
-- `https://` on the port `443` (the default). Full DNS (no IP) should be specified since the TLS certificate is automatically created by using letsencrypt.org. The certificate is stored internally, and it will be created each time that the server starts and it is not found in the `cache-path` folder.
-
 ## Telemetry
 
-The server exports metrics for telemetry in the `0.0.0.0:4000` port, additionally from the exported golang metrics, also exports:
+The server exports metrics in `0.0.0.0:4000/telemetry` port, additionally from the exported golang metrics, also exports:
 
 - `authproxy_ops_success` : the total number of processed operations
 - `authproxy_ops_failed` : the total number of failed operations

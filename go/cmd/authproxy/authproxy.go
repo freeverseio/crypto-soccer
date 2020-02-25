@@ -9,7 +9,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -20,7 +19,6 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -242,18 +240,12 @@ func assert(err error) {
 	}
 }
 
-func startProxyServer(serviceurl *string, ratelimit *int) {
+func startProxyServer(serviceport int, ratelimit int) {
 
 	// check gql server
 	_, err := checkPermissions(context.Background(), common.HexToAddress("0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"))
 	if err != nil {
 		log.Warnf("Caution, cannot access to gql service at %s: %w", gqlurl, err)
-	}
-
-	// parse service url
-	serviceURL, err := url.Parse(*serviceurl)
-	if err != nil {
-		log.Fatal("malformed URL ", *serviceurl)
 	}
 
 	// create authentication cache
@@ -263,51 +255,35 @@ func startProxyServer(serviceurl *string, ratelimit *int) {
 	// create server handing requests with reqest limits
 	proxyserver := http.NewServeMux()
 
-	lmt := tollbooth.NewLimiter(float64(*ratelimit), nil)
+	lmt := tollbooth.NewLimiter(float64(ratelimit), nil)
 	lmt.SetOnLimitReached(func(w http.ResponseWriter, r *http.Request) {
 		metricsOpsDropped.Inc()
 	})
 	lmtHandler := tollbooth.LimitFuncHandler(lmt, gqlproxy)
-	proxyserver.Handle(serviceURL.Path, lmtHandler)
+	proxyserver.Handle("/", lmtHandler)
 
-	// start the server
-	if serviceURL.Scheme == "https" {
-		log.Info("Starting at :443")
-		m := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(serviceURL.Host),
-			Cache:      autocert.DirCache("cache-path"),
-		}
-		server := &http.Server{
-			Handler:   proxyserver,
-			Addr:      ":https",
-			TLSConfig: m.TLSConfig(),
-		}
-		if err := server.ListenAndServeTLS("", ""); err != nil {
-			log.Fatal("cannot start https server: ", err)
-		}
-	} else if serviceURL.Scheme == "http" {
-		log.Info("Starting proxy server at :8080")
-		server := &http.Server{
-			Handler: proxyserver,
-			Addr:    ":8080",
-		}
-		if err := server.ListenAndServe(); err != nil {
-			log.Fatal("cannot start http server", err)
-		}
-	} else {
-		log.Fatal("Unknown scheme ", serviceURL.Scheme)
+	bind := fmt.Sprintf(":%v", serviceport)
+	log.Infof("Starting proxy server at %v/", bind)
+	server := &http.Server{
+		Handler: proxyserver,
+		Addr:    bind,
+	}
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal("cannot start http server", err)
 	}
 }
 
-func startMetricsServer() {
-	log.Info("Starting metrics server at :4000/metrics")
+func startMetricsServer(metricsport int) {
+
+	bind := fmt.Sprintf(":%v", metricsport)
+	log.Infof("Starting metrics server at %v/metrics", bind)
+
 	metricsserver := http.NewServeMux()
 	metricsserver.Handle("/metrics", promhttp.Handler())
 
 	server := &http.Server{
 		Handler: metricsserver,
-		Addr:    ":4000",
+		Addr:    bind,
 	}
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("cannot start metrics server", err)
@@ -317,7 +293,8 @@ func startMetricsServer() {
 func main() {
 
 	gqlurl = flag.String("gqlurl", "http://dev1.gorengine.com:4000/graphql", "graphql url")
-	serviceurl := flag.String("serviceurl", "http://localhost:8080/graphql", "service url, http or https for autocert")
+	serviceport := flag.Int("serviceport", 8080, "service port")
+	metricsport := flag.Int("metricsport", 4000, "metrics port")
 	debug = flag.Bool("debug", false, "debug")
 	timeout = flag.Int("timeout", 5, "max timeout")
 	ratelimit := flag.Int("ratelimit", 1000000, "max requests per second")
@@ -327,7 +304,8 @@ func main() {
 
 	log.Info("-timeout=", *timeout)
 	log.Info("-gqlurl=", *gqlurl)
-	log.Info("-serviceurl=", *serviceurl)
+	log.Info("-serviceport=", *serviceport)
+	log.Info("-metricsport=", *metricsport)
 	log.Info("-debug=", *debug)
 	log.Info("-ratelimit=", *ratelimit)
 	log.Info("-backdoor=", *backdoor, " (Bearer ", godtoken, ")")
@@ -337,8 +315,8 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	go startMetricsServer()
-	startProxyServer(serviceurl, ratelimit)
+	go startMetricsServer(*metricsport)
+	startProxyServer(*serviceport, *ratelimit)
 }
 
 /*
