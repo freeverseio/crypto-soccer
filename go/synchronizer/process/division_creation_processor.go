@@ -34,31 +34,31 @@ func NewDivisionCreationProcessor(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
 ) (*DivisionCreationProcessor, error) {
-	SK_SHO, err := contracts.Assets.SKSHO(&bind.CallOpts{})
+	SK_SHO, err := contracts.ConstantsGetters.GetSKSHO(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	SK_SPE, err := contracts.Assets.SKSPE(&bind.CallOpts{})
+	SK_SPE, err := contracts.ConstantsGetters.GetSKSPE(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	SK_PAS, err := contracts.Assets.SKPAS(&bind.CallOpts{})
+	SK_PAS, err := contracts.ConstantsGetters.GetSKPAS(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	SK_DEF, err := contracts.Assets.SKDEF(&bind.CallOpts{})
+	SK_DEF, err := contracts.ConstantsGetters.GetSKDEF(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	SK_END, err := contracts.Assets.SKEND(&bind.CallOpts{})
+	SK_END, err := contracts.ConstantsGetters.GetSKEND(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	LEAGUES_PER_DIV, err := contracts.Assets.LEAGUESPERDIV(&bind.CallOpts{})
+	LEAGUES_PER_DIV, err := contracts.ConstantsGetters.GetLEAGUESPERDIV(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	TEAMS_PER_LEAGUE, err := contracts.Assets.TEAMSPERLEAGUE(&bind.CallOpts{})
+	TEAMS_PER_LEAGUE, err := contracts.ConstantsGetters.GetTEAMSPERLEAGUE(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func NewDivisionCreationProcessor(
 	if err != nil {
 		return nil, err
 	}
-	PLAYERS_PER_TEAM_INIT, err := contracts.Assets.PLAYERSPERTEAMINIT(&bind.CallOpts{})
+	PLAYERS_PER_TEAM_INIT, err := contracts.ConstantsGetters.GetPLAYERSPERTEAMINIT(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
