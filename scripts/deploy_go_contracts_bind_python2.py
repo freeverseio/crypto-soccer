@@ -67,7 +67,7 @@ if __name__ == "__main__":
              ]
 
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'ConstantsGetters.json'), 'constantsgetters', dests)
-    deploy_go_contract(os.path.join(truffle_contracts_dir, 'StorageProxy.json'), 'storageproxy', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'Proxy.json'), 'proxy', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Assets.json'), 'assets', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'AssetsView.json'), 'assetsview', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Market.json'), 'market', dests)
