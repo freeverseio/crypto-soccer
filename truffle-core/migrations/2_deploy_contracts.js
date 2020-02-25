@@ -50,11 +50,12 @@ module.exports = function (deployer) {
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
     console.log("Setting up ... done");
-    if (deployer.network === "local") {
-      await assets.initSingleTZ(1).should.be.fulfilled;
-    } else {
+    if (deployer.network === "production") {
       await assets.init().should.be.fulfilled;
-    }
+    } else {
+      console.log("WARNING ... only timezone 10")
+      await assets.initSingleTZ(10).should.be.fulfilled;
+    } 
     console.log("Initing ... done");
 
     console.log("");
