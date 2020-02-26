@@ -56,7 +56,7 @@ spec:
         - containerPort: 8545
         volumeMounts:
         - name: xdai-storage
-          mountPath: /home
+          mountPath: /home/parity/.local/share/io.parity.ethereum
       initContainers:
       - name: xdai-storage-permission-fix
         image: busybox
