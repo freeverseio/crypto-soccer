@@ -1,6 +1,7 @@
 package testutils_test
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -15,6 +16,7 @@ func TestConctactsDeploy(t *testing.T) {
 		log.Fatal(err)
 	}
 	assert.NilError(t, bc.DeployContracts(bc.Owner))
+	t.Log(fmt.Sprintf("%+v", bc.Contracts))
 	assert.Assert(t, bc.Contracts.Client != nil)
 	assert.Assert(t, bc.Contracts.Leagues != nil)
 	assert.Assert(t, bc.Contracts.Assets != nil)
