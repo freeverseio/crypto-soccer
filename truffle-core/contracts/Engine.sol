@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
@@ -7,6 +7,23 @@ import "./EncodingTactics.sol";
 import "./EngineApplyBoosters.sol";
 
 contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
+    uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
+    uint8 constant public N_SKILLS = 5;
+    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
+    uint8 constant public IDX_GK = 0;
+    uint8 constant public IDX_D  = 1;
+    uint8 constant public IDX_M  = 2;
+    uint8 constant public IDX_F  = 3;
+    uint8 constant public IDX_MD = 4;
+    uint8 constant public IDX_MF = 5;
+    
+    // Skills: shoot, speed, pass, defence, endurance
+    uint8 constant public SK_SHO = 0;
+    uint8 constant public SK_SPE = 1;
+    uint8 constant public SK_PAS = 2;
+    uint8 constant public SK_DEF = 3;
+    uint8 constant public SK_END = 4;    
+    
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 public constant MAX_GOALS_IN_MATCH  = 15;   // Max number of goals that one single team in an entire match (no restriction on which half)
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]

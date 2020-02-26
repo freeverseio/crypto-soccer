@@ -105,6 +105,7 @@ func deplyByTruffle() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	// log.Infof("%s", o)
 	output := string(o)
 	startIdx := strings.Index(output, "-----------AddressesStart-----------") + len("-----------AddressesStart-----------")
 	endIdx := strings.Index(output, "-----------AddressesEnd-----------")
@@ -141,6 +142,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		contractMap["PLAYANDEVOLVE_CONTRACT_ADDRESS"],
 		contractMap["SHOP_CONTRACT_ADDRESS"],
 		contractMap["TRAININGPOINTS_CONTRACT_ADDRESS"],
+		contractMap["CONSTANTSGETTERS_CONTRACT_ADDRESS"],
 	)
 
 	b.Addresses = ContractAddresses{

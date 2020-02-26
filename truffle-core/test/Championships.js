@@ -6,6 +6,7 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 
+const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Championships = artifacts.require('Championships');
 const Assets = artifacts.require('Assets');
 const Engine = artifacts.require('Engine');
@@ -26,7 +27,7 @@ contract('Championships', (accounts) => {
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false]) => {
         teamState = []
         sumSkills = skills.reduce((a, b) => a + b, 0);
-        var playerStateTemp = await engine.encodePlayerSkills(
+        var playerStateTemp = await assets.encodePlayerSkills(
             skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills
@@ -35,7 +36,7 @@ contract('Championships', (accounts) => {
             teamState.push(playerStateTemp)
         }
 
-        playerStateTemp = await engine.encodePlayerSkills(
+        playerStateTemp = await assets.encodePlayerSkills(
             skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills
@@ -60,14 +61,15 @@ contract('Championships', (accounts) => {
     }
     
     beforeEach(async () => {
+        constants = await ConstantsGetters.new().should.be.fulfilled;
         champs = await Championships.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.initSingleTZ(INIT_TZ).should.be.fulfilled;
         await champs.setEngineAdress(engine.address).should.be.fulfilled;
         await champs.setAssetsAdress(assets.address).should.be.fulfilled;
-        TEAMS_PER_LEAGUE = await champs.TEAMS_PER_LEAGUE().should.be.fulfilled;
-        PLAYERS_PER_TEAM_MAX = await champs.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        TEAMS_PER_LEAGUE = await constants.get_TEAMS_PER_LEAGUE().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         MATCHDAYS = await champs.MATCHDAYS().should.be.fulfilled;
         MATCHES_PER_DAY = await champs.MATCHES_PER_DAY().should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine);

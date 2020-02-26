@@ -1,8 +1,9 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 import "./EncodingMatchLog.sol";
-import "./EncodingSkills.sol";
+import "./EncodingSkillsGetters.sol";
 
-contract Utils is EncodingMatchLog, EncodingSkills{
+contract Utils is EncodingMatchLog, EncodingSkillsGetters{
+    uint8 constant public N_SKILLS = 5;
 
     function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {
         decodedLog[0] = uint32(getTeamSumSkills(log));

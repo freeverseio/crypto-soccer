@@ -1,10 +1,13 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./EncodingTactics.sol";
-import "./EncodingSkills.sol";
+import "./EncodingSkillsGetters.sol";
 import "./EncodingSkillsSetters.sol";
 
-contract EngineApplyBoosters is EncodingSkillsSetters, EncodingSkills, EncodingTactics  {
+contract EngineApplyBoosters is EncodingSkillsSetters, EncodingSkillsGetters, EncodingTactics  {
+
+    uint8 constant private PLAYERS_PER_TEAM_MAX  = 25;
+    uint8 constant public N_SKILLS = 5;
 
     // skills order: shoot, speed, pass, defence, endurance
     function applyItemBoost(uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills, uint256 tactics) public pure returns(uint256[PLAYERS_PER_TEAM_MAX] memory) {

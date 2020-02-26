@@ -43,7 +43,7 @@ func New(
 	if auction.UUID != bid.Auction {
 		return nil, errors.New("Bid of wrong auction")
 	}
-	postAuctionTime, err := contracts.Market.POSTAUCTIONTIME(&bind.CallOpts{})
+	postAuctionTime, err := contracts.ConstantsGetters.GetPOSTAUCTIONTIME(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
