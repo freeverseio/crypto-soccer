@@ -22,7 +22,7 @@ require('chai')
 
 const delegateUtils = require('../utils/delegateCallUtils.js');
 
-module.exports = function (deployer) {
+module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
     const proxy = await deployer.deploy(Proxy).should.be.fulfilled;
     const {0: assets, 1: market, 2: updates} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
@@ -65,6 +65,11 @@ module.exports = function (deployer) {
       await assets.initSingleTZ(10).should.be.fulfilled;
     }
     console.log("Initing ... done");
+
+    const value = "100000000000000000";
+    const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
+    console.log("Transfer " + value + " to " + to);
+    web3.eth.sendTransaction({from: accounts[0], to , value}).should.be.fulfilled;
 
     console.log("");
     console.log("🚀  Deployed on:", deployer.network)
