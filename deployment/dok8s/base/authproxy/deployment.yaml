@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authproxy
+  labels:
+    app: authproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authproxy
+  template:
+    metadata:
+      labels:
+        app: authproxy
+    spec:
+      containers:
+      - name: authproxy
+        image: freeverseio/authproxy:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        args: [-debug, -backdoor=true,
+               -gqlurl, "http://horizon:4000"]
+
+      imagePullSecrets:
+      - name: docker-secret
