@@ -47,7 +47,7 @@ func NewProcessor(
 }
 
 func (p *Processor) Process(tx *sql.Tx) error {
-	currentVerse, err := p.updatesContract.CurrentVerse(&bind.CallOpts{})
+	currentVerse, err := p.updatesContract.GetCurrentVerse(&bind.CallOpts{})
 	if err != nil {
 		return err
 	}
