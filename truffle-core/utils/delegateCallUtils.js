@@ -1,19 +1,19 @@
 var Web3 = require('web3');
 var web3 = new Web3(Web3.givenProvider);
 
-const deployPair = async (sto, Contr) => {
+const deployPair = async (proxy, Contr) => {
     if (Contr == "") return ["", "", []];
-    contr = await Contr.at(sto.address).should.be.fulfilled;
+    contr = await Contr.at(proxy.address).should.be.fulfilled;
     contrAsLib = await Contr.new().should.be.fulfilled;
     selectors = extractSelectorsFromAbi(Contr.abi);
     return [contr, contrAsLib, selectors];
 };
 
-const deployDelegate = async (sto, Assets, Market = "", Updates = "") => {
+const deployDelegate = async (proxy, Assets, Market = "", Updates = "") => {
     // setting up StorageProxy delegate calls to Assets
-    const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(sto, Assets);
-    const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(sto, Market);
-    const {0: updates, 1: updatesAsLib, 2: selectorsUpdates} = await deployPair(sto, Updates);
+    const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(proxy, Assets);
+    const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(proxy, Market);
+    const {0: updates, 1: updatesAsLib, 2: selectorsUpdates} = await deployPair(proxy, Updates);
     
     namesStr            = ['Assets', 'Market', 'Updates'];
     contractsAsLib      = [assetsAsLib, marketAsLib, updatesAsLib];
@@ -36,12 +36,12 @@ const deployDelegate = async (sto, Assets, Market = "", Updates = "") => {
     // Add all contracts to predicted Ids: [1, 2, ...]
     for (c = 0; c < nContracts; c++) {
         if (allSelectors[c].length > 0) {
-            tx0 = await sto.addContract(contractIds[c], addresses[c], allSelectors[c], names[c]).should.be.fulfilled;
+            tx0 = await proxy.addContract_magicx(contractIds[c], addresses[c], allSelectors[c], names[c]).should.be.fulfilled;
         }
     }
 
     // Activate all contracts atomically
-    tx1 = await sto.deactivateAndActivateContracts(deactivate = [], activate = contractIds).should.be.fulfilled;
+    tx1 = await proxy.deactivateAndActivateContracts_magicx(deactivate = [], activate = contractIds).should.be.fulfilled;
 
     return [assets, market, updates, allSelectors];
 
