@@ -31,7 +31,7 @@ kustomize edit set image freeverseio/universe.db:${FREEVERSE_TAG}
 kustomize edit set image freeverseio/xdai:${FREEVERSE_TAG}
 
 # build application to be deployed
-kustomize build .
+kustomize build . -o output.yaml
 
 # or alternative apply directly to cluster
 # kubectl apply -k .
