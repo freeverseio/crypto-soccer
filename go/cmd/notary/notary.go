@@ -18,6 +18,7 @@ func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres url")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	marketContractAddress := flag.String("market_address", "", "market contract address")
+	constantsgettersContractAddress := flag.String("constantsgetters_address", "", "constantsgetters contract address")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	debug := flag.Bool("debug", false, "print debug logs")
 	flag.Parse()
@@ -26,6 +27,7 @@ func main() {
 	log.Infof("[PARAM] postgres          : %v", *postgresURL)
 	log.Infof("[PARAM] ethereum_client   : %v", *ethereumClient)
 	log.Infof("[PARAM] market_address    : %v", *marketContractAddress)
+	log.Infof("[PARAM] constantsgetters_address    : %v", *constantsgettersContractAddress)
 	log.Infof("[PARAM] debug             : %v", *debug)
 	log.Infof("[PARAM] privatekey        : %v", *privateKeyHex)
 	log.Infof("-------------------------------------------------------------------")
@@ -56,7 +58,8 @@ func main() {
 		client,
 		"", "", "", "", "", "",
 		*marketContractAddress,
-		"", "", "", "", "",
+		"", "", "", "",
+		*constantsgettersContractAddress,
 	)
 	if err != nil {
 		log.Fatal(err)
