@@ -13,26 +13,23 @@ program
   .option("-p, --port <port>", "server port", "4000")
   .option("-d, --databaseUrl <url>", "set the database url", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
   .option("-e, --ethereum <url>", "Ethereum node url", "http://localhost:8545")
-  .option("-k, --privateKey <pk>", "private key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
   .option("-a, --assetsContractAddress <address>", "assets contract address")
-  .option("-i, --interval <sec>", "interval in sec", "5")
   .parse(process.argv)
 
-const { port, databaseUrl, ethereum, privateKey, assetsContractAddress } = program;
+const { port, databaseUrl, ethereum, assetsContractAddress } = program;
 
 
 console.log("--------------------------------------------------------");
+console.log("port              : ", port);
 console.log("databaseUrl       : ", databaseUrl);
 console.log("ethereum          : ", ethereum);
-console.log("🔥  account p.k.   : ", privateKey);
 console.log("assets address    : ", assetsContractAddress);
 console.log("--------------------------------------------------------");
 
 const app = express();
-const provider = new HDWalletProvider(privateKey, ethereum);
-const web3 = new Web3(provider, null, {});
+const web3 = new Web3(ethereum);
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
-const from = provider.addresses[0];
+const from = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
 const mutationsPlugin = MutationsPlugin(assets, from);
 
 app.use(

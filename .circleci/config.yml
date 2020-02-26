@@ -57,7 +57,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - run: cd go/contracts && go test ./...
+      # - run: cd go/contracts && go test ./...
       - run: cd go/useractions && go test ./...
       - run: cd go/marketpay/v1 && go test ./...
       - run: cd go/storage && go test ./...
@@ -139,17 +139,6 @@ jobs:
       - run: docker push freeverseio/universe.api:${CIRCLE_TAG}
       - run: docker push freeverseio/relay.actions:${CIRCLE_TAG}
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
-  deploy:
-    executor: freeverse
-    steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "1f:0d:ef:01:c6:82:5d:62:6c:2c:3f:57:37:ac:b9:13"
-      - checkout
-      - run: scp -o StrictHostKeyChecking=no ./deployment/development/docker-compose.yml $DROPLET_USER@$DROPLET_IP:./
-      - run: scp -o StrictHostKeyChecking=no ./deployment/development/.env $DROPLET_USER@$DROPLET_IP:./
-      - run: scp -o StrictHostKeyChecking=no ./deployment/development/deploy.sh $DROPLET_USER@$DROPLET_IP:./
-      - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
   deployk8s:
     docker:
       - image: 'cimg/base:stable'
@@ -211,14 +200,6 @@ workflows:
             - market-trader
             - relay-actions
             - market-notary
-      - deploy:
-          filters:
-           branches:
-              only:
-                - dev
-          requires:
-            - dockerization-development
-            - truffle_core
       - deployk8s:
           filters:
            branches:

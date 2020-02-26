@@ -6,9 +6,11 @@ require('chai')
 
 const debug = require('../utils/debugUtils.js');
 
+const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Encoding = artifacts.require('EncodingSkills');
 const EncodingTact = artifacts.require('EncodingTacticsPart1');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
+const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
 
 contract('Encoding', (accounts) => {
@@ -16,14 +18,16 @@ contract('Encoding', (accounts) => {
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
+        constants = await ConstantsGetters.new().should.be.fulfilled;
         encoding = await Encoding.new().should.be.fulfilled;
         utils = await Utils.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
+        encodingGet = await EncodingGet.new().should.be.fulfilled;
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
     it('encodeTactics incorrect lineup', async () =>  {
-        PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
         substitutions = [4,10,2];
@@ -35,7 +39,7 @@ contract('Encoding', (accounts) => {
     })
     
     it('encodeTactics', async () =>  {
-        PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
         substitutions = [4,10,2];
@@ -90,61 +94,61 @@ contract('Encoding', (accounts) => {
         N_SKILLS = 5;
         resultSkills = [];
         for (s = 0; s < N_SKILLS; s++) {
-            result = await encoding.getSkill(skills, s).should.be.fulfilled;
+            result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
             resultSkills.push(result);
         }
         debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
 
-        result = await encoding.getBirthDay(skills).should.be.fulfilled;
+        result = await encodingGet.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
-        result = await encoding.getPotential(skills).should.be.fulfilled;
+        result = await encodingGet.getPotential(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(potential);
-        result = await encoding.getForwardness(skills).should.be.fulfilled;
+        result = await encodingGet.getForwardness(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(forwardness);
-        result = await encoding.getLeftishness(skills).should.be.fulfilled;
+        result = await encodingGet.getLeftishness(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(leftishness);
-        result = await encoding.getAggressiveness(skills).should.be.fulfilled;
+        result = await encodingGet.getAggressiveness(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(aggressiveness);
-        result = await encoding.getPlayerIdFromSkills(skills).should.be.fulfilled;
+        result = await encodingGet.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
-        result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
+        result = await encodingGet.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(alignedEndOfFirstHalf);
-        result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
+        result = await encodingGet.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
 
-        result = await encoding.getGamesNonStopping(skills).should.be.fulfilled;
+        result = await encodingGet.getGamesNonStopping(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(gamesNonStopping);
         gamesNonStopping = 7;        
         skills = await encodingSet.setGamesNonStopping(skills, gamesNonStopping).should.be.fulfilled;
-        result = await encoding.getGamesNonStopping(skills).should.be.fulfilled;
+        result = await encodingGet.getGamesNonStopping(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(gamesNonStopping);
         skillsdummy = await encodingSet.setGamesNonStopping(skills, 8).should.be.rejected;
         
 
         skills = await encodingSet.setPotential(skills, potential+1).should.be.fulfilled;
-        result = await encoding.getPotential(skills).should.be.fulfilled;
+        result = await encodingGet.getPotential(skills).should.be.fulfilled;
         potential = potential + 1;
         result.toNumber().should.be.equal(potential);
 
-        result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
+        result = await encodingGet.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
 
-        result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
+        result = await encodingGet.getSubstitutedFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(substitutedFirstHalf);
         substitutedFirstHalf = !substitutedFirstHalf;
         skills = await encodingSet.setSubstitutedFirstHalf(skills, substitutedFirstHalf).should.be.fulfilled;
-        result = await encoding.getSubstitutedFirstHalf(skills).should.be.fulfilled;
+        result = await encodingGet.getSubstitutedFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(substitutedFirstHalf);
 
-        result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
+        result = await encodingGet.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
-        result = await encoding.getGeneration(skills).should.be.fulfilled;
+        result = await encodingGet.getGeneration(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(generation);
         
-        result =  await encoding.getIsSpecial(skills).should.be.fulfilled;
+        result =  await encodingGet.getIsSpecial(skills).should.be.fulfilled;
         result.should.be.equal(false);
-        skills2 = await encoding.addIsSpecial(skills).should.be.fulfilled;
-        result =  await encoding.getIsSpecial(skills2).should.be.fulfilled;
+        skills2 = await encodingGet.addIsSpecial(skills).should.be.fulfilled;
+        result =  await encodingGet.getIsSpecial(skills2).should.be.fulfilled;
         result.should.be.equal(true);
         
         sk = [2**16 - 43, 2**16 - 567, 0, 2**16 - 356, 2**16 - 4556]
@@ -154,55 +158,55 @@ contract('Encoding', (accounts) => {
         }
         resultSkills = [];
         for (s = 0; s < N_SKILLS; s++) {
-            result = await encoding.getSkill(skills, s).should.be.fulfilled;
+            result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
             resultSkills.push(result);
         }
         debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
 
         alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
         skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
-        result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
+        result = await encodingGet.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(alignedEndOfFirstHalf);
 
         alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
         skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
-        result = await encoding.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
+        result = await encodingGet.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(alignedEndOfFirstHalf);
         
         redCardLastGame = !redCardLastGame;
         skills = await encodingSet.setRedCardLastGame(skills, redCardLastGame).should.be.fulfilled;
-        result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
+        result = await encodingGet.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
 
         redCardLastGame = !redCardLastGame;
         skills = await encodingSet.setRedCardLastGame(skills, redCardLastGame).should.be.fulfilled;
-        result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
+        result = await encodingGet.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
         
         injuryWeeksLeft -= 2;
         skills = await encodingSet.setInjuryWeeksLeft(skills, injuryWeeksLeft).should.be.fulfilled;
-        result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
+        result = await encodingGet.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
 
         injuryWeeksLeft += 1;
         skills = await encodingSet.setInjuryWeeksLeft(skills, injuryWeeksLeft).should.be.fulfilled;
-        result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
+        result = await encodingGet.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
 
         skills = await encodingSet.setSumOfSkills(skills, sumSkills);
-        result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
+        result = await encodingGet.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         
-        result = await encoding.getTargetTeamId(skills).should.be.fulfilled;
+        result = await encodingGet.getTargetTeamId(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         
-        skills = await encoding.setTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
-        result = await encoding.getTargetTeamId(skills).should.be.fulfilled;
+        skills = await encodingGet.setTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
+        result = await encodingGet.getTargetTeamId(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(targetTeamId);
 
         generation += 2;
         skills = await encodingSet.setGeneration(skills, generation).should.be.fulfilled;
-        result = await encoding.getGeneration(skills).should.be.fulfilled;
+        result = await encodingGet.getGeneration(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(generation);
         
         // testing full decode

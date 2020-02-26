@@ -5,12 +5,10 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/helper"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/storage"
-	"github.com/freeverseio/crypto-soccer/go/useractions"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"gotest.tools/assert"
 )
 
@@ -71,27 +69,27 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ua := useractions.UserActions{}
-	cid, err := ua.ToIpfs(ipfsURL)
-	assert.NilError(t, err)
-	seed, err := ua.Hash()
-	assert.NilError(t, err)
-	var txs []*types.Transaction
-	for i := 0; i < 24*4; i++ {
-		tx, err := bc.Contracts.Updates.SubmitActionsRoot(
-			bind.NewKeyedTransactor(bc.Owner),
-			seed,
-			cid,
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-		txs = append(txs, tx)
-	}
-	err = helper.WaitReceipts(bc.Client, txs, 3)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// ua := useractions.UserActions{}
+	// cid, err := ua.ToIpfs(ipfsURL)
+	// assert.NilError(t, err)
+	// seed, err := ua.Hash()
+	// assert.NilError(t, err)
+	// var txs []*types.Transaction
+	// for i := 0; i < 24*4; i++ {
+	// 	tx, err := bc.Contracts.Updates.SubmitActionsRoot(
+	// 		bind.NewKeyedTransactor(bc.Owner),
+	// 		seed,
+	// 		cid,
+	// 	)
+	// 	if err != nil {
+	// 		t.Fatal(err)
+	// 	}
+	// 	txs = append(txs, tx)
+	// }
+	// err = helper.WaitReceipts(bc.Client, txs, 3)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 	_, err = p.Process(tx, 0)
 	if err != nil {
 		t.Fatal(err)
@@ -102,7 +100,7 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	owner, err := bc.Contracts.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerID)
+	owner, err := bc.Contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +127,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	owner, err = bc.Contracts.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerID)
+	owner, err = bc.Contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerID)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./Assets.sol";
 import "./EngineLib.sol";
@@ -9,6 +9,7 @@ import "./EncodingSkillsSetters.sol";
 import "./EncodingTacticsPart1.sol";
 
 contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsPart1 {
+    uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
 
     // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card

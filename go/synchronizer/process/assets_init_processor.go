@@ -19,7 +19,7 @@ type AssetsInitProcessor struct {
 func NewAssetsInitProcessor(
 	contracts *contracts.Contracts,
 ) (*AssetsInitProcessor, error) {
-	ACADEMYTEAM, err := contracts.Assets.ACADEMYTEAM(&bind.CallOpts{})
+	ACADEMYTEAM, err := contracts.ConstantsGetters.GetACADEMYTEAM(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
