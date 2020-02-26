@@ -41,7 +41,6 @@ module.exports = function (deployer, network, accounts) {
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     
     console.log("Setting up ...");
-    await assets.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     await updates.initUpdates().should.be.fulfilled;
@@ -65,6 +64,8 @@ module.exports = function (deployer, network, accounts) {
       await assets.initSingleTZ(10).should.be.fulfilled;
     }
     console.log("Initing ... done");
+
+    await assets.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
 
     const value = "100000000000000000";
     const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
