@@ -75,6 +75,7 @@ module.exports = function (deployer, network, accounts) {
     console.log("🚀  Deployed on:", deployer.network)
     console.log("-----------AddressesStart-----------");
     console.log("ASSETS_CONTRACT_ADDRESS=" + assets.address);
+    console.log("MARKET_CONTRACT_ADDRESS=" + market.address);
     console.log("ENGINE_CONTRACT_ADDRESS=" + engine.address);
     console.log("ENGINEPRECOMP_CONTRACT_ADDRESS=" + enginePreComp.address);
     console.log("ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS=" + engineApplyBoosters.address);
