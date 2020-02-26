@@ -88,10 +88,10 @@ contract('Proxy', (accounts) => {
         result = await proxy.countContracts_magicx().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
         selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-        tx0 = await proxy.addContracts_magicx(contractId = 0, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.rejected;
-        tx0 = await proxy.addContracts_magicx(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.rejected;
+        tx0 = await proxy.addContract_magicx(contractId = 0, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.rejected;
+        tx0 = await proxy.addContract_magicx(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.rejected;
         contractId = 1;
-        tx0 = await proxy.addContracts_magicx(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        tx0 = await proxy.addContract_magicx(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         truffleAssert.eventEmitted(tx0, "ContractAdded_magicx", async (event) => { return event.contractId === contractId && event.name === name});
         
         tx1 = await proxy.activateContracts_magicx(contractIds = [contractId]).should.be.fulfilled;
@@ -107,7 +107,7 @@ contract('Proxy', (accounts) => {
         // add function (still not enough to call assets):
         selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
         contractId = 1;
-        tx0 = await proxy.addContracts_magicx(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        tx0 = await proxy.addContract_magicx(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         await assets.init().should.be.rejected;
         // activate function, now, enough to call assets:
         tx1 = await proxy.activateContracts_magicx(contractIds = [contractId]).should.be.fulfilled;
@@ -122,7 +122,7 @@ contract('Proxy', (accounts) => {
 
         // I can re-activate, and, because storage is preserved, I cannot init again, but nCountries is still OK
         contractId = 2;
-        tx0 = await proxy.addContracts_magicx(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        tx0 = await proxy.addContract_magicx(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         tx1 = await proxy.activateContracts_magicx(contractIds = [contractId]).should.be.fulfilled;
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
@@ -130,7 +130,7 @@ contract('Proxy', (accounts) => {
 
         // I can do the same thing in one atomic TX:
         contractId = 3;
-        tx0 = await proxy.addContracts_magicx(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+        tx0 = await proxy.addContract_magicx(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         tx1 = await proxy.deactivateAndActivateContracts_magicx(deactivate = [2], activate = [3]).should.be.fulfilled;
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
