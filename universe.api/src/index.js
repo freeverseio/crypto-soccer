@@ -29,10 +29,9 @@ console.log("assets address    : ", assetsContractAddress);
 console.log("--------------------------------------------------------");
 
 const app = express();
-const provider = new HDWalletProvider(privateKey, ethereum);
-const web3 = new Web3(provider, null, {});
+const web3 = new Web3(ethereum);
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
-const from = provider.addresses[0];
+const from = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
 const mutationsPlugin = MutationsPlugin(assets, from);
 
 app.use(
