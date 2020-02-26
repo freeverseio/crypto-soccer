@@ -10,4 +10,3 @@ spec:
      targetPort: 8545
   selector:
    app: xdai
-

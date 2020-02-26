@@ -3,15 +3,12 @@ kind: Kustomization
 resources:
 - configmap.yaml
 - ingress.yaml
-bases:
 - helloworld
-- universedb
-- universeapi
-- ipfsnode
+- horizon
+- marketdb
 - notary
 - relayactions
-- xdai
-- marketdb
-- horizon
 - synchronizer
 - trader
+- universeapi
+- universedb
