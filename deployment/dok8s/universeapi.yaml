@@ -51,7 +51,8 @@ spec:
         # namespace the name of the service is sufficient
         args: [-d, postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer,
                --assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
-               --ethereum, "http://xdai:8545" ]
+               --ethereum, "http://xdai:8545",
+               --sender, "$(sender)"]
         ports:
         - containerPort: 4000
       imagePullSecrets:

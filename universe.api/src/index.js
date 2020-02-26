@@ -14,9 +14,10 @@ program
   .option("-d, --databaseUrl <url>", "set the database url", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
   .option("-e, --ethereum <url>", "Ethereum node url", "http://localhost:8545")
   .option("-a, --assetsContractAddress <address>", "assets contract address")
+  .option("-s, --sender <address>", "sender address")
   .parse(process.argv)
 
-const { port, databaseUrl, ethereum, assetsContractAddress } = program;
+const { port, databaseUrl, ethereum, assetsContractAddress, sender } = program;
 
 
 console.log("--------------------------------------------------------");
@@ -24,12 +25,13 @@ console.log("port              : ", port);
 console.log("databaseUrl       : ", databaseUrl);
 console.log("ethereum          : ", ethereum);
 console.log("assets address    : ", assetsContractAddress);
+console.log("sender            : ", sender);
 console.log("--------------------------------------------------------");
 
 const app = express();
 const web3 = new Web3(ethereum);
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
-const from = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
+const from = sender;
 const mutationsPlugin = MutationsPlugin(assets, from);
 
 app.use(
