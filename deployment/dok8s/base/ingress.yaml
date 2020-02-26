@@ -23,14 +23,10 @@ spec:
         backend:
           serviceName: xdai
           servicePort: 8545
-      # - path: /horizon(/|$)(.*)
-      #   backend:
-      #     serviceName: horizon
-      #     servicePort: 4000
-      - path: /auth(/|$)(.*)
+      - path: /horizon(/|$)(.*)
         backend:
-          serviceName: authproxy
-          servicePort: 8080
+          serviceName: horizon
+          servicePort: 4000
       #- path: /universe(/|$)(.*)
       #  backend:
       #    serviceName: universeapi
