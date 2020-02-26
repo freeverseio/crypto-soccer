@@ -124,7 +124,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		log.Infof("[processor] Dispatching LeaguesDivisionCreation event Timezone %v, CountryIdxInTZ: %v, DivisionIdxInCountry %v", v.Timezone, v.CountryIdxInTZ, v.DivisionIdxInCountry)
 		return p.divisionCreationProcessor.Process(tx, v)
 	case assets.AssetsTeamTransfer:
-		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To)
+		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To.Hex())
 		return p.teamTransferProcessor.Process(tx, v)
 	case market.MarketPlayerStateChange:
 		log.Infof("[processor] dispatching MarketPlayerStateChange event PlayerID %v", v.PlayerId)
