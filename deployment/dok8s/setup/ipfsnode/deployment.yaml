@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ipfsnode
+  labels:
+    app.kubernetes.io/app: ipfsnode
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: ipfsnode
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: ipfsnode
+    spec:
+      containers:
+      - name: ipfsnode
+        image: ipfs/go-ipfs:v0.4.23
+        env:
+        - name: IPFS_PROFILE
+          value: server
+        - name: IPFS_PATH
+          value: /data 
+        ports:
+        - containerPort: 4001

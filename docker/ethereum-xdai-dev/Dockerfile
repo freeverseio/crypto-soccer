@@ -4,9 +4,10 @@ COPY ./data /data
 RUN ["/bin/parity","account","import","--chain","/data/devnet.chain","/data/eb3ce112d8610382a994646872c4361a96c82cf8"]
 
 RUN mkdir -p /home/parity/.local/share/io.parity.ethereum/
+RUN mv /home/parity/.local/share/io.parity.ethereum/keys /home/parity/keys
 
 EXPOSE 8545
 EXPOSE 30303
 EXPOSE 30303/udp
 
-ENTRYPOINT ["/bin/parity","--chain","/data/devnet.chain","--no-discovery","--jsonrpc-interface","all","--mode","offline", "--unlock", "0xeb3ce112d8610382a994646872c4361a96c82cf8", "--password", "/data/passwd", "--logging","info"]
+ENTRYPOINT ["/bin/parity","--chain","/data/devnet.chain","--no-discovery","--jsonrpc-interface","all","--mode","offline", "--unlock", "0xeb3ce112d8610382a994646872c4361a96c82cf8", "--password", "/data/passwd", "--logging","info", "--keys-path","/home/parity/keys"]

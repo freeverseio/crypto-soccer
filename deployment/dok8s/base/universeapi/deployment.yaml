@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: universeapi
+  labels:
+    app.kubernetes.io/app: universeapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: universeapi
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: universeapi
+    spec:
+      containers:
+      - name: universeapi
+        image: freeverseio/universe.api:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        #args: [-d, postgres://freeverse:freeverse@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer]
+        # or we can use dns record universedb[.namespace]. Since they will both be in the same
+        # namespace the name of the service is sufficient
+        args: [-d, postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer,
+               --assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
+               --ethereum, "http://xdai:8545" ]
+        ports:
+        - containerPort: 4000
+      imagePullSecrets:
+      - name: docker-secret

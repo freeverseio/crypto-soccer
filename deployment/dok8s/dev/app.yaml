@@ -1,0 +1,553 @@
+apiVersion: v1
+data:
+  ASSETS_CONTRACT_ADDRESS: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
+  MARKET_CONTRACT_ADDRESS: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
+  ENGINE_CONTRACT_ADDRESS: 0x7Ec09abC265f9ce2385041563e82203f4DC38bee
+  ENGINEPRECOMP_CONTRACT_ADDRESS: 0x169dCd95cCD6384D58D51549a33904EDD28A9e7D
+  ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS: 0x615668099Cc46D035b3c34aCdf01204Ac4A4F446
+  LEAGUES_CONTRACT_ADDRESS: 0x241b21e91d9c73EE758F94199dbEf1ad1733fF39
+  UPDATES_CONTRACT_ADDRESS: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
+  TRAININGPOINTS_CONTRACT_ADDRESS: 0x1d0d5e33B331631676ffd3b4b656eBDC15b063F6
+  EVOLUTION_CONTRACT_ADDRESS: 0x366D6Be881e799f9FAd8FFAEB52315F33a9BC8B9
+  FRIENDLIES_CONTRACT_ADDRESS: 0x4A19f95b8609D8A8CEe3322D18B900A769397cd4
+  SHOP_CONTRACT_ADDRESS: 0x05E43062013fC33FAF573DB743Bd58634827b4d7
+  PRIVILEGED_CONTRACT_ADDRESS: 0xdd329C7cA2B7e61b0Bcb6688299c1C611f1c8181
+  UTILS_CONTRACT_ADDRESS: 0xE09C3eDb1562e3562E1cD58b4eA3E706EE4fc84D
+  PLAYANDEVOLVE_CONTRACT_ADDRESS: 0x1668F2cf51259a3Db554EFF666f94f2a090Ce49A
+  CONSTANTSGETTERS_CONTRACT_ADDRESS: 0x0EBC54dCA38f80b26638E146edAe7aa43Af12125
+  freeverse_password: freeverse
+  freeverse_username: freeverse
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: freeverse-configmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: helloworld
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: hello-kubernetes-first
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app.kubernetes.io/app: helloworld
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: horizon
+    app.kubernetes.io/component: horizon
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: horizon
+spec:
+  ports:
+  - port: 4000
+  selector:
+    app.kubernetes.io/app: horizon
+    app.kubernetes.io/component: horizon
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: marketdb
+    app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: marketdb
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app.kubernetes.io/app: marketdb
+    app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: relayactions
+    app.kubernetes.io/component: relayactions
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: relayactions
+spec:
+  ports:
+  - port: 4004
+  selector:
+    app.kubernetes.io/app: relayactions
+    app.kubernetes.io/component: relayactions
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: synchronizer
+    app.kubernetes.io/component: synchronizer
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: synchronizer
+spec:
+  ports:
+  - port: 4004
+  selector:
+    app.kubernetes.io/app: synchronizer
+    app.kubernetes.io/component: synchronizer
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: trader
+    app.kubernetes.io/component: trader
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: trader
+spec:
+  ports:
+  - port: 4000
+  selector:
+    app.kubernetes.io/app: trader
+    app.kubernetes.io/component: trader
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: universeapi
+    app.kubernetes.io/component: universeapi
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: universeapi
+spec:
+  ports:
+  - name: http
+    port: 4000
+    protocol: TCP
+    targetPort: 4000
+  selector:
+    app.kubernetes.io/app: universeapi
+    app.kubernetes.io/component: universeapi
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: universedb
+    app.kubernetes.io/component: universedb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: universedb
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app.kubernetes.io/app: universedb
+    app.kubernetes.io/component: universedb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: helloworld
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: hello-kubernetes-first
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: helloworld
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: helloworld
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - env:
+        - name: MESSAGE
+          value: Hello from the first deployment!
+        image: paulbouwer/hello-kubernetes:1.5
+        name: hello-kubernetes
+        ports:
+        - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: horizon
+    app.kubernetes.io/component: horizon
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: horizon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: horizon
+      app.kubernetes.io/component: horizon
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: horizon
+        app.kubernetes.io/component: horizon
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -u
+        - http://universeapi:4000/graphql
+        - -m
+        - http://trader:4000/graphql
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/horizon:dev
+        imagePullPolicy: Always
+        name: horizon
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: marketdb
+    app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: marketdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: marketdb
+      app.kubernetes.io/component: marketdb
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: marketdb
+        app.kubernetes.io/component: marketdb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - image: freeverseio/market.db:dev
+        imagePullPolicy: Always
+        name: marketdb
+        ports:
+        - containerPort: 5432
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: notary
+    app.kubernetes.io/component: notary
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: notary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: notary
+      app.kubernetes.io/component: notary
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: notary
+        app.kubernetes.io/component: notary
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -postgres
+        - postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable
+        - -ethereum
+        - http://xdai:8545
+        - -private_key
+        - 3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54
+        - -market_address
+        - $(MARKET_CONTRACT_ADDRESS)
+        - -constantsgetters_address
+        - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/market.notary:dev
+        imagePullPolicy: Always
+        name: notary
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: relayactions
+    app.kubernetes.io/component: relayactions
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: relayactions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: relayactions
+      app.kubernetes.io/component: relayactions
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: relayactions
+        app.kubernetes.io/component: relayactions
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -postgres
+        - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
+        - -ethereum
+        - http://xdai:8545
+        - -private_key
+        - 3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27
+        - -updatesContractAddress
+        - $(UPDATES_CONTRACT_ADDRESS)
+        - -ipfs
+        - ipfsnode:5001
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/relay.actions:dev
+        imagePullPolicy: Always
+        name: relayactions
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: synchronizer
+    app.kubernetes.io/component: synchronizer
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: synchronizer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: synchronizer
+      app.kubernetes.io/component: synchronizer
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: synchronizer
+        app.kubernetes.io/component: synchronizer
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -postgres
+        - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
+        - -ethereum
+        - http://xdai:8545
+        - -ipfs
+        - ipfsnode:5001
+        - -leaguesContractAddress
+        - $(LEAGUES_CONTRACT_ADDRESS)
+        - -engineContractAddress
+        - $(ENGINE_CONTRACT_ADDRESS)
+        - -enginePreCompContractAddress
+        - $(ENGINEPRECOMP_CONTRACT_ADDRESS)
+        - -marketContractAddress
+        - $(MARKET_CONTRACT_ADDRESS)
+        - -updatesContractAddress
+        - $(UPDATES_CONTRACT_ADDRESS)
+        - -assetsContractAddress
+        - $(ASSETS_CONTRACT_ADDRESS)
+        - -evolutionContractAddress
+        - $(EVOLUTION_CONTRACT_ADDRESS)
+        - -playandevolveContractAddress
+        - $(PLAYANDEVOLVE_CONTRACT_ADDRESS)
+        - -trainingpointsContractAddress
+        - $(TRAININGPOINTS_CONTRACT_ADDRESS)
+        - -shopContractAddress
+        - $(SHOP_CONTRACT_ADDRESS)
+        - -utilsContractAddress
+        - $(UTILS_CONTRACT_ADDRESS)
+        - -constantsgettersContractAddress
+        - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/synchronizer:dev
+        imagePullPolicy: Always
+        name: synchronizer
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: trader
+    app.kubernetes.io/component: trader
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: trader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: trader
+      app.kubernetes.io/component: trader
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: trader
+        app.kubernetes.io/component: trader
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -d
+        - postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market
+        - -p
+        - "4000"
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/market.trader:dev
+        imagePullPolicy: Always
+        name: trader
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: universeapi
+    app.kubernetes.io/component: universeapi
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: universeapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: universeapi
+      app.kubernetes.io/component: universeapi
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: universeapi
+        app.kubernetes.io/component: universeapi
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -d
+        - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer
+        - --assetsContractAddress
+        - $(ASSETS_CONTRACT_ADDRESS)
+        - --ethereum
+        - http://xdai:8545
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/universe.api:dev
+        imagePullPolicy: Always
+        name: universeapi
+        ports:
+        - containerPort: 4000
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: universedb
+    app.kubernetes.io/component: universedb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: universedb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: universedb
+      app.kubernetes.io/component: universedb
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: universedb
+        app.kubernetes.io/component: universedb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - image: freeverseio/universe.db:dev
+        imagePullPolicy: Always
+        name: universedb
+        ports:
+        - containerPort: 5432
+      imagePullSecrets:
+      - name: docker-secret

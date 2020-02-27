@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: relayactions
+  labels:
+    app.kubernetes.io/app: relayactions
+spec:
+  ports:
+  - port: 4004
+  selector:
+    app.kubernetes.io/app: relayactions

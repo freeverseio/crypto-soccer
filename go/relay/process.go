@@ -55,7 +55,9 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	}
 	log.Infof("Staring process of verse %v, timezone %v, day %v, turn %v", currentVerse, nextToUpdate.TimeZone, nextToUpdate.Day, nextToUpdate.TurnInDay)
 	upcomingUserActions := useractions.New()
-	if nextToUpdate.TurnInDay <= 1 {
+	if nextToUpdate.TimeZone == 0 {
+		log.Info("Timezone 0 ... skipping user actions")
+	} else if nextToUpdate.TurnInDay <= 1 {
 		if upcomingUserActions, err = useractions.NewFromStorage(tx, storage.UpcomingVerse, int(nextToUpdate.TimeZone)); err != nil {
 			return err
 		}
