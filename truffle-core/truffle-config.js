@@ -1,5 +1,5 @@
 const HDWalletProvider = require("truffle-hdwallet-provider");
-const LedgerWalletProvider = require('@umaprotocol/truffle-ledger-provider');
+// const LedgerWalletProvider = require('@umaprotocol/truffle-ledger-provider');
 
 module.exports = {
   compilers: {
@@ -27,14 +27,14 @@ module.exports = {
       ),
       network_id: 100
     },
-    xdailedger: {
-      provider: () => new LedgerWalletProvider({
-        networkId: 100, // mainnet
-        path: "44'/60'/0'/0/0", // ledger default derivation path
-      }, 'https://dai.poa.network'),
-      port: 443,
-      network_id: "100",
-    },
+    // xdailedger: {
+    //   provider: () => new LedgerWalletProvider({
+    //     networkId: 100, // mainnet
+    //     path: "44'/60'/0'/0/0", // ledger default derivation path
+    //   }, 'https://dai.poa.network'),
+    //   port: 443,
+    //   network_id: "100",
+    // },
     local: { // 0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7
       provider: new HDWalletProvider(
         "FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85",
