@@ -8,7 +8,7 @@ executors:
   freeverse_ethereum:
     docker:
       - image: freeverseio/circleci
-      - image: freeverseio/xdai:test
+      - image: freeverseio/xdai:dev
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD

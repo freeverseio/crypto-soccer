@@ -2,7 +2,6 @@ package relay
 
 import (
 	"context"
-	"crypto/ecdsa"
 	"database/sql"
 	"encoding/hex"
 	"errors"
@@ -31,12 +30,11 @@ type Processor struct {
 
 func NewProcessor(
 	client *ethclient.Client,
-	privateKey *ecdsa.PrivateKey,
+	auth *bind.TransactOpts,
 	db *sql.DB,
 	updatesContract *updates.Updates,
 	ipfsURL string,
 ) (*Processor, error) {
-	auth := bind.NewKeyedTransactor(privateKey)
 
 	return &Processor{
 		client,

@@ -41,7 +41,7 @@ func toCallArg(msg ethereum.CallMsg) interface{} {
 
 type ParityBackend struct {
 	rpc    *rpc.Client
-	client *ethclient.Client
+	Client *ethclient.Client
 }
 
 func NewParityBackend(rpcUrl string) (*ParityBackend, error) {
@@ -51,27 +51,27 @@ func NewParityBackend(rpcUrl string) (*ParityBackend, error) {
 	}
 	return &ParityBackend{
 		rpc:    c,
-		client: ethclient.NewClient(c),
+		Client: ethclient.NewClient(c),
 	}, nil
 }
 
 func (s *ParityBackend) CodeAt(ctx context.Context, contract common.Address, blockNumber *big.Int) ([]byte, error) {
-	return s.client.CodeAt(ctx, contract, blockNumber)
+	return s.Client.CodeAt(ctx, contract, blockNumber)
 }
 func (s *ParityBackend) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
-	return s.client.CallContract(ctx, call, blockNumber)
+	return s.Client.CallContract(ctx, call, blockNumber)
 }
 func (s *ParityBackend) PendingCodeAt(ctx context.Context, contract common.Address) ([]byte, error) {
-	return s.client.PendingCodeAt(ctx, contract)
+	return s.Client.PendingCodeAt(ctx, contract)
 }
 func (s *ParityBackend) PendingNonceAt(ctx context.Context, account common.Address) (uint64, error) {
-	return s.client.PendingNonceAt(ctx, account)
+	return s.Client.PendingNonceAt(ctx, account)
 }
 func (s *ParityBackend) SuggestGasPrice(ctx context.Context) (*big.Int, error) {
-	return s.client.SuggestGasPrice(ctx)
+	return s.Client.SuggestGasPrice(ctx)
 }
 func (s *ParityBackend) EstimateGas(ctx context.Context, call ethereum.CallMsg) (gas uint64, err error) {
-	gas, err = s.client.EstimateGas(ctx, call)
+	gas, err = s.Client.EstimateGas(ctx, call)
 	if err != nil && strings.Contains(fmt.Sprintf("%#v", err), `Data:"Reverted"`) {
 		var hex map[string]interface{}
 		err := s.rpc.CallContext(ctx, &hex, "trace_call", toCallArg(call), []string{"trace"})
@@ -85,13 +85,13 @@ func (s *ParityBackend) EstimateGas(ctx context.Context, call ethereum.CallMsg) 
 	return gas, err
 }
 func (s *ParityBackend) SendTransaction(ctx context.Context, tx *types.Transaction) error {
-	return s.client.SendTransaction(ctx, tx)
+	return s.Client.SendTransaction(ctx, tx)
 }
 func (s *ParityBackend) FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error) {
-	return s.client.FilterLogs(ctx, query)
+	return s.Client.FilterLogs(ctx, query)
 }
 func (s *ParityBackend) SubscribeFilterLogs(ctx context.Context, query ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error) {
-	return s.client.SubscribeFilterLogs(ctx, query, ch)
+	return s.Client.SubscribeFilterLogs(ctx, query, ch)
 }
 
 func (s *ParityBackend) Transactor(keyAddr common.Address) *bind.TransactOpts {
