@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: universeapi
   labels:
-    app: universeapi
+    app.kubernetes.io/app: universeapi
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: universeapi
+      app.kubernetes.io/app: universeapi
   template:
     metadata:
       labels:
-        app: universeapi
+        app.kubernetes.io/app: universeapi
     spec:
       containers:
       - name: universeapi
@@ -26,7 +26,6 @@ spec:
         # namespace the name of the service is sufficient
         args: [-d, postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer,
                --assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
-               --privateKey, "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" ,
                --ethereum, "http://xdai:8545" ]
         ports:
         - containerPort: 4000

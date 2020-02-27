@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: universedb
   labels:
-    app: universedb
+    app.kubernetes.io/app: universedb
 spec:
   ports:
    - port: 5432
   selector:
-   app: universedb
+   app.kubernetes.io/app: universedb

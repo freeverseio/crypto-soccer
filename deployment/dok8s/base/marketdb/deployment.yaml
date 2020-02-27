@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: marketdb
   labels:
-    app: marketdb
+    app.kubernetes.io/app: marketdb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: marketdb
+      app.kubernetes.io/app: marketdb
   template:
     metadata:
       labels:
-        app: marketdb
+        app.kubernetes.io/app: marketdb
     spec:
       containers:
       - name: marketdb

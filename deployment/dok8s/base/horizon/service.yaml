@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: horizon
   labels:
-    app: horizon
+    app.kubernetes.io/app: horizon
 spec:
   ports:
   - port: 4000
   selector:
-    app: horizon
+    app.kubernetes.io/app: horizon

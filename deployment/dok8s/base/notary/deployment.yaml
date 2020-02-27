@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: notary
   labels:
-    app: notary
+    app.kubernetes.io/app: notary
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: notary
+      app.kubernetes.io/app: notary
   template:
     metadata:
       labels:
-        app: notary
+        app.kubernetes.io/app: notary
     spec:
       containers:
       - name: notary
@@ -24,7 +24,8 @@ spec:
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable",
                -ethereum, http://xdai:8545,
                -private_key, "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54",
-               -market_address, "$(MARKET_CONTRACT_ADDRESS)"]
+               -market_address, "$(MARKET_CONTRACT_ADDRESS)",
+               -constantsgetters_address, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)"]
 
       imagePullSecrets:
       - name: docker-secret

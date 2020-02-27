@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: relayactions
   labels:
-    app: relayactions
+    app.kubernetes.io/app: relayactions
 spec:
   ports:
   - port: 4004
   selector:
-    app: relayactions
+    app.kubernetes.io/app: relayactions

@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: universedb
   labels:
-    app: universedb
+    app.kubernetes.io/app: universedb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: universedb
+      app.kubernetes.io/app: universedb
   template:
     metadata:
       labels:
-        app: universedb
+        app.kubernetes.io/app: universedb
     spec:
       containers:
       - name: universedb

@@ -22,7 +22,3 @@ images:
   newTag: dev
 - name: freeverseio/universe.db
   newTag: dev
-- name: freeverseio/xdai
-  newTag: dev
-- name: ipfs/go-ipfs
-  newTag: v0.4.23
