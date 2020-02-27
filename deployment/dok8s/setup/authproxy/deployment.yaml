@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: authproxy
   labels:
-    app: authproxy
+    app.kubernetes.io/app: authproxy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: authproxy
+      app.kubernetes.io/app: authproxy
   template:
     metadata:
       labels:
-        app: authproxy
+        app.kubernetes.io/app: authproxy
     spec:
       containers:
       - name: authproxy

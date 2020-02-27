@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: authproxy
   labels:
-    app: authproxy
+    app.kubernetes.io/app: authproxy
 spec:
   ports:
   - port: 8080
   selector:
-    app: authproxy
+    app.kubernetes.io/app: authproxy

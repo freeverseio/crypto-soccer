@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: xdai 
   labels:
-    app: xdai
+    app.kubernetes.io/app: xdai
 spec:
   ports:
    - port: 8545
      targetPort: 8545
   selector:
-   app: xdai
+   app.kubernetes.io/app: xdai

@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: xdai
   labels:
-    app: xdai
+    app.kubernetes.io/app: xdai
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: xdai
+      app.kubernetes.io/app: xdai
   template:
     metadata:
       labels:
-        app: xdai
+        app.kubernetes.io/app: xdai
     spec:
       containers:
       - name: xdai

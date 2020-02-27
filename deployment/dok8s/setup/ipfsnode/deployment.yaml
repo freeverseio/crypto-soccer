@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: ipfsnode
   labels:
-    app: ipfsnode
+    app.kubernetes.io/app: ipfsnode
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ipfsnode
+      app.kubernetes.io/app: ipfsnode
   template:
     metadata:
       labels:
-        app: ipfsnode
+        app.kubernetes.io/app: ipfsnode
     spec:
       containers:
       - name: ipfsnode
