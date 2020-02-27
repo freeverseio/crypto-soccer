@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: synchronizer
   labels:
-    app: synchronizer
+    app.kubernetes.io/app: synchronizer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: synchronizer
+      app.kubernetes.io/app: synchronizer
   template:
     metadata:
       labels:
-        app: synchronizer
+        app.kubernetes.io/app: synchronizer
     spec:
       containers:
       - name: synchronizer

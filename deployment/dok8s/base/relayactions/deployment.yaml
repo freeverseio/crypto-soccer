@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: relayactions
   labels:
-    app: relayactions
+    app.kubernetes.io/app: relayactions
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: relayactions
+      app.kubernetes.io/app: relayactions
   template:
     metadata:
       labels:
-        app: relayactions
+        app.kubernetes.io/app: relayactions
     spec:
       containers:
       - name: relayactions

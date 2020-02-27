@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: synchronizer
   labels:
-    app: synchronizer
+    app.kubernetes.io/app: synchronizer
 spec:
   ports:
   - port: 4004
   selector:
-    app: synchronizer
+    app.kubernetes.io/app: synchronizer
 

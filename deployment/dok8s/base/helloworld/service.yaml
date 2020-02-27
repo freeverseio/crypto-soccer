@@ -8,4 +8,4 @@ spec:
   - port: 80
     targetPort: 8080
   selector:
-    app: hello-kubernetes-first
+    app.kubernetes.io/app: hello-kubernetes-first

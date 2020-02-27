@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: horizon
   labels:
-    app: horizon
+    app.kubernetes.io/app: horizon
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: horizon
+      app.kubernetes.io/app: horizon
   template:
     metadata:
       labels:
-        app: horizon
+        app.kubernetes.io/app: horizon
     spec:
       containers:
       - name: horizon

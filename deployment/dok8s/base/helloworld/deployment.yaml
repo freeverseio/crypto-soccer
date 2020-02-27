@@ -6,11 +6,11 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: hello-kubernetes-first
+      app.kubernetes.io/app: hello-kubernetes-first
   template:
     metadata:
       labels:
-        app: hello-kubernetes-first
+        app.kubernetes.io/app: hello-kubernetes-first
     spec:
       containers:
       - name: hello-kubernetes

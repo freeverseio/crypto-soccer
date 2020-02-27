@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: trader
   labels:
-    app: trader
+    app.kubernetes.io/app: trader
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: trader
+      app.kubernetes.io/app: trader
   template:
     metadata:
       labels:
-        app: trader
+        app.kubernetes.io/app: trader
     spec:
       containers:
       - name: trader

@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: trader
   labels:
-    app: trader
+    app.kubernetes.io/app: trader
 spec:
   ports:
   - port: 4000
   selector:
-    app: trader
+    app.kubernetes.io/app: trader

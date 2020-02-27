@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: marketdb
   labels:
-    app: marketdb
+    app.kubernetes.io/app: marketdb
 spec:
   ports:
    - port: 5432
   selector:
-   app: marketdb
+   app.kubernetes.io/app: marketdb

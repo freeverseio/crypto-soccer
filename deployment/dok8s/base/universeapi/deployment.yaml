@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: universeapi
   labels:
-    app: universeapi
+    app.kubernetes.io/app: universeapi
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: universeapi
+      app.kubernetes.io/app: universeapi
   template:
     metadata:
       labels:
-        app: universeapi
+        app.kubernetes.io/app: universeapi
     spec:
       containers:
       - name: universeapi

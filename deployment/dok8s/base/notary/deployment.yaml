@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: notary
   labels:
-    app: notary
+    app.kubernetes.io/app: notary
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: notary
+      app.kubernetes.io/app: notary
   template:
     metadata:
       labels:
-        app: notary
+        app.kubernetes.io/app: notary
     spec:
       containers:
       - name: notary

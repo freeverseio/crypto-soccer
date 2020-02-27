@@ -28,7 +28,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: helloworld
+    app.kubernetes.io/app: helloworld
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   name: hello-kubernetes-first
@@ -37,7 +37,7 @@ spec:
   - port: 80
     targetPort: 8080
   selector:
-    app: helloworld
+    app.kubernetes.io/app: helloworld
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   type: ClusterIP
@@ -46,7 +46,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: horizon
+    app.kubernetes.io/app: horizon
     app.kubernetes.io/component: horizon
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -55,7 +55,7 @@ spec:
   ports:
   - port: 4000
   selector:
-    app: horizon
+    app.kubernetes.io/app: horizon
     app.kubernetes.io/component: horizon
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -64,7 +64,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: marketdb
+    app.kubernetes.io/app: marketdb
     app.kubernetes.io/component: marketdb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -73,7 +73,7 @@ spec:
   ports:
   - port: 5432
   selector:
-    app: marketdb
+    app.kubernetes.io/app: marketdb
     app.kubernetes.io/component: marketdb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -82,7 +82,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: relayactions
+    app.kubernetes.io/app: relayactions
     app.kubernetes.io/component: relayactions
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -91,7 +91,7 @@ spec:
   ports:
   - port: 4004
   selector:
-    app: relayactions
+    app.kubernetes.io/app: relayactions
     app.kubernetes.io/component: relayactions
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -100,7 +100,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: synchronizer
+    app.kubernetes.io/app: synchronizer
     app.kubernetes.io/component: synchronizer
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -109,7 +109,7 @@ spec:
   ports:
   - port: 4004
   selector:
-    app: synchronizer
+    app.kubernetes.io/app: synchronizer
     app.kubernetes.io/component: synchronizer
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -118,7 +118,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: trader
+    app.kubernetes.io/app: trader
     app.kubernetes.io/component: trader
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -127,7 +127,7 @@ spec:
   ports:
   - port: 4000
   selector:
-    app: trader
+    app.kubernetes.io/app: trader
     app.kubernetes.io/component: trader
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -136,7 +136,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: universeapi
+    app.kubernetes.io/app: universeapi
     app.kubernetes.io/component: universeapi
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -148,7 +148,7 @@ spec:
     protocol: TCP
     targetPort: 4000
   selector:
-    app: universeapi
+    app.kubernetes.io/app: universeapi
     app.kubernetes.io/component: universeapi
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -157,7 +157,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: universedb
+    app.kubernetes.io/app: universedb
     app.kubernetes.io/component: universedb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -166,7 +166,7 @@ spec:
   ports:
   - port: 5432
   selector:
-    app: universedb
+    app.kubernetes.io/app: universedb
     app.kubernetes.io/component: universedb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -175,7 +175,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: helloworld
+    app.kubernetes.io/app: helloworld
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   name: hello-kubernetes-first
@@ -183,13 +183,13 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: helloworld
+      app.kubernetes.io/app: helloworld
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: helloworld
+        app.kubernetes.io/app: helloworld
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
     spec:
@@ -206,7 +206,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: horizon
+    app.kubernetes.io/app: horizon
     app.kubernetes.io/component: horizon
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -215,14 +215,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: horizon
+      app.kubernetes.io/app: horizon
       app.kubernetes.io/component: horizon
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: horizon
+        app.kubernetes.io/app: horizon
         app.kubernetes.io/component: horizon
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
@@ -246,7 +246,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: marketdb
+    app.kubernetes.io/app: marketdb
     app.kubernetes.io/component: marketdb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -255,14 +255,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: marketdb
+      app.kubernetes.io/app: marketdb
       app.kubernetes.io/component: marketdb
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: marketdb
+        app.kubernetes.io/app: marketdb
         app.kubernetes.io/component: marketdb
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
@@ -280,7 +280,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: notary
+    app.kubernetes.io/app: notary
     app.kubernetes.io/component: notary
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -289,14 +289,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: notary
+      app.kubernetes.io/app: notary
       app.kubernetes.io/component: notary
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: notary
+        app.kubernetes.io/app: notary
         app.kubernetes.io/component: notary
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
@@ -326,7 +326,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: relayactions
+    app.kubernetes.io/app: relayactions
     app.kubernetes.io/component: relayactions
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -335,14 +335,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: relayactions
+      app.kubernetes.io/app: relayactions
       app.kubernetes.io/component: relayactions
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: relayactions
+        app.kubernetes.io/app: relayactions
         app.kubernetes.io/component: relayactions
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
@@ -372,7 +372,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: synchronizer
+    app.kubernetes.io/app: synchronizer
     app.kubernetes.io/component: synchronizer
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -381,14 +381,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: synchronizer
+      app.kubernetes.io/app: synchronizer
       app.kubernetes.io/component: synchronizer
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: synchronizer
+        app.kubernetes.io/app: synchronizer
         app.kubernetes.io/component: synchronizer
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
@@ -438,7 +438,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: trader
+    app.kubernetes.io/app: trader
     app.kubernetes.io/component: trader
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -447,14 +447,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: trader
+      app.kubernetes.io/app: trader
       app.kubernetes.io/component: trader
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: trader
+        app.kubernetes.io/app: trader
         app.kubernetes.io/component: trader
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
@@ -478,7 +478,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: universeapi
+    app.kubernetes.io/app: universeapi
     app.kubernetes.io/component: universeapi
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -487,14 +487,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: universeapi
+      app.kubernetes.io/app: universeapi
       app.kubernetes.io/component: universeapi
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: universeapi
+        app.kubernetes.io/app: universeapi
         app.kubernetes.io/component: universeapi
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
@@ -522,7 +522,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: universedb
+    app.kubernetes.io/app: universedb
     app.kubernetes.io/component: universedb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -531,14 +531,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: universedb
+      app.kubernetes.io/app: universedb
       app.kubernetes.io/component: universedb
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
   template:
     metadata:
       labels:
-        app: universedb
+        app.kubernetes.io/app: universedb
         app.kubernetes.io/component: universedb
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
