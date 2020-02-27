@@ -27,6 +27,11 @@ kustomize edit set image freeverseio/market.trader:${TAG}
 kustomize edit set image freeverseio/universe.api:${TAG}
 kustomize edit set image freeverseio/universe.db:${TAG}
 
+# change to n replicas
+kustomize edit set replicas horizon=1
+kustomize edit set replicas universeapi=1
+kustomize edit set replicas trader=1
+
 # build application to be deployed
 kustomize build ${MY_DIR} -o ${MY_DIR}/app.yaml
 

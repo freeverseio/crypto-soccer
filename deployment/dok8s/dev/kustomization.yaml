@@ -22,3 +22,10 @@ images:
   newTag: dev
 - name: freeverseio/universe.db
   newTag: dev
+replicas:
+- count: 1
+  name: horizon
+- count: 1
+  name: trader
+- count: 1
+  name: universeapi
