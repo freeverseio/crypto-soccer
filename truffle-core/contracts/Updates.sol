@@ -35,7 +35,7 @@ contract Updates is UpdatesView {
     }
     
     function submitActionsRoot(bytes32 actionsRoot, string memory cid) public {
-        // require(now > nextVerseTimestamp, "too early to accept actions root");
+        require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
         // (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
