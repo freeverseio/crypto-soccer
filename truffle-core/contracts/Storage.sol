@@ -22,10 +22,7 @@ contract Storage is ProxyStorage, Constants{
     uint256 internal currentVerse;
     bytes32 internal currentVerseSeed;
 
-
-// todo: add NULL_TZ = 0 and use it
-
-    TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
+    TimeZone[25] public _timeZones;
     uint256 public gameDeployDay;
     uint256 public currentRound;
 

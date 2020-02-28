@@ -297,7 +297,7 @@ contract("Market", accounts => {
   });
   
   it('addAcquisitionConstraint of constraints in friendlies', async () => {
-    maxNumConstraints = 7;
+    maxNumConstraints = 6;
     teamId = buyerTeamId;
     for (c = 0; c < maxNumConstraints; c++) {
       await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.fulfilled;

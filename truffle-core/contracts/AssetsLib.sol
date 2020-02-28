@@ -12,7 +12,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     event TeamTransfer(uint256 teamId, address to);
 
     function _assertTZExists(uint8 timeZone) internal pure {
-        require(timeZone > 0 && timeZone < 25, "timeZone does not exist");
+        require(timeZone > NULL_TIMEZONE && timeZone < 25, "timeZone does not exist");
     }
     
     function isBotTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {

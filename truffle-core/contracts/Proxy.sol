@@ -11,6 +11,8 @@ contract Proxy is ProxyStorage {
     event ContractsActivated(uint256[] contactIds);
     event ContractsDeleted(uint256[] contactIds);
 
+    address constant private NULL_ADDR = address(0);
+
     // TODO: is this future-proof? shall we have it re-settable?
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
@@ -20,7 +22,7 @@ contract Proxy is ProxyStorage {
     */
     constructor() public {
         _proxyOwner = msg.sender;
-        _contractsInfo.push(ContractInfo(address(0), new bytes4[](0), "")); 
+        _contractsInfo.push(ContractInfo(NULL_ADDR, new bytes4[](0), "")); 
     }
     
     modifier onlyOwner() 
@@ -33,9 +35,9 @@ contract Proxy is ProxyStorage {
     * @dev execute a delegate call via fallback function
     */
     fallback () external {
-        ContractInfo memory info = _contractsInfo[_selectorToContractId[msg.sig]];
-        require(info.selectors.length != 0, "function selector is not assigned to a valid contract");
-        delegate(info.addr, msg.data);
+        address contractAddr = getContractAddressForSelector(msg.sig);
+        require(contractAddr != NULL_ADDR, "function selector is not assigned to a valid contract");
+        delegate(contractAddr, msg.data);
     } 
     
     /**
@@ -136,6 +138,7 @@ contract Proxy is ProxyStorage {
     function deactivateContracts(uint256[] memory contractIds) public onlyOwner {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
+            require(contractId != 0, "cannot deactivate the null contract, with id = 0");
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             for (uint256 s = 0; s < selectors.length; s++) {
                 delete _selectorToContractId[selectors[s]];
@@ -150,7 +153,7 @@ contract Proxy is ProxyStorage {
     */
     function countContracts() external view returns(uint256) { return _contractsInfo.length; }
     function countAddressesInContract(uint256 contractId) external view returns(uint256) { return _contractsInfo[contractId].selectors.length; }
-    function getContractAddressForSelector(bytes4 selector) external view returns(address) { 
+    function getContractAddressForSelector(bytes4 selector) public view returns(address) { 
         return _contractsInfo[_selectorToContractId[selector]].addr; 
     }
     function getContractInfo(uint256 contractId) external view returns (address, bytes32, bytes4[] memory) {
