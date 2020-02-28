@@ -45,6 +45,12 @@ func NewProcessor(
 }
 
 func (p *Processor) Process(tx *sql.Tx) error {
+	nextUpdate, err := p.NextUpdateSinceEpochSec()
+	now := NowSinceEpochSec()
+	if now < nextUpdate {
+		log.Debugf("Next Update %v, now %v ... ", nextUpdate, now)
+		return nil
+	}
 	currentVerse, err := p.updatesContract.GetCurrentVerse(&bind.CallOpts{})
 	if err != nil {
 		return err
@@ -86,6 +92,20 @@ func (p *Processor) Process(tx *sql.Tx) error {
 		}
 	}
 	return nil
+}
+
+func (p *Processor) NextUpdateSinceEpochSec() (int64, error) {
+	secs, err := p.updatesContract.GetNextVerseTimestamp(nil)
+	if err != nil {
+		return 0, err
+	}
+	return secs.Int64(), nil
+}
+
+func NowSinceEpochSec() int64 {
+	now := time.Now()
+	secs := now.Unix()
+	return secs
 }
 
 func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uint8) (*types.Receipt, error) {
