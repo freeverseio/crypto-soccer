@@ -29,3 +29,5 @@ replicas:
   name: trader
 - count: 1
   name: universeapi
+patchesStrategicMerge:
+- configmap.yaml
