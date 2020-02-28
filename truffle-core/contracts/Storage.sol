@@ -26,16 +26,12 @@ contract Storage is ProxyStorage, Constants{
     uint256 public gameDeployDay;
     uint256 public currentRound;
 
-    struct Team {
-        uint256[PLAYERS_PER_TEAM_MAX] playerIds; 
-        address owner;
-    }
-
     struct Country {
         uint256 nDivisions;
         uint8 nDivisionsToAddNextRound;
         mapping (uint256 => uint256) divisonIdxToRound;
-        mapping (uint256 => Team) teamIdxInCountryToTeam;
+        mapping (uint256 => uint256[PLAYERS_PER_TEAM_MAX]) teamIdxInCountryToPlayerIds;
+        mapping (uint256 => address) teamIdxInCountryToOwner;
         uint256 nHumanTeams;
     }
 

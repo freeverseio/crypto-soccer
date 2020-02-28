@@ -277,7 +277,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
             }
         } else {
             for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
-                uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+                uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToPlayerIds[teamIdxInCountry][shirtNum];
                 if (writtenId == 0) {
                     playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
                 } else {
@@ -301,17 +301,21 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         // already assumes that there was a previous check that this team is not a bot
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
-            uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
-            if (isFreeShirt(writtenId, shirtNum)) { return shirtNum; }
+            if (isFreeShirt(
+                _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToPlayerIds[teamIdxInCountry][shirtNum], 
+                shirtNum)
+            ) { 
+                return shirtNum; 
+            }
         }
         return PLAYERS_PER_TEAM_MAX;
     }
     
     function isFreeShirt(uint256 playerId, uint8 shirtNum) public pure returns(bool) {
-        if (shirtNum < PLAYERS_PER_TEAM_INIT) {
-            return (playerId == FREE_PLAYER_ID);
-        } else {
+        if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
             return (playerId == 0 || playerId == FREE_PLAYER_ID);
+        } else {
+            return (playerId == FREE_PLAYER_ID);
         }
     }
 

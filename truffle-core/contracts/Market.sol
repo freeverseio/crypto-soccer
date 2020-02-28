@@ -178,11 +178,11 @@ contract Market is MarketView {
             );
 
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToPlayerIds[teamIdxInCountry][shirtTarget] = playerId;
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
-            _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
+            _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToPlayerIds[teamIdxInCountry][shirtOrigin] = FREE_PLAYER_ID;
         }
         emit PlayerStateChange(playerId, newState);
     }
@@ -192,8 +192,8 @@ contract Market is MarketView {
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
         require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a bot team");
         require(addr != NULL_ADDR, "cannot transfer to a null address");
-        require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner != addr, "buyer and seller are the same addr");
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
+        require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToOwner[teamIdxInCountry] != addr, "buyer and seller are the same addr");
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToOwner[teamIdxInCountry] = addr;
     }
 
     function transferTeam(uint256 teamId, address addr) public {
