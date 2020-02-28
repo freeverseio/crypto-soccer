@@ -24,8 +24,7 @@ spec:
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
                -ethereum, http://xdai:8545,
                -updatesContractAddress, "$(UPDATES_CONTRACT_ADDRESS)",
-               -ipfs, ipfsnode:5001,
-               -sender, "$(sender)"]
+               -ipfs, ipfsnode:5001]
 
       imagePullSecrets:
       - name: docker-secret
