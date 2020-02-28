@@ -84,7 +84,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         // check that the team itself does not have players already for sale:   
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = getPlayerIdsInTeam(teamId);
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (isPlayerFrozen(playerIds[p]) && !isFreeShirt(playerIds[p], p)) return false;
+            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozen(playerIds[p])) return false;
         }
     }
 
