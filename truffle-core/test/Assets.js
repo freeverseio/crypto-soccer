@@ -192,10 +192,19 @@ contract('Assets', (accounts) => {
         const tz = 1;
         const countryIdxInTZ = 0;
         const tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
-        // truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
-        //     return event.teamId.should.be.bignumber.equal('274877906944') && event.to.should.be.equal(ALICE);
-        // });
+        truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
+            return event.teamId.should.be.bignumber.equal('274877906944') && event.to.should.be.equal(ALICE);
+        });
     });
+
+    it('transfer 2 bots to address to estimate cost', async () => {
+        const tz = 1;
+        const countryIdxInTZ = 0;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, BOB).should.be.fulfilled;
+    });
+
+
 
     it('transfer of bot teams', async () =>  {
         tz = 1;
