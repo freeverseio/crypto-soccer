@@ -3,7 +3,16 @@ pragma solidity >=0.5.12 <=0.6.3;
 import "./MarketView.sol";
 /**
  * @title Entry point for changing ownership of assets, and managing bids and auctions.
+ * @dev The serialized structs appearing here are "AcquisitonConstraints" and "AuctionData"
+ * @dev     Both use validUntil (in seconds) which uses 32b, hence allowing 2**32/(3600*24*365) = 136 years after 1970
+ * @dev     AuctionData encodes, (8b of zeroes, 216b for sellerHiddenPrice, 32b for validUntil), 
+ * @dev         where sellerHiddenPrice has the leftmost 40 bit killed, 
+ * @dev         => validUntil + (uint256(sellerHiddenPrice) << 40)) >> 8;
+ * @dev     AcquisitonConstraints: serializes the number of trades left (4b), and until when, for the 6 possible constraints
+ * @dev         => (n5, validUntil5, n4, validUntil4,... n0, validUntil0), 
+ * @dev         => so it leaves the leftmost 256 - 6 * 36 = 40b free
  */
+ 
 contract Market is MarketView {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
@@ -44,7 +53,7 @@ contract Market is MarketView {
     ) public {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
-        _playerIdToAuctionData[playerId] = validUntil + uint256(sellerHiddenPrice << 34);
+        _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
@@ -118,7 +127,7 @@ contract Market is MarketView {
     ) public {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
-        _teamIdToAuctionData[teamId] = validUntil + uint256(sellerHiddenPrice << 34);
+        _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
     }
 

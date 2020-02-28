@@ -10,6 +10,7 @@ import "./EncodingSkillsSetters.sol";
 contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
     
+    
     function isAcademyPlayer(uint256 playerId) public view returns(bool) {
         return (getIsSpecial(playerId) && _playerIdToState[playerId] == 0);
     }
@@ -75,7 +76,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
                 (teamOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
                 // check that they signed what they input data says they signed:
                 (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, teamId))) &&
-                // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
+                // check that auction time is less that the required 32 bit (2^32 - 1)
                 (validUntil < now + MAX_VALID_UNTIL);
         if (!ok) return false;
         if (teamId == ACADEMY_TEAM) return true;
@@ -106,7 +107,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         ok =    // check buyerAddress is legit and signature is valid
                 (buyerAddress != address(0)) && 
                 // check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (_teamIdToAuctionData[teamId] >> 34)) &&
+                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32)) &&
                 // // check player is still frozen
                 isTeamFrozen(teamId) &&
                 // // check that they signed what they input data says they signed:
@@ -142,14 +143,13 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         ok =    // check asset is owned by buyer
                 (getOwnerTeam(buyerTeamId) != address(0)) && 
                 // check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (_playerIdToAuctionData[playerId] >> 34)) &&
+                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
                 // check signatures are valid by requiring that they own the asset:
                 (getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
                 isPlayerFrozen(playerId) &&
                 // check that they signed what they input data says they signed:
                 sig[IDX_MSG] == prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
-
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
@@ -184,7 +184,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
             (prevOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
             // check that they signed what they input data says they signed:
             (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId))) &&
-            // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
+            // check that auction time is less that the required 32 bit
             (validUntil < now + MAX_VALID_UNTIL)
         );
     }

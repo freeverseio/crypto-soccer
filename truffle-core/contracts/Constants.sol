@@ -54,8 +54,9 @@ contract Constants {
     uint256 constant internal POST_AUCTION_TIME   = 6 hours; 
     uint256 constant internal AUCTION_TIME        = 24 hours; 
     uint256 constant internal MAX_VALID_UNTIL     = 30 hours; // the sum of the previous two
-    uint256 constant internal VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
-    uint8 constant internal MAX_ACQUISITON_CONSTAINTS  = 7;
+    uint256 constant internal VALID_UNTIL_MASK    = 4294967295; // 2^32-1 (32 bit)
+    uint256 constant internal KILL_LEFTMOST_40BIT_MASK = (2**(256-40))-1; 
+    uint8 constant internal MAX_ACQUISITON_CONSTAINTS  = 6;
 
     // Updates related:
     uint16 constant internal SECS_BETWEEN_VERSES = 900; // 15 mins
