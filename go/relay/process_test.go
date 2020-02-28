@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/relay"
+	"gotest.tools/assert"
 )
 
 func TestSubmitActionRoot(t *testing.T) {
@@ -33,4 +34,15 @@ func TestSubmitActionRoot(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestProcessNextUpdateTime(t *testing.T) {
+	conn, err := helper.NewParityBackend("http://localhost:8545")
+	auth := conn.Transactor(common.HexToAddress("0xeb3ce112d8610382a994646872c4361a96c82cf8"))
+	p, err := relay.NewProcessor(conn.Client, auth, db, bc.Contracts.Updates, "localhost:5001")
+	assert.NilError(t, err)
+	nextDeadline, err := p.NextUpdateSinceEpochSec()
+	assert.NilError(t, err)
+	now := relay.NowSinceEpochSec()
+	assert.Equal(t, nextDeadline, now)
 }
