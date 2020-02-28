@@ -45,6 +45,12 @@ func NewProcessor(
 }
 
 func (p *Processor) Process(tx *sql.Tx) error {
+	nextUpdate, err := p.NextUpdateSinceEpochSec()
+	now := NowSinceEpochSec()
+	if now < nextUpdate {
+		log.Debugf("Next Update %v, now %v ... ", nextUpdate, now)
+		return nil
+	}
 	currentVerse, err := p.updatesContract.GetCurrentVerse(&bind.CallOpts{})
 	if err != nil {
 		return err
