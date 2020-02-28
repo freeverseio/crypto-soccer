@@ -13,9 +13,9 @@ contract EncodingIDs {
     **/
     function encodeTZCountryAndVal(uint8 timeZone, uint256 countryIdxInTZ, uint256 val) public pure returns (uint256)
     {
-        require(timeZone < 2**5, "defence out of bound");
-        require(countryIdxInTZ < 2**10, "defence out of bound");
-        require(val < 2**28, "defence out of bound");
+        require(timeZone < 2**5, "timezone out of bound");
+        require(countryIdxInTZ < 2**10, "countryIdxInTZ out of bound");
+        require(val < 2**28, "val to encode out of bound");
         uint256 encoded  = uint256(timeZone) << 38;        // 43 - 5
         encoded         |= countryIdxInTZ << 28;  // 38 - 10
         return (encoded | val);            // 28 - 28

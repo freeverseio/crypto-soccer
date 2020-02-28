@@ -53,9 +53,6 @@ contract Assets is AssetsView {
         require(isBotTeamInCountry(timeZone, countryIdxInTZ, firstBotIdx), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
-        for (uint p = PLAYERS_PER_TEAM_INIT; p < PLAYERS_PER_TEAM_MAX; p++) {
-            playerIds[p] = FREE_PLAYER_ID;
-        }
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[firstBotIdx] = Team(playerIds, addr);
         _timeZones[timeZone].countries[countryIdxInTZ].nHumanTeams++;
         uint256 teamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, firstBotIdx);

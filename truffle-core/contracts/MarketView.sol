@@ -84,7 +84,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         // check that the team itself does not have players already for sale:   
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = getPlayerIdsInTeam(teamId);
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if ((playerIds[p] != FREE_PLAYER_ID) && isPlayerFrozen(playerIds[p])) return false;
+            if (isPlayerFrozen(playerIds[p]) && !isFreeShirt(playerIds[p], p)) return false;
         }
     }
 
@@ -298,12 +298,21 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
+        // already assumes that there was a previous check that this team is not a bot
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
-            if (isFreeShirt(teamId, shirtNum)) {
-                return shirtNum;
-            }
+            uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+            if (isFreeShirt(writtenId, shirtNum)) { return shirtNum; }
         }
         return PLAYERS_PER_TEAM_MAX;
+    }
+    
+    function isFreeShirt(uint256 playerId, uint8 shirtNum) public pure returns(bool) {
+        if (shirtNum < PLAYERS_PER_TEAM_INIT) {
+            return (playerId == FREE_PLAYER_ID);
+        } else {
+            return (playerId == 0 || playerId == FREE_PLAYER_ID);
+        }
     }
 
     function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_playerIdToState[playerId] != 0); }       
@@ -319,23 +328,12 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         returns(uint256)
     {
         if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
-            return FREE_PLAYER_ID;
+            return 0;
         } else {
             return encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
         }
     }
        
-    function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry),"cannot query about the shirt of a Bot Team");
-        uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
-        if (shirtNum > PLAYERS_PER_TEAM_INIT - 1) {
-            return (writtenId == 0 || writtenId == FREE_PLAYER_ID);
-        } else {
-            return writtenId == FREE_PLAYER_ID;
-        }
-    }
-
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
         require(playerExists(playerId), "unexistent player");
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
