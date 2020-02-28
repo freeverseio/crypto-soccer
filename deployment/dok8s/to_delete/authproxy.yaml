@@ -42,7 +42,7 @@ spec:
         envFrom:
           - configMapRef:
               name: freeverse-configmap
-        args: [-debug, -backdoor=true,
+        args: [-backdoor=true, -timeout=30,
                -gqlurl, "http://horizon:4000"]
 
       imagePullSecrets:
