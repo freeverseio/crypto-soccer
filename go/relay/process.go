@@ -48,7 +48,7 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	nextUpdate, err := p.NextUpdateSinceEpochSec()
 	now := NowSinceEpochSec()
 	if now < nextUpdate {
-		log.Debugf("Next Update %v, now %v ... ", nextUpdate, now)
+		log.Infof("Now %v Next Update %v ... ", now, nextUpdate)
 		return nil
 	}
 	currentVerse, err := p.updatesContract.GetCurrentVerse(&bind.CallOpts{})
