@@ -11,26 +11,18 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/relay"
+	"gotest.tools/assert"
 )
 
 func TestSubmitActionRoot(t *testing.T) {
 	tx, err := db.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	defer tx.Rollback()
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	conn, err := helper.NewParityBackend("http://localhost:8545")
+	assert.NilError(t, err)
 	auth := conn.Transactor(common.HexToAddress("0xeb3ce112d8610382a994646872c4361a96c82cf8"))
 	p, err := relay.NewProcessor(conn.Client, auth, db, bc.Contracts.Updates, "localhost:5001")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = p.Process(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
+	assert.NilError(t, p.Process(tx))
 }
