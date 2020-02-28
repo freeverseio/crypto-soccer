@@ -205,7 +205,6 @@ workflows:
            branches:
               only:
                 - dev
-                - k8s
           requires:
             - dockerization-development
             - truffle_core
