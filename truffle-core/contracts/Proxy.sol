@@ -141,6 +141,7 @@ contract Proxy is ProxyStorage {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
             require(contractId != 0, "cannot deactivate the null contract, with id = 0");
+            require(_contractsInfo[contractId].isActive, "cannot deactivate a contract that is Active");
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             for (uint256 s = 0; s < selectors.length; s++) {
                 delete _selectorToContractAddr[selectors[s]];
