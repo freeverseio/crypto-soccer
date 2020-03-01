@@ -35,7 +35,7 @@ contract Proxy is ProxyStorage {
     * @dev execute a delegate call via fallback function
     */
     fallback () external {
-        address contractAddr = getContractAddressForSelector(msg.sig);
+        address contractAddr = _selectorToContractAddr[msg.sig];
         require(contractAddr != NULL_ADDR, "function selector is not assigned to a valid contract");
         delegate(contractAddr, msg.data);
     } 
@@ -116,15 +116,16 @@ contract Proxy is ProxyStorage {
         
     /**
     * @dev  Activates a set of contracts, by adding an entry in the 
-    *       _selectorToContractId mapping for each selector of the contract. 
+    *       _selectorToContractAddr mapping for each selector of the contract. 
     * @param contractIds The ids of the contracts to be activated
     */
     function activateContracts(uint256[] memory contractIds) public onlyOwner {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
+            address addr = _contractsInfo[contractId].addr;
             for (uint256 s = 0; s < selectors.length; s++) {
-                _selectorToContractId[selectors[s]] = contractId;
+                _selectorToContractAddr[selectors[s]] = addr;
             }
         }
         emit ContractsActivated(contractIds);        
@@ -132,7 +133,7 @@ contract Proxy is ProxyStorage {
 
     /**
     * @dev  De-activates a set of contracts, by adding an entry in the 
-    *       _selectorToContractId mapping for each selector of the contract. 
+    *       _selectorToContractAddr mapping for each selector of the contract. 
     * @param contractIds The ids of the contracts to be activated
     */
     function deactivateContracts(uint256[] memory contractIds) public onlyOwner {
@@ -141,7 +142,7 @@ contract Proxy is ProxyStorage {
             require(contractId != 0, "cannot deactivate the null contract, with id = 0");
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             for (uint256 s = 0; s < selectors.length; s++) {
-                delete _selectorToContractId[selectors[s]];
+                delete _selectorToContractAddr[selectors[s]];
             }
         }
         emit ContractsDeleted(contractIds);        
@@ -154,7 +155,7 @@ contract Proxy is ProxyStorage {
     function countContracts() external view returns(uint256) { return _contractsInfo.length; }
     function countAddressesInContract(uint256 contractId) external view returns(uint256) { return _contractsInfo[contractId].selectors.length; }
     function getContractAddressForSelector(bytes4 selector) public view returns(address) { 
-        return _contractsInfo[_selectorToContractId[selector]].addr; 
+        return _selectorToContractAddr[selector]; 
     }
     function getContractInfo(uint256 contractId) external view returns (address, bytes32, bytes4[] memory) {
         return (
