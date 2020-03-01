@@ -14,5 +14,6 @@ contract ProxyStorage {
         address addr;
         bytes4[] selectors;
         bytes32 name;
+        bool isActive;
     }
 }

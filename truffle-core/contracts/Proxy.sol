@@ -22,7 +22,7 @@ contract Proxy is ProxyStorage {
     */
     constructor() public {
         _proxyOwner = msg.sender;
-        _contractsInfo.push(ContractInfo(NULL_ADDR, new bytes4[](0), "")); 
+        _contractsInfo.push(ContractInfo(NULL_ADDR, new bytes4[](0), "", false)); 
     }
     
     modifier onlyOwner() 
@@ -96,6 +96,7 @@ contract Proxy is ProxyStorage {
         ContractInfo memory info;
         info.addr = addr;
         info.name = name;
+        info.isActive = false;
         info.selectors = selectors;
         _contractsInfo.push(info);
         emit ContractAdded(contractId, name, selectors);        
@@ -126,6 +127,7 @@ contract Proxy is ProxyStorage {
             for (uint256 s = 0; s < selectors.length; s++) {
                 _selectorToContractAddr[selectors[s]] = addr;
             }
+            _contractsInfo[contractId].isActive = true;
         }
         emit ContractsActivated(contractIds);        
     }
@@ -143,6 +145,7 @@ contract Proxy is ProxyStorage {
             for (uint256 s = 0; s < selectors.length; s++) {
                 delete _selectorToContractAddr[selectors[s]];
             }
+            _contractsInfo[contractId].isActive = false;
         }
         emit ContractsDeleted(contractIds);        
     }
@@ -156,11 +159,12 @@ contract Proxy is ProxyStorage {
     function getContractAddressForSelector(bytes4 selector) public view returns(address) { 
         return _selectorToContractAddr[selector]; 
     }
-    function getContractInfo(uint256 contractId) external view returns (address, bytes32, bytes4[] memory) {
+    function getContractInfo(uint256 contractId) external view returns (address, bytes32, bytes4[] memory, bool) {
         return (
             _contractsInfo[contractId].addr,
             _contractsInfo[contractId].name,
-            _contractsInfo[contractId].selectors
+            _contractsInfo[contractId].selectors,
+            _contractsInfo[contractId].isActive
         );
     }
 
