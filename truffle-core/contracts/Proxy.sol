@@ -41,17 +41,16 @@ contract Proxy is ProxyStorage {
     } 
     
     /**
-    * @dev Performs a delegatecall and returns whatever the delegatecall returned
-    *      (entire context execution will return!)
+    * @dev Delegates call. It returns the entire context execution
     * @dev NOTE: does not check if the implementation (code) address is a contract,
     *      so having an incorrect implementation could lead to unexpected results
-    * @param _dst Destination address to perform the delegatecall
+    * @param _target Target address to perform the delegatecall
     * @param _calldata Calldata for the delegatecall
     */
-    function delegate(address _dst, bytes memory _calldata) internal {
+    function delegate(address _target, bytes memory _calldata) internal {
         uint256 fwdGasLimit = FWD_GAS_LIMIT;
         assembly {
-            let result := delegatecall(sub(gas(), fwdGasLimit), _dst, add(_calldata, 0x20), mload(_calldata), 0, 0)
+            let result := delegatecall(sub(gas(), fwdGasLimit), _target, add(_calldata, 0x20), mload(_calldata), 0, 0)
             let size := returndatasize()
             let ptr := mload(0x40)
             returndatacopy(ptr, 0, size)
