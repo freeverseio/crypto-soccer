@@ -7,15 +7,6 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestResetTrainings(t *testing.T) {
-	tx, err := s.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tx.Rollback()
-	assert.NilError(t, storage.ResetTrainingsByTimezone(tx, 0))
-}
-
 func TestTrainingCreate(t *testing.T) {
 	tx, err := s.Begin()
 	if err != nil {
@@ -42,6 +33,10 @@ func TestCurrentTraining(t *testing.T) {
 
 	createMinimumUniverse(t, tx)
 
+	trainings, err := storage.UpcomingTrainings(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(trainings), 0)
+
 	training := storage.Training{}
 	training.Verse = storage.UpcomingVerse
 	training.TeamID = teamID
@@ -50,7 +45,7 @@ func TestCurrentTraining(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	trainings, err := storage.UpcomingTrainings(tx)
+	trainings, err = storage.UpcomingTrainings(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,5 +66,23 @@ func TestCurrentTraining(t *testing.T) {
 	if len(trainings) != 1 {
 		t.Fatalf("Expected 1 got %v", len(trainings))
 	}
+}
 
+func TestTrainingResetTrainings(t *testing.T) {
+	tx, err := s.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	createMinimumUniverse(t, tx)
+
+	training := storage.NewTraining()
+	training.TeamID = teamID
+	assert.NilError(t, training.Insert(tx))
+	trainings, err := storage.UpcomingTrainings(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(trainings), 1)
+	assert.NilError(t, storage.ResetTrainingsByTimezone(tx, timezoneIdx))
+	trainings, err = storage.UpcomingTrainings(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(trainings), 0)
 }

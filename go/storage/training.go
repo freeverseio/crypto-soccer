@@ -39,6 +39,12 @@ type Training struct {
 	SpecialPlayerEndurance int    `json:"special_player_endurance"` // special_player_endurance
 }
 
+func NewTraining() *Training {
+	training := Training{}
+	training.Verse = UpcomingVerse
+	return &training
+}
+
 func UpcomingTrainings(tx *sql.Tx) ([]Training, error) {
 	return TrainingByVerse(tx, UpcomingVerse)
 }
@@ -50,6 +56,7 @@ func (b *Training) Delete(tx *sql.Tx) error {
 }
 
 func ResetTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
+	log.Infof("[DBMS] Reset trainings by Timezone %v", timezone)
 	_, err := tx.Exec(
 		`UPDATE trainings SET 
 			special_player_shirt = -1,
