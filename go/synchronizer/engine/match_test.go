@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
@@ -156,6 +157,12 @@ func TestMatchRedCards(t *testing.T) {
 	}
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".golden")
-	assert.Equal(t, m.Events.HomeRedCards(), uint8(1))
-	assert.Equal(t, m.Events.VisitorRedCards(), uint8(1))
+	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
+	event := m.Events[12]
+	assert.Equal(t, event.Type, matchevents.EVNT_RED)
+	assert.Equal(t, event.PrimaryPlayer, int16(7))
+	assert.Equal(t, event.Team, int16(0))
+	stoPlayer, err := m.HomeTeam.Players[event.PrimaryPlayer].ToStorage(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Assert(t, stoPlayer.RedCard)
 }

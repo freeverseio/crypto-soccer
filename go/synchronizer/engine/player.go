@@ -38,10 +38,10 @@ func (b *Player) SetSkills(contracts contracts.Contracts, skills *big.Int) {
 	SK_PAS := uint8(2)
 	SK_DEF := uint8(3)
 	SK_END := uint8(4)
-	decodedSkills, _ := contracts.Utils.FullDecodeSkills(opts, b.EncodedSkills)
-	// if err != nil {
-	// 	return err
-	// }
+	decodedSkills, err := contracts.Utils.FullDecodeSkills(opts, b.EncodedSkills)
+	if err != nil {
+		panic("TODO: return err" + err.Error())
+	}
 	b.Potential = uint64(decodedSkills.BirthTraits[0])
 	b.Defence = uint64(decodedSkills.Skills[SK_DEF])
 	b.Speed = uint64(decodedSkills.Skills[SK_SPE])
