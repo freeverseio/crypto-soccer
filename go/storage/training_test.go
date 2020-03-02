@@ -17,15 +17,16 @@ func TestResetTrainings(t *testing.T) {
 }
 
 func TestTrainingCreate(t *testing.T) {
-	t.Skip("******************** REACTIVE  **********************")
 	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
 
+	createMinimumUniverse(t, tx)
+
 	training := storage.Training{}
-	training.TeamID = "4"
+	training.TeamID = teamID
 	err = training.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
@@ -33,16 +34,17 @@ func TestTrainingCreate(t *testing.T) {
 }
 
 func TestCurrentTraining(t *testing.T) {
-	t.Skip("******************** REACTIVE  **********************")
 	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
 
+	createMinimumUniverse(t, tx)
+
 	training := storage.Training{}
 	training.Verse = storage.UpcomingVerse
-	training.TeamID = "4"
+	training.TeamID = teamID
 	err = training.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
