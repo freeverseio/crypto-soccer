@@ -185,7 +185,7 @@ func TestMatchRedCards(t *testing.T) {
 	assert.Assert(t, player.RedCard)
 }
 
-func TestMatchSoftInjury(t *testing.T) {
+func TestMatchHardInjury(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
 	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
@@ -199,7 +199,7 @@ func TestMatchSoftInjury(t *testing.T) {
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
 	event := m.Events[12]
-	assert.Equal(t, event.Type, matchevents.EVNT_SOFT)
+	assert.Equal(t, event.Type, matchevents.EVNT_HARD)
 	assert.Equal(t, event.PrimaryPlayer, int16(8))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[10]
@@ -207,7 +207,7 @@ func TestMatchSoftInjury(t *testing.T) {
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(5))
 }
 
-func TestMatchHardInjury(t *testing.T) {
+func TestMatchSoftInjury(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
 	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
@@ -221,7 +221,7 @@ func TestMatchHardInjury(t *testing.T) {
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
 	event := m.Events[12]
-	assert.Equal(t, event.Type, matchevents.EVNT_HARD)
+	assert.Equal(t, event.Type, matchevents.EVNT_SOFT)
 	assert.Equal(t, event.PrimaryPlayer, int16(10))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[12]
