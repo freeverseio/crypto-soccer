@@ -53,17 +53,19 @@ contract UpdatesView is Storage, AssetsLib {
         // recall that timeZones range from 1...24 (not from 0...24)
         turnInDay = uint8(verse % 4);
         uint256 delta = 9 * 4 + turnInDay;
-        uint256 tz;        
+        uint256 tz;
+        uint256 dia;        
         if (turnInDay >=2 && verse < delta) return (NULL_TIMEZONE, 0, 0);
         if (turnInDay < 2) {
             tz = TZForRound1 + ((verse - turnInDay) % VERSES_PER_DAY)/4;
-            day = 2 * uint8((verse - 4 * (tz - TZForRound1) - turnInDay)/VERSES_PER_DAY);
+            dia = 2 * uint8((verse - 4 * (tz - TZForRound1) - turnInDay)/VERSES_PER_DAY);
         } else {
             tz = TZForRound1 + ((verse - delta) % VERSES_PER_DAY)/4;
-            day = 1 + 2 * uint8((verse - 4 * (tz - TZForRound1) - delta)/VERSES_PER_DAY);
+            dia = 1 + 2 * uint8((verse - 4 * (tz - TZForRound1) - delta)/VERSES_PER_DAY);
             turnInDay -= 2;
         }
         timeZone = normalizeTZ(tz);
+        day = uint8(dia % DAYS_PER_ROUND);
     }
     
     function normalizeTZ(uint256 tz) public pure returns (uint8) {
