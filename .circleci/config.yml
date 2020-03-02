@@ -123,11 +123,12 @@ jobs:
       - run: cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} .
       - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
-      - run: cd dashboard && docker build -t freeverseio/dashboard:${CIRCLE_TAG} .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:${CIRCLE_TAG} .
       - run: cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} .
+      - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:${CIRCLE_TAG} .
       - run: cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
@@ -138,6 +139,7 @@ jobs:
       - run: docker push freeverseio/market.notary:${CIRCLE_TAG}
       - run: docker push freeverseio/universe.api:${CIRCLE_TAG}
       - run: docker push freeverseio/relay.actions:${CIRCLE_TAG}
+      - run: docker push freeverseio/authproxy:${CIRCLE_TAG}
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
   deployk8s:
     docker:
