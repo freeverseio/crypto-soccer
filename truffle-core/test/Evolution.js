@@ -271,6 +271,15 @@ contract('Evolution', (accounts) => {
         outRounds.toNumber().should.be.equal(9);
         yellow1.toNumber().should.be.equal(0);
         yellow2.toNumber().should.be.equal(0);
+    
+        expectedReds = Array.from(new Array(5), (x,i) => false);
+        expectedReds[0] = true;
+        reds = [];
+        for (p=0; p < 25; p++) {       
+            red = await assets.getRedCardLastGame(skills[0][p]).should.be.fulfilled;
+            reds.push(red);
+        }
+        debug.compareArrays(reds, expectedReds, toNum = false, verbose = false, isBigNumber = false);
     });
 
     return
