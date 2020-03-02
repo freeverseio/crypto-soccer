@@ -147,7 +147,7 @@ func TestDumpMatch(t *testing.T) {
 func TestMatchRedCards(t *testing.T) {
 	m := engine.NewMatch()
 	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
-	m.Seed = sha256.Sum256([]byte("14"))
+	m.Seed = sha256.Sum256([]byte("18"))
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
 	for i := 0; i < 25; i++ {
@@ -156,4 +156,6 @@ func TestMatchRedCards(t *testing.T) {
 	}
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".golden")
+	assert.Equal(t, m.Events.HomeRedCards(), uint8(1))
+	assert.Equal(t, m.Events.VisitorRedCards(), uint8(1))
 }

@@ -217,5 +217,21 @@ func (b MatchEvents) DumpState() string {
 }
 
 func (b MatchEvents) HomeRedCards() uint8 {
-	return 0
+	var counter uint8
+	for _, event := range b {
+		if event.Team == 1 && event.Type == 2 {
+			counter++
+		}
+	}
+	return counter
+}
+
+func (b MatchEvents) VisitorRedCards() uint8 {
+	var counter uint8
+	for _, event := range b {
+		if event.Team == 1 && event.Type == 2 {
+			counter++
+		}
+	}
+	return counter
 }
