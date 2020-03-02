@@ -72,9 +72,9 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 	if thereWasAnOutOfGame {
 		var typeOfEvent int16
 		if matchLog[5] == 1 {
-			typeOfEvent = EVNT_HARD
-		} else if matchLog[5] == 2 {
 			typeOfEvent = EVNT_SOFT
+		} else if matchLog[5] == 2 {
+			typeOfEvent = EVNT_HARD
 		} else if matchLog[5] == 3 {
 			typeOfEvent = EVNT_RED
 		}
