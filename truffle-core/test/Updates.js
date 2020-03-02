@@ -54,7 +54,7 @@ contract('Updates', (accounts) => {
 
     });
 
-    it2('test that cannot initialize updates twice', async () =>  {
+    it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
     });
     
