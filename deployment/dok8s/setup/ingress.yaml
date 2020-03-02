@@ -10,7 +10,7 @@ metadata:
 spec:
   tls:
   - hosts:
-    - k8s.gorengine.com
+    - www.goalrevolution.live
     secretName: cryptosoccer-tls
   rules:
   - host: k8s.gorengine.com
