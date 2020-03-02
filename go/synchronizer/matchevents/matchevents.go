@@ -215,3 +215,7 @@ func (b MatchEvents) DumpState() string {
 	}
 	return state
 }
+
+func (b MatchEvents) HomeRedCards() uint8 {
+	return 0
+}
