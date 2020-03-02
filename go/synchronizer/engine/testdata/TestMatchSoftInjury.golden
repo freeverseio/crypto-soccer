@@ -11,8 +11,8 @@ Events[9]: {Minute:39 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlay
 Events[10]: {Minute:41 Type:0 Team:1 ManagesToShoot:true IsGoal:true PrimaryPlayer:7 SecondaryPlayer:7}
 Events[11]: {Minute:46 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:8 SecondaryPlayer:0}
 Events[12]: {Minute:7 Type:3 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
-Events[13]: {Minute:6 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
+Events[13]: {Minute:2 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
 Events[14]: {Minute:27 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:3 SecondaryPlayer:-1}
 Events[15]: {Minute:7 Type:3 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
-Events[16]: {Minute:6 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
+Events[16]: {Minute:2 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
 Events[17]: {Minute:27 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:3 SecondaryPlayer:-1}
