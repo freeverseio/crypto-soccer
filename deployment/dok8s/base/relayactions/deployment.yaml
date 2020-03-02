@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relayactions
+  labels:
+    app.kubernetes.io/app: relayactions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: relayactions
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: relayactions
+    spec:
+      containers:
+      - name: relayactions
+        image: freeverseio/relay.actions:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
+               -ethereum, http://xdai:8545,
+               -updatesContractAddress, "$(UPDATES_CONTRACT_ADDRESS)",
+               -ipfs, ipfsnode:5001]
+
+      imagePullSecrets:
+      - name: docker-secret

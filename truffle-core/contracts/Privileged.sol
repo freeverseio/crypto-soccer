@@ -1,11 +1,12 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */
 import "./EncodingSkills.sol";
+import "./EncodingSkillsGetters.sol";
 import "./EncodingSkillsSetters.sol";
 
-contract Privileged is EncodingSkills, EncodingSkillsSetters {
+contract Privileged is EncodingSkills, EncodingSkillsGetters, EncodingSkillsSetters {
     
     // order of idxs:
     // skills: shoot, speed, pass, defence, endurance

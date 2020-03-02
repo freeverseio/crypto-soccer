@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./EncodingSkillsSetters.sol";
 import "./EncodingTacticsPart2.sol";

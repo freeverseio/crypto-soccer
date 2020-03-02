@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: synchronizer
+  labels:
+    app: synchronizer
+    component: synchronizer
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  #type: NodePort
+  ports:
+  - port: 4004
+  selector:
+    app: synchronizer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synchronizer
+  labels:
+    app: synchronizer
+    component: synchronizer
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: synchronizer
+  template:
+    metadata:
+      labels:
+        app: synchronizer
+        component: synchronizer
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: synchronizer
+        image: freeverseio/synchronizer:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
+               -ethereum, http://xdai:8545,
+               -ipfs, ipfsnode:5001,
+               -leaguesContractAddress, "$(LEAGUES_CONTRACT_ADDRESS)",
+               -engineContractAddress, "$(ENGINE_CONTRACT_ADDRESS)",
+               -enginePreCompContractAddress, "$(ENGINEPRECOMP_CONTRACT_ADDRESS)",
+               -marketContractAddress, "$(MARKET_CONTRACT_ADDRESS)",
+               -updatesContractAddress, "$(UPDATES_CONTRACT_ADDRESS)",
+               -assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
+               -evolutionContractAddress, "$(EVOLUTION_CONTRACT_ADDRESS)",
+               -playandevolveContractAddress, "$(PLAYANDEVOLVE_CONTRACT_ADDRESS)",
+               -trainingpointsContractAddress, "$(TRAININGPOINTS_CONTRACT_ADDRESS)",
+               -shopContractAddress, "$(SHOP_CONTRACT_ADDRESS)",
+               -utilsContractAddress, "$(UTILS_CONTRACT_ADDRESS)",
+               -constantsgettersContractAddress, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)"]
+
+      imagePullSecrets:
+      - name: docker-secret

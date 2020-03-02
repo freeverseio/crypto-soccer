@@ -1,13 +1,13 @@
-#### address: 0x83a909262608c650bd9b0ae06e29d90d0f67ac5e 
-#### private key: FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85
-
 FROM parity/parity:v2.7.2-stable
+COPY ./data /data
 
-COPY ./devnet.chain /devnet.chain
+RUN ["/bin/parity","account","import","--chain","/data/devnet.chain","/data/eb3ce112d8610382a994646872c4361a96c82cf8"]
+
 RUN mkdir -p /home/parity/.local/share/io.parity.ethereum/
+RUN mv /home/parity/.local/share/io.parity.ethereum/keys /home/parity/keys
 
 EXPOSE 8545
 EXPOSE 30303
 EXPOSE 30303/udp
 
-ENTRYPOINT ["/bin/parity","--chain","/devnet.chain","--no-discovery","--jsonrpc-interface","all","--mode","offline", "--logging","info"]
+ENTRYPOINT ["/bin/parity","--chain","/data/devnet.chain","--no-discovery","--jsonrpc-interface","all","--mode","offline", "--unlock", "0xeb3ce112d8610382a994646872c4361a96c82cf8", "--password", "/data/passwd", "--logging","info", "--keys-path","/home/parity/keys"]

@@ -11,8 +11,8 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 )
 
 func run(
@@ -50,6 +50,7 @@ func main() {
 	playandevolveContractAddress := flag.String("playandevolveContractAddress", "", "")
 	shopContractAddress := flag.String("shopContractAddress", "", "")
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
+	constantsgettersContractAddress := flag.String("constantsgettersContractAddress", "", "")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
 
@@ -92,6 +93,9 @@ func main() {
 	if *trainingpointsContractAddress == "" {
 		log.Fatal("no trainingpoints contract address")
 	}
+	if *constantsgettersContractAddress == "" {
+		log.Fatal("no constantsgetters contract address")
+	}
 
 	log.Infof("ipfs URL: %v", *ipfsURL)
 
@@ -119,6 +123,7 @@ func main() {
 			*playandevolveContractAddress,
 			*shopContractAddress,
 			*trainingpointsContractAddress,
+			*constantsgettersContractAddress,
 		)
 		if err != nil {
 			log.Fatalf(err.Error())

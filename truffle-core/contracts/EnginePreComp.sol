@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
 
 import "./EncodingSkills.sol";
 import "./EncodingTacticsPart1.sol";
@@ -7,6 +7,22 @@ import "./SortValues.sol";
 import "./EncodingMatchLogPart1.sol";
 
 contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1, SortValues {
+    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
+    // Skills: shoot, speed, pass, defence, endurance
+    uint8 constant public SK_SHO = 0;
+    uint8 constant public SK_SPE = 1;
+    uint8 constant public SK_PAS = 2;
+    uint8 constant public SK_DEF = 3;
+    uint8 constant public SK_END = 4;    
+    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
+    uint8 constant public IDX_GK = 0;
+    uint8 constant public IDX_D  = 1;
+    uint8 constant public IDX_M  = 2;
+    uint8 constant public IDX_F  = 3;
+    uint8 constant public IDX_MD = 4;
+    uint8 constant public IDX_MF = 5;
+    
+    
     uint256 private constant ONE256            = uint256(1); 
     uint8 private constant CHG_HAPPENED        = uint8(1); 
     uint8 private constant CHG_CANCELLED       = uint8(2); 
@@ -331,7 +347,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         pure
         returns (uint256 penalty) 
     {
-        require(lineupPos < 11, "wrong arg in computePenaltyBadPositionAndCondition");
+        require(lineupPos < NO_SUBST, "wrong arg in computePenaltyBadPositionAndCondition");
         uint256 forwardness = getForwardness(playerSkills);
         uint256 leftishness = getLeftishness(playerSkills);
         if (forwardness == IDX_GK && lineupPos > 0 || forwardness != IDX_GK && lineupPos == 0) return 0;
@@ -506,15 +522,18 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         // Count changes during half-time, as well as not-aligned players
         // ...note: substitutions = 11 means NO_SUBS
         for (uint8 p = 0; p < 11; p++) {
-            linedUpSkills[p] = verifyCanPlay(lineup[p], skills[lineup[p]], is2ndHalf, false);
-            if (linedUpSkills[p] != 0) {
-                if (is2ndHalf && !getAlignedEndOfFirstHalf(linedUpSkills[p])) {
-                    matchLog = addHalfTimeSubs(matchLog, lineup[p]+1, changes); // for halftime subs, 0 = NO_SUBS
-                    changes++;
-                    teamSkills += getSumOfSkills(linedUpSkills[p]); 
-                } else if (!is2ndHalf) teamSkills += getSumOfSkills(linedUpSkills[p]); 
+            if (lineup[p] != NO_LINEUP) {   
+                linedUpSkills[p] = verifyCanPlay(lineup[p], skills[lineup[p]], is2ndHalf, false);
+                if (linedUpSkills[p] != 0) {
+                    if (is2ndHalf && !getAlignedEndOfFirstHalf(linedUpSkills[p])) {
+                        matchLog = addHalfTimeSubs(matchLog, lineup[p]+1, changes); // for halftime subs, 0 = NO_SUBS
+                        changes++;
+                        teamSkills += getSumOfSkills(linedUpSkills[p]); 
+                    } else if (!is2ndHalf) teamSkills += getSumOfSkills(linedUpSkills[p]); 
+                }
             }
         }
+        
         // Count changes ingame during 1st half
         // matchLog >> 189, 190, 191 contain ingameSubsCancelled
         if (is2ndHalf) {
@@ -523,18 +542,18 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
             }        
         }
 
-        if (substitutions[0] < 11) {
+        if ((substitutions[0] != NO_SUBST) && (lineup[11] != NO_LINEUP)) {
             changes++;
             linedUpSkills[11] = verifyCanPlay(lineup[11], skills[lineup[11]], is2ndHalf, true);
             teamSkills += getSumOfSkills(linedUpSkills[11]); 
         }
-        if (substitutions[1] < 11) { 
+        if ((substitutions[1] != NO_SUBST) && (lineup[12] != NO_LINEUP)) {
             changes++;
             require(substitutions[0] != substitutions[1], "changelist incorrect");
             linedUpSkills[12] = verifyCanPlay(lineup[12], skills[lineup[12]], is2ndHalf, true);
             teamSkills += getSumOfSkills(linedUpSkills[12]); 
         }
-        if (substitutions[2] < 11) {
+        if ((substitutions[2] != NO_SUBST) && (lineup[13] != NO_LINEUP)) {
             changes++;
             require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
             linedUpSkills[13] = verifyCanPlay(lineup[13], skills[lineup[13]], is2ndHalf, true);
@@ -548,8 +567,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
     }
 
     function verifyCanPlay(uint8 lineup, uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {
-        bool isWrong =  (lineup == NO_LINEUP) ||
-                        (playerSkills == 0) ||
+        bool isWrong =  (playerSkills == 0) ||
                         (getInjuryWeeksLeft(playerSkills) != 0) ||
                         getRedCardLastGame(playerSkills);
         if (is2ndHalf) isWrong = isWrong || getSubstitutedFirstHalf(playerSkills);

@@ -131,7 +131,7 @@ func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
-	iter, err := s.contracts.Assets.FilterPlayerStateChange(opts)
+	iter, err := s.contracts.Market.FilterPlayerStateChange(opts)
 	if err != nil {
 		return err
 	}

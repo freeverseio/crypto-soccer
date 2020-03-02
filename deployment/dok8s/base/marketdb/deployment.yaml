@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketdb
+  labels:
+    app.kubernetes.io/app: marketdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: marketdb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: marketdb
+    spec:
+      containers:
+      - name: marketdb
+        image: freeverseio/market.db:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5432
+        #volumeMounts:
+        #- mountPath: "/var/lib/postgresql/data"
+        #  name: marketdb-storage
+      imagePullSecrets:
+      - name: docker-secret
+      #volumes:
+      #- name: marketdb-storage
+      #  persistentVolumeClaim:
+      #    claimName: marketdb-pvclaim

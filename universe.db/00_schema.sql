@@ -68,6 +68,7 @@ CREATE TABLE players (
     PRIMARY KEY(player_id)
 );
 
+CREATE TYPE match_state AS ENUM ('begin', 'half', 'end', 'cancel');
 CREATE TABLE matches (
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
@@ -80,6 +81,7 @@ CREATE TABLE matches (
     visitor_goals INT NOT NULL DEFAULT 0,
     home_match_log TEXT NOT NULL,
     visitor_match_log TEXT NOT NULL,
+    state match_state NOT NULL,
     PRIMARY KEY(timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );

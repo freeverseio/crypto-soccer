@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xdai
+  labels:
+    app.kubernetes.io/app: xdai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: xdai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: xdai
+    spec:
+      containers:
+      - name: xdai
+        image: freeverseio/xdai:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8545
+        volumeMounts:
+        - name: xdai-storage
+          mountPath: /home/parity/.local/share/io.parity.ethereum
+      initContainers:
+      - name: xdai-storage-permission-fix
+        image: busybox
+        command: ["/bin/chmod","-R","777", "/data"]
+        volumeMounts:
+        - name: xdai-storage
+          mountPath: /data
+      imagePullSecrets:
+      - name: docker-secret
+      volumes:
+      - name: xdai-storage
+        persistentVolumeClaim:
+          claimName: xdai-pvc

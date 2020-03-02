@@ -1,33 +1,12 @@
-pragma solidity >=0.5.12 <0.6.2;
+pragma solidity >=0.5.12 <=0.6.3;
+
+import "./Constants.sol";
+
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */
 
-contract EncodingSkills {
-
-    uint8 constant public N_SKILLS = 5;
-    uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
-    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
-
-    // Skills: shoot, speed, pass, defence, endurance
-    uint8 constant public SK_SHO = 0;
-    uint8 constant public SK_SPE = 1;
-    uint8 constant public SK_PAS = 2;
-    uint8 constant public SK_DEF = 3;
-    uint8 constant public SK_END = 4;
-
-    // Birth Traits: potential, forwardness, leftishness, aggressiveness
-    uint8 constant private IDX_POT = 0;
-    uint8 constant private IDX_FWD = 1;
-    uint8 constant private IDX_LEF = 2;
-    uint8 constant private IDX_AGG = 3;
-    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
-    uint8 constant public IDX_GK = 0;
-    uint8 constant public IDX_D  = 1;
-    uint8 constant public IDX_M  = 2;
-    uint8 constant public IDX_F  = 3;
-    uint8 constant public IDX_MD = 4;
-    uint8 constant public IDX_MF = 5;
+contract EncodingSkills is Constants {
 
     /**
      * @dev PlayerSkills serializes a total of 148 bits:  6*14 + 4 + 3+ 3 + 43 + 1 + 1 + 3 + 3 + 3
@@ -99,76 +78,4 @@ contract EncodingSkills {
         return (encoded | uint256(generation) << 223);
     }
 
-    function getSkill(uint256 encodedSkills, uint8 skillIdx) public pure returns (uint256) {
-        return (encodedSkills >> (uint256(skillIdx) * 16)) & 65535; // 65535 = 2**16 - 1
-    }
-
-    function getBirthDay(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 80 & 65535);
-    }
-
-    function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
-        if (getIsSpecial(encodedSkills)) return encodedSkills;
-        return uint256(encodedSkills >> 96 & 8796093022207); // 2**43 - 1 = 8796093022207
-    }
-
-    function getPotential(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 139 & 15);
-    }
-
-    function getForwardness(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 143 & 7);
-    }
-
-    function getLeftishness(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 146 & 7);
-    }
-
-    function getAggressiveness(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 149 & 7);
-    }
-
-    function getAlignedEndOfFirstHalf(uint256 encodedSkills) public pure returns (bool) {
-        return (encodedSkills >> 152 & 1) == 1;
-    }
-
-    function getRedCardLastGame(uint256 encodedSkills) public pure returns (bool) {
-        return (encodedSkills >> 153 & 1) == 1;
-    }
-
-    function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint8) {
-        return uint8(encodedSkills >> 154 & 7);
-    }
-
-    function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint8) {
-        return uint8(encodedSkills >> 157 & 7);
-    }
-
-    function getSubstitutedFirstHalf(uint256 encodedSkills) public pure returns (bool) {
-        return (encodedSkills >> 160 & 1) == 1;
-    }
-
-    function getSumOfSkills(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 161 & 524287); // 2**19-1
-    }
-    
-    function getIsSpecial(uint256 encodedSkills) public pure returns (bool) {
-        return uint256(encodedSkills >> 255 & 1) == 1; 
-    }
-     
-    function addIsSpecial(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills | (uint256(1) << 255));
-    }
-
-    function setTargetTeamId(uint256 encodedSkills, uint256 targetTeamId) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(2**43-1) << 180)) | (targetTeamId << 180);
-    }
-
-    function getTargetTeamId(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills >> 180) & (2**43-1);
-    }
-
-    function getGeneration(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills >> 223) & 255;
-    }
 }

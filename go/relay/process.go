@@ -2,7 +2,6 @@ package relay
 
 import (
 	"context"
-	"crypto/ecdsa"
 	"database/sql"
 	"encoding/hex"
 	"errors"
@@ -31,12 +30,11 @@ type Processor struct {
 
 func NewProcessor(
 	client *ethclient.Client,
-	privateKey *ecdsa.PrivateKey,
+	auth *bind.TransactOpts,
 	db *sql.DB,
 	updatesContract *updates.Updates,
 	ipfsURL string,
 ) (*Processor, error) {
-	auth := bind.NewKeyedTransactor(privateKey)
 
 	return &Processor{
 		client,
@@ -47,7 +45,13 @@ func NewProcessor(
 }
 
 func (p *Processor) Process(tx *sql.Tx) error {
-	currentVerse, err := p.updatesContract.CurrentVerse(&bind.CallOpts{})
+	nextUpdate, err := p.NextUpdateSinceEpochSec()
+	now := NowSinceEpochSec()
+	if now < nextUpdate {
+		log.Infof("Now %v Next Update %v ... ", now, nextUpdate)
+		return nil
+	}
+	currentVerse, err := p.updatesContract.GetCurrentVerse(&bind.CallOpts{})
 	if err != nil {
 		return err
 	}
@@ -57,7 +61,9 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	}
 	log.Infof("Staring process of verse %v, timezone %v, day %v, turn %v", currentVerse, nextToUpdate.TimeZone, nextToUpdate.Day, nextToUpdate.TurnInDay)
 	upcomingUserActions := useractions.New()
-	if nextToUpdate.TurnInDay <= 1 {
+	if nextToUpdate.TimeZone == 0 {
+		log.Info("Timezone 0 ... skipping user actions")
+	} else if nextToUpdate.TurnInDay <= 1 {
 		if upcomingUserActions, err = useractions.NewFromStorage(tx, storage.UpcomingVerse, int(nextToUpdate.TimeZone)); err != nil {
 			return err
 		}
@@ -86,6 +92,20 @@ func (p *Processor) Process(tx *sql.Tx) error {
 		}
 	}
 	return nil
+}
+
+func (p *Processor) NextUpdateSinceEpochSec() (int64, error) {
+	secs, err := p.updatesContract.GetNextVerseTimestamp(nil)
+	if err != nil {
+		return 0, err
+	}
+	return secs.Int64(), nil
+}
+
+func NowSinceEpochSec() int64 {
+	now := time.Now()
+	secs := now.Unix()
+	return secs
 }
 
 func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uint8) (*types.Receipt, error) {

@@ -7,9 +7,12 @@ const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const timeTravel = require('../utils/TimeTravel.js');
 const marketUtils = require('../utils/marketUtils.js');
+const delegateUtils = require('../utils/delegateCallUtils.js');
 
-const Market = artifacts.require("Market");
+const ConstantsGetters = artifacts.require('ConstantsGetters');
+const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
 const Privileged = artifacts.require('Privileged');
 
 async function createPromoPlayer(targetTeamId, internalId = 144321433) {
@@ -83,6 +86,7 @@ async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sell
     sigSellerMsgRS,
     sigSeller.v
   ).should.be.fulfilled;
+  
   return tx;
 };
 
@@ -241,26 +245,29 @@ contract("Market", accounts => {
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
+    constants = await ConstantsGetters.new().should.be.fulfilled;
+    proxy = await Proxy.new().should.be.fulfilled;
+    depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
+    assets = depl[0]
+    market = depl[1]
+    
+    // done with delegate calls
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
-    assets = await Assets.new().should.be.fulfilled;
     await assets.init().should.be.fulfilled;
-    market = await Market.new().should.be.fulfilled;
-    await market.setAssetsAddress(assets.address).should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;
-    encoding = assets;
     sellerAccount = await web3.eth.accounts.create("iamaseller");
     buyerAccount = await web3.eth.accounts.create("iamabuyer");
-    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sellerTeamId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
-    buyerTeamId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
+    buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address).should.be.fulfilled;
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
-    
-    AUCTION_TIME = await market.AUCTION_TIME().should.be.fulfilled;
+
+    AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
     AUCTION_TIME = AUCTION_TIME.toNumber();
     
-    POST_AUCTION_TIME = await market.POST_AUCTION_TIME().should.be.fulfilled;
+    POST_AUCTION_TIME = await constants.get_POST_AUCTION_TIME().should.be.fulfilled;
     POST_AUCTION_TIME = POST_AUCTION_TIME.toNumber();
     
     validUntil = now.toNumber() + AUCTION_TIME;
@@ -272,7 +279,7 @@ contract("Market", accounts => {
 
   });
 
-  it('setAcquisitionConstraint of constraints in friendlies)', async () => {
+  it('setAcquisitionConstraint of constraints in friendliess', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
     for (c = 0; c < maxNumConstraints; c++) {
@@ -290,7 +297,7 @@ contract("Market", accounts => {
   });
   
   it('addAcquisitionConstraint of constraints in friendlies', async () => {
-    maxNumConstraints = 7;
+    maxNumConstraints = 6;
     teamId = buyerTeamId;
     for (c = 0; c < maxNumConstraints; c++) {
       await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.fulfilled;
@@ -370,7 +377,7 @@ contract("Market", accounts => {
   it('players: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
-    sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+    sellerTeamPlayerIds = await market.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
     const playerIdToSell = sellerTeamPlayerIds[0];
     playerIdToSell.should.be.bignumber.equal('274877906944');
 
@@ -553,7 +560,6 @@ contract("Market", accounts => {
     //          tells the buyer to forget about this player
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
-
     tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
@@ -570,7 +576,7 @@ contract("Market", accounts => {
       return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(false);
     });
 
-    let finalOwner = await assets.getOwnerTeam(sellerTeamId.toNumber()).should.be.fulfilled;
+    let finalOwner = await market.getOwnerTeam(sellerTeamId.toNumber()).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
@@ -591,7 +597,7 @@ contract("Market", accounts => {
   it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because one of its players already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
-    teamId = await assets.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
+    teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
     teamId.should.be.bignumber.equal(sellerTeamId);
     
     // put player:
@@ -618,7 +624,7 @@ contract("Market", accounts => {
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because his team is already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
-    teamId = await assets.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
+    teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
     teamId.should.be.bignumber.equal(sellerTeamId);
 
     // put team:
@@ -656,7 +662,7 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
 
-    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
@@ -717,21 +723,21 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
 
-    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
   it("players: tests constraints on players", async () => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
     // first acquisition works:
-    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     tx = await completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
     // second acquisition should fail:
-    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     tx = await completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
@@ -743,7 +749,7 @@ contract("Market", accounts => {
     playerId = await createSpecialPlayerId();
 
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
-    tx = await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
       return event.teamId.toNumber() == 1 && event.to == freeverseAccount.address;
     });
@@ -765,7 +771,7 @@ contract("Market", accounts => {
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
-    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
 
     // test that Freeverse cannot put the same player again in the market
@@ -798,25 +804,25 @@ contract("Market", accounts => {
     exists.should.be.equal(false);
 
     // it currently has no owner:
-    owner = await assets.getOwnerPlayer(playerId).should.be.rejected;
+    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
     // this will fail because we still haven't said that Freeverse owns the academy:
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.rejected;
     // let's fix it:
-    await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
     // change of academy address immediately reflects in change of who owns the academy players
-    owner = await assets.getOwnerPlayer(playerId).should.be.rejected;
+    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
     // when transferred, the "targetTeamId" is erased (set to zero)
     finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
     exists = await assets.playerExists(finalPlayerId).should.be.fulfilled;
     exists.should.be.equal(true);
-    owner = await assets.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
+    owner = await market.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
     owner.should.be.equal(buyerAccount.address);
   });
 
   it("promo players: effect of constraints", async () => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
-    await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     // first acquisition works:
     playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
     sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
@@ -834,7 +840,7 @@ contract("Market", accounts => {
   });
 
   it("promo players: a promo player cannot be acquired by any team other than targetTeam", async () => {
-    await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
     sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await sellerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil])); // note the signer is not the targetTeam owner
@@ -844,7 +850,7 @@ contract("Market", accounts => {
   });
   
   it("promo players: cannot offer a promo player that already exists", async () => {
-    await market.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
     sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
@@ -852,7 +858,7 @@ contract("Market", accounts => {
     sigBuyerMsgRS  = [sigBuyer.messageHash, sigBuyer.r, sigBuyer.s];
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
     finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
-    owner = await assets.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
+    owner = await market.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
     owner.should.be.equal(buyerAccount.address);
 
     // try to offer it again to the same buyer (literal copy-paste of previous paragraph)
@@ -922,7 +928,7 @@ contract("Market", accounts => {
   it('players: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
-    sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+    sellerTeamPlayerIds = await market.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
     const playerIdToSell = sellerTeamPlayerIds[0];
     playerIdToSell.should.be.bignumber.equal('274877906944');
 

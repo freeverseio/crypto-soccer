@@ -4,6 +4,7 @@ import (
 	"flag"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -15,17 +16,22 @@ import (
 )
 
 func main() {
-	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
-	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
-	delay := flag.String("delay", "3600s", "3600s, 1h, ...")
+	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
+	// sender := flag.String("sender", "sender address", "")
 	flag.Parse()
 
 	if *updatesContractAddress == "" {
 		log.Fatal("no updates contract address")
+	}
+
+	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
+	if err != nil {
+		log.Fatal("Unable to obtain privateLey")
 	}
 
 	if *debug {
@@ -34,61 +40,47 @@ func main() {
 
 	log.Info("Starting ...")
 
+	log.Info("Dial the Ethereum client: ", *ethereumClient)
+	client, err := ethclient.Dial(*ethereumClient)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+	auth := bind.NewKeyedTransactor(privateKey)
+
+	log.Info("Creating Updates bindings to: ", *updatesContractAddress)
+	updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+
+	log.Infof("ipfs URL: %v", *ipfsURL)
+
+	log.Info("Connecting to DBMS: ", *postgresURL)
+	db, err := storage.New(*postgresURL)
+	if err != nil {
+		log.Fatal("Failed to connect to DBMS: %v", err)
+	}
+
+	processor, err := relay.NewProcessor(client, auth, db, updatesContract, *ipfsURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for {
-		log.Info("Dial the Ethereum client: ", *ethereumClient)
-		client, err := ethclient.Dial(*ethereumClient)
+		tx, err := db.Begin()
 		if err != nil {
-			log.Errorf("Failed to connect to the Ethereum client: %v", err)
+			log.Fatal(err)
+		}
+		err = processor.Process(tx)
+		if err != nil {
+			tx.Rollback()
+			log.Fatal(err)
+		}
+		err = tx.Commit()
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		log.Info("Creating Updates bindings to: ", *updatesContractAddress)
-		updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
-		if err != nil {
-			log.Errorf("Failed to connect to the Ethereum client: %v", err)
-		}
-
-		log.Infof("ipfs URL: %v", *ipfsURL)
-
-		log.Info("Connecting to DBMS: ", *postgresURL)
-		db, err := storage.New(*postgresURL)
-		if err != nil {
-			log.Errorf("Failed to connect to DBMS: %v", err)
-		}
-
-		privateKey, err := crypto.HexToECDSA(*privateKeyHex)
-		if err != nil {
-			log.Error("Unable to obtain privateLey")
-		}
-		delayDuration, err := time.ParseDuration(*delay)
-		if err != nil {
-			log.Error(err)
-		}
-		log.Infof("Delay of %v seconds", delayDuration.Seconds())
-
-		processor, err := relay.NewProcessor(client, privateKey, db, updatesContract, *ipfsURL)
-		if err != nil {
-			log.Error(err)
-		}
-
-		log.Info("All is ready ... 5 seconds to start ...")
 		time.Sleep(5 * time.Second)
-
-		for {
-			tx, err := db.Begin()
-			if err != nil {
-				log.Error(err)
-				break
-			}
-			err = processor.Process(tx)
-			if err != nil {
-				tx.Rollback()
-				log.Error(err)
-				break
-			}
-			tx.Commit() // TODO handle error
-			time.Sleep(delayDuration)
-		}
-		log.Warning("Waiting 2 secs and retry ...")
-		time.Sleep(2 * time.Second)
 	}
 }

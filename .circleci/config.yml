@@ -8,7 +8,7 @@ executors:
   freeverse_ethereum:
     docker:
       - image: freeverseio/circleci
-      - image: freeverseio/xdai:test
+      - image: freeverseio/xdai:dev
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
@@ -57,10 +57,11 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - run: cd go/contracts && go test ./...
+      # - run: cd go/contracts && go test ./...
       - run: cd go/useractions && go test ./...
       - run: cd go/marketpay/v1 && go test ./...
       - run: cd go/storage && go test ./...
+      - run: cd go/authproxy && go test ./...
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
   market-notary:
@@ -69,7 +70,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - run: cd go/cmd/notary && go build ./notary.go
-      - run: cd go/notary && go test ./... -p 1
+      # - run: cd go/notary && go test ./... -p 1
   relay-actions:
     executor: freeverse_ethereum
     steps:
@@ -99,6 +100,7 @@ jobs:
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
+      - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:dev .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:dev
@@ -109,6 +111,7 @@ jobs:
       - run: docker push freeverseio/market.notary:dev
       - run: docker push freeverseio/universe.api:dev
       - run: docker push freeverseio/relay.actions:dev
+      - run: docker push freeverseio/authproxy:dev
       - run: docker push freeverseio/dashboard:dev
   dockerization-production:
     executor: freeverse
@@ -136,17 +139,6 @@ jobs:
       - run: docker push freeverseio/universe.api:${CIRCLE_TAG}
       - run: docker push freeverseio/relay.actions:${CIRCLE_TAG}
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
-  deploy:
-    executor: freeverse
-    steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "1f:0d:ef:01:c6:82:5d:62:6c:2c:3f:57:37:ac:b9:13"
-      - checkout
-      - run: scp -o StrictHostKeyChecking=no ./deployment/development/docker-compose.yml $DROPLET_USER@$DROPLET_IP:./
-      - run: scp -o StrictHostKeyChecking=no ./deployment/development/.env $DROPLET_USER@$DROPLET_IP:./
-      - run: scp -o StrictHostKeyChecking=no ./deployment/development/deploy.sh $DROPLET_USER@$DROPLET_IP:./
-      - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
   deployk8s:
     docker:
       - image: 'cimg/base:stable'
@@ -155,7 +147,7 @@ jobs:
       - kube-orb/install-kubectl
       - kube-orb/install-kubeconfig:
         kubeconfig: KUBECONFIG_DATA
-      - run: cd deployment/dok8s &&  /bin/bash cicd_deploy.sh
+      - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
 workflows:
@@ -208,20 +200,11 @@ workflows:
             - market-trader
             - relay-actions
             - market-notary
-      - deploy:
-          filters:
-           branches:
-              only:
-                - dev
-          requires:
-            - dockerization-development
-            - truffle_core
       - deployk8s:
           filters:
            branches:
               only:
                 - dev
-                - k8s
           requires:
             - dockerization-development
             - truffle_core
