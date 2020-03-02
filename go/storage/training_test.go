@@ -76,13 +76,17 @@ func TestTrainingResetTrainings(t *testing.T) {
 	createMinimumUniverse(t, tx)
 
 	training := storage.NewTraining()
+	training.Timezone = int(timezoneIdx)
 	training.TeamID = teamID
+	training.DefendersDefence = 5
 	assert.NilError(t, training.Insert(tx))
 	trainings, err := storage.UpcomingTrainings(tx)
 	assert.NilError(t, err)
 	assert.Equal(t, len(trainings), 1)
+	assert.Equal(t, trainings[0].DefendersDefence, 5)
 	assert.NilError(t, storage.ResetTrainingsByTimezone(tx, timezoneIdx))
 	trainings, err = storage.UpcomingTrainings(tx)
 	assert.NilError(t, err)
-	assert.Equal(t, len(trainings), 0)
+	assert.Equal(t, len(trainings), 1)
+	assert.Equal(t, trainings[0].DefendersDefence, 0)
 }
