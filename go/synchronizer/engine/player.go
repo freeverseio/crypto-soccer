@@ -49,6 +49,7 @@ func (b *Player) SetSkills(contracts contracts.Contracts, skills *big.Int) {
 	b.Shoot = uint64(decodedSkills.Skills[SK_SHO])
 	b.Endurance = uint64(decodedSkills.Skills[SK_END])
 	b.RedCard = decodedSkills.Aligned1stSubst1stRedCardLastGame[2]
+	b.RedCard, _ = decodedSkills.Aligned1stSubst1stRedCardLastGame[2]
 	b.InjuryMatchesLeft = decodedSkills.GenerationGamesNonStopInjuryWeeks[2]
 }
 
