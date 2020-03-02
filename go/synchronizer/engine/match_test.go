@@ -157,10 +157,33 @@ func TestMatchRedCards(t *testing.T) {
 	}
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".golden")
-	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
 	event := m.Events[12]
 	assert.Equal(t, event.Type, matchevents.EVNT_RED)
 	assert.Equal(t, event.PrimaryPlayer, int16(7))
 	assert.Equal(t, event.Team, int16(0))
-	assert.Assert(t, m.HomeTeam.Players[event.PrimaryPlayer].RedCard)
+	playerWithRedCard := m.HomeTeam.Players[event.PrimaryPlayer]
+	assert.Equal(t, playerWithRedCard.Skills().String(), "444839120007985571215337246103345753542683081535197729558926920581886")
+	golden.Assert(t, dump.Sdump(playerWithRedCard), t.Name()+".playerWithRedCard.golden")
+	assert.Assert(t, playerWithRedCard.RedCard)
 }
+
+// func TestMatchInjury(t *testing.T) {
+// 	for i := 0; ; i++ {
+// 		m := engine.NewMatch()
+// 		m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+// 		m.Seed = sha256.Sum256([]byte(fmt.Sprintf))
+// 		m.HomeTeam.TeamID = "274877906944"
+// 		m.VisitorTeam.TeamID = "274877906945"
+// 		for i := 0; i < 25; i++ {
+// 			m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+// 			m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+// 		}
+// 		assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+// 		golden.Assert(t, m.Events.DumpState(), t.Name()+".golden")
+// 		event := m.Events[12]
+// 		assert.Equal(t, event.Type, matchevents.EVNT_RED)
+// 		assert.Equal(t, event.PrimaryPlayer, int16(7))
+// 		assert.Equal(t, event.Team, int16(0))
+// 		assert.Assert(t, m.HomeTeam.Players[event.PrimaryPlayer].RedCard)
+// 	}
+// }
