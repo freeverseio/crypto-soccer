@@ -19,7 +19,7 @@ func TestSubmitActionRoot(t *testing.T) {
 	defer tx.Rollback()
 
 	auth := bind.NewKeyedTransactor(bc.Owner)
-	p, err := relay.NewProcessor(bc.Client, auth, db, bc.Contracts.Updates, "localhost:5001")
+	p, err := relay.NewProcessor(bc.Client, auth, bc.Contracts.Updates, "localhost:5001")
 	assert.NilError(t, err)
 	assert.NilError(t, p.Process(tx))
 }

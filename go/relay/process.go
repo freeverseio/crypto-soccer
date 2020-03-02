@@ -29,7 +29,6 @@ type Processor struct {
 func NewProcessor(
 	client *ethclient.Client,
 	auth *bind.TransactOpts,
-	db *sql.DB,
 	updatesContract *updates.Updates,
 	ipfsURL string,
 ) (*Processor, error) {
