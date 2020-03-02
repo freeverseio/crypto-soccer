@@ -55,8 +55,3 @@ func (b *Player) SetSkills(contracts contracts.Contracts, skills *big.Int) {
 func (b Player) Skills() *big.Int {
 	return new(big.Int).Set(b.EncodedSkills)
 }
-
-func (b Player) ToStorage(contracts contracts.Contracts) (storage.Player, error) {
-
-	return b.Player, nil
-}

@@ -162,7 +162,5 @@ func TestMatchRedCards(t *testing.T) {
 	assert.Equal(t, event.Type, matchevents.EVNT_RED)
 	assert.Equal(t, event.PrimaryPlayer, int16(7))
 	assert.Equal(t, event.Team, int16(0))
-	stoPlayer, err := m.HomeTeam.Players[event.PrimaryPlayer].ToStorage(*bc.Contracts)
-	assert.NilError(t, err)
-	assert.Assert(t, stoPlayer.RedCard)
+	assert.Assert(t, m.HomeTeam.Players[event.PrimaryPlayer].RedCard)
 }
