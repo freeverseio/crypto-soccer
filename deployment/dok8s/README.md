@@ -1,0 +1,3 @@
+- setup: contains initial configuration files
+- base: contains application specific yaml files
+- dev: contains customization from base

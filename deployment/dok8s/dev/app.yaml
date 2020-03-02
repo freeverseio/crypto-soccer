@@ -29,6 +29,24 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/app: authproxy
+    app.kubernetes.io/component: authproxy
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: authproxy
+spec:
+  ports:
+  - port: 8080
+  selector:
+    app.kubernetes.io/app: authproxy
+    app.kubernetes.io/component: authproxy
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
     app.kubernetes.io/app: helloworld
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
@@ -171,6 +189,46 @@ spec:
     app.kubernetes.io/component: universedb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: authproxy
+    app.kubernetes.io/component: authproxy
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: authproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: authproxy
+      app.kubernetes.io/component: authproxy
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: authproxy
+        app.kubernetes.io/component: authproxy
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -backdoor=true
+        - -timeout=30
+        - -gqlurl
+        - http://horizon:4000
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/authproxy:dev
+        imagePullPolicy: Always
+        name: authproxy
+      imagePullSecrets:
+      - name: docker-secret
 ---
 apiVersion: apps/v1
 kind: Deployment
