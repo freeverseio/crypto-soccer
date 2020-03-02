@@ -72,9 +72,9 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 	if thereWasAnOutOfGame {
 		var typeOfEvent int16
 		if matchLog[5] == 1 {
-			typeOfEvent = EVNT_HARD
-		} else if matchLog[5] == 2 {
 			typeOfEvent = EVNT_SOFT
+		} else if matchLog[5] == 2 {
+			typeOfEvent = EVNT_HARD
 		} else if matchLog[5] == 3 {
 			typeOfEvent = EVNT_RED
 		}
@@ -231,24 +231,4 @@ func (b MatchEvents) DumpState() string {
 		state += fmt.Sprintf("Events[%d]: %+v\n", i, event)
 	}
 	return state
-}
-
-func (b MatchEvents) HomeRedCards() uint8 {
-	var counter uint8
-	for _, event := range b {
-		if event.Team == 1 && event.Type == 2 {
-			counter++
-		}
-	}
-	return counter
-}
-
-func (b MatchEvents) VisitorRedCards() uint8 {
-	var counter uint8
-	for _, event := range b {
-		if event.Team == 1 && event.Type == 2 {
-			counter++
-		}
-	}
-	return counter
 }

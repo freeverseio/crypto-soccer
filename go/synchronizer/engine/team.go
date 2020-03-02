@@ -29,11 +29,7 @@ func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 		if player.IsNil() {
 			continue
 		}
-		stoPlayer, err := player.ToStorage(contracts)
-		if err != nil {
-			return err
-		}
-		if err := stoPlayer.Update(tx); err != nil {
+		if err := player.Update(tx); err != nil {
 			return err
 		}
 	}
