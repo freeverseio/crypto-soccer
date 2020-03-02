@@ -172,6 +172,7 @@ func TestMatchRedCards(t *testing.T) {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
 	}
+	// t.Log(m.ToString())
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".golden")
 	event := m.Events[12]
