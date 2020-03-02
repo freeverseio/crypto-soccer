@@ -65,7 +65,7 @@ contract UpdatesView is Storage, AssetsLib {
             turnInDay -= 2;
         }
         timeZone = normalizeTZ(tz);
-        day = uint8(dia % DAYS_PER_ROUND);
+        day = uint8(dia % MATCHDAYS_PER_ROUND);
     }
     
     function normalizeTZ(uint256 tz) public pure returns (uint8) {
