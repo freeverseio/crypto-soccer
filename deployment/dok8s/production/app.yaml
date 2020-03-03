@@ -1,20 +1,20 @@
 apiVersion: v1
 data:
-  ASSETS_CONTRACT_ADDRESS: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
-  CONSTANTSGETTERS_CONTRACT_ADDRESS: 0x0EBC54dCA38f80b26638E146edAe7aa43Af12125
-  ENGINE_CONTRACT_ADDRESS: 0x7Ec09abC265f9ce2385041563e82203f4DC38bee
-  ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS: 0x615668099Cc46D035b3c34aCdf01204Ac4A4F446
-  ENGINEPRECOMP_CONTRACT_ADDRESS: 0x169dCd95cCD6384D58D51549a33904EDD28A9e7D
-  EVOLUTION_CONTRACT_ADDRESS: 0x366D6Be881e799f9FAd8FFAEB52315F33a9BC8B9
-  FRIENDLIES_CONTRACT_ADDRESS: 0x4A19f95b8609D8A8CEe3322D18B900A769397cd4
-  LEAGUES_CONTRACT_ADDRESS: 0x241b21e91d9c73EE758F94199dbEf1ad1733fF39
-  MARKET_CONTRACT_ADDRESS: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
-  PLAYANDEVOLVE_CONTRACT_ADDRESS: 0x1668F2cf51259a3Db554EFF666f94f2a090Ce49A
-  PRIVILEGED_CONTRACT_ADDRESS: 0xdd329C7cA2B7e61b0Bcb6688299c1C611f1c8181
-  SHOP_CONTRACT_ADDRESS: 0x05E43062013fC33FAF573DB743Bd58634827b4d7
-  TRAININGPOINTS_CONTRACT_ADDRESS: 0x1d0d5e33B331631676ffd3b4b656eBDC15b063F6
-  UPDATES_CONTRACT_ADDRESS: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
-  UTILS_CONTRACT_ADDRESS: 0xE09C3eDb1562e3562E1cD58b4eA3E706EE4fc84D
+  ASSETS_CONTRACT_ADDRESS: 0x1B6470b9492b2454670437c65E06dC8Ef7038E2b
+  CONSTANTSGETTERS_CONTRACT_ADDRESS: 0x3E2285590f38C4543EeaEF3FeC36Ff9e695eBcF1
+  ENGINE_CONTRACT_ADDRESS: 0xDF20f938418a3f9CbDE930c6B4E6ADf9D87377C3
+  ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS: 0x3E9F8De918916459646309f27f8f61FA13038305
+  ENGINEPRECOMP_CONTRACT_ADDRESS: 0xdD0346cF799cc439DdB876cFa74360d00e60Dae0
+  EVOLUTION_CONTRACT_ADDRESS: 0xBC57F900Ca6B522D186172B7f8e1cC8Bfbe1bb16
+  FRIENDLIES_CONTRACT_ADDRESS: 0x153f4C3A3642F15A4Ff89639a89435e30Dd475f1
+  LEAGUES_CONTRACT_ADDRESS: 0x627115C801bEBCee9078846c3593895E4D86cF24
+  MARKET_CONTRACT_ADDRESS: 0x1B6470b9492b2454670437c65E06dC8Ef7038E2b
+  PLAYANDEVOLVE_CONTRACT_ADDRESS: 0x73f0F71535eAa89fcE368E98e6732AE15Cc76F32
+  PRIVILEGED_CONTRACT_ADDRESS: 0x1daA41AaF0bD4cb96ad01272f869013A9b7CA91E
+  SHOP_CONTRACT_ADDRESS: 0x551D5e218c01b73E289f0cC3E96962338Ba2Ca56
+  TRAININGPOINTS_CONTRACT_ADDRESS: 0x046fE5618002806C7d03A4102b440F8e84F2f43b
+  UPDATES_CONTRACT_ADDRESS: 0x1B6470b9492b2454670437c65E06dC8Ef7038E2b
+  UTILS_CONTRACT_ADDRESS: 0x0E867e8C6c171f41f1CbBaCF48Ad0e0DF159A788
   freeverse_password: freeverse
   freeverse_username: freeverse
   sender: 0xeb3ce112d8610382a994646872c4361a96c82cf8
@@ -24,6 +24,24 @@ metadata:
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   name: freeverse-configmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: authproxy
+    app.kubernetes.io/component: authproxy
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: authproxy
+spec:
+  ports:
+  - port: 8080
+  selector:
+    app.kubernetes.io/app: authproxy
+    app.kubernetes.io/component: authproxy
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
 ---
 apiVersion: v1
 kind: Service
@@ -171,6 +189,46 @@ spec:
     app.kubernetes.io/component: universedb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: authproxy
+    app.kubernetes.io/component: authproxy
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: authproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: authproxy
+      app.kubernetes.io/component: authproxy
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: authproxy
+        app.kubernetes.io/component: authproxy
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -backdoor=true
+        - -timeout=30
+        - -gqlurl
+        - http://horizon:4000
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/authproxy:dev
+        imagePullPolicy: Always
+        name: authproxy
+      imagePullSecrets:
+      - name: docker-secret
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -424,6 +482,8 @@ spec:
         - $(UTILS_CONTRACT_ADDRESS)
         - -constantsgettersContractAddress
         - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        - -delta
+        - "10000"
         envFrom:
         - configMapRef:
             name: freeverse-configmap
