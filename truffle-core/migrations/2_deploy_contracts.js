@@ -57,7 +57,6 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
-    await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
 
     const value = "1000000000000000000";
     const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
@@ -79,6 +78,7 @@ module.exports = function (deployer, network, accounts) {
     }
     console.log("Initing ... done");
 
+    await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
     namesAndAddresses = [
       ["ASSETS", assets.address],
       ["MARKET", market.address],
