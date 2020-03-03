@@ -23,7 +23,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner;
+        return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToOwner[teamIdxInCountry];
     }
 
     function _assertCountryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) internal view {
