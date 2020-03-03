@@ -17,11 +17,11 @@ func TestNewSpecialPlayer(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	timezoneIdx := uint8(1)
-	countryIdx := uint32(4)
+	timezoneIdx := uint8(0)
+	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = "274877906944"
+	team.TeamID = "1"
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.Owner = "ciao"
@@ -34,8 +34,8 @@ func TestNewSpecialPlayer(t *testing.T) {
 	league.Insert(tx)
 	team.Insert(tx)
 
-	playerId, _ := new(big.Int).SetString("57896044618658097711785542341552232326515206756777149242398696258331718847466", 10)
-	state, _ := new(big.Int).SetString("11425256194259610424594012086965331925454148519759026810474292549273807486976", 10)
+	playerId, _ := new(big.Int).SetString("57896044618658097711785541940796869142293638854084229290456062565102128021503", 10)
+	state, _ := new(big.Int).SetString("57896044618658097711785541891407282612506404271738149168364592226042330824703", 10)
 	player, err := process.GeneratePlayerByPlayerIdAndState(bc.Contracts, playerId, state)
 	if err != nil {
 		t.Fatal(err)
