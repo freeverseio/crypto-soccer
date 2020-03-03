@@ -32,11 +32,11 @@ contract('Proxy', (accounts) => {
     }
     
     beforeEach(async () => {
-        proxy = await Proxy.new().should.be.fulfilled;
+        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         assets = await Assets.at(proxy.address).should.be.fulfilled;
         assetsAsLib = await Assets.new().should.be.fulfilled;
     });
-    
+
     it('permissions check to change owner of proxy', async () => {
         await proxy.proposeProxyOwner(BOB, {from: ALICE}).should.be.rejected;
         await proxy.proposeProxyOwner(BOB, {from: FREEVERSE}).should.be.fulfilled;
