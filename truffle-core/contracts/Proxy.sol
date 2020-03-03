@@ -11,18 +11,20 @@ contract Proxy is ProxyStorage {
     event ContractsActivated(uint256[] contactIds);
     event ContractsDeleted(uint256[] contactIds);
 
-    address constant private NULL_ADDR = address(0);
+    address constant private NULL_ADDR  = address(0);
+    address constant private PROXY_DUMMY_ADDR = address(1);
 
     // TODO: is this future-proof? shall we have it re-settable?
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
     /**
     * @dev Sets owner of proxy to whoever deployed it
-    * @dev And sets _contractsInfo[0] as the NULL contract
+    * @dev Stores proxy selectors in _contractsInfo[0], pointing to PROXY_DUMMY_ADDR
     */
-    constructor() public {
+    constructor(bytes4[] memory proxySelectors) public {
         _proxyOwner = msg.sender;
-        _contractsInfo.push(ContractInfo(NULL_ADDR, new bytes4[](0), "", false)); 
+        _contractsInfo.push(ContractInfo(PROXY_DUMMY_ADDR, proxySelectors, "Proxy", false));
+        activateContracts(new uint256[](1)); 
     }
     
     modifier onlyOwner() 
@@ -122,9 +124,11 @@ contract Proxy is ProxyStorage {
     function activateContracts(uint256[] memory contractIds) public onlyOwner {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
+            require(!_contractsInfo[contractId].isActive, "cannot activate a contract that is already Active");
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             address addr = _contractsInfo[contractId].addr;
             for (uint256 s = 0; s < selectors.length; s++) {
+                require(_selectorToContractAddr[selectors[s]] != PROXY_DUMMY_ADDR, "Found a collision with a function in the Proxy contract");
                 _selectorToContractAddr[selectors[s]] = addr;
             }
             _contractsInfo[contractId].isActive = true;
@@ -140,7 +144,7 @@ contract Proxy is ProxyStorage {
     function deactivateContracts(uint256[] memory contractIds) public onlyOwner {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
-            require(contractId != 0, "cannot deactivate the null contract, with id = 0");
+            require(contractId != 0, "cannot deactivate the proxy contract, with id = 0");
             require(_contractsInfo[contractId].isActive, "cannot deactivate a contract that is Active");
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             for (uint256 s = 0; s < selectors.length; s++) {

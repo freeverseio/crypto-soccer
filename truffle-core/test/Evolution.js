@@ -239,8 +239,6 @@ contract('Evolution', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
-        POINTS_FOR_HAVING_PLAYED = await training.POINTS_FOR_HAVING_PLAYED().should.be.fulfilled;
-        POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
     

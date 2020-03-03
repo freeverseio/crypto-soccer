@@ -25,7 +25,10 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    const proxy = await deployer.deploy(Proxy).should.be.fulfilled;
+    delegateUtils.informNoCollisions(Proxy, Assets, Market, Updates);
+    delegateUtils.assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
+    const proxySelectors = delegateUtils.extractSelectorsFromAbi(Proxy.abi);
+    const proxy = await deployer.deploy(Proxy, proxySelectors).should.be.fulfilled;
     const {0: assets, 1: market, 2: updates} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
 
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
@@ -54,7 +57,6 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
-    await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
 
     const value = "1000000000000000000";
     const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
@@ -76,6 +78,7 @@ module.exports = function (deployer, network, accounts) {
     }
     console.log("Initing ... done");
 
+    await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
     namesAndAddresses = [
       ["ASSETS", assets.address],
       ["MARKET", market.address],

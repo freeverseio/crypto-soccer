@@ -3,9 +3,9 @@ var web3 = new Web3(Web3.givenProvider);
 
 const deployPair = async (proxy, Contr) => {
     if (Contr == "") return ["", "", []];
+    selectors = extractSelectorsFromAbi(Contr.abi);
     contr = await Contr.at(proxy.address).should.be.fulfilled;
     contrAsLib = await Contr.new().should.be.fulfilled;
-    selectors = extractSelectorsFromAbi(Contr.abi);
     return [contr, contrAsLib, selectors];
 };
 
@@ -60,8 +60,50 @@ function extractSelectorsFromAbi(abi) {
 function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
 
+function findDuplicates(data) {
+    let result = [];
+    for (i = 0; i < data.length; i++) {
+        thisEntry = data[i]
+        for (j = 0; j < i; j++) {
+            if (thisEntry == data[j]) {
+                result.push(thisEntry);
+            }
+        }
+    }
+    return result;
+}
+  
+function informNoCollisions(Assets, Market, Updates) {
+    allSelectors = [];
+    allSelectors = allSelectors.concat(extractSelectorsFromAbi(Assets.abi));
+    allSelectors = allSelectors.concat(extractSelectorsFromAbi(Market.abi));
+    allSelectors = allSelectors.concat(extractSelectorsFromAbi(Updates.abi));
+    duplicates = findDuplicates(allSelectors);
+    if (duplicates.length != 0) {
+        console.log("There are collisions between the contracts to delegate. No panic. It is normal when they inherit common libs")
+        console.log("The important thing is that there are no collisions with the proxy.")
+    }
+}
+
+function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates) {
+    proxySelectors = extractSelectorsFromAbi(Proxy.abi);
+
+    duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Assets.abi)));
+    if (duplicates.length != 0) throw new Error("duplicates found proxy-Assets!!!");
+
+    duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Market.abi)));
+    if (duplicates.length != 0) throw new Error("duplicates found proxy-Market!!!");
+
+    duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Updates.abi)));
+    if (duplicates.length != 0) throw new Error("duplicates found proxy-Updates!!!");
+
+    console.log("No collisions were found with the proxy.")
+}
+
 module.exports = {
     extractSelectorsFromAbi,
-    deployDelegate
+    deployDelegate,
+    informNoCollisions,
+    assertNoCollisionsWithProxy
 }
 
