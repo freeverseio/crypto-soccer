@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: xdai
-        image: freeverseio/xdai:dev
+        image: freeverseio/xdai:prod
         imagePullPolicy: Always
         ports:
         - containerPort: 8545
