@@ -74,37 +74,7 @@ module.exports = function (deployer, network, accounts) {
     }
     console.log("Initing ... done");
 
-<<<<<<< HEAD
     await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
-=======
-    await assets.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
-
-    const value = "100000000000000000";
-    const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
-    console.log("Transfer " + value + " to " + to);
-    web3.eth.sendTransaction({from: accounts[0], to , value}).should.be.fulfilled;
-    await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
-
-    namesAndAddresses = [
-      ["ASSETS", assets.address],
-      ["MARKET", market.address],
-      ["ENGINE", engine.address],
-      ["ENGINEPRECOMP", enginePreComp.address],
-      ["ENGINEAPPLYBOOSTERS", engineApplyBoosters.address],
-      ["LEAGUES", leagues.address],
-      ["UPDATES", updates.address],
-      ["TRAININGPOINTS", trainingPoints.address],
-      ["EVOLUTION", evolution.address],
-      ["TRAININGPOINTS", trainingPoints.address],
-      ["FRIENDLIES", friendlies.address],
-      ["SHOP_CONTRACT", shop.address],
-      ["PRIVILEGED", privileged.address],
-      ["UTILS", utils.address],
-      ["PRIVILEGED", assets.address],
-      ["PLAYANDEVOLVE", playAndEvolve.address],
-      ["CONSTANTSGETTERS", constantsGetters.address]
-    ]
->>>>>>> collisions
 
     // Build arrays "names" and "addresses" and store in Directory contract
     names = [];
