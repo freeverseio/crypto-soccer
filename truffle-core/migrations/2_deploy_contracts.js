@@ -76,6 +76,30 @@ module.exports = function (deployer, network, accounts) {
 
     await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
 
+    console.log("Transfer " + value + " to " + to);
+    web3.eth.sendTransaction({from: accounts[0], to , value}).should.be.fulfilled;
+    await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
+
+    namesAndAddresses = [
+      ["ASSETS", assets.address],
+      ["MARKET", market.address],
+      ["ENGINE", engine.address],
+      ["ENGINEPRECOMP", enginePreComp.address],
+      ["ENGINEAPPLYBOOSTERS", engineApplyBoosters.address],
+      ["LEAGUES", leagues.address],
+      ["UPDATES", updates.address],
+      ["TRAININGPOINTS", trainingPoints.address],
+      ["EVOLUTION", evolution.address],
+      ["TRAININGPOINTS", trainingPoints.address],
+      ["FRIENDLIES", friendlies.address],
+      ["SHOP_CONTRACT", shop.address],
+      ["PRIVILEGED", privileged.address],
+      ["UTILS", utils.address],
+      ["PRIVILEGED", assets.address],
+      ["PLAYANDEVOLVE", playAndEvolve.address],
+      ["CONSTANTSGETTERS", constantsGetters.address]
+    ]
+
     // Build arrays "names" and "addresses" and store in Directory contract
     names = [];
     namesBytes32 = [];
