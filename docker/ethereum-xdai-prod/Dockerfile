@@ -10,4 +10,4 @@ EXPOSE 8545
 EXPOSE 30303
 EXPOSE 30303/udp
 
-ENTRYPOINT ["/bin/parity","--chain","xdai","--unlock", "0xeb3ce112d8610382a994646872c4361a96c82cf8", "--password", "/data/passwd", "--keys-path","/home/parity/keys"]
+ENTRYPOINT ["/bin/parity","--chain","xdai","--jsonrpc-interface","all","--unlock", "0xeb3ce112d8610382a994646872c4361a96c82cf8", "--password", "/data/passwd", "--keys-path","/home/parity/keys"]

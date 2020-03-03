@@ -35,7 +35,8 @@ spec:
                -trainingpointsContractAddress, "$(TRAININGPOINTS_CONTRACT_ADDRESS)",
                -shopContractAddress, "$(SHOP_CONTRACT_ADDRESS)",
                -utilsContractAddress, "$(UTILS_CONTRACT_ADDRESS)",
-               -constantsgettersContractAddress, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)"]
+               -constantsgettersContractAddress, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)",
+               -delta, "10000"]
 
       imagePullSecrets:
       - name: docker-secret

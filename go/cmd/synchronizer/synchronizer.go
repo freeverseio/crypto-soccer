@@ -52,6 +52,7 @@ func main() {
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
 	constantsgettersContractAddress := flag.String("constantsgettersContractAddress", "", "")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
+	delta := flag.Int("delta", 10, "number of block to process at maximum")
 	flag.Parse()
 
 	if _, err := os.Stat(*namesDatabase); err != nil {
@@ -149,9 +150,8 @@ func main() {
 		}
 
 		log.Info("On Going ...")
-		delta := uint64(10)
 		for {
-			processedBlocks, err := run(universedb, processor, delta)
+			processedBlocks, err := run(universedb, processor, uint64(*delta))
 			if err != nil {
 				log.Error(err)
 				break

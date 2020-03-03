@@ -8,7 +8,7 @@ BASE_DIR=../base
 NAMESPACE=freeverse
 APP_NAME='cryptosoccer'
 APP_VERSION='1.0.0'
-TAG="dev"
+TAG="1.0.0-alpha"
 
 # create kustomization.yaml
 kustomize create
@@ -26,6 +26,7 @@ kustomize edit set image freeverseio/synchronizer:${TAG}
 kustomize edit set image freeverseio/market.trader:${TAG}
 kustomize edit set image freeverseio/universe.api:${TAG}
 kustomize edit set image freeverseio/universe.db:${TAG}
+kustomize edit set image freeverseio/authproxy:${TAG}
 
 # change to n replicas
 # kustomize edit set replicas horizon=1
