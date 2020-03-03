@@ -37,7 +37,8 @@ contract Constants {
 
 
     uint8 constant internal TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
-    uint256 constant internal DAYS_PER_ROUND = 16;
+    uint256 constant internal MATCHDAYS_PER_ROUND = 14;
+    uint256 constant internal DAYS_PER_ROUND = 7;
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
 
     uint8 constant internal IDX_MSG = 0;
