@@ -157,7 +157,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         // convert outOfGamePlayer [0...13] to the index that points to the skills in the team [0,..24]
         outOfGamePlayer = lineUp[outOfGamePlayer];
         if (skills[outOfGamePlayer] == 0) return;
-        uint8 outOfGameType = lineUp[uint8(getOutOfGameType(matchLog, is2ndHalf))];
+        uint256 outOfGameType = getOutOfGameType(matchLog, is2ndHalf);
         if (outOfGameType == RED_CARD) {
             skills[outOfGamePlayer] = setRedCardLastGame(skills[outOfGamePlayer], true);
         }

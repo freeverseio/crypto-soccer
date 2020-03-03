@@ -38,25 +38,37 @@ contract UpdatesView is Storage, AssetsLib {
         return _timeZoneToUpdatePure(currentVerse - 1, timeZoneForRound1);
     }
 
+
+    // tz0  : v = 0, V_DAY, 2 * V_DAY...
+    // tzN  : v = 4N + V_DAY * day,  day = 0,...6
+    // tzN  : v = 4N + V_DAY * day,  day = 0,...6
+    //  => tzN - tz0 = (v - V_DAY*day)
+    //  => 4 tzN = 4 tz0 + v % VERSES_PER_DAY
+    // last : v = V_DAY + DELTA + V_DAY * 6 
+    // Imagine 2 tzs:
+    // 0:00 - tz0; 0:30 - NUL; 1:00 - tz1; 1:30 - tz0; 0:00 - tz0; 0:30 - tz1;
+    // So the last
     function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
         // if currentVerse = 0, we should be updating timeZoneForRound1
         // recall that timeZones range from 1...24 (not from 0...24)
-        uint16 verseInRound = uint16(verse % VERSES_PER_ROUND);
-        turnInDay = uint8(verseInRound % 4);
-        if (turnInDay >=2 && verse < 9*4+2) return (NULL_TIMEZONE, 0, 0);
-        
+        turnInDay = uint8(verse % 4);
+        uint256 delta = 9 * 4 + turnInDay;
+        uint256 tz;
+        uint256 dia;        
+        if (turnInDay >=2 && verse < delta) return (NULL_TIMEZONE, 0, 0);
         if (turnInDay < 2) {
-            timeZone = normalizeTZ(TZForRound1 + verseInRound/4);
-            day = 2 * uint8(verseInRound / VERSES_PER_DAY);
+            tz = TZForRound1 + ((verse - turnInDay) % VERSES_PER_DAY)/4;
+            dia = 2 * uint8((verse - 4 * (tz - TZForRound1) - turnInDay)/VERSES_PER_DAY);
         } else {
-            timeZone = normalizeTZ(TZForRound1 + verseInRound/4 + (24-9));
-            day = 1 + 2 * uint8(verseInRound / VERSES_PER_DAY);
+            tz = TZForRound1 + ((verse - delta) % VERSES_PER_DAY)/4;
+            dia = 1 + 2 * uint8((verse - 4 * (tz - TZForRound1) - delta)/VERSES_PER_DAY);
             turnInDay -= 2;
         }
-        
+        timeZone = normalizeTZ(tz);
+        day = uint8(dia % MATCHDAYS_PER_ROUND);
     }
     
-    function normalizeTZ(uint16 tz) public pure returns (uint8) {
+    function normalizeTZ(uint256 tz) public pure returns (uint8) {
         return uint8(1 + ((24 + tz - 1)% 24));
     }
 

@@ -128,8 +128,9 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	err := b.play1stHalf(contracts)
 	if err != nil {
 		b.State = storage.MatchCancelled
+	} else {
+		b.State = storage.MatchHalf
 	}
-	b.State = storage.MatchHalf
 	return err
 }
 
@@ -172,8 +173,9 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	err := b.play2ndHalf(contracts)
 	if err != nil {
 		b.State = storage.MatchCancelled
+	} else {
+		b.State = storage.MatchEnd
 	}
-	b.State = storage.MatchEnd
 	return err
 }
 

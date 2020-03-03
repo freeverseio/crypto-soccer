@@ -68,25 +68,33 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 	// eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
 	outOfGamePlayer := int16(matchLog[4])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
+	outOfGameMinute := int16(0)
 	if thereWasAnOutOfGame {
 		var typeOfEvent int16
 		if matchLog[5] == 1 {
-			typeOfEvent = EVNT_HARD
-		} else if matchLog[5] == 2 {
 			typeOfEvent = EVNT_SOFT
+		} else if matchLog[5] == 2 {
+			typeOfEvent = EVNT_HARD
 		} else if matchLog[5] == 3 {
 			typeOfEvent = EVNT_RED
 		}
-		minute := int16(rounds2mins[matchLog[6]])
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, outOfGamePlayer, NULL}
+		outOfGameMinute = int16(rounds2mins[matchLog[6]])
+		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, outOfGamePlayer, NULL}
 		events = append(events, thisEvent)
 	}
 
+	// First yellow card:
 	yellowCardPlayer := int16(matchLog[7])
+	firstYellowCoincidesWithRed := false
 	if yellowCardPlayer < 14 {
 		maxMinute := int16(45)
 		if yellowCardPlayer == outOfGamePlayer {
-			maxMinute = outOfGamePlayer
+			if outOfGameMinute > 0 {
+				maxMinute = outOfGameMinute - 1
+			} else {
+				maxMinute = outOfGameMinute
+			}
+			firstYellowCoincidesWithRed = true
 		}
 		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
@@ -94,15 +102,24 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
+
+	// Second second yellow card:
 	yellowCardPlayer = int16(matchLog[8])
 	if yellowCardPlayer < 14 {
 		maxMinute := int16(45)
+		typeOfEvent := EVNT_YELLOW
 		if yellowCardPlayer == outOfGamePlayer {
-			maxMinute = outOfGamePlayer
+			if firstYellowCoincidesWithRed {
+				minute := outOfGameMinute
+				thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
+				events = append(events, thisEvent)
+				return events
+			} else {
+				maxMinute = outOfGamePlayer
+			}
 		}
 		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
-		typeOfEvent := EVNT_YELLOW
 		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
