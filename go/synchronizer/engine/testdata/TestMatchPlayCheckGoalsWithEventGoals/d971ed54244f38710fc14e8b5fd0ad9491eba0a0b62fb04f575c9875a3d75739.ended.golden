@@ -233,9 +233,9 @@
 					Shoot: (uint64) 1134,
 					Endurance: (uint64) 1134,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(16573452063258200775743406272020887432661978300941422),
+					EncodedSkills: (*big.Int)(16573463481239742423422454738308643028623069362914414),
 					EncodedState: (*big.Int)(<nil>),
-					RedCard: (bool) false,
+					RedCard: (bool) true,
 					InjuryMatchesLeft: (uint8) 0
 				}
 			}),
@@ -757,9 +757,9 @@
 					Shoot: (uint64) 1134,
 					Endurance: (uint64) 1134,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(16573452063258200775743406273229813252276607475647598),
+					EncodedSkills: (*big.Int)(16573463481239742423422454739517568848237698537620590),
 					EncodedState: (*big.Int)(<nil>),
-					RedCard: (bool) false,
+					RedCard: (bool) true,
 					InjuryMatchesLeft: (uint8) 0
 				}
 			}),

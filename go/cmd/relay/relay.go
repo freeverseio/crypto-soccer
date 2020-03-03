@@ -61,7 +61,7 @@ func main() {
 		log.Fatal("Failed to connect to DBMS: %v", err)
 	}
 
-	processor, err := relay.NewProcessor(client, auth, db, updatesContract, *ipfsURL)
+	processor, err := relay.NewProcessor(client, auth, updatesContract, *ipfsURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,13 +71,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = processor.Process(tx)
-		if err != nil {
+		if err = processor.Process(tx); err != nil {
 			tx.Rollback()
 			log.Fatal(err)
 		}
-		err = tx.Commit()
-		if err != nil {
+		if err = tx.Commit(); err != nil {
 			log.Fatal(err)
 		}
 

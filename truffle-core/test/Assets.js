@@ -197,6 +197,15 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('transfer 2 bots to address to estimate cost', async () => {
+        const tz = 1;
+        const countryIdxInTZ = 0;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, BOB).should.be.fulfilled;
+    });
+
+
+
     it('transfer of bot teams', async () =>  {
         tz = 1;
         countryIdxInTZ = 0;
@@ -226,8 +235,7 @@ contract('Assets', (accounts) => {
         ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
         for (shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_MAX; shirtNum++) {
             if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
-                ids[shirtNum].should.be.bignumber.equal(FREE_PLAYER_ID);
-                continue;
+                ids[shirtNum].toNumber().should.be.equal(0);
             } else {
                 decoded = await assets.decodeTZCountryAndVal(ids[shirtNum]).should.be.fulfilled;
                 const {0: timeZone, 1: country, 2: playerIdxInCountry} = decoded;
@@ -240,8 +248,7 @@ contract('Assets', (accounts) => {
         ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
         for (shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_MAX; shirtNum++) {
             if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
-                ids[shirtNum].should.be.bignumber.equal(FREE_PLAYER_ID);
-                continue;
+                ids[shirtNum].toNumber().should.be.equal(0);
             } else {
                 decoded = await assets.decodeTZCountryAndVal(ids[shirtNum]).should.be.fulfilled;
                 const {0: timeZone, 1: country, 2: playerIdxInCountry} = decoded;
@@ -276,7 +283,7 @@ contract('Assets', (accounts) => {
         gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
         dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-        (Math.abs(ageInDays.toNumber() - 11455) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1
+        (Math.abs(ageInDays.toNumber() - 11521) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1
         // check that the ageInDay can be obtained by 7 * (now - dayOfBirth), where
         // now is approximately gameDeployDay. There is an uncertainty of about 7 days due to rounding.
         (Math.abs(7*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < 8).should.be.equal(true);
@@ -317,17 +324,14 @@ contract('Assets', (accounts) => {
         tz = 1;
         countryIdxInTZ = 0;
         teamIdxInCountry = 0; 
-        teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
-        // cannot query about a Bot Team
-        isFree = await market.isFreeShirt(teamId,shirtNum = 3).should.be.rejected
-        // so transfer and query again
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
-        isBot = await market.isBotTeam(teamId).should.be.fulfilled;
-        isBot.should.be.equal(false);
-        isFree = await market.isFreeShirt(teamId, shirtNum = 3).should.be.fulfilled
-        isFree.should.be.equal(false)
-        isFree = await market.isFreeShirt(teamId, shirtNum = 18).should.be.fulfilled
-        isFree.should.be.equal(true)
+        teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+        let ids = await market.getPlayerIdsInTeam(teamId).should.be.fulfilled;
+        shirtNum = 3;
+        isFree = await market.isFreeShirt(ids[shirtNum], shirtNum = 18).should.be.fulfilled
+        isFree.should.be.equal(false);
+        shirtNum = 18;
+        isFree = await market.isFreeShirt(ids[shirtNum], shirtNum = 18).should.be.fulfilled
+        isFree.should.be.equal(true);
     });
 
     it('getFreeShirt', async () => {
@@ -335,12 +339,6 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 0;
         teamIdxInCountry = 0; 
         teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
-        // cannot query about a Bot Team
-        shirtNum = await market.getFreeShirt(teamId).should.be.rejected
-        // so transfer and query again
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
-        isBot = await market.isBotTeam(teamId).should.be.fulfilled;
-        isBot.should.be.equal(false);
         shirtNum = await market.getFreeShirt(teamId).should.be.fulfilled
         shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);
     });
@@ -373,9 +371,14 @@ contract('Assets', (accounts) => {
             return event.playerId === playerId && event.state == state});
 
         // states of teams after selling
-        isFree = await market.isFreeShirt(teamId1, shirtNum = playerIdxInCountry1).should.be.fulfilled
+        let ids1 = await market.getPlayerIdsInTeam(teamId1).should.be.fulfilled;
+        let ids2 = await market.getPlayerIdsInTeam(teamId2).should.be.fulfilled;
+        
+        shirtNum = playerIdxInCountry1;
+        isFree = await market.isFreeShirt(ids1[shirtNum], shirtNum).should.be.fulfilled
         isFree.should.be.equal(true);
-        isFree = await market.isFreeShirt(teamId2, shirtNum = PLAYERS_PER_TEAM_MAX - 1).should.be.fulfilled
+        shirtNum = PLAYERS_PER_TEAM_MAX - 1;
+        isFree = await market.isFreeShirt(ids2[shirtNum], shirtNum).should.be.fulfilled
         isFree.should.be.equal(false);
         shirtNum = await market.getFreeShirt(teamId2).should.be.fulfilled
         shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 2);

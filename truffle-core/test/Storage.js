@@ -93,9 +93,14 @@ contract('Proxy', (accounts) => {
         contractId = 1;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         truffleAssert.eventEmitted(tx0, "ContractAdded", async (event) => { return event.contractId === contractId && event.name === name});
+        var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractId).should.be.fulfilled;
+        isActive.should.be.equal(false);
+        addr.should.be.equal(assetsAsLib.address);
         
         tx1 = await proxy.activateContracts(contractIds = [contractId]).should.be.fulfilled;
         truffleAssert.eventEmitted(tx1, "ContractsActivated", async (event) => { return event.contractId === contractId });
+        var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractId).should.be.fulfilled;
+        isActive.should.be.equal(true);
 
         result = await proxy.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(2);
@@ -127,11 +132,15 @@ contract('Proxy', (accounts) => {
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
+        var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractId).should.be.fulfilled;
+        isActive.should.be.equal(true);
 
         // I can do the same thing in one atomic TX:
         contractId = 3;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         tx1 = await proxy.deactivateAndActivateContracts(deactivate = [2], activate = [3]).should.be.fulfilled;
+        var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(2).should.be.fulfilled;
+        isActive.should.be.equal(false);
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);

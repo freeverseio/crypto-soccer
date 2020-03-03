@@ -10,19 +10,19 @@ metadata:
 spec:
   tls:
   - hosts:
-    - k8s.gorengine.com
-    secretName: cryptosoccer-tls
+    - k8s.goalrevolution.live
+    secretName: letsencrypt-freeverse
   rules:
-  - host: k8s.gorengine.com
+  - host: k8s.goalrevolution.live
     http:
       paths:
-      - backend:
-          serviceName: hello-kubernetes-first
-          servicePort: 80
-      - path: /xdai
-        backend:
-          serviceName: xdai
-          servicePort: 8545
+      # - backend:
+      #     serviceName: hello-kubernetes-first
+      #     servicePort: 80
+      # - path: /xdai
+      #   backend:
+      #     serviceName: xdai
+      #     servicePort: 8545
       - path: /auth(/|$)(.*)
         backend:
           serviceName: authproxy

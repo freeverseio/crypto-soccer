@@ -53,7 +53,7 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
-    const value = "100000000000000000";
+    const value = "1000000000000000000";
     const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
 
     console.log("Setting up ... done");
