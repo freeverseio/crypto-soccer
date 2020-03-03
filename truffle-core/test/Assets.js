@@ -88,7 +88,7 @@ contract('Assets', (accounts) => {
         result.toNumber().should.be.equal(sk[0]);        
     });
 
-    it('check division event on init', async () => {
+    it('check DivisionCreation event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
             timezone++;
@@ -96,6 +96,17 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('check DivisionCreation event on initSingleTz', async () => {
+        proxy2 = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
+        depl2 = await delegateUtils.deployDelegate(proxy2, Assets, Market);
+        assets2 = depl2[0];
+        tx = await assets2.initSingleTZ(tz = 4).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
+        });
+    });
+    
+    
     it('check cannot initialize contract twice', async () => {
         await assets.init().should.be.rejected;
     });
