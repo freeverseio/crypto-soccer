@@ -40,7 +40,7 @@ contract('Updates', (accounts) => {
     
     beforeEach(async () => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        proxy = await Proxy.new().should.be.fulfilled;
+        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
         updates = depl[2];
         // // done with delegate calls

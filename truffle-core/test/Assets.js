@@ -39,7 +39,7 @@ contract('Assets', (accounts) => {
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
-        proxy = await Proxy.new().should.be.fulfilled;
+        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
         assets = depl[0]
         market = depl[1]
