@@ -26,6 +26,7 @@ kustomize edit set image freeverseio/synchronizer:${TAG}
 kustomize edit set image freeverseio/market.trader:${TAG}
 kustomize edit set image freeverseio/universe.api:${TAG}
 kustomize edit set image freeverseio/universe.db:${TAG}
+kustomize edit set image freeverseio/authproxy:${TAG}
 
 # change to n replicas
 # kustomize edit set replicas horizon=1
