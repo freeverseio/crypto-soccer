@@ -8,7 +8,7 @@ BASE_DIR=../base
 NAMESPACE=freeverse
 APP_NAME='cryptosoccer'
 APP_VERSION='1.0.0'
-TAG="dev"
+TAG="1.0.0-alpha"
 
 # create kustomization.yaml
 kustomize create
