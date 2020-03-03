@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
@@ -124,7 +125,7 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 
 func TestMatchPlayerEvolution(t *testing.T) {
 	m := engine.NewMatch()
-	m.StartTime = big.NewInt(1570147200+3600*24*365*7)
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
 	for i := 0; i < 25; i++ {
@@ -144,38 +145,86 @@ func TestDumpMatch(t *testing.T) {
 	golden.Assert(t, match.ToString(), t.Name()+".golden")
 }
 
-// func TestMatchFromStorage(t *testing.T) {
-// 	t.Parallel()
-// 	tx, err := db.Begin()
-// 	assert.NilError(t, err)
-// 	defer tx.Rollback()
-// 	stoMatch := storage.Match{}
-// 	stoHomeTeam := storage.Team{}
-// 	stoVisitorTeam := storage.Team{}
-// 	stoHomePlayers := []*storage.Player{&storage.Player{}}
-// 	stoHomePlayers[0].ShirtNumber = 4
-// 	stoHomePlayers[0].EncodedSkills = SkillsFromString(t, "40439920000726868070503716865792521545121682176182486071370780491777")
-// 	assert.NilError(t, stoHomePlayers[0].Insert(tx))
-// 	stoVisitorPlayers := []*storage.Player{}
-// 	match := engine.NewMatchFromStorage(
-// 		stoMatch,
-// 		stoHomeTeam,
-// 		stoVisitorTeam,
-// 		stoHomePlayers,
-// 		stoVisitorPlayers,
-// 	)
-// 	golden.Assert(t, dump.Sdump(match), t.Name()+".golden")
-// 	assert.NilError(t, match.ToStorage(*bc.Contracts, tx))
-// 	golden.Assert(t, dump.Sdump(match), t.Name()+".after.toStorage.golden")
-// }
+func TestMatchTeamSkillsEvolution(t *testing.T) {
+	t.Parallel()
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+	m.Seed = sha256.Sum256([]byte("18"))
+	m.HomeTeam.TeamID = "274877906944"
+	m.VisitorTeam.TeamID = "274877906945"
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+	}
+	golden.Assert(t, dump.Sdump(m.HomeTeam.Skills()), t.Name()+".before.golden")
+	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	golden.Assert(t, dump.Sdump(m.HomeTeam.Skills()), t.Name()+".half.golden")
+	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
+	golden.Assert(t, dump.Sdump(m.HomeTeam.Skills()), t.Name()+".end.golden")
+}
 
-// func TestMatchToStorage(t *testing.T) {
-// 	t.Parallel()
-// 	tx, err := db.Begin()
-// 	assert.NilError(t, err)
-// 	defer tx.Rollback()
+func TestMatchRedCards(t *testing.T) {
+	t.Parallel()
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+	m.Seed = sha256.Sum256([]byte("18"))
+	m.HomeTeam.TeamID = "274877906944"
+	m.VisitorTeam.TeamID = "274877906945"
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+	}
+	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
+	event := m.Events[12]
+	assert.Equal(t, event.Type, matchevents.EVNT_RED)
+	assert.Equal(t, event.PrimaryPlayer, int16(7))
+	assert.Equal(t, event.Team, int16(0))
+	player := m.HomeTeam.Players[9]
+	assert.Equal(t, player.Skills().String(), "444839120007985571215348664084887401221731547822953325520017982554878")
+	assert.Assert(t, player.RedCard)
+}
 
-// 	match := engine.NewMatch()
-// 	err = match.ToStorage(*bc.Contracts, tx)
-// 	assert.NilError(t, err)
-// }
+func TestMatchHardInjury(t *testing.T) {
+	t.Parallel()
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+	m.Seed = sha256.Sum256([]byte("10"))
+	m.HomeTeam.TeamID = "274877906944"
+	m.VisitorTeam.TeamID = "274877906945"
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+	}
+	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
+	event := m.Events[12]
+	assert.Equal(t, event.Type, matchevents.EVNT_HARD)
+	assert.Equal(t, event.PrimaryPlayer, int16(8))
+	assert.Equal(t, event.Team, int16(0))
+	player := m.HomeTeam.Players[10]
+	assert.Equal(t, player.Skills().String(), "444839120007985571216250684626677567866560384555645406446211878421246")
+	assert.Equal(t, player.InjuryMatchesLeft, uint8(5))
+}
+
+func TestMatchSoftInjury(t *testing.T) {
+	t.Parallel()
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+	m.Seed = sha256.Sum256([]byte("161"))
+	m.HomeTeam.TeamID = "274877906944"
+	m.VisitorTeam.TeamID = "274877906945"
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+	}
+	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
+	event := m.Events[12]
+	assert.Equal(t, event.Type, matchevents.EVNT_SOFT)
+	assert.Equal(t, event.PrimaryPlayer, int16(10))
+	assert.Equal(t, event.Team, int16(0))
+	player := m.HomeTeam.Players[12]
+	assert.Equal(t, player.Skills().String(), "444839120007985571215702621512678479272234002743376800313840903717630")
+	assert.Equal(t, player.InjuryMatchesLeft, uint8(2))
+}

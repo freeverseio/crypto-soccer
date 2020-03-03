@@ -283,7 +283,7 @@ contract('Assets', (accounts) => {
         gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
         dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-        (Math.abs(ageInDays.toNumber() - 11455) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1
+        (Math.abs(ageInDays.toNumber() - 11521) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1
         // check that the ageInDay can be obtained by 7 * (now - dayOfBirth), where
         // now is approximately gameDeployDay. There is an uncertainty of about 7 days due to rounding.
         (Math.abs(7*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < 8).should.be.equal(true);
