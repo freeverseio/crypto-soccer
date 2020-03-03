@@ -75,7 +75,7 @@ contract('Proxy', (accounts) => {
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
         assets = depl[0]
         await assets.init({from: ALICE}).should.be.fulfilled;
-        await assets.getNCountriesInTZ(tz = 1, {from: ALICE}).should.be.fulfilled;
+        await assets.countCountries(tz = 1, {from: ALICE}).should.be.fulfilled;
         tz = 1;
         countryIdxInTZ = 0;
         teamIdxInCountry = 0;

@@ -19,6 +19,11 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry) == NULL_ADDR;
     }
 
+    function isBotTeam(uint256 teamId) public view returns(bool) {
+        if (teamId == ACADEMY_TEAM) return false;
+        return teamIdToOwner[teamId] == NULL_ADDR;
+    }
+
     // returns NULL_ADDR if team is bot
     function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
         _assertTZExists(timeZone);
@@ -27,7 +32,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     }
 
     function _assertCountryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) internal view {
-        require(countryIdxInTZ < _timeZones[timeZone].countries.length, "country does not exist in this timeZone");
+        require(countryIdxInTZ < tzToNCountries[timeZone], "country does not exist in this timeZone");
     }
     
     function _teamExistsInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
@@ -42,7 +47,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     function getNDivisionsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions;
+        return countryIdToNDivisions[encodeTZCountryAndVal(timeZone, countryIdxInTZ, 0)];
     }
 
     function getNLeaguesInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {

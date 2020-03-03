@@ -34,7 +34,6 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint8 => uint256) tzToNCountries;
 
     struct TimeZone {
-        uint256 nCountries;
         bytes32[2] orgMapHash;
         bytes32[2] skillsHash;
         uint8 newestOrgMapIdx;

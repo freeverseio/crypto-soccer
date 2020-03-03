@@ -114,10 +114,10 @@ contract('Assets', (accounts) => {
     });
 
     it2('check initial setup of timeZones', async () =>  {
-        nCountries = await assets.getNCountriesInTZ(0).should.be.rejected;
-        nCountries = await assets.getNCountriesInTZ(25).should.be.rejected;
+        nCountries = await assets.countCountries(0).should.be.rejected;
+        nCountries = await assets.countCountries(25).should.be.rejected;
         for (tz = 1; tz<25; tz++) {
-            nCountries = await assets.getNCountriesInTZ(tz).should.be.fulfilled;
+            nCountries = await assets.countCountries(tz).should.be.fulfilled;
             nCountries.toNumber().should.be.equal(1);
             nDivs = await assets.getNDivisionsInCountry(tz, countryIdxInTZ = 0).should.be.fulfilled;
             nDivs.toNumber().should.be.equal(N_DIVS_AT_START);

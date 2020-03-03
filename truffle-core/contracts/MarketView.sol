@@ -250,8 +250,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
     
     function getOwnerTeam(uint256 teamId) public view returns(address) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+        return teamIdToOwner[teamId];
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
@@ -277,7 +276,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
             }
         } else {
             for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
-                uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToPlayerIds[teamIdxInCountry][shirtNum];
+                uint256 writtenId = teamIdToPlayerIds[teamId][shirtNum];
                 if (writtenId == 0) {
                     playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
                 } else {
@@ -291,18 +290,11 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         return getCurrentTeamId(getPlayerState(playerId));
     }
 
-    function isBotTeam(uint256 teamId) public view returns(bool) {
-        if (teamId == ACADEMY_TEAM) return false;
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
-    }
-
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
         // already assumes that there was a previous check that this team is not a bot
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
             if (isFreeShirt(
-                _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToPlayerIds[teamIdxInCountry][shirtNum], 
+                teamIdToPlayerIds[teamId][shirtNum], 
                 shirtNum)
             ) { 
                 return shirtNum; 

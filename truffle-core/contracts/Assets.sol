@@ -53,11 +53,11 @@ contract Assets is AssetsView {
     function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) external {
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
         uint256 firstBotIdx = countryIdToNHumanTeams[countryId];
-        require(isBotTeamInCountry(tz, countryIdxInTZ, firstBotIdx), "cannot transfer a non-bot team");
-        require(addr != NULL_ADDR, "invalid address");
         uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
+        require(isBotTeam(teamId), "cannot transfer a non-bot team");
+        require(addr != NULL_ADDR, "invalid address");
         teamIdToOwner[teamId] = addr;
-        countryIdToNHumanTeams += 1;
+        countryIdToNHumanTeams[countryId] += 1;
         emit TeamTransfer(teamId, addr);
     }
 
