@@ -152,10 +152,10 @@ jobs:
       - kube-orb/install-kubectl
       - kube-orb/install-kubeconfig:
         kubeconfig: KUBECONFIG_DATA
-      - run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
       - run: | 
-          kustomize build deployment/dok8s/dev | kubectl -n freeverse delete -f -
-          kustomize build deployment/dok8s/dev | kubectl -n freeverse apply -f -
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          ./kustomize build deployment/dok8s/dev | kubectl -n freeverse delete -f -
+          ./kustomize build deployment/dok8s/dev | kubectl -n freeverse apply -f -
       # - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
 workflows:
   version: 2
