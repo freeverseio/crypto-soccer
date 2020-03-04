@@ -9,6 +9,7 @@ import { ApolloProvider } from '@apollo/react-hooks';
 import Web3 from 'web3';
 import Header from './views/Header';
 import Main from './views/Main';
+import * as Constants from './Constants';
 const privilegedJSON = require("./contracts/Privileged.json");
 const marketJSON = require("./contracts/Market.json");
 
@@ -17,9 +18,15 @@ const web3 = new Web3('https://prod.gorengine.com/pippolo');
 const privileged = new web3.eth.Contract(privilegedJSON.abi, "0x615668099Cc46D035b3c34aCdf01204Ac4A4F446");
 const market = new web3.eth.Contract(marketJSON.abi, "0xFB1436D488726D64a0441081D508b238fF756802");
 
-const url = 'https://k8s.goalrevolution.live/auth';
 const client = new ApolloClient({
-  uri: url,
+  request: (operation) => {
+    operation.setContext({
+      headers: {
+        authorization: 'Bearer joshua'
+      }
+    })
+  },
+  uri: Constants.ENDPOINT_URL,
 });
 
 function App() {
@@ -27,7 +34,7 @@ function App() {
     <Router>
       <ApolloProvider client={client}>
         <div className="App">
-          <Header url={url} />
+          <Header url={Constants.ENDPOINT_URL} />
           <Main web3={web3} privileged={privileged} market={market}/>
         </div>
       </ApolloProvider>
