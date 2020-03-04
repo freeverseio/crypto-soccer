@@ -282,7 +282,7 @@ contract('Assets', (accounts) => {
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        expectedSkills = [ 440, 1068, 1284, 826, 1378 ];
+        expectedSkills = [ 1427, 1016, 853, 974, 726 ];
         resultSkills = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
             resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
