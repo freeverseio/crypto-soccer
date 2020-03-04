@@ -6,6 +6,8 @@ commonLabels:
 resources:
 - ../base
 images:
+- name: freeverseio/authproxy
+  newTag: dev
 - name: freeverseio/horizon
   newTag: dev
 - name: freeverseio/market.db

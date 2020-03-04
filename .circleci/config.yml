@@ -1,6 +1,9 @@
 :#: Javascript Node CircleCI 2.1 configuration file
 version: 2.1
 
+orbs:
+  kube-orb: circleci/kubernetes@0.11.0
+
 executors:
   freeverse:
     docker:
@@ -149,9 +152,11 @@ jobs:
       - kube-orb/install-kubectl
       - kube-orb/install-kubeconfig:
         kubeconfig: KUBECONFIG_DATA
-      - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
-orbs:
-  kube-orb: circleci/kubernetes@0.11.0
+      - run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+      - run: | 
+          kustomize build deployment/dok8s/dev | kubectl -n freeverse delete -f -
+          kustomize build deployment/dok8s/dev | kubectl -n freeverse apply -f -
+      # - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
 workflows:
   version: 2
   build_and_test:
