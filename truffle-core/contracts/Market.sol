@@ -177,28 +177,21 @@ contract Market is MarketView {
                 ), block.number
             );
 
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToPlayerIds[teamIdxInCountry][shirtTarget] = playerId;
+        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
-            (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
-            _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToPlayerIds[teamIdxInCountry][shirtOrigin] = FREE_PLAYER_ID;
+            teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
         emit PlayerStateChange(playerId, newState);
     }
     
-    function transferTeamInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
-        _assertTZExists(timeZone);
-        _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a bot team");
-        require(addr != NULL_ADDR, "cannot transfer to a null address");
-        require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToOwner[teamIdxInCountry] != addr, "buyer and seller are the same addr");
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToOwner[teamIdxInCountry] = addr;
-    }
-
+        
     function transferTeam(uint256 teamId, address addr) public {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        transferTeamInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+        // requiring that team is not bot already ensures that tz and countryIdxInTz exist 
+        require(!isBotTeam(teamId), "cannot transfer a bot team");
+        require(addr != NULL_ADDR, "cannot transfer to a null address");
+        require(teamIdToOwner[teamId] != addr, "buyer and seller are the same addr");
+        teamIdToOwner[teamId] = addr;
         emit TeamTransfer(teamId, addr);
     }
 }

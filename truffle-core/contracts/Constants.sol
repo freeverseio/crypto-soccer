@@ -45,9 +45,9 @@ contract Constants {
     uint8 constant internal IDX_r   = 1;
     uint8 constant internal IDX_s   = 2;
  
-    uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
-    uint8 public constant RED_CARD = 3;   // noone saw a card
-    uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
+    uint8 constant internal NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
+    uint8 constant internal RED_CARD = 3;   // noone saw a card
+    uint256 constant internal POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
 
  
     // POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.

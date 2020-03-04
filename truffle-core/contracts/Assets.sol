@@ -38,23 +38,26 @@ contract Assets is AssetsView {
     
 
     function _initTimeZone(uint8 tz) private {
-        Country memory country;
-        country.nDivisions = 1;
-        _timeZones[tz].countries.push(country);
+        uint256 countryIdxInTZ = 0;
+        uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
+        countryIdToNDivisions[countryId] = 1;
+        tzToNCountries[tz] += 1;
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
-        for (uint8 division = 0 ; division < country.nDivisions ; division++){
-            _timeZones[tz].countries[0].divisonIdxToRound[division] = 1;
+        for (uint8 division = 0 ; division < countryIdToNDivisions[countryId]; division++){
+            uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, division);
+            divisionIdToRound[divisionId] = 1;
             emit DivisionCreation(tz, 0, division);
         }
     }
 
-    function transferFirstBotToAddr(uint8 timeZone, uint256 countryIdxInTZ, address addr) external {
-        uint256 firstBotIdx = _timeZones[timeZone].countries[countryIdxInTZ].nHumanTeams;
-        require(isBotTeamInCountry(timeZone, countryIdxInTZ, firstBotIdx), "cannot transfer a non-bot team");
+    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) external {
+        uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
+        uint256 firstBotIdx = countryIdToNHumanTeams[countryId];
+        uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
+        require(isBotTeam(teamId), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToOwner[firstBotIdx] = addr;
-        _timeZones[timeZone].countries[countryIdxInTZ].nHumanTeams++;
-        uint256 teamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, firstBotIdx);
+        teamIdToOwner[teamId] = addr;
+        countryIdToNHumanTeams[countryId] += 1;
         emit TeamTransfer(teamId, addr);
     }
 

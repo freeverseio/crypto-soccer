@@ -246,7 +246,7 @@ contract("Market", accounts => {
   
   beforeEach(async () => {
     constants = await ConstantsGetters.new().should.be.fulfilled;
-    proxy = await Proxy.new().should.be.fulfilled;
+    proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
     depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
     assets = depl[0]
     market = depl[1]

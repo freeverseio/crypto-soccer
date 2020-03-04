@@ -8,25 +8,20 @@ import "./AssetsLib.sol";
 
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions
- * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
+ * @dev Timezones range from 1 to 24, with tz = 0 being null.
  */
 
 contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     
-    function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].countries.length;
-    }
-
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
         if (getIsSpecial(playerId)) return getSpecialPlayerSkillsAtBirth(playerId);
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
-        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+        require(_teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         // compute a dna that is unique to this player, since it is made of a unique playerId:
-        uint256 playerCreationDay = gameDeployDay + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND;
+        uint256 playerCreationDay = gameDeployDay + divisionIdToRound[encodeTZCountryAndVal(tz, countryIdxInTZ, division)] * DAYS_PER_ROUND;
         return computeSkillsAndEncode(shirtNum, playerCreationDay, playerId);
     }
 
@@ -147,15 +142,8 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         return secsToDays(7 * (now - daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId)))));
     }
 
-    function countCountries(uint8 timeZone) public view returns (uint256){
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].countries.length;
+    function countCountries(uint8 tz) public view returns (uint256){
+        _assertTZExists(tz);
+        return tzToNCountries[tz];
     }
-
-    function countTeams(uint8 timeZone, uint256 countryIdxInTZ) public view returns (uint256){
-        _assertTZExists(timeZone);
-        _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions * TEAMS_PER_DIVISION;
-    }
-    
 }

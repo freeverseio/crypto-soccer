@@ -39,7 +39,7 @@ contract('Assets', (accounts) => {
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
-        proxy = await Proxy.new().should.be.fulfilled;
+        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
         assets = depl[0]
         market = depl[1]
@@ -88,7 +88,7 @@ contract('Assets', (accounts) => {
         result.toNumber().should.be.equal(sk[0]);        
     });
 
-    it('check division event on init', async () => {
+    it('check DivisionCreation event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
             timezone++;
@@ -96,6 +96,17 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('check DivisionCreation event on initSingleTz', async () => {
+        proxy2 = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
+        depl2 = await delegateUtils.deployDelegate(proxy2, Assets, Market);
+        assets2 = depl2[0];
+        tx = await assets2.initSingleTZ(tz = 4).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
+        });
+    });
+    
+    
     it('check cannot initialize contract twice', async () => {
         await assets.init().should.be.rejected;
     });
@@ -114,10 +125,10 @@ contract('Assets', (accounts) => {
     });
 
     it('check initial setup of timeZones', async () =>  {
-        nCountries = await assets.getNCountriesInTZ(0).should.be.rejected;
-        nCountries = await assets.getNCountriesInTZ(25).should.be.rejected;
+        nCountries = await assets.countCountries(0).should.be.rejected;
+        nCountries = await assets.countCountries(25).should.be.rejected;
         for (tz = 1; tz<25; tz++) {
-            nCountries = await assets.getNCountriesInTZ(tz).should.be.fulfilled;
+            nCountries = await assets.countCountries(tz).should.be.fulfilled;
             nCountries.toNumber().should.be.equal(1);
             nDivs = await assets.getNDivisionsInCountry(tz, countryIdxInTZ = 0).should.be.fulfilled;
             nDivs.toNumber().should.be.equal(N_DIVS_AT_START);
@@ -475,7 +486,7 @@ contract('Assets', (accounts) => {
     });
 
     it('initial number of teams', async () => {
-        const count = await assets.countTeams(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
+        const count = await assets.getNTeamsInCountry(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
         count.toNumber().should.be.equal(N_DIVS_AT_START * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV);
     });
 
