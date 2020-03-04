@@ -95,6 +95,7 @@ contract Proxy is ProxyStorage {
         // we require that the contract gets assigned an Id that is as specified from outside, 
         // to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
         require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
+        assertPointsToContract(addr);
         ContractInfo memory info;
         info.addr = addr;
         info.name = name;
@@ -153,6 +154,21 @@ contract Proxy is ProxyStorage {
             _contractsInfo[contractId].isActive = false;
         }
         emit ContractsDeleted(contractIds);        
+    }
+
+
+   /**
+    * @dev Reverts unless contractAddress points to a legit contract.
+    *      Makes sure that the hash of the external code is neither 0x0 (not-yet created),
+    *       nor an account without code: keccak256('') = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
+    *      See EIP-1052 for more info
+    *      This check is important to avoid delegateCall returning OK when delegating to nowhere
+    */
+    function assertPointsToContract(address contractAddress) internal view {
+        bytes32 emptyContractHash = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
+        bytes32 codeHashAtContractAddress;
+        assembly { codeHashAtContractAddress := extcodehash(contractAddress) }
+        require(codeHashAtContractAddress != emptyContractHash && codeHashAtContractAddress != 0x0, "pointer to a non Contract found!");
     }
 
 

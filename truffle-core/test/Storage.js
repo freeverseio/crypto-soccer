@@ -37,6 +37,12 @@ contract('Proxy', (accounts) => {
         assetsAsLib = await Assets.new().should.be.fulfilled;
     });
 
+    it('fails when adding a contract to an address without contract', async () => {
+        await proxy.addContract(contractId = 1, '0x0', selectors, name = toBytes32("Assets")).should.be.rejected;
+        await proxy.addContract(contractId = 1, '0x32132', selectors, name = toBytes32("Assets")).should.be.rejected;
+        await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
+    });
+
     it('permissions check to change owner of proxy', async () => {
         await proxy.proposeProxyOwner(BOB, {from: ALICE}).should.be.rejected;
         await proxy.proposeProxyOwner(BOB, {from: FREEVERSE}).should.be.fulfilled;
