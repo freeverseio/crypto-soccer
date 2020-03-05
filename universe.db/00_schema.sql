@@ -76,7 +76,7 @@ CREATE TABLE players_states (
 
 CREATE VIEW current_players AS SELECT * FROM 
     players 
-    LEFT JOIN  LATERAL
+    LEFT JOIN LATERAL
     (SELECT * FROM players_states WHERE player_id = players.player_id ORDER BY block_number DESC LIMIT 1) o2 ON true;
 
 CREATE TYPE match_state AS ENUM ('begin', 'half', 'end', 'cancel');
