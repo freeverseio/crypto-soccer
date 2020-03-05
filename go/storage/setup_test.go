@@ -31,17 +31,17 @@ func TestMain(m *testing.M) {
 }
 
 const timezoneIdx = uint8(1)
+const countryIdx = uint32(0)
+const leagueIdx = uint32(0)
 const teamID = "1"
 
 func createMinimumUniverse(t *testing.T, tx *sql.Tx) {
 	timezone := storage.Timezone{timezoneIdx}
 	assert.NilError(t, timezone.Insert(tx))
 
-	countryIdx := uint32(0)
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
 	assert.NilError(t, country.Insert(tx))
 
-	leagueIdx := uint32(0)
 	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
 	assert.NilError(t, league.Insert(tx))
 
