@@ -10,7 +10,7 @@
 		HomeGoals: (uint8) 0,
 		VisitorGoals: (uint8) 3,
 		HomeMatchLog: (*big.Int)(1809252841225230840719990802578375708719287223563434735527218711620258627584),
-		VisitorMatchLog: (*big.Int)(1809252841804448444897055329416924860979474654558682969824624180456484534691),
+		VisitorMatchLog: (*big.Int)(1809252841804448444897055329415212059213484384589117050712605383253630679459),
 		State: (storage.MatchState) (len=4) "half"
 	},
 	Seed: ([32]uint8) (len=32 cap=32) {
@@ -817,10 +817,10 @@
 					Shoot: (uint64) 825,
 					Endurance: (uint64) 1288,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(13479973333575334506876936500658898894465930974155055096754696028985),
+					EncodedSkills: (*big.Int)(13479973333575334506511561091326173164915009765975984341840712893241),
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
-					InjuryMatchesLeft: (uint8) 2
+					InjuryMatchesLeft: (uint8) 0
 				}
 			}),
 			(*engine.Player)({

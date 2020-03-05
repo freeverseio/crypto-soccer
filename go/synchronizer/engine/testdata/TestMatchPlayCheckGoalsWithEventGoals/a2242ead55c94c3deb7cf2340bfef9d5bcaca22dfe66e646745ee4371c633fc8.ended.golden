@@ -10,7 +10,7 @@
 		HomeGoals: (uint8) 3,
 		VisitorGoals: (uint8) 4,
 		HomeMatchLog: (*big.Int)(1817645559979389328999808897235303282022774084093613330920837419605090674851),
-		VisitorMatchLog: (*big.Int)(1834430607094783980130850223492361007923135326893750737413979931073479084676),
+		VisitorMatchLog: (*big.Int)(1833988895328589384048454400516279430559592690573199725663862433685355268740),
 		State: (storage.MatchState) (len=3) "end"
 	},
 	Seed: ([32]uint8) (len=32 cap=32) {
@@ -559,7 +559,7 @@
 			GoalsAgainst: (uint32) 3,
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
-			TrainingPoints: (uint16) 57,
+			TrainingPoints: (uint16) 56,
 			Tactic: (string) (len=33) "340596594427581673436941882753025"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
@@ -757,9 +757,9 @@
 					Shoot: (uint64) 1134,
 					Endurance: (uint64) 1134,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(16573452063258200775743406273229813252276607475647598),
+					EncodedSkills: (*big.Int)(16573463481239742423422454739517568848237698537620590),
 					EncodedState: (*big.Int)(<nil>),
-					RedCard: (bool) false,
+					RedCard: (bool) true,
 					InjuryMatchesLeft: (uint8) 0
 				}
 			}),
@@ -777,9 +777,9 @@
 					Shoot: (uint64) 1134,
 					Endurance: (uint64) 1134,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(16573463481239742423422454739517568848237698537620590),
+					EncodedSkills: (*big.Int)(16573452063258200775743406273229813252276607475647598),
 					EncodedState: (*big.Int)(<nil>),
-					RedCard: (bool) true,
+					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0
 				}
 			}),
