@@ -60,7 +60,23 @@ func PlayerCount(tx *sql.Tx) (uint64, error) {
 
 func (b *Player) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create player %v", b)
-	if _, err := tx.Exec("INSERT INTO players (player_id, name) VALUES ($1, $2);", b.PlayerId.String(), b.Name); err != nil {
+	if _, err := tx.Exec("INSERT INTO players (name, block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
+		b.Name,
+		b.BlockNumber,
+		b.PlayerId.String(),
+		b.TeamId,
+		b.Defence,
+		b.Speed,
+		b.Pass,
+		b.Shoot,
+		b.Endurance,
+		b.ShirtNumber,
+		b.PreferredPosition,
+		b.EncodedSkills.String(),
+		b.EncodedState.String(),
+		b.Potential,
+		b.DayOfBirth,
+	); err != nil {
 		return err
 	}
 	if _, err := tx.Exec("INSERT INTO players_states (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
@@ -86,6 +102,36 @@ func (b *Player) Insert(tx *sql.Tx) error {
 
 func (b *Player) Update(tx *sql.Tx) error {
 	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
+	if _, err := tx.Exec(`UPDATE players SET 
+	team_id=$1, 
+	defence=$2, 
+	speed=$3, 
+	pass=$4, 
+	shoot=$5,
+	endurance=$6,
+	shirt_number=$7,
+	encoded_skills=$8,
+	red_card=$9,
+	injury_matches_left=$10,
+	name=$11,
+	block_number=$12
+	WHERE player_id=$13;`,
+		b.TeamId,
+		b.Defence,
+		b.Speed,
+		b.Pass,
+		b.Shoot,
+		b.Endurance,
+		b.ShirtNumber,
+		b.EncodedSkills.String(),
+		b.RedCard,
+		b.InjuryMatchesLeft,
+		b.Name,
+		b.BlockNumber,
+		b.PlayerId.String(),
+	); err != nil {
+		return err
+	}
 	if _, err := tx.Exec(`INSERT INTO players_states (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth, red_card,
 	injury_matches_left) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);`,
 		b.BlockNumber,
@@ -128,7 +174,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	day_of_birth, 
 	red_card,
 	injury_matches_left
-	FROM current_players WHERE (player_id = $1);`, playerID.String())
+	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +229,7 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	day_of_birth, 
 	red_card,
 	injury_matches_left
-	FROM current_players WHERE (team_id = $1);`, teamID)
+	FROM players WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return nil, err
 	}
