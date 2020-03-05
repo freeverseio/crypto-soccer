@@ -86,7 +86,7 @@ func (b *Player) Insert(tx *sql.Tx) error {
 
 func (b *Player) Update(tx *sql.Tx) error {
 	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
-	_, err := tx.Exec(`UPDATE players SET 
+	_, err := tx.Exec(`UPDATE players_states SET 
 	team_id=$1, 
 	defence=$2, 
 	speed=$3, 
@@ -96,9 +96,8 @@ func (b *Player) Update(tx *sql.Tx) error {
 	shirt_number=$7,
 	encoded_skills=$8,
 	red_card=$9,
-	injury_matches_left=$10,
-	name=$11
-	WHERE player_id=$12;`,
+	injury_matches_left=$10
+	WHERE player_id=$11;`,
 		b.TeamId,
 		b.Defence,
 		b.Speed,
@@ -109,14 +108,15 @@ func (b *Player) Update(tx *sql.Tx) error {
 		b.EncodedSkills.String(),
 		b.RedCard,
 		b.InjuryMatchesLeft,
-		b.Name,
 		b.PlayerId.String(),
 	)
 	return err
 }
 
 func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
-	rows, err := tx.Query(`SELECT team_id, 
+	rows, err := tx.Query(`SELECT 
+	block_number,
+	team_id, 
 	defence,
 	speed,
 	pass, 
@@ -131,7 +131,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	day_of_birth, 
 	red_card,
 	injury_matches_left
-	FROM players WHERE (player_id = $1);`, playerID.String())
+	FROM current_players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -145,6 +145,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	var encodedSkills sql.NullString
 	var encodedState sql.NullString
 	err = rows.Scan(
+		&player.BlockNumber,
 		&player.TeamId,
 		&player.Defence,
 		&player.Speed,
@@ -169,7 +170,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 
 func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	var players []*Player
-	rows, err := tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID)
+	rows, err := tx.Query("SELECT player_id FROM current_players WHERE (team_id = $1);", teamID)
 	if err != nil {
 		return players, err
 	}

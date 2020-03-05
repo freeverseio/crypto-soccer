@@ -11,22 +11,18 @@ import (
 )
 
 func TestPlayerCount(t *testing.T) {
+	t.Parallel()
 	tx, err := s.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	defer tx.Rollback()
 
 	count, err := storage.PlayerCount(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 0 {
-		t.Fatalf("Expected 0 result %v", count)
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, count, uint64(0))
 }
 
 func TestPlayerCreate(t *testing.T) {
+	t.Parallel()
 	tx, err := s.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
@@ -43,73 +39,33 @@ func TestPlayerCreate(t *testing.T) {
 }
 
 func TestPlayerUpdate(t *testing.T) {
+	t.Parallel()
 	tx, err := s.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	defer tx.Rollback()
 
-	timezoneIdx := uint8(1)
-	countryIdx := uint32(4)
-	leagueIdx := uint32(0)
-	var team storage.Team
-	team.TeamID = "10"
-	team.TimezoneIdx = timezoneIdx
-	team.CountryIdx = countryIdx
-	team.Owner = "ciao"
-	team.LeagueIdx = leagueIdx
-	timezone := storage.Timezone{timezoneIdx}
-	timezone.Insert(tx)
-	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	country.Insert(tx)
-	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.Insert(tx)
-	team.Insert(tx)
+	createMinimumUniverse(t, tx)
 
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
-	player.TeamId = "10"
-	player.Name = "Iam Awesome"
+	player.TeamId = teamID
 	player.EncodedSkills = big.NewInt(4)
-	err = player.Insert(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, player.Insert(tx))
 	player2, err := storage.PlayerByPlayerId(tx, player.PlayerId)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if player2.EncodedSkills.String() != player.EncodedSkills.String() {
-		t.Fatal("Skills are different")
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, player2.EncodedSkills.String(), player.EncodedSkills.String())
 	player2.EncodedSkills = big.NewInt(3)
 	player2.RedCard = true
 	player2.InjuryMatchesLeft = 3
-	player2.Name = "Iam Sad"
-	err = player2.Update(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, player2.Update(tx))
 	player3, err := storage.PlayerByPlayerId(tx, player.PlayerId)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if player2.RedCard != player3.RedCard {
-		t.Fatal("Wrong RedCard")
-	}
-	if player2.InjuryMatchesLeft != player3.InjuryMatchesLeft {
-		t.Fatal("Wrong InjuryMatchesLeft")
-	}
-	if player2.EncodedSkills.String() != player3.EncodedSkills.String() {
-		t.Fatal("Skills player 3 are different")
-	}
-	if player3.Name != "Iam Sad" {
-		t.Fatal("Wrong Name")
-	}
-
+	assert.NilError(t, err)
+	assert.Equal(t, player2.RedCard, player3.RedCard)
+	assert.Equal(t, player2.InjuryMatchesLeft, player3.InjuryMatchesLeft)
+	assert.Equal(t, player2.EncodedSkills.String(), player3.EncodedSkills.String())
 }
 
-func TestGetPlayer(t *testing.T) {
+func TestPlayerGetPlayer(t *testing.T) {
 	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
@@ -172,7 +128,7 @@ func TestGetPlayer(t *testing.T) {
 	}
 }
 
-func TestGetPlayersOfTeam(t *testing.T) {
+func TestPlayerGetPlayersOfTeam(t *testing.T) {
 	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
