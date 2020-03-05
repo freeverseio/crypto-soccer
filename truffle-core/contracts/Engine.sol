@@ -127,7 +127,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         bool[10][2] memory extraAttack;
 
         (matchLogs[0], skills[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
-        (matchLogs[1], skills[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[1], skills[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
 
         matchLogs[0] = writeNDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLogs[1] = writeNDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);

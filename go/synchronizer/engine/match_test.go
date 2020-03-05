@@ -134,9 +134,9 @@ func TestMatchPlayerEvolution(t *testing.T) {
 	}
 	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(955))
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
-	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(892))
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(1237))
 	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
-	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(892))
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(1237))
 }
 
 func TestDumpMatch(t *testing.T) {
@@ -181,7 +181,7 @@ func TestMatchRedCards(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(7))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[9]
-	assert.Equal(t, player.Skills().String(), "444839120007985571215348664084887401221731547822953325520017982554878")
+	assert.Equal(t, player.Skills().String(), "444839120007985571215348664084887401221731547818249502887980205736758")
 	assert.Assert(t, player.RedCard)
 }
 
@@ -203,7 +203,7 @@ func TestMatchHardInjury(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(8))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[10]
-	assert.Equal(t, player.Skills().String(), "444839120007985571216250684626677567866560384555645406446211878421246")
+	assert.Equal(t, player.Skills().String(), "444839120007985571216250684626677567866560384550941583814174101603126")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(5))
 }
 
@@ -225,6 +225,6 @@ func TestMatchSoftInjury(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(10))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[12]
-	assert.Equal(t, player.Skills().String(), "444839120007985571215702621512678479272234002743376800313840903717630")
+	assert.Equal(t, player.Skills().String(), "444839120007985571215702621512678479272234002738672977681803126899510")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(2))
 }
