@@ -51,6 +51,12 @@ CREATE TABLE teams (
 CREATE TABLE players (
     player_id TEXT NOT NULL,
     name TEXT NOT NULL,
+    PRIMARY KEY(player_id)
+);
+
+CREATE TABLE players_states (
+    block_number BIGINT NOT NULL,
+    player_id TEXT NOT NULL REFERENCES players(player_id),
     team_id TEXT NOT NULL REFERENCES teams(team_id),
     defence INT NOT NULL,
     speed INT NOT NULL,
@@ -65,8 +71,10 @@ CREATE TABLE players (
     encoded_state TEXT NOT NULL,
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
-    PRIMARY KEY(player_id)
+    PRIMARY KEY(block_number, player_id)
 );
+
+CREATE VIEW current_players AS SELECT players.name, players_states.* FROM players LEFT JOIN players_states ON players_states.player_id = players.player_id;
 
 CREATE TYPE match_state AS ENUM ('begin', 'half', 'end', 'cancel');
 CREATE TABLE matches (
