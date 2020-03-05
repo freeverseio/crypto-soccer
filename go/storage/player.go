@@ -86,18 +86,10 @@ func (b *Player) Insert(tx *sql.Tx) error {
 
 func (b *Player) Update(tx *sql.Tx) error {
 	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
-	_, err := tx.Exec(`UPDATE players_states SET 
-	team_id=$1, 
-	defence=$2, 
-	speed=$3, 
-	pass=$4, 
-	shoot=$5,
-	endurance=$6,
-	shirt_number=$7,
-	encoded_skills=$8,
-	red_card=$9,
-	injury_matches_left=$10
-	WHERE player_id=$11;`,
+	if _, err := tx.Exec(`INSERT INTO players_states (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth, red_card,
+	injury_matches_left) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);`,
+		b.BlockNumber,
+		b.PlayerId.String(),
 		b.TeamId,
 		b.Defence,
 		b.Speed,
@@ -105,12 +97,17 @@ func (b *Player) Update(tx *sql.Tx) error {
 		b.Shoot,
 		b.Endurance,
 		b.ShirtNumber,
+		b.PreferredPosition,
 		b.EncodedSkills.String(),
+		b.EncodedState.String(),
+		b.Potential,
+		b.DayOfBirth,
 		b.RedCard,
 		b.InjuryMatchesLeft,
-		b.PlayerId.String(),
-	)
-	return err
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {

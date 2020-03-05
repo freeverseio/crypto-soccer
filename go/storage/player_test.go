@@ -57,6 +57,7 @@ func TestPlayerUpdate(t *testing.T) {
 	player2.EncodedSkills = big.NewInt(3)
 	player2.RedCard = true
 	player2.InjuryMatchesLeft = 3
+	player2.BlockNumber++
 	assert.NilError(t, player2.Update(tx))
 	player3, err := storage.PlayerByPlayerId(tx, player.PlayerId)
 	assert.NilError(t, err)
@@ -115,6 +116,7 @@ func TestPlayerGetPlayer(t *testing.T) {
 	}
 	player.Defence = 6
 	player.TeamId = "11"
+	player.BlockNumber++
 	err = player.Update(tx)
 	if err != nil {
 		t.Fatal(err)
