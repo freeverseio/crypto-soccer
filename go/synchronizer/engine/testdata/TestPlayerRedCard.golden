@@ -15,6 +15,7 @@
 		EncodedSkills: (*big.Int)(40439920000726868070503716865792521545121682176182486071370780491777),
 		EncodedState: (*big.Int)(<nil>),
 		RedCard: (bool) true,
-		InjuryMatchesLeft: (uint8) 6
+		InjuryMatchesLeft: (uint8) 6,
+		BlockNumber: (uint64) 0
 	}
 })
