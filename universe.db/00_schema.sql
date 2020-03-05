@@ -69,7 +69,7 @@ CREATE TABLE players (
     PRIMARY KEY(player_id)
 );
 
-CREATE TABLE players_states (
+CREATE TABLE players_history (
     player_id TEXT NOT NULL REFERENCES players(player_id),
     block_number BIGINT NOT NULL,
     team_id TEXT NOT NULL REFERENCES teams(team_id),
