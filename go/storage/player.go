@@ -24,6 +24,7 @@ type Player struct {
 	EncodedState      *big.Int
 	RedCard           bool
 	InjuryMatchesLeft uint8
+	BlockNumber       uint64
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -59,7 +60,11 @@ func PlayerCount(tx *sql.Tx) (uint64, error) {
 
 func (b *Player) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create player %v", b)
-	_, err := tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
+	if _, err := tx.Exec("INSERT INTO players (player_id, name) VALUES ($1, $2);", b.PlayerId.String(), b.Name); err != nil {
+		return err
+	}
+	if _, err := tx.Exec("INSERT INTO players_states (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
+		b.BlockNumber,
 		b.PlayerId.String(),
 		b.TeamId,
 		b.Defence,
@@ -72,13 +77,10 @@ func (b *Player) Insert(tx *sql.Tx) error {
 		b.EncodedSkills.String(),
 		b.EncodedState.String(),
 		b.Potential,
-		b.Name,
 		b.DayOfBirth,
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
-
 	return nil
 }
 

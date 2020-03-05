@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"gotest.tools/assert"
 
 	_ "github.com/lib/pq"
 )
@@ -27,42 +28,18 @@ func TestPlayerCount(t *testing.T) {
 
 func TestPlayerCreate(t *testing.T) {
 	tx, err := s.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	defer tx.Rollback()
 
-	timezoneIdx := uint8(1)
-	countryIdx := uint32(4)
-	leagueIdx := uint32(0)
-	var team storage.Team
-	team.TeamID = "10"
-	team.TimezoneIdx = timezoneIdx
-	team.CountryIdx = countryIdx
-	team.Owner = "ciao"
-	team.LeagueIdx = leagueIdx
-	timezone := storage.Timezone{timezoneIdx}
-	timezone.Insert(tx)
-	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	country.Insert(tx)
-	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.Insert(tx)
-	team.Insert(tx)
+	createMinimumUniverse(t, tx)
 
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
-	player.TeamId = "10"
-	err = player.Insert(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
+	player.TeamId = teamID
+	assert.NilError(t, player.Insert(tx))
 	count, err := storage.PlayerCount(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 1 {
-		t.Fatalf("Expected 1 result %v", count)
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, count, uint64(1))
 }
 
 func TestPlayerUpdate(t *testing.T) {
