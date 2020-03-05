@@ -79,6 +79,13 @@ func (b *Player) Insert(tx *sql.Tx) error {
 	); err != nil {
 		return err
 	}
+	if err := b.insertHistory(tx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b Player) insertHistory(tx *sql.Tx) error {
 	if _, err := tx.Exec("INSERT INTO players_states (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
 		b.BlockNumber,
 		b.PlayerId.String(),
@@ -132,25 +139,7 @@ func (b *Player) Update(tx *sql.Tx) error {
 	); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`INSERT INTO players_states (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth, red_card,
-	injury_matches_left) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);`,
-		b.BlockNumber,
-		b.PlayerId.String(),
-		b.TeamId,
-		b.Defence,
-		b.Speed,
-		b.Pass,
-		b.Shoot,
-		b.Endurance,
-		b.ShirtNumber,
-		b.PreferredPosition,
-		b.EncodedSkills.String(),
-		b.EncodedState.String(),
-		b.Potential,
-		b.DayOfBirth,
-		b.RedCard,
-		b.InjuryMatchesLeft,
-	); err != nil {
+	if err := b.insertHistory(tx); err != nil {
 		return err
 	}
 	return nil
