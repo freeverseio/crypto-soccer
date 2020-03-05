@@ -975,7 +975,7 @@ contract('Evolution', (accounts) => {
 
         // check Training Points (and Goals)
         expectedGoals = [3, 5];
-        expectedPoints = [23, 49];
+        expectedPoints = [23, 47];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
