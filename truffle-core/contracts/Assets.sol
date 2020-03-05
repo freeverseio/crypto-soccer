@@ -38,16 +38,25 @@ contract Assets is AssetsView {
     
 
     function _initTimeZone(uint8 tz) private {
-        uint256 countryIdxInTZ = 0;
-        uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
-        countryIdToNDivisions[countryId] = 1;
-        tzToNCountries[tz] += 1;
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
-        for (uint8 division = 0 ; division < countryIdToNDivisions[countryId]; division++){
-            uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, division);
-            divisionIdToRound[divisionId] = 1;
-            emit DivisionCreation(tz, 0, division);
+        addCountry(tz);
+    }
+    
+    function addCountry(uint8 tz) public {
+        uint256 countryIdxInTZ = tzToNCountries[tz];
+        tzToNCountries[tz] = countryIdxInTZ + 1;
+        for (uint8 division = 0 ; division < DIVS_PER_LEAGUE_AT_START; division++){
+            addDivision(tz, countryIdxInTZ); 
         }
+    }
+
+    function addDivision(uint8 tz, uint256 countryIdxInTZ) public {
+        uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0);
+        uint256 nDivs = countryIdToNDivisions[countryId];
+        uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, nDivs);
+        countryIdToNDivisions[divisionId] = nDivs + 1;
+        divisionIdToRound[divisionId] = currentRound + 1;
+        emit DivisionCreation(tz, countryIdxInTZ, nDivs);
     }
 
     function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) external {
