@@ -54,7 +54,7 @@ contract Assets is AssetsView {
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0);
         uint256 nDivs = countryIdToNDivisions[countryId];
         uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, nDivs);
-        countryIdToNDivisions[divisionId] = nDivs + 1;
+        countryIdToNDivisions[countryId] = nDivs + 1;
         divisionIdToRound[divisionId] = currentRound + 1;
         emit DivisionCreation(tz, countryIdxInTZ, nDivs);
     }
@@ -65,8 +65,9 @@ contract Assets is AssetsView {
         uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
         require(isBotTeam(teamId), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
+        if ((firstBotIdx % TEAMS_PER_DIVISION) == (TEAMS_PER_DIVISION-1)) { addDivision(tz, countryIdxInTZ); }
         teamIdToOwner[teamId] = addr;
-        countryIdToNHumanTeams[countryId] += 1;
+        countryIdToNHumanTeams[countryId] = firstBotIdx + 1;
         emit TeamTransfer(teamId, addr);
     }
 

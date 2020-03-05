@@ -208,6 +208,21 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('add users until you need a new division (it can take several seconds)', async () => {
+        const tz = 1;
+        const countryIdxInTZ = 0;
+        nTeamsPerDiv = 128
+        for (user = 0; user < (nTeamsPerDiv - 1); user++) {
+            await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        }
+        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === countryIdxInTZ.toString() && event.divisionIdxInCountry.toString() === '1';
+        });
+
+    });
+
+
     it('transfer 2 bots to address to estimate cost', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
