@@ -57,7 +57,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -77,7 +78,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -97,7 +99,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -117,7 +120,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -137,7 +141,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -157,7 +162,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -177,7 +183,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -197,7 +204,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -217,7 +225,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227058707314249734033105456240457766711698653512435),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) true,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -237,7 +246,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -257,7 +267,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -277,7 +288,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -297,7 +309,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -317,7 +330,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -337,7 +351,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -357,7 +372,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -377,7 +393,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -397,7 +414,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -417,7 +435,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -437,7 +456,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -457,7 +477,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -477,7 +498,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -497,7 +519,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -517,7 +540,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -537,7 +561,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 })
 },
@@ -581,7 +606,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -601,7 +627,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -621,7 +648,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -641,7 +669,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -661,7 +690,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -681,7 +711,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -701,7 +732,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -721,7 +753,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -741,7 +774,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506540106045180292362536175485364974244568367825721),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) true,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -761,7 +795,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -781,7 +816,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -801,7 +837,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -821,7 +858,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -841,7 +879,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -861,7 +900,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -881,7 +921,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -901,7 +942,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -921,7 +963,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -941,7 +984,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -961,7 +1005,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -981,7 +1026,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1001,7 +1047,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1021,7 +1068,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1041,7 +1089,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1061,7 +1110,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 })
 },
@@ -1380,7 +1430,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1400,7 +1451,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1420,7 +1472,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1440,7 +1493,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1460,7 +1514,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1480,7 +1535,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1500,7 +1556,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1520,7 +1577,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227058707314249734033105456240457766711698653512435),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) true,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1540,7 +1598,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1560,7 +1619,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1580,7 +1640,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1600,7 +1661,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1620,7 +1682,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227047289332708086354056989952702170750607591539443),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1640,7 +1703,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1660,7 +1724,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1680,7 +1745,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1700,7 +1766,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1720,7 +1787,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1740,7 +1808,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1760,7 +1829,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1780,7 +1850,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1800,7 +1871,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1820,7 +1892,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1840,7 +1913,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1860,7 +1934,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(444839120007985571227024453369624790995960057377190978828425467593459),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 })
 },
@@ -1904,7 +1979,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1924,7 +2000,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1944,7 +2021,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1964,7 +2042,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -1984,7 +2063,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2004,7 +2084,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2024,7 +2105,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2044,7 +2126,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2064,7 +2147,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506540106045180292362536175485364974244568367825721),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) true,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2084,7 +2168,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2104,7 +2189,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2124,7 +2210,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2144,7 +2231,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506528688063638644683487709197609378283477305852729),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2164,7 +2252,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2184,7 +2273,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2204,7 +2294,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2224,7 +2315,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2244,7 +2336,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2264,7 +2357,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2284,7 +2378,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2304,7 +2399,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2324,7 +2420,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2344,7 +2441,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2364,7 +2462,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 }),
 (*engine.Player)({
@@ -2384,7 +2483,8 @@ ShirtNumber: (uint8) 0,
 EncodedSkills: (*big.Int)(13479973333575334506505852100555349325390776622098186361295181906745),
 EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
-InjuryMatchesLeft: (uint8) 0
+InjuryMatchesLeft: (uint8) 0,
+BlockNumber: (uint64) 0
 }
 })
 },
