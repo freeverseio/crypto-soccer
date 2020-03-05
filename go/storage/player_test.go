@@ -132,34 +132,14 @@ func TestPlayerGetPlayer(t *testing.T) {
 
 func TestPlayerGetPlayersOfTeam(t *testing.T) {
 	tx, err := s.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	defer tx.Rollback()
 
+	createMinimumUniverse(t, tx)
+
 	players, err := storage.PlayersByTeamId(tx, "343")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(players) != 0 {
-		t.Fatalf("Expected 0 received %v", len(players))
-	}
-	timezoneIdx := uint8(1)
-	countryIdx := uint32(4)
-	leagueIdx := uint32(0)
-	var team storage.Team
-	team.TeamID = "10"
-	team.TimezoneIdx = timezoneIdx
-	team.CountryIdx = countryIdx
-	team.Owner = "ciao"
-	team.LeagueIdx = leagueIdx
-	timezone := storage.Timezone{timezoneIdx}
-	timezone.Insert(tx)
-	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	country.Insert(tx)
-	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.Insert(tx)
-	team.Insert(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(players), 0)
 	var player storage.Player
 	player.PlayerId = big.NewInt(1)
 	player.Defence = 4
@@ -167,31 +147,17 @@ func TestPlayerGetPlayersOfTeam(t *testing.T) {
 	player.Pass = 6
 	player.Shoot = 7
 	player.Speed = 8
-	player.TeamId = team.TeamID
+	player.TeamId = teamID
 	player.EncodedSkills = big.NewInt(43535453)
 	player.EncodedState = big.NewInt(43453)
-	err = player.Insert(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, player.Insert(tx))
 	player2 := player
 	player2.PlayerId = big.NewInt(2)
 	player2.EncodedSkills = big.NewInt(767)
-	err = player2.Insert(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	players, err = storage.PlayersByTeamId(tx, team.TeamID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(players) != 2 {
-		t.Fatalf("Expected 2 received %v", len(players))
-	}
-	if !players[0].Equal(player) {
-		t.Fatalf("Wrong player %v", players[0])
-	}
-	if !players[1].Equal(player2) {
-		t.Fatalf("Wrong player %v", players[0])
-	}
+	assert.NilError(t, player2.Insert(tx))
+	players, err = storage.PlayersByTeamId(tx, teamID)
+	assert.NilError(t, err)
+	assert.Equal(t, len(players), 2)
+	assert.Assert(t, players[0].Equal(player))
+	assert.Assert(t, players[1].Equal(player2))
 }
