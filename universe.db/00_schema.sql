@@ -74,10 +74,10 @@ CREATE TABLE players_states (
     PRIMARY KEY(block_number, player_id)
 );
 
-CREATE VIEW current_players AS SELECT players.name, o2.* FROM 
-    players 
-    LEFT JOIN LATERAL
-    (SELECT * FROM players_states WHERE player_id = players.player_id ORDER BY block_number DESC LIMIT 1) o2 ON true;
+CREATE VIEW current_players AS SELECT players.name, o2.* FROM
+    players
+    LEFT JOIN
+    (SELECT DISTINCT ON (player_id) * FROM players_states ORDER BY player_id, block_number DESC) o2 ON players.player_id = o2.player_id;
 
 CREATE TYPE match_state AS ENUM ('begin', 'half', 'end', 'cancel');
 CREATE TABLE matches (

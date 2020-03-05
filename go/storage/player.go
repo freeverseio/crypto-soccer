@@ -166,29 +166,58 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 }
 
 func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
-	var players []*Player
-	rows, err := tx.Query("SELECT player_id FROM current_players WHERE (team_id = $1);", teamID)
+	rows, err := tx.Query(`SELECT 
+	block_number,
+	player_id, 
+	defence,
+	speed,
+	pass, 
+	shoot, 
+	endurance, 
+	shirt_number, 
+	preferred_position, 
+	encoded_skills, 
+	encoded_state, 
+	potential, 
+	name, 
+	day_of_birth, 
+	red_card,
+	injury_matches_left
+	FROM current_players WHERE (team_id = $1);`, teamID)
 	if err != nil {
-		return players, err
+		return nil, err
 	}
 	defer rows.Close()
-	var playerIDs []*big.Int
+
+	var players []*Player
 	for rows.Next() {
+		player := Player{}
+		var encodedSkills sql.NullString
+		var encodedState sql.NullString
 		var playerID sql.NullString
 		err = rows.Scan(
+			&player.BlockNumber,
 			&playerID,
+			&player.Defence,
+			&player.Speed,
+			&player.Pass,
+			&player.Shoot,
+			&player.Endurance,
+			&player.ShirtNumber,
+			&player.PreferredPosition,
+			&encodedSkills,
+			&encodedState,
+			&player.Potential,
+			&player.Name,
+			&player.DayOfBirth,
+			&player.RedCard,
+			&player.InjuryMatchesLeft,
 		)
-		result, _ := new(big.Int).SetString(playerID.String, 10)
-		playerIDs = append(playerIDs, result)
-	}
-	rows.Close()
-	for i := 0; i < len(playerIDs); i++ {
-		playerID := playerIDs[i]
-		player, err := PlayerByPlayerId(tx, playerID)
-		if err != nil {
-			return players, err
-		}
-		players = append(players, player)
+		player.TeamId = teamID
+		player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
+		player.EncodedState, _ = new(big.Int).SetString(encodedState.String, 10)
+		player.PlayerId, _ = new(big.Int).SetString(playerID.String, 10)
+		players = append(players, &player)
 	}
 	return players, err
 }
