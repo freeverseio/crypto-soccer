@@ -74,7 +74,7 @@ CREATE TABLE players_states (
     PRIMARY KEY(block_number, player_id)
 );
 
-CREATE VIEW current_players AS SELECT * FROM 
+CREATE VIEW current_players AS SELECT players.name, o2.* FROM 
     players 
     LEFT JOIN LATERAL
     (SELECT * FROM players_states WHERE player_id = players.player_id ORDER BY block_number DESC LIMIT 1) o2 ON true;
