@@ -56,6 +56,7 @@ func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 }
 
 func (b *Team) SetBlockNumber(number uint64) {
+	b.BlockNumber = number
 	for i := range b.Players {
 		b.Players[i].BlockNumber = number
 	}

@@ -1,6 +1,7 @@
 ([]storage.Team) (len=8 cap=8) {
 (storage.Team) {
 TeamID: (string) (len=12) "274877906944",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
 Name: (string) (len=9) "Gin Pahit",
@@ -20,6 +21,7 @@ Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906945",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
 Name: (string) (len=12) "Grizzly Bear",
@@ -39,6 +41,7 @@ Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906946",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
 Name: (string) (len=17) "Sangria Popsicles",
@@ -58,6 +61,7 @@ Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906947",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
 Name: (string) (len=10) "Ocean Bird",
@@ -77,6 +81,7 @@ Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906948",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
 Name: (string) (len=13) "A. C. Octopus",
@@ -96,6 +101,7 @@ Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906949",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
 Name: (string) (len=12) "Tequila Sour",
@@ -115,6 +121,7 @@ Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906950",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
 Name: (string) (len=9) "Pink Pike",
@@ -134,6 +141,7 @@ Tactic: (string) (len=33) "340596594427581673436941882753025"
 },
 (storage.Team) {
 TeamID: (string) (len=12) "274877906951",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
 Name: (string) (len=14) "C. Z. Ethereum",

@@ -65,7 +65,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 			// if a new league is starting shuffle the teams
 			if (day == 0) && (turnInDay == 0) {
-				err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
+				err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, event.Raw.BlockNumber, timezoneIdx, countryIdx)
 				if err != nil {
 					return err
 				}
@@ -135,7 +135,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	return nil
 }
 
-func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
+func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, blockNumber uint64, timezoneIdx uint8, countryIdx uint32) error {
 	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap []storage.Team
 	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
@@ -180,6 +180,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	})
 	// create the new leagues
 	for i, team := range orgMap {
+		team.BlockNumber = blockNumber
 		team.LeagueIdx = uint32(i / 8)
 		team.TeamIdxInLeague = uint32(i % 8)
 		err = team.Update(tx)

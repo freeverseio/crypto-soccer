@@ -22,6 +22,7 @@ StartTime: (*big.Int)(1790899200),
 HomeTeam: (engine.Team) {
 Team: (storage.Team) {
 TeamID: (string) (len=1) "0",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 0,
 CountryIdx: (uint32) 0,
 Name: (string) "",
@@ -571,6 +572,7 @@ AssignedTP: (*big.Int)(0)
 VisitorTeam: (engine.Team) {
 Team: (storage.Team) {
 TeamID: (string) (len=1) "0",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 0,
 CountryIdx: (uint32) 0,
 Name: (string) "",
@@ -1269,6 +1271,7 @@ StartTime: (*big.Int)(1790899200),
 HomeTeam: (engine.Team) {
 Team: (storage.Team) {
 TeamID: (string) (len=1) "0",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 0,
 CountryIdx: (uint32) 0,
 Name: (string) "",
@@ -1818,6 +1821,7 @@ AssignedTP: (*big.Int)(0)
 VisitorTeam: (engine.Team) {
 Team: (storage.Team) {
 TeamID: (string) (len=1) "0",
+BlockNumber: (uint64) 0,
 TimezoneIdx: (uint8) 0,
 CountryIdx: (uint32) 0,
 Name: (string) "",

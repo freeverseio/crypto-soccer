@@ -130,6 +130,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 					return errname
 				}
 				team := storage.NewTeam()
+				team.BlockNumber = blockNumber
 				team.TeamID = teamId.String()
 				team.TimezoneIdx = timezone
 				team.CountryIdx = uint32(countryIdx.Uint64())
