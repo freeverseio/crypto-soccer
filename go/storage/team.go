@@ -13,6 +13,7 @@ const BotOwner = "0x0000000000000000000000000000000000000000"
 
 type Team struct {
 	TeamID          string
+	BlockNumber     uint64
 	TimezoneIdx     uint8
 	CountryIdx      uint32
 	Name            string
@@ -44,9 +45,10 @@ func IsBotTeam(team Team) bool {
 
 func (b *Team) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create team %v", b)
-	_, err := tx.Exec(`
+	if _, err := tx.Exec(`
 		INSERT INTO teams (
 			team_id, 
+			block_number,
 			timezone_idx, 
 			country_idx, 
 			owner, 
@@ -55,8 +57,9 @@ func (b *Team) Insert(tx *sql.Tx) error {
 			name,
 			ranking_points,
 			tactic
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
 		b.TeamID,
+		b.BlockNumber,
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.Owner,
@@ -65,11 +68,44 @@ func (b *Team) Insert(tx *sql.Tx) error {
 		b.Name,
 		strconv.FormatUint(b.RankingPoints, 10),
 		b.Tactic,
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
+	if err := b.insertHistory(tx); err != nil {
+		return err
+	}
+	return nil
+}
 
+func (b Team) insertHistory(tx *sql.Tx) error {
+	if _, err := tx.Exec(`
+		INSERT INTO teams_histories (
+			team_id, 
+			block_number,
+			owner, 
+			league_idx, 
+			points,
+			w,d,l,
+			goals_forward,
+    		goals_against,
+    		ranking_points,
+    		training_points,
+    		tactic
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);`,
+		b.TeamID,
+		b.BlockNumber,
+		b.Owner,
+		b.LeagueIdx,
+		b.Points,
+		b.W, b.D, b.L,
+		b.GoalsForward,
+		b.GoalsAgainst,
+		strconv.FormatUint(b.RankingPoints, 10),
+		b.TrainingPoints,
+		b.Tactic,
+	); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -90,7 +126,7 @@ func TeamCount(tx *sql.Tx) (uint64, error) {
 
 func (b *Team) Update(tx *sql.Tx) error {
 	log.Debugf("[DBMS] + update team id %v", b.TeamID)
-	_, err := tx.Exec(`UPDATE teams SET 
+	if _, err := tx.Exec(`UPDATE teams SET 
 						owner=$1, 
 						league_idx=$2, 
 						team_idx_in_league=$3,
@@ -104,8 +140,9 @@ func (b *Team) Update(tx *sql.Tx) error {
 						ranking_points=$11,
 						training_points=$12,
 						name=$13,
-						tactic=$14
-						WHERE team_id=$15`,
+						tactic=$14,
+						block_number=$15
+						WHERE team_id=$16`,
 		b.Owner,
 		b.LeagueIdx,
 		b.TeamIdxInLeague,
@@ -120,9 +157,15 @@ func (b *Team) Update(tx *sql.Tx) error {
 		b.TrainingPoints,
 		b.Name,
 		b.Tactic,
+		b.BlockNumber,
 		b.TeamID,
-	)
-	return err
+	); err != nil {
+		return err
+	}
+	if err := b.insertHistory(tx); err != nil {
+		return err
+	}
+	return nil
 }
 
 func TeamsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error) {
@@ -187,6 +230,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	log.Debugf("[DBMS] TeamByTeamId of teamID %v", teamID)
 	var team Team
 	rows, err := tx.Query(`SELECT 
+	block_number,
 	timezone_idx,
 	country_idx, 
 	owner, 
@@ -211,6 +255,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	}
 	team.TeamID = teamID
 	err = rows.Scan(
+		&team.BlockNumber,
 		&team.TimezoneIdx,
 		&team.CountryIdx,
 		&team.Owner,

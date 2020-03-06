@@ -209,6 +209,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 	}
 	team.Owner = "pippo"
 	team.TrainingPoints = 4
+	team.BlockNumber = 1000
 	err = team.Update(tx)
 	if err != nil {
 		t.Fatal(err)

@@ -27,6 +27,7 @@ CREATE TABLE leagues (
 
 CREATE TABLE teams (
     team_id TEXT NOT NULL,
+    block_number BIGINT NOT NULL,
     name TEXT NOT NULL,
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
@@ -46,6 +47,23 @@ CREATE TABLE teams (
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
+);
+
+CREATE TABLE teams_histories (
+    team_id TEXT NOT NULL REFERENCES teams(team_id),
+    block_number BIGINT NOT NULL,
+    owner TEXT NOT NULL,
+    league_idx INT NOT NULL,
+    points INT NOT NULL,
+    w INT NOT NULL,
+    d INT NOT NULL,
+    l INT NOT NULL,
+    goals_forward INT NOT NULL,
+    goals_against INT NOT NULL,
+    ranking_points TEXT NOT NULL,
+    training_points INT NOT NULL,
+    tactic TEXT NOT NULL,
+    PRIMARY KEY(team_id, block_number)
 );
 
 CREATE TABLE players (
