@@ -9,11 +9,18 @@ import "./Market.sol";
  
 contract MarketCrypto {
 
-    uint256 internal _auctionDuration = 24 hours; 
+    uint32 internal _auctionDuration = 24 hours; 
+    uint128 internal _minimumBid = 0.5*(10**18); // bid for at least 1 XDAI, or increase previous by this amount
+    uint256 constant private MAX_128_BIT = (2**128)-1; 
     Proxy private _proxy;
     Market private _market;
 
-    mapping (uint256 => uint256) internal _putForSalePlayerIdToAuctionData;
+    struct PutForSaleData {
+        uint128 price;
+        uint32 validUntil;
+    }
+
+    mapping (uint256 => PutForSaleData) internal _putForSaleData;
 
     function setProxyAddress(address addr) external {
         _proxy = Proxy(addr);
@@ -23,42 +30,70 @@ contract MarketCrypto {
         _market = Market(addr);
     }
     
-    function setActionDuration(uint256 newDuration) external {
+    function setActionDuration(uint32 newDuration) external {
         _auctionDuration = newDuration;
+    }
+
+    function setMinimumBid(uint128 newMinimum) external {
+        _minimumBid = newMinimum;
     }
 
     function putPlayerForSale(uint256 playerId, uint256 price) external {
         uint256 currentTeamId  = _market.getCurrentTeamIdFromPlayerId(playerId);
         address currentOwner   = _market.getOwnerTeam(currentTeamId);
         bool OK = (
-            (price < 2**205) &&
+            (price < MAX_128_BIT) &&
+            // check asset has not been put for sale before
+            !isPlayerForSale(playerId) &&
             // check player is not already frozen
             (!_market.isPlayerFrozen(playerId)) &&  
             // check that the team it belongs to is not already frozen
             !_market.isTeamFrozen(currentTeamId) &&
-            // check asset has not been put for sale before
-            _putForSalePlayerIdToAuctionData[playerId] == 0 &&
             // check asset is owned by legit address
             (currentOwner != address(0)) && 
             // check asset is owned by sender of this TX
             (currentOwner == msg.sender)   
         );
         require(OK, "conditions to putPlayerForSale not met");
-        _putForSalePlayerIdToAuctionData[playerId] = now + _auctionDuration + ((uint256(price) << 40) >> 8);
+        _putForSaleData[playerId] = PutForSaleData(uint128(price), uint32(now + _auctionDuration));
     }
     
-    function isPlayerPutForSale(uint256 playerId) public view returns (bool) {
-        return 
+    function isPlayerForSale(uint256 playerId) public view returns (bool) { 
+        return (_putForSaleData[playerId].validUntil > now); 
     }
     
-    // // Main PLAYER auction functions: freeze & complete
-    // function freezePlayer(
-    //     bytes32 sellerHiddenPrice,
-    //     uint256 validUntil,
-    //     uint256 playerId,
-    //     bytes32[3] memory sig,
-    //     uint8 sigV
-    // ) public {
+    function bidForPlayer(uint256 playerId) external {
+        if (isPlayerForSale(playerId)) {
+            freezePlayer(price, playerId);
+            delete(_putForSaleData[playerId]);
+            return;
+        }  
+        require (!_market.isPlayerFrozen(playerId), "cannot bid for a player that has never been put for sale");
+        if () 
+    }
+    
+    // function freezePlayer(uint256 price, uint256 playerId) external {
+    //     address prevOwner = isAcademyPlayer(playerId) ? _academyAddr : getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
+    //     return (
+    //         // check validUntil has not expired
+    //         (now < validUntil) &&
+    //         // check player is not already frozen
+    //         (!isPlayerFrozen(playerId)) &&  
+    //         // check that the team it belongs to not already frozen
+    //         !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
+    //         // check asset is owned by legit address
+    //         (prevOwner != address(0)) && 
+    //         // check signatures are valid by requiring that they own the asset:
+    //         (prevOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
+    //         // check that they signed what they input data says they signed:
+    //         (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId))) &&
+    //         // check that auction time is less that the required 32 bit
+    //         (validUntil < now + MAX_VALID_UNTIL)
+    //     );
+    // }        
+        
+        
+        
     //     require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
     //     // // Freeze player
     //     _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
