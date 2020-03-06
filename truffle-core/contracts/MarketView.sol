@@ -143,7 +143,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         ok =    // check asset is owned by buyer
                 (getOwnerTeam(buyerTeamId) != address(0)) && 
                 // check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
+                ((uint256(sellerHiddenPrice) & TO_BIT_128_MASK) == _playerIdToAuctionData[playerId].sellerHiddenPrice) &&
                 // check signatures are valid by requiring that they own the asset:
                 (getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
@@ -153,9 +153,9 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            ok = ok && (validUntil > (_playerIdToAuctionData[playerId].validUntil - AUCTION_TIME));
         } else {
-            ok = ok && (validUntil == (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK));
+            ok = ok && (validUntil == _playerIdToAuctionData[playerId].validUntil);
         } 
     }
 
@@ -240,7 +240,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
     function isPlayerFrozen(uint256 playerId) public view returns (bool) {
         require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
-        return (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
+        return (_playerIdToAuctionData[playerId].validUntil + POST_AUCTION_TIME) > now;
     }
 
     function isTeamFrozen(uint256 teamId) public view returns (bool) {

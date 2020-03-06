@@ -13,7 +13,7 @@ contract Storage is ProxyStorage, Constants{
     address internal _academyAddr;
     
     mapping(uint256 => uint256) internal _playerIdToState;
-    mapping (uint256 => uint256) internal _playerIdToAuctionData;
+    mapping (uint256 => AuctionData) internal _playerIdToAuctionData;
     mapping (uint256 => AuctionData) internal _teamIdToAuctionData;
     mapping (uint256 => uint256) internal _teamIdToRemainingAcqs;
 

@@ -14,7 +14,7 @@ import "./MarketView.sol";
  */
  
 contract Market is MarketView {
-    event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
+    event PlayerFreeze(uint256 playerId, uint128 sellerHiddenPrice, uint32 validUntil, bool frozen);
     event TeamFreeze(uint256 teamId, uint128 sellerHiddenPrice, uint32 validUntil, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
 
@@ -53,8 +53,9 @@ contract Market is MarketView {
     ) public {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
-        _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
-        emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
+        uint128 hiddenPrice128 = uint128(uint256(sellerHiddenPrice) & TO_BIT_128_MASK);
+        _playerIdToAuctionData[playerId] = AuctionData(hiddenPrice128, uint32(validUntil));
+        emit PlayerFreeze(playerId, hiddenPrice128, uint32(validUntil), true);
     }
 
     function transferPromoPlayer(
@@ -112,9 +113,9 @@ contract Market is MarketView {
             , "requirements to complete auction are not met"    
         );
         transferPlayer(playerId, buyerTeamId);
-        _playerIdToAuctionData[playerId] = 1;
+        _playerIdToAuctionData[playerId].validUntil = 1;
         decreaseMaxAllowedAcquisitions(buyerTeamId);
-        emit PlayerFreeze(playerId, 1, false);
+        emit PlayerFreeze(playerId, 0, 1, false);
     }
     
     // Main TEAM auction functions: freeze & complete
