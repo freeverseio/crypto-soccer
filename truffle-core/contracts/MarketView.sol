@@ -107,7 +107,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         ok =    // check buyerAddress is legit and signature is valid
                 (buyerAddress != address(0)) && 
                 // check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) & TO_BIT_128_MASK) == _teamIdToAuctionData[teamId].validUntil) &&
+                ((uint256(sellerHiddenPrice) & TO_BIT_128_MASK) == _teamIdToAuctionData[teamId].sellerHiddenPrice) &&
                 // // check player is still frozen
                 isTeamFrozen(teamId) &&
                 // // check that they signed what they input data says they signed:
