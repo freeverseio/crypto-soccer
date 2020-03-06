@@ -107,7 +107,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         ok =    // check buyerAddress is legit and signature is valid
                 (buyerAddress != address(0)) && 
                 // check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32)) &&
+                ((uint256(sellerHiddenPrice) & TO_BIT_128_MASK) == _teamIdToAuctionData[teamId].validUntil) &&
                 // // check player is still frozen
                 isTeamFrozen(teamId) &&
                 // // check that they signed what they input data says they signed:
@@ -115,9 +115,9 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            ok = ok && (validUntil > (_teamIdToAuctionData[teamId].validUntil - AUCTION_TIME));
         } else {
-            ok = ok && (validUntil == (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK));
+            ok = ok && (validUntil == _teamIdToAuctionData[teamId].validUntil);
         } 
     }
 
@@ -246,7 +246,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     function isTeamFrozen(uint256 teamId) public view returns (bool) {
         if (teamId == ACADEMY_TEAM) return false;
         require(teamExists(teamId), "unexistent team");
-        return (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
+        return (_teamIdToAuctionData[teamId].validUntil + POST_AUCTION_TIME) > now;
     }
     
     function getOwnerTeam(uint256 teamId) public view returns(address) {
