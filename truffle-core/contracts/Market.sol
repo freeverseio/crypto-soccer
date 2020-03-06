@@ -15,7 +15,7 @@ import "./MarketView.sol";
  
 contract Market is MarketView {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
-    event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
+    event TeamFreeze(uint256 teamId, uint128 sellerHiddenPrice, uint32 validUntil, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
 
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
@@ -127,8 +127,10 @@ contract Market is MarketView {
     ) public {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
-        _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
-        emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
+        // TODO: require validUntil < 2**32 (in general add a setter)
+        uint128 hiddenPrice128 = uint128(uint256(sellerHiddenPrice) & TO_BIT_128_MASK);
+        _teamIdToAuctionData[teamId] = AuctionData(hiddenPrice128, uint32(validUntil));
+        emit TeamFreeze(teamId, hiddenPrice128, uint32(validUntil), true);
     }
 
     function completeTeamAuction(
@@ -151,8 +153,8 @@ contract Market is MarketView {
         );
         require(ok, "requirements to complete auction are not met");
         transferTeam(teamId, buyerAddress);
-        _teamIdToAuctionData[teamId] = 1;
-        emit TeamFreeze(teamId, 1, false);
+        _teamIdToAuctionData[teamId].validUntil = 1;
+        emit TeamFreeze(teamId, 0, 1, false);
     }
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {

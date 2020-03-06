@@ -14,7 +14,7 @@ contract Storage is ProxyStorage, Constants{
     
     mapping(uint256 => uint256) internal _playerIdToState;
     mapping (uint256 => uint256) internal _playerIdToAuctionData;
-    mapping (uint256 => uint256) internal _teamIdToAuctionData;
+    mapping (uint256 => AuctionData) internal _teamIdToAuctionData;
     mapping (uint256 => uint256) internal _teamIdToRemainingAcqs;
 
     uint256 internal nextVerseTimestamp;
@@ -32,6 +32,11 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => uint256[PLAYERS_PER_TEAM_MAX]) teamIdToPlayerIds;
     mapping (uint256 => address) teamIdToOwner;
     mapping (uint8 => uint256) tzToNCountries;
+
+    struct AuctionData {
+        uint128 sellerHiddenPrice;
+        uint32 validUntil;
+    }
 
     struct TimeZone {
         bytes32[2] orgMapHash;
