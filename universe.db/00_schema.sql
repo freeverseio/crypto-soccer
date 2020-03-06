@@ -98,6 +98,7 @@ CREATE TABLE matches (
     match_idx INT NOT NULL,
     home_team_id TEXT REFERENCES teams(team_id),
     visitor_team_id TEXT REFERENCES teams(team_id),
+    seed TEXT NOT NULL DEFAULT '',
     home_goals INT NOT NULL DEFAULT 0,
     visitor_goals INT NOT NULL DEFAULT 0,
     home_match_log TEXT NOT NULL,

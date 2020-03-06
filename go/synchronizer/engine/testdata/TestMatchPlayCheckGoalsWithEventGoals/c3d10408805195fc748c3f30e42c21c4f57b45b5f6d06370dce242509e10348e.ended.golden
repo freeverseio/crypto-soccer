@@ -7,15 +7,15 @@
 		MatchIdx: (uint8) 0,
 		HomeTeamID: (*big.Int)(<nil>),
 		VisitorTeamID: (*big.Int)(<nil>),
+		Seed: ([32]uint8) (len=32 cap=32) {
+			00000000  c3 d1 04 08 80 51 95 fc  74 8c 3f 30 e4 2c 21 c4  |.....Q..t.?0.,!.|
+			00000010  f5 7b 45 b5 f6 d0 63 70  dc e2 42 50 9e 10 34 8e  |.{E...cp..BP..4.|
+		},
 		HomeGoals: (uint8) 0,
 		VisitorGoals: (uint8) 2,
 		HomeMatchLog: (*big.Int)(1811019883486470387763871536537230868194806378934866485742174206461193748480),
 		VisitorMatchLog: (*big.Int)(1842823130652481305696370892938780188597835337407702021448384959495930906482),
 		State: (storage.MatchState) (len=3) "end"
-	},
-	Seed: ([32]uint8) (len=32 cap=32) {
-		00000000  c3 d1 04 08 80 51 95 fc  74 8c 3f 30 e4 2c 21 c4  |.....Q..t.?0.,!.|
-		00000010  f5 7b 45 b5 f6 d0 63 70  dc e2 42 50 9e 10 34 8e  |.{E...cp..BP..4.|
 	},
 	StartTime: (*big.Int)(1570147200),
 	HomeTeam: (engine.Team) {

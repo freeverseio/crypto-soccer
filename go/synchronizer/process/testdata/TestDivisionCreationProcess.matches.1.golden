@@ -7,6 +7,10 @@ MatchDayIdx: (uint8) 0,
 MatchIdx: (uint8) 0,
 HomeTeamID: (*big.Int)(274877906944),
 VisitorTeamID: (*big.Int)(274877906945),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
 HomeMatchLog: (*big.Int)(0),
@@ -21,6 +25,10 @@ MatchDayIdx: (uint8) 0,
 MatchIdx: (uint8) 1,
 HomeTeamID: (*big.Int)(274877906951),
 VisitorTeamID: (*big.Int)(274877906946),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
 HomeMatchLog: (*big.Int)(0),
@@ -35,6 +43,10 @@ MatchDayIdx: (uint8) 0,
 MatchIdx: (uint8) 2,
 HomeTeamID: (*big.Int)(274877906950),
 VisitorTeamID: (*big.Int)(274877906947),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
 HomeMatchLog: (*big.Int)(0),
@@ -49,6 +61,10 @@ MatchDayIdx: (uint8) 0,
 MatchIdx: (uint8) 3,
 HomeTeamID: (*big.Int)(274877906949),
 VisitorTeamID: (*big.Int)(274877906948),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
 HomeMatchLog: (*big.Int)(0),
