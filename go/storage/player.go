@@ -86,7 +86,7 @@ func (b *Player) Insert(tx *sql.Tx) error {
 }
 
 func (b Player) insertHistory(tx *sql.Tx) error {
-	if _, err := tx.Exec("INSERT INTO players_history (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
+	if _, err := tx.Exec("INSERT INTO players_histories (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
 		b.BlockNumber,
 		b.PlayerId.String(),
 		b.TeamId,
