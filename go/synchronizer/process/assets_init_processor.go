@@ -46,6 +46,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	teamIdxInLeague := uint32(0)
 	team := storage.Team{
 		b.ACADEMYTEAM.String(),
+		event.Raw.BlockNumber,
 		timezone.TimezoneIdx,
 		country.CountryIdx,
 		"Academy",
