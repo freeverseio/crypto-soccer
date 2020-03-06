@@ -8,15 +8,15 @@ MatchDayIdx: (uint8) 0,
 MatchIdx: (uint8) 0,
 HomeTeamID: (*big.Int)(<nil>),
 VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
 HomeMatchLog: (*big.Int)(0),
 VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) (len=5) "begin"
-},
-Seed: ([32]uint8) (len=32 cap=32) {
-00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
 },
 StartTime: (*big.Int)(0),
 HomeTeam: (engine.Team) {
@@ -1128,15 +1128,15 @@ MatchDayIdx: (uint8) 0,
 MatchIdx: (uint8) 0,
 HomeTeamID: (*big.Int)(<nil>),
 VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
 HomeMatchLog: (*big.Int)(0),
 VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) (len=5) "begin"
-},
-Seed: ([32]uint8) (len=32 cap=32) {
-00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
 },
 StartTime: (*big.Int)(0),
 HomeTeam: (engine.Team) {

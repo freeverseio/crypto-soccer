@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -110,7 +111,7 @@ func (b Match) Update(tx *sql.Tx) error {
 		b.HomeMatchLog.String(),
 		b.VisitorMatchLog.String(),
 		b.State,
-		b.Seed[:],
+		hex.EncodeToString(b.Seed[:]),
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.LeagueIdx,
