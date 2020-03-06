@@ -46,8 +46,8 @@ module.exports = function (deployer, network, accounts) {
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
     
     console.log("Setting up ...");
-    await leagues.setEngineAdress(engine.address).should.be.fulfilled;
-    await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
+    await leagues.setEngineAddress(engine.address).should.be.fulfilled;
+    await leagues.setAssetsAddress(assets.address).should.be.fulfilled;
     await updates.initUpdates().should.be.fulfilled;
     await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
     await trainingPoints.setMarketAddress(market.address).should.be.fulfilled;

@@ -66,8 +66,8 @@ contract('Championships', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.initSingleTZ(INIT_TZ).should.be.fulfilled;
-        await champs.setEngineAdress(engine.address).should.be.fulfilled;
-        await champs.setAssetsAdress(assets.address).should.be.fulfilled;
+        await champs.setEngineAddress(engine.address).should.be.fulfilled;
+        await champs.setAssetsAddress(assets.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await constants.get_TEAMS_PER_LEAGUE().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         MATCHDAYS = await champs.MATCHDAYS().should.be.fulfilled;

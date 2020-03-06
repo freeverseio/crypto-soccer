@@ -24,11 +24,11 @@ contract Championships is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     Engine private _engine;
     Assets private _assets;
 
-    function setEngineAdress(address addr) public {
+    function setEngineAddress(address addr) public {
         _engine = Engine(addr);
     }
 
-    function setAssetsAdress(address addr) public {
+    function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
     }
 
