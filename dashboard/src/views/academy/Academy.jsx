@@ -4,6 +4,7 @@ import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import PlayersTable from '../../components/PlayersTable';
 import WithdrawalTable from '../../components/WithdrawalTable';
+import Config from '../../Config';
 
 const ALL_PLAYER_IN_ACCADEMY = gql`
 query {
@@ -60,8 +61,6 @@ mutation CreateSpecialPlayer(
     }
 `;
 
-
-
 export default function SpecialPlayer(props) {
     const [shoot, setShoot] = useState(1000);
     const [speed, setSpeed] = useState(1000);
@@ -102,7 +101,7 @@ export default function SpecialPlayer(props) {
         const { web3 } = props;
 
         const { loading, error, data } = useQuery(ALL_PLAYER_IN_ACCADEMY, {
-            pollInterval: 2000,
+            pollInterval: Config.polling_ms,
         });
 
         if (loading) return null;

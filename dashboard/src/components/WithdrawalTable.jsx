@@ -2,6 +2,7 @@ import React from 'react';
 import { Table, Label } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import Config from '../Config';
 
 const ALL_AUCTIONS = gql`
 {
@@ -47,9 +48,9 @@ const PlayerTableRow = (props) => {
 }
 
 export default function WithdrawalTable(props) {
-    const { loading, error, data } = useQuery(ALL_AUCTIONS, {
-        pollInterval: 5000,
-    });
+  const { loading, error, data } = useQuery(ALL_AUCTIONS, {
+    pollInterval: Config.polling_ms,
+  });
 
     if (loading) return null;
     if (error) return `Error! ${error}`;

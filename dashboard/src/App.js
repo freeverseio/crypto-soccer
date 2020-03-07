@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 // import logo from './logo.svg';
 // import './App.css';
 import 'semantic-ui-css/semantic.min.css'
@@ -17,18 +17,26 @@ const web3 = new Web3('https://prod.gorengine.com/pippolo');
 const privileged = new web3.eth.Contract(privilegedJSON.abi, "0x615668099Cc46D035b3c34aCdf01204Ac4A4F446");
 const market = new web3.eth.Contract(marketJSON.abi, "0xFB1436D488726D64a0441081D508b238fF756802");
 
-const url = 'http://prod.gorengine.com:4000/graphiql';
-const client = new ApolloClient({
-  uri: url,
-});
-
 function App() {
+  const [url, setUrl] = useState('https://k8s.gorengine.com/auth');
+
+  const client = new ApolloClient({
+    request: (operation) => {
+      operation.setContext({
+        headers: {
+          authorization: 'Bearer joshua'
+        }
+      })
+    },
+    uri: url,
+  });
+
   return (
     <Router>
       <ApolloProvider client={client}>
         <div className="App">
-          <Header url={url} />
-          <Main web3={web3} privileged={privileged} market={market}/>
+          <Header url={url} onUrlChange={setUrl} />
+          <Main web3={web3} privileged={privileged} market={market} />
         </div>
       </ApolloProvider>
     </Router>
