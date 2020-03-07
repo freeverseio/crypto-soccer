@@ -16,7 +16,6 @@ import (
 
 type Match struct {
 	storage.Match
-	Seed        [32]byte
 	StartTime   *big.Int
 	HomeTeam    Team
 	VisitorTeam Team
@@ -315,4 +314,9 @@ func (b Match) ToString() string {
 	}
 	result += "];"
 	return result
+}
+
+func (b *Match) SetBlockNumber(number uint64) {
+	b.HomeTeam.SetBlockNumber(number)
+	b.VisitorTeam.SetBlockNumber(number)
 }

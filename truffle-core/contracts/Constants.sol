@@ -8,6 +8,7 @@ contract Constants {
     
     uint8 constant internal N_SKILLS = 5;
     address constant internal NULL_ADDR = address(0);
+    uint256 constant internal DIVS_PER_LEAGUE_AT_START = 1;
     uint8 constant internal PLAYERS_PER_TEAM_INIT = 18;
     uint8 constant internal LEAGUES_PER_DIV = 16;
     uint8 constant internal TEAMS_PER_LEAGUE = 8;

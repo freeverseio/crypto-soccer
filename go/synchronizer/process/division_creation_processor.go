@@ -103,12 +103,12 @@ func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivis
 			return err
 		}
 	}
-	if err := b.storeTeamsForNewDivision(tx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+	if err := b.storeTeamsForNewDivision(tx, event.Raw.BlockNumber, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
 		return err
 	}
 	return nil
 }
-func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
+func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNumber uint64, timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
 
 	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(b.LEAGUES_PER_DIV)
@@ -140,7 +140,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezon
 				team.RankingPoints = 10
 				if err := team.Insert(tx); err != nil {
 					return err
-				} else if err := b.storeVirtualPlayersForTeam(tx, opts, teamId, timezone, countryIdx, teamIdx); err != nil {
+				} else if err := b.storeVirtualPlayersForTeam(tx, opts, blockNumber, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
 				} else if err := b.createInitialTactics(tx, timezone, teamId); err != nil {
 					return err
@@ -163,7 +163,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezon
 	return nil
 }
 
-func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts *bind.CallOpts, teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
+func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts *bind.CallOpts, blockNumber uint64, teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
 	begin := teamIdxInCountry * int64(b.PLAYERS_PER_TEAM_INIT)
 	end := begin + int64(b.PLAYERS_PER_TEAM_INIT)
 
@@ -212,6 +212,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 			ShirtNumber:       uint8(shirtNumber.Uint64()),
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
+			BlockNumber:       blockNumber,
 		}
 		if err := player.Insert(tx); err != nil {
 			return err

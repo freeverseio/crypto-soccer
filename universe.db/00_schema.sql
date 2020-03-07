@@ -49,8 +49,9 @@ CREATE TABLE teams (
 );
 
 CREATE TABLE players (
-    player_id TEXT NOT NULL,
     name TEXT NOT NULL,
+    player_id TEXT NOT NULL,
+    block_number BIGINT NOT NULL,
     team_id TEXT NOT NULL REFERENCES teams(team_id),
     defence INT NOT NULL,
     speed INT NOT NULL,
@@ -68,6 +69,26 @@ CREATE TABLE players (
     PRIMARY KEY(player_id)
 );
 
+CREATE TABLE players_histories (
+    player_id TEXT NOT NULL REFERENCES players(player_id),
+    block_number BIGINT NOT NULL,
+    team_id TEXT NOT NULL REFERENCES teams(team_id),
+    defence INT NOT NULL,
+    speed INT NOT NULL,
+    pass INT NOT NULL,
+    shoot INT NOT NULL,
+    endurance INT NOT NULL,
+    shirt_number INT NOT NULL,
+    preferred_position TEXT NOT NULL,
+    potential INT NOT NULL, 
+    day_of_birth INT NOT NULL, 
+    encoded_skills TEXT NOT NULL,
+    encoded_state TEXT NOT NULL,
+    red_card BOOL NOT NULL DEFAULT FALSE,
+    injury_matches_left INT NOT NULL DEFAULT 0,
+    PRIMARY KEY(block_number, player_id)
+);
+
 CREATE TYPE match_state AS ENUM ('begin', 'half', 'end', 'cancel');
 CREATE TABLE matches (
     timezone_idx INT NOT NULL,
@@ -77,6 +98,7 @@ CREATE TABLE matches (
     match_idx INT NOT NULL,
     home_team_id TEXT REFERENCES teams(team_id),
     visitor_team_id TEXT REFERENCES teams(team_id),
+    seed TEXT NOT NULL DEFAULT '',
     home_goals INT NOT NULL DEFAULT 0,
     visitor_goals INT NOT NULL DEFAULT 0,
     home_match_log TEXT NOT NULL,

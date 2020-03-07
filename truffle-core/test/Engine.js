@@ -7,6 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const logUtils = require('../utils/matchLogUtils.js');
 
+const Utils = artifacts.require('Utils');
 const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
@@ -211,7 +212,14 @@ contract('Engine', (accounts) => {
             expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
             isHomeSt = UNDEF, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
-            
+
+        // check that the 2nd team does not have an identical set of injuries+redcards
+        utils = await Utils.new().should.be.fulfilled;
+        var {0: sumSkills0 , 1: winner0, 2: nGoals0, 3: TPs0, 4: outPlayer0, 5: typeOut0, 6: outRounds0, 7: yellow10, 8: yellow20, 9: subs10, 10: subs20, 11: subs30 } = await utils.fullDecodeMatchLog(newLog[0], is2nd = false).should.be.fulfilled;
+        var {0: sumSkills1 , 1: winner1, 2: nGoals1, 3: TPs1, 4: outPlayer1, 5: typeOut1, 6: outRounds1, 7: yellow11, 8: yellow21, 9: subs11, 10: subs21, 11: subs31 } = await utils.fullDecodeMatchLog(newLog[1], is2nd = false).should.be.fulfilled;
+        outPlayer0.should.not.be.bignumber.equal(outPlayer1);
+        yellow20.should.not.be.bignumber.equal(yellow21);
+
         // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
         expected = [
             1, 0, 0, 0, 0, 

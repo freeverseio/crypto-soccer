@@ -24,6 +24,7 @@ type Player struct {
 	EncodedState      *big.Int
 	RedCard           bool
 	InjuryMatchesLeft uint8
+	BlockNumber       uint64
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -59,7 +60,9 @@ func PlayerCount(tx *sql.Tx) (uint64, error) {
 
 func (b *Player) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create player %v", b)
-	_, err := tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
+	if _, err := tx.Exec("INSERT INTO players (name, block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
+		b.Name,
+		b.BlockNumber,
 		b.PlayerId.String(),
 		b.TeamId,
 		b.Defence,
@@ -72,19 +75,41 @@ func (b *Player) Insert(tx *sql.Tx) error {
 		b.EncodedSkills.String(),
 		b.EncodedState.String(),
 		b.Potential,
-		b.Name,
 		b.DayOfBirth,
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
+	if err := b.insertHistory(tx); err != nil {
+		return err
+	}
+	return nil
+}
 
+func (b Player) insertHistory(tx *sql.Tx) error {
+	if _, err := tx.Exec("INSERT INTO players_histories (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
+		b.BlockNumber,
+		b.PlayerId.String(),
+		b.TeamId,
+		b.Defence,
+		b.Speed,
+		b.Pass,
+		b.Shoot,
+		b.Endurance,
+		b.ShirtNumber,
+		b.PreferredPosition,
+		b.EncodedSkills.String(),
+		b.EncodedState.String(),
+		b.Potential,
+		b.DayOfBirth,
+	); err != nil {
+		return err
+	}
 	return nil
 }
 
 func (b *Player) Update(tx *sql.Tx) error {
 	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
-	_, err := tx.Exec(`UPDATE players SET 
+	if _, err := tx.Exec(`UPDATE players SET 
 	team_id=$1, 
 	defence=$2, 
 	speed=$3, 
@@ -95,8 +120,9 @@ func (b *Player) Update(tx *sql.Tx) error {
 	encoded_skills=$8,
 	red_card=$9,
 	injury_matches_left=$10,
-	name=$11
-	WHERE player_id=$12;`,
+	name=$11,
+	block_number=$12
+	WHERE player_id=$13;`,
 		b.TeamId,
 		b.Defence,
 		b.Speed,
@@ -108,13 +134,21 @@ func (b *Player) Update(tx *sql.Tx) error {
 		b.RedCard,
 		b.InjuryMatchesLeft,
 		b.Name,
+		b.BlockNumber,
 		b.PlayerId.String(),
-	)
-	return err
+	); err != nil {
+		return err
+	}
+	if err := b.insertHistory(tx); err != nil {
+		return err
+	}
+	return nil
 }
 
 func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
-	rows, err := tx.Query(`SELECT team_id, 
+	rows, err := tx.Query(`SELECT 
+	block_number,
+	team_id, 
 	defence,
 	speed,
 	pass, 
@@ -143,6 +177,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	var encodedSkills sql.NullString
 	var encodedState sql.NullString
 	err = rows.Scan(
+		&player.BlockNumber,
 		&player.TeamId,
 		&player.Defence,
 		&player.Speed,
@@ -166,29 +201,58 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 }
 
 func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
-	var players []*Player
-	rows, err := tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID)
+	rows, err := tx.Query(`SELECT 
+	block_number,
+	player_id, 
+	defence,
+	speed,
+	pass, 
+	shoot, 
+	endurance, 
+	shirt_number, 
+	preferred_position, 
+	encoded_skills, 
+	encoded_state, 
+	potential, 
+	name, 
+	day_of_birth, 
+	red_card,
+	injury_matches_left
+	FROM players WHERE (team_id = $1);`, teamID)
 	if err != nil {
-		return players, err
+		return nil, err
 	}
 	defer rows.Close()
-	var playerIDs []*big.Int
+
+	var players []*Player
 	for rows.Next() {
+		player := Player{}
+		var encodedSkills sql.NullString
+		var encodedState sql.NullString
 		var playerID sql.NullString
 		err = rows.Scan(
+			&player.BlockNumber,
 			&playerID,
+			&player.Defence,
+			&player.Speed,
+			&player.Pass,
+			&player.Shoot,
+			&player.Endurance,
+			&player.ShirtNumber,
+			&player.PreferredPosition,
+			&encodedSkills,
+			&encodedState,
+			&player.Potential,
+			&player.Name,
+			&player.DayOfBirth,
+			&player.RedCard,
+			&player.InjuryMatchesLeft,
 		)
-		result, _ := new(big.Int).SetString(playerID.String, 10)
-		playerIDs = append(playerIDs, result)
-	}
-	rows.Close()
-	for i := 0; i < len(playerIDs); i++ {
-		playerID := playerIDs[i]
-		player, err := PlayerByPlayerId(tx, playerID)
-		if err != nil {
-			return players, err
-		}
-		players = append(players, player)
+		player.TeamId = teamID
+		player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
+		player.EncodedState, _ = new(big.Int).SetString(encodedState.String, 10)
+		player.PlayerId, _ = new(big.Int).SetString(playerID.String, 10)
+		players = append(players, &player)
 	}
 	return players, err
 }

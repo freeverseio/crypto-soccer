@@ -54,3 +54,9 @@ func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 		b.Players[i].SetSkills(contracts, skills[i])
 	}
 }
+
+func (b *Team) SetBlockNumber(number uint64) {
+	for i := range b.Players {
+		b.Players[i].BlockNumber = number
+	}
+}

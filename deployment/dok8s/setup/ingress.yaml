@@ -1,41 +1,64 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: cryptosoccer-ingress
   annotations:
+    # use the shared ingress-nginx
     kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Enable client certificate authentication
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    # Specify the verification depth in the client certificates chain
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+    # Specify an error page to be redirected to verification errors
+    nginx.ingress.kubernetes.io/auth-tls-error-page: "http://www.mysite.com/error-cert.html"
+    # Specify if certificates are passed to upstream server
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-freeverse
+  
+spec:
+  tls:
+  - hosts:
+    - k8s.gorengine.com
+    secretName: cryptosoccer-tls
+  rules:
+  - host: k8s.gorengine.com
+    http:
+      paths:
+      - path: /xdai
+        backend:
+          serviceName: xdai
+          servicePort: 8545
+      - path: /auth
+        backend:
+          serviceName: authproxy
+          servicePort: 8080
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: dashboard-ingress
+  annotations:
+    # use the shared ingress-nginx
+    kubernetes.io/ingress.class: "nginx"
+    # Enable client certificate authentication
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    # Specify the verification depth in the client certificates chain
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+    # Specify an error page to be redirected to verification errors
+    nginx.ingress.kubernetes.io/auth-tls-error-page: "http://www.mysite.com/error-cert.html"
+    # Specify if certificates are passed to upstream server
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
     cert-manager.io/cluster-issuer: letsencrypt-freeverse
 spec:
   tls:
   - hosts:
-    - k8s.goalrevolution.live
-    secretName: letsencrypt-freeverse
+    - dashboard.gorengine.com
+    secretName: dashboard-tls
   rules:
-  - host: k8s.goalrevolution.live
+  - host: dashboard.gorengine.com
     http:
       paths:
-      # - backend:
-      #     serviceName: hello-kubernetes-first
-      #     servicePort: 80
-      # - path: /xdai
-      #   backend:
-      #     serviceName: xdai
-      #     servicePort: 8545
-      - path: /auth(/|$)(.*)
+      - path: /
         backend:
-          serviceName: authproxy
-          servicePort: 8080
-      #- path: /horizon(/|$)(.*)
-      #  backend:
-      #    serviceName: horizon
-      #    servicePort: 4000
-      #- path: /universe(/|$)(.*)
-      #  backend:
-      #    serviceName: universeapi
-      #    servicePort: 4000
-      #- path: /trader(/|$)(.*)
-      #  backend:
-      #    serviceName: trader
-      #    servicePort: 4000
+          serviceName: dashboard
+          servicePort: 80

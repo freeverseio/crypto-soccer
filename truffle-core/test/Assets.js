@@ -208,6 +208,21 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('add users until you need a new division (it can take several seconds)', async () => {
+        const tz = 1;
+        const countryIdxInTZ = 0;
+        nTeamsPerDiv = 128
+        for (user = 0; user < (nTeamsPerDiv - 1); user++) {
+            await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        }
+        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === countryIdxInTZ.toString() && event.divisionIdxInCountry.toString() === '1';
+        });
+
+    });
+
+
     it('transfer 2 bots to address to estimate cost', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
@@ -282,7 +297,7 @@ contract('Assets', (accounts) => {
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        expectedSkills = [ 440, 1068, 1284, 826, 1378 ];
+        expectedSkills = [ 1427, 1016, 853, 974, 726 ];
         resultSkills = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
             resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
@@ -519,6 +534,33 @@ contract('Assets', (accounts) => {
         debug.compareArrays(birthTraits, expected, toNum = true, verbose = false);
     });
 
+    
+    it('test that goal keepers have great shoot=block skills', async () => {
+        skillsAvg = [0,0,0,0,0];
+        nTrials = 100;
+        for (n = 0; n < nTrials; n++) {
+            seed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
+            var {0: skills, 1: birthTraits} = await assets.computeSkills(seed , shirtNum = 0).should.be.fulfilled;
+            for (sk=0; sk < 5; sk++) skillsAvg[sk] += skills[sk].toNumber();
+        }
+        for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
+        expected = [ 1371, 909, 795, 957, 963 ];
+        debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
+    });
+
+    it('test that forwards have great shoot skills', async () => {
+        skillsAvg = [0,0,0,0,0];
+        nTrials = 100;
+        for (n = 0; n < nTrials; n++) {
+            seed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
+            var {0: skills, 1: birthTraits} = await assets.computeSkills(seed , shirtNum = 16).should.be.fulfilled;
+            for (sk=0; sk < 5; sk++) skillsAvg[sk] += skills[sk].toNumber();
+        }
+        for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
+        expected = [ 1251, 950, 989, 802, 1004 ];
+        debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
+    });
+    
     it('computed skills with rnd = 0 for non goal keepers should be 1000 each', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
         const {0: skills, 1: birthTraits} = computedSkills;

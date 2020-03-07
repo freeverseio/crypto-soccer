@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -25,6 +26,7 @@ type Match struct {
 	MatchIdx        uint8
 	HomeTeamID      *big.Int
 	VisitorTeamID   *big.Int
+	Seed            [32]byte
 	HomeGoals       uint8
 	VisitorGoals    uint8
 	HomeMatchLog    *big.Int
@@ -99,8 +101,9 @@ func (b Match) Update(tx *sql.Tx) error {
 		visitor_goals = $4,
 		home_match_log = $5,
 		visitor_match_log = $6,
-		state = $7
-		WHERE (timezone_idx = $8 AND country_idx = $9 AND league_idx = $10 AND match_day_idx = $11 AND match_idx = $12);`,
+		state = $7,
+		seed = $8
+		WHERE (timezone_idx = $9 AND country_idx = $10 AND league_idx = $11 AND match_day_idx = $12 AND match_idx = $13);`,
 		b.HomeTeamID.String(),
 		b.VisitorTeamID.String(),
 		b.HomeGoals,
@@ -108,6 +111,7 @@ func (b Match) Update(tx *sql.Tx) error {
 		b.HomeMatchLog.String(),
 		b.VisitorMatchLog.String(),
 		b.State,
+		hex.EncodeToString(b.Seed[:]),
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.LeagueIdx,

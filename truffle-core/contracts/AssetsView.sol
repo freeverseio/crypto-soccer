@@ -57,52 +57,53 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
     function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory, uint32) {
         uint16[5] memory skills;
-        uint16[N_SKILLS] memory correctFactor;
+        uint256[N_SKILLS] memory correctFactor;
         uint8 potential = uint8(dna % 10);
         dna >>= 4; // log2(10) = 3.3 => ceil = 4
         uint8 forwardness;
         uint8 leftishness;
         uint8 aggressiveness = uint8(dna % 4);
         dna >>= 2; // log2(4) = 2
-        // correctFactor/1000 increases a particular skill depending on player's forwardness
+        // correctFactor/10 increases a particular skill depending on player's forwardness
         if (shirtNum < 3) {
             // 3 GoalKeepers:
-            correctFactor[SK_SHO] = 2000;
+            correctFactor[SK_SHO] = 20;
+            correctFactor[SK_PAS] = 6;
             forwardness = IDX_GK;
             leftishness = 0;
         } else if (shirtNum < 8) {
             // 5 Defenders
-            correctFactor[SK_SHO] = 400;
-            correctFactor[SK_DEF] = 1600;
+            correctFactor[SK_SHO] = 4;
+            correctFactor[SK_DEF] = 16;
             forwardness = IDX_D;
             leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 10) {
             // 2 Pure Midfielders
-            correctFactor[SK_PAS] = 1600;
+            correctFactor[SK_PAS] = 16;
             forwardness = IDX_M;
             leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 12) {
             // 2 Defensive Midfielders
-            correctFactor[SK_PAS] = 1300;
-            correctFactor[SK_SHO] = 700;
+            correctFactor[SK_PAS] = 13;
+            correctFactor[SK_SHO] = 7;
             forwardness = IDX_MD;
             leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 14) {
             // 2 Attachking Midfielders
-            correctFactor[SK_PAS] = 1300;
-            correctFactor[SK_DEF] = 700;
+            correctFactor[SK_PAS] = 13;
+            correctFactor[SK_DEF] = 7;
             forwardness = IDX_MF;
             leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 16) {
             // 2 Forwards that play center-left
-            correctFactor[SK_SHO] = 1600;
-            correctFactor[SK_DEF] = 700;
+            correctFactor[SK_SHO] = 16;
+            correctFactor[SK_DEF] = 5;
             forwardness = IDX_F;
             leftishness = 6;
         } else {
             // 2 Forwards that play center-right
-            correctFactor[SK_SHO] = 1600;
-            correctFactor[SK_DEF] = 700;
+            correctFactor[SK_SHO] = 16;
+            correctFactor[SK_DEF] = 5;
             forwardness = IDX_F;
             leftishness = 3;
         }
@@ -110,18 +111,18 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
 
         /// Compute initial skills, as a random with [0, 49] 
         /// ...apply correction factor depending on preferred pos,
-        //  ...and adjust skills to so that they add up to, at least, 5*50 = 250.
         uint16 excess;
         for (uint8 i = 0; i < N_SKILLS; i++) {
             if (correctFactor[i] == 0) {
-                skills[i] = uint16(dna % 1000);
+                skills[i] = uint16(dna % 800);
             } else {
-                skills[i] = (uint16(dna % 1000) * correctFactor[i])/1000;
+                skills[i] = uint16(((dna % 800) * correctFactor[i])/10);
             }
             excess += skills[i];
             dna >>= 10; // los2(1000) -> ceil
         }
-        // at this point, excess is, at most, 5*999 = 4995, so (5000 - excess) > 0
+        // at this point, excess is at most, last two cases: (1.6+0.7+3)*800 = 4240, so 5000-excess is safe
+        // and for GKS: (2+ 0.6 + 3)*800 = 4480, so 5000-excess is safe.
         uint16 delta;
         delta = (5000 - excess) / N_SKILLS;
         for (uint8 i = 0; i < N_SKILLS; i++) skills[i] = skills[i] + delta;
