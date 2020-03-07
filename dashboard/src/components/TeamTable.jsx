@@ -2,6 +2,7 @@ import React from 'react';
 import { Table } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import Config from '../Config';
 
 const GET_TEAM = gql`
 query teamByTeamId($teamId: String!){
@@ -27,7 +28,7 @@ export default function TeamTable(props) {
     const { teamId } = props;
     const { loading, error, data } = useQuery(GET_TEAM, {
         variables: { teamId },
-        pollInterval: 5000,
+        pollInterval: Config.polling_ms,
     });
 
     if (loading) return 'Loading...';

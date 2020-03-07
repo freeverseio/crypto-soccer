@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import { Button, Form, Grid, Header, Segment, Container, Divider, Image } from 'semantic-ui-react';
 import ShopItemCard from '../../components/ShopItemCard';
 import uuidv1 from 'uuid/v1';
+import Config from '../../Config';
 
 const ALL_SHOPS_ITEMS = gql`
 query {
@@ -78,7 +79,7 @@ export default function Shop(props) {
 
     const Shop = () => {
         const { loading, error, data } = useQuery(ALL_SHOPS_ITEMS, {
-            pollInterval: 2000,
+            pollInterval: Config.polling_ms,
         });
 
         if (loading) return null;
