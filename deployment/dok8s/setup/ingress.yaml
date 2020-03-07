@@ -1,6 +1,7 @@
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
+  name: cryptosoccer-ingress
   annotations:
     # use the shared ingress-nginx
     kubernetes.io/ingress.class: "nginx"
@@ -13,8 +14,7 @@ metadata:
     # Specify if certificates are passed to upstream server
     nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
     cert-manager.io/cluster-issuer: letsencrypt-freeverse
-  name: cryptosoccer-ingress
-  namespace: freeverse
+  
 spec:
   tls:
   - hosts:
@@ -36,7 +36,7 @@ spec:
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: ingress-dashboard
+  name: dashboard-ingress
   annotations:
     # use the shared ingress-nginx
     kubernetes.io/ingress.class: "nginx"
