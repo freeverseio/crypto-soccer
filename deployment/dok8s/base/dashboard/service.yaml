@@ -6,6 +6,6 @@ metadata:
     app.kubernetes.io/app: dashboard
 spec:
   ports:
-  - port: 3000
+  - port: 80
   selector:
     app.kubernetes.io/app: dashboard
