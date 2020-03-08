@@ -278,12 +278,15 @@ const data = [
 ];
 export default function Home(props) {
     const [teamId, setTeamId] = useState("");
+    const [playerId, setPlayerId] = useState("");
+
+    console.log(playerId)
     return (
         <Container>
             <TeamsByRankingTable onTeamIdChange={setTeamId} />
-            <TeamTable teamId={teamId} />
+            <TeamTable teamId={teamId} onPlayerIdChange={setPlayerId}/>
             <Container style={{"height": "600px"}}>
-                <PlayerChart data={data} />
+                <PlayerChart data={data} playerId={playerId} />
             </Container>
         </Container>
     );
