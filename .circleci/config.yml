@@ -103,7 +103,7 @@ jobs:
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd dashboard && docker build -t freeverseio/dashboard:dev .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:dev --build-arg REACT_APP_API="https://dashboard.gorengine.com/api" .
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
@@ -131,7 +131,7 @@ jobs:
       - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} .
-      - run: cd dashboard && docker build -t freeverseio/dashboard:${CIRCLE_TAG} .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:${CIRCLE_TAG} --build-arg REACT_APP_API="https://dashboard.goalrevolution.live/api" .
       - run: cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} .
