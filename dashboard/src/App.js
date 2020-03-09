@@ -18,7 +18,7 @@ const privileged = new web3.eth.Contract(privilegedJSON.abi, "0x615668099Cc46D03
 const market = new web3.eth.Contract(marketJSON.abi, "0xFB1436D488726D64a0441081D508b238fF756802");
 
 function App() {
-  const [url, setUrl] = useState('https://k8s.gorengine.com/auth');
+  const [url, setUrl] = useState('https://cors-anywhere.herokuapp.com/https://k8s.gorengine.com/auth');
 
   const client = new ApolloClient({
     request: (operation) => {
