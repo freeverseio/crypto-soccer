@@ -1,8 +1,6 @@
 {
 	"tactics": [
 		{
-			"verse": 3,
-			"timezone": 0,
 			"team_id": "ciao",
 			"tactic_id": 0,
 			"shirt_0": 0,

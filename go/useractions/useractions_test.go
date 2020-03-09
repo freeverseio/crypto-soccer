@@ -17,7 +17,7 @@ func TestMarshal(t *testing.T) {
 	data, err := ua.Marshal()
 	assert.NilError(t, err)
 	assert.Equal(t, string(data), `{"tactics":[],"trainings":[]}`)
-	ua.Tactics = append(ua.Tactics, storage.Tactic{Verse: 3, TeamID: "ciao"})
+	ua.Tactics = append(ua.Tactics, storage.Tactic{TeamID: "ciao"})
 	ua.Trainings = append(ua.Trainings, storage.Training{TeamID: "pippo"})
 	data, err = ua.Marshal()
 	assert.NilError(t, err)
@@ -49,13 +49,13 @@ func TestIpfsPushAndPull(t *testing.T) {
 	ua.Tactics = append(ua.Tactics, tactic)
 	cif, err := ua.ToIpfs("localhost:5001")
 	assert.NilError(t, err)
-	assert.Equal(t, cif, "QmRrkSTVeoU3qyoKHiVKkCipWaGNwaBJFQY2HFw8ygzezv")
+	assert.Equal(t, cif, "QmXCYKHSNDCHqzv6W7WDHyW1Zp2YLgt87gmt8tzZYTQtx7")
 	training := storage.Training{}
 	training.TeamID = "pippo"
 	ua.Trainings = append(ua.Trainings, training)
 	cif, err = ua.ToIpfs("localhost:5001")
 	assert.NilError(t, err)
-	assert.Equal(t, cif, "QmfGHTVYpo3GzPaf4Dvj4isx1Zi8jefw29DkdSWdmyrLZh")
+	assert.Equal(t, cif, "QmbJ36PXKkuFsDQiQmngBbR3beWZja1tU7UXHstZ3HqSSe")
 	ua2, err := useractions.NewFromIpfs("localhost:5001", cif)
 	assert.NilError(t, err)
 	assert.Assert(t, ua2.Equal(&ua))
@@ -68,9 +68,8 @@ func TestUserActionsPullFromStorageNoUserActions(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	verse := uint64(0)
 	timezone := 4
-	ua, err := useractions.NewFromStorage(tx, verse, timezone)
+	ua, err := useractions.NewFromStorage(tx, timezone)
 	assert.NilError(t, err)
 	assert.Equal(t, len(ua.Tactics), 0)
 	assert.Equal(t, len(ua.Trainings), 0)
@@ -84,16 +83,13 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 
 	createMinimumUniverse(t, tx)
 
-	verse := uint64(6)
 	training := storage.NewTraining()
 	training.TeamID = teamID
 	assert.NilError(t, training.Insert(tx))
 	tactic := storage.Tactic{}
-	tactic.Verse = verse
-	tactic.Timezone = int(timezoneIdx)
 	tactic.TeamID = teamID
 	assert.NilError(t, tactic.Insert(tx))
-	ua, err := useractions.NewFromStorage(tx, verse, int(timezoneIdx))
+	ua, err := useractions.NewFromStorage(tx, int(timezoneIdx))
 	assert.NilError(t, err)
 	assert.Equal(t, len(ua.Tactics), 1)
 	assert.Equal(t, len(ua.Trainings), 1)

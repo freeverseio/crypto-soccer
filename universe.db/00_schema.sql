@@ -128,8 +128,6 @@ CREATE TABLE match_events (
 -- ********************************** USER ACTIONS ****************************************
 
 CREATE TABLE tactics (
-    verse BIGINT NOT NULL DEFAULT 0,
-    timezone INT NOT NULL,
     team_id TEXT NOT NULL REFERENCES teams(team_id),
 
     tactic_id INT NOT NULL,
@@ -169,10 +167,52 @@ CREATE TABLE tactics (
     extra_attack_9  BOOLEAN NOT NULL,
     extra_attack_10 BOOLEAN NOT NULL,
 
-    PRIMARY KEY (verse, team_id)
+    PRIMARY KEY (team_id)
 );
 
-CREATE VIEW upcoming_tactics AS SELECT * FROM tactics WHERE verse=9223372036854775807;
+CREATE TABLE tactics_histories (
+    block_number BIGINT NOT NULL,
+    team_id TEXT NOT NULL REFERENCES teams(team_id),
+
+    tactic_id INT NOT NULL,
+
+    shirt_0 INT NOT NULL CHECK (shirt_0 >= 0),
+    shirt_1 INT NOT NULL CHECK (shirt_1 >= 0),
+    shirt_2 INT NOT NULL CHECK (shirt_2 >= 0),
+    shirt_3 INT NOT NULL CHECK (shirt_3 >= 0),
+    shirt_4 INT NOT NULL CHECK (shirt_4 >= 0),
+    shirt_5 INT NOT NULL CHECK (shirt_5 >= 0),
+    shirt_6 INT NOT NULL CHECK (shirt_6 >= 0),
+    shirt_7 INT NOT NULL CHECK (shirt_7 >= 0),
+    shirt_8 INT NOT NULL CHECK (shirt_8 >= 0),
+    shirt_9 INT NOT NULL CHECK (shirt_9 >= 0),
+    shirt_10 INT NOT NULL CHECK (shirt_10 >= 0),
+
+    substitution_0_shirt INT NOT NULL CHECK (substitution_0_shirt >= 0 AND substitution_0_shirt <= 25),
+    substitution_0_target INT NOT NULL CHECK (substitution_0_target >= 0 AND substitution_0_target <= 11),
+    substitution_0_minute INT NOT NULL CHECK (substitution_0_minute >= 0 AND substitution_0_minute <= 90),
+
+    substitution_1_shirt INT NOT NULL CHECK (substitution_1_shirt >= 0 AND substitution_1_shirt <= 25),
+    substitution_1_target INT NOT NULL CHECK (substitution_1_target >= 0 AND substitution_1_target <= 11),
+    substitution_1_minute INT NOT NULL CHECK (substitution_1_minute >= 0 AND substitution_1_minute <= 90),
+
+    substitution_2_shirt INT NOT NULL CHECK (substitution_2_shirt >= 0 AND substitution_2_shirt <= 25),
+    substitution_2_target INT NOT NULL CHECK (substitution_2_target >= 0 AND substitution_2_target <= 11),
+    substitution_2_minute INT NOT NULL CHECK (substitution_2_minute >= 0 AND substitution_2_minute <= 90),
+
+    extra_attack_1  BOOLEAN NOT NULL,
+    extra_attack_2  BOOLEAN NOT NULL,
+    extra_attack_3  BOOLEAN NOT NULL,
+    extra_attack_4  BOOLEAN NOT NULL,
+    extra_attack_5  BOOLEAN NOT NULL,
+    extra_attack_6  BOOLEAN NOT NULL,
+    extra_attack_7  BOOLEAN NOT NULL,
+    extra_attack_8  BOOLEAN NOT NULL,
+    extra_attack_9  BOOLEAN NOT NULL,
+    extra_attack_10 BOOLEAN NOT NULL,
+
+    PRIMARY KEY (block_number, team_id)
+);
 
 CREATE TABLE trainings (
     team_id TEXT NOT NULL REFERENCES teams(team_id),
