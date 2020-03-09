@@ -169,7 +169,7 @@ func (b *Training) Insert(tx *sql.Tx) error {
 	return err
 }
 
-func TrainingsByTimezone(tx *sql.Tx, timezone uint8) ([]Training, error) {
+func TrainingsByTimezone(tx *sql.Tx, timezone int) ([]Training, error) {
 	var trainings []Training
 	rows, err := tx.Query(
 		`SELECT 
