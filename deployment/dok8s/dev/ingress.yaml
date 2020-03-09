@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: cryptosoccer-ingress
+  annotations:
+    # use the shared ingress-nginx
+    kubernetes.io/ingress.class: "nginx"
+    # Enable client certificate authentication
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    # Specify the verification depth in the client certificates chain
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+    # Specify an error page to be redirected to verification errors
+    nginx.ingress.kubernetes.io/auth-tls-error-page: "http://www.mysite.com/error-cert.html"
+    # Specify if certificates are passed to upstream server
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-freeverse
+  
+spec:
+  tls:
+  - hosts:
+    - k8s.gorengine.com
+    secretName: cryptosoccer-tls
+  rules:
+  - host: k8s.gorengine.com
+    http:
+      paths:
+      - path: /xdai
+        backend:
+          serviceName: xdai
+          servicePort: 8545
+      - path: /auth
+        backend:
+          serviceName: authproxy
+          servicePort: 8080
