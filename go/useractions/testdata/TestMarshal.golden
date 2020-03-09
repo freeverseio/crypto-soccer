@@ -39,8 +39,6 @@
 	],
 	"trainings": [
 		{
-			"verse": 5,
-			"timezone": 0,
 			"team_id": "pippo",
 			"special_player_shirt": 0,
 			"goalkeepers_defence": 0,

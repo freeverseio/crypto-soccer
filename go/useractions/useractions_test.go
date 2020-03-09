@@ -19,7 +19,7 @@ func TestMarshal(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, string(data), `{"tactics":[],"trainings":[]}`)
 	ua.Tactics = append(ua.Tactics, storage.Tactic{Verse: 3, TeamID: "ciao"})
-	ua.Trainings = append(ua.Trainings, storage.Training{Verse: 5, TeamID: "pippo"})
+	ua.Trainings = append(ua.Trainings, storage.Training{TeamID: "pippo"})
 	data, err = ua.Marshal()
 	assert.NilError(t, err)
 	var out bytes.Buffer
@@ -97,8 +97,6 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 	timezone := 4
 	training := storage.Training{}
 	training.TeamID = "0"
-	training.Verse = verse
-	training.Timezone = timezone
 	assert.NilError(t, training.Insert(tx))
 	tactic := storage.Tactic{}
 	tactic.Verse = verse
@@ -110,7 +108,6 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 	assert.Equal(t, len(ua.Tactics), 1)
 	assert.Equal(t, len(ua.Trainings), 1)
 
-	training.Verse = verse - 1
 	assert.NilError(t, training.Insert(tx))
 	tactic.Verse = verse + 1
 	assert.NilError(t, tactic.Insert(tx))
@@ -121,8 +118,6 @@ func TestUserActionsPullFromStorage(t *testing.T) {
 
 	team.TeamID = "43"
 	assert.NilError(t, team.Insert(tx))
-	training.Verse = verse
-	training.Timezone = timezone + 1
 	training.TeamID = "43"
 	assert.NilError(t, training.Insert(tx))
 	tactic.Verse = verse
