@@ -71,25 +71,16 @@ func NewFromIpfs(url string, cid string) (*UserActions, error) {
 	return &ua, nil
 }
 
-func NewFromStorage(tx *sql.Tx, verse uint64, timezone int) (*UserActions, error) {
+func NewFromStorage(tx *sql.Tx, timezone int) (*UserActions, error) {
 	var err error
 	var ua UserActions
-	if ua.Tactics, err = storage.TacticsByVerseAndTimezone(tx, verse, timezone); err != nil {
+	if ua.Tactics, err = storage.TacticsByTimezone(tx, timezone); err != nil {
 		return nil, err
 	}
-	if ua.Trainings, err = storage.TrainingsByVerseAndTimezone(tx, verse, timezone); err != nil {
+	if ua.Trainings, err = storage.TrainingsByTimezone(tx, timezone); err != nil {
 		return nil, err
 	}
 	return &ua, nil
-}
-
-func (b *UserActions) UpdateVerse(verse uint64) {
-	for i := range b.Trainings {
-		b.Trainings[i].Verse = verse
-	}
-	for i := range b.Tactics {
-		b.Tactics[i].Verse = verse
-	}
 }
 
 func (b *UserActions) Hash() ([32]byte, error) {

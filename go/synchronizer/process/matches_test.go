@@ -82,7 +82,7 @@ func TestMatchesSetTactics(t *testing.T) {
 	matches[1].VisitorTeam.TeamID = teamID
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
 	tactics := []storage.Tactic{}
-	tactic := storage.Tactic{0, 0, teamID, 1, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 11, 0, 25, 11, 0, 25, 11, 0, false, false, true, false, false, true, false, false, false, false}
+	tactic := storage.Tactic{teamID, 1, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 11, 0, 25, 11, 0, 25, 11, 0, false, false, true, false, false, true, false, false, false, false}
 	tactics = append(tactics, tactic)
 	assert.NilError(t, matches.SetTactics(*bc.Contracts, tactics))
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
