@@ -15,6 +15,10 @@ spec:
           serviceName: dashboard
           servicePort: 80
         path: /
+      - backend:
+          serviceName: horizon
+          servicePort: 4000
+        path: /api
 
 ---
 
