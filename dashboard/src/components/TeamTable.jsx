@@ -25,13 +25,16 @@ query teamByTeamId($teamId: String!){
 }
 `;
 
-export default function TeamTable(props) {
-    const { teamId, onPlayerIdChange } = props;
+export default function TeamTable({ teamId, onPlayerIdChange }) {
     const [playerId, setPlayerId] = useState("");
     const { loading, error, data } = useQuery(GET_TEAM, {
         variables: { teamId },
         pollInterval: Config.polling_ms,
     });
+
+    if (teamId === '') {
+        return <div/>
+    }
 
     if (loading) return 'Loading...';
     if (error) return `Error! ${error.message}`;
