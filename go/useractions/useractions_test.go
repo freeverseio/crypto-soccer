@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
-	sync "github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
@@ -56,7 +55,7 @@ func TestIpfsPushAndPull(t *testing.T) {
 	ua.Trainings = append(ua.Trainings, training)
 	cif, err = ua.ToIpfs("localhost:5001")
 	assert.NilError(t, err)
-	assert.Equal(t, cif, "QmaW7ZEjanu67W2rmobnpB2qTCCtrjX7Jwzqkqnc5emTfA")
+	assert.Equal(t, cif, "QmfGHTVYpo3GzPaf4Dvj4isx1Zi8jefw29DkdSWdmyrLZh")
 	ua2, err := useractions.NewFromIpfs("localhost:5001", cif)
 	assert.NilError(t, err)
 	assert.Assert(t, ua2.Equal(&ua))
@@ -80,53 +79,22 @@ func TestUserActionsPullFromStorageNoUserActions(t *testing.T) {
 func TestUserActionsPullFromStorage(t *testing.T) {
 	t.Parallel()
 	tx, err := db.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	defer tx.Rollback()
+
+	createMinimumUniverse(t, tx)
+
 	verse := uint64(6)
-	tz := sync.Timezone{}
-	assert.NilError(t, tz.Insert(tx))
-	country := sync.Country{}
-	assert.NilError(t, country.Insert(tx))
-	league := sync.League{}
-	assert.NilError(t, league.Insert(tx))
-	team := sync.Team{}
-	team.TeamID = "0"
-	assert.NilError(t, team.Insert(tx))
-	timezone := 4
-	training := storage.Training{}
-	training.TeamID = "0"
+	training := storage.NewTraining()
+	training.TeamID = teamID
 	assert.NilError(t, training.Insert(tx))
 	tactic := storage.Tactic{}
 	tactic.Verse = verse
-	tactic.Timezone = timezone
-	tactic.TeamID = "0"
+	tactic.Timezone = int(timezoneIdx)
+	tactic.TeamID = teamID
 	assert.NilError(t, tactic.Insert(tx))
-	ua, err := useractions.NewFromStorage(tx, verse, timezone)
+	ua, err := useractions.NewFromStorage(tx, verse, int(timezoneIdx))
 	assert.NilError(t, err)
 	assert.Equal(t, len(ua.Tactics), 1)
 	assert.Equal(t, len(ua.Trainings), 1)
-
-	assert.NilError(t, training.Insert(tx))
-	tactic.Verse = verse + 1
-	assert.NilError(t, tactic.Insert(tx))
-	ua, err = useractions.NewFromStorage(tx, verse, timezone)
-	assert.NilError(t, err)
-	assert.Equal(t, len(ua.Tactics), 1)
-	assert.Equal(t, len(ua.Trainings), 1)
-
-	team.TeamID = "43"
-	assert.NilError(t, team.Insert(tx))
-	training.TeamID = "43"
-	assert.NilError(t, training.Insert(tx))
-	tactic.Verse = verse
-	tactic.Timezone = timezone + 1
-	tactic.TeamID = "43"
-	assert.NilError(t, tactic.Insert(tx))
-	ua, err = useractions.NewFromStorage(tx, verse, timezone)
-	assert.NilError(t, err)
-	assert.Equal(t, len(ua.Tactics), 1)
-	assert.Equal(t, len(ua.Trainings), 1)
-
 }
