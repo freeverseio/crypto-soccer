@@ -71,7 +71,8 @@ func ResetTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
     		special_player_speed = 0,
     		special_player_pass = 0,
     		special_player_shoot = 0,
-			special_player_endurance = 0`); err != nil {
+			special_player_endurance = 0
+			FROM teams WHERE trainings.team_id = teams.team_id AND teams.timezone_idx = $1`, timezone); err != nil {
 		return err
 	}
 	return nil
@@ -168,7 +169,7 @@ func (b *Training) Insert(tx *sql.Tx) error {
 	return err
 }
 
-func TrainingsByTimezone(tx *sql.Tx, timezone int) ([]Training, error) {
+func TrainingsByTimezone(tx *sql.Tx, timezone uint8) ([]Training, error) {
 	var trainings []Training
 	rows, err := tx.Query(
 		`SELECT 
