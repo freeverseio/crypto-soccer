@@ -3,6 +3,7 @@ CREATE TABLE params (
     value TEXT NOT NULL,
     PRIMARY KEY(name)
 );
+comment on table params is E'@omit create,update,delete';
 
 INSERT INTO params (name, value) VALUES ('block_number', '0');
 
@@ -10,12 +11,14 @@ CREATE TABLE timezones (
     timezone_idx INT NOT NULL,
     PRIMARY KEY(timezone_idx)
 );
+comment on table timezones is E'@omit create,update,delete';
 
 CREATE TABLE countries (
     timezone_idx INT NOT NULL REFERENCES timezones(timezone_idx),
     country_idx INT NOT NULL,
     PRIMARY KEY(timezone_idx, country_idx)
 );
+comment on table countries is E'@omit create,update,delete';
 
 CREATE TABLE leagues (
     timezone_idx INT NOT NULL,
@@ -24,6 +27,7 @@ CREATE TABLE leagues (
     PRIMARY KEY(timezone_idx,country_idx, league_idx),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx)
 );
+comment on table leagues is E'@omit create,update,delete';
 
 CREATE TABLE teams (
     team_id TEXT NOT NULL,
@@ -47,6 +51,7 @@ CREATE TABLE teams (
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
+comment on table teams is E'@omit create,update,delete';
 
 CREATE TABLE players (
     name TEXT NOT NULL,
@@ -68,6 +73,7 @@ CREATE TABLE players (
     injury_matches_left INT NOT NULL DEFAULT 0,
     PRIMARY KEY(player_id)
 );
+comment on table players is E'@omit create,update,delete';
 
 CREATE TABLE players_histories (
     player_id TEXT NOT NULL REFERENCES players(player_id),
@@ -88,6 +94,7 @@ CREATE TABLE players_histories (
     injury_matches_left INT NOT NULL DEFAULT 0,
     PRIMARY KEY(block_number, player_id)
 );
+comment on table players_histories is E'@omit create,update,delete';
 
 CREATE TYPE match_state AS ENUM ('begin', 'half', 'end', 'cancel');
 CREATE TABLE matches (
@@ -107,6 +114,7 @@ CREATE TABLE matches (
     PRIMARY KEY(timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
+comment on table matches is E'@omit create,update,delete';
 
 CREATE TYPE match_event_type AS ENUM ('attack', 'yellow_card', 'red_card', 'injury_soft', 'injury_hard', 'substitution');
 CREATE TABLE match_events (
@@ -124,6 +132,7 @@ CREATE TABLE match_events (
     secondary_player_id TEXT REFERENCES players(player_id),
     FOREIGN KEY (timezone_idx, country_idx, league_idx, match_day_idx, match_idx) REFERENCES matches(timezone_idx, country_idx, league_idx, match_day_idx, match_idx)
 );
+comment on table match_events is E'@omit create,update,delete';
 
 -- ********************************** USER ACTIONS ****************************************
 
@@ -169,6 +178,8 @@ CREATE TABLE tactics (
 
     PRIMARY KEY (team_id)
 );
+comment on table tactics is E'@omit create,delete';
+comment on column tactics.team_id is E'@omit update';
 
 CREATE TABLE tactics_histories (
     block_number BIGINT NOT NULL,
@@ -213,6 +224,7 @@ CREATE TABLE tactics_histories (
 
     PRIMARY KEY (block_number, team_id)
 );
+comment on table tactics_histories is E'@omit create,update,delete';
 
 CREATE TABLE trainings (
     team_id TEXT NOT NULL REFERENCES teams(team_id),
@@ -251,6 +263,8 @@ CREATE TABLE trainings (
 
     PRIMARY KEY (team_id)
  );
+comment on table trainings is E'@omit create,delete';
+comment on column trainings.team_id is E'@omit update';
 
 CREATE TABLE trainings_histories (
     block_number BIGINT NOT NULL,
@@ -290,4 +304,5 @@ CREATE TABLE trainings_histories (
 
     PRIMARY KEY (block_number, team_id)
 );
+comment on table trainings_histories is E'@omit create,update,delete';
 

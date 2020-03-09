@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
-	relay "github.com/freeverseio/crypto-soccer/go/storage"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -223,9 +222,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 
 func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, timezone uint8, teamID *big.Int) error {
 	tacticId := 1
-	tactic := &relay.Tactic{
-		relay.UpcomingVerse,
-		int(timezone),
+	tactic := &storage.Tactic{
 		teamID.String(),
 		tacticId,
 		0,
@@ -240,13 +237,13 @@ func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, timezone ui
 		11,
 		12,
 		25,
-		relay.NoSubstitution,
+		storage.NoSubstitution,
 		0,
 		25,
-		relay.NoSubstitution,
+		storage.NoSubstitution,
 		0,
 		25,
-		relay.NoSubstitution,
+		storage.NoSubstitution,
 		0,
 		false,
 		false,
@@ -263,8 +260,7 @@ func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, timezone ui
 }
 
 func (b *DivisionCreationProcessor) createInitialTraining(tx *sql.Tx, teamID *big.Int) error {
-	training := relay.Training{}
-	training.Verse = relay.UpcomingVerse
+	training := storage.NewTraining()
 	training.TeamID = teamID.String()
 	training.SpecialPlayerShirt = -1
 	return training.Insert(tx)
