@@ -306,15 +306,15 @@ contract("Market", accounts => {
     await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
     
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, CAROL).should.be.fulfilled;
-    buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
+    buyerTeamId1 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
 
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: CAROL, value: startingPrice}).should.be.rejected;
+    await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: startingPrice}).should.be.rejected;
 
     newBid = web3.utils.toWei('1.1');
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: CAROL, value: (newBid)}).should.be.rejected;
+    await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.rejected;
 
     newBid = web3.utils.toWei('1.5');
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: CAROL, value: (newBid)}).should.be.fulfilled;
+    await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.fulfilled;
 
     auctionId = await marketCrypto.getCurrentAuction(playerId0).should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: CAROL}).should.be.rejected;
@@ -327,14 +327,20 @@ contract("Market", accounts => {
 
     await marketCrypto.withdraw(auctionId, {from: CAROL}).should.be.rejected;
     await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.rejected;
+    await marketCrypto.executePlayerTransfer(playerId0).should.be.rejected;
 
     await timeTravel.advanceTime(24*3600-100);
     await timeTravel.advanceBlock().should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.rejected;
+    await marketCrypto.executePlayerTransfer(playerId0).should.be.rejected;
 
     await timeTravel.advanceTime(0.1*3600);
     await timeTravel.advanceBlock().should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.fulfilled;
+    await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
+    
+    tId = await market.getCurrentTeamIdFromPlayerId(playerId0).should.be.fulfilled;
+    tId.should.be.bignumber.equal(buyerTeamId1);
 
     
   });

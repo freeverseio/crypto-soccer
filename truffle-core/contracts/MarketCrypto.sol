@@ -136,11 +136,11 @@ contract MarketCrypto {
     // be the interest party in executing it, but we allow anyone to operate it, since this was the intention of the auction.
     function executePlayerTransfer(uint256 playerId) external {
         uint256 auctionId = _playerIdToAuctionId[playerId];
+        require(now > _validUntil[auctionId], "cannot transfer player to highest bidder until auction finishes");
         require(!_assetWentToNewOwner[auctionId], "the player in this auction was already transferred");
         _assetWentToNewOwner[auctionId] = true;
         _market.setIsPlayerFrozenCrypto(playerId, false);
         _market.transferPlayer(playerId, _teamIdHighestBidder[auctionId]);
-        _market.setIsPlayerFrozenCrypto(playerId, false);
     }
     
     function getCurrentAuction(uint256 playerId) external view returns (uint256) { return _playerIdToAuctionId[playerId]; }
