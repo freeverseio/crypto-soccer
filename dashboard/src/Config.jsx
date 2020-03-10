@@ -1,3 +1,3 @@
 export default {
-    polling_ms: 30000,
+    polling_ms: 2000,
 };
