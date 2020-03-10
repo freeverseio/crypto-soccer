@@ -46,28 +46,17 @@ contract MarketCrypto {
         _minimumBidIncrement = newMinimum;
     }
 
-    
-    function isPlayerFrozenCrypto(uint256 playerId) public view returns(bool) { 
-        uint256 auctionId = _playerIdToAuctionId[playerId];
-        if (auctionId == 0) return false;
-        return (_highestBid[auctionId] > 0) && !_assetWentToNewOwner[auctionId]; 
-    }
-
     // an asset is ready to be put for sale again if it either has never been assigned to an auction or, in case it has:
     //  - if the auction never received a bid
     //  - if the auction received bids, and the new owner finally executed the "receive asset" function.
     // Note that the difference with isPlayerFrozenCrypto is that isAuctionSettled is a bit more restrictive, and triggered
-    // as soon as asset if putForSale. In contrast, isPlayerFrozenCrypto on triggers when first bid arrives.
+    // as soon as asset is putForSale. In contrast, isPlayerFrozenCrypto on triggers when first bid arrives.
     function isAuctionSettled(uint256 auctionId) public view returns(bool) {
         if (auctionId == 0) return true;
         if (_assetWentToNewOwner[auctionId]) return true;
         // check if it was put for sale but experied without bids
         return (_highestBid[auctionId] == 0) && (_validUntil[auctionId] < now);
     } 
-
-    function isPlayerFrozenInAnyMarket(uint256 playerId) public view returns (bool) {
-        return isPlayerFrozenCrypto(playerId) || _market.isPlayerFrozen(playerId);
-    }
 
     // this will check also for local crypto freeze of team when feature is added
     function isTeamFrozenInAnyMarket(uint256 teamId) public view returns (bool) {
@@ -83,7 +72,7 @@ contract MarketCrypto {
             // check asset is not already for sale, or if data exists, that the auction has been fully settled
             isAuctionSettled(prevAuctionId) &&
             // check player is not already frozen
-            !isPlayerFrozenInAnyMarket(playerId) &&  
+            !_market.isPlayerFrozenInAnyMarket(playerId) &&  
             // check that the team it belongs to is not already frozen
             !_market.isTeamFrozen(currentTeamId) &&
             // check asset is owned by legit address
@@ -105,6 +94,7 @@ contract MarketCrypto {
     function bidForPlayer(uint256 playerId, uint256 bidderTeamId) external payable {
         // TODO: save gas by calling 1 once and returning all data in 1 call
         require(msg.sender != NULL_ADDR, "sender cannot be the null address");
+        require(msg.sender != _seller[playerId], "seller is not allowed to bid for its own assets");
         uint256 auctionId = _playerIdToAuctionId[playerId];
         require(auctionId != 0, "player has not been put for sale yet");
         require(now < _validUntil[auctionId], "too late to bid, auction time has expired");
@@ -112,11 +102,12 @@ contract MarketCrypto {
 
         uint256 bidAmount = _balance[auctionId][msg.sender] + msg.value;
         require (bidAmount > _highestBid[auctionId] + _minimumBidIncrement, "bid did not increment the previous bid above the minimum allowed");
+
         // if this is the first bid, freeze the asset from every market
-        
-        if (!isPlayerFrozenInAnyMarket(playerId)) {
+        if (!_market.isPlayerFrozenInAnyMarket(playerId)) {
             uint256 currentTeamId  = _market.getCurrentTeamIdFromPlayerId(playerId);
             require (!isTeamFrozenInAnyMarket(currentTeamId), "the team that this player belongs to is already frozen. Cannot sale players if team is for sale");
+            _market.setIsPlayerFrozenCrypto(playerId, true);
         }
         _balance[auctionId][msg.sender] = bidAmount;
         _highestBid[auctionId] = bidAmount;
@@ -128,15 +119,16 @@ contract MarketCrypto {
     // be the interest party in executing it, but we allow anyone to operate it, since this was the intention of the auction.
     function withdraw(uint256 auctionId) external {
         require(now > _validUntil[auctionId], "highest bid goes to seller, so highest bidder cannot withdraw");
-        require(msg.sender != _highestBidder[auctionId], "highest bid goes to seller, so highest bidder cannot withdraw");
+        require(msg.sender != _highestBidder[auctionId], "highest bid deposit goes to seller, so highest bidder cannot withdraw");
         uint256 amount;
         if (msg.sender == _seller[auctionId]) {
             amount = _highestBid[auctionId];
+            _highestBid[auctionId] = 0;
         } else {
             amount = _balance[auctionId][msg.sender];
+            _balance[auctionId][msg.sender] = 0;
         }
         require(amount > 0, "nothing to withdraw for this msg sender");
-        _balance[auctionId][msg.sender] = 0;
         require(msg.sender.send(amount), "failure when withdrawing legit funds");
     }
 
@@ -146,6 +138,7 @@ contract MarketCrypto {
         uint256 auctionId = _playerIdToAuctionId[playerId];
         require(!_assetWentToNewOwner[auctionId], "the player in this auction was already transferred");
         _assetWentToNewOwner[auctionId] = true;
+        _market.setIsPlayerFrozenCrypto(playerId, false);
         _market.transferPlayer(playerId, _teamIdHighestBidder[auctionId]);
     }
 }

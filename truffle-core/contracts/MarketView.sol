@@ -84,7 +84,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         // check that the team itself does not have players already for sale:   
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = getPlayerIdsInTeam(teamId);
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozen(playerIds[p])) return false;
+            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozenInAnyMarket(playerIds[p])) return false;
         }
     }
 
@@ -147,7 +147,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
                 // check signatures are valid by requiring that they own the asset:
                 (getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
-                isPlayerFrozen(playerId) &&
+                isPlayerFrozenFiat(playerId) &&
                 // check that they signed what they input data says they signed:
                 sig[IDX_MSG] == prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
 
@@ -175,7 +175,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
             // check validUntil has not expired
             (now < validUntil) &&
             // check player is not already frozen
-            (!isPlayerFrozen(playerId)) &&  
+            (!isPlayerFrozenInAnyMarket(playerId)) &&  
             // check that the team it belongs to not already frozen
             !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
             // check asset is owned by legit address
@@ -238,7 +238,11 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         return now;
     }
 
-    function isPlayerFrozen(uint256 playerId) public view returns (bool) {
+    function isPlayerFrozenInAnyMarket(uint256 playerId) public view returns (bool) {
+        return isPlayerFrozenFiat(playerId) || _playerIdToIsFrozenCrypto[playerId];
+    }
+
+    function isPlayerFrozenFiat(uint256 playerId) public view returns (bool) {
         require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
         return (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }

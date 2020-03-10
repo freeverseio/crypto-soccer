@@ -15,8 +15,15 @@ import "./MarketView.sol";
  
 contract Market is MarketView {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
+    event PlayerFreezeCrypto(uint256 playerId, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
+
+    function setIsPlayerFrozenCrypto(uint256 playerId, bool isFrozen) public {
+        _playerIdToIsFrozenCrypto[playerId] = isFrozen;
+        emit PlayerFreezeCrypto(playerId, isFrozen);
+    }
+
 
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");

@@ -115,7 +115,7 @@ async function freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, 
     sellerTxMsgBC.should.be.equal(sigSeller.message);
 
     // Then, the buyer builds a message to sign
-    let isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false);
 
     // and send the Freeze TX. 
@@ -602,7 +602,7 @@ contract("Market", accounts => {
     
     // put player:
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     
     // fail to put team:
@@ -634,7 +634,7 @@ contract("Market", accounts => {
     
     // fail to put player:
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
-    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false);
   });
   
@@ -646,7 +646,7 @@ contract("Market", accounts => {
     const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
     tx = await freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
@@ -673,7 +673,7 @@ contract("Market", accounts => {
     const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
     tx = await freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
@@ -708,7 +708,7 @@ contract("Market", accounts => {
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
@@ -756,7 +756,7 @@ contract("Market", accounts => {
 
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
 
-    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -888,7 +888,7 @@ contract("Market", accounts => {
   
   it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
