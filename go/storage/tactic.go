@@ -43,6 +43,10 @@ type Tactic struct {
 	ExtraAttack10       bool   `json:"extra_attack_10"` // extra_attack_1
 }
 
+func NewTactic() *Tactic {
+	return &Tactic{}
+}
+
 func TacticsByTimezone(tx *sql.Tx, timezone int) ([]Tactic, error) {
 	var tactics []Tactic
 	rows, err := tx.Query(
