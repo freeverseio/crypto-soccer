@@ -11,9 +11,10 @@ type TacticHistory struct {
 	BlockNumber uint64
 }
 
-func NewTacticHistory(tactic Tactic) *TacticHistory {
+func NewTacticHistory(blockNumber uint64, tactic Tactic) *TacticHistory {
 	tacticHistory := TacticHistory{}
 	tacticHistory.Tactic = tactic
+	tacticHistory.BlockNumber = blockNumber
 	return &tacticHistory
 }
 

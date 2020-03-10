@@ -20,7 +20,7 @@ func NewUserActionsHistory(blockNumber uint64, userActions UserActions) *UserAct
 
 func (b UserActionsHistory) ToStorage(tx *sql.Tx) error {
 	for _, tactic := range b.UserActions.Tactics {
-		th := storage.NewTacticHistory(tactic)
+		th := storage.NewTacticHistory(b.BlockNumber, tactic)
 		if err := th.Insert(tx); err != nil {
 			return err
 		}
