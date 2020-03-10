@@ -10,7 +10,7 @@ import "./Market.sol";
 contract MarketCrypto {
 
     uint32 internal _auctionDuration = 24 hours; 
-    uint128 internal _minimumBidIncrement = 0.5 ether; // bid for at least this amount of XDAI, or increase previous by this amount
+    uint256 internal _minimumBidIncrement = 0.5 ether; // bid for at least this amount of XDAI, or increase previous by this amount
     uint256 constant private MAX_128_BIT = (2**128)-1; 
     address constant private NULL_ADDR = address(0x0);
     
@@ -76,8 +76,8 @@ contract MarketCrypto {
             (currentOwner == msg.sender)   
         );
         require(OK, "conditions to putPlayerForSale not met");
-        uint256 auctionId = _nAuctions;
         _nAuctions++;
+        uint256 auctionId = _nAuctions;
         _playerIdToAuctionId[playerId] = auctionId;
         _startingPrice[auctionId] = startingPrice;
         _validUntil[auctionId] = now + _auctionDuration;
@@ -96,14 +96,17 @@ contract MarketCrypto {
         require(msg.sender == _market.getOwnerTeam(bidderTeamId), "only the owner of the team can bid for a player");
 
         uint256 bidAmount = _balance[auctionId][msg.sender] + msg.value;
-        require (bidAmount > _highestBid[auctionId] + _minimumBidIncrement, "bid did not increment the previous bid above the minimum allowed");
 
         // if this is the first bid, freeze the asset from every market
         if (!_market.isPlayerFrozenInAnyMarket(playerId)) {
+            require (bidAmount >= _startingPrice[auctionId], "bid did not increment the previous bid above the minimum allowed");
             uint256 currentTeamId  = _market.getCurrentTeamIdFromPlayerId(playerId);
             require (!isTeamFrozenInAnyMarket(currentTeamId), "the team that this player belongs to is already frozen. Cannot sale players if team is for sale");
             _market.setIsPlayerFrozenCrypto(playerId, true);
+        } else {
+            require (bidAmount >= _highestBid[auctionId] + _minimumBidIncrement, "bid did not increment the previous bid above the minimum allowed");
         }
+
         _balance[auctionId][msg.sender] = bidAmount;
         _highestBid[auctionId] = bidAmount;
         _highestBidder[auctionId] = msg.sender;

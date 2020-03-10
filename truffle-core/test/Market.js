@@ -286,14 +286,35 @@ contract("Market", accounts => {
    
   it("crypto flow with player" , async () => {
     BOB = accounts[0];
+    ALICE = accounts[1];
+    TRUMP = accounts[2];
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
-    startingPrice = 1**18;
+    startingPrice = web3.utils.toWei('1');
     teamIdxInCountry0 = 2; 
     playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+3);
-    sellerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 = 0);
+    sellerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0);
 
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB).should.be.fulfilled;
+
     await marketCrypto.putPlayerForSale(playerId0, startingPrice, {from: BOB}).should.be.fulfilled;
+
+    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE).should.be.fulfilled;
+    buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 1);
+
+    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: ALICE, value: startingPrice}).should.be.fulfilled;
+    
+    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, TRUMP).should.be.fulfilled;
+    buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
+
+    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: TRUMP, value: startingPrice}).should.be.rejected;
+
+    newBid = web3.utils.toWei('1.1');
+    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: TRUMP, value: (newBid)}).should.be.rejected;
+
+    newBid = web3.utils.toWei('1.5');
+    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: TRUMP, value: (newBid)}).should.be.fulfilled;
+
+    
   });
 
   return
