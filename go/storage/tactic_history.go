@@ -11,9 +11,9 @@ type TacticHistory struct {
 	BlockNumber uint64
 }
 
-func NewTacticHistory() *TacticHistory {
+func NewTacticHistory(tactic Tactic) *TacticHistory {
 	tacticHistory := TacticHistory{}
-	tacticHistory.Tactic = *NewTactic()
+	tacticHistory.Tactic = tactic
 	return &tacticHistory
 }
 

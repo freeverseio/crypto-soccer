@@ -15,7 +15,8 @@ func TestTacticHistoryInsertWithSameBlockNumber(t *testing.T) {
 
 	createMinimumUniverse(t, tx)
 
-	th := storage.NewTacticHistory()
+	tactic := storage.NewTactic()
+	th := storage.NewTacticHistory(*tactic)
 	th.TeamID = teamID
 	assert.NilError(t, th.Insert(tx))
 	assert.Error(t, th.Insert(tx), "pq: duplicate key value violates unique constraint \"tactics_histories_pkey\"")
@@ -29,7 +30,8 @@ func TestTacticHistoryInsert(t *testing.T) {
 
 	createMinimumUniverse(t, tx)
 
-	th := storage.NewTacticHistory()
+	tactic := storage.NewTactic()
+	th := storage.NewTacticHistory(*tactic)
 	th.TeamID = teamID
 	assert.NilError(t, th.Insert(tx))
 	th.BlockNumber = 1
