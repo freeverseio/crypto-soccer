@@ -6,52 +6,23 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const NoSubstitution = 11
-
-type Tactic struct {
-	TeamID              string `json:"team_id"`   // team_id
-	TacticID            int    `json:"tactic_id"` // tactic_id
-	Shirt0              int    `json:"shirt_0"`   // shirt_0
-	Shirt1              int    `json:"shirt_1"`   // shirt_1
-	Shirt2              int    `json:"shirt_2"`   // shirt_2
-	Shirt3              int    `json:"shirt_3"`   // shirt_3
-	Shirt4              int    `json:"shirt_4"`   // shirt_4
-	Shirt5              int    `json:"shirt_5"`   // shirt_5
-	Shirt6              int    `json:"shirt_6"`   // shirt_6
-	Shirt7              int    `json:"shirt_7"`   // shirt_7
-	Shirt8              int    `json:"shirt_8"`   // shirt_8
-	Shirt9              int    `json:"shirt_9"`   // shirt_9
-	Shirt10             int    `json:"shirt_10"`  // shirt_10
-	Substitution0Shirt  int    `json:"substitution_0_shirt`
-	Substitution0Target int    `json:"substitution_0_target`
-	Substitution0Minute int    `json:"substitution_0_minute`
-	Substitution1Shirt  int    `json:"substitution_1_shirt`
-	Substitution1Target int    `json:"substitution_1_target`
-	Substitution1Minute int    `json:"substitution_1_minute`
-	Substitution2Shirt  int    `json:"substitution_2_shirt`
-	Substitution2Target int    `json:"substitution_2_target`
-	Substitution2Minute int    `json:"substitution_2_minute`
-	ExtraAttack1        bool   `json:"extra_attack_1"`  // extra_attack_1
-	ExtraAttack2        bool   `json:"extra_attack_2"`  // extra_attack_2
-	ExtraAttack3        bool   `json:"extra_attack_3"`  // extra_attack_3
-	ExtraAttack4        bool   `json:"extra_attack_4"`  // extra_attack_4
-	ExtraAttack5        bool   `json:"extra_attack_5"`  // extra_attack_5
-	ExtraAttack6        bool   `json:"extra_attack_6"`  // extra_attack_6
-	ExtraAttack7        bool   `json:"extra_attack_7"`  // extra_attack_7
-	ExtraAttack8        bool   `json:"extra_attack_8"`  // extra_attack_8
-	ExtraAttack9        bool   `json:"extra_attack_9"`  // extra_attack_9
-	ExtraAttack10       bool   `json:"extra_attack_10"` // extra_attack_1
+type TacticHistory struct {
+	Tactic
+	BlockNumber uint64
 }
 
-func NewTactic() *Tactic {
-	return &Tactic{}
+func NewTacticHistory(tactic Tactic) *TacticHistory {
+	tacticHistory := TacticHistory{}
+	tacticHistory.Tactic = tactic
+	return &tacticHistory
 }
 
-func TacticsByTimezone(tx *sql.Tx, timezone int) ([]Tactic, error) {
-	var tactics []Tactic
+func TacticHistoryByTeamID(tx *sql.Tx, teamID string) ([]TacticHistory, error) {
+	var tacticHistories []TacticHistory
 	rows, err := tx.Query(
 		`SELECT
-				tactics.team_id,
+				block_number,
+				team_id,
 				tactic_id,
                 shirt_0,
                 shirt_1,
@@ -83,14 +54,15 @@ func TacticsByTimezone(tx *sql.Tx, timezone int) ([]Tactic, error) {
                 extra_attack_8,
                 extra_attack_9,
                 extra_attack_10
-		FROM tactics LEFT JOIN teams ON tactics.team_id = teams.team_id WHERE teams.timezone_idx = $1;`, timezone)
+		FROM tactics_histories WHERE team_id = $1;`, teamID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var t Tactic
+		var t TacticHistory
 		err = rows.Scan(
+			&t.BlockNumber,
 			&t.TeamID,
 			&t.TacticID,
 			&t.Shirt0,
@@ -127,55 +99,16 @@ func TacticsByTimezone(tx *sql.Tx, timezone int) ([]Tactic, error) {
 		if err != nil {
 			return nil, err
 		}
-		tactics = append(tactics, t)
+		tacticHistories = append(tacticHistories, t)
 	}
-	return tactics, nil
+	return tacticHistories, nil
 }
 
-func TacticCountByVerse(tx *sql.Tx, verse uint64) (uint64, error) {
-	count := uint64(0)
-	var rows *sql.Rows
-	var err error
-
-	rows, err = tx.Query("SELECT COUNT(*) FROM tactics WHERE (verse = $1);", verse)
-
-	if err != nil {
-		return 0, err
-	}
-
-	defer rows.Close()
-	rows.Next()
-	err = rows.Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
-func TacticCount(tx *sql.Tx) (uint64, error) {
-	count := uint64(0)
-	var rows *sql.Rows
-	var err error
-
-	rows, err = tx.Query("SELECT COUNT(*) FROM tactics;")
-
-	if err != nil {
-		return 0, err
-	}
-
-	defer rows.Close()
-	rows.Next()
-	err = rows.Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
-func (b *Tactic) Insert(tx *sql.Tx) error {
-	log.Debugf("[DBMS] Create tactic for TeamID %v", b.TeamID)
+func (b TacticHistory) Insert(tx *sql.Tx) error {
+	log.Debugf("[DBMS] Create tactic history for TeamID %v", b.TeamID)
 	_, err := tx.Exec(
-		`INSERT INTO tactics (
+		`INSERT INTO tactics_histories (
+						block_number,
 						team_id,
 						tactic_id,
                         shirt_0,
@@ -240,8 +173,10 @@ func (b *Tactic) Insert(tx *sql.Tx) error {
 						$29,
 						$30,
 						$31,
-						$32
+						$32,
+						$33
 		);`,
+		b.BlockNumber,
 		b.TeamID,
 		b.TacticID,
 		b.Shirt0,
