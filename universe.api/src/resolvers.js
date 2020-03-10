@@ -28,6 +28,7 @@ const resolvers = (sql, assets, from) => {
               encoded_skills,
               encoded_state,
               red_card,
+              block_number,
               injury_matches_left) VALUES (
                 ${sql.value(name)},
                 ${sql.value(playerId)},
@@ -43,6 +44,7 @@ const resolvers = (sql, assets, from) => {
                 ${sql.value(dayOfBirth)},
                 ${sql.value('')},
                 ${sql.value('')},
+                ${sql.value(0)},
                 ${sql.value(0)},
                 ${sql.value(0)}
             )`;
