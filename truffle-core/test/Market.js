@@ -13,6 +13,7 @@ const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
+const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
 
 async function createPromoPlayer(targetTeamId, internalId = 144321433) {
@@ -248,9 +249,11 @@ contract("Market", accounts => {
     constants = await ConstantsGetters.new().should.be.fulfilled;
     proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
     depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
-    assets = depl[0]
-    market = depl[1]
-    
+    assets = depl[0];
+    market = depl[1];
+
+    marketCrypto = await MarketCrypto.new().should.be.fulfilled;
+
     // done with delegate calls
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     await assets.init().should.be.fulfilled;
@@ -279,6 +282,23 @@ contract("Market", accounts => {
 
   });
 
+  
+   
+  it("crypto flow with player" , async () => {
+    BOB = accounts[0];
+    await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
+    startingPrice = 1**18;
+    teamIdxInCountry0 = 2; 
+    playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+3);
+    sellerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 = 0);
+
+    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB).should.be.fulfilled;
+    await marketCrypto.putPlayerForSale(playerId0, startingPrice, {from: BOB}).should.be.fulfilled;
+  });
+
+  return
+  
+  
   it2('setAcquisitionConstraint of constraints in friendliess', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
@@ -547,6 +567,7 @@ contract("Market", accounts => {
     ).should.be.rejected;
   });
   
+ 
   it2("teams: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
@@ -693,7 +714,7 @@ contract("Market", accounts => {
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
   });
   
-  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+  it2("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
     // 3. Freeverse advertises to owner that there is an offer to buy his asset at price

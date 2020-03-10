@@ -24,7 +24,6 @@ contract Market is MarketView {
         emit PlayerFreezeCrypto(playerId, isFrozen);
     }
 
-
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];

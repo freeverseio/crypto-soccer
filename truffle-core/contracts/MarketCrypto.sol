@@ -14,7 +14,6 @@ contract MarketCrypto {
     uint256 constant private MAX_128_BIT = (2**128)-1; 
     address constant private NULL_ADDR = address(0x0);
     
-    Proxy private _proxy;
     Market private _market;
 
     mapping (uint256 => uint256) internal _playerIdToAuctionId;
@@ -30,12 +29,8 @@ contract MarketCrypto {
     mapping (uint256 => bool) private  _assetWentToNewOwner;
     mapping (uint256 => mapping(address => uint256)) private _balance;
     
-    function setProxyAddress(address addr) external {
-        _proxy = Proxy(addr);
-    }
-
-    function setMarketAddress(address addr) external {
-        _market = Market(addr);
+    function setMarketAddress(address proxyAddr) external {
+        _market = Market(proxyAddr);
     }
     
     function setActionDuration(uint32 newDuration) external {
@@ -140,5 +135,6 @@ contract MarketCrypto {
         _assetWentToNewOwner[auctionId] = true;
         _market.setIsPlayerFrozenCrypto(playerId, false);
         _market.transferPlayer(playerId, _teamIdHighestBidder[auctionId]);
+        _market.setIsPlayerFrozenCrypto(playerId, false);
     }
 }
