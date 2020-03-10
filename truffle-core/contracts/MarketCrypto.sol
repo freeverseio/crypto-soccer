@@ -116,13 +116,15 @@ contract MarketCrypto {
     // Note that this function can be executed by anyone. Of course, only the highest bidder is expected to 
     // be the interest party in executing it, but we allow anyone to operate it, since this was the intention of the auction.
     function withdraw(uint256 auctionId) external {
-        require(now > _validUntil[auctionId], "highest bid goes to seller, so highest bidder cannot withdraw");
-        require(msg.sender != _highestBidder[auctionId], "highest bid deposit goes to seller, so highest bidder cannot withdraw");
+        require(msg.sender != _highestBidder[auctionId], "higher bidder can never withdraw");
         uint256 amount;
         if (msg.sender == _seller[auctionId]) {
+            // seller can only withdraw after the auction ended
+            require(now > _validUntil[auctionId], "highest bid goes to seller, so highest bidder cannot withdraw");
             amount = _highestBid[auctionId];
             _highestBid[auctionId] = 0;
         } else {
+            // outbid users can withdraw any time
             amount = _balance[auctionId][msg.sender];
             _balance[auctionId][msg.sender] = 0;
         }
@@ -140,4 +142,6 @@ contract MarketCrypto {
         _market.transferPlayer(playerId, _teamIdHighestBidder[auctionId]);
         _market.setIsPlayerFrozenCrypto(playerId, false);
     }
+    
+    function getCurrentAuction(uint256 playerId) external view returns (uint256) { return _playerIdToAuctionId[playerId]; }
 }
