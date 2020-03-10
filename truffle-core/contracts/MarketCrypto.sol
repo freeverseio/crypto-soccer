@@ -143,5 +143,5 @@ contract MarketCrypto {
         _market.transferPlayer(playerId, _teamIdHighestBidder[auctionId]);
     }
     
-    function getCurrentAuction(uint256 playerId) external view returns (uint256) { return _playerIdToAuctionId[playerId]; }
+    function getCurrentAuctionForPlayer(uint256 playerId) external view returns (uint256) { return _playerIdToAuctionId[playerId]; }
 }

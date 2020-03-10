@@ -339,7 +339,7 @@ contract("Market", accounts => {
     await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.fulfilled;
     await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
     
-    tId = await market.getCurrentTeamIdFromPlayerId(playerId0).should.be.fulfilled;
+    tId = await market.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
     tId.should.be.bignumber.equal(buyerTeamId1);
 
     
