@@ -5,7 +5,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
-  name: external-auth-oauth2-phoenix
+  name: phoenix-external-auth-oauth2
 spec:
   rules:
   - host: k8s.gorengine.com
@@ -38,7 +38,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: phoenix-oauth2-proxy
+          serviceName: oauth2-proxy
           servicePort: 4180
         path: /oauth2
   tls:
