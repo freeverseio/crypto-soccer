@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
 - configmap.yaml
 - authproxy
-- helloworld
+# - helloworld
 - horizon
 - marketdb
 - notary
