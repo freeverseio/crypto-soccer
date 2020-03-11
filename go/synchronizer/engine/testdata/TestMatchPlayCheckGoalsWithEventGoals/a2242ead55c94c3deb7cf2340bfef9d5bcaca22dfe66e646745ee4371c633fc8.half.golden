@@ -13,8 +13,8 @@
 		},
 		HomeGoals: (uint8) 1,
 		VisitorGoals: (uint8) 2,
-		HomeMatchLog: (*big.Int)(1809253036421563448390736347185344807343282452750693159453103070358909485217),
-		VisitorMatchLog: (*big.Int)(1809253036421563448390736347168619248444384494268095572346785559659767925378),
+		HomeMatchLog: (*big.Int)(1809253036421563448390736347186058431189635432691222302437827817927100858529),
+		VisitorMatchLog: (*big.Int)(1809253036421563448390736347169377473781134535454907786768055603950971259522),
 		State: (storage.MatchState) (len=4) "half"
 	},
 	StartTime: (*big.Int)(1570147200),
@@ -1226,21 +1226,21 @@
 			SecondaryPlayer: (int16) 10
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 25,
+			Minute: (int16) 26,
 			Type: (int16) 1,
 			Team: (int16) 0,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 8,
+			PrimaryPlayer: (int16) 9,
 			SecondaryPlayer: (int16) -1
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 25,
+			Minute: (int16) 26,
 			Type: (int16) 1,
 			Team: (int16) 1,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 8,
+			PrimaryPlayer: (int16) 9,
 			SecondaryPlayer: (int16) -1
 		}
 	}
