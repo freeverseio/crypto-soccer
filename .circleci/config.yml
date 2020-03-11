@@ -94,6 +94,7 @@ jobs:
       - run: cd market.trader && npm test
   dockerization-development:
     executor: freeverse
+    resource_class: xlarge
     steps:
       - checkout
       - setup_remote_docker:   # (2)
@@ -122,6 +123,7 @@ jobs:
       - run: docker push freeverseio/dashboard:dev
   dockerization-production:
     executor: freeverse
+    resource_class: xlarge
     steps:
       - checkout
       - setup_remote_docker:   # (2)
