@@ -211,12 +211,12 @@ workflows:
             - market-trader
             - relay-actions
             - market-notary
-      # - deployk8s:
-      #     filters:
-      #      branches:
-      #         only:
-      #           - dev
-      #     requires:
-      #       - dockerization-development
-      #       - truffle_core
+      - deployk8s:
+          filters:
+           branches:
+              only:
+                - dev
+          requires:
+            - dockerization-development
+            - truffle_core
 
