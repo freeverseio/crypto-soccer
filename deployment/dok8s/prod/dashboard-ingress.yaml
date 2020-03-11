@@ -8,7 +8,7 @@ metadata:
   name: dashboard-external-auth-oauth2
 spec:
   rules:
-  - host: dashboard.gorengine.com
+  - host: dashboard.goalrevolution.live
     http:
       paths:
       - backend:
@@ -21,7 +21,7 @@ spec:
         path: /api
   tls:
   - hosts:
-    - dashboard.gorengine.com
+    - dashboard.goalrevolution.live
     secretName: cryptosoccer-dashboard-tls
 
 ---
@@ -39,7 +39,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-freeverse
 spec:
   rules:
-  - host: dashboard.gorengine.com
+  - host: dashboard.goalrevolution.live
     http:
       paths:
       - backend:
@@ -48,5 +48,5 @@ spec:
         path: /oauth2
   tls:
   - hosts:
-    - dashboard.gorengine.com
+    - dashboard.goalrevolution.live
     secretName: cryptosoccer-dashboard-tls
