@@ -96,7 +96,7 @@ CREATE TABLE players_histories (
 );
 comment on table players_histories is E'@omit create,update,delete';
 
-CREATE TYPE match_state AS ENUM ('begin', 'half', 'end', 'cancel');
+CREATE TYPE match_state AS ENUM ('begin', 'half', 'end', 'cancelled');
 CREATE TABLE matches (
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
