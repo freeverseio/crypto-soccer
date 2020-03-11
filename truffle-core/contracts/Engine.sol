@@ -270,28 +270,30 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         uint256 teamPassCapacity = weights[0];
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getSkill(skills[p], SK_PAS);
+            weights[p] = uint256(extraAttack[p-1] ? 90 : 20) * getSkill(skills[p], SK_PAS);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getSkill(skills[p], SK_PAS);
+            weights[p] = uint256(extraAttack[p-1] ? 150 : 100) * getSkill(skills[p], SK_PAS);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 200 * getSkill(skills[p], SK_PAS);
+            weights[p] = uint256(200) * getSkill(skills[p], SK_PAS);
             teamPassCapacity += weights[p];
             p++;
         }
+        
         // on average: teamPassCapacity442 = (1 + 4 * 20 + 4 * 100 + 2 * 200) < getPass > = 881 <pass>_team
         // on average: shooterSumOfSkills = 5 * <skills>_shooter
         // so a good ratio is shooterSumOfSkills/teamPassCapacity442 = 5/881 * <skills_shooter>/<pass>_team
         // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
-        // or to have a 50% change, multiply by 10, and to have say, 1/3, multiply by 10/3
+        // or to have a 50% chance, multiply by 10, and to have say, 1/3, multiply by 10/3
         // this is to be compensated by an overall factor of about.
         if (teamPassCapacity <= weights[shooter]) return shooter;
-        weights[shooter] = (weights[shooter] * getSumOfSkills(skills[shooter]) * 8810)/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
+        
+        weights[shooter] = (weights[shooter] * getSumOfSkills(skills[shooter]) * uint256(8810))/ (uint256(3 * N_SKILLS) * (teamPassCapacity - weights[shooter]));
         return throwDiceArray(weights, rnd);
     }
 

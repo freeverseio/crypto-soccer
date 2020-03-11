@@ -13,14 +13,16 @@ contract EngineLib is EncodingSkillsGetters {
     /// We return a uint8, not bool, to allow the return to be used as an idx in an array by the callee.
     /// The formula is derived as follows. Consider a segment which is the union of a segment of length w0, and one of length w1.
     //      0, 1, ... w0-1 | w0 ... w0+w1-1
-    //  We want to get a random number in that segment: (w0+w1-1) * (R/maxR)
-    //  w1 wins if (w0+w1-1) * (R/maxR) < w1 => (w0+w1-1) * R < w1 * maxR
-    //  w2 wins otherwise
+    //  We want to get a random number in that segment: (w0+w1) * R/(maxR + 1)
+    //  w0 wins if (w0+w1) * R/(maxR + 1) < w0 => (w0+w1) * R < w0 * (maxR + 1)
+    //  w1 wins otherwise
+    //  Limits:
+    //  (w0 = 0, w1 != 0) => w0 never wins;   (w0 ! 0, w1 = 0) => w1 never wins;   
     //  MAX_RND controls the resolution or fine-graining of the algorithm.
     function throwDice(uint256 weight0, uint256 weight1, uint256 rndNum) public pure returns(uint8) {
         // if both weights are null, return approx 50% chance
         if (weight0 == 0 && weight1 == 0) return uint8(rndNum % 2);
-        if( ( (weight0 + weight1 - 1) * rndNum ) < (weight0 * MAX_RND) ) {
+        if( ( (weight0 + weight1) * rndNum ) < (weight0 * (MAX_RND +1)) ) {
             return 0;
         } else {
             return 1;
@@ -29,6 +31,7 @@ contract EngineLib is EncodingSkillsGetters {
 
     /// @dev Generalization of the previous to any number of input weights
     /// @dev It therefore throws any number of dice and returns the winner's idx.
+    /// @dev Following the explanation above, consider this limits:
     function throwDiceArray(uint256[] memory weights, uint256 rndNum) public pure returns(uint8 w) {
         uint256 uniformRndInSumOfWeights;
         for (w = 0; w < weights.length; w++) {
@@ -36,11 +39,13 @@ contract EngineLib is EncodingSkillsGetters {
         }
         // if all weights are null, return uniform chance
         if (uniformRndInSumOfWeights == 0) return uint8(rndNum % weights.length);
-        uniformRndInSumOfWeights = (uniformRndInSumOfWeights - 1) * rndNum;
+
+        uniformRndInSumOfWeights *= rndNum;
+        uint256 maxRndPlusOne = MAX_RND + 1;
         uint256 cumSum = 0;
         for (w = 0; w < weights.length-1; w++) {
             cumSum += weights[w];
-            if( uniformRndInSumOfWeights < ( cumSum * MAX_RND )) {
+            if( uniformRndInSumOfWeights < ( cumSum * maxRndPlusOne)) {
                 return w;
             }
         }

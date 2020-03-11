@@ -33,7 +33,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
     uint8 private constant IDX_BLOCK_SHOOT  = 3; 
     uint8 private constant IDX_ENDURANCE    = 4; 
     uint256 private constant TEN_TO_4       = uint256(10000); 
-    uint256 private constant TEN_TO_10      = uint256(10000000000); 
     uint256 private constant TEN_TO_8       = uint256(100000000); 
     uint256 private constant SECS_IN_DAY    = 86400; // 24 * 3600 
 
@@ -416,7 +415,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         if (penalty != 0) { 
             globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_8;
             globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_8;
-            globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_10;
+            globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_4;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 30;
             globSkills[IDX_DEFEND_SHOOT] += 20;
@@ -436,7 +435,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
     {
         if (penalty != 0) {
             globSkills[IDX_MOVE2ATTACK] += ((2*getSkill(playerSkills, SK_DEF) + 2*getSkill(playerSkills, SK_SPE) + 3*getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_8;
-            globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_10;
+            globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_4;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 50;
             globSkills[IDX_ENDURANCE]   += 10;
@@ -456,7 +455,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         if (penalty != 0) {
             globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_8;
             globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_8;
-            globSkills[IDX_ENDURANCE] += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_10;
+            globSkills[IDX_ENDURANCE] += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_4;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 10;
             globSkills[IDX_CREATE_SHOOT] += 20;
