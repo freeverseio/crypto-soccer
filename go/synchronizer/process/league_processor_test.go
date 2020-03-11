@@ -92,7 +92,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		big.NewInt(actionsSubmissionTime),
 		root,
 		cid,
-		types.Log{},
+		types.Log{BlockNumber: 1000},
 	})
 	assert.NilError(t, err)
 	turnInDay = 1
@@ -105,7 +105,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		big.NewInt(actionsSubmissionTime),
 		root,
 		cid,
-		types.Log{},
+		types.Log{BlockNumber: 1001},
 	})
 	assert.NilError(t, err)
 }

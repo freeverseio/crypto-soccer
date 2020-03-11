@@ -61,11 +61,10 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if nextToUpdate.TimeZone == 0 {
 		log.Info("Timezone 0 ... skipping user actions")
 	} else if nextToUpdate.TurnInDay <= 1 {
-		if upcomingUserActions, err = useractions.NewFromStorage(tx, storage.UpcomingVerse, int(nextToUpdate.TimeZone)); err != nil {
+		if upcomingUserActions, err = useractions.NewFromStorage(tx, int(nextToUpdate.TimeZone)); err != nil {
 			return err
 		}
 	}
-	upcomingUserActions.UpdateVerse(currentVerse.Uint64())
 	root, err := upcomingUserActions.Root()
 	if err != nil {
 		return err

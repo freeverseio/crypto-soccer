@@ -43,7 +43,7 @@ app.use(
       graphiql: true,
       enhanceGraphiql: true,
       retryOnInitFail: true,
-      disableDefaultMutations: true,
+      // disableDefaultMutations: true,
       appendPlugins: [mutationsPlugin]
     }
   )

@@ -15,6 +15,7 @@ const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
+const Directory = artifacts.require('Directory');
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -24,7 +25,10 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    const proxy = await deployer.deploy(Proxy).should.be.fulfilled;
+    delegateUtils.informNoCollisions(Proxy, Assets, Market, Updates);
+    delegateUtils.assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
+    const proxySelectors = delegateUtils.extractSelectorsFromAbi(Proxy.abi);
+    const proxy = await deployer.deploy(Proxy, proxySelectors).should.be.fulfilled;
     const {0: assets, 1: market, 2: updates} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
 
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
@@ -39,6 +43,7 @@ module.exports = function (deployer, network, accounts) {
     const utils = await deployer.deploy(Utils).should.be.fulfilled;
     const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
+    const directory = await deployer.deploy(Directory).should.be.fulfilled;
     
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
@@ -56,6 +61,7 @@ module.exports = function (deployer, network, accounts) {
     const value = "1000000000000000000";
     const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
 
+    // Initializing Assets differently in XDAI or testing:
     console.log("Setting up ... done");
     if (deployer.network === "xdai") {
       await assets.init().should.be.fulfilled;
@@ -73,25 +79,45 @@ module.exports = function (deployer, network, accounts) {
     console.log("Initing ... done");
 
     await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
+    namesAndAddresses = [
+      ["ASSETS", assets.address],
+      ["MARKET", market.address],
+      ["ENGINE", engine.address],
+      ["ENGINEPRECOMP", enginePreComp.address],
+      ["ENGINEAPPLYBOOSTERS", engineApplyBoosters.address],
+      ["LEAGUES", leagues.address],
+      ["UPDATES", updates.address],
+      ["TRAININGPOINTS", trainingPoints.address],
+      ["EVOLUTION", evolution.address],
+      ["TRAININGPOINTS", trainingPoints.address],
+      ["FRIENDLIES", friendlies.address],
+      ["SHOP_CONTRACT", shop.address],
+      ["PRIVILEGED", privileged.address],
+      ["UTILS", utils.address],
+      ["PRIVILEGED", assets.address],
+      ["PLAYANDEVOLVE", playAndEvolve.address],
+      ["CONSTANTSGETTERS", constantsGetters.address]
+    ]
 
+    // Build arrays "names" and "addresses" and store in Directory contract
+    names = [];
+    namesBytes32 = [];
+    addresses = [];
+    for (c = 0; c < namesAndAddresses.length; c++) {
+      names.push(namesAndAddresses[c][0]);
+      namesBytes32.push(web3.utils.utf8ToHex(namesAndAddresses[c][0]));
+      addresses.push(namesAndAddresses[c][1]);
+    }
+    await directory.deploy(namesBytes32, addresses).should.be.fulfilled;
+
+    // Print Summary to Console
+    namesAndAddresses.push(["DIRECTORY", directory.address]);
     console.log("");
     console.log("🚀  Deployed on:", deployer.network)
     console.log("-----------AddressesStart-----------");
-    console.log("ASSETS_CONTRACT_ADDRESS=" + assets.address);
-    console.log("MARKET_CONTRACT_ADDRESS=" + market.address);
-    console.log("ENGINE_CONTRACT_ADDRESS=" + engine.address);
-    console.log("ENGINEPRECOMP_CONTRACT_ADDRESS=" + enginePreComp.address);
-    console.log("ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS=" + engineApplyBoosters.address);
-    console.log("LEAGUES_CONTRACT_ADDRESS=" + leagues.address);
-    console.log("UPDATES_CONTRACT_ADDRESS=" + updates.address);
-    console.log("TRAININGPOINTS_CONTRACT_ADDRESS=" + trainingPoints.address);
-    console.log("EVOLUTION_CONTRACT_ADDRESS=" + evolution.address);
-    console.log("FRIENDLIES_CONTRACT_ADDRESS=" + friendlies.address);
-    console.log("SHOP_CONTRACT_ADDRESS=" + shop.address);
-    console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
-    console.log("UTILS_CONTRACT_ADDRESS=" + utils.address);
-    console.log("PLAYANDEVOLVE_CONTRACT_ADDRESS=" + playAndEvolve.address);
-    console.log("CONSTANTSGETTERS_CONTRACT_ADDRESS=" + constantsGetters.address);
+    for (c = 0; c < names.length; c++) {
+      console.log(names[c] + "_CONTRACT_ADDRESS=" + addresses[c]);
+    }
     console.log("-----------AddressesEnd-----------");
   });
 };

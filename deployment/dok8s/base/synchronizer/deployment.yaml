@@ -36,7 +36,7 @@ spec:
                -shopContractAddress, "$(SHOP_CONTRACT_ADDRESS)",
                -utilsContractAddress, "$(UTILS_CONTRACT_ADDRESS)",
                -constantsgettersContractAddress, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)",
-               -delta, "10000"]
+               -delta, "$(BLOCKS_PER_STEP)"]
 
       imagePullSecrets:
       - name: docker-secret

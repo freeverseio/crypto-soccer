@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
 - configmap.yaml
 - authproxy
-- helloworld
+# - helloworld
 - horizon
 - marketdb
 - notary
@@ -12,3 +12,6 @@ resources:
 - trader
 - universeapi
 - universedb
+- dashboard
+- webphoenix
+- oauth2-proxy

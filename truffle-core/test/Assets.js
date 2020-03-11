@@ -39,7 +39,7 @@ contract('Assets', (accounts) => {
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
-        proxy = await Proxy.new().should.be.fulfilled;
+        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
         assets = depl[0]
         market = depl[1]
@@ -88,7 +88,7 @@ contract('Assets', (accounts) => {
         result.toNumber().should.be.equal(sk[0]);        
     });
 
-    it('check division event on init', async () => {
+    it('check DivisionCreation event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
             timezone++;
@@ -96,6 +96,17 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('check DivisionCreation event on initSingleTz', async () => {
+        proxy2 = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
+        depl2 = await delegateUtils.deployDelegate(proxy2, Assets, Market);
+        assets2 = depl2[0];
+        tx = await assets2.initSingleTZ(tz = 4).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
+        });
+    });
+    
+    
     it('check cannot initialize contract twice', async () => {
         await assets.init().should.be.rejected;
     });
@@ -114,10 +125,10 @@ contract('Assets', (accounts) => {
     });
 
     it('check initial setup of timeZones', async () =>  {
-        nCountries = await assets.getNCountriesInTZ(0).should.be.rejected;
-        nCountries = await assets.getNCountriesInTZ(25).should.be.rejected;
+        nCountries = await assets.countCountries(0).should.be.rejected;
+        nCountries = await assets.countCountries(25).should.be.rejected;
         for (tz = 1; tz<25; tz++) {
-            nCountries = await assets.getNCountriesInTZ(tz).should.be.fulfilled;
+            nCountries = await assets.countCountries(tz).should.be.fulfilled;
             nCountries.toNumber().should.be.equal(1);
             nDivs = await assets.getNDivisionsInCountry(tz, countryIdxInTZ = 0).should.be.fulfilled;
             nDivs.toNumber().should.be.equal(N_DIVS_AT_START);
@@ -197,6 +208,21 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('add users until you need a new division (it can take several seconds)', async () => {
+        const tz = 1;
+        const countryIdxInTZ = 0;
+        nTeamsPerDiv = 128
+        for (user = 0; user < (nTeamsPerDiv - 1); user++) {
+            await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        }
+        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === countryIdxInTZ.toString() && event.divisionIdxInCountry.toString() === '1';
+        });
+
+    });
+
+
     it('transfer 2 bots to address to estimate cost', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
@@ -271,7 +297,7 @@ contract('Assets', (accounts) => {
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        expectedSkills = [ 440, 1068, 1284, 826, 1378 ];
+        expectedSkills = [ 1427, 1016, 853, 974, 726 ];
         resultSkills = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
             resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
@@ -475,7 +501,7 @@ contract('Assets', (accounts) => {
     });
 
     it('initial number of teams', async () => {
-        const count = await assets.countTeams(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
+        const count = await assets.getNTeamsInCountry(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
         count.toNumber().should.be.equal(N_DIVS_AT_START * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV);
     });
 
@@ -508,6 +534,33 @@ contract('Assets', (accounts) => {
         debug.compareArrays(birthTraits, expected, toNum = true, verbose = false);
     });
 
+    
+    it('test that goal keepers have great shoot=block skills', async () => {
+        skillsAvg = [0,0,0,0,0];
+        nTrials = 100;
+        for (n = 0; n < nTrials; n++) {
+            seed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
+            var {0: skills, 1: birthTraits} = await assets.computeSkills(seed , shirtNum = 0).should.be.fulfilled;
+            for (sk=0; sk < 5; sk++) skillsAvg[sk] += skills[sk].toNumber();
+        }
+        for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
+        expected = [ 1371, 909, 795, 957, 963 ];
+        debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
+    });
+
+    it('test that forwards have great shoot skills', async () => {
+        skillsAvg = [0,0,0,0,0];
+        nTrials = 100;
+        for (n = 0; n < nTrials; n++) {
+            seed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
+            var {0: skills, 1: birthTraits} = await assets.computeSkills(seed , shirtNum = 16).should.be.fulfilled;
+            for (sk=0; sk < 5; sk++) skillsAvg[sk] += skills[sk].toNumber();
+        }
+        for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
+        expected = [ 1251, 950, 989, 802, 1004 ];
+        debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
+    });
+    
     it('computed skills with rnd = 0 for non goal keepers should be 1000 each', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
         const {0: skills, 1: birthTraits} = computedSkills;

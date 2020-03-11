@@ -5,7 +5,12 @@ commonLabels:
   app.kubernetes.io/version: 1.0.0
 resources:
 - ../base
+- ingress.yaml
+- dashboard-ingress.yaml
+- phoenix-ingress.yaml
 images:
+- name: freeverseio/authproxy
+  newTag: dev
 - name: freeverseio/horizon
   newTag: dev
 - name: freeverseio/market.db
@@ -22,5 +27,8 @@ images:
   newTag: dev
 - name: freeverseio/universe.db
   newTag: dev
+- name: freeverseio/webphoenix
+  newTag: dev
 patchesStrategicMerge:
 - configmap.yaml
+

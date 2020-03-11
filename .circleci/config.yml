@@ -1,6 +1,9 @@
 :#: Javascript Node CircleCI 2.1 configuration file
 version: 2.1
 
+orbs:
+  kube-orb: circleci/kubernetes@0.11.0
+
 executors:
   freeverse:
     docker:
@@ -31,6 +34,10 @@ commands:
     description: "Compile and generate code for the services that need to communicate with them"
     steps:
       - run: make setup contracts
+  install_kustomize:
+    description: "Install kustomize in current directory"
+    steps:
+      - run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
 
 jobs:
   truffle_core:
@@ -96,7 +103,7 @@ jobs:
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd dashboard && docker build -t freeverseio/dashboard:dev .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:dev --build-arg REACT_APP_API="https://dashboard.gorengine.com/api" .
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
@@ -124,7 +131,7 @@ jobs:
       - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} .
-      - run: cd dashboard && docker build -t freeverseio/dashboard:${CIRCLE_TAG} .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:${CIRCLE_TAG} --build-arg REACT_APP_API="https://dashboard.goalrevolution.live/api" .
       - run: cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} .
@@ -149,9 +156,11 @@ jobs:
       - kube-orb/install-kubectl
       - kube-orb/install-kubeconfig:
         kubeconfig: KUBECONFIG_DATA
-      - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
-orbs:
-  kube-orb: circleci/kubernetes@0.11.0
+      - install_kustomize
+      - run: | 
+          ./kustomize build deployment/dok8s/dev | kubectl -n freeverse delete -f -
+          ./kustomize build deployment/dok8s/dev | kubectl -n freeverse apply -f -
+      # - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
 workflows:
   version: 2
   build_and_test:

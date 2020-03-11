@@ -239,8 +239,6 @@ contract('Evolution', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
-        POINTS_FOR_HAVING_PLAYED = await training.POINTS_FOR_HAVING_PLAYED().should.be.fulfilled;
-        POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
     
@@ -456,7 +454,7 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen - 32 + 1)
         
-        expected = [ 531, 1506, 912, 551, 1500 ];
+        expected = [ 898, 1167, 1173, 997, 761 ];
         N_SKILLS = 5;
         results = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
@@ -499,7 +497,7 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(32 + gen + 1)
 
-        expected = [ 755, 920, 1455, 762, 1107 ];
+        expected = [ 716, 681, 1216, 1517, 868 ];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
@@ -977,7 +975,7 @@ contract('Evolution', (accounts) => {
 
         // check Training Points (and Goals)
         expectedGoals = [3, 5];
-        expectedPoints = [23, 49];
+        expectedPoints = [23, 47];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {

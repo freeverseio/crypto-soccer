@@ -38,23 +38,36 @@ contract Assets is AssetsView {
     
 
     function _initTimeZone(uint8 tz) private {
-        Country memory country;
-        country.nDivisions = 1;
-        _timeZones[tz].countries.push(country);
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
-        for (uint8 division = 0 ; division < country.nDivisions ; division++){
-            _timeZones[tz].countries[0].divisonIdxToRound[division] = 1;
-            emit DivisionCreation(tz, 0, division);
+        addCountry(tz);
+    }
+    
+    function addCountry(uint8 tz) public {
+        uint256 countryIdxInTZ = tzToNCountries[tz];
+        tzToNCountries[tz] = countryIdxInTZ + 1;
+        for (uint8 division = 0 ; division < DIVS_PER_LEAGUE_AT_START; division++){
+            addDivision(tz, countryIdxInTZ); 
         }
     }
 
-    function transferFirstBotToAddr(uint8 timeZone, uint256 countryIdxInTZ, address addr) external {
-        uint256 firstBotIdx = _timeZones[timeZone].countries[countryIdxInTZ].nHumanTeams;
-        require(isBotTeamInCountry(timeZone, countryIdxInTZ, firstBotIdx), "cannot transfer a non-bot team");
+    function addDivision(uint8 tz, uint256 countryIdxInTZ) public {
+        uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0);
+        uint256 nDivs = countryIdToNDivisions[countryId];
+        uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, nDivs);
+        countryIdToNDivisions[countryId] = nDivs + 1;
+        divisionIdToRound[divisionId] = currentRound + 1;
+        emit DivisionCreation(tz, countryIdxInTZ, nDivs);
+    }
+
+    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) external {
+        uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
+        uint256 firstBotIdx = countryIdToNHumanTeams[countryId];
+        uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
+        require(isBotTeam(teamId), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToOwner[firstBotIdx] = addr;
-        _timeZones[timeZone].countries[countryIdxInTZ].nHumanTeams++;
-        uint256 teamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, firstBotIdx);
+        if ((firstBotIdx % TEAMS_PER_DIVISION) == (TEAMS_PER_DIVISION-1)) { addDivision(tz, countryIdxInTZ); }
+        teamIdToOwner[teamId] = addr;
+        countryIdToNHumanTeams[countryId] = firstBotIdx + 1;
         emit TeamTransfer(teamId, addr);
     }
 
