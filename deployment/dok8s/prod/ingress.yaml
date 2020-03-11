@@ -12,10 +12,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - k8s.gorengine.com
+    - k8s.goalrevolution.live
     secretName: cryptosoccer-tls
   rules:
-  - host: k8s.gorengine.com
+  - host: k8s.goalrevolution.live
     http:
       paths:
       - path: /xdai
