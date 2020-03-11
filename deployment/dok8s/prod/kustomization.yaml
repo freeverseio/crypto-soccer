@@ -10,25 +10,25 @@ resources:
 - phoenix-ingress.yaml
 images:
 - name: freeverseio/authproxy
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/horizon
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/market.db
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/market.notary
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/market.trader
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/relay.actions
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/synchronizer
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/universe.api
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/universe.db
-  newTag: dev
+  newTag: 0.11.0
 - name: freeverseio/webphoenix
-  newTag: dev
+  newTag: 1.1.0a
 patchesStrategicMerge:
 - configmap.yaml
 
