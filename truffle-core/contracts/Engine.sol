@@ -132,8 +132,8 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         matchLogs[0] = writeNDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLogs[1] = writeNDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
-        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], playersPerZone[0], extraAttack[0], seedAndStartTimeAndEvents[IDX_ST_TIME]);
-        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], playersPerZone[1], extraAttack[1], seedAndStartTimeAndEvents[IDX_ST_TIME]);
+        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], playersPerZone[0], extraAttack[0]);
+        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], playersPerZone[1], extraAttack[1]);
 
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
@@ -166,7 +166,6 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
             if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
                 // scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
-                    seedAndStartTimeAndEvents[IDX_ST_TIME],
                     matchLogs[teamThatAttacks],
                     skills[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
@@ -254,7 +253,6 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
     }
 
     function selectAssister(
-        uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
@@ -268,21 +266,21 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         uint256[] memory weights = new uint256[](11);
         // if selected assister == selected shooter =>  
         //  there was no assist => individual play by shoorter
-        weights[0] = penaltyPerAge(skills[0], matchStartTime);
+        weights[0] = 1;
         uint256 teamPassCapacity = weights[0];
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getSkill(skills[p], SK_PAS) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getSkill(skills[p], SK_PAS);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getSkill(skills[p], SK_PAS) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getSkill(skills[p], SK_PAS);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 200 * getSkill(skills[p], SK_PAS) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = 200 * getSkill(skills[p], SK_PAS);
             teamPassCapacity += weights[p];
             p++;
         }
@@ -293,13 +291,12 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
         // or to have a 50% change, multiply by 10, and to have say, 1/3, multiply by 10/3
         // this is to be compensated by an overall factor of about.
         if (teamPassCapacity <= weights[shooter]) return shooter;
-        weights[shooter] = (weights[shooter] * getSumOfSkills(skills[shooter]) * 8810 * penaltyPerAge(skills[shooter], matchStartTime))/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
+        weights[shooter] = (weights[shooter] * getSumOfSkills(skills[shooter]) * 8810)/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
         return throwDiceArray(weights, rnd);
     }
 
 
     function selectShooter(
-        uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
@@ -311,18 +308,18 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
     {
         uint256[] memory weights = new uint256[](11);
         // GK has minimum weight, all others are relative to this.
-        weights[0] = penaltyPerAge(skills[0], matchStartTime);
+        weights[0] = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSkill(skills[p], SK_SPE) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSkill(skills[p], SK_SPE);
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSkill(skills[p], SK_SPE) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSkill(skills[p], SK_SPE);
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 75000 * getSkill(skills[p], SK_SPE) * penaltyPerAge(skills[p], matchStartTime);
+            weights[p] = 75000 * getSkill(skills[p], SK_SPE);
             p++;
         }
         return throwDiceArray(weights, rnd);
@@ -331,7 +328,6 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
-        uint256 matchStartTime,
         uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8[9] memory playersPerZone,
@@ -345,20 +341,19 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
     {
         scoreData[0] = matchLog;
         uint8 currentGoals = getNGoals(matchLog);
-        uint8 shooter = selectShooter(matchStartTime, skills, playersPerZone, extraAttack, rnds[0]);
+        uint8 shooter = selectShooter(skills, playersPerZone, extraAttack, rnds[0]);
         scoreData[1] = uint256(shooter);
         // if we scored alread the max number of goals, return. Note that isGoal = 0 inside scoreData.
         if (currentGoals >= MAX_GOALS_IN_MATCH) return scoreData;
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        uint256 shootPenalty = ( getForwardness(skills[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(skills[shooter], matchStartTime);
-        // penaltyPerAge is in [0, 1M] where 0 is really bad penalty, and 1M is no penalty
+        uint256 shootPenalty = ( getForwardness(skills[shooter]) == IDX_GK ? 1 : 10);
         // since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
-        // shooter weight =  shoot * shootPenalty/(10*1M) * (7/10) = shoort * shootPenalty * 7 / 1e8 
-        bool isGoal = throwDice((getSkill(skills[shooter], SK_SHO) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
+        // shooter weight =  shoot * shootPenalty/(10) * (7/10) = shoort * shootPenalty * 7 / 1e2 
+        bool isGoal = throwDice((getSkill(skills[shooter], SK_SHO) * 7 * shootPenalty)/100, blockShoot, rnds[1]) == 0;
         scoreData[2] = uint256(isGoal ? 1: 0);
         uint8 assister;
         if (isGoal) {
-            assister = selectAssister(matchStartTime, skills, playersPerZone, extraAttack, shooter, rnds[2]);
+            assister = selectAssister(skills, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog = addAssister(matchLog, assister, currentGoals);
             matchLog = addShooter(matchLog, shooter, currentGoals);
             matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);

@@ -63,16 +63,6 @@ contract EngineLib is EncodingSkillsGetters {
         return rnds;
     }
 
-    // no penalty at all => return 1M,  max penalty => return 0
-    // for each day that passes over 31 years (=11315 days), we subtract 0,0274%, so that you get 10.001% less per year
-    // on a max of 1M, this is 274 per day.
-    // so, 3649 days after 31 (ten years), he will reach penalty 0. He'll be useless when reaching 41.
-    function penaltyPerAge(uint256 playerSkills, uint256 matchStartTime) public pure returns (uint256) {
-        uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
-        if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
-        return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
-    }
-
     function getNDefenders(uint8[9] memory playersPerZone) public pure returns (uint8) {
         return 2 * playersPerZone[0] + playersPerZone[1];
     }
