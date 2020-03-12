@@ -58,7 +58,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -124,7 +124,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -146,7 +146,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -168,7 +168,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -190,7 +190,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -212,7 +212,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -234,7 +234,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -256,7 +256,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -278,7 +278,7 @@
 					RedCard: (bool) true,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -300,7 +300,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -322,7 +322,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -632,7 +632,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -698,7 +698,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -720,7 +720,7 @@
 					RedCard: (bool) true,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -742,7 +742,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -764,7 +764,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -786,7 +786,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -808,7 +808,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -830,7 +830,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -852,7 +852,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -874,7 +874,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
@@ -896,7 +896,7 @@
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					BlockNumber: (uint64) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 1
 				}
 			}),
 			(*engine.Player)({
