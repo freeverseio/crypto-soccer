@@ -79,10 +79,10 @@ func (b *Match) updateStats() {
 }
 
 func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
-	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
+	if err := b.HomeTeam.ToStorage(contracts, tx, blockNumber); err != nil {
 		return err
 	}
-	if err := b.VisitorTeam.ToStorage(contracts, tx); err != nil {
+	if err := b.VisitorTeam.ToStorage(contracts, tx, blockNumber); err != nil {
 		return err
 	}
 	for _, computedEvent := range b.Events {
@@ -314,9 +314,4 @@ func (b Match) ToString() string {
 	}
 	result += "];"
 	return result
-}
-
-func (b *Match) SetBlockNumber(number uint64) {
-	b.HomeTeam.SetBlockNumber(number)
-	b.VisitorTeam.SetBlockNumber(number)
 }

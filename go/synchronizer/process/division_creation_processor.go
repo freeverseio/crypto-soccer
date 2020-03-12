@@ -211,10 +211,9 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 			ShirtNumber:       uint8(shirtNumber.Uint64()),
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
-			BlockNumber:       blockNumber,
 			Tiredness:         int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1]),
 		}
-		if err := player.Insert(tx); err != nil {
+		if err := player.Insert(tx, blockNumber); err != nil {
 			return err
 		}
 	}

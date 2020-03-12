@@ -29,7 +29,7 @@ func PlayerStateChangeProcess(
 		if player, err = GeneratePlayerByPlayerIdAndState(contracts, event.Raw.BlockNumber, playerID, state); err != nil {
 			return err
 		}
-		return player.Insert(tx)
+		return player.Insert(tx, event.Raw.BlockNumber)
 	}
 	shirtNumber, err := contracts.Assets.GetCurrentShirtNum(&bind.CallOpts{}, state)
 	if err != nil {
@@ -41,7 +41,7 @@ func PlayerStateChangeProcess(
 	}
 	player.TeamId = teamID.String()
 	player.ShirtNumber = uint8(shirtNumber.Uint64())
-	return player.Update(tx)
+	return player.Update(tx, event.Raw.BlockNumber)
 }
 
 func GeneratePlayerByPlayerIdAndState(
@@ -82,7 +82,6 @@ func GeneratePlayerByPlayerIdAndState(
 			ShirtNumber:       uint8(shirtNumber.Uint64()),
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
-			BlockNumber:       blockNumber,
 			Tiredness:         int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1]),
 		}
 		return &player, nil
