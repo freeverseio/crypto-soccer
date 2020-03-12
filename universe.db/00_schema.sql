@@ -71,6 +71,7 @@ CREATE TABLE players (
     encoded_state TEXT NOT NULL,
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
+    tiredness INT NOT NULL,
     PRIMARY KEY(player_id)
 );
 comment on table players is E'@omit create,update,delete';
