@@ -374,12 +374,23 @@ contract("Market", accounts => {
     await timeTravel.advanceTime(24*3600+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
 
-    // show that the first 7 transfers work, but then it fails because the team is already full
+    // show that the first 7 transfers works normally, for the others, players go to limbo
+    IN_TRANSIT_TEAM = 2;
     for (n = 0; n < nTransfers; n++) { 
-      console.log(n)
-      if (n < 7)  { await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.fulfilled; }
-      else        { await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.fulfilled; }
+      await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.fulfilled;
+      if (n >= 7) {
+        ownTeam = await market.getCurrentTeamIdFromPlayerId(playerIds[n]).should.be.fulfilled;
+        ownTeam.toNumber().should.be.equal(IN_TRANSIT_TEAM);
+      }
     }
+    
+    // buyer can not continue bidding because he already has players in limbo:
+    thisPlayerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+2+nTransfers+1);
+    await marketCrypto.putPlayerForSale(thisPlayerId, startingPrice, {from: ALICE}).should.be.fulfilled;
+    await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.rejected;
+  
+    
+    
   });
 
   return

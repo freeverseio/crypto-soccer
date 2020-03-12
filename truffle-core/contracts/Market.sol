@@ -189,7 +189,7 @@ contract Market is MarketView {
             _playerIdToState[playerId] = 
                 setLastSaleBlock(
                     setCurrentTeamId(
-                        newState, LIMBO_TEAM
+                        newState, IN_TRANSIT_TEAM
                     ), block.number
                 );
         }
