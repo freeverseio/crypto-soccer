@@ -315,8 +315,3 @@ func (b Match) ToString() string {
 	result += "];"
 	return result
 }
-
-func (b *Match) SetBlockNumber(number uint64) {
-	b.HomeTeam.SetBlockNumber(number)
-	b.VisitorTeam.SetBlockNumber(number)
-}

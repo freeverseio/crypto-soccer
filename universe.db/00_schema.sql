@@ -56,7 +56,6 @@ comment on table teams is E'@omit create,update,delete';
 CREATE TABLE players (
     name TEXT NOT NULL,
     player_id TEXT NOT NULL,
-    block_number BIGINT NOT NULL,
     team_id TEXT NOT NULL REFERENCES teams(team_id),
     defence INT NOT NULL,
     speed INT NOT NULL,
