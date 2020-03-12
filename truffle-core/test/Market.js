@@ -284,7 +284,7 @@ contract("Market", accounts => {
 
   
    
-  it("crypto flow with player" , async () => {
+  it2("crypto flow with player" , async () => {
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
     ALICE = accounts[0];
     BOB = accounts[1];
@@ -341,13 +341,9 @@ contract("Market", accounts => {
     
     finalOwner = await market.getOwnerPlayer(playerId0).should.be.fulfilled;
     finalOwner.should.be.equal(CAROL);
-
     
   });
 
-  
-  return
-  
   
   it("crypto mkt shows that we can get past 25 players" , async () => {
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
@@ -357,60 +353,35 @@ contract("Market", accounts => {
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
     startingPrice = web3.utils.toWei('1');
     teamIdxInCountry0 = 2; 
-    playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+3);
+
+    // ALICE will be selling
     sellerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0);
-    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE).should.be.fulfilled;
-
-    // ALICE puts for sale
-    await marketCrypto.putPlayerForSale(playerId0, startingPrice, {from: ALICE}).should.be.fulfilled;
-
-    // BOB does first bid
-    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE).should.be.fulfilled;
+    // BOB will be buying
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB).should.be.fulfilled;
     buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 1);
 
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
-    
-    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, CAROL).should.be.fulfilled;
-    buyerTeamId1 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
+    nTransfers = 10;
+    playerIds = [];
+    for (n = 0; n < nTransfers; n++) { 
+      thisPlayerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+2+n);
+      playerIds.push(thisPlayerId);
+      // ALICE puts for sale and BOB bids
+      await marketCrypto.putPlayerForSale(thisPlayerId, startingPrice, {from: ALICE}).should.be.fulfilled;
+      await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
+    }
 
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: startingPrice}).should.be.rejected;
-
-    newBid = web3.utils.toWei('1.1');
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.rejected;
-
-    newBid = web3.utils.toWei('1.5');
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.fulfilled;
-
-    auctionId = await marketCrypto.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
-    await marketCrypto.withdraw(auctionId, {from: CAROL}).should.be.rejected;
-    
-    balanceBefore = await web3.eth.getBalance(BOB);
-    await marketCrypto.withdraw(auctionId, {from: BOB}).should.be.fulfilled;
-    balanceAfter = await web3.eth.getBalance(BOB);
-    // checks that BOB has as much as he had at the beginning up to gas costs
-    (startingPrice - (balanceAfter - balanceBefore) < web3.utils.toWei('0.001')).should.be.equal(true);
-
-    await marketCrypto.withdraw(auctionId, {from: CAROL}).should.be.rejected;
-    await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.rejected;
-    await marketCrypto.executePlayerTransfer(playerId0).should.be.rejected;
-
-    await timeTravel.advanceTime(24*3600-100);
+    await timeTravel.advanceTime(24*3600+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
-    await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.rejected;
-    await marketCrypto.executePlayerTransfer(playerId0).should.be.rejected;
 
-    await timeTravel.advanceTime(0.1*3600);
-    await timeTravel.advanceBlock().should.be.fulfilled;
-    await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.fulfilled;
-    await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
-    
-    tId = await marketCrypto.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
-    tId.should.be.bignumber.equal(buyerTeamId1);
-
-    
+    // show that the first 7 transfers work, but then it fails because the team is already full
+    for (n = 0; n < nTransfers; n++) { 
+      if (n < 7)  { await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.fulfilled; }
+      else        { await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.rejected; }
+    }
   });
 
-  
+  return
   it2('setAcquisitionConstraint of constraints in friendliess', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
