@@ -171,8 +171,13 @@ contract Market is MarketView {
         uint256 teamIdOrigin = getCurrentTeamId(state);
         require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
         require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
-        uint8 shirtTarget = getFreeShirt(teamIdTarget);
+        if (teamIdOrigin != ACADEMY_TEAM) {
+            uint256 shirtOrigin = getCurrentShirtNum(state);
+            teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+        }
 
+        // what remains is the part related to target team only
+        uint8 shirtTarget = getFreeShirt(teamIdTarget);
         if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
             _playerIdToState[playerId] = 
                 setLastSaleBlock(
@@ -192,10 +197,6 @@ contract Market is MarketView {
                         newState, IN_TRANSIT_TEAM
                     ), block.number
                 );
-        }
-        if (teamIdOrigin != ACADEMY_TEAM) {
-            uint256 shirtOrigin = getCurrentShirtNum(state);
-            teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
         emit PlayerStateChange(playerId, newState);
     }
@@ -226,4 +227,14 @@ contract Market is MarketView {
         teamIdToOwner[teamId] = addr;
         emit TeamTransfer(teamId, addr);
     }
+    
+    function returnPlayerToAcademy(uint256 teamId) public {
+        // requiring that team is not bot already ensures that tz and countryIdxInTz exist 
+        require(!isBotTeam(teamId), "cannot transfer a bot team");
+        require(addr != NULL_ADDR, "cannot transfer to a null address");
+        require(teamIdToOwner[teamId] != addr, "buyer and seller are the same addr");
+        teamIdToOwner[teamId] = addr;
+        emit TeamTransfer(teamId, addr);
+    }
+
 }
