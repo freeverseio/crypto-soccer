@@ -59,7 +59,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -125,7 +125,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -147,7 +147,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -169,7 +169,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -191,7 +191,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -213,7 +213,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -235,7 +235,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) true,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -257,7 +257,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -279,7 +279,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -301,7 +301,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -323,7 +323,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -633,7 +633,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -699,7 +699,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -721,7 +721,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -743,7 +743,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -765,7 +765,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -787,7 +787,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -809,7 +809,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) true,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -831,7 +831,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -853,7 +853,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -875,7 +875,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -897,7 +897,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1482,7 +1482,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1548,7 +1548,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1570,7 +1570,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1592,7 +1592,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1614,7 +1614,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1636,7 +1636,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) true,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1658,7 +1658,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1680,7 +1680,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1702,7 +1702,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1724,7 +1724,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -1746,7 +1746,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2056,7 +2056,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2122,7 +2122,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2144,7 +2144,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2166,7 +2166,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2188,7 +2188,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2210,7 +2210,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2232,7 +2232,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2254,7 +2254,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2276,7 +2276,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) true,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2298,7 +2298,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
@@ -2320,7 +2320,7 @@ EncodedState: (*big.Int)(<nil>),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 BlockNumber: (uint64) 0,
-Tiredness: (int) 0
+Tiredness: (int) 1
 }
 }),
 (*engine.Player)({
