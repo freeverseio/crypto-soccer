@@ -93,6 +93,7 @@ CREATE TABLE players_histories (
     encoded_state TEXT NOT NULL,
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
+    tiredness INT NOT NULL,
     PRIMARY KEY(block_number, player_id)
 );
 comment on table players_histories is E'@omit create,update,delete';
