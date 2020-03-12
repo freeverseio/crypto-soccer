@@ -134,7 +134,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return err
 	}
 	log.Infof("Timezone %v save matches to storage", timezoneIdx)
-	if err = matches.ToStorage(*b.contracts, tx); err != nil {
+	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
 	}
 	return nil

@@ -92,8 +92,8 @@ func MatchSetTeams(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx u
 	return err
 }
 
-func (b Match) Update(tx *sql.Tx) error {
-	_, err := tx.Exec(`
+func (b Match) Update(tx *sql.Tx, blockNumber uint64) error {
+	if _, err := tx.Exec(`
 		UPDATE matches SET 
 		home_team_id = $1, 
 		visitor_team_id = $2 ,
@@ -117,8 +117,14 @@ func (b Match) Update(tx *sql.Tx) error {
 		b.LeagueIdx,
 		b.MatchDayIdx,
 		b.MatchIdx,
-	)
-	return err
+	); err != nil {
+		return err
+	}
+	history := NewMatchHistory(blockNumber, b)
+	if err := history.Insert(tx); err != nil {
+		return err
+	}
+	return nil
 }
 
 func MatchSetResult(

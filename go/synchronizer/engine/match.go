@@ -78,7 +78,7 @@ func (b *Match) updateStats() {
 	}
 }
 
-func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
+func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
 	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 			return err
 		}
 	}
-	return b.Update(tx)
+	return b.Update(tx, blockNumber)
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
