@@ -24,12 +24,12 @@ func NewTeam() *Team {
 	return &team
 }
 
-func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
+func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
 	for _, player := range b.Players {
 		if player.IsNil() {
 			continue
 		}
-		if err := player.Update(tx); err != nil {
+		if err := player.Update(tx, blockNumber); err != nil {
 			return err
 		}
 	}

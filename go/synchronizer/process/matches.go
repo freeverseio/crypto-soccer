@@ -117,12 +117,6 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 	return g.Wait()
 }
 
-func (b *Matches) SetBlockNumber(blockNumber uint64) {
-	for i := range *b {
-		(*b)[i].SetBlockNumber(blockNumber)
-	}
-}
-
 func (b *Matches) SetSeed(seed [32]byte) {
 	for i := range *b {
 		(*b)[i].Seed = seed

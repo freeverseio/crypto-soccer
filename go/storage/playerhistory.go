@@ -7,7 +7,14 @@ type PlayerHistory struct {
 	BlockNumber uint64
 }
 
-func (b PlayerHistory) InsertHistory(tx *sql.Tx) error {
+func NewPlayerHistory(blockNumber uint64, player Player) *PlayerHistory {
+	history := PlayerHistory{}
+	history.Player = player
+	history.BlockNumber = blockNumber
+	return &history
+}
+
+func (b PlayerHistory) Insert(tx *sql.Tx) error {
 	if _, err := tx.Exec(`INSERT INTO players_histories 
 		(block_number, player_id, team_id, defence, speed, pass, shoot, endurance, 
 		shirt_number, preferred_position, encoded_skills, 

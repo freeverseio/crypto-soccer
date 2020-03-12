@@ -58,7 +58,7 @@ func PlayerCount(tx *sql.Tx) (uint64, error) {
 	return count, nil
 }
 
-func (b *Player) Insert(tx *sql.Tx) error {
+func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 	log.Debugf("[DBMS] Create player %v", b)
 	if _, err := tx.Exec(`INSERT INTO players 
 		(name, player_id, team_id, defence, speed,
@@ -83,10 +83,14 @@ func (b *Player) Insert(tx *sql.Tx) error {
 	); err != nil {
 		return err
 	}
+	history := NewPlayerHistory(blockNumber, b)
+	if err := history.Insert(tx); err != nil {
+		return err
+	}
 	return nil
 }
 
-func (b *Player) Update(tx *sql.Tx) error {
+func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
 	if _, err := tx.Exec(`UPDATE players SET 
 	team_id=$1, 
@@ -100,8 +104,8 @@ func (b *Player) Update(tx *sql.Tx) error {
 	red_card=$9,
 	injury_matches_left=$10,
 	name=$11,
-	tiredness=$13
-	WHERE player_id=$14;`,
+	tiredness=$12
+	WHERE player_id=$13;`,
 		b.TeamId,
 		b.Defence,
 		b.Speed,
@@ -116,6 +120,10 @@ func (b *Player) Update(tx *sql.Tx) error {
 		b.Tiredness,
 		b.PlayerId.String(),
 	); err != nil {
+		return err
+	}
+	history := NewPlayerHistory(blockNumber, b)
+	if err := history.Insert(tx); err != nil {
 		return err
 	}
 	return nil
