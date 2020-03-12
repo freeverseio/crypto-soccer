@@ -278,6 +278,14 @@ contract('Evolution', (accounts) => {
             reds.push(red);
         }
         debug.compareArrays(reds, expectedReds, toNum = false, verbose = false, isBigNumber = false);
+
+        // shows that second team has veeery different cards and injuries
+        var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
+        outPlayer.toNumber().should.be.equal(7);
+        typeOut.toNumber().should.be.equal(2); // HARD_INJURY
+        outRounds.toNumber().should.be.equal(5);
+        yellow1.toNumber().should.be.equal(10);
+        yellow2.toNumber().should.be.equal(6);
     });
 
     it('show that a red card is stored in skills after playing 1st half', async () => {

@@ -32,8 +32,8 @@ func TestMatchEventsTwoYellows(t *testing.T) {
 		0, 0, 0} // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
 	var events []*big.Int
 	events64 := []int64{
-		4324,           // seed
-		34234,          // starttime
+		0,           // log0 (not used by the algorithm)
+		0,           // log1 (not used by the algorithm)
 		0, 1, 10, 1, 2, // teamThatAttacks, managesToShoot, shooter, isGoal, assister
 		1, 0, 0, 0, 0, // teamThatAttacks, managesToShoot, shooter, isGoal, assister
 		1, 1, 8, 0, 0, // teamThatAttacks, managesToShoot, shooter, isGoal, assister
