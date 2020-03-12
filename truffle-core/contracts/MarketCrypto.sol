@@ -90,6 +90,7 @@ contract MarketCrypto {
         // TODO: save gas by calling 1 once and returning all data in 1 call
         require(msg.sender != NULL_ADDR, "sender cannot be the null address");
         require(msg.sender != _seller[playerId], "seller is not allowed to bid for its own assets");
+        require(_market.getNPlayersInTransitInTeam(bidderTeamId) == 0, "cannot bid for more players when your team is already beyond MAX");
         uint256 auctionId = _playerIdToAuctionId[playerId];
         require(auctionId != 0, "player has not been put for sale yet");
         require(now < _validUntil[auctionId], "too late to bid, auction time has expired");

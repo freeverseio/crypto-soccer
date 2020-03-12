@@ -172,18 +172,27 @@ contract Market is MarketView {
         require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
         require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
-        require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
-        
-        _playerIdToState[playerId] = 
-            setLastSaleBlock(
-                setCurrentShirtNum(
-                    setCurrentTeamId(
-                        newState, teamIdTarget
-                    ), shirtTarget
-                ), block.number
-            );
 
-        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+        if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
+            _playerIdToState[playerId] = 
+                setLastSaleBlock(
+                    setCurrentShirtNum(
+                        setCurrentTeamId(
+                            newState, teamIdTarget
+                        ), shirtTarget
+                    ), block.number
+                );
+            teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+        } else {
+            _playerInTransitToTeam[playerId] = teamIdTarget;
+            _nPlayersInTransitInTeam[teamIdTarget] += 1;
+            _playerIdToState[playerId] = 
+                setLastSaleBlock(
+                    setCurrentTeamId(
+                        newState, LIMBO_TEAM
+                    ), block.number
+                );
+        }
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;

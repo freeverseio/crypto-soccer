@@ -296,15 +296,10 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
         // already assumes that there was a previous check that this team is not a bot
-        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
-            if (isFreeShirt(
-                teamIdToPlayerIds[teamId][shirtNum], 
-                shirtNum)
-            ) { 
-                return shirtNum; 
-            }
+        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum > 0; shirtNum--) {
+            if (isFreeShirt(teamIdToPlayerIds[teamId][shirtNum], shirtNum)) { return shirtNum; }
         }
-        return PLAYERS_PER_TEAM_MAX;
+        return isFreeShirt(teamIdToPlayerIds[teamId][0], 0) ? 0 : PLAYERS_PER_TEAM_MAX;
     }
     
     function isFreeShirt(uint256 playerId, uint8 shirtNum) public pure returns(bool) {
@@ -338,4 +333,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         require(playerExists(playerId), "unexistent player");
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
+    
+    function getNPlayersInTransitInTeam(uint256 teamId) public view returns (uint8) { return _nPlayersInTransitInTeam[teamId]; }        
+
 }

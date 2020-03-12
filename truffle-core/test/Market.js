@@ -376,8 +376,9 @@ contract("Market", accounts => {
 
     // show that the first 7 transfers work, but then it fails because the team is already full
     for (n = 0; n < nTransfers; n++) { 
+      console.log(n)
       if (n < 7)  { await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.fulfilled; }
-      else        { await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.rejected; }
+      else        { await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.fulfilled; }
     }
   });
 
