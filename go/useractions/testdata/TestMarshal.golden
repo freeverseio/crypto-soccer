@@ -1,8 +1,6 @@
 {
 	"tactics": [
 		{
-			"verse": 3,
-			"timezone": 0,
 			"team_id": "ciao",
 			"tactic_id": 0,
 			"shirt_0": 0,
@@ -39,8 +37,6 @@
 	],
 	"trainings": [
 		{
-			"verse": 5,
-			"timezone": 0,
 			"team_id": "pippo",
 			"special_player_shirt": 0,
 			"goalkeepers_defence": 0,

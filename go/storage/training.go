@@ -8,8 +8,6 @@ import (
 
 // Training represents a row from 'public.trainings'.
 type Training struct {
-	Verse                  uint64 `json:"verse"`
-	Timezone               int    `json:"timezone"`
 	TeamID                 string `json:"team_id"`                  // team_id
 	SpecialPlayerShirt     int    `json:"special_player_shirt"`     // special_player_shirt
 	GoalkeepersDefence     int    `json:"goalkeepers_defence"`      // goalkeepers_defence
@@ -41,23 +39,12 @@ type Training struct {
 
 func NewTraining() *Training {
 	training := Training{}
-	training.Verse = UpcomingVerse
 	return &training
-}
-
-func UpcomingTrainings(tx *sql.Tx) ([]Training, error) {
-	return TrainingByVerse(tx, UpcomingVerse)
-}
-
-func (b *Training) Delete(tx *sql.Tx) error {
-	log.Debugf("[DBMS] Delete training %v", b)
-	_, err := tx.Exec(`DELETE FROM trainings WHERE (verse=$1) AND (team_id=$2);`, b.Verse, b.TeamID)
-	return err
 }
 
 func ResetTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
 	log.Infof("[DBMS] Reset trainings by Timezone %v", timezone)
-	_, err := tx.Exec(
+	if _, err := tx.Exec(
 		`UPDATE trainings SET 
 			special_player_shirt = -1,
 			goalkeepers_defence = 0,
@@ -85,16 +72,16 @@ func ResetTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
     		special_player_pass = 0,
     		special_player_shoot = 0,
 			special_player_endurance = 0
-			WHERE (verse = $1 AND timezone = $2)`, UpcomingVerse, timezone)
-	return err
+			FROM teams WHERE trainings.team_id = teams.team_id AND teams.timezone_idx = $1`, timezone); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (b *Training) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create training %v", b)
 	_, err := tx.Exec(
 		`INSERT INTO trainings (
-			verse,
-			timezone,
 			team_id,
     		special_player_shirt,
 			goalkeepers_defence,
@@ -149,12 +136,8 @@ func (b *Training) Insert(tx *sql.Tx) error {
             $24,
             $25,
 			$26,
-			$27,
-			$28,
-			$29
+			$27
 		);`,
-		b.Verse,
-		b.Timezone,
 		b.TeamID,
 		b.SpecialPlayerShirt,
 		b.GoalkeepersDefence,
@@ -186,13 +169,11 @@ func (b *Training) Insert(tx *sql.Tx) error {
 	return err
 }
 
-func TrainingsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Training, error) {
+func TrainingsByTimezone(tx *sql.Tx, timezone int) ([]Training, error) {
 	var trainings []Training
 	rows, err := tx.Query(
-		`SELECT
-			verse,
-			timezone,
-			team_id,
+		`SELECT 
+			trainings.team_id,
     		special_player_shirt,
 			goalkeepers_defence,
     		goalkeepers_speed,
@@ -219,7 +200,7 @@ func TrainingsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Trai
     		special_player_pass,
     		special_player_shoot,
 			special_player_endurance
-		FROM trainings WHERE (verse = $1 AND timezone = $2);`, verse, timezone)
+		FROM trainings LEFT JOIN teams ON trainings.team_id = teams.team_id WHERE teams.timezone_idx = $1;`, timezone)
 	if err != nil {
 		return nil, err
 	}
@@ -227,85 +208,6 @@ func TrainingsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Trai
 	for rows.Next() {
 		var t Training
 		err = rows.Scan(
-			&t.Verse,
-			&t.Timezone,
-			&t.TeamID,
-			&t.SpecialPlayerShirt,
-			&t.GoalkeepersDefence,
-			&t.GoalkeepersSpeed,
-			&t.GoalkeepersPass,
-			&t.GoalkeepersShoot,
-			&t.GoalkeepersEndurance,
-			&t.DefendersDefence,
-			&t.DefendersSpeed,
-			&t.DefendersPass,
-			&t.DefendersShoot,
-			&t.DefendersEndurance,
-			&t.MidfieldersDefence,
-			&t.MidfieldersSpeed,
-			&t.MidfieldersPass,
-			&t.MidfieldersShoot,
-			&t.MidfieldersEndurance,
-			&t.AttackersDefence,
-			&t.AttackersSpeed,
-			&t.AttackersPass,
-			&t.AttackersShoot,
-			&t.AttackersEndurance,
-			&t.SpecialPlayerDefence,
-			&t.SpecialPlayerSpeed,
-			&t.SpecialPlayerPass,
-			&t.SpecialPlayerShoot,
-			&t.SpecialPlayerEndurance,
-		)
-		if err != nil {
-			return nil, err
-		}
-		trainings = append(trainings, t)
-	}
-	return trainings, nil
-}
-
-func TrainingByVerse(tx *sql.Tx, verse uint64) ([]Training, error) {
-	var trainings []Training
-	rows, err := tx.Query(
-		`SELECT
-			verse,
-			team_id,
-    		special_player_shirt,
-			goalkeepers_defence,
-    		goalkeepers_speed,
-    		goalkeepers_pass,
-    		goalkeepers_shoot,
-    		goalkeepers_endurance,
-    		defenders_defence,
-    		defenders_speed,
-    		defenders_pass,
-    		defenders_shoot,
-    		defenders_endurance,
-    		midfielders_defence,
-    		midfielders_speed,
-    		midfielders_pass,
-    		midfielders_shoot,
-    		midfielders_endurance,
-    		attackers_defence,
-    		attackers_speed,
-    		attackers_pass,
-    		attackers_shoot,
-    		attackers_endurance,
-    		special_player_defence,
-    		special_player_speed,
-    		special_player_pass,
-    		special_player_shoot,
-			special_player_endurance
-		FROM trainings WHERE (verse = $1);`, verse)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var t Training
-		err = rows.Scan(
-			&t.Verse,
 			&t.TeamID,
 			&t.SpecialPlayerShirt,
 			&t.GoalkeepersDefence,

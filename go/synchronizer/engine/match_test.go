@@ -167,7 +167,7 @@ func TestMatchRedCards(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
 	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
-	m.Seed = sha256.Sum256([]byte("18"))
+	m.Seed = sha256.Sum256([]byte(string(4)))
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
 	for i := 0; i < 25; i++ {
@@ -178,9 +178,9 @@ func TestMatchRedCards(t *testing.T) {
 	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
 	event := m.Events[12]
 	assert.Equal(t, event.Type, matchevents.EVNT_RED)
-	assert.Equal(t, event.PrimaryPlayer, int16(7))
+	assert.Equal(t, event.PrimaryPlayer, int16(8))
 	assert.Equal(t, event.Team, int16(0))
-	player := m.HomeTeam.Players[9]
+	player := m.HomeTeam.Players[10]
 	assert.Equal(t, player.Skills().String(), "444839120007985571215348664084887401221731547818249502887980205736758")
 	assert.Assert(t, player.RedCard)
 }

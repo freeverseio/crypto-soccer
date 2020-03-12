@@ -16,6 +16,7 @@
 		EncodedState: (*big.Int)(<nil>),
 		RedCard: (bool) true,
 		InjuryMatchesLeft: (uint8) 6,
-		BlockNumber: (uint64) 0
+		BlockNumber: (uint64) 0,
+		Tiredness: (int) 2
 	}
 })

@@ -9,8 +9,6 @@ import (
 const NoSubstitution = 11
 
 type Tactic struct {
-	Verse               uint64 `json:"verse"`
-	Timezone            int    `json:"timezone"`
 	TeamID              string `json:"team_id"`   // team_id
 	TacticID            int    `json:"tactic_id"` // tactic_id
 	Shirt0              int    `json:"shirt_0"`   // shirt_0
@@ -45,19 +43,15 @@ type Tactic struct {
 	ExtraAttack10       bool   `json:"extra_attack_10"` // extra_attack_1
 }
 
-func (b *Tactic) Delete(tx *sql.Tx) error {
-	log.Debugf("[DBMS] Delete tactic %v", b)
-	_, err := tx.Exec(`DELETE FROM tactics WHERE (verse=$1) AND (team_id=$2);`, b.Verse, b.TeamID)
-	return err
+func NewTactic() *Tactic {
+	return &Tactic{}
 }
 
-func TacticsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Tactic, error) {
+func TacticsByTimezone(tx *sql.Tx, timezone int) ([]Tactic, error) {
 	var tactics []Tactic
 	rows, err := tx.Query(
 		`SELECT
-				verse,
-				timezone,
-				team_id,
+				tactics.team_id,
 				tactic_id,
                 shirt_0,
                 shirt_1,
@@ -89,7 +83,7 @@ func TacticsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Tactic
                 extra_attack_8,
                 extra_attack_9,
                 extra_attack_10
-		FROM tactics WHERE (verse = $1 AND timezone = $2);`, verse, timezone)
+		FROM tactics LEFT JOIN teams ON tactics.team_id = teams.team_id WHERE teams.timezone_idx = $1;`, timezone)
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +91,6 @@ func TacticsByVerseAndTimezone(tx *sql.Tx, verse uint64, timezone int) ([]Tactic
 	for rows.Next() {
 		var t Tactic
 		err = rows.Scan(
-			&t.Verse,
-			&t.Timezone,
 			&t.TeamID,
 			&t.TacticID,
 			&t.Shirt0,
@@ -184,8 +176,6 @@ func (b *Tactic) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create tactic for TeamID %v", b.TeamID)
 	_, err := tx.Exec(
 		`INSERT INTO tactics (
-						verse,
-						timezone,
 						team_id,
 						tactic_id,
                         shirt_0,
@@ -250,12 +240,8 @@ func (b *Tactic) Insert(tx *sql.Tx) error {
 						$29,
 						$30,
 						$31,
-						$32,
-						$33,
-						$34
+						$32
 		);`,
-		b.Verse,
-		b.Timezone,
 		b.TeamID,
 		b.TacticID,
 		b.Shirt0,

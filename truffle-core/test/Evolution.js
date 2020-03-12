@@ -285,17 +285,29 @@ contract('Evolution', (accounts) => {
         assignment = 0
         prev2ndHalfLog = 0;
         teamIds = [1,2]
-        vSeed = '0x234a2b366'
+
+        // for (p=1; p< 1000; p++) {
+        //     vSeed = web3.utils.keccak256(p.toString());
+        //     var {0: skills, 1: matchLogsAndEvents} =  await play.play1stHalfAndEvolve(
+        //         vSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
+        //         [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
+        //     ).should.be.fulfilled;
+        //     outType = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        //     console.log(vSeed.toString(), outType.toNumber())
+        // }
+
+        vSeed='0x3b4066bd7b7960752225af105d3beafb5c47a26c5aae7e6798a437b7c0bb33e6';
         var {0: skills, 1: matchLogsAndEvents} =  await play.play1stHalfAndEvolve(
             vSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tactics1], [prev2ndHalfLog, prev2ndHalfLog],
             [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
         ).should.be.fulfilled;
         outType = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+    
         outType.toNumber().should.be.equal(3); // RED_CARD = 3
-        // with this seed, player p = 8 sees the red card
+        // with this seed, player p = 9 sees the red card
         outPlayer = await training.getOutOfGamePlayer(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
-        outPlayer.toNumber().should.be.equal(8);
-        p = 8;    
+        p = 9;    
+        outPlayer.toNumber().should.be.equal(p);
         red = await assets.getRedCardLastGame(skills[0][p]).should.be.fulfilled;
         red.should.be.equal(true)
     });
@@ -940,6 +952,13 @@ contract('Evolution', (accounts) => {
             verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tactics0, tacticsNew], [prev2ndHalfLog, prev2ndHalfLog],
             [is2nd = false, isHomeStadium, isPlayoff], [assignment, assignment]
         ).should.be.fulfilled;
+        
+        goals = []
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodeLog.getNGoals(matchLogsAndEvents0[team]);
+            goals.push(nGoals);
+        }
+        debug.compareArrays(goals, [1,2], toNum = true, verbose = false, isBigNumber = false);
 
         // first: check correct properties for team1:
             // recall:   lineUp = consecutive,  subst = [6, NO_SUBST, NO_SUBST]
@@ -974,8 +993,8 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, verbose = false, isBigNumber = false);
 
         // check Training Points (and Goals)
-        expectedGoals = [3, 5];
-        expectedPoints = [23, 47];
+        expectedGoals = [2, 5];
+        expectedPoints = [17, 49];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {

@@ -13,14 +13,16 @@ contract EngineLib is EncodingSkillsGetters {
     /// We return a uint8, not bool, to allow the return to be used as an idx in an array by the callee.
     /// The formula is derived as follows. Consider a segment which is the union of a segment of length w0, and one of length w1.
     //      0, 1, ... w0-1 | w0 ... w0+w1-1
-    //  We want to get a random number in that segment: (w0+w1-1) * (R/maxR)
-    //  w1 wins if (w0+w1-1) * (R/maxR) < w1 => (w0+w1-1) * R < w1 * maxR
-    //  w2 wins otherwise
+    //  We want to get a random number in that segment: (w0+w1) * R/(maxR + 1)
+    //  w0 wins if (w0+w1) * R/(maxR + 1) < w0 => (w0+w1) * R < w0 * (maxR + 1)
+    //  w1 wins otherwise
+    //  Limits:
+    //  (w0 = 0, w1 != 0) => w0 never wins;   (w0 ! 0, w1 = 0) => w1 never wins;   
     //  MAX_RND controls the resolution or fine-graining of the algorithm.
     function throwDice(uint256 weight0, uint256 weight1, uint256 rndNum) public pure returns(uint8) {
         // if both weights are null, return approx 50% chance
         if (weight0 == 0 && weight1 == 0) return uint8(rndNum % 2);
-        if( ( (weight0 + weight1 - 1) * rndNum ) < (weight0 * MAX_RND) ) {
+        if( ( (weight0 + weight1) * rndNum ) < (weight0 * (MAX_RND +1)) ) {
             return 0;
         } else {
             return 1;
@@ -29,6 +31,7 @@ contract EngineLib is EncodingSkillsGetters {
 
     /// @dev Generalization of the previous to any number of input weights
     /// @dev It therefore throws any number of dice and returns the winner's idx.
+    /// @dev Following the explanation above, consider this limits:
     function throwDiceArray(uint256[] memory weights, uint256 rndNum) public pure returns(uint8 w) {
         uint256 uniformRndInSumOfWeights;
         for (w = 0; w < weights.length; w++) {
@@ -36,11 +39,13 @@ contract EngineLib is EncodingSkillsGetters {
         }
         // if all weights are null, return uniform chance
         if (uniformRndInSumOfWeights == 0) return uint8(rndNum % weights.length);
-        uniformRndInSumOfWeights = (uniformRndInSumOfWeights - 1) * rndNum;
+
+        uniformRndInSumOfWeights *= rndNum;
+        uint256 maxRndPlusOne = MAX_RND + 1;
         uint256 cumSum = 0;
         for (w = 0; w < weights.length-1; w++) {
             cumSum += weights[w];
-            if( uniformRndInSumOfWeights < ( cumSum * MAX_RND )) {
+            if( uniformRndInSumOfWeights < ( cumSum * maxRndPlusOne)) {
                 return w;
             }
         }
@@ -61,16 +66,6 @@ contract EngineLib is EncodingSkillsGetters {
             remainingBits -= BITS_PER_RND;
         }
         return rnds;
-    }
-
-    // no penalty at all => return 1M,  max penalty => return 0
-    // for each day that passes over 31 years (=11315 days), we subtract 0,0274%, so that you get 10.001% less per year
-    // on a max of 1M, this is 274 per day.
-    // so, 3649 days after 31 (ten years), he will reach penalty 0. He'll be useless when reaching 41.
-    function penaltyPerAge(uint256 playerSkills, uint256 matchStartTime) public pure returns (uint256) {
-        uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
-        if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
-        return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
     }
 
     function getNDefenders(uint8[9] memory playersPerZone) public pure returns (uint8) {

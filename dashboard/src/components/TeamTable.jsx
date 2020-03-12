@@ -2,6 +2,8 @@ import React from 'react';
 import { Table } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import Config from '../Config';
+import { useState } from 'react';
 
 const GET_TEAM = gql`
 query teamByTeamId($teamId: String!){
@@ -23,12 +25,16 @@ query teamByTeamId($teamId: String!){
 }
 `;
 
-export default function TeamTable(props) {
-    const { teamId } = props;
+export default function TeamTable({ teamId, onPlayerIdChange }) {
+    const [playerId, setPlayerId] = useState("");
     const { loading, error, data } = useQuery(GET_TEAM, {
         variables: { teamId },
-        pollInterval: 5000,
+        pollInterval: Config.polling_ms,
     });
+
+    if (teamId === '') {
+        return <div/>
+    }
 
     if (loading) return 'Loading...';
     if (error) return `Error! ${error.message}`;
@@ -53,7 +59,13 @@ export default function TeamTable(props) {
             <Table.Body >
                 {
                     players.map(player => (
-                        <Table.Row key={player.playerId}>
+                        <Table.Row 
+                            key={player.playerId}
+                            active={playerId === player.playerId}
+                            onClick={() => {
+                                setPlayerId(player.playerId);
+                                onPlayerIdChange && onPlayerIdChange(player.playerId);
+                            }}>
                             <Table.Cell>{player.shirtNumber}</Table.Cell>
                             <Table.Cell>{player.name}</Table.Cell>
                             <Table.Cell>{player.defence}</Table.Cell>

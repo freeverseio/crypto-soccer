@@ -50,6 +50,7 @@ func (b *Player) SetSkills(contracts contracts.Contracts, skills *big.Int) {
 	b.Endurance = uint64(decodedSkills.Skills[SK_END])
 	b.RedCard = decodedSkills.Aligned1stSubst1stRedCardLastGame[2]
 	b.InjuryMatchesLeft = decodedSkills.GenerationGamesNonStopInjuryWeeks[2]
+	b.Tiredness = int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1])
 }
 
 func (b Player) Skills() *big.Int {
