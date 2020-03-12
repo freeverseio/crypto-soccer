@@ -388,8 +388,19 @@ contract("Market", accounts => {
     thisPlayerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+2+nTransfers+1);
     await marketCrypto.putPlayerForSale(thisPlayerId, startingPrice, {from: ALICE}).should.be.fulfilled;
     await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.rejected;
-  
-    
+
+    // so player 7, 8, 9 are in transit. We can still not complete transits because team is still full
+    await market.completePlayerTransit(playerIds[7]).should.be.rejected;
+
+    // so let's sell again
+
+    await market.completePlayerTransit(playerIds[7]).should.be.fulfilled;
+    await market.completePlayerTransit(playerIds[8]).should.be.fulfilled;
+    // still not capable of bidding again, one player still in transit in buyers team
+    await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.rejected;
+    // now yes:
+    await market.completePlayerTransit(playerIds[9]).should.be.fulfilled;
+    await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
     
   });
 

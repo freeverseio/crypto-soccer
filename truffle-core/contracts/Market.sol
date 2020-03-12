@@ -200,6 +200,23 @@ contract Market is MarketView {
         emit PlayerStateChange(playerId, newState);
     }
     
+    function completePlayerTransit(uint256 playerId) public  {
+        uint256 teamIdTarget = _playerInTransitToTeam[playerId];
+        require(teamIdTarget != 0, "player not in transit");
+        uint8 shirtTarget = getFreeShirt(teamIdTarget);
+        require(shirtTarget < PLAYERS_PER_TEAM_MAX, "cannot complete player transit because targetTeam is still full");
+        uint256 state = getPlayerState(playerId);
+        state = setCurrentShirtNum(
+                    setCurrentTeamId(
+                        state, teamIdTarget
+                    ), shirtTarget
+                );
+        _playerIdToState[playerId] = state;
+        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+        _nPlayersInTransitInTeam[teamIdTarget] -= 1;
+        delete _playerInTransitToTeam[playerId];
+        emit PlayerStateChange(playerId, state);
+    }
         
     function transferTeam(uint256 teamId, address addr) public {
         // requiring that team is not bot already ensures that tz and countryIdxInTz exist 
