@@ -53,7 +53,7 @@ func GeneratePlayerByPlayerIdAndState(
 	opts := &bind.CallOpts{}
 	if encodedSkills, err := contracts.Assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
 		return nil, err
-	} else if defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := contracts.DecodeSkills(encodedSkills); err != nil {
+	} else if decodedSkills, err := contracts.Utils.FullDecodeSkills(opts, encodedSkills); err != nil {
 		return nil, err
 	} else if preferredPosition, err := GetPlayerPreferredPosition(contracts, encodedSkills); err != nil {
 		return nil, err
@@ -70,19 +70,20 @@ func GeneratePlayerByPlayerIdAndState(
 		player := storage.Player{
 			PlayerId:          playerId,
 			PreferredPosition: preferredPosition,
-			Potential:         potential.Uint64(),
-			DayOfBirth:        dayOfBirth.Uint64(),
+			Potential:         uint64(decodedSkills.BirthTraits[0]),
+			DayOfBirth:        uint64(decodedSkills.DayOfBirth),
 			TeamId:            teamId.String(),
 			Name:              name,
-			Defence:           defence.Uint64(), // TODO: type should be uint16
-			Speed:             speed.Uint64(),
-			Pass:              pass.Uint64(),
-			Shoot:             shoot.Uint64(),
-			Endurance:         endurance.Uint64(),
+			Defence:           uint64(decodedSkills.Skills[3]),
+			Speed:             uint64(decodedSkills.Skills[1]),
+			Pass:              uint64(decodedSkills.Skills[2]),
+			Shoot:             uint64(decodedSkills.Skills[0]),
+			Endurance:         uint64(decodedSkills.Skills[4]),
 			ShirtNumber:       uint8(shirtNumber.Uint64()),
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
 			BlockNumber:       blockNumber,
+			Tiredness:         int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1]),
 		}
 		return &player, nil
 	}
