@@ -392,16 +392,19 @@ contract("Market", accounts => {
     // so player 7, 8, 9 are in transit. We can still not complete transits because team is still full
     await market.completePlayerTransit(playerIds[7]).should.be.rejected;
 
-    // so let's sell again
-
+    // so let's sell again, return back to ALICE :-)
+    for (n = 0; n < 3; n++) { 
+      await marketCrypto.putPlayerForSale(playerIds[n], startingPrice, {from: BOB}).should.be.fulfilled;
+      await marketCrypto.bidForPlayer(playerIds[n], sellerTeamId0, {from: ALICE, value: startingPrice}).should.be.fulfilled;
+    }
+    await timeTravel.advanceTime(24*3600+100);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    for (n = 0; n < 3; n++) { 
+      await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.fulfilled;
+    }
     await market.completePlayerTransit(playerIds[7]).should.be.fulfilled;
     await market.completePlayerTransit(playerIds[8]).should.be.fulfilled;
-    // still not capable of bidding again, one player still in transit in buyers team
-    await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.rejected;
-    // now yes:
     await market.completePlayerTransit(playerIds[9]).should.be.fulfilled;
-    await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
-    
   });
 
   return
