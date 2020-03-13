@@ -13,8 +13,8 @@
 		},
 		HomeGoals: (uint8) 3,
 		VisitorGoals: (uint8) 4,
-		HomeMatchLog: (*big.Int)(1817645559979389328999808897235303282022774084093613330920837419605090674851),
-		VisitorMatchLog: (*big.Int)(1833988895328589384048454400516279430559592690573199725663862433685355268740),
+		HomeMatchLog: (*big.Int)(0),
+		VisitorMatchLog: (*big.Int)(0),
 		State: (storage.MatchState) (len=3) "end"
 	},
 	StartTime: (*big.Int)(1570147200),
@@ -37,7 +37,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 19,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1809253036421563448390736347185344807343282452750693159453103070358909485217"
+			MatchLog: (string) (len=76) "1817645559979389328999808897235303282022774084093613330920837419605090674851"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -587,7 +587,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 56,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1809253036421563448390736347168619248444384494268095572346785559659767925378"
+			MatchLog: (string) (len=76) "1833988895328589384048454400516279430559592690573199725663862433685355268740"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({

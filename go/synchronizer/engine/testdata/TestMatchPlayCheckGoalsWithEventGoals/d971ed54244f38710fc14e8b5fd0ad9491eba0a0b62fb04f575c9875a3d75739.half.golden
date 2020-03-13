@@ -13,8 +13,8 @@
 		},
 		HomeGoals: (uint8) 1,
 		VisitorGoals: (uint8) 1,
-		HomeMatchLog: (*big.Int)(1809253036428145466620021171343661739791790705611584000845430934500955652209),
-		VisitorMatchLog: (*big.Int)(1809253036428145466620021171349682940995393973859798644779054999306825105553),
+		HomeMatchLog: (*big.Int)(0),
+		VisitorMatchLog: (*big.Int)(0),
 		State: (storage.MatchState) (len=4) "half"
 	},
 	StartTime: (*big.Int)(1570147200),

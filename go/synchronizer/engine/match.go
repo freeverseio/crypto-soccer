@@ -160,8 +160,6 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeMatchLog = logsAndEvents[0]
-	b.VisitorMatchLog = logsAndEvents[1]
 	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
 	if err != nil {
 		return err
@@ -213,8 +211,6 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeMatchLog = logsAndEvents[0]
-	b.VisitorMatchLog = logsAndEvents[1]
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
 		return err
 	}
@@ -227,10 +223,12 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 
 func (b *Match) updateTrainingPoints(contracts contracts.Contracts) error {
 	var err error
-	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog); err != nil {
+	matchLog, _ := new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
+	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, matchLog); err != nil {
 		return err
 	}
-	if b.VisitorTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.VisitorMatchLog); err != nil {
+	matchLog, _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
+	if b.VisitorTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, matchLog); err != nil {
 		return err
 	}
 	return nil
