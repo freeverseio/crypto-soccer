@@ -157,32 +157,37 @@ contract Market is MarketView {
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
-        // TODO: checking if they are bots should be done outside this function
+        // TODO: checking if they are bots should be moved outside this function
         require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
         require(teamExists(teamIdTarget), "unexistent target team");
+        // part related to origin team:
         uint256 state = getPlayerState(playerId);
-        uint256 newState = state;
         uint256 teamIdOrigin = getCurrentTeamId(state);
-        require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
-        require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
-        uint8 shirtTarget = getFreeShirt(teamIdTarget);
-        require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
-        
-        _playerIdToState[playerId] = 
-            setLastSaleBlock(
-                setCurrentShirtNum(
-                    setCurrentTeamId(
-                        newState, teamIdTarget
-                    ), shirtTarget
-                ), block.number
-            );
-
-        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
-        emit PlayerStateChange(playerId, newState);
+        
+        // part related to both teams:
+        require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
+        require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
+
+        // part related to target team:
+        uint8 shirtTarget = getFreeShirt(teamIdTarget);
+        require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
+        
+        state = setLastSaleBlock(
+                    setCurrentShirtNum(
+                        setCurrentTeamId(
+                            state, teamIdTarget
+                        ), shirtTarget
+                    ), block.number
+                );
+
+        _playerIdToState[playerId] = state;
+        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+
+        emit PlayerStateChange(playerId, state);
     }
     
         
