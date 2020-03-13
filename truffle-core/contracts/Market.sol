@@ -227,14 +227,4 @@ contract Market is MarketView {
         teamIdToOwner[teamId] = addr;
         emit TeamTransfer(teamId, addr);
     }
-    
-    function returnPlayerToAcademy(uint256 teamId) public {
-        // requiring that team is not bot already ensures that tz and countryIdxInTz exist 
-        require(!isBotTeam(teamId), "cannot transfer a bot team");
-        require(addr != NULL_ADDR, "cannot transfer to a null address");
-        require(teamIdToOwner[teamId] != addr, "buyer and seller are the same addr");
-        teamIdToOwner[teamId] = addr;
-        emit TeamTransfer(teamId, addr);
-    }
-
 }
