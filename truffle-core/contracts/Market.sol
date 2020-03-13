@@ -199,7 +199,6 @@ contract Market is MarketView {
                     );
         }
         _playerIdToState[playerId] = state;
-        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
 
         emit PlayerStateChange(playerId, state);
     }
