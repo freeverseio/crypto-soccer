@@ -29,12 +29,14 @@ type Team struct {
 	RankingPoints   uint64
 	TrainingPoints  uint16
 	Tactic          string
+	MatchLog        string
 }
 
 func NewTeam() *Team {
 	var team Team
 	team.TeamID = "0"
 	team.Tactic = "340596594427581673436941882753025"
+	team.MatchLog = "0"
 	return &team
 }
 
@@ -54,8 +56,9 @@ func (b *Team) Insert(tx *sql.Tx) error {
 			team_idx_in_league, 
 			name,
 			ranking_points,
-			tactic
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+			tactic,
+			match_log
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
 		b.TeamID,
 		b.TimezoneIdx,
 		b.CountryIdx,
@@ -65,6 +68,7 @@ func (b *Team) Insert(tx *sql.Tx) error {
 		b.Name,
 		strconv.FormatUint(b.RankingPoints, 10),
 		b.Tactic,
+		b.MatchLog,
 	)
 	if err != nil {
 		return err
@@ -104,8 +108,9 @@ func (b *Team) Update(tx *sql.Tx) error {
 						ranking_points=$11,
 						training_points=$12,
 						name=$13,
-						tactic=$14
-						WHERE team_id=$15`,
+						tactic=$14,
+						match_log=$15
+						WHERE team_id=$16`,
 		b.Owner,
 		b.LeagueIdx,
 		b.TeamIdxInLeague,
@@ -120,6 +125,7 @@ func (b *Team) Update(tx *sql.Tx) error {
 		b.TrainingPoints,
 		b.Name,
 		b.Tactic,
+		b.MatchLog,
 		b.TeamID,
 	)
 	return err
@@ -200,7 +206,8 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	ranking_points,
 	name,
 	training_points,
-	tactic
+	tactic,
+	match_log
 	FROM teams WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return team, err
@@ -227,6 +234,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 		&team.Name,
 		&team.TrainingPoints,
 		&team.Tactic,
+		&team.MatchLog,
 	)
 	if err != nil {
 		return team, err

@@ -209,17 +209,11 @@ func TestUpdateTeamOwner(t *testing.T) {
 	}
 	team.Owner = "pippo"
 	team.TrainingPoints = 4
-	err = team.Update(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
+	team.MatchLog = "Gimme gasolina!"
+	assert.NilError(t, team.Update(tx))
 	result, err := storage.TeamByTeamId(tx, team.TeamID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if team != result {
-		t.Fatalf("expected %v but got %v", team, result)
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, team, result)
 }
 
 // func TestTeamAddSameTimeTwice(t *testing.T) {

@@ -45,8 +45,8 @@ func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, engine.HomeGoals, uint8(0))
 	assert.Equal(t, engine.VisitorGoals, uint8(0))
-	assert.Equal(t, engine.HomeMatchLog.String(), "1822502747332067472423741020992967168868778470381174956540879256639596658688")
-	assert.Equal(t, engine.VisitorMatchLog.String(), "1822502747332067472423741020992967168868778470381174956540879256639596658688")
+	assert.Equal(t, engine.HomeTeam.MatchLog, "1822502747332067472423741020992967168868778470381174956540879256639596658688")
+	assert.Equal(t, engine.VisitorTeam.MatchLog, "1822502747332067472423741020992967168868778470381174956540879256639596658688")
 }
 
 func TestPlayGame(t *testing.T) {
@@ -82,12 +82,14 @@ func TestPlay2ndHalf(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
-	assert.Equal(t, m.HomeMatchLog.String(), "1822502747332067472423741020992967168868778470381174956540879256639596658688")
-	assert.Equal(t, m.VisitorMatchLog.String(), "1822502747332067472423741020992967168868778470381174956540879256639596658688")
+	assert.Equal(t, m.HomeTeam.MatchLog, "1822502747332067472423741020992967168868778470381174956540879256639596658688")
+	assert.Equal(t, m.VisitorTeam.MatchLog, "1822502747332067472423741020992967168868778470381174956540879256639596658688")
 	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146173659658851975133989506638843274536350558846986")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
 	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730774314591213142415462872739884964159759890645042")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
+	assert.Equal(t, m.HomeTeam.TrainingPoints, uint16(30))
+	assert.Equal(t, m.VisitorTeam.TrainingPoints, uint16(30))
 }
 
 func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
