@@ -47,6 +47,7 @@ CREATE TABLE teams (
     ranking_points TEXT NOT NULL DEFAULT '0',
     training_points INT NOT NULL DEFAULT 0,
     tactic TEXT NOT NULL DEFAULT '',
+    match_log TEXT NOT NULL,
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
