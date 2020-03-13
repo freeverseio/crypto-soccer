@@ -109,8 +109,6 @@ CREATE TABLE matches (
     seed TEXT NOT NULL DEFAULT '',
     home_goals INT NOT NULL DEFAULT 0,
     visitor_goals INT NOT NULL DEFAULT 0,
-    home_match_log TEXT NOT NULL,
-    visitor_match_log TEXT NOT NULL,
     state match_state NOT NULL,
     PRIMARY KEY(timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
