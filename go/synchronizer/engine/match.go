@@ -139,6 +139,9 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
+	matchLogs := [2]*big.Int{}
+	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
+	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -146,7 +149,7 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		b.Skills(),
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
-		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
+		matchLogs,
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 		[2]*big.Int{b.HomeTeam.AssignedTP, b.VisitorTeam.AssignedTP},
 	)
@@ -155,6 +158,8 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
+	b.HomeTeam.MatchLog = logsAndEvents[0].String()
+	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
 	b.HomeMatchLog = logsAndEvents[0]
 	b.VisitorMatchLog = logsAndEvents[1]
 	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
@@ -184,6 +189,9 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
+	matchLogs := [2]*big.Int{}
+	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
+	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -191,7 +199,7 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		b.Skills(),
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
-		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
+		matchLogs,
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 	)
 	if err != nil {
@@ -203,6 +211,8 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
+	b.HomeTeam.MatchLog = logsAndEvents[0].String()
+	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
 	b.HomeMatchLog = logsAndEvents[0]
 	b.VisitorMatchLog = logsAndEvents[1]
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
