@@ -22,7 +22,9 @@ contract('Proxy', (accounts) => {
     const it2 = async(text, f) => {};
 
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
+    function fromBytes32(name) { return web3.utils.hexToUtf8(name); }
 
+    
     function getIdxInABI(abi, name) {
         for (i = 0; i < abi.length; i++) { 
             if (abi[i].name == name) {
@@ -98,18 +100,31 @@ contract('Proxy', (accounts) => {
         tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.rejected;
         contractId = 1;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
-        truffleAssert.eventEmitted(tx0, "ContractAdded", async (event) => { return event.contractId === contractId && event.name === name});
+
+        truffleAssert.eventEmitted(tx0, "ContractAdded", (event) => {
+            ok = true;
+            for (s = 0; s < selectors.length; s++) {
+                ok = ok && (event.selectors[s] == selectors[s]);
+            }
+            return ok && event.contractId.toNumber().should.be.equal(contractId) && fromBytes32(event.name).should.be.equal("Assets");
+        });
+
+
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractId).should.be.fulfilled;
         isActive.should.be.equal(false);
         addr.should.be.equal(assetsAsLib.address);
+
         
         tx1 = await proxy.activateContracts(contractIds = [contractId]).should.be.fulfilled;
-        truffleAssert.eventEmitted(tx1, "ContractsActivated", async (event) => { return event.contractId === contractId });
+        truffleAssert.eventEmitted(tx1, "ContractsActivated", (event) => { 
+            return event.contractIds[0].toNumber().should.be.equal(contractId)
+        });
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractId).should.be.fulfilled;
         isActive.should.be.equal(true);
 
         result = await proxy.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(2);
+        
     });
 
     it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {

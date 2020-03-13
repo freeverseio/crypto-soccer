@@ -8,7 +8,7 @@ import "./Constants.sol";
 */
 contract Storage is ProxyStorage, Constants{
 
-    uint256[2**8] _slotReserve;
+    uint256[2**12] _slotReserve;
    
     address internal _academyAddr;
     
