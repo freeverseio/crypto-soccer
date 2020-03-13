@@ -15,8 +15,14 @@ import "./MarketView.sol";
  
 contract Market is MarketView {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
+    event PlayerFreezeCrypto(uint256 playerId, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
+
+    function setIsPlayerFrozenCrypto(uint256 playerId, bool isFrozen) public {
+        _playerIdToIsFrozenCrypto[playerId] = isFrozen;
+        emit PlayerFreezeCrypto(playerId, isFrozen);
+    }
 
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
@@ -174,22 +180,46 @@ contract Market is MarketView {
 
         // part related to target team:
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
-        require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
-        
-        state = setLastSaleBlock(
-                    setCurrentShirtNum(
+        if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
+            state = setLastSaleBlock(
+                        setCurrentShirtNum(
+                            setCurrentTeamId(
+                                state, teamIdTarget
+                            ), shirtTarget
+                        ), block.number
+                    );
+            teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+        } else {
+            _playerInTransitToTeam[playerId] = teamIdTarget;
+            _nPlayersInTransitInTeam[teamIdTarget] += 1;
+            state = setLastSaleBlock(
                         setCurrentTeamId(
-                            state, teamIdTarget
-                        ), shirtTarget
-                    ), block.number
-                );
-
+                            state, IN_TRANSIT_TEAM
+                        ), block.number
+                    );
+        }
         _playerIdToState[playerId] = state;
-        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
 
         emit PlayerStateChange(playerId, state);
     }
     
+    function completePlayerTransit(uint256 playerId) public  {
+        uint256 teamIdTarget = _playerInTransitToTeam[playerId];
+        require(teamIdTarget != 0, "player not in transit");
+        uint8 shirtTarget = getFreeShirt(teamIdTarget);
+        require(shirtTarget < PLAYERS_PER_TEAM_MAX, "cannot complete player transit because targetTeam is still full");
+        uint256 state = getPlayerState(playerId);
+        state = setCurrentShirtNum(
+                    setCurrentTeamId(
+                        state, teamIdTarget
+                    ), shirtTarget
+                );
+        _playerIdToState[playerId] = state;
+        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+        _nPlayersInTransitInTeam[teamIdTarget] -= 1;
+        delete _playerInTransitToTeam[playerId];
+        emit PlayerStateChange(playerId, state);
+    }
         
     function transferTeam(uint256 teamId, address addr) public {
         // requiring that team is not bot already ensures that tz and countryIdxInTz exist 
