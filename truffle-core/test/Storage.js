@@ -102,7 +102,11 @@ contract('Proxy', (accounts) => {
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
 
         truffleAssert.eventEmitted(tx0, "ContractAdded", (event) => {
-            return event.contractId.toNumber().should.be.equal(contractId) && fromBytes32(event.name).should.be.equal("Assets");
+            ok = true;
+            for (s = 0; s < selectors.length; s++) {
+                ok = ok && (event.selectors[s] == selectors[s]);
+            }
+            return ok && event.contractId.toNumber().should.be.equal(contractId) && fromBytes32(event.name).should.be.equal("Assets");
         });
 
 
