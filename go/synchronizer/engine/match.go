@@ -30,8 +30,6 @@ func NewMatch() *Match {
 	mp.StartTime = big.NewInt(0)
 	mp.HomeTeam = *NewTeam()
 	mp.VisitorTeam = *NewTeam()
-	mp.HomeMatchLog = big.NewInt(0)
-	mp.VisitorMatchLog = big.NewInt(0)
 	mp.State = storage.MatchBegin
 	return &mp
 }
@@ -139,6 +137,9 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
+	matchLogs := [2]*big.Int{}
+	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
+	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -146,7 +147,7 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		b.Skills(),
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
-		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
+		matchLogs,
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 		[2]*big.Int{b.HomeTeam.AssignedTP, b.VisitorTeam.AssignedTP},
 	)
@@ -155,8 +156,8 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
-	b.HomeMatchLog = logsAndEvents[0]
-	b.VisitorMatchLog = logsAndEvents[1]
+	b.HomeTeam.MatchLog = logsAndEvents[0].String()
+	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
 	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
 	if err != nil {
 		return err
@@ -184,6 +185,9 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
+	matchLogs := [2]*big.Int{}
+	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
+	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -191,7 +195,7 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		b.Skills(),
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
-		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
+		matchLogs,
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 	)
 	if err != nil {
@@ -203,8 +207,8 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
-	b.HomeMatchLog = logsAndEvents[0]
-	b.VisitorMatchLog = logsAndEvents[1]
+	b.HomeTeam.MatchLog = logsAndEvents[0].String()
+	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
 		return err
 	}
@@ -217,10 +221,12 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 
 func (b *Match) updateTrainingPoints(contracts contracts.Contracts) error {
 	var err error
-	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog); err != nil {
+	matchLog, _ := new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
+	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, matchLog); err != nil {
 		return err
 	}
-	if b.VisitorTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.VisitorMatchLog); err != nil {
+	matchLog, _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
+	if b.VisitorTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, matchLog); err != nil {
 		return err
 	}
 	return nil
@@ -295,7 +301,7 @@ func (b Match) ToString() string {
 	var result string
 	result += fmt.Sprintf("seed = '0x%v';", hex.EncodeToString(b.Seed[:]))
 	result += fmt.Sprintf("startTime = '%v';", b.StartTime)
-	result += fmt.Sprintf("matchLog0 = '%v';", b.HomeMatchLog)
+	result += fmt.Sprintf("matchLog0 = '%v';", b.HomeTeam.MatchLog)
 	result += fmt.Sprintf("teamId0 = '%v';", b.HomeTeam.TeamID)
 	result += fmt.Sprintf("tactic0 = '%v';", b.HomeTeam.Tactic)
 	result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
@@ -304,7 +310,7 @@ func (b Match) ToString() string {
 		result += fmt.Sprintf("'%v',", player.EncodedSkills)
 	}
 	result += "];"
-	result += fmt.Sprintf("matchLog1 = '%v';", b.VisitorMatchLog)
+	result += fmt.Sprintf("matchLog1 = '%v';", b.VisitorTeam.MatchLog)
 	result += fmt.Sprintf("teamId1 = '%v';", b.VisitorTeam.TeamID)
 	result += fmt.Sprintf("tactic1 = '%v';", b.VisitorTeam.Tactic)
 	result += fmt.Sprintf("assignedTP1 = '%v';", b.VisitorTeam.AssignedTP)

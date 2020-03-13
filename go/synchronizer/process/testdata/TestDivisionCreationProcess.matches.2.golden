@@ -1,4 +1,4 @@
-([]storage.Match) (len=56 cap=78) {
+([]storage.Match) (len=56 cap=69) {
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
@@ -13,8 +13,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -31,8 +29,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -49,8 +45,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -67,8 +61,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -85,8 +77,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -103,8 +93,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -121,8 +109,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -139,8 +125,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -157,8 +141,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -175,8 +157,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -193,8 +173,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -211,8 +189,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -229,8 +205,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -247,8 +221,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -265,8 +237,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -283,8 +253,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -301,8 +269,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -319,8 +285,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -337,8 +301,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -355,8 +317,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -373,8 +333,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -391,8 +349,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -409,8 +365,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -427,8 +381,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -445,8 +397,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -463,8 +413,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -481,8 +429,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -499,8 +445,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -517,8 +461,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -535,8 +477,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -553,8 +493,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -571,8 +509,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -589,8 +525,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -607,8 +541,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -625,8 +557,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -643,8 +573,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -661,8 +589,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -679,8 +605,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -697,8 +621,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -715,8 +637,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -733,8 +653,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -751,8 +669,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -769,8 +685,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -787,8 +701,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -805,8 +717,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -823,8 +733,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -841,8 +749,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -859,8 +765,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -877,8 +781,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -895,8 +797,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -913,8 +813,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -931,8 +829,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -949,8 +845,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -967,8 +861,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -985,8 +877,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 },
 (storage.Match) {
@@ -1003,8 +893,6 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeMatchLog: (*big.Int)(0),
-VisitorMatchLog: (*big.Int)(0),
 State: (storage.MatchState) ""
 }
 }
