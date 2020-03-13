@@ -32,7 +32,9 @@ func TestPlayerCreate(t *testing.T) {
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
 	player.TeamId = teamID
-	assert.NilError(t, player.Insert(tx))
+
+	blockNumber := uint64(3)
+	assert.NilError(t, player.Insert(tx, blockNumber))
 	count, err := storage.PlayerCount(tx)
 	assert.NilError(t, err)
 	assert.Equal(t, count, uint64(1))
@@ -50,15 +52,15 @@ func TestPlayerUpdate(t *testing.T) {
 	player.PlayerId = big.NewInt(33)
 	player.TeamId = teamID
 	player.EncodedSkills = big.NewInt(4)
-	assert.NilError(t, player.Insert(tx))
+	blockNumber := uint64(3)
+	assert.NilError(t, player.Insert(tx, blockNumber))
 	player2, err := storage.PlayerByPlayerId(tx, player.PlayerId)
 	assert.NilError(t, err)
 	assert.Equal(t, player2.EncodedSkills.String(), player.EncodedSkills.String())
 	player2.EncodedSkills = big.NewInt(3)
 	player2.RedCard = true
 	player2.InjuryMatchesLeft = 3
-	player2.BlockNumber++
-	assert.NilError(t, player2.Update(tx))
+	assert.NilError(t, player2.Update(tx, blockNumber+1))
 	player3, err := storage.PlayerByPlayerId(tx, player.PlayerId)
 	assert.NilError(t, err)
 	assert.Equal(t, player2.RedCard, player3.RedCard)
@@ -103,7 +105,7 @@ func TestPlayerGetPlayer(t *testing.T) {
 	player.EncodedSkills, _ = new(big.Int).SetString("3618502788692870556043062973242620158809030731543066377891708431006382948352", 10)
 	player.EncodedState, _ = new(big.Int).SetString("614878739568587161270510773682668741239185861458610514677961004951428661248", 10)
 
-	err = player.Insert(tx)
+	err = player.Insert(tx, uint64(3))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,8 +118,7 @@ func TestPlayerGetPlayer(t *testing.T) {
 	}
 	player.Defence = 6
 	player.TeamId = "11"
-	player.BlockNumber++
-	err = player.Update(tx)
+	err = player.Update(tx, uint64(4))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,11 +151,11 @@ func TestPlayerGetPlayersOfTeam(t *testing.T) {
 	player.TeamId = teamID
 	player.EncodedSkills = big.NewInt(43535453)
 	player.EncodedState = big.NewInt(43453)
-	assert.NilError(t, player.Insert(tx))
+	assert.NilError(t, player.Insert(tx, uint64(4)))
 	player2 := player
 	player2.PlayerId = big.NewInt(2)
 	player2.EncodedSkills = big.NewInt(767)
-	assert.NilError(t, player2.Insert(tx))
+	assert.NilError(t, player2.Insert(tx, uint64(4)))
 	players, err = storage.PlayersByTeamId(tx, teamID)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 2)
