@@ -245,4 +245,5 @@ func TestMatchEvents(t *testing.T) {
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.golden")
 }
