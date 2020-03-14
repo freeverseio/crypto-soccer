@@ -10,8 +10,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type Match struct {
@@ -252,48 +250,22 @@ func (b *Match) Skills() [2][25]*big.Int {
 }
 
 func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents []*big.Int, is2ndHalf bool) error {
-	log0, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
-	if err != nil {
-		return err
-	}
-	log1, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
-	if err != nil {
-		return err
-	}
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
-	log.Debugf("Full decoded match log 0: %v", log0)
-	log.Debugf("Full decoded match log 1: %v", log1)
-	decodedTactics0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, homeTactic)
-	if err != nil {
-		return err
-	}
-	decodedTactics1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, visitorTactic)
-	if err != nil {
-		return err
-	}
-	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
-	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
-
-	generatedEvents, err := matchevents.Generate(
+	events, err := matchevents.NewMatchEvents(
+		contracts,
 		b.Seed,
 		b.HomeTeam.TeamID,
 		b.VisitorTeam.TeamID,
-		log0,
-		log1,
+		homeTactic,
+		visitorTactic,
 		logsAndEvents,
-		decodedTactics0.Lineup,
-		decodedTactics1.Lineup,
-		decodedTactics0.Substitutions,
-		decodedTactics1.Substitutions,
-		decodedTactics0.SubsRounds,
-		decodedTactics1.SubsRounds,
 		is2ndHalf,
 	)
 	if err != nil {
 		return err
 	}
-	b.Events = append(b.Events, generatedEvents...)
+	b.Events = append(b.Events, events...)
 	return nil
 }
 

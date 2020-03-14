@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"strconv"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 )
 
@@ -15,14 +16,48 @@ type MatchEvents []MatchEvent
 func NewMatchEvents(
 	contracts contracts.Contracts,
 	verseSeed [32]byte,
-	homeTeam string,
-	visitorTeam string,
-	homaTeamMatchLog *big.Int,
-	visitorTeamMatchLog *big.Int,
+	homeTeamID string,
+	visitorTeamID string,
+	homeTactic *big.Int,
+	visitorTactic *big.Int,
+	logsAndEvents []*big.Int,
 	is2ndHalf bool,
-) (*MatchEvents, error) {
-	events := MatchEvents{}
-	return &events, nil
+) (MatchEvents, error) {
+	log0, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	if err != nil {
+		return nil, err
+	}
+	log1, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
+	if err != nil {
+		return nil, err
+	}
+	decodedTactic0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, homeTactic)
+	if err != nil {
+		return nil, err
+	}
+	decodedTactic1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, visitorTactic)
+	if err != nil {
+		return nil, err
+	}
+	events, err := Generate(
+		verseSeed,
+		homeTeamID,
+		visitorTeamID,
+		log0,
+		log1,
+		logsAndEvents,
+		decodedTactic0.Lineup,
+		decodedTactic1.Lineup,
+		decodedTactic0.Substitutions,
+		decodedTactic1.Substitutions,
+		decodedTactic0.SubsRounds,
+		decodedTactic1.SubsRounds,
+		is2ndHalf,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
 }
 
 func Generate(
