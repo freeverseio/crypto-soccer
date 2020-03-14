@@ -6,9 +6,24 @@ import (
 	"math"
 	"math/big"
 	"strconv"
+
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 )
 
 type MatchEvents []MatchEvent
+
+func NewMatchEvents(
+	contracts contracts.Contracts,
+	verseSeed [32]byte,
+	homeTeam string,
+	visitorTeam string,
+	homaTeamMatchLog *big.Int,
+	visitorTeamMatchLog *big.Int,
+	is2ndHalf bool,
+) (*MatchEvents, error) {
+	events := MatchEvents{}
+	return &events, nil
+}
 
 func Generate(
 	verseSeed [32]byte,
