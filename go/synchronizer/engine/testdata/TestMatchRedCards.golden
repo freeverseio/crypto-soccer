@@ -35,7 +35,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1809252841225230840719990802576567867449345403164777349740842651283017957376"
+			MatchLog: (string) (len=76) "1809252841225230840719990802586915413221463612302449923019351491021792870400"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -585,7 +585,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1809252842383666049074119856253627407002480579871841461333007538180245710739"
+			MatchLog: (string) (len=76) "1809252842383666049074119856298496506341924193632611326497576041530278307731"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -1116,7 +1116,7 @@
 		},
 		AssignedTP: (*big.Int)(0)
 	},
-	Events: (matchevents.MatchEvents) (len=18 cap=18) {
+	Events: (matchevents.MatchEvents) (len=16 cap=16) {
 		(matchevents.MatchEvent) {
 			Minute: (int16) 3,
 			Type: (int16) 0,
@@ -1235,21 +1235,12 @@
 			SecondaryPlayer: (int16) -1
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 8,
-			Type: (int16) 1,
-			Team: (int16) 0,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 0,
-			SecondaryPlayer: (int16) -1
-		},
-		(matchevents.MatchEvent) {
 			Minute: (int16) 27,
 			Type: (int16) 1,
 			Team: (int16) 0,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 0,
+			PrimaryPlayer: (int16) 8,
 			SecondaryPlayer: (int16) -1
 		},
 		(matchevents.MatchEvent) {
@@ -1262,21 +1253,12 @@
 			SecondaryPlayer: (int16) -1
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 8,
-			Type: (int16) 1,
-			Team: (int16) 1,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 0,
-			SecondaryPlayer: (int16) -1
-		},
-		(matchevents.MatchEvent) {
 			Minute: (int16) 27,
 			Type: (int16) 1,
 			Team: (int16) 1,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 0,
+			PrimaryPlayer: (int16) 8,
 			SecondaryPlayer: (int16) -1
 		}
 	}

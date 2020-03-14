@@ -1957,9 +1957,9 @@ GoalsForward: (uint32) 0,
 GoalsAgainst: (uint32) 2,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
-TrainingPoints: (uint16) 1,
+TrainingPoints: (uint16) 2,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=76) "1809694554143407181970777235256024184119066594262817047398195570258359615488"
+MatchLog: (string) (len=76) "1810136265909601778053173059641557459520141674374708525416234811547457683456"
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
