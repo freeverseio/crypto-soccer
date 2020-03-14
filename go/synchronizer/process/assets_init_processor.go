@@ -2,6 +2,7 @@ package process
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -34,6 +35,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	timezone := storage.Timezone{uint8(0)}
 	country := storage.Country{timezone.TimezoneIdx, uint32(0)}
 	league := storage.League{timezone.TimezoneIdx, country.CountryIdx, uint32(0)}
+	log.Infof("Creating timezone %v country %v league %v", timezone.TimezoneIdx, country.CountryIdx, league.LeagueIdx)
 	if err := timezone.Insert(tx); err != nil {
 		return err
 	}
@@ -43,27 +45,15 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	if err := league.Insert(tx); err != nil {
 		return err
 	}
-	teamIdxInLeague := uint32(0)
-	team := storage.Team{
-		b.ACADEMYTEAM.String(),
-		timezone.TimezoneIdx,
-		country.CountryIdx,
-		"Academy",
-		event.CreatorAddr.String(),
-		league.LeagueIdx,
-		teamIdxInLeague,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		"0",
-	}
-
+	team := storage.NewTeam()
+	team.TeamID = b.ACADEMYTEAM.String()
+	team.TimezoneIdx = timezone.TimezoneIdx
+	team.CountryIdx = country.CountryIdx
+	team.Name = "Academy"
+	team.Owner = event.CreatorAddr.String()
+	team.LeagueIdx = league.LeagueIdx
+	team.TeamIdxInLeague = uint32(0)
+	log.Infof("Creating Academy with owner 0x%v", hex.EncodeToString(event.CreatorAddr[:]))
 	if err := team.Insert(tx); err != nil {
 		return err
 	}

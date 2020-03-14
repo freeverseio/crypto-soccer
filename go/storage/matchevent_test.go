@@ -44,7 +44,8 @@ func TestMatchEventTest(t *testing.T) {
 	player := storage.Player{}
 	player.PlayerId = big.NewInt(4)
 	player.TeamId = team.TeamID
-	if err = player.Insert(tx); err != nil {
+	blockNumber := uint64(3)
+	if err = player.Insert(tx, blockNumber); err != nil {
 		t.Fatal(err)
 	}
 	count, err := storage.MatchEventCount(tx)

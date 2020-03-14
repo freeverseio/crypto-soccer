@@ -8,14 +8,18 @@ import "./Constants.sol";
 */
 contract Storage is ProxyStorage, Constants{
 
-    uint256[2**8] _slotReserve;
+    uint256[2**12] _slotReserve;
    
     address internal _academyAddr;
     
     mapping(uint256 => uint256) internal _playerIdToState;
     mapping (uint256 => uint256) internal _playerIdToAuctionData;
+    mapping (uint256 => bool) internal _playerIdToIsFrozenCrypto;
     mapping (uint256 => uint256) internal _teamIdToAuctionData;
     mapping (uint256 => uint256) internal _teamIdToRemainingAcqs;
+    mapping (uint256 => uint256) internal _playerInTransitToTeam;
+    mapping (uint256 => uint8) internal _nPlayersInTransitInTeam;
+
 
     uint256 internal nextVerseTimestamp;
     uint8 internal timeZoneForRound1;

@@ -24,12 +24,12 @@ func NewTeam() *Team {
 	return &team
 }
 
-func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
+func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
 	for _, player := range b.Players {
 		if player.IsNil() {
 			continue
 		}
-		if err := player.Update(tx); err != nil {
+		if err := player.Update(tx, blockNumber); err != nil {
 			return err
 		}
 	}
@@ -52,11 +52,5 @@ func DefaultTactic() *big.Int {
 func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 	for i := range skills {
 		b.Players[i].SetSkills(contracts, skills[i])
-	}
-}
-
-func (b *Team) SetBlockNumber(number uint64) {
-	for i := range b.Players {
-		b.Players[i].BlockNumber = number
 	}
 }

@@ -34,6 +34,7 @@ const timezoneIdx = uint8(1)
 const countryIdx = uint32(0)
 const leagueIdx = uint32(0)
 const teamID = "1"
+const teamID1 = "2"
 
 func createMinimumUniverse(t *testing.T, tx *sql.Tx) {
 	timezone := storage.Timezone{timezoneIdx}
@@ -47,6 +48,15 @@ func createMinimumUniverse(t *testing.T, tx *sql.Tx) {
 
 	team := storage.NewTeam()
 	team.TeamID = teamID
+	team.TimezoneIdx = timezone.TimezoneIdx
+	team.CountryIdx = countryIdx
+	team.LeagueIdx = leagueIdx
+	team.Owner = "my team"
+	team.RankingPoints = math.MaxUint64
+	assert.NilError(t, team.Insert(tx))
+
+	team = storage.NewTeam()
+	team.TeamID = teamID1
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
 	team.LeagueIdx = leagueIdx

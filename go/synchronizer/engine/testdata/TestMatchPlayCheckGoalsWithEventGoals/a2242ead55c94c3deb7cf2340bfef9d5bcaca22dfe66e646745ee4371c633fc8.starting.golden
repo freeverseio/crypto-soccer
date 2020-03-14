@@ -13,8 +13,6 @@
 		},
 		HomeGoals: (uint8) 0,
 		VisitorGoals: (uint8) 0,
-		HomeMatchLog: (*big.Int)(0),
-		VisitorMatchLog: (*big.Int)(0),
 		State: (storage.MatchState) (len=5) "begin"
 	},
 	StartTime: (*big.Int)(1570147200),
@@ -36,7 +34,8 @@
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
-			Tactic: (string) (len=33) "340596594427581673436941882753025"
+			Tactic: (string) (len=33) "340596594427581673436941882753025",
+			MatchLog: (string) (len=1) "0"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -57,7 +56,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -79,7 +77,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -101,7 +98,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -123,7 +119,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -145,7 +140,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -167,7 +161,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -189,7 +182,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -211,7 +203,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -233,7 +224,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -255,7 +245,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -277,7 +266,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -299,7 +287,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -321,7 +308,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -343,7 +329,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -365,7 +350,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -387,7 +371,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -409,7 +392,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -431,7 +413,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -453,7 +434,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -475,7 +455,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -497,7 +476,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -519,7 +497,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -541,7 +518,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -563,7 +539,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -585,7 +560,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			})
@@ -610,7 +584,8 @@
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
-			Tactic: (string) (len=33) "340596594427581673436941882753025"
+			Tactic: (string) (len=33) "340596594427581673436941882753025",
+			MatchLog: (string) (len=1) "0"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -631,7 +606,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -653,7 +627,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -675,7 +648,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -697,7 +669,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -719,7 +690,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -741,7 +711,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -763,7 +732,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -785,7 +753,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -807,7 +774,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -829,7 +795,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -851,7 +816,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -873,7 +837,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -895,7 +858,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -917,7 +879,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -939,7 +900,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -961,7 +921,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -983,7 +942,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -1005,7 +963,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -1027,7 +984,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -1049,7 +1005,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -1071,7 +1026,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -1093,7 +1047,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -1115,7 +1068,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -1137,7 +1089,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			}),
@@ -1159,7 +1110,6 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					BlockNumber: (uint64) 0,
 					Tiredness: (int) 0
 				}
 			})

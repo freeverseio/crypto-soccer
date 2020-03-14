@@ -16,18 +16,17 @@ func int_hash(s string) uint64 {
 	return h.Sum64()
 }
 
-
 func TestMatchEventsTwoYellows(t *testing.T) {
 	verseSeed := [32]byte{0x2, 0x1}
 	teamId0 := "1"
 	teamId1 := "2"
 	matchLog := [15]uint32{
-		0,        //teamSumSkills,
-		0,        //winner,
-		0,        //nGoals,
-		0,        //trainingPoints1stHalf = 0,
+		0,       //teamSumSkills,
+		0,       //winner,
+		0,       //nGoals,
+		0,       //trainingPoints1stHalf = 0,
 		3, 3, 5, //outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
-		3, 3,   //yellowCards1[0], yellowCards1[1],
+		3, 3, //yellowCards1[0], yellowCards1[1],
 		1, 1, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
 		0, 0, 0} // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
 	var events []*big.Int
@@ -96,7 +95,6 @@ func TestMatchEventsTwoYellows(t *testing.T) {
 		t.Fatal("result of generating matchevents not as expected")
 	}
 }
-
 
 func TestMatchEvents(t *testing.T) {
 	verseSeed := [32]byte{0x2, 0x1}

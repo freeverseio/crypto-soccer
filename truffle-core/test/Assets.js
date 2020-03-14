@@ -393,8 +393,10 @@ contract('Assets', (accounts) => {
         shirt = await assets.getCurrentShirtNum(state).should.be.fulfilled;
         shirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);        
 
-        truffleAssert.eventEmitted(tx, "PlayerStateChange", async (event) => {
-            return event.playerId === playerId && event.state == state});
+        
+        truffleAssert.eventEmitted(tx, "PlayerStateChange", (event) => {
+            return event.playerId.should.be.bignumber.equal(playerId) && event.state.should.be.bignumber.equal(state);
+        });
 
         // states of teams after selling
         let ids1 = await market.getPlayerIdsInTeam(teamId1).should.be.fulfilled;
