@@ -283,7 +283,7 @@ contract('Evolution', (accounts) => {
         typeOut.toNumber().should.be.equal(RED_CARD);
         outRounds.toNumber().should.be.equal(9);
         yellow1.toNumber().should.be.equal(0);
-        yellow2.toNumber().should.be.equal(0);
+        yellow2.toNumber().should.be.equal(14);
     
         expectedReds = Array.from(new Array(5), (x,i) => false);
         expectedReds[0] = true;
