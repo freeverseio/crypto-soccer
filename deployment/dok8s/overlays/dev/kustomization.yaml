@@ -4,7 +4,7 @@ commonLabels:
   app.kubernetes.io/part-of: cryptosoccer
   app.kubernetes.io/version: 1.0.0
 resources:
-- ../base
+- ../../base
 - ingress.yaml
 - dashboard-ingress.yaml
 - phoenix-ingress.yaml
@@ -31,4 +31,3 @@ images:
   newTag: dev
 patchesStrategicMerge:
 - configmap.yaml
-
