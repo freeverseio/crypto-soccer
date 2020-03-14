@@ -23,6 +23,9 @@ func NewMatchEvents(
 	logsAndEvents []*big.Int,
 	is2ndHalf bool,
 ) (MatchEvents, error) {
+	if len(logsAndEvents) < 2 {
+		return nil, errors.New("logAndEvents len < 2")
+	}
 	log0, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
 		return nil, err
