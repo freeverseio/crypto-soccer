@@ -16,9 +16,6 @@ kustomize create
 kustomize edit add label 'app.kubernetes.io/part-of':${APP_NAME},'app.kubernetes.io/version':${APP_VERSION}
 
 kustomize edit add base ${BASE_DIR}
-kustomize edit add resource ingress.yaml
-kustomize edit add resource dashboard-ingress.yaml
-kustomize edit add resource phoenix-ingress.yaml
 
 #kustomize edit set namespace ${NAMESPACE}
 
@@ -33,7 +30,6 @@ kustomize edit set image freeverseio/universe.api:${TAG}
 kustomize edit set image freeverseio/universe.db:${TAG}
 kustomize edit set image freeverseio/authproxy:${TAG}
 kustomize edit set image freeverseio/dashboard:${TAG}
-
 kustomize edit set image freeverseio/webphoenix:${WEBPHOENIXTAG}
 
 # change to n replicas
@@ -43,6 +39,41 @@ kustomize edit set image freeverseio/webphoenix:${WEBPHOENIXTAG}
 
 # patching
 kustomize edit add patch configmap.yaml
+
+# ingress patching
+cat <<EOF >>$MY_DIR/kustomization.yaml
+patchesJson6902:
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: cryptosoccer-ingress
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: phoenix-external-auth-oauth2
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: phoenix-oauth2-proxy
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: dashboard-external-auth-oauth2
+  path: dashboard/ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: dashboard-oauth2-proxy
+  path: dashboard/ingress_patch.yaml
+EOF
 
 # apply directly to cluster
 # kubectl apply -k .

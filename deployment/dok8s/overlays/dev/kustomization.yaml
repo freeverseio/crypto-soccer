@@ -5,11 +5,10 @@ commonLabels:
   app.kubernetes.io/version: 1.0.0
 resources:
 - ../../base
-- ingress.yaml
-- dashboard-ingress.yaml
-- phoenix-ingress.yaml
 images:
 - name: freeverseio/authproxy
+  newTag: dev
+- name: freeverseio/dashboard
   newTag: dev
 - name: freeverseio/horizon
   newTag: dev
@@ -31,3 +30,34 @@ images:
   newTag: dev
 patchesStrategicMerge:
 - configmap.yaml
+patchesJson6902:
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: cryptosoccer-ingress
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: phoenix-external-auth-oauth2
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: phoenix-oauth2-proxy
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: dashboard-external-auth-oauth2
+  path: dashboard/ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: dashboard-oauth2-proxy
+  path: dashboard/ingress_patch.yaml

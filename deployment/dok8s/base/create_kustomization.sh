@@ -1,6 +1,7 @@
 #!/bin/sh
 kustomize create
 kustomize edit add resource configmap.yaml
+kustomize edit add resource ingress.yaml
 kustomize edit add base authproxy
 #kustomize edit add base helloworld
 kustomize edit add base horizon
