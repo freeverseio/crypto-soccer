@@ -230,3 +230,24 @@ func TestMatchSoftInjury(t *testing.T) {
 	assert.Equal(t, player.Skills().String(), "444839120007985571215702621512678479272234002738672977681803126899510")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(2))
 }
+
+func TestMatchEvents(t *testing.T) {
+	t.Parallel()
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+	m.Seed = sha256.Sum256([]byte(string(4)))
+	m.HomeTeam.TeamID = "274877906944"
+	m.VisitorTeam.TeamID = "274877906945"
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+	}
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".atStart.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.atStart.golden")
+	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".first.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.first.golden")
+	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".second.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.second.golden")
+}
