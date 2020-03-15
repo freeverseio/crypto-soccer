@@ -278,6 +278,27 @@ contract('Evolution', (accounts) => {
 
     });
 
+    it('test that used to fail because yellow cards reamined 0 when truned into a red]', async () => {
+        special = 1;
+        TPperSkill = [0, 0, 0, 10, 8, 10, 4, 4, 0, 0, 5, 3, 10, 0, 0, 0, 5, 0, 10, 3, 0, 0, 0, 10, 8];
+        TP = 18;
+        assignment = await training.encodeTP(TP, TPperSkill, special).should.be.fulfilled;
+        special = 1;
+        TPperSkill = [20, 8, 1, 22, 14, 27, 29, 0, 9, 0, 9, 0, 18, 0, 38, 6, 16, 15, 12, 16, 33, 0, 0, 19, 13];
+        TP = 65;
+        assignment = await training.encodeTP(TP, TPperSkill, special).should.be.fulfilled;
+        // further info if needed:
+        // idx = 0;
+        // for (b = 0; b < 5; b++) {
+        //     sum = 0;
+        //     for (i = 0; i < 5; i++) {
+        //         sum += TPperSkill[idx];
+        //         console.log(TPperSkill[idx]/TP > 0.6, TPperSkill[idx]/TP);
+        //         idx++;
+        //     }
+        //     console.log(TP, sum);
+        // }
+    });
 
     it('test that used to fail because yellow cards reamined 0 when truned into a red]', async () => {
         utils = await Utils.new().should.be.fulfilled;
