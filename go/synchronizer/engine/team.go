@@ -12,7 +12,7 @@ import (
 type Team struct {
 	storage.Team
 	Players  [25]*Player
-	Training Training
+	Training storage.Training
 }
 
 func NewTeam() *Team {
@@ -21,7 +21,7 @@ func NewTeam() *Team {
 	for i := range team.Players {
 		team.Players[i] = NewPlayer()
 	}
-	team.Training = *NewTraining()
+	team.Training = *storage.NewTraining()
 	return &team
 }
 
