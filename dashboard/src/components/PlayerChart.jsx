@@ -6,8 +6,6 @@ import { useQuery } from '@apollo/react-hooks';
 // make sure parent container have a defined height when using
 // responsive component, otherwise height will be 0 and
 // no chart will be rendered.
-// website examples showcase many properties,
-// you'll often use just a few of them.
 
 const GET_TEAMS_BY_RANKING = gql`
 query allPlayersHistories($playerId: String!){
@@ -23,8 +21,6 @@ query allPlayersHistories($playerId: String!){
     }
 }
 `;
-
-
 
 const MyResponsiveLine = ({ playerId }) => {
     const { loading, error, data } = useQuery(GET_TEAMS_BY_RANKING, {
@@ -75,7 +71,7 @@ const MyResponsiveLine = ({ playerId }) => {
         <ResponsiveLine
             data={chartData}
             margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-            xScale={{ type: 'point' }}
+            xScale={{ type: 'linear', min: 'auto', max: 'auto' }}
             yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
             axisTop={null}
             axisRight={null}
