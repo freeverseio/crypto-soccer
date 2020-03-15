@@ -138,6 +138,14 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	matchLogs := [2]*big.Int{}
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
+	homeAssignedTP, err := b.HomeTeam.CalculateAssignedTrainingPoints(contracts)
+	if err != nil {
+		return err
+	}
+	visitorAssignedTP, err := b.VisitorTeam.CalculateAssignedTrainingPoints(contracts)
+	if err != nil {
+		return err
+	}
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -147,7 +155,7 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
-		[2]*big.Int{b.HomeTeam.AssignedTP, b.VisitorTeam.AssignedTP},
+		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	if err != nil {
 		return err
