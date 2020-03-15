@@ -102,7 +102,7 @@ func Generate(
 	// Compute main events: per-round, and cards & injuries
 	events, rounds2mins := addEventsInRound(seed, blockchainEvents, NULL)
 	events = addCardsAndInjuries(0, events, seed, matchLog0, rounds2mins, NULL, NOONE)
-	events = addCardsAndInjuries(1, events, seed, matchLog0, rounds2mins, NULL, NOONE)
+	events = addCardsAndInjuries(1, events, seed, matchLog1, rounds2mins, NULL, NOONE)
 	events = addSubstitutions(0, events, seed, matchLog0, rounds2mins, lineup0, substitutions0, subsRounds0, NULL)
 	events = addSubstitutions(1, events, seed, matchLog1, rounds2mins, lineup1, substitutions1, subsRounds1, NULL)
 

@@ -242,8 +242,12 @@ func TestMatchEvents(t *testing.T) {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
 	}
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".atStart.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.atStart.golden")
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".first.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.first.golden")
 	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
-	golden.Assert(t, m.Events.DumpState(), t.Name()+".golden")
-	golden.Assert(t, m.ToString(), t.Name()+".js.golden")
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".second.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.second.golden")
 }

@@ -1116,7 +1116,7 @@
 		},
 		AssignedTP: (*big.Int)(0)
 	},
-	Events: (matchevents.MatchEvents) (len=18 cap=18) {
+	Events: (matchevents.MatchEvents) (len=17 cap=17) {
 		(matchevents.MatchEvent) {
 			Minute: (int16) 1,
 			Type: (int16) 0,
@@ -1253,30 +1253,21 @@
 			SecondaryPlayer: (int16) -1
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 7,
-			Type: (int16) 4,
-			Team: (int16) 1,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 8,
-			SecondaryPlayer: (int16) -1
-		},
-		(matchevents.MatchEvent) {
-			Minute: (int16) 2,
+			Minute: (int16) 17,
 			Type: (int16) 1,
 			Team: (int16) 1,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 8,
+			PrimaryPlayer: (int16) 6,
 			SecondaryPlayer: (int16) -1
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 27,
+			Minute: (int16) 28,
 			Type: (int16) 1,
 			Team: (int16) 1,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 3,
+			PrimaryPlayer: (int16) 2,
 			SecondaryPlayer: (int16) -1
 		}
 	}
