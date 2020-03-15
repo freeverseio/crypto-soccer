@@ -39,6 +39,7 @@ type Training struct {
 
 func NewTraining() *Training {
 	training := Training{}
+	training.SpecialPlayerShirt = -1
 	return &training
 }
 
