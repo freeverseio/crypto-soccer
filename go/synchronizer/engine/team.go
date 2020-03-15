@@ -11,9 +11,8 @@ import (
 
 type Team struct {
 	storage.Team
-	Players    [25]*Player
-	Training   Training
-	AssignedTP *big.Int
+	Players  [25]*Player
+	Training Training
 }
 
 func NewTeam() *Team {
@@ -23,7 +22,6 @@ func NewTeam() *Team {
 		team.Players[i] = NewPlayer()
 	}
 	team.Training = *NewTraining()
-	team.AssignedTP = big.NewInt(0)
 	return &team
 }
 

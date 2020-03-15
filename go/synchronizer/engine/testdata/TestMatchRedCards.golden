@@ -594,8 +594,7 @@
 				SpecialPlayerShoot: (int) 0,
 				SpecialPlayerEndurance: (int) 0
 			}
-		},
-		AssignedTP: (*big.Int)(0)
+		}
 	},
 	VisitorTeam: (engine.Team) {
 		Team: (storage.Team) {
@@ -1175,8 +1174,7 @@
 				SpecialPlayerShoot: (int) 0,
 				SpecialPlayerEndurance: (int) 0
 			}
-		},
-		AssignedTP: (*big.Int)(0)
+		}
 	},
 	Events: (matchevents.MatchEvents) (len=14 cap=14) {
 		(matchevents.MatchEvent) {

@@ -576,6 +576,5 @@
 			SpecialPlayerShoot: (int) 0,
 			SpecialPlayerEndurance: (int) 0
 		}
-	},
-	AssignedTP: (*big.Int)(0)
+	}
 })
