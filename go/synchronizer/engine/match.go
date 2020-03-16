@@ -164,9 +164,10 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeTeam.TrainingPoints = 0
-	b.VisitorTeam.TrainingPoints = 0
 	if b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]}); err != nil {
+		return err
+	}
+	if err = b.updateTrainingPoints(contracts); err != nil {
 		return err
 	}
 	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
