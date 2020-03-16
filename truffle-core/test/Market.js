@@ -297,13 +297,23 @@ contract("Market", accounts => {
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE).should.be.fulfilled;
 
     // ALICE puts for sale
-    await marketCrypto.putPlayerForSale(playerId0, startingPrice, {from: ALICE}).should.be.fulfilled;
+    tx = await marketCrypto.putPlayerForSale(playerId0, startingPrice, {from: ALICE}).should.be.fulfilled;
+    truffleAssert.eventEmitted(tx, "PlayerPutForSaleCrypto", (event) => {
+      return event.playerId.should.be.bignumber.equal(playerId0) && event.startingPrice.should.be.bignumber.equal(web3.utils.toBN(startingPrice));
+    });
 
     // BOB does first bid
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB).should.be.fulfilled;
     buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 1);
 
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
+    tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
+
+    truffleAssert.eventEmitted(tx, "BidForPlayerCrypto", (event) => {
+      return  event.playerId.should.be.bignumber.equal(playerId0) && 
+              event.bidderTeamId.should.be.bignumber.equal(buyerTeamId0) && 
+              event.totalAmount.should.be.bignumber.equal(web3.utils.toBN(startingPrice));
+    });
+
     
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, CAROL).should.be.fulfilled;
     buyerTeamId1 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
@@ -314,10 +324,18 @@ contract("Market", accounts => {
     await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.rejected;
 
     newBid = web3.utils.toWei('1.5');
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.fulfilled;
+    tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.fulfilled;
 
+    truffleAssert.eventEmitted(tx, "BidForPlayerCrypto", (event) => {
+      return  event.playerId.should.be.bignumber.equal(playerId0) && 
+              event.bidderTeamId.should.be.bignumber.equal(buyerTeamId1) && 
+              event.totalAmount.should.be.bignumber.equal(web3.utils.toBN(newBid));
+    });
+
+    
     auctionId = await marketCrypto.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: CAROL}).should.be.rejected;
+
     
     balanceBefore = await web3.eth.getBalance(BOB);
     await marketCrypto.withdraw(auctionId, {from: BOB}).should.be.fulfilled;
@@ -337,14 +355,16 @@ contract("Market", accounts => {
     await timeTravel.advanceTime(0.1*3600);
     await timeTravel.advanceBlock().should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.fulfilled;
-    await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
+    tx = await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
+    truffleAssert.eventEmitted(tx, "AssetWentToNewOwner", (event) => {
+      return  event.playerId.should.be.bignumber.equal(playerId0) && 
+              event.auctionId.should.be.bignumber.equal(web3.utils.toBN(1)) 
+    });
     
     finalOwner = await market.getOwnerPlayer(playerId0).should.be.fulfilled;
     finalOwner.should.be.equal(CAROL);
-    
   });
 
-  
   it("crypto mkt shows that we can get past 25 players" , async () => {
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
     ALICE = accounts[0];

@@ -9,6 +9,10 @@ import "./Market.sol";
  
 contract MarketCrypto {
 
+    event PlayerPutForSaleCrypto(uint256 playerId, uint256 startingPrice);
+    event BidForPlayerCrypto(uint256 playerId, uint256 bidderTeamId, uint256 totalAmount);
+    event AssetWentToNewOwner(uint256 playerId, uint256 auctionId);
+
     uint32 internal _auctionDuration = 24 hours; 
     uint256 internal _minimumBidIncrement = 0.5 ether; // bid for at least this amount of XDAI, or increase previous by this amount
     uint256 constant private MAX_128_BIT = (2**128)-1; 
@@ -82,6 +86,7 @@ contract MarketCrypto {
         _startingPrice[auctionId] = startingPrice;
         _validUntil[auctionId] = now + _auctionDuration;
         _seller[auctionId] = currentOwner;
+        emit PlayerPutForSaleCrypto(playerId, startingPrice);
     }
 
     
@@ -112,6 +117,7 @@ contract MarketCrypto {
         _highestBid[auctionId] = bidAmount;
         _highestBidder[auctionId] = msg.sender;
         _teamIdHighestBidder[auctionId] = bidderTeamId;
+        emit BidForPlayerCrypto(playerId, bidderTeamId, bidAmount);
     }
 
     // Note that this function can be executed by anyone. Of course, only the highest bidder is expected to 
@@ -142,7 +148,13 @@ contract MarketCrypto {
         _assetWentToNewOwner[auctionId] = true;
         _market.setIsPlayerFrozenCrypto(playerId, false);
         _market.transferPlayer(playerId, _teamIdHighestBidder[auctionId]);
+        emit AssetWentToNewOwner(playerId, auctionId);
     }
     
+    function getAssetWentToNewOwner(uint256 auctionId) external view returns (bool) { return _assetWentToNewOwner[auctionId]; }
+    function getValidUntil(uint256 auctionId) external view returns (uint256) { return _validUntil[auctionId]; }
+    function getBalance(uint256 auctionId, address addr) external view returns (uint256) { return _balance[auctionId][addr]; }
+    function getHighestBid(uint256 auctionId) external view returns (uint256) { return _highestBid[auctionId]; } 
+    function getHighestBidder(uint256 auctionId) external view returns (address) { return _highestBidder[auctionId]; } 
     function getCurrentAuctionForPlayer(uint256 playerId) external view returns (uint256) { return _playerIdToAuctionId[playerId]; }
 }
