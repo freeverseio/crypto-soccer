@@ -302,6 +302,16 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId0) && event.startingPrice.should.be.bignumber.equal(web3.utils.toBN(startingPrice));
     });
 
+    auctionId = await marketCrypto.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
+    auctionId.toNumber().should.be.equal(1); 
+    
+    var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
+    teamIdHi.toNumber().should.be.equal(0);
+    hiBid.toNumber().should.be.equal(0);
+    hiBidder.should.be.equal('0x0000000000000000000000000000000000000000');
+    sell.should.be.equal(ALICE);
+    assetWent.should.be.equal(false);
+    
     // BOB does first bid
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB).should.be.fulfilled;
     buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 1);
@@ -333,7 +343,6 @@ contract("Market", accounts => {
     });
 
     
-    auctionId = await marketCrypto.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: CAROL}).should.be.rejected;
 
     
@@ -365,6 +374,8 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(CAROL);
   });
 
+  return;
+  
   it("crypto mkt shows that we can get past 25 players" , async () => {
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
     ALICE = accounts[0];
@@ -425,7 +436,11 @@ contract("Market", accounts => {
     await market.completePlayerTransit(playerIds[7]).should.be.fulfilled;
     await market.completePlayerTransit(playerIds[8]).should.be.fulfilled;
     await market.completePlayerTransit(playerIds[9]).should.be.fulfilled;
-  });
+    ownTeam = await market.getCurrentTeamIdFromPlayerId(playerIds[8]).should.be.fulfilled;
+    ownTeam.toNumber().should.be.equal(buyerTeamId0);
+});
+  
+  return;
 
   it('setAcquisitionConstraint of constraints in friendliess', async () => {
     maxNumConstraints = 7;

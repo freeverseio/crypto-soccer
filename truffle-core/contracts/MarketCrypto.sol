@@ -151,10 +151,23 @@ contract MarketCrypto {
         emit AssetWentToNewOwner(playerId, auctionId);
     }
     
-    function getAssetWentToNewOwner(uint256 auctionId) external view returns (bool) { return _assetWentToNewOwner[auctionId]; }
-    function getValidUntil(uint256 auctionId) external view returns (uint256) { return _validUntil[auctionId]; }
+    function getAuctionData(uint256 auctionId) external view returns(
+        uint256 validUntil,
+        uint256 teamIdHighestBidder,
+        uint256 highestBid,
+        address highestBidder,
+        address seller,
+        bool assetWentToNewOwner
+    ) {
+        return(
+            _validUntil[auctionId], 
+            _teamIdHighestBidder[auctionId],
+            _highestBid[auctionId], 
+            _highestBidder[auctionId], 
+            _seller[auctionId], 
+            _assetWentToNewOwner[auctionId]
+        );
+    }
     function getBalance(uint256 auctionId, address addr) external view returns (uint256) { return _balance[auctionId][addr]; }
-    function getHighestBid(uint256 auctionId) external view returns (uint256) { return _highestBid[auctionId]; } 
-    function getHighestBidder(uint256 auctionId) external view returns (address) { return _highestBidder[auctionId]; } 
     function getCurrentAuctionForPlayer(uint256 playerId) external view returns (uint256) { return _playerIdToAuctionId[playerId]; }
 }
