@@ -320,6 +320,10 @@ contract("Market", accounts => {
 
     tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
 
+    past = await market.getPastEvents( 'PlayerFreezeCrypto', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.playerId.should.be.bignumber.equal(playerId0);
+    past[0].args.frozen.should.be.equal(true);
+
     truffleAssert.eventEmitted(tx, "BidForPlayerCrypto", (event) => {
       return  event.playerId.should.be.bignumber.equal(playerId0) && 
               event.bidderTeamId.should.be.bignumber.equal(buyerTeamId0) && 
@@ -394,7 +398,11 @@ contract("Market", accounts => {
       return  event.playerId.should.be.bignumber.equal(playerId0) && 
               event.auctionId.should.be.bignumber.equal(web3.utils.toBN(1)) 
     });
-    
+
+    past = await market.getPastEvents( 'PlayerFreezeCrypto', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[1].args.playerId.should.be.bignumber.equal(playerId0);
+    past[1].args.frozen.should.be.equal(false);
+
     finalOwner = await market.getOwnerPlayer(playerId0).should.be.fulfilled;
     finalOwner.should.be.equal(CAROL);
     
@@ -408,7 +416,6 @@ contract("Market", accounts => {
     (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
     (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
     
-    // PlayerPutForSaleCrypto
   });
 
   it("crypto mkt shows that we can get past 25 players" , async () => {
