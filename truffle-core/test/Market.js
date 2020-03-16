@@ -410,10 +410,9 @@ contract("Market", accounts => {
   });
 
   it("crypto mkt shows that we can get past 25 players" , async () => {
-    // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
+    // set up teams: team 2 - ALICE, team 3 - BOB
     ALICE = accounts[0];
     BOB = accounts[1];
-    CAROL = accounts[2];
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
     startingPrice = web3.utils.toWei('1');
     teamIdxInCountry0 = 2; 
@@ -470,11 +469,9 @@ contract("Market", accounts => {
     await market.completePlayerTransit(playerIds[8]).should.be.fulfilled;
     await market.completePlayerTransit(playerIds[9]).should.be.fulfilled;
     ownTeam = await market.getCurrentTeamIdFromPlayerId(playerIds[8]).should.be.fulfilled;
-    ownTeam.toNumber().should.be.equal(buyerTeamId0);
-});
+    ownTeam.should.be.bignumber.equal(buyerTeamId0);
+  });
   
-  return;
-
   it('setAcquisitionConstraint of constraints in friendliess', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
