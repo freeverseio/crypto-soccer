@@ -305,12 +305,16 @@ contract("Market", accounts => {
     auctionId = await marketCrypto.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
     auctionId.toNumber().should.be.equal(1); 
     
+    // TEST all auction getters at this stage:
     var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
     teamIdHi.toNumber().should.be.equal(0);
     hiBid.toNumber().should.be.equal(0);
     hiBidder.should.be.equal('0x0000000000000000000000000000000000000000');
     sell.should.be.equal(ALICE);
     assetWent.should.be.equal(false);
+    (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
+
     
     // BOB does first bid
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB).should.be.fulfilled;
@@ -324,7 +328,17 @@ contract("Market", accounts => {
               event.totalAmount.should.be.bignumber.equal(web3.utils.toBN(startingPrice));
     });
 
+    // TEST all auction getters at this stage:
+    var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
+    teamIdHi.should.be.bignumber.equal(buyerTeamId0);
+    hiBid.should.be.bignumber.equal(web3.utils.toBN(startingPrice));
+    hiBidder.should.be.equal(BOB);
+    sell.should.be.equal(ALICE);
+    assetWent.should.be.equal(false);
+    (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
     
+ 
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, CAROL).should.be.fulfilled;
     buyerTeamId1 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
 
@@ -342,7 +356,17 @@ contract("Market", accounts => {
               event.totalAmount.should.be.bignumber.equal(web3.utils.toBN(newBid));
     });
 
+    // TEST all auction getters at this stage:
+    var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
+    teamIdHi.should.be.bignumber.equal(buyerTeamId1);
+    hiBid.should.be.bignumber.equal(web3.utils.toBN(newBid));
+    hiBidder.should.be.equal(CAROL);
+    sell.should.be.equal(ALICE);
+    assetWent.should.be.equal(false);
+    (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
     
+     
     await marketCrypto.withdraw(auctionId, {from: CAROL}).should.be.rejected;
 
     
@@ -372,10 +396,19 @@ contract("Market", accounts => {
     
     finalOwner = await market.getOwnerPlayer(playerId0).should.be.fulfilled;
     finalOwner.should.be.equal(CAROL);
+    
+    // TEST all auction getters at this stage:
+    var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
+    teamIdHi.should.be.bignumber.equal(buyerTeamId1);
+    hiBid.should.be.bignumber.equal(web3.utils.toBN(0));
+    hiBidder.should.be.equal(CAROL);
+    sell.should.be.equal(ALICE);
+    assetWent.should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
+    
   });
 
-  return;
-  
   it("crypto mkt shows that we can get past 25 players" , async () => {
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
     ALICE = accounts[0];
