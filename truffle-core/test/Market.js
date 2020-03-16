@@ -407,6 +407,7 @@ contract("Market", accounts => {
     (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
     (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
     
+    // PlayerPutForSaleCrypto
   });
 
   it("crypto mkt shows that we can get past 25 players" , async () => {
@@ -431,8 +432,14 @@ contract("Market", accounts => {
       playerIds.push(thisPlayerId);
       // ALICE puts for sale and BOB bids
       await marketCrypto.putPlayerForSale(thisPlayerId, startingPrice, {from: ALICE}).should.be.fulfilled;
+
+      result = await market.isPlayerFrozenInAnyMarket(thisPlayerId).should.be.fulfilled;
+      result.should.be.equal(false);
+
       await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
-    }
+      result = await market.isPlayerFrozenInAnyMarket(thisPlayerId).should.be.fulfilled;
+      result.should.be.equal(true);
+      }
 
     await timeTravel.advanceTime(24*3600+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
@@ -446,7 +453,11 @@ contract("Market", accounts => {
         ownTeam.toNumber().should.be.equal(IN_TRANSIT_TEAM);
       }
     }
-    
+    // note that the players are not frozen anymore. However, it'll be impossible to freeze them since
+    // they currently belong to IN_TRANSIT_TEAM
+    result = await market.isPlayerFrozenInAnyMarket(playerIds[8]).should.be.fulfilled;
+    result.should.be.equal(false);
+  
     // buyer can not continue bidding because he already has players in limbo:
     thisPlayerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+2+nTransfers+1);
     await marketCrypto.putPlayerForSale(thisPlayerId, startingPrice, {from: ALICE}).should.be.fulfilled;
@@ -470,8 +481,11 @@ contract("Market", accounts => {
     await market.completePlayerTransit(playerIds[9]).should.be.fulfilled;
     ownTeam = await market.getCurrentTeamIdFromPlayerId(playerIds[8]).should.be.fulfilled;
     ownTeam.should.be.bignumber.equal(buyerTeamId0);
+
+    result = await market.isPlayerFrozenInAnyMarket(playerIds[8]).should.be.fulfilled;
+    result.should.be.equal(false);
   });
-  
+
   it('setAcquisitionConstraint of constraints in friendliess', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;

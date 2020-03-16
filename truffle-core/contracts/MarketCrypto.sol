@@ -15,7 +15,6 @@ contract MarketCrypto {
 
     uint32 internal _auctionDuration = 24 hours; 
     uint256 internal _minimumBidIncrement = 0.5 ether; // bid for at least this amount of XDAI, or increase previous by this amount
-    uint256 constant private MAX_128_BIT = (2**128)-1; 
     address constant private NULL_ADDR = address(0x0);
     
     Market private _market;
