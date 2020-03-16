@@ -160,18 +160,31 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
+	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	if err = b.processMatchEvents(
+		contracts,
+		logsAndEvents[:],
+		decodedHomeMatchLog,
+		decodedVisitorMatchLog,
+		is2ndHalf,
+	); err != nil {
+		return err
+	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
-	if err != nil {
-		return err
-	}
-	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
-		return err
-	}
-	b.State = storage.MatchHalf
+	b.HomeGoals = uint8(decodedHomeMatchLog[2])
+	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
+	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
+	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
 	return nil
 }
 
@@ -207,7 +220,11 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
-	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
+	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
 	if err != nil {
 		return err
 	}
@@ -215,13 +232,20 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
+	b.HomeGoals = uint8(decodedHomeMatchLog[2])
+	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
+	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
+	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
+	if err = b.processMatchEvents(
+		contracts,
+		logsAndEvents[:],
+		decodedHomeMatchLog,
+		decodedVisitorMatchLog,
+		is2ndHalf,
+	); err != nil {
 		return err
 	}
 	b.updateStats()
-	if err = b.updateTrainingPoints(contracts); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -257,7 +281,13 @@ func (b *Match) Skills() [2][25]*big.Int {
 	return [2][25]*big.Int{b.HomeTeam.Skills(), b.VisitorTeam.Skills()}
 }
 
-func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents []*big.Int, is2ndHalf bool) error {
+func (b *Match) processMatchEvents(
+	contracts contracts.Contracts,
+	logsAndEvents []*big.Int,
+	decodedHomeMatchLog [15]uint32,
+	decodedVisitorMatchLog [15]uint32,
+	is2ndHalf bool,
+) error {
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	events, err := matchevents.NewMatchEvents(
@@ -268,6 +298,8 @@ func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents 
 		homeTactic,
 		visitorTactic,
 		logsAndEvents,
+		decodedHomeMatchLog,
+		decodedVisitorMatchLog,
 		is2ndHalf,
 	)
 	if err != nil {

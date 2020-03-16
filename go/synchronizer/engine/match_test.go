@@ -38,6 +38,24 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	assert.Equal(t, match.VisitorGoals, uint8(0))
 }
 
+func TestPlay1stHalfConsumeTheTrainingPoints(t *testing.T) {
+	t.Parallel()
+	match := engine.NewMatch()
+	match.Seed = [32]byte{0x2, 0x1}
+	match.StartTime = big.NewInt(1570147200)
+	match.HomeTeam.TeamID = "1"
+	match.VisitorTeam.TeamID = "2"
+	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
+	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(0))
+	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(0))
+	assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
+	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(34))
+	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(34))
+	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
+	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(0))
+	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(0))
+}
+
 func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
 	t.Parallel()
 	engine := engine.NewMatch()

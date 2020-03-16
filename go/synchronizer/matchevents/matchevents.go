@@ -21,18 +21,12 @@ func NewMatchEvents(
 	homeTactic *big.Int,
 	visitorTactic *big.Int,
 	logsAndEvents []*big.Int,
+	homeDecodedMatchLog [15]uint32,
+	visitorDecodedMatchLog [15]uint32,
 	is2ndHalf bool,
 ) (MatchEvents, error) {
 	if len(logsAndEvents) < 2 {
 		return nil, errors.New("logAndEvents len < 2")
-	}
-	log0, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
-	if err != nil {
-		return nil, err
-	}
-	log1, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
-	if err != nil {
-		return nil, err
 	}
 	decodedTactic0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, homeTactic)
 	if err != nil {
@@ -46,8 +40,8 @@ func NewMatchEvents(
 		verseSeed,
 		homeTeamID,
 		visitorTeamID,
-		log0,
-		log1,
+		homeDecodedMatchLog,
+		visitorDecodedMatchLog,
 		logsAndEvents,
 		decodedTactic0.Lineup,
 		decodedTactic1.Lineup,
