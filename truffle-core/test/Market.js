@@ -282,8 +282,6 @@ contract("Market", accounts => {
 
   });
 
-  
-   
   it("crypto flow with player" , async () => {
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
     ALICE = accounts[0];
@@ -348,6 +346,9 @@ contract("Market", accounts => {
     await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.rejected;
 
     newBid = web3.utils.toWei('1.5');
+    // ALICE cannot bid for her own player:
+    tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: ALICE, value: (newBid)}).should.be.rejected;
+    // but CAROL can:
     tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.fulfilled;
 
     truffleAssert.eventEmitted(tx, "BidForPlayerCrypto", (event) => {
