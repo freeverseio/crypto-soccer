@@ -54,7 +54,7 @@ contract Market is MarketView {
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 playerId,
-        bytes32[3] memory sig,
+        bytes32[2] memory sig,
         uint8 sigV
     ) public {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
@@ -102,7 +102,7 @@ contract Market is MarketView {
         uint256 playerId,
         bytes32 buyerHiddenPrice,
         uint256 buyerTeamId,
-        bytes32[3] memory sig,
+        bytes32[2] memory sig,
         uint8 sigV,
         bool isOffer2StartAuction
      ) public {
@@ -128,7 +128,7 @@ contract Market is MarketView {
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 teamId,
-        bytes32[3] memory sig,
+        bytes32[2] memory sig,
         uint8 sigV
     ) public {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");

@@ -43,9 +43,9 @@ contract Constants {
     uint256 constant internal DAYS_PER_ROUND = 7;
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
 
-    uint8 constant internal IDX_MSG = 0;
-    uint8 constant internal IDX_r   = 1;
-    uint8 constant internal IDX_s   = 2;
+    uint8 constant internal IDX_r   = 0;
+    uint8 constant internal IDX_s   = 1;
+    uint8 constant internal IDX_MSG = 2;
  
     uint8 constant internal NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 constant internal RED_CARD = 3;   // noone saw a card
