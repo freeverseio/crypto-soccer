@@ -13,5 +13,4 @@ resources:
 - universeapi
 - universedb
 - dashboard
-- webphoenix
 - oauth2-proxy
