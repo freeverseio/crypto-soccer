@@ -54,7 +54,7 @@ contract Market is MarketView {
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 playerId,
-        bytes32[3] memory sig,
+        bytes32[2] memory sig,
         uint8 sigV
     ) public {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
@@ -66,8 +66,8 @@ contract Market is MarketView {
     function transferPromoPlayer(
         uint256 playerId,
         uint256 validUntil,
-        bytes32[3] memory sigSel,
-        bytes32[3] memory sigBuy,
+        bytes32[2] memory sigSel,
+        bytes32[2] memory sigBuy,
         uint8 sigVSel,
         uint8 sigVBuy
      ) public {
@@ -83,15 +83,12 @@ contract Market is MarketView {
         require(teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
         require(!isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
                 
-        require(getOwnerTeam(targetTeamId) == 
-                    recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
-         
-        require(_academyAddr == 
-                    recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
-         
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
-        require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
-        require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
+        require(getOwnerTeam(targetTeamId) == 
+                    recoverAddr(signedMsg, sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
+        require(_academyAddr == 
+                    recoverAddr(signedMsg, sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
+         
         transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
         decreaseMaxAllowedAcquisitions(targetTeamId);
     }
@@ -102,7 +99,7 @@ contract Market is MarketView {
         uint256 playerId,
         bytes32 buyerHiddenPrice,
         uint256 buyerTeamId,
-        bytes32[3] memory sig,
+        bytes32[2] memory sig,
         uint8 sigV,
         bool isOffer2StartAuction
      ) public {
@@ -128,7 +125,7 @@ contract Market is MarketView {
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 teamId,
-        bytes32[3] memory sig,
+        bytes32[2] memory sig,
         uint8 sigV
     ) public {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
@@ -142,17 +139,19 @@ contract Market is MarketView {
         uint256 validUntil,
         uint256 teamId,
         bytes32 buyerHiddenPrice,
-        bytes32[3] memory sig,
+        bytes32[2] memory sig,
         uint8 sigV,
+        address buyerAddress,
         bool isOffer2StartAuction
      ) public {
-        (bool ok, address buyerAddress) = areCompleteTeamAuctionRequirementsOK(
+        bool ok = areCompleteTeamAuctionRequirementsOK(
             sellerHiddenPrice,
             validUntil,
             teamId,
             buyerHiddenPrice,
             sig,
             sigV,
+            buyerAddress,
             isOffer2StartAuction
         );
         require(ok, "requirements to complete auction are not met");
