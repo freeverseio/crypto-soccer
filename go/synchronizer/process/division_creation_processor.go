@@ -143,10 +143,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 					return err
 				} else if err := b.createInitialTactics(tx, timezone, teamId); err != nil {
 					return err
-				} else if err := b.createInitialTraining(tx, teamId); err != nil {
-					return err
 				}
-
 			}
 		}
 
@@ -257,11 +254,4 @@ func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, timezone ui
 		false,
 	}
 	return tactic.Insert(tx)
-}
-
-func (b *DivisionCreationProcessor) createInitialTraining(tx *sql.Tx, teamID *big.Int) error {
-	training := storage.NewTraining()
-	training.TeamID = teamID.String()
-	training.SpecialPlayerShirt = -1
-	return training.Insert(tx)
 }

@@ -116,12 +116,18 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	switch turnInDay {
 	case 0:
 		log.Infof("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
+		if err = storage.DeleteTrainingsByTimezone(tx, timezoneIdx); err != nil {
+			return err
+		}
 		if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
 			return err
 		}
 	case 1:
 		log.Infof("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
 		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
+			return err
+		}
+		if err := storage.CreateDefaultTrainingByTimezone(tx, timezoneIdx); err != nil {
 			return err
 		}
 	default:
