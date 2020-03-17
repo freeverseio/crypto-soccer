@@ -71,6 +71,13 @@ jobs:
       - run: cd go/authproxy && go test ./...
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
+  deployment-test:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - install_kustomize
+      - run: cd deployment/dok8s/dev && kustomize build . | diff ./testdata/kustomize.golden -
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -191,6 +198,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - deployment-test:
+          filters:
+            tags:
+              only: /.*
       - dockerization-development:
           filters:
             branches:
@@ -202,6 +213,7 @@ workflows:
             - relay-actions
             - market-notary
             - go1
+            - deployment-test
       - dockerization-production:
           filters:
             tags:
@@ -213,6 +225,8 @@ workflows:
             - market-trader
             - relay-actions
             - market-notary
+            - go1
+            - deployment-test
       - deployk8s:
           filters:
            branches:
