@@ -43,8 +43,16 @@ func NewTraining() *Training {
 	return &training
 }
 
+func DeleteTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
+	log.Debugf("[DBMS] Delete trainings by Timezone %v", timezone)
+	if _, err := tx.Exec(`DELETE FROM trainings USING teams WHERE trainings.team_id = teams.team_id AND teams.timezone_idx = $1`, timezone); err != nil {
+		return err
+	}
+	return nil
+}
+
 func ResetTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
-	log.Infof("[DBMS] Reset trainings by Timezone %v", timezone)
+	log.Debugf("[DBMS] Reset trainings by Timezone %v", timezone)
 	if _, err := tx.Exec(
 		`UPDATE trainings SET 
 			special_player_shirt = -1,
