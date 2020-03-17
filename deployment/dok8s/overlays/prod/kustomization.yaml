@@ -7,27 +7,27 @@ resources:
 - ../../base
 images:
 - name: freeverseio/authproxy
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/dashboard
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/horizon
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/market.db
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/market.notary
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/market.trader
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/relay.actions
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/synchronizer
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/universe.api
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/universe.db
-  newTag: 0.11.1
+  newTag: 0.12.0
 - name: freeverseio/dashboard
-  newTag: 0.11.1
+  newTag: 0.12.0
 patchesStrategicMerge:
 - configmap.yaml
 patchesJson6902:
@@ -36,18 +36,6 @@ patchesJson6902:
     version: v1beta1
     kind: Ingress
     name: cryptosoccer-ingress
-  path: ingress_patch.yaml
-- target:
-    group: networking.k8s.io
-    version: v1beta1
-    kind: Ingress
-    name: phoenix-external-auth-oauth2
-  path: ingress_patch.yaml
-- target:
-    group: networking.k8s.io
-    version: v1beta1
-    kind: Ingress
-    name: phoenix-oauth2-proxy
   path: ingress_patch.yaml
 - target:
     group: networking.k8s.io
