@@ -37,9 +37,7 @@ commands:
   install_kustomize:
     description: "Install kustomize in current directory"
     steps:
-      - run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash 
-          mv ./kustomize /usr/local/bin
+      - run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
 
 jobs:
   truffle_core:
@@ -79,7 +77,7 @@ jobs:
     steps:
       - checkout
       - install_kustomize
-      - run: cd deployment/dok8s/dev && kustomize build . | diff ./testdata/kustomize.golden -
+      - run: ./kustomize build ./deployment/dok8s/dev/. | diff ./deployment/dok8s/dev/testdata/kustomize.golden -
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -169,8 +167,8 @@ jobs:
         kubeconfig: KUBECONFIG_DATA
       - install_kustomize
       - run: | 
-          kustomize build deployment/dok8s/dev | kubectl -n freeverse delete -f -
-          kustomize build deployment/dok8s/dev | kubectl -n freeverse apply -f -
+          ./kustomize build deployment/dok8s/dev | kubectl -n freeverse delete -f -
+          ./kustomize build deployment/dok8s/dev | kubectl -n freeverse apply -f -
       # - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
 workflows:
   version: 2
