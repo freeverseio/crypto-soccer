@@ -134,9 +134,9 @@ func (b *BidMachine) processPaying() error {
 			if err != nil {
 				return err
 			}
-			var sig [3][32]byte
+			var sig [2][32]byte
 			var sigV uint8
-			sig[0], err = b.signer.HashBidMessage(
+			_, err = b.signer.HashBidMessage(
 				b.auction.CurrencyID,
 				b.auction.Price,
 				b.auction.Rnd,
@@ -150,7 +150,7 @@ func (b *BidMachine) processPaying() error {
 			if err != nil {
 				return err
 			}
-			sig[1], sig[2], sigV, err = b.signer.RSV(b.bid.Signature)
+			sig[0], sig[1], sigV, err = b.signer.RSV(b.bid.Signature)
 			if err != nil {
 				return err
 			}
