@@ -41,18 +41,6 @@ patchesJson6902:
     group: networking.k8s.io
     version: v1beta1
     kind: Ingress
-    name: phoenix-external-auth-oauth2
-  path: ingress_patch.yaml
-- target:
-    group: networking.k8s.io
-    version: v1beta1
-    kind: Ingress
-    name: phoenix-oauth2-proxy
-  path: ingress_patch.yaml
-- target:
-    group: networking.k8s.io
-    version: v1beta1
-    kind: Ingress
     name: dashboard-external-auth-oauth2
   path: dashboard/ingress_patch.yaml
 - target:
