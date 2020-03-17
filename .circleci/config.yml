@@ -201,7 +201,7 @@ workflows:
       - deployment-test:
           filters:
             tags:
-              only: /.*
+              only: /.*/
       - dockerization-development:
           filters:
             tags:
