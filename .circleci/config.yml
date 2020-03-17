@@ -204,8 +204,9 @@ workflows:
               only: /.*/
       - dockerization-development:
           filters:
-            tags:
-              only: /.*
+           branches:
+              only:
+                - dev
           requires:
             - synchronizer
             - market-trader
