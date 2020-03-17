@@ -78,6 +78,7 @@ jobs:
       - checkout
       - install_kustomize
       - run: ./kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
+      - run: ./kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -169,7 +170,6 @@ jobs:
       - run: | 
           ./kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
           ./kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
-      # - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
 workflows:
   version: 2
   build_and_test:
