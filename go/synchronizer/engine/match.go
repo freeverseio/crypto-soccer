@@ -10,8 +10,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type Match struct {
@@ -76,11 +74,11 @@ func (b *Match) updateStats() {
 	}
 }
 
-func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
-	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
+func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
+	if err := b.HomeTeam.ToStorage(contracts, tx, blockNumber); err != nil {
 		return err
 	}
-	if err := b.VisitorTeam.ToStorage(contracts, tx); err != nil {
+	if err := b.VisitorTeam.ToStorage(contracts, tx, blockNumber); err != nil {
 		return err
 	}
 	for _, computedEvent := range b.Events {
@@ -118,7 +116,7 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 			return err
 		}
 	}
-	return b.Update(tx)
+	return b.Update(tx, blockNumber)
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
@@ -140,6 +138,14 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	matchLogs := [2]*big.Int{}
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
+	homeAssignedTP, err := b.HomeTeam.CalculateAssignedTrainingPoints(contracts)
+	if err != nil {
+		return err
+	}
+	visitorAssignedTP, err := b.VisitorTeam.CalculateAssignedTrainingPoints(contracts)
+	if err != nil {
+		return err
+	}
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -149,23 +155,36 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
-		[2]*big.Int{b.HomeTeam.AssignedTP, b.VisitorTeam.AssignedTP},
+		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	if err != nil {
+		return err
+	}
+	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	if err = b.processMatchEvents(
+		contracts,
+		logsAndEvents[:],
+		decodedHomeMatchLog,
+		decodedVisitorMatchLog,
+		is2ndHalf,
+	); err != nil {
 		return err
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
-	if err != nil {
-		return err
-	}
-	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
-		return err
-	}
-	b.State = storage.MatchHalf
+	b.HomeGoals = uint8(decodedHomeMatchLog[2])
+	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
+	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
+	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
 	return nil
 }
 
@@ -201,7 +220,11 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
-	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, [2]*big.Int{logsAndEvents[0], logsAndEvents[1]})
+	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
 	if err != nil {
 		return err
 	}
@@ -209,13 +232,20 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	if err = b.processMatchEvents(contracts, logsAndEvents[:], is2ndHalf); err != nil {
+	b.HomeGoals = uint8(decodedHomeMatchLog[2])
+	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
+	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
+	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
+	if err = b.processMatchEvents(
+		contracts,
+		logsAndEvents[:],
+		decodedHomeMatchLog,
+		decodedVisitorMatchLog,
+		is2ndHalf,
+	); err != nil {
 		return err
 	}
 	b.updateStats()
-	if err = b.updateTrainingPoints(contracts); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -251,49 +281,31 @@ func (b *Match) Skills() [2][25]*big.Int {
 	return [2][25]*big.Int{b.HomeTeam.Skills(), b.VisitorTeam.Skills()}
 }
 
-func (b *Match) processMatchEvents(contracts contracts.Contracts, logsAndEvents []*big.Int, is2ndHalf bool) error {
-	log0, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
-	if err != nil {
-		return err
-	}
-	log1, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
-	if err != nil {
-		return err
-	}
+func (b *Match) processMatchEvents(
+	contracts contracts.Contracts,
+	logsAndEvents []*big.Int,
+	decodedHomeMatchLog [15]uint32,
+	decodedVisitorMatchLog [15]uint32,
+	is2ndHalf bool,
+) error {
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
-	log.Debugf("Full decoded match log 0: %v", log0)
-	log.Debugf("Full decoded match log 1: %v", log1)
-	decodedTactics0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, homeTactic)
-	if err != nil {
-		return err
-	}
-	decodedTactics1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, visitorTactic)
-	if err != nil {
-		return err
-	}
-	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
-	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
-
-	generatedEvents, err := matchevents.Generate(
+	events, err := matchevents.NewMatchEvents(
+		contracts,
 		b.Seed,
 		b.HomeTeam.TeamID,
 		b.VisitorTeam.TeamID,
-		log0,
-		log1,
+		homeTactic,
+		visitorTactic,
 		logsAndEvents,
-		decodedTactics0.Lineup,
-		decodedTactics1.Lineup,
-		decodedTactics0.Substitutions,
-		decodedTactics1.Substitutions,
-		decodedTactics0.SubsRounds,
-		decodedTactics1.SubsRounds,
+		decodedHomeMatchLog,
+		decodedVisitorMatchLog,
 		is2ndHalf,
 	)
 	if err != nil {
 		return err
 	}
-	b.Events = append(b.Events, generatedEvents...)
+	b.Events = append(b.Events, events...)
 	return nil
 }
 
@@ -304,7 +316,7 @@ func (b Match) ToString() string {
 	result += fmt.Sprintf("matchLog0 = '%v';", b.HomeTeam.MatchLog)
 	result += fmt.Sprintf("teamId0 = '%v';", b.HomeTeam.TeamID)
 	result += fmt.Sprintf("tactic0 = '%v';", b.HomeTeam.Tactic)
-	result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
+	// result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
 	result += "players0 = ["
 	for _, player := range b.HomeTeam.Players {
 		result += fmt.Sprintf("'%v',", player.EncodedSkills)
@@ -313,16 +325,11 @@ func (b Match) ToString() string {
 	result += fmt.Sprintf("matchLog1 = '%v';", b.VisitorTeam.MatchLog)
 	result += fmt.Sprintf("teamId1 = '%v';", b.VisitorTeam.TeamID)
 	result += fmt.Sprintf("tactic1 = '%v';", b.VisitorTeam.Tactic)
-	result += fmt.Sprintf("assignedTP1 = '%v';", b.VisitorTeam.AssignedTP)
+	// result += fmt.Sprintf("assignedTP1 = '%v';", b.VisitorTeam.AssignedTP)
 	result += "players1 = ["
 	for _, player := range b.VisitorTeam.Players {
 		result += fmt.Sprintf("'%v',", player.EncodedSkills)
 	}
 	result += "];"
 	return result
-}
-
-func (b *Match) SetBlockNumber(number uint64) {
-	b.HomeTeam.SetBlockNumber(number)
-	b.VisitorTeam.SetBlockNumber(number)
 }

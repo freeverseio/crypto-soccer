@@ -15,6 +15,7 @@ contract Constants {
     uint8 constant internal PLAYERS_PER_TEAM_MAX  = 25;
     uint256 constant internal FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant internal ACADEMY_TEAM = 1;
+    uint256 constant internal IN_TRANSIT_TEAM = 2;
 
     // Skills: shoot, speed, pass, defence, endurance
     uint8 constant internal SK_SHO = 0;
@@ -42,9 +43,8 @@ contract Constants {
     uint256 constant internal DAYS_PER_ROUND = 7;
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
 
-    uint8 constant internal IDX_MSG = 0;
-    uint8 constant internal IDX_r   = 1;
-    uint8 constant internal IDX_s   = 2;
+    uint8 constant internal IDX_r   = 0;
+    uint8 constant internal IDX_s   = 1;
  
     uint8 constant internal NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 constant internal RED_CARD = 3;   // noone saw a card

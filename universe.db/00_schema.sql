@@ -57,7 +57,6 @@ comment on table teams is E'@omit create,update,delete';
 CREATE TABLE players (
     name TEXT NOT NULL,
     player_id TEXT NOT NULL,
-    block_number BIGINT NOT NULL,
     team_id TEXT NOT NULL REFERENCES teams(team_id),
     defence INT NOT NULL,
     speed INT NOT NULL,
@@ -72,6 +71,7 @@ CREATE TABLE players (
     encoded_state TEXT NOT NULL,
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
+    tiredness INT NOT NULL,
     PRIMARY KEY(player_id)
 );
 comment on table players is E'@omit create,update,delete';
@@ -93,6 +93,7 @@ CREATE TABLE players_histories (
     encoded_state TEXT NOT NULL,
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
+    tiredness INT NOT NULL,
     PRIMARY KEY(block_number, player_id)
 );
 comment on table players_histories is E'@omit create,update,delete';
@@ -114,6 +115,24 @@ CREATE TABLE matches (
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
 comment on table matches is E'@omit create,update,delete';
+
+CREATE TABLE matches_histories (
+    block_number INT NOT NULL,
+    timezone_idx INT NOT NULL,
+    country_idx INT NOT NULL,
+    league_idx INT NOT NULL,
+    match_day_idx INT NOT NULL,
+    match_idx INT NOT NULL,
+    home_team_id TEXT REFERENCES teams(team_id),
+    visitor_team_id TEXT REFERENCES teams(team_id),
+    seed TEXT NOT NULL DEFAULT '',
+    home_goals INT NOT NULL DEFAULT 0,
+    visitor_goals INT NOT NULL DEFAULT 0,
+    state match_state NOT NULL,
+    PRIMARY KEY(block_number, timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
+    FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
+);
+comment on table matches_histories is E'@omit create,update,delete';
 
 CREATE TYPE match_event_type AS ENUM ('attack', 'yellow_card', 'red_card', 'injury_soft', 'injury_hard', 'substitution');
 CREATE TABLE match_events (

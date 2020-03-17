@@ -117,12 +117,6 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 	return g.Wait()
 }
 
-func (b *Matches) SetBlockNumber(blockNumber uint64) {
-	for i := range *b {
-		(*b)[i].SetBlockNumber(blockNumber)
-	}
-}
-
 func (b *Matches) SetSeed(seed [32]byte) {
 	for i := range *b {
 		(*b)[i].Seed = seed
@@ -214,71 +208,21 @@ func (b *Matches) SetTactics(contracts contracts.Contracts, tactics []sto.Tactic
 
 func (b *Matches) SetTrainings(contracts contracts.Contracts, trainings []sto.Training) error {
 	for _, training := range trainings {
-		TPperSkill := [25]uint16{
-			uint16(training.GoalkeepersDefence),
-			uint16(training.GoalkeepersSpeed),
-			uint16(training.GoalkeepersPass),
-			uint16(training.GoalkeepersShoot),
-			uint16(training.GoalkeepersEndurance),
-			uint16(training.DefendersDefence),
-			uint16(training.DefendersSpeed),
-			uint16(training.DefendersPass),
-			uint16(training.DefendersEndurance),
-			uint16(training.MidfieldersDefence),
-			uint16(training.MidfieldersSpeed),
-			uint16(training.MidfieldersPass),
-			uint16(training.MidfieldersShoot),
-			uint16(training.MidfieldersEndurance),
-			uint16(training.AttackersDefence),
-			uint16(training.AttackersSpeed),
-			uint16(training.AttackersPass),
-			uint16(training.AttackersEndurance),
-			uint16(training.SpecialPlayerDefence),
-			uint16(training.SpecialPlayerSpeed),
-			uint16(training.SpecialPlayerPass),
-			uint16(training.SpecialPlayerShoot),
-			uint16(training.SpecialPlayerEndurance),
-		}
-		specialPlayer := uint8(25)
-		if training.SpecialPlayerShirt >= 0 && training.SpecialPlayerShirt < 25 {
-			specialPlayer = uint8(training.SpecialPlayerShirt)
-		}
-
 		for i := range *b {
 			if training.TeamID == (*b)[i].HomeTeam.TeamID {
-				encodedTraining, err := contracts.TrainingPoints.EncodeTP(
-					&bind.CallOpts{},
-					(*b)[i].HomeTeam.TrainingPoints,
-					TPperSkill,
-					specialPlayer,
-				)
-				if err != nil {
-					log.Errorf("%v %v", err.Error(), training)
-					continue
-				}
-				(*b)[i].HomeTeam.AssignedTP = encodedTraining
+				(*b)[i].HomeTeam.Training = training
 			}
 			if training.TeamID == (*b)[i].VisitorTeam.TeamID {
-				encodedTraining, err := contracts.TrainingPoints.EncodeTP(
-					&bind.CallOpts{},
-					(*b)[i].VisitorTeam.TrainingPoints,
-					TPperSkill,
-					specialPlayer,
-				)
-				if err != nil {
-					log.Errorf("%v %v", err.Error(), training)
-					continue
-				}
-				(*b)[i].VisitorTeam.AssignedTP = encodedTraining
+				(*b)[i].VisitorTeam.Training = training
 			}
 		}
 	}
 	return nil
 }
 
-func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
+func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
 	for _, match := range b {
-		if err := match.ToStorage(contracts, tx); err != nil {
+		if err := match.ToStorage(contracts, tx, blockNumber); err != nil {
 			return err
 		}
 	}

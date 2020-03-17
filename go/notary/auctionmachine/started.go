@@ -34,9 +34,9 @@ func (m *AuctionMachine) processStarted() error {
 	if err != nil {
 		return err
 	}
-	var sig [3][32]byte
+	var sig [2][32]byte
 	var sigV uint8
-	sig[0], err = m.signer.HashSellMessage(
+	_, err = m.signer.HashSellMessage(
 		m.Auction.CurrencyID,
 		m.Auction.Price,
 		m.Auction.Rnd,
@@ -46,7 +46,7 @@ func (m *AuctionMachine) processStarted() error {
 	if err != nil {
 		return err
 	}
-	sig[1], sig[2], sigV, err = m.signer.RSV(m.Auction.Signature)
+	sig[0], sig[1], sigV, err = m.signer.RSV(m.Auction.Signature)
 	if err != nil {
 		return err
 	}

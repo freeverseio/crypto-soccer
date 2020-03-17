@@ -105,7 +105,6 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if err != nil {
 		return err
 	}
-	matches.SetBlockNumber(event.Raw.BlockNumber)
 	matches.SetSeed(event.Seed)
 	matches.SetStartTime(event.SubmissionTime)
 	if err := matches.SetTactics(*b.contracts, userActions.Tactics); err != nil {
@@ -117,12 +116,18 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	switch turnInDay {
 	case 0:
 		log.Infof("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
+		if err = storage.DeleteTrainingsByTimezone(tx, timezoneIdx); err != nil {
+			return err
+		}
 		if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
 			return err
 		}
 	case 1:
 		log.Infof("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
 		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
+			return err
+		}
+		if err := storage.CreateDefaultTrainingByTimezone(tx, timezoneIdx); err != nil {
 			return err
 		}
 	default:
@@ -134,7 +139,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return err
 	}
 	log.Infof("Timezone %v save matches to storage", timezoneIdx)
-	if err = matches.ToStorage(*b.contracts, tx); err != nil {
+	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
 	}
 	return nil

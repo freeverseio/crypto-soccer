@@ -24,7 +24,7 @@ type Player struct {
 	EncodedState      *big.Int
 	RedCard           bool
 	InjuryMatchesLeft uint8
-	BlockNumber       uint64
+	Tiredness         int
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -58,11 +58,14 @@ func PlayerCount(tx *sql.Tx) (uint64, error) {
 	return count, nil
 }
 
-func (b *Player) Insert(tx *sql.Tx) error {
+func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 	log.Debugf("[DBMS] Create player %v", b)
-	if _, err := tx.Exec("INSERT INTO players (name, block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
+	if _, err := tx.Exec(`INSERT INTO players 
+		(name, player_id, team_id, defence, speed,
+		pass, shoot, endurance, shirt_number, preferred_position, 
+		encoded_skills, encoded_state, potential, day_of_birth, tiredness) 
+		VALUES ($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`,
 		b.Name,
-		b.BlockNumber,
 		b.PlayerId.String(),
 		b.TeamId,
 		b.Defence,
@@ -76,38 +79,18 @@ func (b *Player) Insert(tx *sql.Tx) error {
 		b.EncodedState.String(),
 		b.Potential,
 		b.DayOfBirth,
+		b.Tiredness,
 	); err != nil {
 		return err
 	}
-	if err := b.insertHistory(tx); err != nil {
+	history := NewPlayerHistory(blockNumber, b)
+	if err := history.Insert(tx); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b Player) insertHistory(tx *sql.Tx) error {
-	if _, err := tx.Exec("INSERT INTO players_histories (block_number, player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
-		b.BlockNumber,
-		b.PlayerId.String(),
-		b.TeamId,
-		b.Defence,
-		b.Speed,
-		b.Pass,
-		b.Shoot,
-		b.Endurance,
-		b.ShirtNumber,
-		b.PreferredPosition,
-		b.EncodedSkills.String(),
-		b.EncodedState.String(),
-		b.Potential,
-		b.DayOfBirth,
-	); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (b *Player) Update(tx *sql.Tx) error {
+func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
 	if _, err := tx.Exec(`UPDATE players SET 
 	team_id=$1, 
@@ -121,7 +104,7 @@ func (b *Player) Update(tx *sql.Tx) error {
 	red_card=$9,
 	injury_matches_left=$10,
 	name=$11,
-	block_number=$12
+	tiredness=$12
 	WHERE player_id=$13;`,
 		b.TeamId,
 		b.Defence,
@@ -134,12 +117,13 @@ func (b *Player) Update(tx *sql.Tx) error {
 		b.RedCard,
 		b.InjuryMatchesLeft,
 		b.Name,
-		b.BlockNumber,
+		b.Tiredness,
 		b.PlayerId.String(),
 	); err != nil {
 		return err
 	}
-	if err := b.insertHistory(tx); err != nil {
+	history := NewPlayerHistory(blockNumber, b)
+	if err := history.Insert(tx); err != nil {
 		return err
 	}
 	return nil
@@ -147,7 +131,6 @@ func (b *Player) Update(tx *sql.Tx) error {
 
 func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	rows, err := tx.Query(`SELECT 
-	block_number,
 	team_id, 
 	defence,
 	speed,
@@ -162,7 +145,8 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	name, 
 	day_of_birth, 
 	red_card,
-	injury_matches_left
+	injury_matches_left,
+	tiredness
 	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
 		return nil, err
@@ -177,7 +161,6 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	var encodedSkills sql.NullString
 	var encodedState sql.NullString
 	err = rows.Scan(
-		&player.BlockNumber,
 		&player.TeamId,
 		&player.Defence,
 		&player.Speed,
@@ -193,6 +176,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 		&player.DayOfBirth,
 		&player.RedCard,
 		&player.InjuryMatchesLeft,
+		&player.Tiredness,
 	)
 	player.PlayerId = playerID
 	player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
@@ -202,7 +186,6 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 
 func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	rows, err := tx.Query(`SELECT 
-	block_number,
 	player_id, 
 	defence,
 	speed,
@@ -217,7 +200,8 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	name, 
 	day_of_birth, 
 	red_card,
-	injury_matches_left
+	injury_matches_left,
+	tiredness
 	FROM players WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return nil, err
@@ -231,7 +215,6 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 		var encodedState sql.NullString
 		var playerID sql.NullString
 		err = rows.Scan(
-			&player.BlockNumber,
 			&playerID,
 			&player.Defence,
 			&player.Speed,
@@ -247,6 +230,7 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 			&player.DayOfBirth,
 			&player.RedCard,
 			&player.InjuryMatchesLeft,
+			&player.Tiredness,
 		)
 		player.TeamId = teamID
 		player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)

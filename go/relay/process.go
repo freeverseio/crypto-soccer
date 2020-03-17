@@ -82,10 +82,11 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	// if it's the 2nd half we reset the current training
-	if nextToUpdate.TurnInDay == 1 {
-		log.Infof("Reset trainings for timezone %v", nextToUpdate.TimeZone)
-		if err = storage.ResetTrainingsByTimezone(tx, nextToUpdate.TimeZone); err != nil {
+
+	switch nextToUpdate.TurnInDay {
+	case 0: // 1st half
+		log.Infof("[timezone %v] Delete trainings", nextToUpdate.TimeZone)
+		if err := storage.DeleteTrainingsByTimezone(tx, nextToUpdate.TimeZone); err != nil {
 			return err
 		}
 	}

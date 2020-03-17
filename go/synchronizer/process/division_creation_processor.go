@@ -143,10 +143,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 					return err
 				} else if err := b.createInitialTactics(tx, timezone, teamId); err != nil {
 					return err
-				} else if err := b.createInitialTraining(tx, teamId); err != nil {
-					return err
 				}
-
 			}
 		}
 
@@ -180,9 +177,9 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 		if err != nil {
 			log.Warning(err)
 		}
-		defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := b.contracts.DecodeSkills(encodedSkills)
+		decodedSkills, err := b.contracts.Utils.FullDecodeSkills(opts, encodedSkills)
 		if err != nil {
-			log.Warning(err)
+			return err
 		}
 		preferredPosition, err := GetPlayerPreferredPosition(b.contracts, encodedSkills)
 		if err != nil {
@@ -199,21 +196,21 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 		player := storage.Player{
 			PlayerId:          playerId,
 			PreferredPosition: preferredPosition,
-			Potential:         potential.Uint64(),
-			DayOfBirth:        dayOfBirth.Uint64(),
+			Potential:         uint64(decodedSkills.BirthTraits[0]),
+			DayOfBirth:        uint64(decodedSkills.DayOfBirth),
 			TeamId:            teamId.String(),
 			Name:              name,
-			Defence:           defence.Uint64(), // TODO: type should be uint16
-			Speed:             speed.Uint64(),
-			Pass:              pass.Uint64(),
-			Shoot:             shoot.Uint64(),
-			Endurance:         endurance.Uint64(),
+			Defence:           uint64(decodedSkills.Skills[3]),
+			Speed:             uint64(decodedSkills.Skills[1]),
+			Pass:              uint64(decodedSkills.Skills[2]),
+			Shoot:             uint64(decodedSkills.Skills[0]),
+			Endurance:         uint64(decodedSkills.Skills[4]),
 			ShirtNumber:       uint8(shirtNumber.Uint64()),
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
-			BlockNumber:       blockNumber,
+			Tiredness:         int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1]),
 		}
-		if err := player.Insert(tx); err != nil {
+		if err := player.Insert(tx, blockNumber); err != nil {
 			return err
 		}
 	}
@@ -257,11 +254,4 @@ func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, timezone ui
 		false,
 	}
 	return tactic.Insert(tx)
-}
-
-func (b *DivisionCreationProcessor) createInitialTraining(tx *sql.Tx, teamID *big.Int) error {
-	training := storage.NewTraining()
-	training.TeamID = teamID.String()
-	training.SpecialPlayerShirt = -1
-	return training.Insert(tx)
 }

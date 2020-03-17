@@ -71,6 +71,14 @@ jobs:
       - run: cd go/authproxy && go test ./...
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
+  deployment-test:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - install_kustomize
+      - run: ./kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
+      - run: ./kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -94,6 +102,7 @@ jobs:
       - run: cd market.trader && npm test
   dockerization-development:
     executor: freeverse
+    resource_class: xlarge
     steps:
       - checkout
       - setup_remote_docker:   # (2)
@@ -122,6 +131,7 @@ jobs:
       - run: docker push freeverseio/dashboard:dev
   dockerization-production:
     executor: freeverse
+    resource_class: xlarge
     steps:
       - checkout
       - setup_remote_docker:   # (2)
@@ -158,9 +168,8 @@ jobs:
         kubeconfig: KUBECONFIG_DATA
       - install_kustomize
       - run: | 
-          ./kustomize build deployment/dok8s/dev | kubectl -n freeverse delete -f -
-          ./kustomize build deployment/dok8s/dev | kubectl -n freeverse apply -f -
-      # - run: cd deployment/dok8s/cicd && /bin/bash cicd_deploy.sh
+          ./kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
+          ./kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
 workflows:
   version: 2
   build_and_test:
@@ -189,6 +198,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - deployment-test:
+          filters:
+            tags:
+              only: /.*
       - dockerization-development:
           filters:
             branches:
@@ -200,6 +213,7 @@ workflows:
             - relay-actions
             - market-notary
             - go1
+            - deployment-test
       - dockerization-production:
           filters:
             tags:
@@ -211,6 +225,8 @@ workflows:
             - market-trader
             - relay-actions
             - market-notary
+            - go1
+            - deployment-test
       - deployk8s:
           filters:
            branches:

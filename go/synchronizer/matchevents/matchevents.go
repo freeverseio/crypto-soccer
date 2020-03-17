@@ -6,9 +6,56 @@ import (
 	"math"
 	"math/big"
 	"strconv"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 )
 
 type MatchEvents []MatchEvent
+
+func NewMatchEvents(
+	contracts contracts.Contracts,
+	verseSeed [32]byte,
+	homeTeamID string,
+	visitorTeamID string,
+	homeTactic *big.Int,
+	visitorTactic *big.Int,
+	logsAndEvents []*big.Int,
+	homeDecodedMatchLog [15]uint32,
+	visitorDecodedMatchLog [15]uint32,
+	is2ndHalf bool,
+) (MatchEvents, error) {
+	if len(logsAndEvents) < 2 {
+		return nil, errors.New("logAndEvents len < 2")
+	}
+	decodedTactic0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, homeTactic)
+	if err != nil {
+		return nil, err
+	}
+	decodedTactic1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, visitorTactic)
+	if err != nil {
+		return nil, err
+	}
+	events, err := Generate(
+		verseSeed,
+		homeTeamID,
+		visitorTeamID,
+		homeDecodedMatchLog,
+		visitorDecodedMatchLog,
+		logsAndEvents,
+		decodedTactic0.Lineup,
+		decodedTactic1.Lineup,
+		decodedTactic0.Substitutions,
+		decodedTactic1.Substitutions,
+		decodedTactic0.SubsRounds,
+		decodedTactic1.SubsRounds,
+		is2ndHalf,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
+}
 
 func Generate(
 	verseSeed [32]byte,
@@ -49,7 +96,7 @@ func Generate(
 	// Compute main events: per-round, and cards & injuries
 	events, rounds2mins := addEventsInRound(seed, blockchainEvents, NULL)
 	events = addCardsAndInjuries(0, events, seed, matchLog0, rounds2mins, NULL, NOONE)
-	events = addCardsAndInjuries(1, events, seed, matchLog0, rounds2mins, NULL, NOONE)
+	events = addCardsAndInjuries(1, events, seed, matchLog1, rounds2mins, NULL, NOONE)
 	events = addSubstitutions(0, events, seed, matchLog0, rounds2mins, lineup0, substitutions0, subsRounds0, NULL)
 	events = addSubstitutions(1, events, seed, matchLog1, rounds2mins, lineup1, substitutions1, subsRounds1, NULL)
 

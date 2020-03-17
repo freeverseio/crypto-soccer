@@ -39,40 +39,50 @@ type Training struct {
 
 func NewTraining() *Training {
 	training := Training{}
+	training.SpecialPlayerShirt = -1
 	return &training
 }
 
-func ResetTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
-	log.Infof("[DBMS] Reset trainings by Timezone %v", timezone)
-	if _, err := tx.Exec(
-		`UPDATE trainings SET 
-			special_player_shirt = -1,
-			goalkeepers_defence = 0,
-    		goalkeepers_speed = 0,
-    		goalkeepers_pass = 0,
-    		goalkeepers_shoot = 0,
-    		goalkeepers_endurance = 0,
-    		defenders_defence = 0,
-    		defenders_speed = 0,
-    		defenders_pass = 0,
-    		defenders_shoot = 0,
-    		defenders_endurance = 0,
-    		midfielders_defence = 0,
-    		midfielders_speed = 0,
-    		midfielders_pass = 0,
-    		midfielders_shoot = 0,
-    		midfielders_endurance = 0,
-    		attackers_defence = 0,
-    		attackers_speed = 0,
-    		attackers_pass = 0,
-    		attackers_shoot = 0,
-    		attackers_endurance = 0,
-    		special_player_defence = 0,
-    		special_player_speed = 0,
-    		special_player_pass = 0,
-    		special_player_shoot = 0,
-			special_player_endurance = 0
-			FROM teams WHERE trainings.team_id = teams.team_id AND teams.timezone_idx = $1`, timezone); err != nil {
+func DeleteTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
+	log.Debugf("[DBMS] Delete trainings by Timezone %v", timezone)
+	if _, err := tx.Exec(`DELETE FROM trainings USING teams WHERE trainings.team_id = teams.team_id AND teams.timezone_idx = $1`, timezone); err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateDefaultTrainingByTimezone(tx *sql.Tx, timezone uint8) error {
+	log.Debugf("[DBMS] Create a default training for each Team in timezone %v", timezone)
+	if _, err := tx.Exec(`
+		INSERT INTO trainings (
+			team_id,
+    		special_player_shirt,
+			goalkeepers_defence,
+    		goalkeepers_speed,
+    		goalkeepers_pass,
+    		goalkeepers_shoot,
+    		goalkeepers_endurance,
+    		defenders_defence,
+    		defenders_speed,
+    		defenders_pass,
+    		defenders_shoot,
+    		defenders_endurance,
+    		midfielders_defence,
+    		midfielders_speed,
+    		midfielders_pass,
+    		midfielders_shoot,
+    		midfielders_endurance,
+    		attackers_defence,
+    		attackers_speed,
+    		attackers_pass,
+    		attackers_shoot,
+    		attackers_endurance,
+    		special_player_defence,
+    		special_player_speed,
+    		special_player_pass,
+    		special_player_shoot,
+			special_player_endurance
+		) SELECT team_id,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 FROM teams WHERE teams.timezone_idx = $1`, timezone); err != nil {
 		return err
 	}
 	return nil
