@@ -282,8 +282,6 @@ contract("Market", accounts => {
 
   });
 
-  
-   
   it("crypto flow with player" , async () => {
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
     ALICE = accounts[0];
@@ -297,14 +295,52 @@ contract("Market", accounts => {
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE).should.be.fulfilled;
 
     // ALICE puts for sale
-    await marketCrypto.putPlayerForSale(playerId0, startingPrice, {from: ALICE}).should.be.fulfilled;
+    tx = await marketCrypto.putPlayerForSale(playerId0, startingPrice, {from: ALICE}).should.be.fulfilled;
+    truffleAssert.eventEmitted(tx, "PlayerPutForSaleCrypto", (event) => {
+      return event.playerId.should.be.bignumber.equal(playerId0) && event.startingPrice.should.be.bignumber.equal(web3.utils.toBN(startingPrice));
+    });
 
+    auctionId = await marketCrypto.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
+    auctionId.toNumber().should.be.equal(1); 
+    
+    // TEST all auction getters at this stage:
+    var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
+    teamIdHi.toNumber().should.be.equal(0);
+    hiBid.toNumber().should.be.equal(0);
+    hiBidder.should.be.equal('0x0000000000000000000000000000000000000000');
+    sell.should.be.equal(ALICE);
+    assetWent.should.be.equal(false);
+    (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
+
+    
     // BOB does first bid
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB).should.be.fulfilled;
     buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 1);
 
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
+    tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
+
+    past = await market.getPastEvents( 'PlayerFreezeCrypto', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.playerId.should.be.bignumber.equal(playerId0);
+    past[0].args.frozen.should.be.equal(true);
+
+    truffleAssert.eventEmitted(tx, "BidForPlayerCrypto", (event) => {
+      return  event.playerId.should.be.bignumber.equal(playerId0) && 
+              event.bidderTeamId.should.be.bignumber.equal(buyerTeamId0) && 
+              event.totalAmount.should.be.bignumber.equal(web3.utils.toBN(startingPrice));
+    });
+
+    // TEST all auction getters at this stage:
+    var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
+    teamIdHi.should.be.bignumber.equal(buyerTeamId0);
+    hiBid.should.be.bignumber.equal(web3.utils.toBN(startingPrice));
+    hiBidder.should.be.equal(BOB);
+    sell.should.be.equal(ALICE);
+    assetWent.should.be.equal(false);
+    (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
     
+ 
     tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, CAROL).should.be.fulfilled;
     buyerTeamId1 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
 
@@ -314,10 +350,30 @@ contract("Market", accounts => {
     await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.rejected;
 
     newBid = web3.utils.toWei('1.5');
-    await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.fulfilled;
+    // ALICE cannot bid for her own player:
+    tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: ALICE, value: (newBid)}).should.be.rejected;
+    // but CAROL can:
+    tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: (newBid)}).should.be.fulfilled;
 
-    auctionId = await marketCrypto.getCurrentAuctionForPlayer(playerId0).should.be.fulfilled;
+    truffleAssert.eventEmitted(tx, "BidForPlayerCrypto", (event) => {
+      return  event.playerId.should.be.bignumber.equal(playerId0) && 
+              event.bidderTeamId.should.be.bignumber.equal(buyerTeamId1) && 
+              event.totalAmount.should.be.bignumber.equal(web3.utils.toBN(newBid));
+    });
+
+    // TEST all auction getters at this stage:
+    var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
+    teamIdHi.should.be.bignumber.equal(buyerTeamId1);
+    hiBid.should.be.bignumber.equal(web3.utils.toBN(newBid));
+    hiBidder.should.be.equal(CAROL);
+    sell.should.be.equal(ALICE);
+    assetWent.should.be.equal(false);
+    (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
+    
+     
     await marketCrypto.withdraw(auctionId, {from: CAROL}).should.be.rejected;
+
     
     balanceBefore = await web3.eth.getBalance(BOB);
     await marketCrypto.withdraw(auctionId, {from: BOB}).should.be.fulfilled;
@@ -337,19 +393,35 @@ contract("Market", accounts => {
     await timeTravel.advanceTime(0.1*3600);
     await timeTravel.advanceBlock().should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.fulfilled;
-    await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
-    
+    tx = await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
+    truffleAssert.eventEmitted(tx, "AssetWentToNewOwner", (event) => {
+      return  event.playerId.should.be.bignumber.equal(playerId0) && 
+              event.auctionId.should.be.bignumber.equal(web3.utils.toBN(1)) 
+    });
+
+    past = await market.getPastEvents( 'PlayerFreezeCrypto', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[1].args.playerId.should.be.bignumber.equal(playerId0);
+    past[1].args.frozen.should.be.equal(false);
+
     finalOwner = await market.getOwnerPlayer(playerId0).should.be.fulfilled;
     finalOwner.should.be.equal(CAROL);
     
+    // TEST all auction getters at this stage:
+    var {0: validUn, 1: teamIdHi, 2: hiBid, 3: hiBidder, 4: sell, 5: assetWent} = await marketCrypto.getAuctionData(auctionId).should.be.fulfilled;
+    teamIdHi.should.be.bignumber.equal(buyerTeamId1);
+    hiBid.should.be.bignumber.equal(web3.utils.toBN(0));
+    hiBidder.should.be.equal(CAROL);
+    sell.should.be.equal(ALICE);
+    assetWent.should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) < 24*3600 + 10).should.be.equal(true);
+    (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
+    
   });
 
-  
   it("crypto mkt shows that we can get past 25 players" , async () => {
-    // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
+    // set up teams: team 2 - ALICE, team 3 - BOB
     ALICE = accounts[0];
     BOB = accounts[1];
-    CAROL = accounts[2];
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
     startingPrice = web3.utils.toWei('1');
     teamIdxInCountry0 = 2; 
@@ -368,8 +440,14 @@ contract("Market", accounts => {
       playerIds.push(thisPlayerId);
       // ALICE puts for sale and BOB bids
       await marketCrypto.putPlayerForSale(thisPlayerId, startingPrice, {from: ALICE}).should.be.fulfilled;
+
+      result = await market.isPlayerFrozenInAnyMarket(thisPlayerId).should.be.fulfilled;
+      result.should.be.equal(false);
+
       await marketCrypto.bidForPlayer(thisPlayerId, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
-    }
+      result = await market.isPlayerFrozenInAnyMarket(thisPlayerId).should.be.fulfilled;
+      result.should.be.equal(true);
+      }
 
     await timeTravel.advanceTime(24*3600+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
@@ -383,7 +461,11 @@ contract("Market", accounts => {
         ownTeam.toNumber().should.be.equal(IN_TRANSIT_TEAM);
       }
     }
-    
+    // note that the players are not frozen anymore. However, it'll be impossible to freeze them since
+    // they currently belong to IN_TRANSIT_TEAM
+    result = await market.isPlayerFrozenInAnyMarket(playerIds[8]).should.be.fulfilled;
+    result.should.be.equal(false);
+  
     // buyer can not continue bidding because he already has players in limbo:
     thisPlayerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+2+nTransfers+1);
     await marketCrypto.putPlayerForSale(thisPlayerId, startingPrice, {from: ALICE}).should.be.fulfilled;
@@ -405,6 +487,11 @@ contract("Market", accounts => {
     await market.completePlayerTransit(playerIds[7]).should.be.fulfilled;
     await market.completePlayerTransit(playerIds[8]).should.be.fulfilled;
     await market.completePlayerTransit(playerIds[9]).should.be.fulfilled;
+    ownTeam = await market.getCurrentTeamIdFromPlayerId(playerIds[8]).should.be.fulfilled;
+    ownTeam.should.be.bignumber.equal(buyerTeamId0);
+
+    result = await market.isPlayerFrozenInAnyMarket(playerIds[8]).should.be.fulfilled;
+    result.should.be.equal(false);
   });
 
   it('setAcquisitionConstraint of constraints in friendliess', async () => {

@@ -112,7 +112,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         // However, it is important to check if a player who saw a yellow card is not linedup anymore
     
         // if both yellows are for the same player => force red card, and leave. Enough punishment.
-        if (yellowCardeds[0] == yellowCardeds[1]) {
+        if (yellowCardeds[0] == yellowCardeds[1] && yellowCardeds[0] != NO_OUT_OF_GAME_PLAYER) {
+            matchLog = addYellowCard(matchLog, yellowCardeds[0], 0, is2ndHalf);
+            matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 1, is2ndHalf);
             return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
         }
         // if we are in the 2nd half (and the 2 yellows are for different players):

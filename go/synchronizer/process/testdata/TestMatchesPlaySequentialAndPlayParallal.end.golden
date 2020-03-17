@@ -565,7 +565,35 @@ Tiredness: (int) 0
 }
 })
 },
-AssignedTP: (*big.Int)(0)
+Training: (storage.Training) {
+TeamID: (string) "",
+SpecialPlayerShirt: (int) -1,
+GoalkeepersDefence: (int) 0,
+GoalkeepersSpeed: (int) 0,
+GoalkeepersPass: (int) 0,
+GoalkeepersShoot: (int) 0,
+GoalkeepersEndurance: (int) 0,
+DefendersDefence: (int) 0,
+DefendersSpeed: (int) 0,
+DefendersPass: (int) 0,
+DefendersShoot: (int) 0,
+DefendersEndurance: (int) 0,
+MidfieldersDefence: (int) 0,
+MidfieldersSpeed: (int) 0,
+MidfieldersPass: (int) 0,
+MidfieldersShoot: (int) 0,
+MidfieldersEndurance: (int) 0,
+AttackersDefence: (int) 0,
+AttackersSpeed: (int) 0,
+AttackersPass: (int) 0,
+AttackersShoot: (int) 0,
+AttackersEndurance: (int) 0,
+SpecialPlayerDefence: (int) 0,
+SpecialPlayerSpeed: (int) 0,
+SpecialPlayerPass: (int) 0,
+SpecialPlayerShoot: (int) 0,
+SpecialPlayerEndurance: (int) 0
+}
 },
 VisitorTeam: (engine.Team) {
 Team: (storage.Team) {
@@ -1115,9 +1143,37 @@ Tiredness: (int) 0
 }
 })
 },
-AssignedTP: (*big.Int)(0)
+Training: (storage.Training) {
+TeamID: (string) "",
+SpecialPlayerShirt: (int) -1,
+GoalkeepersDefence: (int) 0,
+GoalkeepersSpeed: (int) 0,
+GoalkeepersPass: (int) 0,
+GoalkeepersShoot: (int) 0,
+GoalkeepersEndurance: (int) 0,
+DefendersDefence: (int) 0,
+DefendersSpeed: (int) 0,
+DefendersPass: (int) 0,
+DefendersShoot: (int) 0,
+DefendersEndurance: (int) 0,
+MidfieldersDefence: (int) 0,
+MidfieldersSpeed: (int) 0,
+MidfieldersPass: (int) 0,
+MidfieldersShoot: (int) 0,
+MidfieldersEndurance: (int) 0,
+AttackersDefence: (int) 0,
+AttackersSpeed: (int) 0,
+AttackersPass: (int) 0,
+AttackersShoot: (int) 0,
+AttackersEndurance: (int) 0,
+SpecialPlayerDefence: (int) 0,
+SpecialPlayerSpeed: (int) 0,
+SpecialPlayerPass: (int) 0,
+SpecialPlayerShoot: (int) 0,
+SpecialPlayerEndurance: (int) 0
+}
 },
-Events: (matchevents.MatchEvents) (len=28 cap=29) {
+Events: (matchevents.MatchEvents) (len=29 cap=32) {
 (matchevents.MatchEvent) {
 Minute: (int16) 2,
 Type: (int16) 0,
@@ -1245,6 +1301,15 @@ PrimaryPlayer: (int16) 6,
 SecondaryPlayer: (int16) -1
 },
 (matchevents.MatchEvent) {
+Minute: (int16) 20,
+Type: (int16) 1,
+Team: (int16) 1,
+ManagesToShoot: (bool) false,
+IsGoal: (bool) false,
+PrimaryPlayer: (int16) 8,
+SecondaryPlayer: (int16) -1
+},
+(matchevents.MatchEvent) {
 Minute: (int16) 47,
 Type: (int16) 0,
 Team: (int16) 0,
@@ -1362,7 +1427,7 @@ PrimaryPlayer: (int16) 6,
 SecondaryPlayer: (int16) -1
 },
 (matchevents.MatchEvent) {
-Minute: (int16) 50,
+Minute: (int16) 66,
 Type: (int16) 2,
 Team: (int16) 1,
 ManagesToShoot: (bool) false,
@@ -1938,7 +2003,35 @@ Tiredness: (int) 0
 }
 })
 },
-AssignedTP: (*big.Int)(0)
+Training: (storage.Training) {
+TeamID: (string) "",
+SpecialPlayerShirt: (int) -1,
+GoalkeepersDefence: (int) 0,
+GoalkeepersSpeed: (int) 0,
+GoalkeepersPass: (int) 0,
+GoalkeepersShoot: (int) 0,
+GoalkeepersEndurance: (int) 0,
+DefendersDefence: (int) 0,
+DefendersSpeed: (int) 0,
+DefendersPass: (int) 0,
+DefendersShoot: (int) 0,
+DefendersEndurance: (int) 0,
+MidfieldersDefence: (int) 0,
+MidfieldersSpeed: (int) 0,
+MidfieldersPass: (int) 0,
+MidfieldersShoot: (int) 0,
+MidfieldersEndurance: (int) 0,
+AttackersDefence: (int) 0,
+AttackersSpeed: (int) 0,
+AttackersPass: (int) 0,
+AttackersShoot: (int) 0,
+AttackersEndurance: (int) 0,
+SpecialPlayerDefence: (int) 0,
+SpecialPlayerSpeed: (int) 0,
+SpecialPlayerPass: (int) 0,
+SpecialPlayerShoot: (int) 0,
+SpecialPlayerEndurance: (int) 0
+}
 },
 VisitorTeam: (engine.Team) {
 Team: (storage.Team) {
@@ -1957,9 +2050,9 @@ GoalsForward: (uint32) 0,
 GoalsAgainst: (uint32) 2,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
-TrainingPoints: (uint16) 1,
+TrainingPoints: (uint16) 2,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=76) "1809694554143407181970777235256024184119066594262817047398195570258359615488"
+MatchLog: (string) (len=76) "1810136265909601778053173059641557459520141674374708525416234811547457683456"
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -2488,9 +2581,37 @@ Tiredness: (int) 0
 }
 })
 },
-AssignedTP: (*big.Int)(0)
+Training: (storage.Training) {
+TeamID: (string) "",
+SpecialPlayerShirt: (int) -1,
+GoalkeepersDefence: (int) 0,
+GoalkeepersSpeed: (int) 0,
+GoalkeepersPass: (int) 0,
+GoalkeepersShoot: (int) 0,
+GoalkeepersEndurance: (int) 0,
+DefendersDefence: (int) 0,
+DefendersSpeed: (int) 0,
+DefendersPass: (int) 0,
+DefendersShoot: (int) 0,
+DefendersEndurance: (int) 0,
+MidfieldersDefence: (int) 0,
+MidfieldersSpeed: (int) 0,
+MidfieldersPass: (int) 0,
+MidfieldersShoot: (int) 0,
+MidfieldersEndurance: (int) 0,
+AttackersDefence: (int) 0,
+AttackersSpeed: (int) 0,
+AttackersPass: (int) 0,
+AttackersShoot: (int) 0,
+AttackersEndurance: (int) 0,
+SpecialPlayerDefence: (int) 0,
+SpecialPlayerSpeed: (int) 0,
+SpecialPlayerPass: (int) 0,
+SpecialPlayerShoot: (int) 0,
+SpecialPlayerEndurance: (int) 0
+}
 },
-Events: (matchevents.MatchEvents) (len=30 cap=32) {
+Events: (matchevents.MatchEvents) (len=31 cap=32) {
 (matchevents.MatchEvent) {
 Minute: (int16) 2,
 Type: (int16) 0,
@@ -2618,16 +2739,16 @@ PrimaryPlayer: (int16) 8,
 SecondaryPlayer: (int16) -1
 },
 (matchevents.MatchEvent) {
-Minute: (int16) 12,
-Type: (int16) 1,
+Minute: (int16) 44,
+Type: (int16) 2,
 Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
-PrimaryPlayer: (int16) 5,
+PrimaryPlayer: (int16) 8,
 SecondaryPlayer: (int16) -1
 },
 (matchevents.MatchEvent) {
-Minute: (int16) 11,
+Minute: (int16) 16,
 Type: (int16) 1,
 Team: (int16) 1,
 ManagesToShoot: (bool) false,
@@ -2753,12 +2874,21 @@ PrimaryPlayer: (int16) 5,
 SecondaryPlayer: (int16) -1
 },
 (matchevents.MatchEvent) {
-Minute: (int16) 66,
-Type: (int16) 2,
+Minute: (int16) 61,
+Type: (int16) 1,
 Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
-PrimaryPlayer: (int16) 5,
+PrimaryPlayer: (int16) 9,
+SecondaryPlayer: (int16) -1
+},
+(matchevents.MatchEvent) {
+Minute: (int16) 45,
+Type: (int16) 1,
+Team: (int16) 1,
+ManagesToShoot: (bool) false,
+IsGoal: (bool) false,
+PrimaryPlayer: (int16) 7,
 SecondaryPlayer: (int16) -1
 }
 }

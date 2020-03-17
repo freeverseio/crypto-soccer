@@ -24,7 +24,7 @@ export default function TeamsByRanking(props) {
     const { onTeamIdChange } = props;
     const [teamId, setTeamId] = useState("");
     const { loading, error, data } = useQuery(GET_TEAMS_BY_RANKING, {
-        pollInterval: Config.polling_ms,
+        // pollInterval: Config.polling_ms,
     });
 
     if (loading) return 'Loading...';

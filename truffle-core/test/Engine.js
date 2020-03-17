@@ -208,6 +208,16 @@ contract('Engine', (accounts) => {
         expectedInGameSubs1 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         yellowedCouldNotFinish = [true, false];
+
+        red0 = await encodingLog.getOutOfGamePlayer(newLog[0], false).should.be.fulfilled;
+        red0.toNumber().should.be.equal(9)
+        red0 = await encodingLog.getOutOfGamePlayer(newLog[0], true).should.be.fulfilled;
+        red0.toNumber().should.be.equal(0)
+        red0 = await encodingLog.getOutOfGamePlayer(newLog[1], false).should.be.fulfilled;
+        red0.toNumber().should.be.equal(14)
+        red0 = await encodingLog.getOutOfGamePlayer(newLog[1], true).should.be.fulfilled;
+        red0.toNumber().should.be.equal(0)
+
         await logUtils.checkExpectedLog(encodingLog, newLog[0], nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
             isHomeSt = UNDEF, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 

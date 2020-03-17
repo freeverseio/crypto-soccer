@@ -26,8 +26,8 @@ images:
   newTag: 0.11.1
 - name: freeverseio/universe.db
   newTag: 0.11.1
-- name: freeverseio/webphoenix
-  newTag: 1.1.0a1
+- name: freeverseio/dashboard
+  newTag: 0.11.1
 patchesStrategicMerge:
 - configmap.yaml
 patchesJson6902:

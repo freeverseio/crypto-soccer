@@ -38,6 +38,24 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	assert.Equal(t, match.VisitorGoals, uint8(0))
 }
 
+func TestPlay1stHalfConsumeTheTrainingPoints(t *testing.T) {
+	t.Parallel()
+	match := engine.NewMatch()
+	match.Seed = [32]byte{0x2, 0x1}
+	match.StartTime = big.NewInt(1570147200)
+	match.HomeTeam.TeamID = "1"
+	match.VisitorTeam.TeamID = "2"
+	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
+	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(0))
+	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(0))
+	assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
+	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(34))
+	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(34))
+	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
+	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(0))
+	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(0))
+}
+
 func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
 	t.Parallel()
 	engine := engine.NewMatch()
@@ -45,8 +63,8 @@ func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, engine.HomeGoals, uint8(0))
 	assert.Equal(t, engine.VisitorGoals, uint8(0))
-	assert.Equal(t, engine.HomeTeam.MatchLog, "1822502747332067472423741020992967168868778470381174956540879256639596658688")
-	assert.Equal(t, engine.VisitorTeam.MatchLog, "1822502747332067472423741020992967168868778470381174956540879256639596658688")
+	assert.Equal(t, engine.HomeTeam.MatchLog, "1823386170864456664588543800539808540283317251593298733231417759322490273792")
+	assert.Equal(t, engine.VisitorTeam.MatchLog, "1823386170864456664588543800539808540283317251593298733231417759322490273792")
 }
 
 func TestPlayGame(t *testing.T) {
@@ -82,14 +100,14 @@ func TestPlay2ndHalf(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
-	assert.Equal(t, m.HomeTeam.MatchLog, "1822502747332067472423741020992967168868778470381174956540879256639596658688")
-	assert.Equal(t, m.VisitorTeam.MatchLog, "1822502747332067472423741020992967168868778470381174956540879256639596658688")
+	assert.Equal(t, m.HomeTeam.MatchLog, "1823386170864456664588543800539808540283317251593298733231417759322490273792")
+	assert.Equal(t, m.VisitorTeam.MatchLog, "1823386170864456664588543800539808540283317251593298733231417759322490273792")
 	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146173659658851975133989506638843274536350558846986")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
 	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730774314591213142415462872739884964159759890645042")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
-	assert.Equal(t, m.HomeTeam.TrainingPoints, uint16(30))
-	assert.Equal(t, m.VisitorTeam.TrainingPoints, uint16(30))
+	assert.Equal(t, m.HomeTeam.TrainingPoints, uint16(32))
+	assert.Equal(t, m.VisitorTeam.TrainingPoints, uint16(32))
 }
 
 func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
@@ -229,4 +247,25 @@ func TestMatchSoftInjury(t *testing.T) {
 	player := m.HomeTeam.Players[12]
 	assert.Equal(t, player.Skills().String(), "444839120007985571215702621512678479272234002738672977681803126899510")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(2))
+}
+
+func TestMatchEvents(t *testing.T) {
+	t.Parallel()
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+	m.Seed = sha256.Sum256([]byte(string(4)))
+	m.HomeTeam.TeamID = "274877906944"
+	m.VisitorTeam.TeamID = "274877906945"
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+	}
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".atStart.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.atStart.golden")
+	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".first.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.first.golden")
+	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
+	golden.Assert(t, m.Events.DumpState(), t.Name()+".second.golden")
+	golden.Assert(t, m.ToString(), t.Name()+".js.second.golden")
 }
