@@ -249,7 +249,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/authproxy:0.11.1
+        image: freeverseio/authproxy:0.12.0
         imagePullPolicy: Always
         name: authproxy
       imagePullSecrets:
@@ -281,7 +281,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/dashboard:0.11.1
+      - image: freeverseio/dashboard:0.12.0
         imagePullPolicy: Always
         name: dashboard
       imagePullSecrets:
@@ -321,7 +321,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/horizon:0.11.1
+        image: freeverseio/horizon:0.12.0
         imagePullPolicy: Always
         name: horizon
       imagePullSecrets:
@@ -353,7 +353,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/market.db:0.11.1
+      - image: freeverseio/market.db:0.12.0
         imagePullPolicy: Always
         name: marketdb
         ports:
@@ -401,7 +401,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.notary:0.11.1
+        image: freeverseio/market.notary:0.12.0
         imagePullPolicy: Always
         name: notary
       imagePullSecrets:
@@ -493,7 +493,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/relay.actions:0.11.1
+        image: freeverseio/relay.actions:0.12.0
         imagePullPolicy: Always
         name: relayactions
       imagePullSecrets:
@@ -561,7 +561,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/synchronizer:0.11.1
+        image: freeverseio/synchronizer:0.12.0
         imagePullPolicy: Always
         name: synchronizer
       imagePullSecrets:
@@ -601,7 +601,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.trader:0.11.1
+        image: freeverseio/market.trader:0.12.0
         imagePullPolicy: Always
         name: trader
       imagePullSecrets:
@@ -645,7 +645,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/universe.api:0.11.1
+        image: freeverseio/universe.api:0.12.0
         imagePullPolicy: Always
         name: universeapi
         ports:
@@ -679,7 +679,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/universe.db:0.11.1
+      - image: freeverseio/universe.db:0.12.0
         imagePullPolicy: Always
         name: universedb
         ports:
