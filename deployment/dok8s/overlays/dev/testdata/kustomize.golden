@@ -726,6 +726,8 @@ metadata:
     nginx.ingress.kubernetes.io/auth-signin: https://$host/oauth2/start?rd=$escaped_request_uri
     nginx.ingress.kubernetes.io/auth-url: https://$host/oauth2/auth
   labels:
+    app.kubernetes.io/app: dashboard
+    app.kubernetes.io/component: dashboard
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   name: dashboard-external-auth-oauth2
@@ -758,6 +760,8 @@ metadata:
     nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
     nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
   labels:
+    app.kubernetes.io/app: dashboard
+    app.kubernetes.io/component: dashboard
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   name: dashboard-oauth2-proxy

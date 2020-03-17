@@ -26,8 +26,6 @@ images:
   newTag: dev
 - name: freeverseio/universe.db
   newTag: dev
-- name: freeverseio/webphoenix
-  newTag: dev
 patchesStrategicMerge:
 - configmap.yaml
 patchesJson6902:
@@ -36,18 +34,6 @@ patchesJson6902:
     version: v1beta1
     kind: Ingress
     name: cryptosoccer-ingress
-  path: ingress_patch.yaml
-- target:
-    group: networking.k8s.io
-    version: v1beta1
-    kind: Ingress
-    name: phoenix-external-auth-oauth2
-  path: ingress_patch.yaml
-- target:
-    group: networking.k8s.io
-    version: v1beta1
-    kind: Ingress
-    name: phoenix-oauth2-proxy
   path: ingress_patch.yaml
 - target:
     group: networking.k8s.io
