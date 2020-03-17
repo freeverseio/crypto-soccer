@@ -92,25 +92,26 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         uint256 validUntil,
         uint256 teamId,
         bytes32 buyerHiddenPrice,
-        bytes32[3] memory sig,
+        bytes32[2] memory sig,
         uint8 sigV,
+        address buyerAddress,
         bool isOffer2StartAuction
      ) 
         public
         view
-        returns(bool ok, address buyerAddress) 
+        returns(bool ok) 
     {
         // the next line will verify that the teamId is the same that was used by the seller to sign
         bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, teamId));
-        buyerAddress = recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]);
+        bytes32 msgHash = prefixed(buildAgreeToBuyTeamTxMsg(sellerTxHash, buyerHiddenPrice, isOffer2StartAuction));
         ok =    // check buyerAddress is legit and signature is valid
                 (buyerAddress != address(0)) && 
+                // // check that they signed what they input data says they signed:
+                (buyerAddress == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) && 
                 // check buyer and seller refer to the exact same auction
                 ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32)) &&
                 // // check player is still frozen
-                isTeamFrozen(teamId) &&
-                // // check that they signed what they input data says they signed:
-                sig[IDX_MSG] == prefixed(buildAgreeToBuyTeamTxMsg(sellerTxHash, buyerHiddenPrice, isOffer2StartAuction));
+                isTeamFrozen(teamId);
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil

@@ -45,7 +45,6 @@ contract Constants {
 
     uint8 constant internal IDX_r   = 0;
     uint8 constant internal IDX_s   = 1;
-    uint8 constant internal IDX_MSG = 2;
  
     uint8 constant internal NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 constant internal RED_CARD = 3;   // noone saw a card
