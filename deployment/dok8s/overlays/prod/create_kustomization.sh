@@ -4,20 +4,22 @@ set -e
 MY_DIR=`dirname "$0"`
 MY_DIR=`cd "$MY_DIR" ; pwd`
 
-BASE_DIR=../base
+BASE_DIR=../../base
 NAMESPACE=freeverse
 APP_NAME='cryptosoccer'
 APP_VERSION='1.0.0'
-TAG="1.0.0-alpha"
+TAG="0.11.1"
+WEBPHOENIXTAG="1.1.0a1"
 
 # create kustomization.yaml
 kustomize create
 kustomize edit add label 'app.kubernetes.io/part-of':${APP_NAME},'app.kubernetes.io/version':${APP_VERSION}
 
 kustomize edit add base ${BASE_DIR}
+
 #kustomize edit set namespace ${NAMESPACE}
 
-# set image tags 
+# set image tags
 kustomize edit set image freeverseio/horizon:${TAG}
 kustomize edit set image freeverseio/market.db:${TAG}
 kustomize edit set image freeverseio/market.notary:${TAG}
@@ -27,6 +29,8 @@ kustomize edit set image freeverseio/market.trader:${TAG}
 kustomize edit set image freeverseio/universe.api:${TAG}
 kustomize edit set image freeverseio/universe.db:${TAG}
 kustomize edit set image freeverseio/authproxy:${TAG}
+kustomize edit set image freeverseio/dashboard:${TAG}
+kustomize edit set image freeverseio/webphoenix:${WEBPHOENIXTAG}
 
 # change to n replicas
 # kustomize edit set replicas horizon=1
@@ -36,8 +40,40 @@ kustomize edit set image freeverseio/authproxy:${TAG}
 # patching
 kustomize edit add patch configmap.yaml
 
-# build application to be deployed
-kustomize build ${MY_DIR} -o ${MY_DIR}/app.yaml
+# ingress patching
+cat <<EOF >>$MY_DIR/kustomization.yaml
+patchesJson6902:
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: cryptosoccer-ingress
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: phoenix-external-auth-oauth2
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: phoenix-oauth2-proxy
+  path: ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: dashboard-external-auth-oauth2
+  path: dashboard/ingress_patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    name: dashboard-oauth2-proxy
+  path: dashboard/ingress_patch.yaml
+EOF
 
-# or alternative apply directly to cluster
+# apply directly to cluster
 # kubectl apply -k .

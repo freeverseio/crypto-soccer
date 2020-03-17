@@ -1,0 +1,6 @@
+- op: replace
+  path: /spec/rules/0/host
+  value: k8s.goalrevolution.live
+- op: replace
+  path: /spec/tls/0/hosts/0
+  value: k8s.goalrevolution.live

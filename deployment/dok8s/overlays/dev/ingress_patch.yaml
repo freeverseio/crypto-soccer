@@ -1,0 +1,6 @@
+- op: replace
+  path: /spec/rules/0/host
+  value: k8s.gorengine.com
+- op: replace
+  path: /spec/tls/0/hosts/0
+  value: k8s.gorengine.com
