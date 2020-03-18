@@ -12,9 +12,11 @@ contract Merkle {
     //  nLevels = 1 => 3 leafs = lev1 - root // lev0 - 2 leafs
     //  nLevels = 2 => 7 leafs = lev2 - root // lev1 - 2 leafs // lev0 - 4 leafs
     function merkleRoot(bytes32[] memory array, uint256 nLevels) public pure {
-        require(array.length == 2**nLevels, "number of leafs is not = pow(2,nLevels)");
+        uint256 nLeafs = 2**nLevels;
+        require(array.length == nLeafs, "number of leafs is not = pow(2,nLevels)");
         for (uint8 level = 0; level < nLevels - 1; level++) {
-            for (uint32 pos = 0; pos < 2**(nLevels - level); pos++) {
+            nLeafs /= 2;
+            for (uint32 pos = 0; pos < nLeafs; pos++) {
                 array[pos] = hash_node(array[2 * pos], array[2 * pos + 1]);      
             }
         }

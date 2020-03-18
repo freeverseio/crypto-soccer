@@ -20,7 +20,10 @@ contract('Assets', (accounts) => {
     });
         
     it('create and verify', async () => {
-        2+2;
+        leafs = Array.from(new Array(4), (x,i) => web3.utils.keccak256(i.toString()));
+        console.log(leafs);
+        root = await merkle.merkleRoot(leafs, nLevels = 2).should.be.fulfilled;
+        console.log(root);
     });
 
 });
