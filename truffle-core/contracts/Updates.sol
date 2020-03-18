@@ -29,7 +29,7 @@ contract Updates is UpdatesView {
         }
     }
  
-    function incrementVerse() private {
+    function _incrementVerse() private {
         currentVerse += 1;
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
     }
@@ -45,8 +45,8 @@ contract Updates is UpdatesView {
         if(newTZ != NULL_TIMEZONE) {
             _setActionsRoot(newTZ, actionsRoot);
         }
-        incrementVerse();
-        setCurrentVerseSeed(blockhash(block.number-1));
+        _incrementVerse();
+        _setCurrentVerseSeed(blockhash(block.number-1));
         emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
     }
     
@@ -56,29 +56,27 @@ contract Updates is UpdatesView {
         _timeZones[timeZone].lastActionsSubmissionTime = now;
     }
 
+    // accepts an update about the root of the current state of a timezone. 
+    // in order to accept it, either:
+    //  - timezone is null,
+    //  - timezone has not been updated yet (lastUpdate < lastActionsSubmissionTime)
     function updateTZ(bytes32 root) public {
         (uint8 tz,,) = prevTimeZoneToUpdate();
-        if(tz != NULL_TIMEZONE) {
-            uint256 lastUpdate = getLastUpdateTime(tz);
-            uint256 lastActionsSubmissionTime = getLastActionsSubmissionTime(tz);
-            if (lastUpdate > lastActionsSubmissionTime) {
-                require(now < lastUpdate + CHALLENGE_TIME, "challenging period is already over for this timezone");
-                setSkillsRoot(tz, root, false); // this is a challenge to a previous update
-            } else {
-                require(now < lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
-                setSkillsRoot(tz, root, true); // first time that we update this TZ
-            }
-        }
+        bool accept = (tz == NULL_TIMEZONE) || (getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz));
+        require(accept, "TZ has already been updated once");
+        _setTZRoot(tz, root, true); // first time that we update this TZ
         emit TimeZoneUpdate(tz, root, now);
     }
     
-    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) internal returns(uint256) {
+    
+    
+    function _setTZRoot(uint8 tz, bytes32 root, bool newTZ) internal returns(uint256) {
         if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
         _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
         _timeZones[tz].lastUpdateTime = now;
     }
 
-    function setCurrentVerseSeed(bytes32 seed) public {
+    function _setCurrentVerseSeed(bytes32 seed) private {
         currentVerseSeed = seed;
     }
 
