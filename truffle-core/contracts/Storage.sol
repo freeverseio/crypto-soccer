@@ -26,7 +26,6 @@ contract Storage is ProxyStorage, Constants{
     uint256 internal currentVerse;
     bytes32 internal currentVerseSeed;
 
-    TimeZone[25] public _timeZones;
     uint256 public gameDeployDay;
     uint256 public currentRound;
 
@@ -37,18 +36,14 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => address) teamIdToOwner;
     mapping (uint8 => uint256) tzToNCountries;
 
-    struct TimeZone {
-        bytes32[2] orgMapHash;
-        bytes32[2] skillsHash;
-        uint8 newestOrgMapIdx;
-        uint8 newestSkillsIdx;
-        bytes32 scoresRoot;
-        uint8 updateCycleIdx;
-        uint256 lastActionsSubmissionTime;
-        uint256 lastUpdateTime;
-        bytes32 actionsRoot;
-        uint256 lastMarketClosureBlockNum;
-    }    
 
-
+    mapping (uint256 => bytes32[2]) orgMapRoot;
+    mapping (uint256 => bytes32[2][MAX_CHALLENGE_LEVELS]) roots;
+    mapping (uint256 => uint8) newestOrgMapIdx;
+    mapping (uint256 => uint8) newestSkillsIdx;
+    mapping (uint256 => uint8) updateCycleIdx;
+    mapping (uint256 => uint256) lastActionsSubmissionTime;
+    mapping (uint256 => uint256) lastUpdateTime;
+    mapping (uint256 => bytes32) actionsRoot;
+    mapping (uint256 => bytes32) trainingsRoot;
 }

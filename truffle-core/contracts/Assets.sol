@@ -38,7 +38,7 @@ contract Assets is AssetsView {
     
 
     function _initTimeZone(uint8 tz) private {
-        _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
+        orgMapRoot[tz][0] = INIT_ORGMAP_HASH;
         addCountry(tz);
     }
     

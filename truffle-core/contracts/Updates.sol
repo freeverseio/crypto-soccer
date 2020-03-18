@@ -52,8 +52,8 @@ contract Updates is UpdatesView {
     
     function _setActionsRoot(uint8 timeZone, bytes32 root) public returns(uint256) {
         _assertTZExists(timeZone);
-        _timeZones[timeZone].actionsRoot = root;
-        _timeZones[timeZone].lastActionsSubmissionTime = now;
+        actionsRoot[timeZone] = root;
+        lastActionsSubmissionTime[timeZone] = now;
     }
 
     // accepts an update about the root of the current state of a timezone. 
@@ -64,16 +64,17 @@ contract Updates is UpdatesView {
         (uint8 tz,,) = prevTimeZoneToUpdate();
         bool accept = (tz == NULL_TIMEZONE) || (getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz));
         require(accept, "TZ has already been updated once");
-        _setTZRoot(tz, root, true); // first time that we update this TZ
+        _setTZRoot(tz, root); // first time that we update this TZ
         emit TimeZoneUpdate(tz, root, now);
     }
     
     
     
-    function _setTZRoot(uint8 tz, bytes32 root, bool newTZ) internal returns(uint256) {
-        if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
-        _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
-        _timeZones[tz].lastUpdateTime = now;
+    function _setTZRoot(uint8 tz, bytes32 root) internal returns(uint256) {
+        uint8 newIdx = 1 - newestSkillsIdx[tz];
+        newestSkillsIdx[tz] = newIdx;
+        roots[tz][newIdx][0] = root;
+        lastUpdateTime[tz] = now;
     }
 
     function _setCurrentVerseSeed(bytes32 seed) private {
