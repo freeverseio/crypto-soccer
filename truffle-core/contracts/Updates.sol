@@ -7,7 +7,7 @@ import "./UpdatesView.sol";
 
 contract Updates is UpdatesView {
     event TeamTransfer(uint256 teamId, address to);
-    event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string cid);
+    event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
 
     function initUpdates() public {
@@ -34,23 +34,23 @@ contract Updates is UpdatesView {
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
     }
     
-    function submitActionsRoot(bytes32 actionsRoot, string memory cid) public {
-        // require(now > nextVerseTimestamp, "too early to accept actions root");
+    function submitActionsRoot(bytes32 actionsRoot, string memory ipfsCid) public {
+        require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
-        // (uint8 prevTz,,) = prevTimeZoneToUpdate();
+        (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
-        // if (prevTz != NULL_TIMEZONE) {
-        //     require(now > _storageProxy.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
-        // }
+        if (prevTz != NULL_TIMEZONE) {
+            require(now > getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
+        }
         if(newTZ != NULL_TIMEZONE) {
-            setActionsRoot(newTZ, actionsRoot);
+            _setActionsRoot(newTZ, actionsRoot);
         }
         incrementVerse();
         setCurrentVerseSeed(blockhash(block.number-1));
-        emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, cid);
+        emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
     }
     
-    function setActionsRoot(uint8 timeZone, bytes32 root) public returns(uint256) {
+    function _setActionsRoot(uint8 timeZone, bytes32 root) public returns(uint256) {
         _assertTZExists(timeZone);
         _timeZones[timeZone].actionsRoot = root;
         _timeZones[timeZone].lastActionsSubmissionTime = now;
