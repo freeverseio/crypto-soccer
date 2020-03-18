@@ -57,8 +57,9 @@ func TestDivisionCreationProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	timezone := uint8(1)
 	event := assets.AssetsDivisionCreation{
-		Timezone:             uint8(1),
+		Timezone:             timezone,
 		CountryIdxInTZ:       big.NewInt(0),
 		DivisionIdxInCountry: big.NewInt(0),
 	}
@@ -66,10 +67,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// player, err := storage.PlayerByPlayerId(tx, big.NewInt(274877906944))
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
+
 	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, 1, 0, 0, 0)
 	if err != nil {
 		t.Fatal(err)
@@ -83,4 +81,9 @@ func TestDivisionCreationProcess(t *testing.T) {
 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, 1, 0, 0)
 	assert.NilError(t, err)
 	golden.Assert(t, dump.Sdump(teams), t.Name()+".teams.golden")
+
+	// check for trainings
+	trainings, err := storage.TrainingsByTimezone(tx, int(timezone))
+	assert.NilError(t, err)
+	assert.Equal(t, len(trainings), 128)
 }
