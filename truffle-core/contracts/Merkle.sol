@@ -10,16 +10,16 @@ contract Merkle {
     // nLeafs = 2**nLevels
     //  nLevels = 1 => 3 leafs = lev1 - root // lev0 - 2 leafs
     //  nLevels = 2 => 7 leafs = lev2 - root // lev1 - 2 leafs // lev0 - 4 leafs
-    function merkleRoot(bytes32[] memory array, uint256 nLevels) public pure returns(bytes32) {
+    function merkleRoot(bytes32[] memory leafs, uint256 nLevels) public pure returns(bytes32) {
         uint256 nLeafs = 2**nLevels;
-        require(array.length == nLeafs, "number of leafs is not = pow(2,nLevels)");
+        require(leafs.length == nLeafs, "number of leafs is not = pow(2,nLevels)");
         for (uint8 level = 0; level < nLevels; level++) {
             nLeafs /= 2;
             for (uint256 pos = 0; pos < nLeafs; pos++) {
-                array[pos] = hash_node(array[2 * pos], array[2 * pos + 1]);      
+                leafs[pos] = hash_node(leafs[2 * pos], leafs[2 * pos + 1]);      
             }
         }
-        return array[0];
+        return leafs[0];
     }
   
     function hash_node(bytes32 left, bytes32 right) public pure returns (bytes32 hash) {
@@ -48,6 +48,23 @@ contract Merkle {
             leafPos /= 2;
         }     
         return root == leafHash;   
+    }
+    
+    function buildProof(uint256 leafPos, bytes32[] memory leafs, uint256 nLevels) public pure returns(bytes32[] memory proof) {
+        uint256 nLeafs = 2**nLevels;
+        require(leafs.length == nLeafs, "number of leafs is not = pow(2,nLevels)");
+        proof = new bytes32[](nLevels);
+        // The 1st element is just its pair
+        proof[0] = ((leafPos % 2) == 0) ? leafs[leafPos+1] : leafs[leafPos-1];
+        // The rest requires computing all hashes
+        for (uint8 level = 0; level < nLevels-1; level++) {
+            nLeafs /= 2;
+            leafPos /= 2; 
+            for (uint256 pos = 0; pos < nLeafs; pos++) {
+                leafs[pos] = hash_node(leafs[2 * pos], leafs[2 * pos + 1]);      
+            }
+            proof[level + 1] = ((leafPos % 2) == 0) ? leafs[leafPos+1] : leafs[leafPos-1];
+        }
     }
     
 }

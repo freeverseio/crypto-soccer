@@ -23,18 +23,27 @@ contract('Assets', (accounts) => {
         leafs = Array.from(new Array(4), (x,i) => web3.utils.keccak256(i.toString()));
         root = await merkle.merkleRoot(leafs, nLevels = 2).should.be.fulfilled;
         root1 = await merkle.hash_node(leafs[0], leafs[1]).should.be.fulfilled;
-        root2 = await merkle.hash_node(leafs[2], leafs[3]).should.be.fulfilled;
+        root2 = await  merkle.hash_node(leafs[2], leafs[3]).should.be.fulfilled;
         myRoot = await merkle.hash_node(root1, root2).should.be.fulfilled;
         myRoot.should.be.equal(root)
     });
 
-
-    it('create and verify', async () => {
+    it('verify', async () => {
         leafs = Array.from(new Array(4), (x,i) => web3.utils.keccak256(i.toString()));
         root = await merkle.merkleRoot(leafs, nLevels = 2).should.be.fulfilled;
-        leafHash = leafs[1];
+        leafPos = 1;
         proof2 = await merkle.hash_node(leafs[2], leafs[3]).should.be.fulfilled;
-        ok = await merkle.verify(root, [leafs[0], proof2], leafHash, 1).should.be.fulfilled;
+        proof = [leafs[0], proof2];
+        ok = await merkle.verify(root, proof, leafs[leafPos], leafPos).should.be.fulfilled;
+        ok.should.be.equal(true);
+    });
+
+    it('build proof', async () => {
+        leafs = Array.from(new Array(4), (x,i) => web3.utils.keccak256(i.toString()));
+        root = await merkle.merkleRoot(leafs, nLevels = 2).should.be.fulfilled;
+        leafPos = 1;
+        proof = await merkle.buildProof(leafPos, leafs, nLevels).should.be.fulfilled; 
+        ok = await merkle.verify(root, proof, leafs[leafPos], leafPos).should.be.fulfilled;
         ok.should.be.equal(true);
     });
 
