@@ -101,20 +101,24 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 				team.RankingPoints = 10
 				if err := team.Insert(tx); err != nil {
 					return err
-				} else if err := b.storeVirtualPlayersForTeam(tx, opts, blockNumber, teamId, timezone, countryIdx, teamIdx); err != nil {
+				}
+				if err := b.storeVirtualPlayersForTeam(tx, opts, blockNumber, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
-				} else if err := b.createInitialTactics(tx, timezone, teamId); err != nil {
+				}
+				if err := b.createInitialTactics(tx, timezone, teamId); err != nil {
+					return err
+				}
+				training := storage.NewTraining()
+				training.TeamID = teamId.String()
+				if err := training.Insert(tx); err != nil {
 					return err
 				}
 			}
 		}
-
-		err := b.calendarProcessor.Generate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
-		if err != nil {
+		if err := b.calendarProcessor.Generate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)); err != nil {
 			return err
 		}
-		err = b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
-		if err != nil {
+		if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)); err != nil {
 			return err
 		}
 	}
