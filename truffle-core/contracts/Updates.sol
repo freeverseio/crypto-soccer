@@ -81,4 +81,5 @@ contract Updates is UpdatesView {
         currentVerseSeed = seed;
     }
 
+
 }

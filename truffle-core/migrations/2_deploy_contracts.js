@@ -12,6 +12,7 @@ const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
 const Utils = artifacts.require('Utils');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
+const Merkle = artifacts.require('Merkle');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -42,6 +43,7 @@ module.exports = function (deployer, network, accounts) {
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
     const utils = await deployer.deploy(Utils).should.be.fulfilled;
     const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
+    const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
     
@@ -96,6 +98,7 @@ module.exports = function (deployer, network, accounts) {
       ["UTILS", utils.address],
       ["PRIVILEGED", assets.address],
       ["PLAYANDEVOLVE", playAndEvolve.address],
+      ["MERKLE", merkle.address],
       ["CONSTANTSGETTERS", constantsGetters.address]
     ]
 
