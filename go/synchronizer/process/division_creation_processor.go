@@ -15,71 +15,33 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const SK_SHO = uint8(0)
+const SK_SPE = uint8(1)
+const SK_PAS = uint8(2)
+const SK_DEF = uint8(3)
+const SK_END = uint8(4)
+const LEAGUES_PER_DIV = uint8(16)
+const TEAMS_PER_LEAGUE = uint8(8)
+const PLAYERS_PER_TEAM_INIT = uint8(18)
+
 type DivisionCreationProcessor struct {
-	contracts             *contracts.Contracts
-	SK_SHO                uint8
-	SK_SPE                uint8
-	SK_PAS                uint8
-	SK_DEF                uint8
-	SK_END                uint8
-	LEAGUES_PER_DIV       uint8
-	TEAMS_PER_LEAGUE      uint8
-	calendarProcessor     *Calendar
-	PLAYERS_PER_TEAM_INIT uint8
-	namesGenerator        *names.Generator
+	contracts         *contracts.Contracts
+	calendarProcessor *Calendar
+	namesGenerator    *names.Generator
 }
 
 func NewDivisionCreationProcessor(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
 ) (*DivisionCreationProcessor, error) {
-	SK_SHO, err := contracts.ConstantsGetters.GetSKSHO(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	SK_SPE, err := contracts.ConstantsGetters.GetSKSPE(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	SK_PAS, err := contracts.ConstantsGetters.GetSKPAS(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	SK_DEF, err := contracts.ConstantsGetters.GetSKDEF(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	SK_END, err := contracts.ConstantsGetters.GetSKEND(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	LEAGUES_PER_DIV, err := contracts.ConstantsGetters.GetLEAGUESPERDIV(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	TEAMS_PER_LEAGUE, err := contracts.ConstantsGetters.GetTEAMSPERLEAGUE(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
 	calendarProcessor, err := NewCalendar(contracts)
 	if err != nil {
 		return nil, err
 	}
-	PLAYERS_PER_TEAM_INIT, err := contracts.ConstantsGetters.GetPLAYERSPERTEAMINIT(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
+
 	return &DivisionCreationProcessor{
 		contracts,
-		SK_SHO,
-		SK_SPE,
-		SK_PAS,
-		SK_DEF,
-		SK_END,
-		LEAGUES_PER_DIV,
-		TEAMS_PER_LEAGUE,
 		calendarProcessor,
-		PLAYERS_PER_TEAM_INIT,
 		namesdb,
 	}, nil
 }
@@ -110,16 +72,16 @@ func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivis
 func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNumber uint64, timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
 
-	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(b.LEAGUES_PER_DIV)
-	leagueIdxEnd := leagueIdxBegin + int64(b.LEAGUES_PER_DIV)
+	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(LEAGUES_PER_DIV)
+	leagueIdxEnd := leagueIdxBegin + int64(LEAGUES_PER_DIV)
 
 	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
 		league := storage.League{timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)}
 		if err := league.Insert(tx); err != nil {
 			return err
 		}
-		teamIdxBegin := leagueIdx * int64(b.TEAMS_PER_LEAGUE)
-		teamIdxEnd := teamIdxBegin + int64(b.TEAMS_PER_LEAGUE)
+		teamIdxBegin := leagueIdx * int64(TEAMS_PER_LEAGUE)
+		teamIdxEnd := teamIdxBegin + int64(TEAMS_PER_LEAGUE)
 		for teamIdxInLeague, teamIdx := uint32(0), teamIdxBegin; teamIdx < teamIdxEnd; teamIdx, teamIdxInLeague = teamIdx+1, teamIdxInLeague+1 {
 			if teamId, err := b.contracts.Assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
 				return err
@@ -139,20 +101,24 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 				team.RankingPoints = 10
 				if err := team.Insert(tx); err != nil {
 					return err
-				} else if err := b.storeVirtualPlayersForTeam(tx, opts, blockNumber, teamId, timezone, countryIdx, teamIdx); err != nil {
+				}
+				if err := b.storeVirtualPlayersForTeam(tx, opts, blockNumber, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
-				} else if err := b.createInitialTactics(tx, timezone, teamId); err != nil {
+				}
+				if err := b.createInitialTactics(tx, timezone, teamId); err != nil {
+					return err
+				}
+				training := storage.NewTraining()
+				training.TeamID = teamId.String()
+				if err := training.Insert(tx); err != nil {
 					return err
 				}
 			}
 		}
-
-		err := b.calendarProcessor.Generate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
-		if err != nil {
+		if err := b.calendarProcessor.Generate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)); err != nil {
 			return err
 		}
-		err = b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
-		if err != nil {
+		if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)); err != nil {
 			return err
 		}
 	}
@@ -160,8 +126,8 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 }
 
 func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts *bind.CallOpts, blockNumber uint64, teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
-	begin := teamIdxInCountry * int64(b.PLAYERS_PER_TEAM_INIT)
-	end := begin + int64(b.PLAYERS_PER_TEAM_INIT)
+	begin := teamIdxInCountry * int64(PLAYERS_PER_TEAM_INIT)
+	end := begin + int64(PLAYERS_PER_TEAM_INIT)
 
 	generation := uint8(0)
 	for i := begin; i < end; i++ {
