@@ -29,7 +29,7 @@ commands:
   submit_universe_db_schema:
     description: "Submit cryptosoccer schema in database"
     steps:
-      - run: cd universe.db && PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f *.sql
+      - run: cd universe.db && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f $f; done
   generate_contracts_code:
     description: "Compile and generate code for the services that need to communicate with them"
     steps:
