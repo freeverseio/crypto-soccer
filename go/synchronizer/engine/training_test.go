@@ -9,5 +9,5 @@ import (
 
 func TestTrainingToString(t *testing.T) {
 	training := engine.NewTraining()
-	golden.Assert(t, training.ToString(), t.Name()+".golden")
+	golden.Assert(t, training.Marshal(), t.Name()+".golden")
 }

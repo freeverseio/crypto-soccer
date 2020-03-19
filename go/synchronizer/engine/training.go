@@ -16,7 +16,7 @@ func NewTraining() *Training {
 	return &training
 }
 
-func (b Training) ToString() string {
+func (b Training) Marshal() string {
 	var result string
 	s, _ := json.Marshal(b)
 	result += string(s)
