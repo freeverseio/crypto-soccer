@@ -2,6 +2,7 @@ package engine
 
 import (
 	"database/sql"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -96,4 +97,19 @@ func (b Team) CalculateAssignedTrainingPoints(contracts contracts.Contracts) (*b
 		return nil, err
 	}
 	return encodedTraining, nil
+}
+
+func (b Team) ToJavaScript() string {
+	var result string
+	result += "{"
+	result += fmt.Sprintf("matchLog: '%v',", b.MatchLog)
+	result += fmt.Sprintf("teamId: '%v',", b.TeamID)
+	result += fmt.Sprintf("tactic: '%v',", b.Tactic)
+	// result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
+	result += "players: ["
+	for _, player := range b.Players {
+		result += fmt.Sprintf("'%v',", player.EncodedSkills)
+	}
+	result += "],}"
+	return result
 }
