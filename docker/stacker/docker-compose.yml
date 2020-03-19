@@ -42,7 +42,7 @@ services:
       - IPFS_PROFILE=server
       - IPFS_PATH=/data
     ports:
-      - "4001:4001"
+      - "40010:4001"
     volumes:
       - ipfs.node-data:/data
   universe.api:
