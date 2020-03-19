@@ -223,27 +223,30 @@ contract('Updates', (accounts) => {
         // ...so that we cannot challenge with the correct set of hashes
         await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStruct[1]).should.be.rejected;
         // ...but we can challenge with one of them being wrong
-        merkleStructWrong = [...merkleStruct];
-        merkleStructWrong[1][7] = web3.utils.keccak256('iAmEvil');
+        leafsWrong = [...leafs];
+        // we will lie in a bottom leave that leads to root 7 in the first level
+        // so being at pos = 7, leads to pos 7 * nLeafsPerRoot, which leads at 7*nLeafsPerRoot^2
+        leafsWrong[7 * (nLeafsPerRoot**2) + 1] = web3.utils.keccak256('iAmEvil');
+        merkleStructWrong =  merkleUtils.buildMerkleStruct(leafsWrong, nLeafsPerRoot);
+        assert.notEqual(merkleUtils.merkleRoot(leafsWrong, nTotalLevels), merkleUtils.merkleRoot(leafs, nTotalLevels), "wrong leafs should lead to different root");
+        assert.notEqual(merkleUtils.merkleRoot(merkleStructWrong[1], nLevelsPerRoot), merkleUtils.merkleRoot(merkleStruct[1], nLevelsPerRoot), "wrong leafs should lead to different merkle structs");
+        
         await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStructWrong[1]).should.be.fulfilled;
         // we can now challenge the challenger :-) with the correct hashes  
         // TODO: test that vals are gotten from events
-        console.log(merkleStruct.length)
-        console.log(merkleStructWrong.length)
         wrongPos = 7;
         wrongVal = merkleStructWrong[1][wrongPos];
         proof = merkleUtils.buildProof(wrongPos, merkleStructWrong[1], nLevelsPerRoot);
         roots2Submit = merkleStruct[0].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
         wrongRoot = merkleUtils.merkleRoot(merkleStructWrong[1], nLevelsPerRoot);
         assert.equal(merkleUtils.verify(wrongRoot, proof, wrongVal, wrongPos), true, "proof not working");
-        console.log(roots2Submit.length)
-        console.log(proof)
-        console.log(roots2Submit)
+        // as always, first check that we cannot submit roots that coinicide with previous:
+        roots2SubmitWrong = merkleStructWrong[0].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
+        assert.equal(merkleUtils.merkleRoot(roots2SubmitWrong, nLevelsPerRoot), wrongVal, "wrong choice of slice");
+        assert.notEqual(merkleUtils.merkleRoot(roots2SubmitWrong, nLevelsPerRoot), merkleUtils.merkleRoot(roots2Submit, nLevelsPerRoot), "wrong choice of slice");
+        await updates.challengeTZ(wrongVal, wrongPos, proof, roots2SubmitWrong).should.be.rejected;
+        // but we can with differing ones:
         await updates.challengeTZ(wrongVal, wrongPos, proof, roots2Submit).should.be.fulfilled;
     });
-   
-    
-    
-
 
 });
