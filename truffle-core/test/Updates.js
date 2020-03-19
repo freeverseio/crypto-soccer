@@ -207,8 +207,11 @@ contract('Updates', (accounts) => {
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
 
+        nLeafsPerRoot = 16;
+        nChallenges = 3;
+        nTotalLeafs = nLeafsPerRoot**3;
         leafs = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
-        merkleStruct = buildMerkleStruct(leafs, nLeafsPerRoot = 16);
+        merkleStruct = merkleUtils.buildMerkleStruct(leafs, nLeafsPerRoot);
         console.log(merkleStruct)
         // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
     });

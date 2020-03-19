@@ -70,7 +70,6 @@ function buildMerkleStruct(leafs, nLeafsPerRoot) {
       rootsAtThisLevel = [];
       assert.equal(leafsAtThisLevel.length % nLeafsPerRoot, 0, "wrong number of leafs");
       nRootsToCompute = leafsAtThisLevel.length/nLeafsPerRoot;
-      console.log("new level: ", ch, nLeafsPerRoot)
       for (n = 0; n < nRootsToCompute; n++) {
           left = n * nLeafsPerRoot;
           right = (n+1)*nLeafsPerRoot
@@ -85,6 +84,7 @@ function buildMerkleStruct(leafs, nLeafsPerRoot) {
       merkleRoot(leafs, nLev = Math.log2(nTotalLeafs)),
       "the merkle struct built does not have a correct merkle root"
   );
+  return rootsPerLevel;
 }
   
   module.exports = {
