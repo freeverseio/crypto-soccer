@@ -276,3 +276,10 @@ func TestMatchJson(t *testing.T) {
 	assert.Equal(t, m.StartTime.String(), match.StartTime.String())
 	assert.Equal(t, m.Seed, match.Seed)
 }
+
+func TestMatchHash(t *testing.T) {
+	t.Parallel()
+	m := engine.NewMatch()
+	fmt.Sprintf("%x", m.Hash())
+	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "df4cade399310b67143e7ca5792dab7f8ed048b8bcb6478d70b9010f819a4e24")
+}
