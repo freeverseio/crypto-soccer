@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -292,4 +293,10 @@ func NewMatchFromJson(input []byte) (*Match, error) {
 		return nil, err
 	}
 	return &match, nil
+}
+
+func (b Match) Hash() []byte {
+	h := sha256.New()
+	h.Write(b.ToJson())
+	return h.Sum(nil)
 }
