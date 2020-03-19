@@ -159,12 +159,6 @@ func TestMatchPlayerEvolution(t *testing.T) {
 	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(1237))
 }
 
-func TestDumpMatch(t *testing.T) {
-	t.Parallel()
-	match := engine.NewMatch()
-	golden.Assert(t, match.ToString(), t.Name()+".golden")
-}
-
 func TestMatchTeamSkillsEvolution(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
@@ -261,11 +255,24 @@ func TestMatchEvents(t *testing.T) {
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
 	}
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".atStart.golden")
-	golden.Assert(t, m.ToString(), t.Name()+".js.atStart.golden")
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".first.golden")
-	golden.Assert(t, m.ToString(), t.Name()+".js.first.golden")
 	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".second.golden")
-	golden.Assert(t, m.ToString(), t.Name()+".js.second.golden")
+}
+
+func TestMatchJson(t *testing.T) {
+	t.Parallel()
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+	m.Seed = sha256.Sum256([]byte("161"))
+	m.HomeTeam.Players[0].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+
+	golden.Assert(t, string(m.ToJson()), t.Name()+".golden")
+	input := golden.Get(t, t.Name()+".golden")
+	match, err := engine.NewMatchFromJson(input)
+	assert.NilError(t, err)
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), match.HomeTeam.Players[0].Skills().String())
+	assert.Equal(t, m.StartTime.String(), match.StartTime.String())
+	assert.Equal(t, m.Seed, match.Seed)
 }

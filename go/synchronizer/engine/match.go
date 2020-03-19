@@ -2,7 +2,7 @@ package engine
 
 import (
 	"database/sql"
-	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
 
@@ -281,13 +281,15 @@ func (b *Match) processMatchEvents(
 	return nil
 }
 
-func (b Match) ToString() string {
-	var result string
-	result += fmt.Sprintf("{")
-	result += fmt.Sprintf("seed: '0x%v',", hex.EncodeToString(b.Seed[:]))
-	result += fmt.Sprintf("startTime: '%v',", b.StartTime)
-	result += fmt.Sprintf("homeTeam: %v,", b.HomeTeam.ToJavaScript())
-	result += fmt.Sprintf("visitorTeam: %v,", b.VisitorTeam.ToJavaScript())
-	result += fmt.Sprintf("}")
-	return result
+func (b Match) ToJson() []byte {
+	s, _ := json.MarshalIndent(b, "", "\t")
+	return s
+}
+
+func NewMatchFromJson(input []byte) (*Match, error) {
+	match := Match{}
+	if err := json.Unmarshal(input, &match); err != nil {
+		return nil, err
+	}
+	return &match, nil
 }
