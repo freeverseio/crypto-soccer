@@ -79,16 +79,21 @@ contract Updates is UpdatesView, Merkle {
         uint8 level = getChallengeLevel(tz, true);
         if (level == 0) require(root != getRoot(tz, 0, true), "provided leafs lead to same root being challenged");
         else {
-            require(verify(getRoot(tz, level-1, true), proofWrongLeave, wrongLeaveVal, wrongLeavePos),"merkle proof not correct");
+            require(root != wrongLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
+            bytes32 prevRoot = getRoot(tz, level, true);
+            require(verify(prevRoot, proofWrongLeave, wrongLeaveVal, wrongLeavePos), "merkle proof not correct");
         }
-        _roots[tz][newestRootsIdx[tz]][level + 1] = root;
-        challengeLevel[tz][newestRootsIdx[tz]] = level + 1;
+        uint8 newIdx = newestRootsIdx[tz];
+        _roots[tz][newIdx][level + 1] = root;
+        if (level > 0) require(false,'---');
+        challengeLevel[tz][newIdx] = level + 1;
         emit ChallengeTZ(root, providedRoots);
     }
        
     function _setTZRoot(uint8 tz, bytes32 root) internal {
         uint8 newIdx = 1 - newestRootsIdx[tz];
         newestRootsIdx[tz] = newIdx;
+        _roots[tz][newIdx] = new bytes32[](MAX_CHALLENGE_LEVELS);
         _roots[tz][newIdx][0] = root;
         lastUpdateTime[tz] = now;
     }

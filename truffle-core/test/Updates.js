@@ -210,14 +210,38 @@ contract('Updates', (accounts) => {
         nLeafsPerRoot = 16;
         nChallenges = 3;
         nTotalLeafs = nLeafsPerRoot**3;
+        nTotalLevels = Math.log2(nTotalLeafs);
+        nLevelsPerRoot = Math.log2(nLeafsPerRoot);
         leafs = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
         merkleStruct = merkleUtils.buildMerkleStruct(leafs, nLeafsPerRoot);
-        console.log(merkleStruct)
         const nullHash = '0x0';
+        // First challenge fails because the TZ has not been updated yet with a root
         await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStruct[1]).should.be.rejected;
-        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
-        await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStruct[1]).should.be.fulfilled;
+
+        // We update with the correct root...
+        await updates.updateTZ(root = merkleUtils.merkleRoot(leafs, nTotalLevels)).should.be.fulfilled;
+        // ...so that we cannot challenge with the correct set of hashes
+        await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStruct[1]).should.be.rejected;
+        // ...but we can challenge with one of them being wrong
+        merkleStructWrong = [...merkleStruct];
+        merkleStructWrong[1][7] = web3.utils.keccak256('iAmEvil');
+        await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStructWrong[1]).should.be.fulfilled;
+        // we can now challenge the challenger :-) with the correct hashes  
+        // TODO: test that vals are gotten from events
+        console.log(merkleStruct.length)
+        console.log(merkleStructWrong.length)
+        wrongPos = 7;
+        wrongVal = merkleStructWrong[1][wrongPos];
+        proof = merkleUtils.buildProof(wrongPos, merkleStructWrong[1], nLevelsPerRoot);
+        roots2Submit = merkleStruct[0].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
+        wrongRoot = merkleUtils.merkleRoot(merkleStructWrong[1], nLevelsPerRoot);
+        assert.equal(merkleUtils.verify(wrongRoot, proof, wrongVal, wrongPos), true, "proof not working");
+        console.log(roots2Submit.length)
+        console.log(proof)
+        console.log(roots2Submit)
+        await updates.challengeTZ(wrongVal, wrongPos, proof, roots2Submit).should.be.fulfilled;
     });
+   
     
     
 
