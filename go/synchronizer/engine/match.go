@@ -11,6 +11,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
+	"github.com/pkg/errors"
 )
 
 type Match struct {
@@ -141,11 +142,11 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	homeAssignedTP, err := b.HomeTeam.CalculateAssignedTrainingPoints(contracts)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed calculating home assignedTP")
 	}
 	visitorAssignedTP, err := b.VisitorTeam.CalculateAssignedTrainingPoints(contracts)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed calculating visitor assignedTP")
 	}
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
@@ -159,15 +160,15 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed play1stHalfAndEvolve")
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed decoding home match log")
 	}
 	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed decoding visitor match log")
 	}
 	if err = b.processMatchEvents(
 		contracts,
@@ -176,7 +177,7 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		decodedVisitorMatchLog,
 		is2ndHalf,
 	); err != nil {
-		return err
+		return errors.Wrap(err, "failed processing match events")
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
@@ -219,15 +220,15 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed decoding home match log")
 	}
 	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed decoding visitor match log")
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
@@ -244,7 +245,7 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		decodedVisitorMatchLog,
 		is2ndHalf,
 	); err != nil {
-		return err
+		return errors.Wrap(err, "failed processing match events")
 	}
 	b.updateStats()
 	return nil
