@@ -199,49 +199,7 @@ contract('Evolution', (accounts) => {
         ];
     };
     
-    beforeEach(async () => {
-        training = await TrainingPoints.new().should.be.fulfilled;
-        evo = await Evolution.new().should.be.fulfilled;
-        play = await PlayAndEvolve.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
-        assets = await Assets.new().should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
-        market = await Market.new().should.be.fulfilled;
-        shop = await Shop.new().should.be.fulfilled;
-        encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
-        precomp = await EnginePreComp.new().should.be.fulfilled;
-        applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
-        await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
-        await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
-        await training.setAssetsAddress(assets.address).should.be.fulfilled;
-        await training.setMarketAddress(market.address).should.be.fulfilled;
-        await play.setEngineAddress(engine.address).should.be.fulfilled;
-        await play.setTrainingAddress(training.address).should.be.fulfilled;
-        await play.setEvolutionAddress(evo.address).should.be.fulfilled;
-        await play.setShopAddress(shop.address).should.be.fulfilled;
-        
-        tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
-            extraAttackNull, tacticId442).should.be.fulfilled;
-        tactics1 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
-            extraAttackNull, tacticId433).should.be.fulfilled;
-        tactics1NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, noSubstitutions), 
-            extraAttackNull, tacticId433).should.be.fulfilled;
-        tactics442 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions),
-            extraAttackNull, tacticId442).should.be.fulfilled;
-        tactics442NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, noSubstitutions), 
-            extraAttackNull, tacticId442).should.be.fulfilled;
-        teamStateAll50Half1 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
-        teamStateAll1Half1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
-        teamStateAll50Half2 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2, aligned = [true, false]).should.be.fulfilled;
-        teamStateAll1Half2 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2, aligned = [true, false]).should.be.fulfilled;
-        MAX_RND = await engine.MAX_RND().should.be.fulfilled;
-        MAX_RND = MAX_RND.toNumber();
-        kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
-        events1Half = Array.from(new Array(7), (x,i) => 0);
-        events1Half = [events1Half,events1Half];
-    });
-
-    function getarray(tr) {
+    function parseLog(tr) {
         arr = [
             tr.goalkeepersShoot,
             tr.goalkeepersSpeed,
@@ -292,6 +250,48 @@ contract('Evolution', (accounts) => {
         return OK;
     }
     
+    beforeEach(async () => {
+        training = await TrainingPoints.new().should.be.fulfilled;
+        evo = await Evolution.new().should.be.fulfilled;
+        play = await PlayAndEvolve.new().should.be.fulfilled;
+        engine = await Engine.new().should.be.fulfilled;
+        assets = await Assets.new().should.be.fulfilled;
+        await assets.init().should.be.fulfilled;
+        market = await Market.new().should.be.fulfilled;
+        shop = await Shop.new().should.be.fulfilled;
+        encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
+        precomp = await EnginePreComp.new().should.be.fulfilled;
+        applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
+        await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
+        await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
+        await training.setAssetsAddress(assets.address).should.be.fulfilled;
+        await training.setMarketAddress(market.address).should.be.fulfilled;
+        await play.setEngineAddress(engine.address).should.be.fulfilled;
+        await play.setTrainingAddress(training.address).should.be.fulfilled;
+        await play.setEvolutionAddress(evo.address).should.be.fulfilled;
+        await play.setShopAddress(shop.address).should.be.fulfilled;
+        
+        tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
+            extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics1 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
+            extraAttackNull, tacticId433).should.be.fulfilled;
+        tactics1NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, noSubstitutions), 
+            extraAttackNull, tacticId433).should.be.fulfilled;
+        tactics442 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions),
+            extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics442NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, noSubstitutions), 
+            extraAttackNull, tacticId442).should.be.fulfilled;
+        teamStateAll50Half1 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
+        teamStateAll1Half1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
+        teamStateAll50Half2 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2, aligned = [true, false]).should.be.fulfilled;
+        teamStateAll1Half2 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2, aligned = [true, false]).should.be.fulfilled;
+        MAX_RND = await engine.MAX_RND().should.be.fulfilled;
+        MAX_RND = MAX_RND.toNumber();
+        kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
+        events1Half = Array.from(new Array(7), (x,i) => 0);
+        events1Half = [events1Half,events1Half];
+    });
+  
     it('test from real usage with wrong TPs', async () => {
         utils = await Utils.new().should.be.fulfilled;
         const m = {seed: '0xde9bb65e19116c116d90dbc47f0768b48d59d6fbb3d59c14aeaaa16dbfe741c8',startTime: '1584561605',homeTeam: {matchLog: '1813669955609432960456902410271639858111608102732060412172363805284857020465',teamId: '2748779069444',tactic: '232408266530362452830574477312',training: {specialPlayerShirt: '2',goalkeepersDefence: '7',goalkeepersSpeed: '7',goalkeepersPass: '7',goalkeepersShoot: '18',goalkeepersEndurance: '7',defendersDefence: '17',defendersSpeed: '9',defendersPass: '10',defendersShoot: '1',defendersEndurance: '9',midfieldersDefence: '8',midfieldersSpeed: '7',midfieldersPass: '16',midfieldersShoot: '8',midfieldersEndurance: '7',attackersDefence: '6',attackersSpeed: '7',attackersPass: '7',attackersShoot: '19',attackersEndurance: '7',specialPlayerDefence: '6',specialPlayerSpeed: '7',specialPlayerPass: '8',specialPlayerShoot: '18',specialPlayerEndurance: '7',},players: ['14612116925414264039006259820021938440926764999246740','14615018517882840393082285187396688242385939889587061','14606248083598755419429588575186064071903927308453288','14615041273702620631221112938462187826692729468289629','14615018885148237881383722578101816985097908308542326','14615040296651221620598345541814670397798203019559648','14609195713168200990160998605534315952458229950776041','14609194464326469872446182541170637213109379453682525','14609172889052388581522454130189844252270960416129838','14612117216020849907359155524616944456014451713705251','14606272744738453557029007322175197373200380973417328','14156128991598804340507454847183603030029701459870564','14615041674419135917318960788834448296248855585882997','14606272579573559430411817680184408329000805937709911','14226259653112517641734269893597994955086218517874078','14615041210284876472900604249447759739107818137585327','14360716818332782250137257356822881879680062124721428','14170722320497407798658961929466794521743345408083452','0','0','0','0','0','0','0',],},visitorTeam: {matchLog: '1826921310194728590591745137873553598950309165842763324864192017878004793344',teamId: '2748779069456',tactic: '232408266302079135077072109569',training: {specialPlayerShirt: '25',goalkeepersDefence: '0',goalkeepersSpeed: '0',goalkeepersPass: '0',goalkeepersShoot: '0',goalkeepersEndurance: '0',defendersDefence: '0',defendersSpeed: '0',defendersPass: '0',defendersShoot: '0',defendersEndurance: '0',midfieldersDefence: '0',midfieldersSpeed: '0',midfieldersPass: '0',midfieldersShoot: '0',midfieldersEndurance: '0',attackersDefence: '0',attackersSpeed: '0',attackersPass: '0',attackersShoot: '0',attackersEndurance: '0',specialPlayerDefence: '0',specialPlayerSpeed: '0',specialPlayerPass: '0',specialPlayerShoot: '0',specialPlayerEndurance: '0',},players: ['14612116920535976026844799462581639683369679317436032','14609172508545923631610255145763459444678019830776771','14609171084782722362920862989287857719959332913481299','14603349977712311198142947713368876176608243773276876','14372430040137011563575738961534875797419547711373974','14606270573900288137580377972564619267005209781535671','14603348280764981247453580826793315643950344031961796','14603349528909814077714473838533687184345498680885830','14612118460681191300366593901052115769072662616343473','14615041821464674570147132595182346690573257038169264','14606271852708645615821195169916683528593382968853386','14606270336954870403192982683953411631766633996157735','14609194600918534213463758525648968699663940852646984','14150260430633305564942932076595900865038660788552854','14615019087945639530539482090752560590899391798707572','14612095367562639934452803937469415500402399650907525','14612094389117444348921792324221429424304893867853225','14606247669641172671723198605250492952087284368605814','0','0','0','0','0','0','0',],},};        
@@ -299,12 +299,12 @@ contract('Evolution', (accounts) => {
         TP1 = await encodeLog.getTrainingPoints(m.visitorTeam.matchLog).should.be.fulfilled;
         TP0 = TP0.toNumber();
         TP1 = TP1.toNumber();
-        ok = checkTPAssigment(TP0, getarray(m.homeTeam.training), verb = false);
+        ok = checkTPAssigment(TP0, parseLog(m.homeTeam.training), verb = false);
         ok.should.be.equal(false);
-        ok = checkTPAssigment(TP1, getarray(m.visitorTeam.training), verb = false);
+        ok = checkTPAssigment(TP1, parseLog(m.visitorTeam.training), verb = false);
         ok.should.be.equal(true);
-        assignedTP0 = await training.encodeTP(TP0, getarray(m.homeTeam.training), parseInt(m.homeTeam.training.specialPlayerShirt)).should.be.rejected;
-        assignedTP1 = await training.encodeTP(TP1, getarray(m.visitorTeam.training), parseInt(m.visitorTeam.training.specialPlayerShirt)).should.be.fulfilled;
+        assignedTP0 = await training.encodeTP(TP0, parseLog(m.homeTeam.training), parseInt(m.homeTeam.training.specialPlayerShirt)).should.be.rejected;
+        assignedTP1 = await training.encodeTP(TP1, parseLog(m.visitorTeam.training), parseInt(m.visitorTeam.training.specialPlayerShirt)).should.be.fulfilled;
         // var {0: skills, 1: matchLogsAndEvents} =  await play.play1stHalfAndEvolve(
         //     m.seed, m.startTime, [m.homeTeam.players, m.visitorTeam.players], [m.homeTeam.teamId, m.visitorTeam.teamId], 
         //     [m.homeTeam.tactic, m.visitorTeam.tactic], [m.homeTeam.matchLog, m.visitorTeam.matchLog],
@@ -313,8 +313,6 @@ contract('Evolution', (accounts) => {
         // ).should.be.fulfilled;
     });
 
-    return
-    
     it('test that used to fail because yellow cards reamined 0 when truned into a red -serious', async () => {
         utils = await Utils.new().should.be.fulfilled;
         seed = '0xe52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71';startTime = '1790899200';matchLog0 = '0';teamId0 = '274877906944';tactic0 = '340596594427581673436941882753025';assignedTP0 = '0';players0 = ['14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247',];matchLog1 = '0';teamId1 = '274877906945';tactic1 = '340596594427581673436941882753025';assignedTP1 = '0';players1 = ['16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614',];
