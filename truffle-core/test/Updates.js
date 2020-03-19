@@ -207,37 +207,9 @@ contract('Updates', (accounts) => {
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
 
-// 
-        nChallenges = 3;
-        levelsPerRoot = 4;
-        nLeafsPerRoot = 2**levelsPerRoot;
-        nTotalLeafs = nLeafsPerRoot**nChallenges;
         leafs = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
-        console.log("Total leafs: ", nTotalLeafs);
-
-        rootsPerLevel = [];
-        leafsAtThisLevel = [...leafs];
-
-        for (ch = 0; ch < nChallenges - 1; ch++) {
-            rootsAtThisLevel = [];
-            assert.equal(leafsAtThisLevel.length % nLeafsPerRoot, 0, "wrong number of leafs");
-            nRootsToCompute = leafsAtThisLevel.length/nLeafsPerRoot;
-            console.log("new level: ", ch, nLeafsPerRoot)
-            for (n = 0; n < nRootsToCompute; n++) {
-                left = n * nLeafsPerRoot;
-                right = (n+1)*nLeafsPerRoot
-                thisRoot = merkleUtils.merkleRoot(leafsAtThisLevel.slice(left, right), levelsPerRoot);
-                rootsAtThisLevel.push(thisRoot)
-            }
-            leafsAtThisLevel = [...rootsAtThisLevel];
-            rootsPerLevel.push([...rootsAtThisLevel]);
-        }
-        assert.equal(
-            merkleUtils.merkleRoot(leafsAtThisLevel, levelsPerRoot),
-            merkleUtils.merkleRoot(leafs, nLev = Math.log2(nTotalLeafs)),
-            "the merkle struct built does not have a correct merkle root"
-        )
-        console.log(rootsPerLevel)
+        merkleStruct = buildMerkleStruct(leafs, nLeafsPerRoot = 16);
+        console.log(merkleStruct)
         // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
     });
     

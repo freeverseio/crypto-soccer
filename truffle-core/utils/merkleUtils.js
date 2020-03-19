@@ -50,11 +50,47 @@ function buildProof(leafPos, leafs, nLevels) {
   return proof;
 }
 
+function getBaseLog(base, x) {
+  return Math.log(x) / Math.log(base);
+}
 
+function buildMerkleStruct(leafs, nLeafsPerRoot) {
+  levelsPerRoot = Math.floor(Math.log2(nLeafsPerRoot));
+  assert.equal(nLeafsPerRoot, 2**levelsPerRoot, "nLeafsPerRoot must be a power of 2");
+  
+  nTotalLeafs = leafs.length;
+  nChallenges = getBaseLog(nLeafsPerRoot, nTotalLeafs);
+  assert.equal(nTotalLeafs, nLeafsPerRoot**nChallenges, "nTotalLeafs should be a power of nLeafsPerRoot");
+  
 
+  rootsPerLevel = [];
+  leafsAtThisLevel = [...leafs];
+
+  for (ch = 0; ch < nChallenges - 1; ch++) {
+      rootsAtThisLevel = [];
+      assert.equal(leafsAtThisLevel.length % nLeafsPerRoot, 0, "wrong number of leafs");
+      nRootsToCompute = leafsAtThisLevel.length/nLeafsPerRoot;
+      console.log("new level: ", ch, nLeafsPerRoot)
+      for (n = 0; n < nRootsToCompute; n++) {
+          left = n * nLeafsPerRoot;
+          right = (n+1)*nLeafsPerRoot
+          thisRoot = merkleRoot(leafsAtThisLevel.slice(left, right), levelsPerRoot);
+          rootsAtThisLevel.push(thisRoot)
+      }
+      leafsAtThisLevel = [...rootsAtThisLevel];
+      rootsPerLevel.push([...rootsAtThisLevel]);
+  }
+  assert.equal(
+      merkleRoot(leafsAtThisLevel, levelsPerRoot),
+      merkleRoot(leafs, nLev = Math.log2(nTotalLeafs)),
+      "the merkle struct built does not have a correct merkle root"
+  );
+}
+  
   module.exports = {
     hash_node,
     merkleRoot,
     verify,
-    buildProof
+    buildProof,
+    buildMerkleStruct
   }
