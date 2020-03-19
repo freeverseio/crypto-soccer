@@ -66,6 +66,11 @@ contract('Assets', (accounts) => {
         proof = await merkle.buildProof(leafPos, leafs, nLevels).should.be.fulfilled; 
         ok = await merkle.verify(root, proof, leafs[leafPos], leafPos).should.be.fulfilled;
         ok.should.be.equal(true);
+        proofJS = merkleUtils.buildProof(leafPos, leafs, nLevels); 
+        ok = await merkle.verify(root, proofJS, leafs[leafPos], leafPos).should.be.fulfilled;
+        ok.should.be.equal(true);
+        ok = merkleUtils.verify(root, proofJS, leafs[leafPos], leafPos);
+        ok.should.be.equal(true);
     });
 
 });
