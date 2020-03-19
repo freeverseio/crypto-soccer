@@ -10,9 +10,9 @@ type Training struct {
 	storage.Training
 }
 
-func NewTraining() *Training {
+func NewTraining(sto storage.Training) *Training {
 	training := Training{}
-	training.Training = *(storage.NewTraining())
+	training.Training = sto
 	return &training
 }
 

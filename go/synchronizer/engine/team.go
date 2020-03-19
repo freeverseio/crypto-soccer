@@ -22,7 +22,7 @@ func NewTeam() *Team {
 	for i := range team.Players {
 		team.Players[i] = NewPlayer()
 	}
-	team.Training = *NewTraining()
+	team.Training = *NewTraining(*storage.NewTraining())
 	return &team
 }
 

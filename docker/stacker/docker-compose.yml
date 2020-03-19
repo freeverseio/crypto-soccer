@@ -2,19 +2,22 @@ version: '3'
 services:
   ethereum: 
     image: parity/parity:v2.7.2-stable
-    command: --chain xdai
+    command: --chain xdai --jsonrpc-interface all
     ports: 
       - "30303:30303"
       - "30303:30303/udp"
     volumes:
       - ethereum-data:/home/parity
   universe.db:
-    image: freeverseio/universe.db:$TAG
+    build: 
+      context: ../../universe.db/
     restart: always
     volumes:
       - universe.db-data:/var/lib/postgresql/data
   synchronizer:
-    image: freeverseio/synchronizer:$TAG
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.synchronizer
     restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
