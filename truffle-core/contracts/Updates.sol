@@ -85,7 +85,6 @@ contract Updates is UpdatesView, Merkle {
         }
         uint8 newIdx = newestRootsIdx[tz];
         _roots[tz][newIdx][level + 1] = root;
-        if (level > 0) require(false,'---');
         challengeLevel[tz][newIdx] = level + 1;
         emit ChallengeTZ(root, providedRoots);
     }
@@ -93,8 +92,8 @@ contract Updates is UpdatesView, Merkle {
     function _setTZRoot(uint8 tz, bytes32 root) internal {
         uint8 newIdx = 1 - newestRootsIdx[tz];
         newestRootsIdx[tz] = newIdx;
-        _roots[tz][newIdx] = new bytes32[](MAX_CHALLENGE_LEVELS);
         _roots[tz][newIdx][0] = root;
+        for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][newIdx][level] = 0;
         lastUpdateTime[tz] = now;
     }
 
