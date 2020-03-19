@@ -67,4 +67,5 @@ contract Constants {
     uint8 constant internal NULL_TIMEZONE = 0;
     uint8 constant internal CHALLENGE_TIME = 60; // in secs
     uint8 constant internal MAX_CHALLENGE_LEVELS = 6;
+    uint16 constant internal LEVELS_IN_ONE_CHALLENGE = 6; // so every level provides 2**10 = 1024 leafs
 }

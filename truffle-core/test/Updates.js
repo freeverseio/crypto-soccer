@@ -12,6 +12,7 @@ const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
+const Merkle = artifacts.require('Merkle');
 
 
 
@@ -40,6 +41,7 @@ contract('Updates', (accounts) => {
     
     beforeEach(async () => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
+        merkle = await Merkle.new().should.be.fulfilled;
         proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
         updates = depl[2];
@@ -54,11 +56,11 @@ contract('Updates', (accounts) => {
 
     });
 
-    it('test that cannot initialize updates twice', async () =>  {
+    it2('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
     });
     
-    it('check timezones for this verse', async () =>  {
+    it2('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
@@ -75,7 +77,7 @@ contract('Updates', (accounts) => {
         result.should.be.equal(expected);
     });
     
-    it('require that BC and local time are less than 15 sec out of sync', async () =>  {
+    it2('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await updates.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
         // the substraction is in miliseconds:
@@ -95,7 +97,7 @@ contract('Updates', (accounts) => {
         (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 20*1000).should.be.equal(true);
     });
     
-    it('check BC is set up in agreement with the local time', async () =>  {
+    it2('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
         localTimeMs = Date.now();
@@ -115,7 +117,7 @@ contract('Updates', (accounts) => {
         timeZoneForRound1.toNumber().should.be.equal(expectedHour);
     });
     
-    it('wait some minutes', async () =>  {
+    it2('wait some minutes', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
         extraTime = 3*60
@@ -130,11 +132,11 @@ contract('Updates', (accounts) => {
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    // it('submitActions to timezone too early', async () =>  {
+    // it2('submitActions to timezone too early', async () =>  {
     //     await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     // });
 
-    it('submitActions to timezone', async () =>  {
+    it2('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verseBefore = await updates.getCurrentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -157,7 +159,7 @@ contract('Updates', (accounts) => {
         // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     });
 
-    it('update Timezone once', async () =>  {
+    it2('update Timezone once', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = -10);
@@ -176,7 +178,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
     });
 
-    it('moveToNextVerse', async () =>  {
+    it2('moveToNextVerse', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
@@ -186,7 +188,7 @@ contract('Updates', (accounts) => {
         
     });
 
-    it('update Timezone many times', async () =>  {
+    it2('update Timezone many times', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -197,8 +199,44 @@ contract('Updates', (accounts) => {
             await moveToNextVerse(updates, extraSecs = 10);
         }
     });
+    
+    it('challenging a tz', async () =>  {
+        await moveToNextVerse(updates, extraSecs = 10);
+        timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        const cif = "ciao3";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
 
-    // it('timeZoneToUpdate selected edge choices', async () =>  {
+// 
+        nChallenges = 2;
+        LEVELS_IN_ONE_CHALLENGE = 6;
+        nLeavesPerChallenge = 2**LEVELS_IN_ONE_CHALLENGE;
+        nTotalLeaves = nLeavesPerChallenge**nChallenges;
+        leafs = Array.from(new Array(nTotalLeaves), (x,i) => web3.utils.keccak256(i.toString()));
+        rootsPerLevel = [];
+        leafsAtThisLevel = [...leafs];
+        console.log("nTotalLeaves - ", nTotalLeaves)
+        for (ch = 0; ch < nChallenges; ch++) {
+            rootsAtThisLevel = [];
+            nLeavesInThisLevel = (ch == nChallenges-1) ? 1 : nLeavesPerChallenge;
+            for (n = 0; n < nLeavesInThisLevel; n++) {
+                console.log(n)
+                left = n * nLeavesPerChallenge;
+                right = (n+1)*nLeavesPerChallenge
+                thisRoot = await merkle.merkleRoot(leafsAtThisLevel.slice(left, right), LEVELS_IN_ONE_CHALLENGE).should.be.fulfilled;
+                rootsAtThisLevel.push(thisRoot)
+            }
+            console.log("rootsAtThisLevel", ch);
+            console.log(rootsAtThisLevel)
+            leafsAtThisLevel = [...rootsAtThisLevel];
+            rootsPerLevel.push([...rootsAtThisLevel]);
+            console.log("HEEEEE: ", leafsAtThisLevel.length)
+        }
+        // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
+    });
+    
+    
+
+    // it2('timeZoneToUpdate selected edge choices', async () =>  {
     //     result = await updates._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
     //     result.timeZone.toNumber().should.be.equal(1)
     //     result.day.toNumber().should.be.equal(0);

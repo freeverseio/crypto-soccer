@@ -77,13 +77,13 @@ contract UpdatesView is Storage, AssetsLib {
     function getCurrentVerse() public view returns (uint256) { return currentVerse; }
     function getCurrentVerseSeed() public view returns (bytes32) { return currentVerseSeed; }
 
-    // function getTimeZonesPlayingInNextRound() public view returns (uint8[] memory) {
-    //     // morning 11am - evening 20 pm
-    //     // so if the first match is in the morning => 11am, then the next one is at +9h
-    //     uint8[] memory tzs = new uint8[](2);
-    //     (tzs[0], , ) = nextTimeZoneToUpdate();
-    //     tzs[1] = normalizeTZ(tzs[0] - 9);
-    //     return tzs; 
-    // }
+    function getRoot(uint8 tz, uint8 level, bool current) public view returns(bytes32) { 
+        return (current) ? _roots[tz][newestRootsIdx[tz]][level] : _roots[tz][1-newestRootsIdx[tz]][level];
+    }
+
+    function getChallengeLevel(uint8 tz, bool current) public view returns(uint8) { 
+        return (current) ? challengeLevel[tz][newestRootsIdx[tz]] : challengeLevel[tz][1-newestRootsIdx[tz]];
+    }
+
 
 }

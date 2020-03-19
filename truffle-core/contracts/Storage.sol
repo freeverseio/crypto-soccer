@@ -38,9 +38,10 @@ contract Storage is ProxyStorage, Constants{
 
 
     mapping (uint256 => bytes32[2]) orgMapRoot;
-    mapping (uint256 => bytes32[2][MAX_CHALLENGE_LEVELS]) roots;
+    mapping (uint256 => bytes32[2][MAX_CHALLENGE_LEVELS]) _roots;
+    mapping (uint256 => uint8[2]) challengeLevel;
     mapping (uint256 => uint8) newestOrgMapIdx;
-    mapping (uint256 => uint8) newestSkillsIdx;
+    mapping (uint256 => uint8) newestRootsIdx;
     mapping (uint256 => uint8) updateCycleIdx;
     mapping (uint256 => uint256) lastActionsSubmissionTime;
     mapping (uint256 => uint256) lastUpdateTime;

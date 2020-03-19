@@ -1,14 +1,16 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
 import "./UpdatesView.sol";
+import "./Merkle.sol";
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
  */
 
-contract Updates is UpdatesView {
+contract Updates is UpdatesView, Merkle {
     event TeamTransfer(uint256 teamId, address to);
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
+    event ChallengeTZ(bytes32 root, bytes32[] providedRoots);
 
     function initUpdates() public {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
@@ -67,13 +69,27 @@ contract Updates is UpdatesView {
         _setTZRoot(tz, root); // first time that we update this TZ
         emit TimeZoneUpdate(tz, root, now);
     }
-    
-    
-    
-    function _setTZRoot(uint8 tz, bytes32 root) internal returns(uint256) {
-        uint8 newIdx = 1 - newestSkillsIdx[tz];
-        newestSkillsIdx[tz] = newIdx;
-        roots[tz][newIdx][0] = root;
+
+    // TODO: specify which leaf you challenge!!! And bring Merkle proof!
+    function challengeTZ(bytes32 wrongLeaveVal, uint256 wrongLeavePos, bytes32[] memory proofWrongLeave, bytes32[] memory providedRoots) public {
+        (uint8 tz,,) = prevTimeZoneToUpdate();
+        require(tz != NULL_TIMEZONE, "cannot challenge the null timezone");
+        require(now < getLastUpdateTime(tz) + CHALLENGE_TIME, "challenging time is over for the current timezone");
+        bytes32 root = merkleRoot(providedRoots, LEVELS_IN_ONE_CHALLENGE);
+        uint8 level = getChallengeLevel(tz, true);
+        if (level == 0) require(root != getRoot(tz, 0, true), "provided leafs lead to same root being challenged");
+        else {
+            require(verify(getRoot(tz, level-1, true), proofWrongLeave, wrongLeaveVal, wrongLeavePos),"merkle proof not correct");
+        }
+        _roots[tz][newestRootsIdx[tz]][level + 1] = root;
+        challengeLevel[tz][newestRootsIdx[tz]] = level + 1;
+        emit ChallengeTZ(root, providedRoots);
+    }
+       
+    function _setTZRoot(uint8 tz, bytes32 root) internal {
+        uint8 newIdx = 1 - newestRootsIdx[tz];
+        newestRootsIdx[tz] = newIdx;
+        _roots[tz][newIdx][0] = root;
         lastUpdateTime[tz] = now;
     }
 
