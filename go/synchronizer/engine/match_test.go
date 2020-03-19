@@ -283,3 +283,11 @@ func TestMatchHash(t *testing.T) {
 	fmt.Sprintf("%x", m.Hash())
 	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "df4cade399310b67143e7ca5792dab7f8ed048b8bcb6478d70b9010f819a4e24")
 }
+
+func TestMatchError(t *testing.T) {
+	t.Parallel()
+	input := golden.Get(t, t.Name()+"/input/24f74a2696ab9c5ae2efe5edb7525a99443c0293d8b0b132a362d9717cf6fc3a.error.json")
+	match, err := engine.NewMatchFromJson(input)
+	assert.NilError(t, err)
+	assert.Error(t, match.Play1stHalf(*bc.Contracts), "VM execution error.")
+}
