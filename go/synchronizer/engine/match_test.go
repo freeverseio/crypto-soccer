@@ -286,8 +286,18 @@ func TestMatchHash(t *testing.T) {
 
 func TestMatchError(t *testing.T) {
 	t.Parallel()
-	input := golden.Get(t, t.Name()+"/input/24f74a2696ab9c5ae2efe5edb7525a99443c0293d8b0b132a362d9717cf6fc3a.error.json")
-	match, err := engine.NewMatchFromJson(input)
-	assert.NilError(t, err)
-	assert.Error(t, match.Play1stHalf(*bc.Contracts), "VM execution error.")
+	cases := []struct {
+		File   string
+		Output string
+	}{
+		{"/input/24f74a2696ab9c5ae2efe5edb7525a99443c0293d8b0b132a362d9717cf6fc3a.error.json", "VM execution error."},
+	}
+	for _, tc := range cases {
+		t.Run(tc.File, func(t *testing.T) {
+			input := golden.Get(t, t.Name())
+			match, err := engine.NewMatchFromJson(input)
+			assert.NilError(t, err)
+			assert.Error(t, match.Play1stHalf(*bc.Contracts), tc.Output)
+		})
+	}
 }
