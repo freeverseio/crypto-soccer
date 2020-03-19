@@ -6,6 +6,7 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const timeTravel = require('../utils/TimeTravel.js');
 const delegateUtils = require('../utils/delegateCallUtils.js');
+const merkleUtils = require('../utils/merkleUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -207,62 +208,40 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
 
 // 
-        nChallenges = 2;
-        LEVELS_IN_ONE_CHALLENGE = 6;
-        nLeavesPerChallenge = 2**LEVELS_IN_ONE_CHALLENGE;
-        nTotalLeaves = nLeavesPerChallenge**nChallenges;
-        leafs = Array.from(new Array(nTotalLeaves), (x,i) => web3.utils.keccak256(i.toString()));
+        nChallenges = 3;
+        levelsPerRoot = 4;
+        nLeafsPerRoot = 2**levelsPerRoot;
+        nTotalLeafs = nLeafsPerRoot**nChallenges;
+        leafs = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
+        console.log("Total leafs: ", nTotalLeafs);
+
         rootsPerLevel = [];
         leafsAtThisLevel = [...leafs];
-        console.log("nTotalLeaves - ", nTotalLeaves)
-        for (ch = 0; ch < nChallenges; ch++) {
+
+        for (ch = 0; ch < nChallenges - 1; ch++) {
             rootsAtThisLevel = [];
-            nLeavesInThisLevel = (ch == nChallenges-1) ? 1 : nLeavesPerChallenge;
-            for (n = 0; n < nLeavesInThisLevel; n++) {
-                console.log(n)
-                left = n * nLeavesPerChallenge;
-                right = (n+1)*nLeavesPerChallenge
-                thisRoot = await merkle.merkleRoot(leafsAtThisLevel.slice(left, right), LEVELS_IN_ONE_CHALLENGE).should.be.fulfilled;
+            assert.equal(leafsAtThisLevel.length % nLeafsPerRoot, 0, "wrong number of leafs");
+            nRootsToCompute = leafsAtThisLevel.length/nLeafsPerRoot;
+            console.log("new level: ", ch, nLeafsPerRoot)
+            for (n = 0; n < nRootsToCompute; n++) {
+                left = n * nLeafsPerRoot;
+                right = (n+1)*nLeafsPerRoot
+                thisRoot = merkleUtils.merkleRoot(leafsAtThisLevel.slice(left, right), levelsPerRoot);
                 rootsAtThisLevel.push(thisRoot)
             }
-            console.log("rootsAtThisLevel", ch);
-            console.log(rootsAtThisLevel)
             leafsAtThisLevel = [...rootsAtThisLevel];
             rootsPerLevel.push([...rootsAtThisLevel]);
-            console.log("HEEEEE: ", leafsAtThisLevel.length)
         }
+        assert.equal(
+            merkleUtils.merkleRoot(leafsAtThisLevel, levelsPerRoot),
+            merkleUtils.merkleRoot(leafs, nLev = Math.log2(nTotalLeafs)),
+            "the merkle struct built does not have a correct merkle root"
+        )
+        console.log(rootsPerLevel)
         // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
     });
     
     
-
-    // it2('timeZoneToUpdate selected edge choices', async () =>  {
-    //     result = await updates._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
-    //     result.timeZone.toNumber().should.be.equal(1)
-    //     result.day.toNumber().should.be.equal(0);
-    //     result.turnInDay.toNumber().should.be.equal(0);
-    //     result = await updates._timeZoneToUpdatePure.call(verse = 3, TZ1 = 1).should.be.fulfilled;
-    //     result.timeZone.toNumber().should.be.equal(1)
-    //     result.day.toNumber().should.be.equal(0);
-    //     result = await updates._timeZoneToUpdatePure.call(verse = 4, TZ1 = 1).should.be.fulfilled;
-    //     result.timeZone.toNumber().should.be.equal(2)
-    //     result.day.toNumber().should.be.equal(0);
-    //     result.turnInDay.toNumber().should.be.equal(0);
-    //     result = await updates._timeZoneToUpdatePure.call(verse = 95, TZ1 = 4).should.be.fulfilled;
-    //     result.timeZone.toNumber().should.be.equal(3);
-    //     result.day.toNumber().should.be.equal(0);
-    //     result.turnInDay.toNumber().should.be.equal(3);
-    //     result = await updates._timeZoneToUpdatePure.call(verse = 96, TZ1 = 2).should.be.fulfilled;
-    //     result.timeZone.toNumber().should.be.equal(2);
-    //     result = await updates._timeZoneToUpdatePure.call(verse = 97, TZ1 = 24).should.be.fulfilled;
-    //     result.timeZone.toNumber().should.be.equal(24);
-    //     result.day.toNumber().should.be.equal(1);
-    //     result.turnInDay.toNumber().should.be.equal(1);
-    //     result = await updates._timeZoneToUpdatePure.call(verse = 1343, TZ1 = 24).should.be.fulfilled;
-    //     result.timeZone.toNumber().should.be.equal(23);
-    //     result.day.toNumber().should.be.equal(13);
-    //     result.turnInDay.toNumber().should.be.equal(3);
-    // });
 
 
 });
