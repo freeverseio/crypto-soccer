@@ -167,3 +167,19 @@ CREATE TABLE trainings_histories (
     PRIMARY KEY (block_number, team_id)
 );
 comment on table trainings_histories is E'@omit create,update,delete';
+
+CREATE TABLE teams_props (
+    team_id TEXT NOT NULL REFERENCES teams(team_id),
+    name TEXT NOT NULL,
+    PRIMARY KEY (team_id)
+);
+comment on table teams_props is E'@omit create,delete';
+comment on column teams_props.team_id is E'@omit update';
+
+CREATE TABLE teams_props_histories (
+    block_number BIGINT NOT NULL,
+    team_id TEXT NOT NULL REFERENCES teams(team_id),
+    name TEXT NOT NULL,
+    PRIMARY KEY (block_number, team_id)
+);
+comment on table teams_props_histories is E'@omit create,update,delete'
