@@ -210,10 +210,10 @@ func (b *Matches) SetTrainings(contracts contracts.Contracts, trainings []sto.Tr
 	for _, training := range trainings {
 		for i := range *b {
 			if training.TeamID == (*b)[i].HomeTeam.TeamID {
-				(*b)[i].HomeTeam.Training = training
+				(*b)[i].HomeTeam.Training = *engine.NewTraining(training)
 			}
 			if training.TeamID == (*b)[i].VisitorTeam.TeamID {
-				(*b)[i].VisitorTeam.Training = training
+				(*b)[i].VisitorTeam.Training = *engine.NewTraining(training)
 			}
 		}
 	}

@@ -565,6 +565,7 @@ Tiredness: (int) 0
 }
 })
 },
+Training: (engine.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -593,6 +594,7 @@ SpecialPlayerSpeed: (int) 0,
 SpecialPlayerPass: (int) 0,
 SpecialPlayerShoot: (int) 0,
 SpecialPlayerEndurance: (int) 0
+}
 }
 },
 VisitorTeam: (engine.Team) {
@@ -1143,6 +1145,7 @@ Tiredness: (int) 0
 }
 })
 },
+Training: (engine.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -1171,6 +1174,7 @@ SpecialPlayerSpeed: (int) 0,
 SpecialPlayerPass: (int) 0,
 SpecialPlayerShoot: (int) 0,
 SpecialPlayerEndurance: (int) 0
+}
 }
 },
 Events: (matchevents.MatchEvents) (len=29 cap=32) {
@@ -2003,6 +2007,7 @@ Tiredness: (int) 0
 }
 })
 },
+Training: (engine.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -2031,6 +2036,7 @@ SpecialPlayerSpeed: (int) 0,
 SpecialPlayerPass: (int) 0,
 SpecialPlayerShoot: (int) 0,
 SpecialPlayerEndurance: (int) 0
+}
 }
 },
 VisitorTeam: (engine.Team) {
@@ -2581,6 +2587,7 @@ Tiredness: (int) 0
 }
 })
 },
+Training: (engine.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -2609,6 +2616,7 @@ SpecialPlayerSpeed: (int) 0,
 SpecialPlayerPass: (int) 0,
 SpecialPlayerShoot: (int) 0,
 SpecialPlayerEndurance: (int) 0
+}
 }
 },
 Events: (matchevents.MatchEvents) (len=31 cap=32) {
