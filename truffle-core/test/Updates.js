@@ -213,7 +213,10 @@ contract('Updates', (accounts) => {
         leafs = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
         merkleStruct = merkleUtils.buildMerkleStruct(leafs, nLeafsPerRoot);
         console.log(merkleStruct)
-        // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
+        const nullHash = '0x0';
+        await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStruct[1]).should.be.rejected;
+        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
+        await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStruct[1]).should.be.fulfilled;
     });
     
     
