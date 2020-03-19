@@ -81,5 +81,5 @@ contract Updates is UpdatesView {
     function setCurrentVerseSeed(bytes32 seed) public {
         currentVerseSeed = seed;
     }
-
+ 
 }
