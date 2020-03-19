@@ -18,7 +18,8 @@ func NewTraining() *Training {
 
 func (b Training) ToString() string {
 	var result string
-	s, _ := json.MarshalIndent(b, "", "\t")
+	s, _ := json.Marshal(b)
 	result += string(s)
+
 	return result
 }

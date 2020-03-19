@@ -105,6 +105,7 @@ func (b Team) ToJavaScript() string {
 	result += fmt.Sprintf("matchLog: '%v',", b.MatchLog)
 	result += fmt.Sprintf("teamId: '%v',", b.TeamID)
 	result += fmt.Sprintf("tactic: '%v',", b.Tactic)
+	result += fmt.Sprintf("training: %v,", b.Training.ToString())
 	// result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
 	result += "players: ["
 	for _, player := range b.Players {
