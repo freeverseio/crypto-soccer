@@ -212,41 +212,56 @@ contract('Updates', (accounts) => {
         nTotalLeafs = nLeafsPerRoot**3;
         nTotalLevels = Math.log2(nTotalLeafs);
         nLevelsPerRoot = Math.log2(nLeafsPerRoot);
-        leafs = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
-        merkleStruct = merkleUtils.buildMerkleStruct(leafs, nLeafsPerRoot);
+        leafsA = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
+        leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
+        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
+        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
         const nullHash = '0x0';
         // First challenge fails because the TZ has not been updated yet with a root
-        await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStruct[1]).should.be.rejected;
+        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1], forceSuccess = true).should.be.rejected;
 
         // We update with the correct root...
-        await updates.updateTZ(root = merkleUtils.merkleRoot(leafs, nTotalLevels)).should.be.fulfilled;
+        await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
         // ...so that we cannot challenge with the correct set of hashes
-        await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStruct[1]).should.be.rejected;
+        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1], forceSuccess).should.be.rejected;
         // ...but we can challenge with one of them being wrong
-        leafsWrong = [...leafs];
         // we will lie in a bottom leave that leads to root 7 in the first level
         // so being at pos = 7, leads to pos 7 * nLeafsPerRoot, which leads at 7*nLeafsPerRoot^2
-        leafsWrong[7 * (nLeafsPerRoot**2) + 1] = web3.utils.keccak256('iAmEvil');
-        merkleStructWrong =  merkleUtils.buildMerkleStruct(leafsWrong, nLeafsPerRoot);
-        assert.notEqual(merkleUtils.merkleRoot(leafsWrong, nTotalLevels), merkleUtils.merkleRoot(leafs, nTotalLevels), "wrong leafs should lead to different root");
-        assert.notEqual(merkleUtils.merkleRoot(merkleStructWrong[1], nLevelsPerRoot), merkleUtils.merkleRoot(merkleStruct[1], nLevelsPerRoot), "wrong leafs should lead to different merkle structs");
+        leafsB[7 * (nLeafsPerRoot**2) + 1] = web3.utils.keccak256('iAmEvil');
+        assert.notEqual(merkleUtils.merkleRoot(leafsB, nTotalLevels), merkleUtils.merkleRoot(leafsA, nTotalLevels), "wrong leafsA should lead to different root");
+        assert.notEqual(merkleUtils.merkleRoot(merkleStructB[1], nLevelsPerRoot), merkleUtils.merkleRoot(merkleStructA[1], nLevelsPerRoot), "wrong leafsA should lead to different merkle structs");
         
-        await updates.challengeTZ(wrongVal = nullHash, wrongPos = 0, proof = [], merkleStructWrong[1]).should.be.fulfilled;
+        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1], forceSuccess).should.be.fulfilled;
         // we can now challenge the challenger :-) with the correct hashes  
         // TODO: test that vals are gotten from events
-        wrongPos = 7;
-        wrongVal = merkleStructWrong[1][wrongPos];
-        proof = merkleUtils.buildProof(wrongPos, merkleStructWrong[1], nLevelsPerRoot);
-        roots2Submit = merkleStruct[2].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
-        wrongRoot = merkleUtils.merkleRoot(merkleStructWrong[1], nLevelsPerRoot);
-        assert.equal(merkleUtils.verify(wrongRoot, proof, wrongVal, wrongPos), true, "proof not working");
+        newChallengePos = 7;
+        challengePos = [];
+        challengePos.push(newChallengePos);
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
+
         // as always, first check that we cannot submit roots that coinicide with previous:
-        roots2SubmitWrong = merkleStructWrong[2].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
-        assert.equal(merkleUtils.merkleRoot(roots2SubmitWrong, nLevelsPerRoot), wrongVal, "wrong choice of slice");
-        assert.notEqual(merkleUtils.merkleRoot(roots2SubmitWrong, nLevelsPerRoot), merkleUtils.merkleRoot(roots2Submit, nLevelsPerRoot), "wrong choice of slice");
-        await updates.challengeTZ(wrongVal, wrongPos, proof, roots2SubmitWrong).should.be.rejected;
+        assert.notEqual(merkleUtils.merkleRoot(roots2SubmitB, nLevelsPerRoot), merkleUtils.merkleRoot(roots2SubmitA, nLevelsPerRoot), "wrong choice of slice");
+        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitB, forceSuccess).should.be.rejected;
         // but we can with differing ones:
-        await updates.challengeTZ(wrongVal, wrongPos, proof, roots2Submit).should.be.fulfilled;
+        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA, forceSuccess).should.be.fulfilled;
+
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(timeZoneToUpdateBefore[0], current = true).should.be.fulfilled; 
+        // finally, the last challenge, is one that the BC can check
+        console.log(idx.toNumber(), lev.toNumber(), maxLev.toNumber(), merkleStructA.length)
+        newChallengePos = 3;
+        challengePos.push(newChallengePos);
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
+        console.log(challValA, challengePos)
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
+        console.log(challValB, challengePos)
+        // I cannot submit roots that are compatible with the previous
+        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitA, forceSuccess).should.be.rejected;
+        // but I can submit different ones. In this case the BC decides according to forceSuccess
+        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = false).should.be.rejected;
+        console.log("---")
+        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;
+        console.log("---")
     });
 
 });

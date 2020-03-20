@@ -27,6 +27,7 @@ function verify(root, proof, leafHash, leafPos) {
   return root == leafHash;   
 }
 
+// proof that leafs[leafPos] is the correct leaf in its MerkleTree
 function buildProof(leafPos, leafs, nLevels) {
   _leafs = [...leafs];
   nLeafs = 2**nLevels;
@@ -99,10 +100,56 @@ function buildMerkleStruct(leafs, nLeafsPerRoot) {
   return revertArray(rootsPerLevel);
 }
   
+function getRootsBelowRootAtLevel(merkleStruct, level, pos, nLeafsPerRoot) {
+  // previous level had nLeafsPerRoot^(level) roots, and pos is one idx in this range.
+  // this level has nLeafsPerRoot^(level+1) roots
+  left = pos * nLeafsPerRoot;
+  right = (pos+1) * nLeafsPerRoot;
+  console.log(left,right)
+  return merkleStruct[level + 1].slice(left,right);
+}
+
+//                      .
+//     .        o        .        .  (ch = 7, provided ..x.)
+//  . . . .  . . x .  . . . .  . . . . (comes from 7) (ch = 3)
+//  .... .... .... ....    .... .... ....
+function getDataToChallenge(posArray, merkleStruct, nLeafsPerRoot) {
+  // first it returns the proof needed to verify that 
+  // merkleStruct[level][pos] was part of the previous commit
+  // then it provides de leafs that form merkleStruct[level][pos]
+  // only works for level > 0
+  // build posInLevels = [0, pos0, pos0*nLevels + pos1, ...]
+  const level = posArray.length;
+  posInLevels = [];
+  posInLevels = [0];
+  for (l = 0; l < level; l++) {
+    posInLevels.push(posInLevels[l] * nLeafsPerRoot + posArray[l]);
+  }
+  console.log(level, posInLevels, posInLevels[level], posArray)
+  // 2 [ 0, 7, 31 ] 31 [ 7, 3 ]
+  root = merkleStruct[level][posInLevels[level]];  // . . X .
+  rootsSubmitted = getRootsBelowRootAtLevel(merkleStruct, level-1, posInLevels[level-1], nLeafsPerRoot);
+  assert.equal(rootsSubmitted[posArray[level-1]], root, "wrong slice submitted");
+  proof = buildProof(posArray[level-1], rootsSubmitted, nLevelsPerRoot);
+  
+  rootFromStruct = merkleRoot(rootsSubmitted, nLevelsPerRoot);
+  console.log(rootFromStruct, root, posInLevels[level], proof)
+  assert.equal(verify(rootFromStruct, proof, root, posArray[level-1]), true, "proof not working");
+  console.log("......")
+  // done with checks
+  roots2submit = getRootsBelowRootAtLevel(merkleStruct, level, posInLevels[level], nLeafsPerRoot);
+  // double check proof before returning:
+  assert.equal(merkleRoot(roots2submit, nLevelsPerRoot), root, "wrong choice of slice");
+  return [root, proof, roots2submit];
+}
+
+
   module.exports = {
     hash_node,
     merkleRoot,
     verify,
     buildProof,
-    buildMerkleStruct
+    buildMerkleStruct,
+    getRootsBelowRootAtLevel,
+    getDataToChallenge
   }

@@ -81,9 +81,9 @@ contract UpdatesView is Storage, AssetsLib {
         return (current) ? _roots[tz][newestRootsIdx[tz]][level] : _roots[tz][1-newestRootsIdx[tz]][level];
     }
 
-    function getChallengeLevel(uint8 tz, bool current) public view returns(uint8) { 
-        return (current) ? challengeLevel[tz][newestRootsIdx[tz]] : challengeLevel[tz][1-newestRootsIdx[tz]];
+    function getChallengeData(uint8 tz, bool current) public view returns(uint8, uint8, uint8) { 
+        uint8 idx = current ? newestRootsIdx[tz] : 1 - newestRootsIdx[tz];
+        return (idx, challengeLevel[tz][idx], levelVerifiableByBC[tz][idx]);
     }
-
 
 }

@@ -10,7 +10,8 @@ contract Updates is UpdatesView, Merkle {
     event TeamTransfer(uint256 teamId, address to);
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
-    event ChallengeTZ(bytes32 root, bytes32[] providedRoots);
+    event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
+    event ChallengeResolved(uint8 tz, uint8 resolvedLevel, bool resolution);
 
     function initUpdates() public {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
@@ -71,29 +72,42 @@ contract Updates is UpdatesView, Merkle {
     }
 
     // TODO: specify which leaf you challenge!!! And bring Merkle proof!
-    function challengeTZ(bytes32 wrongLeaveVal, uint256 wrongLeavePos, bytes32[] memory proofWrongLeave, bytes32[] memory providedRoots) public {
+    function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots, bool forceSuccess) public {
         (uint8 tz,,) = prevTimeZoneToUpdate();
         require(tz != NULL_TIMEZONE, "cannot challenge the null timezone");
         require(now < getLastUpdateTime(tz) + CHALLENGE_TIME, "challenging time is over for the current timezone");
         bytes32 root = merkleRoot(providedRoots, LEVELS_IN_ONE_CHALLENGE);
-        uint8 level = getChallengeLevel(tz, true);
+        (uint8 newIdx, uint8 level, uint8 levelVerifiable) = getChallengeData(tz, true);
+        // verify provided roots are an actual challenge (they lead to a root different from the one provided by previous challenge/update)
         if (level == 0) require(root != getRoot(tz, 0, true), "provided leafs lead to same root being challenged");
         else {
-            require(root != wrongLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
+            require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
             bytes32 prevRoot = getRoot(tz, level, true);
-            require(verify(prevRoot, proofWrongLeave, wrongLeaveVal, wrongLeavePos), "merkle proof not correct");
+            require(verify(prevRoot, proofChallLeave, challLeaveVal, challLeavePos), "merkle proof not correct");
         }
-        uint8 newIdx = newestRootsIdx[tz];
-        _roots[tz][newIdx][level + 1] = root;
-        challengeLevel[tz][newIdx] = level + 1;
-        emit ChallengeTZ(root, providedRoots);
+        // accept the challenge and store new root, or let the BC verify challenge and revert to level - 1
+        if (level < levelVerifiable - 1) {
+           level += 1;
+            _roots[tz][newIdx][level] = root;
+            challengeLevel[tz][newIdx] = level;
+            emit ChallengeAccepted(tz, level, root, providedRoots);
+        } else {
+            // bool success = computeChallenge(challLeaveVal, challLeavePos, providedRoots);
+            bool success = forceSuccess;
+            require(success, "challenge was not successful according to blockchain computation");
+            _roots[tz][newIdx][level] = 0;
+            challengeLevel[tz][newIdx] = level - 1;
+            emit ChallengeResolved(tz, level, true);
+        }
+        lastUpdateTime[tz] = now;
     }
-       
+    
     function _setTZRoot(uint8 tz, bytes32 root) internal {
         uint8 newIdx = 1 - newestRootsIdx[tz];
         newestRootsIdx[tz] = newIdx;
         _roots[tz][newIdx][0] = root;
         for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][newIdx][level] = 0;
+        levelVerifiableByBC[tz][newIdx] = 3;
         lastUpdateTime[tz] = now;
     }
 
