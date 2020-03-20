@@ -69,12 +69,12 @@ module.exports = function (deployer, network, accounts) {
       console.log("WARNING ... only timezone 1")
       await assets.initSingleTZ(1).should.be.fulfilled;
       console.log("Transfer " + value + " to " + to);
-      web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
+      await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
     } else {
       console.log("WARNING ... only timezone 10")
       await assets.initSingleTZ(10).should.be.fulfilled;
       console.log("Transfer " + value + " to " + to);
-      web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
+      await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
     }
     console.log("Initing ... done");
 

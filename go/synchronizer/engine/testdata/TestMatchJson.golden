@@ -43,6 +43,7 @@
 	"HomeGoals": 0,
 	"VisitorGoals": 0,
 	"State": "begin",
+	"StateExtra": "",
 	"StartTime": 1790899200,
 	"HomeTeam": {
 		"TeamID": "0",

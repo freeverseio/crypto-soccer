@@ -125,6 +125,7 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	err := b.play1stHalf(contracts)
 	if err != nil {
 		b.State = storage.MatchCancelled
+		b.StateExtra = err.Error()
 	} else {
 		b.State = storage.MatchHalf
 	}
@@ -194,6 +195,7 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	err := b.play2ndHalf(contracts)
 	if err != nil {
 		b.State = storage.MatchCancelled
+		b.StateExtra = err.Error()
 	} else {
 		b.State = storage.MatchEnd
 	}

@@ -111,6 +111,7 @@ CREATE TABLE matches (
     home_goals INT NOT NULL DEFAULT 0,
     visitor_goals INT NOT NULL DEFAULT 0,
     state match_state NOT NULL,
+    state_extra TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
@@ -129,6 +130,7 @@ CREATE TABLE matches_histories (
     home_goals INT NOT NULL DEFAULT 0,
     visitor_goals INT NOT NULL DEFAULT 0,
     state match_state NOT NULL,
+    state_extra TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(block_number, timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );

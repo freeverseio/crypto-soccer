@@ -30,6 +30,7 @@ type Match struct {
 	HomeGoals     uint8
 	VisitorGoals  uint8
 	State         MatchState
+	StateExtra    string
 }
 
 func NewMatch() *Match {
@@ -42,13 +43,14 @@ func NewMatch() *Match {
 
 func (b *Match) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create Match Day %v", b)
-	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, state) VALUES ($1, $2, $3, $4, $5, $6);",
+	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, state, state_extra) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.LeagueIdx,
 		b.MatchDayIdx,
 		b.MatchIdx,
 		b.State,
+		b.StateExtra,
 	)
 	if err != nil {
 		return err
@@ -57,7 +59,7 @@ func (b *Match) Insert(tx *sql.Tx) error {
 }
 
 func MatchReset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8, matchIdx uint8) error {
-	_, err := tx.Exec("UPDATE matches SET home_team_id = NULL, visitor_team_id = NULL, home_goals = 0, visitor_goals = 0, state = 'begin' WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);",
+	_, err := tx.Exec("UPDATE matches SET home_team_id = NULL, visitor_team_id = NULL, home_goals = 0, visitor_goals = 0, state = 'begin', state_extra='' WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);",
 		timezoneIdx,
 		countryIdx,
 		leagueIdx,
@@ -95,13 +97,15 @@ func (b Match) Update(tx *sql.Tx, blockNumber uint64) error {
 		visitor_goals = $4,
 		state = $5,
 		seed = $6
-		WHERE (timezone_idx = $7 AND country_idx = $8 AND league_idx = $9 AND match_day_idx = $10 AND match_idx = $11);`,
+		state_extra = $7
+		WHERE (timezone_idx = $8 AND country_idx = $9 AND league_idx = $10 AND match_day_idx = $11 AND match_idx = $12);`,
 		b.HomeTeamID.String(),
 		b.VisitorTeamID.String(),
 		b.HomeGoals,
 		b.VisitorGoals,
 		b.State,
 		hex.EncodeToString(b.Seed[:]),
+		b.StateExtra,
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.LeagueIdx,
