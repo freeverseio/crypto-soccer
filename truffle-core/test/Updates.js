@@ -248,20 +248,15 @@ contract('Updates', (accounts) => {
 
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(timeZoneToUpdateBefore[0], current = true).should.be.fulfilled; 
         // finally, the last challenge, is one that the BC can check
-        console.log(idx.toNumber(), lev.toNumber(), maxLev.toNumber(), merkleStructA.length)
         newChallengePos = 3;
         challengePos.push(newChallengePos);
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
-        console.log(challValA, challengePos)
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
-        console.log(challValB, challengePos)
         // I cannot submit roots that are compatible with the previous
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitA, forceSuccess).should.be.rejected;
         // but I can submit different ones. In this case the BC decides according to forceSuccess
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = false).should.be.rejected;
-        console.log("---")
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;
-        console.log("---")
     });
 
 });

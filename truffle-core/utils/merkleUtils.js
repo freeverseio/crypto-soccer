@@ -105,7 +105,6 @@ function getRootsBelowRootAtLevel(merkleStruct, level, pos, nLeafsPerRoot) {
   // this level has nLeafsPerRoot^(level+1) roots
   left = pos * nLeafsPerRoot;
   right = (pos+1) * nLeafsPerRoot;
-  console.log(left,right)
   return merkleStruct[level + 1].slice(left,right);
 }
 
@@ -125,17 +124,13 @@ function getDataToChallenge(posArray, merkleStruct, nLeafsPerRoot) {
   for (l = 0; l < level; l++) {
     posInLevels.push(posInLevels[l] * nLeafsPerRoot + posArray[l]);
   }
-  console.log(level, posInLevels, posInLevels[level], posArray)
-  // 2 [ 0, 7, 31 ] 31 [ 7, 3 ]
   root = merkleStruct[level][posInLevels[level]];  // . . X .
   rootsSubmitted = getRootsBelowRootAtLevel(merkleStruct, level-1, posInLevels[level-1], nLeafsPerRoot);
   assert.equal(rootsSubmitted[posArray[level-1]], root, "wrong slice submitted");
   proof = buildProof(posArray[level-1], rootsSubmitted, nLevelsPerRoot);
   
   rootFromStruct = merkleRoot(rootsSubmitted, nLevelsPerRoot);
-  console.log(rootFromStruct, root, posInLevels[level], proof)
   assert.equal(verify(rootFromStruct, proof, root, posArray[level-1]), true, "proof not working");
-  console.log("......")
   // done with checks
   roots2submit = getRootsBelowRootAtLevel(merkleStruct, level, posInLevels[level], nLeafsPerRoot);
   // double check proof before returning:
