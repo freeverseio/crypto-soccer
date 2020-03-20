@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"gotest.tools/assert"
@@ -300,6 +301,14 @@ func TestMatchError1stHalf(t *testing.T) {
 			input := golden.Get(t, t.Name())
 			match, err := engine.NewMatchFromJson(input)
 			assert.NilError(t, err)
+			matchLog, _ := new(big.Int).SetString(match.HomeTeam.MatchLog, 10)
+			decodedHomeMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, matchLog, true)
+			assert.NilError(t, err)
+			assert.Equal(t, uint32(match.HomeTeam.TrainingPoints), decodedHomeMatchLog[3])
+			matchLog, _ = new(big.Int).SetString(match.VisitorTeam.MatchLog, 10)
+			decodedVisitorMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, matchLog, true)
+			assert.NilError(t, err)
+			assert.Equal(t, uint32(match.VisitorTeam.TrainingPoints), decodedVisitorMatchLog[3])
 			err = match.Play1stHalf(*bc.Contracts)
 			assert.Assert(t, err != nil)
 			assert.Equal(t, err.Error(), tc.Output)
