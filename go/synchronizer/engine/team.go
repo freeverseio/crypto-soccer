@@ -67,6 +67,7 @@ func (b Team) CalculateAssignedTrainingPoints(contracts contracts.Contracts) (*b
 		uint16(b.Training.DefendersDefence),
 		uint16(b.Training.DefendersSpeed),
 		uint16(b.Training.DefendersPass),
+		uint16(b.Training.DefendersShoot),
 		uint16(b.Training.DefendersEndurance),
 		uint16(b.Training.MidfieldersDefence),
 		uint16(b.Training.MidfieldersSpeed),
@@ -76,6 +77,7 @@ func (b Team) CalculateAssignedTrainingPoints(contracts contracts.Contracts) (*b
 		uint16(b.Training.AttackersDefence),
 		uint16(b.Training.AttackersSpeed),
 		uint16(b.Training.AttackersPass),
+		uint16(b.Training.AttackersShoot),
 		uint16(b.Training.AttackersEndurance),
 		uint16(b.Training.SpecialPlayerDefence),
 		uint16(b.Training.SpecialPlayerSpeed),
@@ -105,8 +107,8 @@ func (b Team) ToJavaScript() string {
 	result += fmt.Sprintf("matchLog: '%v',", b.MatchLog)
 	result += fmt.Sprintf("teamId: '%v',", b.TeamID)
 	result += fmt.Sprintf("tactic: '%v',", b.Tactic)
+	result += fmt.Sprintf("trainingPoints: '%v',", b.TrainingPoints)
 	result += fmt.Sprintf("training: %v,", b.Training.Marshal())
-	// result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
 	result += "players: ["
 	for _, player := range b.Players {
 		result += fmt.Sprintf("'%v',", player.EncodedSkills)

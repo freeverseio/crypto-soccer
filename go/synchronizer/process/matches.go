@@ -3,6 +3,8 @@ package process
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"runtime"
@@ -74,7 +76,11 @@ func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.C
 			}
 			for match := range matchesChannel {
 				if err := match.Play1stHalf(*c); err != nil {
-					log.Errorf("%v: %v", err.Error(), match.ToString())
+					filename := fmt.Sprintf("/tmp/%x", match.Hash()) + ".1st.error.json"
+					log.Errorf("play 1st half: %v: saving match state to %v", err.Error(), filename)
+					if err := ioutil.WriteFile(filename, match.ToJson(), 0644); err != nil {
+						return err
+					}
 				}
 			}
 			return nil
@@ -103,7 +109,11 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 			}
 			for match := range matchesChannel {
 				if err := match.Play2ndHalf(*c); err != nil {
-					log.Errorf("%v: %v", err.Error(), match.ToString())
+					filename := fmt.Sprintf("/tmp/%x", match.Hash()) + ".2nd.error.json"
+					log.Errorf("play 2nd half: %v: saving match state to %v", err.Error(), filename)
+					if err := ioutil.WriteFile(filename, match.ToJson(), 0644); err != nil {
+						return err
+					}
 				}
 			}
 			return nil
