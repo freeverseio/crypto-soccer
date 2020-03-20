@@ -14,7 +14,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 1,
 VisitorGoals: (uint8) 1,
-State: (storage.MatchState) (len=4) "half"
+State: (storage.MatchState) (len=4) "half",
+StateExtra: (string) ""
 },
 StartTime: (*big.Int)(1790899200),
 HomeTeam: (engine.Team) {
@@ -565,6 +566,7 @@ Tiredness: (int) 0
 }
 })
 },
+Training: (engine.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -593,6 +595,7 @@ SpecialPlayerSpeed: (int) 0,
 SpecialPlayerPass: (int) 0,
 SpecialPlayerShoot: (int) 0,
 SpecialPlayerEndurance: (int) 0
+}
 }
 },
 VisitorTeam: (engine.Team) {
@@ -1143,6 +1146,7 @@ Tiredness: (int) 0
 }
 })
 },
+Training: (engine.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -1171,6 +1175,7 @@ SpecialPlayerSpeed: (int) 0,
 SpecialPlayerPass: (int) 0,
 SpecialPlayerShoot: (int) 0,
 SpecialPlayerEndurance: (int) 0
+}
 }
 },
 Events: (matchevents.MatchEvents) (len=15 cap=16) {
@@ -1326,7 +1331,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 1,
 VisitorGoals: (uint8) 0,
-State: (storage.MatchState) (len=4) "half"
+State: (storage.MatchState) (len=4) "half",
+StateExtra: (string) ""
 },
 StartTime: (*big.Int)(1790899200),
 HomeTeam: (engine.Team) {
@@ -1877,6 +1883,7 @@ Tiredness: (int) 0
 }
 })
 },
+Training: (engine.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -1905,6 +1912,7 @@ SpecialPlayerSpeed: (int) 0,
 SpecialPlayerPass: (int) 0,
 SpecialPlayerShoot: (int) 0,
 SpecialPlayerEndurance: (int) 0
+}
 }
 },
 VisitorTeam: (engine.Team) {
@@ -2455,6 +2463,7 @@ Tiredness: (int) 0
 }
 })
 },
+Training: (engine.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -2483,6 +2492,7 @@ SpecialPlayerSpeed: (int) 0,
 SpecialPlayerPass: (int) 0,
 SpecialPlayerShoot: (int) 0,
 SpecialPlayerEndurance: (int) 0
+}
 }
 },
 Events: (matchevents.MatchEvents) (len=16 cap=16) {
