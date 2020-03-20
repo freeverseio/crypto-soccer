@@ -54,6 +54,17 @@ function getBaseLog(base, x) {
   return Math.log(x) / Math.log(base);
 }
 
+function revertArray(arr) {
+  n = arr.length;
+  return Array.from(arr, (x,i) => arr[n-1-i]);
+}
+// it returns a struct where:
+//  * $L_{ch} = 0$: one Merkle Root H
+//  * $L_{ch} = 1$: $N_{leafs/root}$ roots
+//  * $L_{ch} = 2$: $(N_{leafs/root})^2$ roots
+//  * ...
+//  * $L_{ch} = N_{ch}$: $(N_{leafs/root})^{N_{ch}} = N_{leafs}$ roots (aka leafs)function buildMerkleStruct(leafs, nLeafsPerRoot) {
+// Note that it builds them from the bottom to the top, and at the end, reverts them.
 function buildMerkleStruct(leafs, nLeafsPerRoot) {
   levelsPerRoot = Math.floor(Math.log2(nLeafsPerRoot));
   assert.equal(nLeafsPerRoot, 2**levelsPerRoot, "nLeafsPerRoot must be a power of 2");
@@ -61,12 +72,12 @@ function buildMerkleStruct(leafs, nLeafsPerRoot) {
   nTotalLeafs = leafs.length;
   nChallenges = getBaseLog(nLeafsPerRoot, nTotalLeafs);
   assert.equal(nTotalLeafs, nLeafsPerRoot**nChallenges, "nTotalLeafs should be a power of nLeafsPerRoot");
-  
 
   rootsPerLevel = [];
+  rootsPerLevel.push([...leafs]);
   leafsAtThisLevel = [...leafs];
 
-  for (ch = 0; ch < nChallenges - 1; ch++) {
+  for (ch = 0; ch < nChallenges; ch++) {
       rootsAtThisLevel = [];
       assert.equal(leafsAtThisLevel.length % nLeafsPerRoot, 0, "wrong number of leafs");
       nRootsToCompute = leafsAtThisLevel.length/nLeafsPerRoot;
@@ -79,12 +90,13 @@ function buildMerkleStruct(leafs, nLeafsPerRoot) {
       leafsAtThisLevel = [...rootsAtThisLevel];
       rootsPerLevel.push([...rootsAtThisLevel]);
   }
+  // check that the last value coinicides with the merkle root computed from the ground up
   assert.equal(
-      merkleRoot(leafsAtThisLevel, levelsPerRoot),
+      rootsAtThisLevel[0],
       merkleRoot(leafs, nLev = Math.log2(nTotalLeafs)),
       "the merkle struct built does not have a correct merkle root"
   );
-  return rootsPerLevel;
+  return revertArray(rootsPerLevel);
 }
   
   module.exports = {

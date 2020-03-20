@@ -237,11 +237,11 @@ contract('Updates', (accounts) => {
         wrongPos = 7;
         wrongVal = merkleStructWrong[1][wrongPos];
         proof = merkleUtils.buildProof(wrongPos, merkleStructWrong[1], nLevelsPerRoot);
-        roots2Submit = merkleStruct[0].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
+        roots2Submit = merkleStruct[2].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
         wrongRoot = merkleUtils.merkleRoot(merkleStructWrong[1], nLevelsPerRoot);
         assert.equal(merkleUtils.verify(wrongRoot, proof, wrongVal, wrongPos), true, "proof not working");
         // as always, first check that we cannot submit roots that coinicide with previous:
-        roots2SubmitWrong = merkleStructWrong[0].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
+        roots2SubmitWrong = merkleStructWrong[2].slice(wrongPos*nLeafsPerRoot, (wrongPos+1)*nLeafsPerRoot);
         assert.equal(merkleUtils.merkleRoot(roots2SubmitWrong, nLevelsPerRoot), wrongVal, "wrong choice of slice");
         assert.notEqual(merkleUtils.merkleRoot(roots2SubmitWrong, nLevelsPerRoot), merkleUtils.merkleRoot(roots2Submit, nLevelsPerRoot), "wrong choice of slice");
         await updates.challengeTZ(wrongVal, wrongPos, proof, roots2SubmitWrong).should.be.rejected;
