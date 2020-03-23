@@ -15,7 +15,7 @@ type TrainingPerFieldPos struct {
 	Endurance int `json:"Endurance"`
 }
 
-func (b TrainingPerFieldPos) ToArray() []uint16 {
+func (b TrainingPerFieldPos) ToSlice() []uint16 {
 	return []uint16{
 		uint16(b.Shoot),
 		uint16(b.Speed),

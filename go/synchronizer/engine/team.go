@@ -59,11 +59,11 @@ func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 
 // order: shoot, speed, pass, defence, endurance
 func (b Team) EncodeAssignedTrainingPoints(contracts contracts.Contracts) (*big.Int, error) {
-	TPperSkill := b.Training.Goalkeepers.ToArray()
-	TPperSkill = append(TPperSkill, b.Training.Defenders.ToArray()...)
-	TPperSkill = append(TPperSkill, b.Training.Midfielders.ToArray()...)
-	TPperSkill = append(TPperSkill, b.Training.Attackers.ToArray()...)
-	TPperSkill = append(TPperSkill, b.Training.SpecialPlayer.ToArray()...)
+	TPperSkill := b.Training.Goalkeepers.ToSlice()
+	TPperSkill = append(TPperSkill, b.Training.Defenders.ToSlice()...)
+	TPperSkill = append(TPperSkill, b.Training.Midfielders.ToSlice()...)
+	TPperSkill = append(TPperSkill, b.Training.Attackers.ToSlice()...)
+	TPperSkill = append(TPperSkill, b.Training.SpecialPlayer.ToSlice()...)
 
 	var TPperSkillFixedSize [25]uint16
 	copy(TPperSkillFixedSize[:], TPperSkill[:25])
