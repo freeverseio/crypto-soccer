@@ -311,6 +311,7 @@ func TestMatchError1stHalf(t *testing.T) {
 			assert.Equal(t, uint32(match.VisitorTeam.TrainingPoints), decodedVisitorMatchLog[3])
 			err = match.Play1stHalf(*bc.Contracts)
 			assert.Assert(t, err != nil)
+			assert.Equal(t, err.Error(), tc.Output)
 		})
 	}
 }
