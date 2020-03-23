@@ -74,15 +74,15 @@ func TestTrainingPointsAssigned(t *testing.T) {
 		trainingPerFieldPosSpecialPlayer,
 	}
 	// the sum of assigned TPs is 50, so if we had 50 available => expect no errors:
-	errs := engine.CheckTraining(50, training)
-	assert.Equal(t, engine.IsTrainingCorrect(50, training), true)
+	errs := CheckTraining(50, training)
+	assert.Equal(t, IsTrainingCorrect(50, training), true)
 	assert.Equal(t, errs[0], false) // errTooMany
 	assert.Equal(t, errs[1], false) // errTooManyOneSkill
 	assert.Equal(t, errs[2], false) // errSpecialPlayer
 	// if we only had 49 available... failure in the sums, but not in perSkill
 	// the special player had (49*11)/10 = 53.9 = 53 available, so he should fail too
-	errs = engine.CheckTraining(49, training)
-	assert.Equal(t, engine.IsTrainingCorrect(49, training), false)
+	errs = CheckTraining(49, training)
+	assert.Equal(t, IsTrainingCorrect(49, training), false)
 	assert.Equal(t, errs[0], true)  // errTooMany
 	assert.Equal(t, errs[1], false) // errTooManyOneSkill
 	assert.Equal(t, errs[2], true)  // errSpecialPlayer
@@ -97,8 +97,8 @@ func TestTrainingPointsAssigned(t *testing.T) {
 		trainingPerFieldPos,
 		trainingPerFieldPosSpecialPlayer,
 	}
-	errs = engine.CheckTraining(50, training)
-	assert.Equal(t, engine.IsTrainingCorrect(50, training), false)
+	errs = CheckTraining(50, training)
+	assert.Equal(t, IsTrainingCorrect(50, training), false)
 	assert.Equal(t, errs[0], false) // errTooMany
 	assert.Equal(t, errs[1], true)  // errTooManyOneSkill
 	assert.Equal(t, errs[2], false) // errSpecialPlayer}
