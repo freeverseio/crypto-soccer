@@ -55,7 +55,7 @@ func TestIpfsPushAndPull(t *testing.T) {
 	ua.Trainings = append(ua.Trainings, training)
 	cif, err = ua.ToIpfs("localhost:5001")
 	assert.NilError(t, err)
-	assert.Equal(t, cif, "QmbJ36PXKkuFsDQiQmngBbR3beWZja1tU7UXHstZ3HqSSe")
+	assert.Equal(t, cif, "QmPWEmoTFJwUSRZDAQZQ78D1qm6g87ZC1jnXZLbKMJGCTs")
 	ua2, err := useractions.NewFromIpfs("localhost:5001", cif)
 	assert.NilError(t, err)
 	assert.Assert(t, ua2.Equal(&ua))
