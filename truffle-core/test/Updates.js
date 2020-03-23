@@ -276,6 +276,12 @@ contract('Updates', (accounts) => {
         var {0: level, 1: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 2).should.be.fulfilled;
         level.toNumber().should.be.equal(2);
         isSet.should.be.equal(false);
+        var {0: level, 1: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, writtenLevel = 2).should.be.fulfilled;
+        level.toNumber().should.be.equal(0);
+        isSet.should.be.equal(false);
+        var {0: level, 1: isSet} = await updates.getStatusPure(nowTime = Math.floor(2.5*challengeTime), lastUpdate = 0, writtenLevel = 2).should.be.fulfilled;
+        level.toNumber().should.be.equal(0);
+        isSet.should.be.equal(true);
     });
 
 });

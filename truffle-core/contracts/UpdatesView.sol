@@ -96,7 +96,7 @@ contract UpdatesView is Storage, AssetsLib {
         require(nowTime > lastUpdate, "now seems to be in the past of lastUpdate!");
         uint256 numChallPeriods = (nowTime - lastUpdate)/CHALLENGE_TIME;
         if (writtenLevel == 0) return (0, numChallPeriods != 0);
-        uint8 finalLevel = (writtenLevel >= 2 * numChallPeriods) ? uint8(writtenLevel - 2 * numChallPeriods) : writtenLevel;
+        uint8 finalLevel = (writtenLevel >= 2 * numChallPeriods) ? uint8(writtenLevel - 2 * numChallPeriods) : (writtenLevel % 2);
         uint8 nJumps = (writtenLevel - finalLevel) / 2;
         bool isSettled = nowTime > lastUpdate + (nJumps + 1) * CHALLENGE_TIME;
         return (finalLevel, isSettled);
