@@ -6,35 +6,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// order: shoot, speed, pass, defence, endurance
+type TrainingPerFieldPos struct {
+	Shoot     int `json:"shoot"`
+	Speed     int `json:"speed"`
+	Pass      int `json:"pass"`
+	Defence   int `json:"defence"`
+	Endurance int `json:"endurance"`
+}
+
 // Training represents a row from 'public.trainings'.
 type Training struct {
-	TeamID                 string `json:"team_id"`                  // team_id
-	SpecialPlayerShirt     int    `json:"special_player_shirt"`     // special_player_shirt
-	GoalkeepersDefence     int    `json:"goalkeepers_defence"`      // goalkeepers_defence
-	GoalkeepersSpeed       int    `json:"goalkeepers_speed"`        // goalkeepers_speed
-	GoalkeepersPass        int    `json:"goalkeepers_pass"`         // goalkeepers_pass
-	GoalkeepersShoot       int    `json:"goalkeepers_shoot"`        // goalkeepers_shoot
-	GoalkeepersEndurance   int    `json:"goalkeepers_endurance"`    // goalkeepers_endurance
-	DefendersDefence       int    `json:"defenders_defence"`        // defenders_defence
-	DefendersSpeed         int    `json:"defenders_speed"`          // defenders_speed
-	DefendersPass          int    `json:"defenders_pass"`           // defenders_pass
-	DefendersShoot         int    `json:"defenders_shoot"`          // defenders_shoot
-	DefendersEndurance     int    `json:"defenders_endurance"`      // defenders_endurance
-	MidfieldersDefence     int    `json:"midfielders_defence"`      // midfielders_defence
-	MidfieldersSpeed       int    `json:"midfielders_speed"`        // midfielders_speed
-	MidfieldersPass        int    `json:"midfielders_pass"`         // midfielders_pass
-	MidfieldersShoot       int    `json:"midfielders_shoot"`        // midfielders_shoot
-	MidfieldersEndurance   int    `json:"midfielders_endurance"`    // midfielders_endurance
-	AttackersDefence       int    `json:"attackers_defence"`        // attackers_defence
-	AttackersSpeed         int    `json:"attackers_speed"`          // attackers_speed
-	AttackersPass          int    `json:"attackers_pass"`           // attackers_pass
-	AttackersShoot         int    `json:"attackers_shoot"`          // attackers_shoot
-	AttackersEndurance     int    `json:"attackers_endurance"`      // attackers_endurance
-	SpecialPlayerDefence   int    `json:"special_player_defence"`   // special_player_defence
-	SpecialPlayerSpeed     int    `json:"special_player_speed"`     // special_player_speed
-	SpecialPlayerPass      int    `json:"special_player_pass"`      // special_player_pass
-	SpecialPlayerShoot     int    `json:"special_player_shoot"`     // special_player_shoot
-	SpecialPlayerEndurance int    `json:"special_player_endurance"` // special_player_endurance
+	TeamID             string              `json:"team_id"`                // team_id
+	SpecialPlayerShirt int                 `json:"special_player_shirt"`   // special_player_shirt
+	Goalkeepers        TrainingPerFieldPos `json:"goalkeepers_training"`   // goalkeepers_training
+	Defenders          TrainingPerFieldPos `json:"defenders_training"`     // defenders_training
+	Midfielders        TrainingPerFieldPos `json:"midfielders_training"`   // midfielders_training
+	Attackers          TrainingPerFieldPos `json:"attackers_training"`     // attackers_training
+	SpecialPlayer      TrainingPerFieldPos `json:"specialPlayer_training"` // specialPlayer_training
 }
 
 func NewTraining() *Training {
@@ -51,36 +40,37 @@ func DeleteTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
 	return nil
 }
 
+// order: shoot, speed, pass, defence, endurance
 func CreateDefaultTrainingByTimezone(tx *sql.Tx, timezone uint8) error {
 	log.Debugf("[DBMS] Create a default training for each Team in timezone %v", timezone)
 	if _, err := tx.Exec(`
 		INSERT INTO trainings (
 			team_id,
     		special_player_shirt,
-			goalkeepers_defence,
+    		goalkeepers_shoot,
     		goalkeepers_speed,
     		goalkeepers_pass,
-    		goalkeepers_shoot,
+			goalkeepers_defence,
     		goalkeepers_endurance,
-    		defenders_defence,
+    		defenders_shoot,
     		defenders_speed,
     		defenders_pass,
-    		defenders_shoot,
+    		defenders_defence,
     		defenders_endurance,
-    		midfielders_defence,
+    		midfielders_shoot,
     		midfielders_speed,
     		midfielders_pass,
-    		midfielders_shoot,
+    		midfielders_defence,
     		midfielders_endurance,
-    		attackers_defence,
+    		attackers_shoot,
     		attackers_speed,
     		attackers_pass,
-    		attackers_shoot,
+    		attackers_defence,
     		attackers_endurance,
-    		special_player_defence,
+    		special_player_shoot,
     		special_player_speed,
     		special_player_pass,
-    		special_player_shoot,
+    		special_player_defence,
 			special_player_endurance
 		) SELECT team_id,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 FROM teams WHERE teams.timezone_idx = $1`, timezone); err != nil {
 		return err
@@ -94,30 +84,30 @@ func (b *Training) Insert(tx *sql.Tx) error {
 		`INSERT INTO trainings (
 			team_id,
     		special_player_shirt,
-			goalkeepers_defence,
+    		goalkeepers_shoot,
     		goalkeepers_speed,
     		goalkeepers_pass,
-    		goalkeepers_shoot,
+			goalkeepers_defence,
     		goalkeepers_endurance,
-    		defenders_defence,
+    		defenders_shoot,
     		defenders_speed,
     		defenders_pass,
-    		defenders_shoot,
+    		defenders_defence,
     		defenders_endurance,
-    		midfielders_defence,
+    		midfielders_shoot,
     		midfielders_speed,
     		midfielders_pass,
-    		midfielders_shoot,
+    		midfielders_defence,
     		midfielders_endurance,
-    		attackers_defence,
+    		attackers_shoot,
     		attackers_speed,
     		attackers_pass,
-    		attackers_shoot,
+    		attackers_defence,
     		attackers_endurance,
-    		special_player_defence,
+    		special_player_shoot,
     		special_player_speed,
     		special_player_pass,
-    		special_player_shoot,
+    		special_player_defence,
 			special_player_endurance
 		) VALUES (                    
 			$1,
@@ -150,31 +140,31 @@ func (b *Training) Insert(tx *sql.Tx) error {
 		);`,
 		b.TeamID,
 		b.SpecialPlayerShirt,
-		b.GoalkeepersDefence,
-		b.GoalkeepersSpeed,
-		b.GoalkeepersPass,
-		b.GoalkeepersShoot,
-		b.GoalkeepersEndurance,
-		b.DefendersDefence,
-		b.DefendersSpeed,
-		b.DefendersPass,
-		b.DefendersShoot,
-		b.DefendersEndurance,
-		b.MidfieldersDefence,
-		b.MidfieldersSpeed,
-		b.MidfieldersPass,
-		b.MidfieldersShoot,
-		b.MidfieldersEndurance,
-		b.AttackersDefence,
-		b.AttackersSpeed,
-		b.AttackersPass,
-		b.AttackersShoot,
-		b.AttackersEndurance,
-		b.SpecialPlayerDefence,
-		b.SpecialPlayerSpeed,
-		b.SpecialPlayerPass,
-		b.SpecialPlayerShoot,
-		b.SpecialPlayerEndurance,
+		b.Goalkeepers.Shoot,
+		b.Goalkeepers.Speed,
+		b.Goalkeepers.Pass,
+		b.Goalkeepers.Defence,
+		b.Goalkeepers.Endurance,
+		b.Defenders.Shoot,
+		b.Defenders.Speed,
+		b.Defenders.Pass,
+		b.Defenders.Defence,
+		b.Defenders.Endurance,
+		b.Midfielders.Shoot,
+		b.Midfielders.Speed,
+		b.Midfielders.Pass,
+		b.Midfielders.Defence,
+		b.Midfielders.Endurance,
+		b.Attackers.Shoot,
+		b.Attackers.Speed,
+		b.Attackers.Pass,
+		b.Attackers.Defence,
+		b.Attackers.Endurance,
+		b.SpecialPlayer.Shoot,
+		b.SpecialPlayer.Speed,
+		b.SpecialPlayer.Pass,
+		b.SpecialPlayer.Defence,
+		b.SpecialPlayer.Endurance,
 	)
 	return err
 }
@@ -185,30 +175,30 @@ func TrainingsByTimezone(tx *sql.Tx, timezone int) ([]Training, error) {
 		`SELECT 
 			trainings.team_id,
     		special_player_shirt,
-			goalkeepers_defence,
+    		goalkeepers_shoot,
     		goalkeepers_speed,
     		goalkeepers_pass,
-    		goalkeepers_shoot,
+			goalkeepers_defence,
     		goalkeepers_endurance,
-    		defenders_defence,
+    		defenders_shoot,
     		defenders_speed,
     		defenders_pass,
-    		defenders_shoot,
+    		defenders_defence,
     		defenders_endurance,
-    		midfielders_defence,
+    		midfielders_shoot,
     		midfielders_speed,
     		midfielders_pass,
-    		midfielders_shoot,
+    		midfielders_defence,
     		midfielders_endurance,
-    		attackers_defence,
+    		attackers_shoot,
     		attackers_speed,
     		attackers_pass,
-    		attackers_shoot,
+    		attackers_defence,
     		attackers_endurance,
-    		special_player_defence,
+    		special_player_shoot,
     		special_player_speed,
     		special_player_pass,
-    		special_player_shoot,
+    		special_player_defence,
 			special_player_endurance
 		FROM trainings LEFT JOIN teams ON trainings.team_id = teams.team_id WHERE teams.timezone_idx = $1;`, timezone)
 	if err != nil {
@@ -220,31 +210,31 @@ func TrainingsByTimezone(tx *sql.Tx, timezone int) ([]Training, error) {
 		err = rows.Scan(
 			&t.TeamID,
 			&t.SpecialPlayerShirt,
-			&t.GoalkeepersDefence,
-			&t.GoalkeepersSpeed,
-			&t.GoalkeepersPass,
-			&t.GoalkeepersShoot,
-			&t.GoalkeepersEndurance,
-			&t.DefendersDefence,
-			&t.DefendersSpeed,
-			&t.DefendersPass,
-			&t.DefendersShoot,
-			&t.DefendersEndurance,
-			&t.MidfieldersDefence,
-			&t.MidfieldersSpeed,
-			&t.MidfieldersPass,
-			&t.MidfieldersShoot,
-			&t.MidfieldersEndurance,
-			&t.AttackersDefence,
-			&t.AttackersSpeed,
-			&t.AttackersPass,
-			&t.AttackersShoot,
-			&t.AttackersEndurance,
-			&t.SpecialPlayerDefence,
-			&t.SpecialPlayerSpeed,
-			&t.SpecialPlayerPass,
-			&t.SpecialPlayerShoot,
-			&t.SpecialPlayerEndurance,
+			&t.Goalkeepers.Shoot,
+			&t.Goalkeepers.Speed,
+			&t.Goalkeepers.Pass,
+			&t.Goalkeepers.Defence,
+			&t.Goalkeepers.Endurance,
+			&t.Defenders.Shoot,
+			&t.Defenders.Speed,
+			&t.Defenders.Pass,
+			&t.Defenders.Defence,
+			&t.Defenders.Endurance,
+			&t.Midfielders.Shoot,
+			&t.Midfielders.Speed,
+			&t.Midfielders.Pass,
+			&t.Midfielders.Defence,
+			&t.Midfielders.Endurance,
+			&t.Attackers.Shoot,
+			&t.Attackers.Speed,
+			&t.Attackers.Pass,
+			&t.Attackers.Defence,
+			&t.Attackers.Endurance,
+			&t.SpecialPlayer.Shoot,
+			&t.SpecialPlayer.Speed,
+			&t.SpecialPlayer.Pass,
+			&t.SpecialPlayer.Defence,
+			&t.SpecialPlayer.Endurance,
 		)
 		if err != nil {
 			return nil, err

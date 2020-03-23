@@ -141,11 +141,11 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	matchLogs := [2]*big.Int{}
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
-	homeAssignedTP, err := b.HomeTeam.CalculateAssignedTrainingPoints(contracts)
+	homeAssignedTP, err := b.HomeTeam.EncodeAssignedTrainingPoints(contracts)
 	if err != nil {
 		return errors.Wrap(err, "failed calculating home assignedTP")
 	}
-	visitorAssignedTP, err := b.VisitorTeam.CalculateAssignedTrainingPoints(contracts)
+	visitorAssignedTP, err := b.VisitorTeam.EncodeAssignedTrainingPoints(contracts)
 	if err != nil {
 		return errors.Wrap(err, "failed calculating visitor assignedTP")
 	}
