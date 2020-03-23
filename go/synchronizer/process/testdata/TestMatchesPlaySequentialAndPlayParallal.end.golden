@@ -14,7 +14,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 3,
 VisitorGoals: (uint8) 2,
-State: (storage.MatchState) (len=3) "end"
+State: (storage.MatchState) (len=3) "end",
+StateExtra: (string) ""
 },
 StartTime: (*big.Int)(1790899200),
 HomeTeam: (engine.Team) {
@@ -1456,7 +1457,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 2,
 VisitorGoals: (uint8) 0,
-State: (storage.MatchState) (len=3) "end"
+State: (storage.MatchState) (len=3) "end",
+StateExtra: (string) ""
 },
 StartTime: (*big.Int)(1790899200),
 HomeTeam: (engine.Team) {
