@@ -100,6 +100,12 @@ jobs:
       - checkout
       - run: cd market.trader && npm install
       - run: cd market.trader && npm test
+  universe-api:
+    executor: freeverse
+    steps:
+      - checkout
+      - run: cd universe.api && npm install
+      - run: cd universe.api && npm test
   dockerization-development:
     executor: freeverse
     resource_class: xlarge
@@ -190,6 +196,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - universe-api:
+          filters:
+            tags:
+              only: /.*
       - relay-actions:
           filters:
             tags:
@@ -214,6 +224,7 @@ workflows:
             - market-notary
             - go1
             - deployment-test
+            - universe-api
       - dockerization-production:
           filters:
             tags:
@@ -227,6 +238,7 @@ workflows:
             - market-notary
             - go1
             - deployment-test
+            - universe-api
       - deployk8s:
           filters:
            branches:
