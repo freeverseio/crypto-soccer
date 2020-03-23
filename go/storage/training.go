@@ -8,22 +8,22 @@ import (
 
 // order: shoot, speed, pass, defence, endurance
 type TrainingPerFieldPos struct {
-	Shoot     int `json:"shoot"`
-	Speed     int `json:"speed"`
-	Pass      int `json:"pass"`
-	Defence   int `json:"defence"`
-	Endurance int `json:"endurance"`
+	Shoot     int `json:"Shoot"`
+	Speed     int `json:"Speed"`
+	Pass      int `json:"Pass"`
+	Defence   int `json:"Defence"`
+	Endurance int `json:"Endurance"`
 }
 
 // Training represents a row from 'public.trainings'.
 type Training struct {
-	TeamID             string              `json:"team_id"`                // team_id
-	SpecialPlayerShirt int                 `json:"special_player_shirt"`   // special_player_shirt
-	Goalkeepers        TrainingPerFieldPos `json:"goalkeepers_training"`   // goalkeepers_training
-	Defenders          TrainingPerFieldPos `json:"defenders_training"`     // defenders_training
-	Midfielders        TrainingPerFieldPos `json:"midfielders_training"`   // midfielders_training
-	Attackers          TrainingPerFieldPos `json:"attackers_training"`     // attackers_training
-	SpecialPlayer      TrainingPerFieldPos `json:"specialPlayer_training"` // specialPlayer_training
+	TeamID             string              `json:"team_id"`              // team_id
+	SpecialPlayerShirt int                 `json:"special_player_shirt"` // special_player_shirt
+	Goalkeepers        TrainingPerFieldPos `json:"Goalkeepers"`          // goalkeepers_training
+	Defenders          TrainingPerFieldPos `json:"Defenders"`            // defenders_training
+	Midfielders        TrainingPerFieldPos `json:"Midfielders"`          // midfielders_training
+	Attackers          TrainingPerFieldPos `json:"Attackers"`            // attackers_training
+	SpecialPlayer      TrainingPerFieldPos `json:"SpecialPlayer"`        // specialPlayer_training
 }
 
 func NewTraining() *Training {
