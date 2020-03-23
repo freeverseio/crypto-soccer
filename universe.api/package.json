@@ -5,17 +5,16 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/index.js",
-    "test": "mocha --recursive"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@truffle/hdwallet-provider": "^1.0.17",
     "express": "^4.17.1",
-    "postgraphile": "^4.5.5",
+    "postgraphile": "^4.6.0",
     "web3": "^1.2.6"
   },
   "devDependencies": {
-    "mocha": "^6.2.2"
+    "jest": "^25.1.0"
   }
 }
