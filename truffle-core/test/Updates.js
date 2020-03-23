@@ -201,7 +201,7 @@ contract('Updates', (accounts) => {
         }
     });
     
-    it('challenging a tz', async () =>  {
+    it2('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 10);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -257,6 +257,25 @@ contract('Updates', (accounts) => {
         // but I can submit different ones. In this case the BC decides according to forceSuccess
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = false).should.be.rejected;
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;
+    });
+    
+    it('true status of timezone challenge', async () =>  {
+        challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
+        var {0: level, 1: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
+        level.toNumber().should.be.equal(0);
+        isSet.should.be.equal(false);
+        var {0: level, 1: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
+        level.toNumber().should.be.equal(0);
+        isSet.should.be.equal(true);
+        var {0: level, 1: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, writtenLevel = 1).should.be.fulfilled;
+        level.toNumber().should.be.equal(1);
+        isSet.should.be.equal(true);
+        var {0: level, 1: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, writtenLevel = 1).should.be.fulfilled;
+        level.toNumber().should.be.equal(1);
+        isSet.should.be.equal(true);
+        var {0: level, 1: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 2).should.be.fulfilled;
+        level.toNumber().should.be.equal(2);
+        isSet.should.be.equal(false);
     });
 
 });
