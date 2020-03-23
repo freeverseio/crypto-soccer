@@ -101,7 +101,7 @@ jobs:
       - run: cd market.trader && npm install
       - run: cd market.trader && npm test
   universe-api:
-    executor: freeverse
+    executor: circleci/node:lts
     steps:
       - checkout
       - run: cd universe.api && npm install
