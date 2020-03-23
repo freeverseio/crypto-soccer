@@ -57,23 +57,13 @@ func (b *Team) SetSkills(contracts contracts.Contracts, skills [25]*big.Int) {
 	}
 }
 
-func SerializeTrainingPerFieldPos(tr storage.TrainingPerFieldPos) []uint16 {
-	return []uint16{
-		uint16(tr.Shoot),
-		uint16(tr.Speed),
-		uint16(tr.Pass),
-		uint16(tr.Defence),
-		uint16(tr.Endurance),
-	}
-}
-
 // order: shoot, speed, pass, defence, endurance
 func (b Team) EncodeAssignedTrainingPoints(contracts contracts.Contracts) (*big.Int, error) {
-	TPperSkill := SerializeTrainingPerFieldPos(b.Training.Goalkeepers)
-	TPperSkill = append(TPperSkill, SerializeTrainingPerFieldPos(b.Training.Defenders)...)
-	TPperSkill = append(TPperSkill, SerializeTrainingPerFieldPos(b.Training.Midfielders)...)
-	TPperSkill = append(TPperSkill, SerializeTrainingPerFieldPos(b.Training.Attackers)...)
-	TPperSkill = append(TPperSkill, SerializeTrainingPerFieldPos(b.Training.SpecialPlayer)...)
+	TPperSkill := b.Training.Goalkeepers.SerializeTrainingPerFieldPos()
+	TPperSkill = append(TPperSkill, b.Training.Defenders.SerializeTrainingPerFieldPos()...)
+	TPperSkill = append(TPperSkill, b.Training.Midfielders.SerializeTrainingPerFieldPos()...)
+	TPperSkill = append(TPperSkill, b.Training.Attackers.SerializeTrainingPerFieldPos()...)
+	TPperSkill = append(TPperSkill, b.Training.SpecialPlayer.SerializeTrainingPerFieldPos()...)
 
 	var TPperSkillFixedSize [25]uint16
 	copy(TPperSkillFixedSize[:], TPperSkill[:25])

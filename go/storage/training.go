@@ -15,6 +15,16 @@ type TrainingPerFieldPos struct {
 	Endurance int `json:"Endurance"`
 }
 
+func (b TrainingPerFieldPos) SerializeTrainingPerFieldPos() []uint16 {
+	return []uint16{
+		uint16(b.Shoot),
+		uint16(b.Speed),
+		uint16(b.Pass),
+		uint16(b.Defence),
+		uint16(b.Endurance),
+	}
+}
+
 // Training represents a row from 'public.trainings'.
 type Training struct {
 	TeamID             string              `json:"team_id"`              // team_id
