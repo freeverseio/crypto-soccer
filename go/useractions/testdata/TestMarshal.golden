@@ -39,40 +39,40 @@
 		{
 			"team_id": "pippo",
 			"special_player_shirt": 0,
-			"goalkeepers_training": {
-				"shoot": 0,
-				"speed": 0,
-				"pass": 0,
-				"defence": 0,
-				"endurance": 0
+			"Goalkeepers": {
+				"Shoot": 0,
+				"Speed": 0,
+				"Pass": 0,
+				"Defence": 0,
+				"Endurance": 0
 			},
-			"defenders_training": {
-				"shoot": 0,
-				"speed": 0,
-				"pass": 0,
-				"defence": 0,
-				"endurance": 0
+			"Defenders": {
+				"Shoot": 0,
+				"Speed": 0,
+				"Pass": 0,
+				"Defence": 0,
+				"Endurance": 0
 			},
-			"midfielders_training": {
-				"shoot": 0,
-				"speed": 0,
-				"pass": 0,
-				"defence": 0,
-				"endurance": 0
+			"Midfielders": {
+				"Shoot": 0,
+				"Speed": 0,
+				"Pass": 0,
+				"Defence": 0,
+				"Endurance": 0
 			},
-			"attackers_training": {
-				"shoot": 0,
-				"speed": 0,
-				"pass": 0,
-				"defence": 0,
-				"endurance": 0
+			"Attackers": {
+				"Shoot": 0,
+				"Speed": 0,
+				"Pass": 0,
+				"Defence": 0,
+				"Endurance": 0
 			},
-			"specialPlayer_training": {
-				"shoot": 0,
-				"speed": 0,
-				"pass": 0,
-				"defence": 0,
-				"endurance": 0
+			"SpecialPlayer": {
+				"Shoot": 0,
+				"Speed": 0,
+				"Pass": 0,
+				"Defence": 0,
+				"Endurance": 0
 			}
 		}
 	]
