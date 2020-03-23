@@ -1,10 +1,11 @@
 const express = require("express");
 const { postgraphile } = require("postgraphile");
-const MutationsPlugin = require("./mutations_plugin");
 const Web3 = require("web3");
 const assetsJSON = require("../contracts/Assets.json");
 const program = require("commander");
 const version = require("../package.json").version;
+const MutationsPlugin = require("./mutations_plugin");
+const mutationsWrapperPlugin =  require("./mutation_wrapper_plugin");
 
 // Parsing command line arguments
 program
@@ -43,7 +44,7 @@ app.use(
       enhanceGraphiql: true,
       retryOnInitFail: true,
       // disableDefaultMutations: true,
-      appendPlugins: [mutationsPlugin]
+      appendPlugins: [mutationsPlugin, mutationsWrapperPlugin],
     }
   )
 );
