@@ -67,36 +67,42 @@ func SerializeTrainingPerFieldPos(tr storage.TrainingPerFieldPos) []uint16 {
 	}
 }
 
-func checkTrainingPerFieldPos(availableTPs int, tr storage.TrainingPerFieldPos) [2]bool {
-	errTooManyOneSkill := (tr.Shoot + tr.Speed + tr.Pass + tr.Defence + tr.Endurance) > availableTPs
-	errTooMany := (100*tr.Shoot > 60*availableTPs) ||
+func IsTrainingCorrect(availableTPs int, tr storage.Training) bool {
+	err := CheckTraining(availableTPs, tr)
+	return !(err[0] || err[1] || err[2])
+}
+
+func CheckTraining(availableTPs int, tr storage.Training) [3]bool {
+	errTooMany := false
+	errTooManyOneSkill := false
+	err := CheckTrainingPerFieldPos(availableTPs, tr.Goalkeepers)
+	errTooMany = errTooMany || err[0]
+	errTooManyOneSkill = errTooManyOneSkill || err[1]
+	err = CheckTrainingPerFieldPos(availableTPs, tr.Defenders)
+	errTooMany = errTooMany || err[0]
+	errTooManyOneSkill = errTooManyOneSkill || err[1]
+	err = CheckTrainingPerFieldPos(availableTPs, tr.Midfielders)
+	errTooMany = errTooMany || err[0]
+	errTooManyOneSkill = errTooManyOneSkill || err[1]
+	err = CheckTrainingPerFieldPos(availableTPs, tr.Attackers)
+	errTooMany = errTooMany || err[0]
+	errTooManyOneSkill = errTooManyOneSkill || err[1]
+	// Special Player has extra 10% points, calculated in this precise integer-division manner:
+	availableTPs = (availableTPs * 11) / 10
+	err = CheckTrainingPerFieldPos(availableTPs, tr.SpecialPlayer)
+	errSpecialPlayer := err[0] || err[1]
+	return [3]bool{errTooMany, errTooManyOneSkill, errSpecialPlayer}
+}
+
+func CheckTrainingPerFieldPos(availableTPs int, tr storage.TrainingPerFieldPos) [2]bool {
+	sum := tr.Shoot + tr.Speed + tr.Pass + tr.Defence + tr.Endurance
+	errTooMany := (sum > availableTPs)
+	errTooManyOneSkill := (100*tr.Shoot > 60*availableTPs) ||
 		(100*tr.Speed > 60*availableTPs) ||
 		(100*tr.Pass > 60*availableTPs) ||
 		(100*tr.Defence > 60*availableTPs) ||
 		(100*tr.Endurance > 60*availableTPs)
 	return [2]bool{errTooMany, errTooManyOneSkill}
-}
-
-func checkTraining(availableTPs int, tr storage.Training) [3]bool {
-	errTooMany := false
-	errTooManyOneSkill := false
-	err := checkTrainingPerFieldPos(availableTPs, tr.Goalkeepers)
-	errTooMany = errTooMany || err[0]
-	errTooManyOneSkill = errTooMany || err[1]
-	err = checkTrainingPerFieldPos(availableTPs, tr.Defenders)
-	errTooMany = errTooMany || err[0]
-	errTooManyOneSkill = errTooMany || err[1]
-	err = checkTrainingPerFieldPos(availableTPs, tr.Midfielders)
-	errTooMany = errTooMany || err[0]
-	errTooManyOneSkill = errTooMany || err[1]
-	err = checkTrainingPerFieldPos(availableTPs, tr.Attackers)
-	errTooMany = errTooMany || err[0]
-	errTooManyOneSkill = errTooMany || err[1]
-	// Special Player has extra 10% points, calculated in this precise integer-division manner:
-	availableTPs = (availableTPs * 11) / 10
-	err = checkTrainingPerFieldPos(availableTPs, tr.Attackers)
-	errSpecialPlayer := err[0] || err[1]
-	return [3]bool{errTooMany, errTooManyOneSkill, errSpecialPlayer}
 }
 
 // order: shoot, speed, pass, defence, endurance
