@@ -95,7 +95,7 @@ contract UpdatesView is Storage, AssetsLib {
     function getStatusPure(uint256 nowTime, uint256 lastUpdate, uint8 writtenLevel) public pure returns(uint8, bool) {
         require(nowTime > lastUpdate, "now seems to be in the past of lastUpdate!");
         uint256 numChallPeriods = (nowTime - lastUpdate)/CHALLENGE_TIME;
-        if (writtenLevel == 0) return (0, numChallPeriods != 0);
+        // if (writtenLevel == 0) return (0, 0, numChallPeriods != 0);
         uint8 finalLevel = (writtenLevel >= 2 * numChallPeriods) ? uint8(writtenLevel - 2 * numChallPeriods) : (writtenLevel % 2);
         uint8 nJumps = (writtenLevel - finalLevel) / 2;
         bool isSettled = nowTime > lastUpdate + (nJumps + 1) * CHALLENGE_TIME;
