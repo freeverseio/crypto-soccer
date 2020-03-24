@@ -15,7 +15,6 @@ executors:
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
-
       - image: postgres:11.6-alpine
         environment:
           - POSTGRES_USER=freeverse
@@ -34,10 +33,6 @@ commands:
     description: "Compile and generate code for the services that need to communicate with them"
     steps:
       - run: make setup contracts
-  install_kustomize:
-    description: "Install kustomize in current directory"
-    steps:
-      - run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
 
 jobs:
   truffle_core:
@@ -72,13 +67,11 @@ jobs:
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
   deployment-test:
-    docker:
-      - image: 'cimg/base:stable'
+    executor: freeverse
     steps:
       - checkout
-      - install_kustomize
-      - run: ./kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
-      - run: ./kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
+      - run: kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
+      - run: kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -166,17 +159,15 @@ jobs:
       - run: docker push freeverseio/authproxy:${CIRCLE_TAG}
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
   deployk8s:
-    docker:
-      - image: 'cimg/base:stable'
+    executor: freeverse
     steps:
       - checkout
       - kube-orb/install-kubectl
       - kube-orb/install-kubeconfig:
         kubeconfig: KUBECONFIG_DATA
-      - install_kustomize
       - run: | 
-          ./kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
-          ./kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
+          kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
+          kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
 workflows:
   version: 2
   build_and_test:
