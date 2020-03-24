@@ -43,7 +43,8 @@ contract Updates is UpdatesView, Merkle {
         (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
         if (prevTz != NULL_TIMEZONE) {
-            require(now > getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
+            ( , , bool isSettled) = getStatus(prevTz, true);
+            require(isSettled, "last verse is still under challenge period");
         }
         if(newTZ != NULL_TIMEZONE) {
             _setActionsRoot(newTZ, actionsRoot);
@@ -64,6 +65,8 @@ contract Updates is UpdatesView, Merkle {
     //  - timezone is null,
     //  - timezone has not been updated yet (lastUpdate < lastActionsSubmissionTime)
     function updateTZ(bytes32 root) public {
+        // when actionRoots were submitted, nextTimeZone points to the future.
+        // so the timezone waiting for updates & challenges is provided by prevTimeZoneToUpdate()
         (uint8 tz,,) = prevTimeZoneToUpdate();
         bool accept = (tz == NULL_TIMEZONE) || (getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz));
         require(accept, "TZ has already been updated once");

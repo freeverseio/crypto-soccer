@@ -200,11 +200,21 @@ contract('Updates', (accounts) => {
             await moveToNextVerse(updates, extraSecs = 10);
         }
     });
+
+    it('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
+        await moveToNextVerse(updates, extraSecs = 2);
+        var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        const cif = "ciao3";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        var {0: tzAfter, 1: dayAfter, 2: turnInDayAfter} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        tzAfter.toNumber().should.be.equal(tzBefore.toNumber());
+        dayAfter.toNumber().should.be.equal(dayBefore.toNumber());
+        (turnInDayAfter.toNumber() - turnInDayBefore.toNumber()).should.be.equal(1);
+    });
     
     it('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
-        timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        tz = timeZoneToUpdateBefore[0];
+        var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
 
@@ -300,6 +310,13 @@ contract('Updates', (accounts) => {
         level.toNumber().should.be.equal(0);
         nJumps.toNumber().should.be.equal(1);
         isSet.should.be.equal(false);
+
+        // I should not be able to provide a new update, nor new actionRoots, for 2 reasons:
+        //      we're not in the next verse yet
+        //      the previous verse is not settled yet
+        // In this case, it fails because of the first reason. TODO: add test for 2nd.
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.rejected;
+        await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.rejected;
         
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
@@ -310,7 +327,7 @@ contract('Updates', (accounts) => {
 
     });
     
-    it2('true status of timezone challenge', async () =>  {
+    it('true status of timezone challenge', async () =>  {
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
