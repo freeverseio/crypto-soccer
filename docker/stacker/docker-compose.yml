@@ -48,6 +48,8 @@ services:
   universe.api:
     build: 
       context: ../../universe.api/
+    ports:
+      - "4000:4000"
     depends_on:
       - ethereum
     command: >
@@ -58,5 +60,4 @@ volumes:
   ethereum-data:
   ipfs.node-data:
   universe.db-data:
-
 
