@@ -37,7 +37,6 @@ contract('Assets', (accounts) => {
         resultBC.should.be.equal(nullHash)
     });
 
-    return
     it('get merkle root', async () => {
         leafs = Array.from(new Array(4), (x,i) => web3.utils.keccak256(i.toString()));
         rootBC = await merkle.merkleRoot(leafs, nLevels = 2).should.be.fulfilled;
