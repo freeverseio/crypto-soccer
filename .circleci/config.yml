@@ -33,10 +33,6 @@ commands:
     description: "Compile and generate code for the services that need to communicate with them"
     steps:
       - run: make setup contracts
-  install_kustomize:
-    description: "Install kustomize in current directory"
-    steps:
-      - run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
 
 jobs:
   truffle_core:
@@ -71,13 +67,11 @@ jobs:
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
   deployment-test:
-    docker:
-      - image: 'cimg/base:stable'
+    executor: freeverse
     steps:
       - checkout
-      - install_kustomize
-      - run: ./kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
-      - run: ./kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
+      - run: kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
+      - run: kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
     executor: freeverse_ethereum
     steps:
