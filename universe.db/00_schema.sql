@@ -54,6 +54,32 @@ CREATE TABLE teams (
 );
 comment on table teams is E'@omit create,update,delete';
 
+CREATE TABLE teams_histories (
+    block_number BIGINT NOT NULL,
+    team_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    timezone_idx INT NOT NULL,
+    country_idx INT NOT NULL,
+    owner TEXT NOT NULL,
+    league_idx INT NOT NULL,
+    team_idx_in_league INT NOT NULL,
+    points INT NOT NULL DEFAULT 0,
+    w INT NOT NULL DEFAULT 0,
+    d INT NOT NULL DEFAULT 0,
+    l INT NOT NULL DEFAULT 0,
+    goals_forward INT NOT NULL DEFAULT 0,
+    goals_against INT NOT NULL DEFAULT 0,
+    prev_perf_points TEXT NOT NULL DEFAULT '0',
+    ranking_points TEXT NOT NULL DEFAULT '0',
+    training_points INT NOT NULL DEFAULT 0,
+    tactic TEXT NOT NULL DEFAULT '',
+    match_log TEXT NOT NULL,
+    PRIMARY KEY(block_number, team_id),
+    FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
+    FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
+);
+comment on table teams_histories is E'@omit create,update,delete';
+
 CREATE TABLE players (
     name TEXT NOT NULL,
     player_id TEXT NOT NULL,
