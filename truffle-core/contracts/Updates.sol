@@ -78,12 +78,12 @@ contract Updates is UpdatesView, Merkle {
     function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots, bool forceSuccess) public {
         (uint8 tz,,) = prevTimeZoneToUpdate();
         require(tz != NULL_TIMEZONE, "cannot challenge the null timezone");
-        require(now < getLastUpdateTime(tz) + CHALLENGE_TIME, "challenging time is over for the current timezone");
-        bytes32 root = merkleRoot(providedRoots, LEVELS_IN_ONE_CHALLENGE);
         (uint8 newIdx, uint8 level, uint8 levelVerifiable) = getChallengeData(tz, true);
-        level = _cleanTimeAcceptedChallenges(tz, level);
+        bool isSettled;
+        (level, isSettled) = _cleanTimeAcceptedChallenges(tz, level);
+        require(!isSettled, "challenging time is over for the current timezone");
         // verify provided roots are an actual challenge (they lead to a root different from the one provided by previous challenge/update)
-    
+        bytes32 root = merkleRoot(providedRoots, LEVELS_IN_ONE_CHALLENGE);
         if (level == 0) require(root != getRoot(tz, 0, true), "provided leafs lead to same root being challenged");
         else {
             require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
@@ -108,10 +108,10 @@ contract Updates is UpdatesView, Merkle {
         lastUpdateTime[tz] = now;
     }
     
-    function _cleanTimeAcceptedChallenges(uint8 tz, uint8 writtenLevel) internal returns (uint8) {
-        (uint8 finalLevel, uint8 nJumps, ) = getStatus(tz, true);
+    function _cleanTimeAcceptedChallenges(uint8 tz, uint8 writtenLevel) internal returns (uint8, bool) {
+        (uint8 finalLevel, uint8 nJumps, bool isSettled) = getStatus(tz, true);
         // if there was 0 jumps, do nothing
-        if (nJumps == 0) return writtenLevel;
+        if (nJumps == 0) return (writtenLevel, isSettled);
         // otherwise clean all data except for the lowest level
         require(writtenLevel == finalLevel + 2 * nJumps, "challenge status: nJumps incompatible with writtenLevel and finalLevel");
         uint8 idx = newestRootsIdx[tz];
@@ -123,8 +123,7 @@ contract Updates is UpdatesView, Merkle {
             emit ChallengeResolved(tz, levelAccepted - 1, false);
         }
         challengeLevel[tz][idx] = finalLevel;
-        lastUpdateTime[tz] = now;
-        return finalLevel;
+        return (finalLevel, isSettled);
     }
     
     function _setTZRoot(uint8 tz, bytes32 root) internal {

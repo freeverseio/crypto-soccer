@@ -19,6 +19,7 @@ contract ConstantsGetters is Constants {
     function get_NULL_TIMEZONE() external pure returns(uint8) { return NULL_TIMEZONE;}
     function get_VERSES_PER_DAY() external pure returns(uint8) { return VERSES_PER_DAY;}
     function get_CHALLENGE_TIME() external pure returns(uint256) { return CHALLENGE_TIME;}
+    function get_SECS_BETWEEN_VERSES() external pure returns(uint256) { return SECS_BETWEEN_VERSES;}
     function get_VERSES_PER_ROUND() external pure returns(uint16) { return VERSES_PER_ROUND;}
     function get_ACADEMY_TEAM() external pure returns(uint256) { return ACADEMY_TEAM; }
     function get_SK_SHO() external pure returns(uint8) { return SK_SHO; }
