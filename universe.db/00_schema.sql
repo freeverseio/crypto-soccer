@@ -55,6 +55,7 @@ CREATE TABLE teams (
 comment on table teams is E'@omit create,update,delete';
 
 CREATE TABLE teams_histories (
+    block_number BIGINT NOT NULL,
     team_id TEXT NOT NULL,
     name TEXT NOT NULL,
     timezone_idx INT NOT NULL,
@@ -73,7 +74,7 @@ CREATE TABLE teams_histories (
     training_points INT NOT NULL DEFAULT 0,
     tactic TEXT NOT NULL DEFAULT '',
     match_log TEXT NOT NULL,
-    PRIMARY KEY(team_id),
+    PRIMARY KEY(block_number, team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
