@@ -75,7 +75,6 @@ commands:
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
   deployment-test:
-    executor: freeverse
     docker:
       - image: cimg/base:2020.01
     steps:
