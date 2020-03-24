@@ -283,21 +283,31 @@ contract('Updates', (accounts) => {
         
         // challenge again to move to level2, and now we will wait time
         await updates.challengeTZ(challValB_backup, newChallengePos_backup, proofB_backup, roots2SubmitA_backup, forceSuccess).should.be.fulfilled;
-        // var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        level.toNumber().should.be.equal(2);
+        isSet.should.be.equal(false);
         
-        // lev.toNumber().should.be.equal(2);
-        // var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        // level.toNumber().should.be.equal(2);
-        // isSet.should.be.equal(false);
+        challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
+        await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
+        await timeTravel.advanceBlock().should.be.fulfilled;
+
+        // note that getStatus realises that we moved to level 0, but not the written stuff
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        level.toNumber().should.be.equal(0);
+        nJumps.toNumber().should.be.equal(1);
+        isSet.should.be.equal(false);
         
-        // challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
-        // await timeTravel.advanceTime(challengeTime + 10).should.be.fulfilled;
-        // await timeTravel.advanceBlock().should.be.fulfilled;
-        
-        // var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        // level.toNumber().should.be.equal(0);
-        // isSet.should.be.equal(false);
-        
+        await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        level.toNumber().should.be.equal(0);
+        isSet.should.be.equal(true);
+
+
     });
     
     it2('true status of timezone challenge', async () =>  {
