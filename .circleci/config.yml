@@ -42,7 +42,7 @@ commands:
       - run: chmod +x ./kustomize
       - run: mv ./kustomize /usr/local/bin
 
-      jobs:
+jobs:
   truffle_core:
     executor: freeverse
     steps:
