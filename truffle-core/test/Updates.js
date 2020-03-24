@@ -246,11 +246,24 @@ contract('Updates', (accounts) => {
         assert.notEqual(merkleUtils.merkleRoot(roots2SubmitB, nLevelsPerRoot), merkleUtils.merkleRoot(roots2SubmitA, nLevelsPerRoot), "wrong choice of slice");
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitB, forceSuccess).should.be.rejected;
         
+
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        level.toNumber().should.be.equal(1);
+        isSet.should.be.equal(false);
+
         // but we can with differing ones:
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA, forceSuccess).should.be.fulfilled;
-        
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
+        challValB_backup = challValB;
+        newChallengePos_backup = newChallengePos;
+        proofB_backup = [...proofB];
+        roots2SubmitA_backup = [...roots2SubmitA];
+        
         // finally, the last challenge, is one that the BC can check
+        // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
         newChallengePos = 3;
         challengePos.push(newChallengePos);
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
@@ -261,9 +274,33 @@ contract('Updates', (accounts) => {
         // but I can submit different ones. In this case the BC decides according to forceSuccess
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = false).should.be.rejected;
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;
+        
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        level.toNumber().should.be.equal(1);
+        isSet.should.be.equal(false);
+        
+        // challenge again to move to level2, and now we will wait time
+        await updates.challengeTZ(challValB_backup, newChallengePos_backup, proofB_backup, roots2SubmitA_backup, forceSuccess).should.be.fulfilled;
+        // var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        
+        // lev.toNumber().should.be.equal(2);
+        // var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        // level.toNumber().should.be.equal(2);
+        // isSet.should.be.equal(false);
+        
+        // challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
+        // await timeTravel.advanceTime(challengeTime + 10).should.be.fulfilled;
+        // await timeTravel.advanceBlock().should.be.fulfilled;
+        
+        // var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        // level.toNumber().should.be.equal(0);
+        // isSet.should.be.equal(false);
+        
     });
     
-    it('true status of timezone challenge', async () =>  {
+    it2('true status of timezone challenge', async () =>  {
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
