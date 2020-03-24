@@ -33,8 +33,16 @@ commands:
     description: "Compile and generate code for the services that need to communicate with them"
     steps:
       - run: make setup contracts
+  install_kustomize:
+    description: "Install kustomize"
+    steps:
+      - run: wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.4/kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: tar xvzf ./kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: chmod +x ./kustomize
+      - run: mv ./kustomize /usr/local/bin
 
-jobs:
+      jobs:
   truffle_core:
     executor: freeverse
     steps:
@@ -68,8 +76,11 @@ jobs:
       - run: cd go/names && go test ./...
   deployment-test:
     executor: freeverse
+    docker:
+      - image: cimg/base:2020.01
     steps:
       - checkout
+      - install_kustomize
       - run: kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
       - run: kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
