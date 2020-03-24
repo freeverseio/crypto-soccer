@@ -15,7 +15,6 @@ executors:
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
-
       - image: postgres:11.6-alpine
         environment:
           - POSTGRES_USER=freeverse
@@ -35,9 +34,13 @@ commands:
     steps:
       - run: make setup contracts
   install_kustomize:
-    description: "Install kustomize in current directory"
+    description: "Install kustomize"
     steps:
-      - run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+      - run: wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.4/kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: tar xvzf ./kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: chmod +x ./kustomize
+      - run: sudo mv ./kustomize /usr/local/bin
 
 jobs:
   truffle_core:
@@ -73,12 +76,12 @@ jobs:
       - run: cd go/names && go test ./...
   deployment-test:
     docker:
-      - image: 'cimg/base:stable'
+      - image: cimg/base:2020.01
     steps:
       - checkout
       - install_kustomize
-      - run: ./kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
-      - run: ./kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
+      - run: kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
+      - run: kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -100,6 +103,13 @@ jobs:
       - checkout
       - run: cd market.trader && npm install
       - run: cd market.trader && npm test
+  universe-api:
+    docker:
+      - image: circleci/node:lts
+    steps:
+      - checkout
+      - run: cd universe.api && npm install
+      - run: cd universe.api && npm test
   dockerization-development:
     executor: freeverse
     resource_class: xlarge
@@ -160,16 +170,16 @@ jobs:
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
   deployk8s:
     docker:
-      - image: 'cimg/base:stable'
+      - image: cimg/base:2020.01
     steps:
       - checkout
       - kube-orb/install-kubectl
       - kube-orb/install-kubeconfig:
-        kubeconfig: KUBECONFIG_DATA
+          kubeconfig: KUBECONFIG_DATA
       - install_kustomize
       - run: | 
-          ./kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
-          ./kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
+          kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
+          kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
 workflows:
   version: 2
   build_and_test:
@@ -190,6 +200,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - universe-api:
+          filters:
+            tags:
+              only: /.*
       - relay-actions:
           filters:
             tags:
@@ -214,6 +228,7 @@ workflows:
             - market-notary
             - go1
             - deployment-test
+            - universe-api
       - dockerization-production:
           filters:
             tags:
@@ -227,6 +242,7 @@ workflows:
             - market-notary
             - go1
             - deployment-test
+            - universe-api
       - deployk8s:
           filters:
            branches:
