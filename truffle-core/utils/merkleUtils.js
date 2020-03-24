@@ -1,4 +1,7 @@
+const NULL_BYTES32 = web3.eth.abi.encodeParameter('bytes32','0x0');
+
 function hash_node(x, y) {
+  if (x == NULL_BYTES32 &&  y == NULL_BYTES32) return NULL_BYTES32; 
   return web3.utils.keccak256(web3.eth.abi.encodeParameters(['bytes32', 'bytes32'], [x,y]));
 }
 

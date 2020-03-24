@@ -13,7 +13,7 @@ const Merkle = artifacts.require('Merkle');
 contract('Assets', (accounts) => {
     
     const it2 = async(text, f) => {};
-    const nullHash = '0x0';
+    const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
@@ -34,8 +34,10 @@ contract('Assets', (accounts) => {
         resultBC = await merkle.hash_node(nullHash, nullHash).should.be.fulfilled;
         resultJS = merkleUtils.hash_node(nullHash, nullHash);
         resultBC.should.be.equal(resultJS)
+        resultBC.should.be.equal(nullHash)
     });
 
+    return
     it('get merkle root', async () => {
         leafs = Array.from(new Array(4), (x,i) => web3.utils.keccak256(i.toString()));
         rootBC = await merkle.merkleRoot(leafs, nLevels = 2).should.be.fulfilled;

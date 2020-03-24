@@ -6,6 +6,7 @@ pragma solidity >=0.5.12 <=0.6.3;
 
 contract Merkle {
     
+    bytes32 constant private NULL_BYTES32 = bytes32(0);
     // This function will revert if nLevels = 0.
     // nLeafs = 2**nLevels
     //  nLevels = 1 => 3 leafs = lev1 - root // lev0 - 2 leafs
@@ -23,6 +24,7 @@ contract Merkle {
     }
   
     function hash_node(bytes32 left, bytes32 right) public pure returns (bytes32 hash) {
+        if ((right == NULL_BYTES32) && (left == NULL_BYTES32)) return NULL_BYTES32;
         assembly {
             mstore(0x00, left)
             mstore(0x20, right)
