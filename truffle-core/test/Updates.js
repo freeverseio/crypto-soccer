@@ -201,9 +201,10 @@ contract('Updates', (accounts) => {
         }
     });
     
-    it2('challenging a tz', async () =>  {
-        await moveToNextVerse(updates, extraSecs = 10);
+    it('challenging a tz', async () =>  {
+        await moveToNextVerse(updates, extraSecs = 2);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        tz = timeZoneToUpdateBefore[0];
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
 
@@ -230,8 +231,9 @@ contract('Updates', (accounts) => {
         leafsB[7 * (nLeafsPerRoot**2) + 1] = web3.utils.keccak256('iAmEvil');
         assert.notEqual(merkleUtils.merkleRoot(leafsB, nTotalLevels), merkleUtils.merkleRoot(leafsA, nTotalLevels), "wrong leafsA should lead to different root");
         assert.notEqual(merkleUtils.merkleRoot(merkleStructB[1], nLevelsPerRoot), merkleUtils.merkleRoot(merkleStructA[1], nLevelsPerRoot), "wrong leafsA should lead to different merkle structs");
-        
+
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1], forceSuccess).should.be.fulfilled;
+
         // we can now challenge the challenger :-) with the correct hashes  
         // TODO: test that vals are gotten from events
         newChallengePos = 7;
@@ -243,10 +245,11 @@ contract('Updates', (accounts) => {
         // as always, first check that we cannot submit roots that coinicide with previous:
         assert.notEqual(merkleUtils.merkleRoot(roots2SubmitB, nLevelsPerRoot), merkleUtils.merkleRoot(roots2SubmitA, nLevelsPerRoot), "wrong choice of slice");
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitB, forceSuccess).should.be.rejected;
+        
         // but we can with differing ones:
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA, forceSuccess).should.be.fulfilled;
-
-        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(timeZoneToUpdateBefore[0], current = true).should.be.fulfilled; 
+        
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         // finally, the last challenge, is one that the BC can check
         newChallengePos = 3;
         challengePos.push(newChallengePos);
@@ -254,6 +257,7 @@ contract('Updates', (accounts) => {
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
         // I cannot submit roots that are compatible with the previous
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitA, forceSuccess).should.be.rejected;
+
         // but I can submit different ones. In this case the BC decides according to forceSuccess
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = false).should.be.rejected;
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;

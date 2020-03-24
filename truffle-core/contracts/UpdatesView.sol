@@ -11,7 +11,7 @@ contract UpdatesView is Storage, AssetsLib {
         return now;
     }
 
-    function getLastUpdateTime(uint8 tz) internal view returns(uint256) {
+    function getLastUpdateTime(uint8 tz) public view returns(uint256) {
         _assertTZExists(tz);
         return lastUpdateTime[tz];
     }
@@ -93,8 +93,7 @@ contract UpdatesView is Storage, AssetsLib {
     }
     
     function getStatusPure(uint256 nowTime, uint256 lastUpdate, uint8 writtenLevel) public pure returns(uint8 finalLevel, uint8 nJumps, bool isSettled) {
-        require(nowTime > lastUpdate, "now seems to be in the past of lastUpdate!");
-        uint256 numChallPeriods = (nowTime - lastUpdate)/CHALLENGE_TIME;
+        uint256 numChallPeriods = (nowTime > lastUpdate) ? (nowTime - lastUpdate)/CHALLENGE_TIME : 0;
         finalLevel = (writtenLevel >= 2 * numChallPeriods) ? uint8(writtenLevel - 2 * numChallPeriods) : (writtenLevel % 2);
         nJumps = (writtenLevel - finalLevel) / 2;
         isSettled = nowTime > lastUpdate + (nJumps + 1) * CHALLENGE_TIME;

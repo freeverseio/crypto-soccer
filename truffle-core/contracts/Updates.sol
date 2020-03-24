@@ -11,7 +11,7 @@ contract Updates is UpdatesView, Merkle {
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
-    event ChallengeResolved(uint8 tz, uint8 resolvedLevel, bool resolution);
+    event ChallengeResolved(uint8 tz, uint8 resolvedLevel, bool isSuccessful);
 
     function initUpdates() public {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
@@ -78,7 +78,9 @@ contract Updates is UpdatesView, Merkle {
         require(now < getLastUpdateTime(tz) + CHALLENGE_TIME, "challenging time is over for the current timezone");
         bytes32 root = merkleRoot(providedRoots, LEVELS_IN_ONE_CHALLENGE);
         (uint8 newIdx, uint8 level, uint8 levelVerifiable) = getChallengeData(tz, true);
+        level = _cleanTimeAcceptedChallenges(tz, level);
         // verify provided roots are an actual challenge (they lead to a root different from the one provided by previous challenge/update)
+    
         if (level == 0) require(root != getRoot(tz, 0, true), "provided leafs lead to same root being challenged");
         else {
             require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
@@ -97,9 +99,29 @@ contract Updates is UpdatesView, Merkle {
             require(success, "challenge was not successful according to blockchain computation");
             _roots[tz][newIdx][level] = 0;
             challengeLevel[tz][newIdx] = level - 1;
-            emit ChallengeResolved(tz, level, true);
+            emit ChallengeResolved(tz, level + 1, true);
+            emit ChallengeResolved(tz, level, false);
         }
         lastUpdateTime[tz] = now;
+    }
+    
+    function _cleanTimeAcceptedChallenges(uint8 tz, uint8 writtenLevel) internal returns (uint8) {
+        (uint8 finalLevel, uint8 nJumps, ) = getStatus(tz, true);
+        // if there was 0 jumps, do nothing
+        if (nJumps == 0) return writtenLevel;
+        // otherwise clean all data except for the lowest level
+        require(writtenLevel == finalLevel + 2 * nJumps, "challenge status: nJumps incompatible with writtenLevel and finalLevel");
+        uint8 idx = newestRootsIdx[tz];
+        for (uint8 j = 0; j < nJumps; j++) {
+            uint8 levelAccepted = finalLevel + 2 * (j + 1);
+            _roots[tz][idx][levelAccepted] = 0;
+            _roots[tz][idx][levelAccepted-1] = 0;
+            emit ChallengeResolved(tz, levelAccepted, true);
+            emit ChallengeResolved(tz, levelAccepted - 1, false);
+        }
+        challengeLevel[tz][idx] = finalLevel;
+        lastUpdateTime[tz] = now;
+        return finalLevel;
     }
     
     function _setTZRoot(uint8 tz, bytes32 root) internal {
