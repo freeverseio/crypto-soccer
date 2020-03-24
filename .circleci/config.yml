@@ -40,7 +40,7 @@ commands:
       - run: tar xvzf ./kustomize_v3.5.4_linux_amd64.tar.gz
       - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
       - run: chmod +x ./kustomize
-      - run: mv ./kustomize /usr/local/bin
+      - run: sudo mv ./kustomize /usr/local/bin
 
 jobs:
   truffle_core:
@@ -169,12 +169,14 @@ jobs:
       - run: docker push freeverseio/authproxy:${CIRCLE_TAG}
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
   deployk8s:
-    executor: freeverse
+    docker:
+      - image: cimg/base:2020.01
     steps:
       - checkout
       - kube-orb/install-kubectl
       - kube-orb/install-kubeconfig:
-        kubeconfig: KUBECONFIG_DATA
+          kubeconfig: KUBECONFIG_DATA
+      - install_kustomize
       - run: | 
           kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
           kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
