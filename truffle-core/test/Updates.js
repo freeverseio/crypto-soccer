@@ -201,7 +201,7 @@ contract('Updates', (accounts) => {
         }
     });
 
-    it('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
+    it2('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -212,7 +212,7 @@ contract('Updates', (accounts) => {
         (turnInDayAfter.toNumber() - turnInDayBefore.toNumber()).should.be.equal(1);
     });
     
-    it('challenging a tz', async () =>  {
+    it2('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -326,7 +326,7 @@ contract('Updates', (accounts) => {
     
     
     
-    it('challenging a tz beyond the next timezone!', async () =>  {
+    it('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -357,8 +357,7 @@ contract('Updates', (accounts) => {
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
     
-        for (iter = 0; iter < nInterations; iter++) {
-            console.log(iter)
+        for (iter = 0; iter < nInterations - 1; iter++) {
             var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
             level.toNumber().should.be.equal(0);
             isSet.should.be.equal(false);
@@ -372,7 +371,7 @@ contract('Updates', (accounts) => {
             isSet.should.be.equal(false);
 
             // wait so that this challenge of level 2 is successful
-            await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
+            await timeTravel.advanceTime(challengeTime.toNumber() + 2).should.be.fulfilled;
             await timeTravel.advanceBlock().should.be.fulfilled;
 
             var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
@@ -380,9 +379,84 @@ contract('Updates', (accounts) => {
             nJumps.toNumber().should.be.equal(1);
             isSet.should.be.equal(false);
         }
+        // Time-wise, we are ready for next TZ actions root submission, but extraordinarily,
+        // the previous timezone is not settled yet:
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.rejected;
+        // so just wait one CHLL period extra.
+        await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
     });
     
-    it('true status of timezone challenge', async () =>  {
+    
+    it('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
+        // identical to previous test but we wait 1 challenge time less!
+        // so at the very end, we're not allowed to submit actions because the time has not come for next timezone
+        await moveToNextVerse(updates, extraSecs = 2);
+        var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        const cif = "ciao3";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+
+        nLeafsPerRoot = 16;
+        nChallenges = 3;
+        nTotalLeafs = nLeafsPerRoot**3;
+        nTotalLevels = Math.log2(nTotalLeafs);
+        nLevelsPerRoot = Math.log2(nLeafsPerRoot);
+        leafsA = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
+        leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
+        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
+        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
+        const nullHash = '0x0';
+        // We update with the correct root...
+        await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
+
+        secsBetweenVerses = await constants.get_SECS_BETWEEN_VERSES().should.be.fulfilled;
+        challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
+        nInterations = Math.floor(secsBetweenVerses.toNumber()/challengeTime.toNumber())
+        console.log(nInterations)
+
+        // prepare for challenges to level 1 -> level 2
+        newChallengePos = 7;
+        challengePos = [];
+        challengePos.push(newChallengePos);
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
+    
+        for (iter = 0; iter < nInterations - 2; iter++) {
+            var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+            level.toNumber().should.be.equal(0);
+            isSet.should.be.equal(false);
+            // challenge 0 -> 1
+            await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1], forceSuccess).should.be.fulfilled;
+            // challenge 1 -> 2
+            await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA, forceSuccess).should.be.fulfilled;
+            var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+            level.toNumber().should.be.equal(2);
+            nJumps.toNumber().should.be.equal(0);
+            isSet.should.be.equal(false);
+
+            // wait so that this challenge of level 2 is successful
+            await timeTravel.advanceTime(challengeTime.toNumber() + 2).should.be.fulfilled;
+            await timeTravel.advanceBlock().should.be.fulfilled;
+
+            var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+            level.toNumber().should.be.equal(0);
+            nJumps.toNumber().should.be.equal(1);
+            isSet.should.be.equal(false);
+        }
+        // Time-wise, we are ready for next TZ actions root submission, but extraordinarily,
+        // the previous timezone is not settled yet:
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.rejected;
+        // so just wait one CHLL period extra.
+        await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.rejected;
+        await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.rejected;
+    });
+
+    
+    it2('true status of timezone challenge', async () =>  {
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
