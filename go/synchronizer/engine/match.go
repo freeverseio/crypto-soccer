@@ -1,8 +1,9 @@
 package engine
 
 import (
+	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
+	"github.com/pkg/errors"
 )
 
 type Match struct {
@@ -123,6 +125,7 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	err := b.play1stHalf(contracts)
 	if err != nil {
 		b.State = storage.MatchCancelled
+		b.StateExtra = err.Error()
 	} else {
 		b.State = storage.MatchHalf
 	}
@@ -138,13 +141,13 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	matchLogs := [2]*big.Int{}
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
-	homeAssignedTP, err := b.HomeTeam.CalculateAssignedTrainingPoints(contracts)
+	homeAssignedTP, err := b.HomeTeam.EncodeAssignedTrainingPoints(contracts)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed calculating home assignedTP")
 	}
-	visitorAssignedTP, err := b.VisitorTeam.CalculateAssignedTrainingPoints(contracts)
+	visitorAssignedTP, err := b.VisitorTeam.EncodeAssignedTrainingPoints(contracts)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed calculating visitor assignedTP")
 	}
 	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
@@ -158,15 +161,15 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed play1stHalfAndEvolve")
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed decoding home match log")
 	}
 	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed decoding visitor match log")
 	}
 	if err = b.processMatchEvents(
 		contracts,
@@ -175,7 +178,7 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		decodedVisitorMatchLog,
 		is2ndHalf,
 	); err != nil {
-		return err
+		return errors.Wrap(err, "failed processing match events")
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
@@ -192,6 +195,7 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	err := b.play2ndHalf(contracts)
 	if err != nil {
 		b.State = storage.MatchCancelled
+		b.StateExtra = err.Error()
 	} else {
 		b.State = storage.MatchEnd
 	}
@@ -218,15 +222,15 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed decoding home match log")
 	}
 	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed decoding visitor match log")
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
@@ -243,38 +247,10 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		decodedVisitorMatchLog,
 		is2ndHalf,
 	); err != nil {
-		return err
+		return errors.Wrap(err, "failed processing match events")
 	}
 	b.updateStats()
 	return nil
-}
-
-func (b *Match) updateTrainingPoints(contracts contracts.Contracts) error {
-	var err error
-	matchLog, _ := new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
-	if b.HomeTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, matchLog); err != nil {
-		return err
-	}
-	matchLog, _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
-	if b.VisitorTeam.TrainingPoints, err = contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, matchLog); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (b *Match) getGoals(contracts contracts.Contracts, logs [2]*big.Int) (homeGoals uint8, VisitorGoals uint8, err error) {
-	homeGoals, err = contracts.Evolution.GetNGoals(
-		&bind.CallOpts{},
-		logs[0],
-	)
-	if err != nil {
-		return homeGoals, VisitorGoals, err
-	}
-	VisitorGoals, err = contracts.Evolution.GetNGoals(
-		&bind.CallOpts{},
-		logs[1],
-	)
-	return homeGoals, VisitorGoals, err
 }
 
 func (b *Match) Skills() [2][25]*big.Int {
@@ -309,27 +285,21 @@ func (b *Match) processMatchEvents(
 	return nil
 }
 
-func (b Match) ToString() string {
-	var result string
-	result += fmt.Sprintf("seed = '0x%v';", hex.EncodeToString(b.Seed[:]))
-	result += fmt.Sprintf("startTime = '%v';", b.StartTime)
-	result += fmt.Sprintf("matchLog0 = '%v';", b.HomeTeam.MatchLog)
-	result += fmt.Sprintf("teamId0 = '%v';", b.HomeTeam.TeamID)
-	result += fmt.Sprintf("tactic0 = '%v';", b.HomeTeam.Tactic)
-	// result += fmt.Sprintf("assignedTP0 = '%v';", b.HomeTeam.AssignedTP)
-	result += "players0 = ["
-	for _, player := range b.HomeTeam.Players {
-		result += fmt.Sprintf("'%v',", player.EncodedSkills)
+func (b Match) ToJson() []byte {
+	s, _ := json.MarshalIndent(b, "", "\t")
+	return s
+}
+
+func NewMatchFromJson(input []byte) (*Match, error) {
+	match := Match{}
+	if err := json.Unmarshal(input, &match); err != nil {
+		return nil, err
 	}
-	result += "];"
-	result += fmt.Sprintf("matchLog1 = '%v';", b.VisitorTeam.MatchLog)
-	result += fmt.Sprintf("teamId1 = '%v';", b.VisitorTeam.TeamID)
-	result += fmt.Sprintf("tactic1 = '%v';", b.VisitorTeam.Tactic)
-	// result += fmt.Sprintf("assignedTP1 = '%v';", b.VisitorTeam.AssignedTP)
-	result += "players1 = ["
-	for _, player := range b.VisitorTeam.Players {
-		result += fmt.Sprintf("'%v',", player.EncodedSkills)
-	}
-	result += "];"
-	return result
+	return &match, nil
+}
+
+func (b Match) Hash() []byte {
+	h := sha256.New()
+	h.Write(b.ToJson())
+	return h.Sum(nil)
 }

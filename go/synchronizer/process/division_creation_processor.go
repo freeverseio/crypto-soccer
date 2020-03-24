@@ -113,6 +113,10 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 				if err := training.Insert(tx); err != nil {
 					return err
 				}
+				teamHistory := storage.NewTeamHistory(blockNumber, *team)
+				if err := teamHistory.Insert(tx); err != nil {
+					return err
+				}
 			}
 		}
 		if err := b.calendarProcessor.Generate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)); err != nil {

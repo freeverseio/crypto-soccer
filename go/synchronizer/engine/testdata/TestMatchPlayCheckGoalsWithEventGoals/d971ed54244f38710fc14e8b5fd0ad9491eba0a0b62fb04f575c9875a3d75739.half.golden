@@ -13,7 +13,8 @@
 		},
 		HomeGoals: (uint8) 1,
 		VisitorGoals: (uint8) 1,
-		State: (storage.MatchState) (len=4) "half"
+		State: (storage.MatchState) (len=4) "half",
+		StateExtra: (string) ""
 	},
 	StartTime: (*big.Int)(1570147200),
 	HomeTeam: (engine.Team) {
@@ -564,34 +565,46 @@
 				}
 			})
 		},
-		Training: (storage.Training) {
-			TeamID: (string) "",
-			SpecialPlayerShirt: (int) -1,
-			GoalkeepersDefence: (int) 0,
-			GoalkeepersSpeed: (int) 0,
-			GoalkeepersPass: (int) 0,
-			GoalkeepersShoot: (int) 0,
-			GoalkeepersEndurance: (int) 0,
-			DefendersDefence: (int) 0,
-			DefendersSpeed: (int) 0,
-			DefendersPass: (int) 0,
-			DefendersShoot: (int) 0,
-			DefendersEndurance: (int) 0,
-			MidfieldersDefence: (int) 0,
-			MidfieldersSpeed: (int) 0,
-			MidfieldersPass: (int) 0,
-			MidfieldersShoot: (int) 0,
-			MidfieldersEndurance: (int) 0,
-			AttackersDefence: (int) 0,
-			AttackersSpeed: (int) 0,
-			AttackersPass: (int) 0,
-			AttackersShoot: (int) 0,
-			AttackersEndurance: (int) 0,
-			SpecialPlayerDefence: (int) 0,
-			SpecialPlayerSpeed: (int) 0,
-			SpecialPlayerPass: (int) 0,
-			SpecialPlayerShoot: (int) 0,
-			SpecialPlayerEndurance: (int) 0
+		Training: (engine.Training) {
+			Training: (storage.Training) {
+				TeamID: (string) "",
+				SpecialPlayerShirt: (int) -1,
+				Goalkeepers: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				},
+				Defenders: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				},
+				Midfielders: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				},
+				Attackers: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				},
+				SpecialPlayer: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				}
+			}
 		}
 	},
 	VisitorTeam: (engine.Team) {
@@ -1142,34 +1155,46 @@
 				}
 			})
 		},
-		Training: (storage.Training) {
-			TeamID: (string) "",
-			SpecialPlayerShirt: (int) -1,
-			GoalkeepersDefence: (int) 0,
-			GoalkeepersSpeed: (int) 0,
-			GoalkeepersPass: (int) 0,
-			GoalkeepersShoot: (int) 0,
-			GoalkeepersEndurance: (int) 0,
-			DefendersDefence: (int) 0,
-			DefendersSpeed: (int) 0,
-			DefendersPass: (int) 0,
-			DefendersShoot: (int) 0,
-			DefendersEndurance: (int) 0,
-			MidfieldersDefence: (int) 0,
-			MidfieldersSpeed: (int) 0,
-			MidfieldersPass: (int) 0,
-			MidfieldersShoot: (int) 0,
-			MidfieldersEndurance: (int) 0,
-			AttackersDefence: (int) 0,
-			AttackersSpeed: (int) 0,
-			AttackersPass: (int) 0,
-			AttackersShoot: (int) 0,
-			AttackersEndurance: (int) 0,
-			SpecialPlayerDefence: (int) 0,
-			SpecialPlayerSpeed: (int) 0,
-			SpecialPlayerPass: (int) 0,
-			SpecialPlayerShoot: (int) 0,
-			SpecialPlayerEndurance: (int) 0
+		Training: (engine.Training) {
+			Training: (storage.Training) {
+				TeamID: (string) "",
+				SpecialPlayerShirt: (int) -1,
+				Goalkeepers: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				},
+				Defenders: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				},
+				Midfielders: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				},
+				Attackers: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				},
+				SpecialPlayer: (storage.TrainingPerFieldPos) {
+					Shoot: (int) 0,
+					Speed: (int) 0,
+					Pass: (int) 0,
+					Defence: (int) 0,
+					Endurance: (int) 0
+				}
+			}
 		}
 	},
 	Events: (matchevents.MatchEvents) (len=15 cap=16) {

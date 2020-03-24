@@ -56,7 +56,7 @@ func TestTrainingDeleteTrainingsByTimezone(t *testing.T) {
 
 	training := storage.NewTraining()
 	training.TeamID = teamID
-	training.DefendersPass = 4
+	training.Defenders.Pass = 4
 	assert.NilError(t, training.Insert(tx))
 
 	assert.NilError(t, storage.DeleteTrainingsByTimezone(tx, timezoneIdx+1))

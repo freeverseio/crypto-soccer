@@ -5,6 +5,7 @@ import 'semantic-ui-css/semantic.min.css'
 
 import { HashRouter as Router } from 'react-router-dom';
 import ApolloClient from 'apollo-boost';
+import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloProvider } from '@apollo/react-hooks';
 import Web3 from 'web3';
 import Header from './views/Header';
@@ -18,8 +19,12 @@ const privileged = new web3.eth.Contract(privilegedJSON.abi, "0x615668099Cc46D03
 const market = new web3.eth.Contract(marketJSON.abi, "0xFB1436D488726D64a0441081D508b238fF756802");
 
 const url = process.env.REACT_APP_API;
+const cache = new InMemoryCache({
+  dataIdFromObject: object => object.nodeId || null,
+});
 const client = new ApolloClient({
   uri: url,
+  cache,
 });
 
 function App() {

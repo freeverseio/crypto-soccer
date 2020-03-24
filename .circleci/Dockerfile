@@ -1,9 +1,7 @@
-FROM alpine:3.11.3
+FROM alpine:3.11
 RUN apk update
 RUN apk upgrade
 RUN apk add --no-cache nodejs nodejs-npm go lsof python3 python git alpine-sdk openssh docker py-pip python-dev libffi-dev openssl-dev gcc libc-dev make geth postgresql-client
-RUN pip install docker-compose
-RUN docker-compose --version
 # abigen compiling
 RUN (git clone -b master --single-branch https://github.com/ethereum/go-ethereum /go-ethereum) 
 RUN (cd /go-ethereum && git checkout v1.9.11)
