@@ -8,25 +8,15 @@ import (
 )
 
 type TeamHistory struct {
-	BlockNumber     uint64
-	TeamID          string
-	TimezoneIdx     uint8
-	CountryIdx      uint32
-	Name            string
-	Owner           string
-	LeagueIdx       uint32
-	TeamIdxInLeague uint32
-	Points          uint32
-	W               uint32
-	D               uint32
-	L               uint32
-	GoalsForward    uint32
-	GoalsAgainst    uint32
-	PrevPerfPoints  uint64
-	RankingPoints   uint64
-	TrainingPoints  uint16
-	Tactic          string
-	MatchLog        string
+	Team
+	BlockNumber uint64
+}
+
+func NewTeamHistory(blockNumber uint64, team Team) *TeamHistory {
+	h := TeamHistory{}
+	h.BlockNumber = blockNumber
+	h.Team = team
+	return &h
 }
 
 func (b TeamHistory) Insert(tx *sql.Tx) error {
