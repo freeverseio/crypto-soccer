@@ -33,6 +33,14 @@ commands:
     description: "Compile and generate code for the services that need to communicate with them"
     steps:
       - run: make setup contracts
+  install_kustomize:
+    description: "Install kustomize"
+    steps:
+      - run: wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.4/kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: tar xvzf ./kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: chmod +x ./kustomize
+      - run: sudo mv ./kustomize /usr/local/bin
 
 jobs:
   truffle_core:
@@ -67,9 +75,11 @@ jobs:
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
   deployment-test:
-    executor: freeverse
+    docker:
+      - image: cimg/base:2020.01
     steps:
       - checkout
+      - install_kustomize
       - run: kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
       - run: kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
@@ -159,12 +169,14 @@ jobs:
       - run: docker push freeverseio/authproxy:${CIRCLE_TAG}
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
   deployk8s:
-    executor: freeverse
+    docker:
+      - image: cimg/base:2020.01
     steps:
       - checkout
       - kube-orb/install-kubectl
       - kube-orb/install-kubeconfig:
-        kubeconfig: KUBECONFIG_DATA
+          kubeconfig: KUBECONFIG_DATA
+      - install_kustomize
       - run: | 
           kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
           kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
