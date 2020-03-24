@@ -34,7 +34,15 @@ func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber u
 			return err
 		}
 	}
-	return b.Update(tx)
+	if err := b.Update(tx); err != nil {
+		return err
+	}
+	// TODO put it in inside storage.Team.Insert and storage.Team.Update
+	teamHistory := storage.NewTeamHistory(blockNumber, b.Team)
+	if err := teamHistory.Insert(tx); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (b Team) Skills() [25]*big.Int {
