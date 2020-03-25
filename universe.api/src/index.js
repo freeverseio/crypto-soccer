@@ -19,7 +19,6 @@ program
   .parse(process.argv)
 
 const { port, databaseUrl, ethereum, assetsContractAddress, sender } = program;
-const privateKey = "a98c8730d71a46bcc40fb06fc68142edbc2fdf17b89197db0fbe41d35718d5fc";
 
 console.log("--------------------------------------------------------");
 console.log("port              : ", port);
@@ -29,13 +28,15 @@ console.log("assets address    : ", assetsContractAddress);
 console.log("sender            : ", sender);
 console.log("--------------------------------------------------------");
 
+const privateKey = "FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85";
+const from = "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7";
+
 const app = express();
 // const web3 = new Web3(ethereum);
 const provider = new HDWalletProvider(privateKey, ethereum);
 const web3 = new Web3(provider, null, {});
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
 // const from = sender;
-const from = "0xA9c0F76cA045163E28afDdFe035ec76a44f5C1F3";
 const mutationsPlugin = MutationsPlugin(assets, from);
 
 app.use(
