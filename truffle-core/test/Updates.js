@@ -161,7 +161,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = -10);
         await timeTravel.advanceTime(20);
         const cif = "ciao2";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
