@@ -78,9 +78,6 @@ func TestDivisionCreationProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".matches.2.golden")
-	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, 1, 0, 0)
-	assert.NilError(t, err)
-	golden.Assert(t, dump.Sdump(teams), t.Name()+".teams.golden")
 
 	// check for trainings
 	trainings, err := storage.TrainingsByTimezone(tx, int(timezone))
