@@ -37,7 +37,7 @@ contract Updates is UpdatesView, Merkle {
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
     }
     
-    function submitActionsRoot(bytes32 actionsRoot, string memory ipfsCid) public {
+    function submitActionsRoot(bytes32 actionsRoot, bytes32 activeTeamsRoot, string memory ipfsCid) public {
         require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
         (uint8 prevTz,,) = prevTimeZoneToUpdate();
@@ -47,23 +47,20 @@ contract Updates is UpdatesView, Merkle {
             require(isSettled, "last verse is still under challenge period");
         }
         if(newTZ != NULL_TIMEZONE) {
-            _setActionsRoot(newTZ, actionsRoot);
+            _actionsRoot[newTZ] = actionsRoot;
+            _activeTeamsRoot[newTZ] = activeTeamsRoot;
+            _lastActionsSubmissionTime[newTZ] = now;
         }
         _incrementVerse();
         _setCurrentVerseSeed(blockhash(block.number-1));
         emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
     }
     
-    function _setActionsRoot(uint8 timeZone, bytes32 root) public returns(uint256) {
-        _assertTZExists(timeZone);
-        actionsRoot[timeZone] = root;
-        lastActionsSubmissionTime[timeZone] = now;
-    }
 
     // accepts an update about the root of the current state of a timezone. 
     // in order to accept it, either:
     //  - timezone is null,
-    //  - timezone has not been updated yet (lastUpdate < lastActionsSubmissionTime)
+    //  - timezone has not been updated yet (lastUpdate < _lastActionsSubmissionTime)
     function updateTZ(bytes32 root) public {
         // when actionRoots were submitted, nextTimeZone points to the future.
         // so the timezone waiting for updates & challenges is provided by prevTimeZoneToUpdate()
@@ -94,18 +91,18 @@ contract Updates is UpdatesView, Merkle {
         if (level < levelVerifiable - 1) {
            level += 1;
             _roots[tz][newIdx][level] = root;
-            challengeLevel[tz][newIdx] = level;
+            _challengeLevel[tz][newIdx] = level;
             emit ChallengeAccepted(tz, level, root, providedRoots);
         } else {
             // bool success = computeChallenge(challLeaveVal, challLeavePos, providedRoots);
             bool success = forceSuccess;
             require(success, "challenge was not successful according to blockchain computation");
             _roots[tz][newIdx][level] = 0;
-            challengeLevel[tz][newIdx] = level - 1;
+            _challengeLevel[tz][newIdx] = level - 1;
             emit ChallengeResolved(tz, level + 1, true);
             emit ChallengeResolved(tz, level, false);
         }
-        lastUpdateTime[tz] = now;
+        _lastUpdateTime[tz] = now;
     }
     
     function _cleanTimeAcceptedChallenges(uint8 tz, uint8 writtenLevel) internal returns (uint8, bool) {
@@ -114,7 +111,7 @@ contract Updates is UpdatesView, Merkle {
         if (nJumps == 0) return (writtenLevel, isSettled);
         // otherwise clean all data except for the lowest level
         require(writtenLevel == finalLevel + 2 * nJumps, "challenge status: nJumps incompatible with writtenLevel and finalLevel");
-        uint8 idx = newestRootsIdx[tz];
+        uint8 idx = _newestRootsIdx[tz];
         for (uint8 j = 0; j < nJumps; j++) {
             uint8 levelAccepted = finalLevel + 2 * (j + 1);
             _roots[tz][idx][levelAccepted] = 0;
@@ -122,17 +119,17 @@ contract Updates is UpdatesView, Merkle {
             emit ChallengeResolved(tz, levelAccepted, true);
             emit ChallengeResolved(tz, levelAccepted - 1, false);
         }
-        challengeLevel[tz][idx] = finalLevel;
+        _challengeLevel[tz][idx] = finalLevel;
         return (finalLevel, isSettled);
     }
     
     function _setTZRoot(uint8 tz, bytes32 root) internal {
-        uint8 newIdx = 1 - newestRootsIdx[tz];
-        newestRootsIdx[tz] = newIdx;
+        uint8 newIdx = 1 - _newestRootsIdx[tz];
+        _newestRootsIdx[tz] = newIdx;
         _roots[tz][newIdx][0] = root;
         for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][newIdx][level] = 0;
-        levelVerifiableByBC[tz][newIdx] = 3;
-        lastUpdateTime[tz] = now;
+        _levelVerifiableByBC[tz][newIdx] = 3;
+        _lastUpdateTime[tz] = now;
     }
 
     function _setCurrentVerseSeed(bytes32 seed) private {

@@ -18,9 +18,10 @@ const Merkle = artifacts.require('Merkle');
 
 
 contract('Updates', (accounts) => {
+    const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
     
     const it2 = async(text, f) => {};
-
+    
     function normalizeTZ(tz) {
         return 1 + ((tz - 1) % 24);
     }
@@ -57,11 +58,11 @@ contract('Updates', (accounts) => {
 
     });
 
-    it2('test that cannot initialize updates twice', async () =>  {
+    it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
     });
     
-    it2('check timezones for this verse', async () =>  {
+    it('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
@@ -78,7 +79,7 @@ contract('Updates', (accounts) => {
         result.should.be.equal(expected);
     });
     
-    it2('require that BC and local time are less than 15 sec out of sync', async () =>  {
+    it('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await updates.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
         // the substraction is in miliseconds:
@@ -98,7 +99,7 @@ contract('Updates', (accounts) => {
         (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 20*1000).should.be.equal(true);
     });
     
-    it2('check BC is set up in agreement with the local time', async () =>  {
+    it('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
         localTimeMs = Date.now();
@@ -118,7 +119,7 @@ contract('Updates', (accounts) => {
         timeZoneForRound1.toNumber().should.be.equal(expectedHour);
     });
     
-    it2('wait some minutes', async () =>  {
+    it('wait some minutes', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
         extraTime = 3*60
@@ -133,20 +134,15 @@ contract('Updates', (accounts) => {
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    // it2('submitActions to timezone too early', async () =>  {
-    //     await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
-    // });
-
-    it2('submitActions to timezone', async () =>  {
+    it('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verseBefore = await updates.getCurrentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraTime = -10)        
-        // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
         await timeTravel.advanceTime(20);
         await timeTravel.advanceBlock().should.be.fulfilled;
         const cif = "ciao";
-        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), cif).should.be.fulfilled;
+        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), nullHash, cif).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verse = await updates.getCurrentVerse().should.be.fulfilled;
         verse.toNumber().should.be.equal(verseBefore.toNumber() + 1); 
@@ -157,17 +153,13 @@ contract('Updates', (accounts) => {
         truffleAssert.eventEmitted(tx, "ActionsSubmission", (event) => {
             return event.seed == seed1 && isCloseEnough(event.submissionTime.toNumber(), now.toNumber());
         });
-        // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     });
 
-    it2('update Timezone once', async () =>  {
+    it('update Timezone once', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = -10);
-        // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
-        // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
         await timeTravel.advanceTime(20);
-        // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
         const cif = "ciao2";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -179,7 +171,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
     });
 
-    it2('moveToNextVerse', async () =>  {
+    it('moveToNextVerse', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
@@ -189,34 +181,33 @@ contract('Updates', (accounts) => {
         
     });
 
-    it2('update Timezone many times', async () =>  {
+    it('update Timezone many times', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
         for (verse = 0; verse < 110; verse++) {
-            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
-            // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
+            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
             await moveToNextVerse(updates, extraSecs = 10);
         }
     });
 
-    it2('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
+    it('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
         var {0: tzAfter, 1: dayAfter, 2: turnInDayAfter} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         tzAfter.toNumber().should.be.equal(tzBefore.toNumber());
         dayAfter.toNumber().should.be.equal(dayBefore.toNumber());
         (turnInDayAfter.toNumber() - turnInDayBefore.toNumber()).should.be.equal(1);
     });
     
-    it2('challenging a tz', async () =>  {
+    it('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
 
         nLeafsPerRoot = 16;
         nChallenges = 3;
@@ -227,7 +218,6 @@ contract('Updates', (accounts) => {
         leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
-        const nullHash = '0x0';
         // First challenge fails because the TZ has not been updated yet with a root
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1], forceSuccess = true).should.be.rejected;
 
@@ -314,7 +304,7 @@ contract('Updates', (accounts) => {
         //      we're not in the next verse yet
         //      the previous verse is not settled yet
         // In this case, it fails because of the first reason. TODO: add test for 2nd.
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.rejected;
         await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.rejected;
         
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
@@ -330,7 +320,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
 
         nLeafsPerRoot = 16;
         nChallenges = 3;
@@ -341,14 +331,12 @@ contract('Updates', (accounts) => {
         leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
-        const nullHash = '0x0';
         // We update with the correct root...
         await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
 
         secsBetweenVerses = await constants.get_SECS_BETWEEN_VERSES().should.be.fulfilled;
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         nInterations = Math.floor(secsBetweenVerses.toNumber()/challengeTime.toNumber())
-        console.log(nInterations)
 
         // prepare for challenges to level 1 -> level 2
         newChallengePos = 7;
@@ -357,6 +345,7 @@ contract('Updates', (accounts) => {
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
     
+        forceSuccess = false;
         for (iter = 0; iter < nInterations - 1; iter++) {
             var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
             level.toNumber().should.be.equal(0);
@@ -381,11 +370,11 @@ contract('Updates', (accounts) => {
         }
         // Time-wise, we are ready for next TZ actions root submission, but extraordinarily,
         // the previous timezone is not settled yet:
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.rejected;
         // so just wait one CHLL period extra.
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
         await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
     });
     
@@ -396,7 +385,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
 
         nLeafsPerRoot = 16;
         nChallenges = 3;
@@ -407,14 +396,12 @@ contract('Updates', (accounts) => {
         leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
-        const nullHash = '0x0';
         // We update with the correct root...
         await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
 
         secsBetweenVerses = await constants.get_SECS_BETWEEN_VERSES().should.be.fulfilled;
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         nInterations = Math.floor(secsBetweenVerses.toNumber()/challengeTime.toNumber())
-        console.log(nInterations)
 
         // prepare for challenges to level 1 -> level 2
         newChallengePos = 7;
@@ -423,6 +410,7 @@ contract('Updates', (accounts) => {
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
     
+        forceSuccess = false;
         for (iter = 0; iter < nInterations - 2; iter++) {
             var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
             level.toNumber().should.be.equal(0);
@@ -447,16 +435,16 @@ contract('Updates', (accounts) => {
         }
         // Time-wise, we are ready for next TZ actions root submission, but extraordinarily,
         // the previous timezone is not settled yet:
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.rejected;
         // so just wait one CHLL period extra.
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.rejected;
         await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.rejected;
     });
 
     
-    it2('true status of timezone challenge', async () =>  {
+    it('true status of timezone challenge', async () =>  {
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);

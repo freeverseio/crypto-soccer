@@ -37,15 +37,14 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint8 => uint256) tzToNCountries;
 
 
-    mapping (uint256 => bytes32[2]) orgMapRoot;
     mapping (uint256 => bytes32[MAX_CHALLENGE_LEVELS][2]) _roots;
-    mapping (uint256 => uint8[2]) challengeLevel;
-    mapping (uint256 => uint8[2]) levelVerifiableByBC;
-    mapping (uint256 => uint8) newestOrgMapIdx;
-    mapping (uint256 => uint8) newestRootsIdx;
-    mapping (uint256 => uint8) updateCycleIdx;
-    mapping (uint256 => uint256) lastActionsSubmissionTime;
-    mapping (uint256 => uint256) lastUpdateTime;
-    mapping (uint256 => bytes32) actionsRoot;
-    mapping (uint256 => bytes32) trainingsRoot;
+    mapping (uint256 => uint8[2]) _challengeLevel;
+    mapping (uint256 => uint8[2]) _levelVerifiableByBC;
+    mapping (uint256 => uint8) _newestOrgMapIdx;
+    mapping (uint256 => uint8) _newestRootsIdx;
+    mapping (uint256 => uint256) _lastActionsSubmissionTime;
+    mapping (uint256 => uint256) _lastUpdateTime;
+    mapping (uint256 => bytes32) _actionsRoot;
+    mapping (uint256 => bytes32) _activeTeamsRoot;
+    mapping (uint256 => bytes32[2]) _orgMapRoot;
 }

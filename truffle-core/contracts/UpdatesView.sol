@@ -13,12 +13,12 @@ contract UpdatesView is Storage, AssetsLib {
 
     function getLastUpdateTime(uint8 tz) public view returns(uint256) {
         _assertTZExists(tz);
-        return lastUpdateTime[tz];
+        return _lastUpdateTime[tz];
     }
     
     function getLastActionsSubmissionTime(uint8 tz) public view returns(uint256) {
         _assertTZExists(tz);
-        return lastActionsSubmissionTime[tz];
+        return _lastActionsSubmissionTime[tz];
     }
 
     
@@ -78,18 +78,18 @@ contract UpdatesView is Storage, AssetsLib {
     function getCurrentVerseSeed() public view returns (bytes32) { return currentVerseSeed; }
 
     function getRoot(uint8 tz, uint8 level, bool current) public view returns(bytes32) { 
-        return (current) ? _roots[tz][newestRootsIdx[tz]][level] : _roots[tz][1-newestRootsIdx[tz]][level];
+        return (current) ? _roots[tz][_newestRootsIdx[tz]][level] : _roots[tz][1-_newestRootsIdx[tz]][level];
     }
 
     function getChallengeData(uint8 tz, bool current) public view returns(uint8, uint8, uint8) { 
-        uint8 idx = current ? newestRootsIdx[tz] : 1 - newestRootsIdx[tz];
-        return (idx, challengeLevel[tz][idx], levelVerifiableByBC[tz][idx]);
+        uint8 idx = current ? _newestRootsIdx[tz] : 1 - _newestRootsIdx[tz];
+        return (idx, _challengeLevel[tz][idx], _levelVerifiableByBC[tz][idx]);
     }
 
     function getStatus(uint8 tz, bool current) public view returns(uint8, uint8, bool) { 
-        uint8 idx = current ? newestRootsIdx[tz] : 1 - newestRootsIdx[tz];
-        uint8 writtenLevel = challengeLevel[tz][idx];
-        return getStatusPure(now, lastUpdateTime[tz], writtenLevel);
+        uint8 idx = current ? _newestRootsIdx[tz] : 1 - _newestRootsIdx[tz];
+        uint8 writtenLevel = _challengeLevel[tz][idx];
+        return getStatusPure(now, _lastUpdateTime[tz], writtenLevel);
     }
     
     function getStatusPure(uint256 nowTime, uint256 lastUpdate, uint8 writtenLevel) public pure returns(uint8 finalLevel, uint8 nJumps, bool isSettled) {
