@@ -128,7 +128,6 @@ contract Updates is UpdatesView, Merkle {
         _newestRootsIdx[tz] = newIdx;
         _roots[tz][newIdx][0] = root;
         for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][newIdx][level] = 0;
-        _levelVerifiableByBC[tz][newIdx] = 3;
         _lastUpdateTime[tz] = now;
     }
 
@@ -136,5 +135,7 @@ contract Updates is UpdatesView, Merkle {
         currentVerseSeed = seed;
     }
 
-
+    function setLevelVerifiableByBC(uint8 newVal) public {
+        _levelVerifiableByBC = newVal;
+    }
 }

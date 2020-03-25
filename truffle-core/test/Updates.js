@@ -50,6 +50,7 @@ contract('Updates', (accounts) => {
         updates = depl[2];
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
+        await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
@@ -204,7 +205,7 @@ contract('Updates', (accounts) => {
         (turnInDayAfter.toNumber() - turnInDayBefore.toNumber()).should.be.equal(1);
     });
     
-    it2('challenging a tz', async () =>  {
+    it('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -501,7 +502,7 @@ contract('Updates', (accounts) => {
     });
     
     
-    it('vefiable challe', async () =>  {
+    it('vefiable challenge', async () =>  {
         chllUtils.test();
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
