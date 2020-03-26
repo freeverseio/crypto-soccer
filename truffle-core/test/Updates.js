@@ -205,7 +205,7 @@ contract('Updates', (accounts) => {
         (turnInDayAfter.toNumber() - turnInDayBefore.toNumber()).should.be.equal(1);
     });
     
-    it('challenging a tz', async () =>  {
+    it2('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -504,6 +504,9 @@ contract('Updates', (accounts) => {
     
     it('vefiable challenge', async () =>  {
         chllUtils.test();
+        await updates.setLevelVerifiableByBC(4).should.be.fulfilled;
+        
+        return;
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif = "ciao3").should.be.fulfilled;
