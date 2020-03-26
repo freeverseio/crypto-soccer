@@ -14,6 +14,28 @@ contract('EncodingTPAssignment', (accounts) => {
         MAX_PERCENT = MAX_PERCENT.toNumber();
     });
     
+    
+    it('encode minimal TP', async () =>  {
+        specialPlayer = 21;
+        TP = 2;
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        for (bucket = 0; bucket < 5; bucket++) {
+            TPperSkill[5*bucket] = 1;
+            TPperSkill[5*bucket + 1] = 1;
+        }
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        result = await encoding.decodeTP(result).should.be.fulfilled;
+        specialPlayer = 21;
+        TP = 1;
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        for (bucket = 0; bucket < 5; bucket++) {
+            TPperSkill[5*bucket] = 1;
+        }
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        result = await encoding.decodeTP(result).should.be.fulfilled;
+        result = await encoding.encodeTP(TP = 0, TPperSkill, specialPlayer).should.be.rejected;
+    })
+    
     it('encode fails if sum is not correct', async () =>  {
         specialPlayer = 21;
         TP = 40;
