@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
@@ -54,4 +55,51 @@ func TestDefaultTactics(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, tactic.String(), engine.DefaultTactic().String())
+}
+
+func TestTrainingPointsAssigned(t *testing.T) {
+	t.Parallel()
+	var teamID string
+	teamID = "12"
+	// teamID := big.NewInt(12)
+	trainingPerFieldPos := storage.TrainingPerFieldPos{10, 10, 10, 10, 10}
+	trainingPerFieldPosSpecialPlayer := storage.TrainingPerFieldPos{11, 11, 11, 11, 11}
+	training := storage.Training{
+		teamID,
+		3,
+		trainingPerFieldPos,
+		trainingPerFieldPos,
+		trainingPerFieldPos,
+		trainingPerFieldPos,
+		trainingPerFieldPosSpecialPlayer,
+	}
+	// the sum of assigned TPs is 50, so if we had 50 available => expect no errors:
+	errs := CheckTraining(50, training)
+	assert.Equal(t, IsTrainingCorrect(50, training), true)
+	assert.Equal(t, errs[0], false) // errTooMany
+	assert.Equal(t, errs[1], false) // errTooManyOneSkill
+	assert.Equal(t, errs[2], false) // errSpecialPlayer
+	// if we only had 49 available... failure in the sums, but not in perSkill
+	// the special player had (49*11)/10 = 53.9 = 53 available, so he should fail too
+	errs = CheckTraining(49, training)
+	assert.Equal(t, IsTrainingCorrect(49, training), false)
+	assert.Equal(t, errs[0], true)  // errTooMany
+	assert.Equal(t, errs[1], false) // errTooManyOneSkill
+	assert.Equal(t, errs[2], true)  // errSpecialPlayer
+	// check per skill now
+	trainingPerFieldPosWrong := storage.TrainingPerFieldPos{42, 2, 2, 2, 2}
+	training = storage.Training{
+		teamID,
+		3,
+		trainingPerFieldPosWrong,
+		trainingPerFieldPos,
+		trainingPerFieldPos,
+		trainingPerFieldPos,
+		trainingPerFieldPosSpecialPlayer,
+	}
+	errs = CheckTraining(50, training)
+	assert.Equal(t, IsTrainingCorrect(50, training), false)
+	assert.Equal(t, errs[0], false) // errTooMany
+	assert.Equal(t, errs[1], true)  // errTooManyOneSkill
+	assert.Equal(t, errs[2], false) // errSpecialPlayer}
 }

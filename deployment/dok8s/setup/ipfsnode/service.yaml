@@ -8,6 +8,5 @@ spec:
   ports:
   - protocol: TCP
     port: 4001
-    port: 5001
   selector:
     app.kubernetes.io/app: ipfsnode

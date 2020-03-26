@@ -13,7 +13,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-State: (storage.MatchState) ""
+State: (storage.MatchState) "",
+StateExtra: (string) ""
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -29,7 +30,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-State: (storage.MatchState) ""
+State: (storage.MatchState) "",
+StateExtra: (string) ""
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -45,7 +47,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-State: (storage.MatchState) ""
+State: (storage.MatchState) "",
+StateExtra: (string) ""
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -61,6 +64,7 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-State: (storage.MatchState) ""
+State: (storage.MatchState) "",
+StateExtra: (string) ""
 }
 }

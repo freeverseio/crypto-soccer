@@ -1,0 +1,63 @@
+version: '3'
+services:
+  ethereum: 
+    image: parity/parity:v2.7.2-stable
+    command: --chain xdai --jsonrpc-interface all
+    volumes:
+      - ethereum-data:/home/parity
+  universe.db:
+    build: 
+      context: ../../universe.db/
+    restart: always
+    volumes:
+      - universe.db-data:/var/lib/postgresql/data
+  synchronizer:
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.synchronizer
+    restart: always
+    command: > 
+      -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
+      -ipfs ipfs.node:5001
+      -ethereum http://ethereum:8545
+      -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
+      -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
+      -enginePreCompContractAddress "${ENGINEPRECOMP_CONTRACT_ADDRESS}"
+      -marketContractAddress "${MARKET_CONTRACT_ADDRESS}"
+      -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
+      -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
+      -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
+      -utilsContractAddress "${UTILS_CONTRACT_ADDRESS}"
+      -playandevolveContractAddress "${PLAYANDEVOLVE_CONTRACT_ADDRESS}"
+      -shopContractAddress "${SHOP_CONTRACT_CONTRACT_ADDRESS}"
+      -trainingpointsContractAddress "${TRAININGPOINTS_CONTRACT_ADDRESS}"
+      -constantsgettersContractAddress "${CONSTANTSGETTERS_CONTRACT_ADDRESS}"
+      -delta "${BLOCKS_PER_STEP}"
+    depends_on:
+      - universe.db
+      - ethereum
+  ipfs.node:
+    image: ipfs/go-ipfs:v0.4.23
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data
+    ports:
+      - "40010:4001"
+    volumes:
+      - ipfs.node-data:/data
+  universe.api:
+    build: 
+      context: ../../universe.api/
+    ports:
+      - "4000:4000"
+    depends_on:
+      - ethereum
+    command: >
+      -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
+      --ethereum "http://ethereum:8545"
+
+volumes:
+  ethereum-data:
+  ipfs.node-data:
+  universe.db-data:
+
