@@ -26,12 +26,12 @@ contract EncodingTPAssignment {
         encoded |= uint256(TP) << 225;
         encoded |= uint256(specialPlayer) << 234;
 
-        uint16 maxRHS = MAX_PERCENT * TP;
+        uint16 maxRHS = (TP == 1) ? 100 : MAX_PERCENT * TP;
         uint8 lastBucket = (specialPlayer == NO_PLAYER ? 4 : 5);
         for (uint8 bucket = 0; bucket < lastBucket; bucket++) {
             if (bucket == 4) {
                 TP = uint16((uint256(TP) * 11)/10);
-                maxRHS = MAX_PERCENT * TP;
+                maxRHS = (TP == 1) ? 100 : MAX_PERCENT * TP;
             }
             uint256 sum = 0;
             for (uint8 sk = 5 * bucket; sk < 5 * (bucket+1); sk++) {
@@ -49,11 +49,11 @@ contract EncodingTPAssignment {
         uint16 TPtemp = TP;
         specialPlayer = uint8((encoded >> 234) & 31);
         require(specialPlayer <= PLAYERS_PER_TEAM_MAX, "specialPlayer value too large");
-        uint16 maxRHS = MAX_PERCENT * TPtemp;
+        uint16 maxRHS = (TP == 1) ? 100 : MAX_PERCENT * TPtemp;
         for (uint8 bucket = 0; bucket < 5; bucket++) {
             if (bucket == 4) {
                 TPtemp = uint16((uint256(TPtemp) * 11000)/10000);
-                maxRHS = MAX_PERCENT * TPtemp;
+                maxRHS = (TP == 1) ? 100 : MAX_PERCENT * TPtemp;
             }
             uint256 sum = 0;
             for (uint8 sk = 5 * bucket; sk < 5* (bucket+1); sk++) {
