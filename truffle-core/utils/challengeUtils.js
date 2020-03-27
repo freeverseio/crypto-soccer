@@ -27,6 +27,7 @@ function joinTacticsAndTPs(tactics, TPs) {
 }
 
 // returns, for a given League: leafsLeague[128] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13], 0,...]
+// [League[128], Team$_{0,aft}$[32], ... Team$_{0,aft}$[32],... Team$_{7,aft}$[32], ...Team$_{7,aft}$[32]]
 function createLeague() {
   teamState = readTeam442();
   return teamState;

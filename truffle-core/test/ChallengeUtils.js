@@ -28,7 +28,17 @@ contract('Updates', (accounts) => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
     });
 
-    it('test that cannot initialize updates twice', async () =>  {
+    it('create real data for an entire league', async () =>  {
+        var {0: activeTeams, 1: orgMap} = await chllUtils.createUniverse(10);
+        // console.log(activeTeams)
+        // console.log(orgMap)
+        var team = chllUtils.createLeague();
+        console.log(team)
+        console.log(team[0])
+    });
+
+    
+    it('first test', async () =>  {
         var {0: activeTeams, 1: orgMap} = await chllUtils.createUniverse(10);
         // console.log(activeTeams)
         // console.log(orgMap)
