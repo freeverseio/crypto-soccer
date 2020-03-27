@@ -29,11 +29,12 @@ contract('Updates', (accounts) => {
     });
 
     it('test that cannot initialize updates twice', async () =>  {
-        var {0: activeTeams, 1: orgMap} = chllUtils.createUniverse(10);
-        console.log(activeTeams)
-        console.log(orgMap)
+        var {0: activeTeams, 1: orgMap} = await chllUtils.createUniverse(10);
+        // console.log(activeTeams)
+        // console.log(orgMap)
         var team = chllUtils.createLeague();
         console.log(team)
+        console.log(team[0])
     });
 
 });

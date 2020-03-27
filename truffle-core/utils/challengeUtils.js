@@ -2,17 +2,10 @@ const NULL_BYTES32 = web3.eth.abi.encodeParameter('bytes32','0x0');
 
 const merkleUtils = require('../utils/merkleUtils.js');
 const teamsUtils = require('../utils/teamsUtils.js');
+const fs = require('fs');
 
 function readTeam442(filepath = 'test/testdata/team442.json'){
-  fs.readFile(filepath, 'utf8', function (err, data) {
-      if (err) throw err;
-      try {
-        result = JSON.parse(data);
-      } catch (e) {
-          console.error( e );
-      }
-  });
-  return result;
+  return JSON.parse(fs.readFileSync(filepath, 'utf8'));
 }
 
 function sortDec(array) { 
@@ -33,11 +26,11 @@ function joinTacticsAndTPs(tactics, TPs) {
   return joined;
 }
 
-// returns, for a given TZ, [nActiveCountry0,... 1023]
+// returns, for a given League: leafsLeague[128] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13], 0,...]
 function createLeague() {
   teamState = readTeam442();
-  console.log(teamState);
   return teamState;
+  
 }
 
 
