@@ -15,7 +15,7 @@ function joinTacticsAndTPs(tactics, TPs) {
   joined = Array.from(new Array(n), (x,i) => 0);
   for (i = 0; i < tactics.length; i++) {
     joined [2*i] = tactics[i];
-    joined [2*i + 1] = TPs[i];
+    joined [2*i + 1] = TPs[i]; 
   }
   return joined;
 }
