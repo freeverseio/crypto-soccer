@@ -79,9 +79,9 @@ contract('Championships', (accounts) => {
     it('computeTeamRankingPoints with no previous points', async () =>  {
         // teamSkills = 5*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*20-100) = 143000
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5 * 25 + 18*1000 *(6*20-100) = 43000
         result = await champs.computeTeamRankingPointsPure(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(143000);
+        result[0].toNumber().should.be.equal(385000);
         // prevPerfPoints = 0.6 * 20 = 12
         result[1].toNumber().should.be.equal(12);
     });
@@ -89,9 +89,9 @@ contract('Championships', (accounts) => {
     it('computeTeamRankingPoints with previous points', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5*50 * 25 + 18*1000 *(4*10+ 6 * 2 -100) = 6206800
         result = await champs.computeTeamRankingPointsPure(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(6206800);
+        result[0].toNumber().should.be.equal(386000);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
         result[1].toNumber().should.be.equal(5);
     });
@@ -99,7 +99,7 @@ contract('Championships', (accounts) => {
     it('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5*50 * 25 + 18*1000 *(4*10+ 6 * 2 -100) = 386000
         TWO_TO_28 = 2**28;
         MAX_TEAMIDX_IN_COUNTRY = TWO_TO_28 - 1;
         teamId = await champs.encodeTZCountryAndVal(tz = INIT_TZ, countryIdxInTZ = 0, teamIdxInCountry = 0)
@@ -110,7 +110,7 @@ contract('Championships', (accounts) => {
         // make it human:
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, accounts[0]).should.be.fulfilled;
         result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(6206800*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
+        result[0].toNumber().should.be.equal(386000*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
         result[1].toNumber().should.be.equal(5);
     });
