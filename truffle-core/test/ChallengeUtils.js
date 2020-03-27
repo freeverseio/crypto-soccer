@@ -32,6 +32,8 @@ contract('Updates', (accounts) => {
         var {0: activeTeams, 1: orgMap} = chllUtils.createUniverse(10);
         console.log(activeTeams)
         console.log(orgMap)
+        var team = chllUtils.createLeague();
+        console.log(team)
     });
 
 });

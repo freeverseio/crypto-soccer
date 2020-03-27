@@ -3,6 +3,18 @@ const NULL_BYTES32 = web3.eth.abi.encodeParameter('bytes32','0x0');
 const merkleUtils = require('../utils/merkleUtils.js');
 const teamsUtils = require('../utils/teamsUtils.js');
 
+function readTeam442(filepath = 'test/testdata/team442.json'){
+  fs.readFile(filepath, 'utf8', function (err, data) {
+      if (err) throw err;
+      try {
+        result = JSON.parse(data);
+      } catch (e) {
+          console.error( e );
+      }
+  });
+  return result;
+}
+
 function sortDec(array) { 
   arr = [...array];
   return arr.sort(function(a, b){return b-a});
@@ -23,7 +35,9 @@ function joinTacticsAndTPs(tactics, TPs) {
 
 // returns, for a given TZ, [nActiveCountry0,... 1023]
 function createLeague() {
-  teamState = teamsUtils.createTeamState442();
+  teamState = readTeam442();
+  console.log(teamState);
+  return teamState;
 }
 
 
@@ -53,4 +67,5 @@ function createUniverse(nLevels) {
 
   module.exports = {
     createUniverse,
+    createLeague,
   }
