@@ -239,10 +239,13 @@ contract('Assets', (accounts) => {
         teamIdxInCountry2 = 1;
         teamId1 = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry1);
         teamId2 = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
-        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, BOB).should.be.fulfilled;
+        addresses = [ALICE, BOB];
+        teamIds = [teamId1, teamId2];
+        tx = await assets.transferFirstBotsToAddresses([tz, tz], [countryIdxInTZ, countryIdxInTZ], addresses).should.be.fulfilled;
+        let count = -1;
         truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
-            return event.teamId.toNumber() == teamId2 && event.to == BOB;
+            count++;
+            return event.teamId.toNumber() == teamIds[count] && event.to == addresses[count];
         });
         isBot = await assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
         isBot.should.be.equal(false);
