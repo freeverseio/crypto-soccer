@@ -1,6 +1,7 @@
 const NULL_BYTES32 = web3.eth.abi.encodeParameter('bytes32','0x0');
 
 const merkleUtils = require('../utils/merkleUtils.js');
+const teamsUtils = require('../utils/teamsUtils.js');
 
 function sortDec(array) { 
   arr = [...array];
@@ -22,6 +23,7 @@ function joinTacticsAndTPs(tactics, TPs) {
 
 // returns, for a given TZ, [nActiveCountry0,... 1023]
 function createLeague() {
+  teamState = teamsUtils.createTeamState442();
 }
 
 
