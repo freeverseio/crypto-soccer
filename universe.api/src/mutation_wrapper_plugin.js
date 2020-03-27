@@ -16,7 +16,7 @@ const updateTrainingByTeamIdWrapper = propName => {
             throw "unexistent team";
         }
 
-        const allowedTP = result.rows[0];
+        const allowedTP = result.rows[0].training_points;
 
         isTrainingGroupValid(allowedTP, trainingPatch.attackersShoot, trainingPatch.attackersSpeed, trainingPatch.attackersPass, trainingPatch.attackersDefence, trainingPatch.attackersEndurance);
         isTrainingGroupValid(allowedTP, trainingPatch.defendersShoot, trainingPatch.defendersSpeed, trainingPatch.defendersPass, trainingPatch.defendersDefence, trainingPatch.defendersEndurance);

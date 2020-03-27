@@ -17,8 +17,8 @@ contract Championships is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint8 constant public MATCHES_PER_DAY = 4;
     uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
     uint64 constant private INERTIA = 4;
-    uint64 constant private WEIGHT_SKILLS = 100;
-    uint64 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
+    uint64 constant private WEIGHT_SKILLS = 20;
+    uint64 constant private SKILLS_AT_START = 18000; // 18 players per team at start with 50 avg
     uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; // 268435455 = 2**28 - 1 
 
     Engine private _engine;
