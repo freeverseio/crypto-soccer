@@ -2,10 +2,13 @@
 package schema
 
 const Schema = ` 
+	type Query {}
+
 	type Mutation {
         transferFirstBotToAddr(
-          	timezone: Int,
+          	timezone: Int!,
           	countryIdxInTimezone: ID!,
           	address: String!
-        ): Boolean,
+		): Boolean!,
+	}
 `

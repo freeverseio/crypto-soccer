@@ -9,6 +9,7 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/gin-gonic/gin v1.5.0
 	github.com/google/uuid v1.1.1
+	github.com/graph-gophers/graphql-go v0.0.0-20191115155744-f33e81362277
 	github.com/ipfs/go-ipfs-api v0.0.3
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
