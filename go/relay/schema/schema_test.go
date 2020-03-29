@@ -9,6 +9,6 @@ import (
 )
 
 func TestTransferFirstBot(t *testing.T) {
-	_, err := graphql.ParseSchema(schema.Schema, &schema.Resolver{})
+	_, err := graphql.ParseSchema(schema.Schema, schema.NewResolver())
 	assert.NilError(t, err)
 }
