@@ -1,3 +1,0 @@
-type Mutation {
-   transferFirstBotToAddr(timezone: Int, countryIdxInTimezone: ID!, address: String!): Boolean
-}
