@@ -8,10 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func NewServer() error {
+func NewServer(c chan TransferFirstBotToAddrInput) error {
 	log.Info("New GraphQL server staring ...")
 
-	schema := graphql.MustParseSchema(Schema, NewResolver())
+	resolver := NewResolver(c)
+	schema := graphql.MustParseSchema(Schema, resolver)
 
 	handler := relay.Handler{Schema: schema}
 

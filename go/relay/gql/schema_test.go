@@ -8,7 +8,7 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestTransferFirstBot(t *testing.T) {
-	_, err := graphql.ParseSchema(gql.Schema, gql.NewResolver())
+func TestSchemaParsing(t *testing.T) {
+	_, err := graphql.ParseSchema(gql.Schema, gql.NewResolver(nil))
 	assert.NilError(t, err)
 }

@@ -1,9 +1,9 @@
 package gql
 
-func (_ *Resolver) TransferFirstBotToAddr(input struct {
-	Timezone             int32
-	CountryIdxInTimezone string
-	Address              string
-}) bool {
-	return false
+func (b *Resolver) TransferFirstBotToAddr(input TransferFirstBotToAddrInput) bool {
+	if b.c != nil {
+		b.c <- input
+	}
+
+	return true
 }

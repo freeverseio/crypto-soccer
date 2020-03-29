@@ -1,23 +1,35 @@
 package gql_test
 
 import (
-	"context"
-	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/relay/gql"
-	graphql "github.com/graph-gophers/graphql-go"
 	"gotest.tools/assert"
 )
 
-func TestTransferFirstBotToAddr(t *testing.T) {
-	schema := graphql.MustParseSchema(gql.Schema, gql.NewResolver())
-	query := `mutation {
-		transferFirstBotToAddr(timezone: 3, countryIdxInTimezone: "4", address: "0x0")
-	}`
-	ctx := context.Background()
-	resp := schema.Exec(ctx, query, "", nil)
-	json, err := json.Marshal(resp)
-	assert.NilError(t, err)
-	assert.Equal(t, string(json), `{"data":{"transferFirstBotToAddr":false}}`)
+func TestTransferFirstBot(t *testing.T) {
+	t.Parallel()
+	input := gql.TransferFirstBotToAddrInput{}
+	resolver := gql.NewResolver(nil)
+	assert.Equal(t, resolver.TransferFirstBotToAddr(input), true)
+}
+
+func TestTransferFirstBotChannel(t *testing.T) {
+	t.Parallel()
+	c := make(chan gql.TransferFirstBotToAddrInput)
+	resolver := gql.NewResolver(c)
+
+	input := gql.TransferFirstBotToAddrInput{}
+	input.Timezone = 23
+	input.CountryIdxInTimezone = "4"
+	input.Address = "sdfsgsd"
+	go resolver.TransferFirstBotToAddr(input)
+
+	select {
+	case result := <-c:
+		assert.Equal(t, input, result)
+	case <-time.After(1 * time.Second):
+		t.Error("timeout")
+	}
 }

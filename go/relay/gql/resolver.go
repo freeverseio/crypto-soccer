@@ -1,7 +1,9 @@
 package gql
 
-type Resolver struct{}
+type Resolver struct {
+	c chan TransferFirstBotToAddrInput
+}
 
-func NewResolver() *Resolver {
-	return &Resolver{}
+func NewResolver(c chan TransferFirstBotToAddrInput) *Resolver {
+	return &Resolver{c}
 }
