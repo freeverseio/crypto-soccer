@@ -1,17 +1,17 @@
-package schema_test
+package gql_test
 
 import (
 	"context"
 	"encoding/json"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/schema"
+	"github.com/freeverseio/crypto-soccer/go/relay/gql"
 	graphql "github.com/graph-gophers/graphql-go"
 	"gotest.tools/assert"
 )
 
 func TestTransferFirstBotToAddr(t *testing.T) {
-	schema := graphql.MustParseSchema(schema.Schema, schema.NewResolver())
+	schema := graphql.MustParseSchema(gql.Schema, gql.NewResolver())
 	query := `mutation {
 		transferFirstBotToAddr(timezone: 3, countryIdxInTimezone: "4", address: "0x0")
 	}`

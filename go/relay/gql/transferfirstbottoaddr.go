@@ -1,4 +1,4 @@
-package schema
+package gql
 
 func (_ *Resolver) TransferFirstBotToAddr(input struct {
 	Timezone             int32
