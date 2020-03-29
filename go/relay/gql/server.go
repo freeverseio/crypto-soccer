@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func NewServer(c chan TransferFirstBotToAddrInput) error {
+func NewServer(c chan interface{}) error {
 	log.Info("New GraphQL server staring ...")
 
 	resolver := NewResolver(c)

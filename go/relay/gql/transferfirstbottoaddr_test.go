@@ -12,12 +12,14 @@ func TestTransferFirstBot(t *testing.T) {
 	t.Parallel()
 	input := gql.TransferFirstBotToAddrInput{}
 	resolver := gql.NewResolver(nil)
-	assert.Equal(t, resolver.TransferFirstBotToAddr(input), true)
+	result, err := resolver.TransferFirstBotToAddr(input)
+	assert.NilError(t, err)
+	assert.Equal(t, result, true)
 }
 
 func TestTransferFirstBotChannel(t *testing.T) {
 	t.Parallel()
-	c := make(chan gql.TransferFirstBotToAddrInput)
+	c := make(chan interface{})
 	resolver := gql.NewResolver(c)
 
 	input := gql.TransferFirstBotToAddrInput{}
