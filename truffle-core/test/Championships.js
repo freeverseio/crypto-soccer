@@ -125,6 +125,39 @@ contract('Championships', (accounts) => {
         debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
         debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
+
+    it('computeLeagueLeaderBoard at start', async () =>  {
+        MATCHES_PER_LEAGUE = 56;
+        matchDay = 0;
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [0,0]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [ 802, 754, 610, 441, 423, 402, 389, 110 ];
+        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+        // changing the results should not affect
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [5,4]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+        // changing the seed should affect:
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, web3.utils.toBN(web3.utils.keccak256("pop"))).should.be.fulfilled;
+        expectedPoints =  [ 875, 636, 620, 319, 248, 238, 218, 175 ];
+        expectedRanking = [ 1, 7, 3, 0, 4, 6, 5, 2 ];
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+    });
+
+    it('computeLeagueLeaderBoard at end of league', async () =>  {
+        MATCHES_PER_LEAGUE = 56;
+        matchDay = 14;
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [5,5]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [14000070802, 14000070754, 14000070610, 14000070441, 14000070423, 14000070402, 14000070389, 14000070110 ];
+        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+    });
     
     it('computeLeagueLeaderBoard many clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
