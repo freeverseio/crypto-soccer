@@ -15,6 +15,6 @@ func TestTransferFirstBot(t *testing.T) {
 	event.Timezone = 10
 	event.CountryIdxInTimezone = "0"
 	event.Address = "0xeb3ce112d8610382a994646872c4361a96c82cf8"
-	c := consumer.NewTransferFirstBot(bc.Client, auth, bc.Contracts.Assets)
+	c := consumer.NewFirstBotTransfer(bc.Client, auth, bc.Contracts.Assets)
 	assert.NilError(t, c.Process(event))
 }

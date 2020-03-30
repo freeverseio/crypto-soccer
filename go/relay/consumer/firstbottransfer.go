@@ -12,25 +12,25 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-type TransferFirstBot struct {
+type FirstBotTransfer struct {
 	client         *ethclient.Client
 	assetsContract *assets.Assets
 	auth           *bind.TransactOpts
 }
 
-func NewTransferFirstBot(
+func NewFirstBotTransfer(
 	client *ethclient.Client,
 	auth *bind.TransactOpts,
 	assetsContract *assets.Assets,
-) *TransferFirstBot {
-	return &TransferFirstBot{
+) *FirstBotTransfer {
+	return &FirstBotTransfer{
 		client,
 		assetsContract,
 		auth,
 	}
 }
 
-func (b TransferFirstBot) Process(event gql.TransferFirstBotToAddrInput) error {
+func (b FirstBotTransfer) Process(event gql.TransferFirstBotToAddrInput) error {
 	timezone := uint8(event.Timezone)
 	countryIdxInTimezone, _ := new(big.Int).SetString(event.CountryIdxInTimezone, 10)
 	if countryIdxInTimezone == nil {

@@ -71,36 +71,18 @@ func main() {
 		log.Fatal("Failed to connect to DBMS: %v", err)
 	}
 
-	processor := consumer.NewProcessor(client, auth, updatesContract, *ipfsURL)
-	transferFirstBotConsumer := consumer.NewTransferFirstBot(client, auth, assetsContract)
+	ch := make(chan interface{}, *bufferSize)
 
-	c := make(chan interface{}, *bufferSize)
-	go gql.NewServer(c)
-	go submitactions.NewSubmitTimer(c, 5*time.Second)
+	go gql.NewServer(ch)
+	go submitactions.NewSubmitTimer(ch, 5*time.Second)
 
-	for {
-		event := <-c
-		switch ev := event.(type) {
-		case gql.TransferFirstBotToAddrInput:
-			log.Info("Received TransferFirstBotAddrInput")
-			if err := transferFirstBotConsumer.Process(ev); err != nil {
-				log.Fatal(err)
-			}
-		case submitactions.SubmitActionsEvent:
-			log.Info("Relay sumbit action event")
-			tx, err := db.Begin()
-			if err != nil {
-				log.Fatal(err)
-			}
-			if err = processor.Process(tx); err != nil {
-				tx.Rollback()
-				log.Fatal(err)
-			}
-			if err = tx.Commit(); err != nil {
-				log.Fatal(err)
-			}
-		default:
-			log.Error("unknown event: %v", event)
-		}
-	}
+	consumer.NewConsumer(
+		ch,
+		client,
+		auth,
+		updatesContract,
+		assetsContract,
+		*ipfsURL,
+		db,
+	).Start()
 }

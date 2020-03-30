@@ -15,7 +15,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/useractions"
 )
 
-type Processor struct {
+type ActionsSubmitter struct {
 	client          *ethclient.Client
 	updatesContract *updates.Updates
 	auth            *bind.TransactOpts
@@ -26,13 +26,13 @@ type Processor struct {
 // public
 // *****************************************************************************
 
-func NewProcessor(
+func NewActionsSubmitter(
 	client *ethclient.Client,
 	auth *bind.TransactOpts,
 	updatesContract *updates.Updates,
 	ipfsURL string,
-) *Processor {
-	return &Processor{
+) *ActionsSubmitter {
+	return &ActionsSubmitter{
 		client,
 		updatesContract,
 		auth,
@@ -40,7 +40,7 @@ func NewProcessor(
 	}
 }
 
-func (p *Processor) Process(tx *sql.Tx) error {
+func (p *ActionsSubmitter) Process(tx *sql.Tx) error {
 	nextUpdate, err := p.NextUpdateSinceEpochSec()
 	now := NowSinceEpochSec()
 	if now < nextUpdate {
@@ -92,7 +92,7 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	return nil
 }
 
-func (p *Processor) NextUpdateSinceEpochSec() (int64, error) {
+func (p *ActionsSubmitter) NextUpdateSinceEpochSec() (int64, error) {
 	secs, err := p.updatesContract.GetNextVerseTimestamp(nil)
 	if err != nil {
 		return 0, err
