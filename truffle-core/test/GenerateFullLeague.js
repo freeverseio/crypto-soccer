@@ -343,13 +343,17 @@ contract('Evolution', (accounts) => {
             seeds: [], // [2 * nMatchDays]
             teamIds: [], // [nTeamsInLeague]
             startTimes: [], // [2 * nMatchDays]
-            teamStates: [], // [2 * nMatchdays+1][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
-            matchLogs: [], // [2 * nMatchdays+1][nTeamsInLeague]
-            results: [], // [nMatchesPerLeague][2]  -> goals per team per match
-            points: [], // [2 * nMatchdays+1][nTeamsInLeague]
+            teamStates: [], // [1 + 2 * nMatchdays][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
+            matchLogs: [], // [1 + 2 * nMatchdays][nTeamsInLeague]
+            results: [], // [nMatchesPerLeague][2]  ->  per team per match
+            points: [], // [2 * nMatchdays][nTeamsInLeague]
             tactics: [], // [2 * nMatchdays][nTeamsInLeague]
             trainings: [] // [2 * nMatchdays][nTeamsInLeague]
         }
+        // on starting points: if we query computeLeagueLeaderBoard, I would get 
+        // a non-null value, sorting because of all tied, which would depend on a seed.
+        // we don't have that seed before a match starts, so we set all points to 0.
+
         leagueData.seeds = Array.from(new Array(2 * nMatchdays), (x,i) => web3.utils.keccak256(i.toString()));
         leagueData.startTimes = Array.from(new Array(2 * nMatchdays), (x,i) => now + i * secsBetweenMatches);
         allMatchLogs = Array.from(new Array(nTeamsInLeague), (x,i) => 0);
@@ -369,12 +373,10 @@ contract('Evolution', (accounts) => {
         for (day = 0; day < 2 * nMatchdays; day++) {
             leagueData.tactics.push(Array.from(new Array(nMatchdays), (x,i) => tact));
         }
-        var {0: rnking, 1: lPoints} = await champs.computeLeagueLeaderBoard([...leagueData.results], day =0, leagueData.seeds[0]).should.be.fulfilled;
-        leagueData.points.push(lPoints);   
 
         // we just need to build, across the league: teamStates, points, teamIds
-        for (day = 0; day < 1; day++) {
-        // for (day = 0; day < nMatchdays; day++) {
+        // for (day = 0; day < 1; day++) {
+        for (day = 0; day < nMatchdays; day++) {
             console.log("day ", day)
             // 1st half
             for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
