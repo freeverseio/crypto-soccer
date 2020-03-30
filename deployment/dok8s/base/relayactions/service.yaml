@@ -5,7 +5,9 @@ metadata:
   labels:
     app.kubernetes.io/app: relayactions
 spec:
-  ports:
-  - port: 4004
   selector:
     app.kubernetes.io/app: relayactions
+  ports:
+  - name: api
+    port: 4000
+    targetPort: 4000

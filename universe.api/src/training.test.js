@@ -63,6 +63,10 @@ describe('training', () => {
         test('group with sum < TP', () => {
             expect(() => isTrainingSpecialPlayerValid(TP, 2, 2, 2, 1, 2)).not.toThrow();
         });
+
+        test('all null', () => {
+            expect(() => isTrainingSpecialPlayerValid(47, undefined, undefined, undefined, undefined, undefined)).toThrow("invalid params");
+        });
     });
     
     describe('low TPs: special player', () => {
@@ -99,6 +103,4 @@ describe('training', () => {
             expect(() => isTrainingGroupValid(TP, 1, 0, 0, 0, 0)).toThrow("group sum 1 exceeds available TP 0");
         });
     });
-
-    
 });

@@ -133,7 +133,9 @@ metadata:
   name: relayactions
 spec:
   ports:
-  - port: 4004
+  - name: api
+    port: 4000
+    targetPort: 4000
   selector:
     app.kubernetes.io/app: relayactions
     app.kubernetes.io/component: relayactions
@@ -318,6 +320,8 @@ spec:
         - http://universeapi:4000/graphql
         - -m
         - http://trader:4000/graphql
+        - -r
+        - http://relayactions:4000/graphql
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -488,6 +492,8 @@ spec:
         - http://xdai:8545
         - -updatesContractAddress
         - $(UPDATES_CONTRACT_ADDRESS)
+        - -assetsContractAddress
+        - $(ASSETS_CONTRACT_ADDRESS)
         - -ipfs
         - ipfsnode:5001
         envFrom:
@@ -496,6 +502,8 @@ spec:
         image: freeverseio/relay.actions:0.13.1
         imagePullPolicy: Always
         name: relayactions
+        ports:
+        - containerPort: 4000
       imagePullSecrets:
       - name: docker-secret
 ---
@@ -636,12 +644,6 @@ spec:
       - args:
         - -d
         - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer
-        - --assetsContractAddress
-        - $(ASSETS_CONTRACT_ADDRESS)
-        - --ethereum
-        - http://xdai:8545
-        - --sender
-        - $(sender)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
