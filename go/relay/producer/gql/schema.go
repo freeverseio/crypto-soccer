@@ -2,7 +2,9 @@
 package gql
 
 const Schema = ` 
-	type Query {}
+	type Query {
+		ping: Boolean!,
+	}
 
 	type Mutation {
         transferFirstBotToAddr(

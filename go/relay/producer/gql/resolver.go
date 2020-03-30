@@ -7,3 +7,7 @@ type Resolver struct {
 func NewResolver(c chan interface{}) *Resolver {
 	return &Resolver{c}
 }
+
+func (b *Resolver) Ping() bool {
+	return true
+}
