@@ -9,11 +9,6 @@ const MyPlugin = (assets, from) => {
     return {
       typeDefs: gql`
       extend type Mutation {
-        transferFirstBotToAddr(
-          timezone: Int,
-          countryIdxInTimezone: ID!,
-          address: String!
-        ): Boolean,
         createSpecialPlayer(
           playerId: String!,
           name: String!,

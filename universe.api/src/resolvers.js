@@ -1,15 +1,6 @@
 const resolvers = (sql, assets, from) => {
   return {
     Mutation: {
-      transferFirstBotToAddr: async (_, { timezone, countryIdxInTimezone, address }) => {
-        const gas = await assets.methods
-          .transferFirstBotToAddr(timezone, countryIdxInTimezone, address)
-          .estimateGas();
-        await assets.methods
-          .transferFirstBotToAddr(timezone, countryIdxInTimezone, address)
-          .send({ from, gas });
-        return true;
-      },
       createSpecialPlayer: async (_, params, context) => {
         const { playerId, name, defence, speed, pass, shoot, endurance, preferredPosition, potential, dayOfBirth } = params;
         const query = sql.query`INSERT INTO players (
