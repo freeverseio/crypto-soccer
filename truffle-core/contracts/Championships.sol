@@ -200,7 +200,9 @@ contract Championships is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     }
 
     // returns two sorted lists, [best teamIdxInLeague, points], ....
-    // idx in the N*(N-1) matrix, assuming t0 < t1
+    // corresponding to ranking and points AT THE BEGINING OF matchday
+    // so if we receive matchDay = 0, it is before playing any game,
+    // where all teams have 0 points, and sorting is random.
     function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay, uint256 matchDaySeed) public pure returns (
         uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
     ) {
