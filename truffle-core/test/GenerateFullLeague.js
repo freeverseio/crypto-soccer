@@ -271,22 +271,21 @@ contract('Evolution', (accounts) => {
     //     trainings: [] // [2 * nMatchdays][nTeamsInLeague]
     // }
     // - Data[1024] = [League[512], Team$_{i, aft}$[32], Team$_{i, bef}$[32]]
-    // League[512] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13; half=0,1], Goals[56][2]]
+    // League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
     // 
-    // returns leaves AFTER having played the matches at matchday = day, half = half.
-    // use day = -1 for leafs before starting
-    //   - idx = day * nMatchesPerDay * 4 + matchInDay * 4 + half * 2+ team
-    function buildLeafs([...leagueData], day, matchIdxInDay, half) {
+    // returns leafs AFTER having played the matches at matchday = day, half = half.
+    //  - sorting results:
+    //      - idx = day * nMatchesPerDay * 2 + matchInDay * 2 + teamHomeOrAway
+    function buildLeafs(leagueData, day, matchIdxInDay, half) {
         nTeamsInLeague = 8;
-        nMathLogs = 14 * 4 * 2 * 2; // = nDays * nMatchesPerDay * nHalfs * 2teams
         leafs = []
-        if (day == -1) {
-            points = Array.from(new Array(nTeamsInLeague), (x,i) => 0);
-            leafs = leafs.concat(points);
-            leafs = leafs.concat(zeroPadToLength(leagueData.matchLogs[0], nMathLogs));
-            leafs = leafs.concat(zeroPadToLength(leagueData.results[0], nMathLogs));
-            
+        leafs = leafs.concat(leagueData.points[day]);
+        for (d = 0; d < day; d++) {
+            leafs = leafs.concat(leagueData.results[d][0]);
+            leafs = leafs.concat(leagueData.results[d][1]);
         }
+        leafs = zeroPadToLength(leafs, 128);
+        return leafs
     }
 
     
@@ -377,7 +376,7 @@ contract('Evolution', (accounts) => {
         }
 
         // we just need to build, across the league: teamStates, points, teamIds
-        for (day = 0; day < 1; day++) {
+        for (day = 0; day < 2; day++) {
         // for (day = 0; day < nMatchdays; day++) {
             console.log("day ", day)
             // 1st half
@@ -443,7 +442,7 @@ contract('Evolution', (accounts) => {
         var fs = require('fs');
         leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
         // build leafs
-        leafs = buildLeafs([...leagueData], day, matchIdxInDay, half);
+        leafs = buildLeafs(leagueData, day = 1, matchIdxInDay = 0, half = 0);
         console.log(leafs)
     });
     
