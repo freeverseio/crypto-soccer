@@ -263,12 +263,12 @@ contract('Evolution', (accounts) => {
     //     seeds: [], // [2 * nMatchDays]
     //     teamIds: [], // [nTeamsInLeague]
     //     startTimes: [], // [2 * nMatchDays]
-    //     teamStates: [], // [2 * nMatchdays+1][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
-    //     matchLogs: [], // [2 * nMatchdays+1][nTeamsInLeague]
+    //     teamStates: [], // [2 * nMatchdays + 1][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
+    //     matchLogs: [], // [2 * nMatchdays+ 1][nTeamsInLeague]
     //     results: [], // [nMatchesPerLeague][2]  -> goals per team per match
-    //     points: [], // [2 * nMatchdays+1][nTeamsInLeague]
-    //     tactics: [], // [2 * nMatchdays][nTeamsInLeague]
-    //     trainings: [] // [2 * nMatchdays][nTeamsInLeague]
+    //     points: [], // [2 * nMatchdays][nTeamsInLeague]
+    //     tactics: [], // [2 * nMatchdays + 1][nTeamsInLeague]
+    //     trainings: [] // [2 * nMatchdays + 1][nTeamsInLeague]
     // }
     // - Data[1024] = [League[512], Team$_{i, aft}$[32], Team$_{i, bef}$[32]]
     // League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
@@ -276,15 +276,34 @@ contract('Evolution', (accounts) => {
     // returns leafs AFTER having played the matches at matchday = day, half = half.
     //  - sorting results:
     //      - idx = day * nMatchesPerDay * 2 + matchInDay * 2 + teamHomeOrAway
-    function buildLeafs(leagueData, day, matchIdxInDay, half) {
+    function buildLeafs(leagueData, day, half) {
         nTeamsInLeague = 8;
-        leafs = []
-        leafs = leafs.concat(leagueData.points[day]);
-        for (d = 0; d < day; d++) {
-            leafs = leafs.concat(leagueData.results[d][0]);
-            leafs = leafs.concat(leagueData.results[d][1]);
+        nPlayersInTeam = 25;
+        var leafs;
+        if ((half == 0) && (day == 0)) { 
+            leafs =  Array.from(new Array(nTeamsInLeague), (x,i) => 0);
+        } else {
+            lastDayToCount = (half == 0) ? day - 1 : day;
+            leafs = leagueData.points[lastDayToCount]; 
+            for (d = 0; d < lastDayToCount; d++) {
+                leafs.push(leagueData.results[d][0]);
+                leafs.push(leagueData.results[d][1]);
+            }
         }
         leafs = zeroPadToLength(leafs, 128);
+
+        for (extraHalf = 0; extraHalf < 2; extraHalf++) {
+            teamData = [];
+            for (team = 0; team < nTeamsInLeague; team++) {
+                for (p = 0; p < nPlayersInTeam; p++) {
+                    teamData.push(leagueData.teamStates[2*day + half + extraHalf][team][p])
+                }
+                teamData.push(leagueData.tactics[2*day + half + extraHalf]);
+                teamData.push(leagueData.trainings[2*day + half + extraHalf]);
+                teamData.push(leagueData.matchLogs[2*day + half + extraHalf][team]);
+                leafs.push(zeroPadToLength(teamData, 32));
+            }
+        }
         return leafs
     }
 
@@ -348,8 +367,8 @@ contract('Evolution', (accounts) => {
             matchLogs: [], // [1 + 2 * nMatchdays][nTeamsInLeague]
             results: [], // [nMatchesPerLeague][2]  ->  per team per match
             points: [], // [2 * nMatchdays][nTeamsInLeague]
-            tactics: [], // [2 * nMatchdays][nTeamsInLeague]
-            trainings: [] // [2 * nMatchdays][nTeamsInLeague]
+            tactics: [], // [2 * nMatchdays + 1][nTeamsInLeague]
+            trainings: [] // [2 * nMatchdays + 1][nTeamsInLeague]
         }
         // on starting points: if we query computeLeagueLeaderBoard, I would get 
         // a non-null value, sorting because of all tied, which would depend on a seed.
@@ -359,7 +378,6 @@ contract('Evolution', (accounts) => {
         leagueData.startTimes = Array.from(new Array(2 * nMatchdays), (x,i) => now + i * secsBetweenMatches);
         allMatchLogs = Array.from(new Array(nTeamsInLeague), (x,i) => 0);
         leagueData.matchLogs.push(allMatchLogs);
-        leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => [0,0]));
         teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         allTeamsStates = Array.from(new Array(nTeamsInLeague), (x,i) => teamState442);
         leagueData.teamStates.push(allTeamsStates);
@@ -369,15 +387,19 @@ contract('Evolution', (accounts) => {
         leagueData.teamIds = Array.from(new Array(nTeamsInLeague), (x,i) => teamId.toNumber() + i);
         leagueData.results = Array.from(new Array(nMatchesPerLeague), (x,i) => [0,0]);
 
-        // same tactics for all matchdays:
+        // tactics and trainings start at all 0 (undefined until we play the first match)
+        leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
+        leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
+        // same tactics and trainings for all matchdays:
         tact = tactics442NoChanges;
         for (day = 0; day < 2 * nMatchdays; day++) {
-            leagueData.tactics.push(Array.from(new Array(nMatchdays), (x,i) => tact));
+            leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => tact));
+            leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
         }
 
         // we just need to build, across the league: teamStates, points, teamIds
-        for (day = 0; day < 2; day++) {
-        // for (day = 0; day < nMatchdays; day++) {
+        // for (day = 0; day < 2; day++) {
+        for (day = 0; day < nMatchdays; day++) {
             console.log("day ", day)
             // 1st half
             for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
@@ -390,7 +412,7 @@ contract('Evolution', (accounts) => {
                     leagueData.seeds[2 * day], leagueData.startTimes[2 * day], 
                     [allTeamsStates[t0], allTeamsStates[t1]], 
                     [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
-                    [leagueData.tactics[2 * day][t0], leagueData.tactics[2 * day][t1]], 
+                    [leagueData.tactics[2 * day + 1][t0], leagueData.tactics[2 * day + 1][t1]], 
                     [allMatchLogs[t0], allMatchLogs[t1]],
                     [is2nd = false, isHom = true, isPlay = false],
                     [tp = 0, tp = 0]
