@@ -203,10 +203,11 @@ contract Championships is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     // corresponding to ranking and points AT THE BEGINING OF matchday
     // so if we receive matchDay = 0, it is before playing any game,
     // where all teams have 0 points, and sorting is random.
+    // so we expect the range of matchday = 0, ... ,MATCHDAYS (included)
     function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay, uint256 matchDaySeed) public pure returns (
         uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
     ) {
-        require(matchDay < MATCHDAYS, "wrong matchDay");
+        require(matchDay <= MATCHDAYS, "wrong matchDay");
         uint8 team0;
         uint8 team1;
         uint16[TEAMS_PER_LEAGUE]memory goals;
