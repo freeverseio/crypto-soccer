@@ -22,7 +22,8 @@ spec:
           - configMapRef:
               name: freeverse-configmap
         args: [-u, "http://universeapi:4000/graphql",
-               -m, "http://trader:4000/graphql"]
+               -m, "http://trader:4000/graphql",
+               -r, "http://relayactions:4000/graphql"]
 
       imagePullSecrets:
       - name: docker-secret
