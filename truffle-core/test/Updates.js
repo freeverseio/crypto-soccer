@@ -60,11 +60,11 @@ contract('Updates', (accounts) => {
 
     });
 
-    it2('test that cannot initialize updates twice', async () =>  {
+    it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
     });
     
-    it2('check timezones for this verse', async () =>  {
+    it('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
@@ -81,7 +81,7 @@ contract('Updates', (accounts) => {
         result.should.be.equal(expected);
     });
     
-    it2('require that BC and local time are less than 15 sec out of sync', async () =>  {
+    it('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await updates.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
         // the substraction is in miliseconds:
@@ -101,7 +101,7 @@ contract('Updates', (accounts) => {
         (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 20*1000).should.be.equal(true);
     });
     
-    it2('check BC is set up in agreement with the local time', async () =>  {
+    it('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
         localTimeMs = Date.now();
@@ -121,7 +121,7 @@ contract('Updates', (accounts) => {
         timeZoneForRound1.toNumber().should.be.equal(expectedHour);
     });
     
-    it2('wait some minutes', async () =>  {
+    it('wait some minutes', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
         extraTime = 3*60
@@ -136,7 +136,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    it2('submitActions to timezone', async () =>  {
+    it('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verseBefore = await updates.getCurrentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -157,7 +157,7 @@ contract('Updates', (accounts) => {
         });
     });
 
-    it2('update Timezone once', async () =>  {
+    it('update Timezone once', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = -10);
@@ -173,7 +173,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
     });
 
-    it2('moveToNextVerse', async () =>  {
+    it('moveToNextVerse', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
@@ -183,7 +183,7 @@ contract('Updates', (accounts) => {
         
     });
 
-    it2('update Timezone many times', async () =>  {
+    it('update Timezone many times', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -194,7 +194,7 @@ contract('Updates', (accounts) => {
         }
     });
 
-    it2('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
+    it('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -205,7 +205,7 @@ contract('Updates', (accounts) => {
         (turnInDayAfter.toNumber() - turnInDayBefore.toNumber()).should.be.equal(1);
     });
     
-    it2('challenging a tz', async () =>  {
+    it('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -318,7 +318,7 @@ contract('Updates', (accounts) => {
     
     
     
-    it2('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
+    it('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -381,7 +381,7 @@ contract('Updates', (accounts) => {
     });
     
     
-    it2('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
+    it('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
         // identical to previous test but we wait 1 challenge time less!
         // so at the very end, we're not allowed to submit actions because the time has not come for next timezone
         await moveToNextVerse(updates, extraSecs = 2);
@@ -446,7 +446,7 @@ contract('Updates', (accounts) => {
     });
 
     
-    it2('true status of timezone challenge', async () =>  {
+    it('true status of timezone challenge', async () =>  {
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
@@ -503,7 +503,6 @@ contract('Updates', (accounts) => {
     
     
     it('vefiable challenge', async () =>  {
-        chllUtils.test();
         await updates.setLevelVerifiableByBC(4).should.be.fulfilled;
         
         return;
