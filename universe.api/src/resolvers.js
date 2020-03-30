@@ -1,4 +1,4 @@
-const resolvers = (sql, assets, from) => {
+const resolvers = (sql) => {
   return {
     Mutation: {
       createSpecialPlayer: async (_, params, context) => {
