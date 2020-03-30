@@ -293,8 +293,8 @@ contract('Evolution', (accounts) => {
         leafs = zeroPadToLength(leafs, 128);
 
         for (extraHalf = 0; extraHalf < 2; extraHalf++) {
-            teamData = [];
             for (team = 0; team < nTeamsInLeague; team++) {
+                teamData = [];
                 for (p = 0; p < nPlayersInTeam; p++) {
                     teamData.push(leagueData.teamStates[2*day + half + extraHalf][team][p])
                 }
