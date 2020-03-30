@@ -277,10 +277,12 @@ contract('Evolution', (accounts) => {
     // use day = -1 for leafs before starting
     //   - idx = day * nMatchesPerDay * 4 + matchInDay * 4 + half * 2+ team
     function buildLeafs([...leagueData], day, matchIdxInDay, half) {
+        nTeamsInLeague = 8;
         nMathLogs = 14 * 4 * 2 * 2; // = nDays * nMatchesPerDay * nHalfs * 2teams
         leafs = []
         if (day == -1) {
-            leafs = leafs.concat(leagueData.points[0]);
+            points = Array.from(new Array(nTeamsInLeague), (x,i) => 0);
+            leafs = leafs.concat(points);
             leafs = leafs.concat(zeroPadToLength(leagueData.matchLogs[0], nMathLogs));
             leafs = leafs.concat(zeroPadToLength(leagueData.results[0], nMathLogs));
             
@@ -331,7 +333,7 @@ contract('Evolution', (accounts) => {
     });
   
     // leafsLeague[128] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13], 0,...]
-    it('create real data for an entire league', async () => {
+    it2('create real data for an entire league', async () => {
         champs = await Championships.new().should.be.fulfilled;
 
         let nMatchdays = 14;
@@ -437,7 +439,7 @@ contract('Evolution', (accounts) => {
         });
     });
 
-    it2('read an entire league and organize data in the leaf format required', async () => {
+    it('read an entire league and organize data in the leaf format required', async () => {
         var fs = require('fs');
         leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
         // build leafs
