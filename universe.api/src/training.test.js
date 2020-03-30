@@ -100,5 +100,14 @@ describe('training', () => {
         });
     });
 
+    describe('example that went wrong in real life', () => {
+        const TP = 47;
+
+        test('group with small sums', () => {
+            expect(() => isTrainingGroupValid(TP, 28, 0, 0, 0, 19)).not.toThrow();
+            expect(() => isTrainingSpecialPlayerValid(TP, 31, 0, 0, 0, 21)).toThrow("group sum 52 exceeds available TP 51");
+        });
+    });
+
     
 });
