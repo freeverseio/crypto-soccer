@@ -1,4 +1,4 @@
-package relay_test
+package consumer_test
 
 import (
 	"database/sql"
