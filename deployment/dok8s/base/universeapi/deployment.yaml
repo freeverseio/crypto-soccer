@@ -24,10 +24,7 @@ spec:
         #args: [-d, postgres://freeverse:freeverse@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer]
         # or we can use dns record universedb[.namespace]. Since they will both be in the same
         # namespace the name of the service is sufficient
-        args: [-d, postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer,
-               --assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
-               --ethereum, "http://xdai:8545",
-               --sender, "$(sender)" ]
+        args: [-d, postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer]
         ports:
         - containerPort: 4000
       imagePullSecrets:

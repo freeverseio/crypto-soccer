@@ -22,7 +22,7 @@ program
   .option("-r, --relayUrl <url>", "graphql relay url", "http://localhost:4003/graphql")
   .parse(process.argv);
 
-const { universeUrl, marketUrl } = program;
+const { universeUrl, marketUrl, relayUrl } = program;
 
 console.log("--------------------------------------------------------");
 console.log("universeUrl       : ", universeUrl);
