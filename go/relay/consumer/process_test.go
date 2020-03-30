@@ -1,15 +1,9 @@
-package relay_test
+package consumer_test
 
 import (
-	//"math/big"
 	"testing"
 
-	//"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	//"github.com/ethereum/go-ethereum/core/types"
-	//"github.com/ethereum/go-ethereum/crypto"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/relay"
 	"gotest.tools/assert"
 )
 

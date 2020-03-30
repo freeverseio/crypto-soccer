@@ -1,4 +1,4 @@
-package relay
+package consumer
 
 import (
 	"database/sql"
@@ -31,14 +31,13 @@ func NewProcessor(
 	auth *bind.TransactOpts,
 	updatesContract *updates.Updates,
 	ipfsURL string,
-) (*Processor, error) {
-
+) *Processor {
 	return &Processor{
 		client,
 		updatesContract,
 		auth,
 		ipfsURL,
-	}, nil
+	}
 }
 
 func (p *Processor) Process(tx *sql.Tx) error {
