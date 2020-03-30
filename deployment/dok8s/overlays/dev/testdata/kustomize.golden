@@ -133,7 +133,9 @@ metadata:
   name: relayactions
 spec:
   ports:
-  - port: 4004
+  - name: api
+    port: 4000
+    targetPort: 4000
   selector:
     app.kubernetes.io/app: relayactions
     app.kubernetes.io/component: relayactions
@@ -488,6 +490,8 @@ spec:
         - http://xdai:8545
         - -updatesContractAddress
         - $(UPDATES_CONTRACT_ADDRESS)
+        - -assetsContractAddress
+        - $(ASSETS_CONTRACT_ADDRESS)
         - -ipfs
         - ipfsnode:5001
         envFrom:
@@ -496,6 +500,8 @@ spec:
         image: freeverseio/relay.actions:dev
         imagePullPolicy: Always
         name: relayactions
+        ports:
+        - containerPort: 4000
       imagePullSecrets:
       - name: docker-secret
 ---
