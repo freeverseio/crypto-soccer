@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/gql"
+	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql"
 	"gotest.tools/assert"
 )
 

@@ -65,6 +65,7 @@ func main() {
 	}
 
 	processor := consumer.NewProcessor(client, auth, updatesContract, *ipfsURL)
+	transferFirstBotConsumer := consumer.NewTransferFirstBot()
 
 	c := make(chan interface{}, *bufferSize)
 	go gql.NewServer(c)
@@ -72,9 +73,12 @@ func main() {
 
 	for {
 		event := <-c
-		switch event := event.(type) {
+		switch ev := event.(type) {
 		case gql.TransferFirstBotToAddrInput:
 			log.Info("Received TransferFirstBotAddrInput")
+			if err := transferFirstBotConsumer.Process(ev); err != nil {
+				log.Fatal(err)
+			}
 		case submitactions.SubmitActionsEvent:
 			log.Info("Relay sumbit action event")
 			tx, err := db.Begin()

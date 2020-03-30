@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/gql"
+	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql"
 	graphql "github.com/graph-gophers/graphql-go"
 	"gotest.tools/assert"
 )
