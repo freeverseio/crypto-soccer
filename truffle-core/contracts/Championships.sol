@@ -200,7 +200,8 @@ contract Championships is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     }
 
     // returns two sorted lists, [best teamIdxInLeague, points], ....
-    // idx in the N*(N-1) matrix, assuming t0 < t1
+    // corresponding to ranking and points AT THE END OF matchday
+    // so if we receive matchDay = 0, it is after playing the 1st game.
     function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay, uint256 matchDaySeed) public pure returns (
         uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
     ) {
@@ -208,7 +209,7 @@ contract Championships is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         uint8 team0;
         uint8 team1;
         uint16[TEAMS_PER_LEAGUE]memory goals;
-        for(uint8 m = 0; m < matchDay * 4; m++) {
+        for(uint8 m = 0; m < (matchDay + 1) * 4; m++) {
             (team0, team1) = getTeamsInLeagueMatch(m / 4, m % 4); 
             goals[team0] += results[m][0];
             goals[team1] += results[m][1];
