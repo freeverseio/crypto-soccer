@@ -375,8 +375,8 @@ contract('Evolution', (accounts) => {
         }
 
         // we just need to build, across the league: teamStates, points, teamIds
-        // for (day = 0; day < 1; day++) {
-        for (day = 0; day < nMatchdays; day++) {
+        for (day = 0; day < 1; day++) {
+        // for (day = 0; day < nMatchdays; day++) {
             console.log("day ", day)
             // 1st half
             for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
@@ -437,7 +437,7 @@ contract('Evolution', (accounts) => {
         });
     });
 
-    it('read an entire league and organize data in the leaf format required', async () => {
+    it2('read an entire league and organize data in the leaf format required', async () => {
         var fs = require('fs');
         leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
         // build leafs

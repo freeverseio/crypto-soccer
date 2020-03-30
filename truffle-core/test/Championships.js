@@ -76,7 +76,7 @@ contract('Championships', (accounts) => {
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
     });
 
-    it2('computeTeamRankingPoints with no previous points', async () =>  {
+    it('computeTeamRankingPoints with no previous points', async () =>  {
         // teamSkills = 5*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5 * 25 + 18*1000 *(6*20-100) = 43000
@@ -86,7 +86,7 @@ contract('Championships', (accounts) => {
         result[1].toNumber().should.be.equal(12);
     });
 
-    it2('computeTeamRankingPoints with previous points', async () =>  {
+    it('computeTeamRankingPoints with previous points', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5*50 * 25 + 18*1000 *(4*10+ 6 * 2 -100) = 6206800
@@ -96,7 +96,7 @@ contract('Championships', (accounts) => {
         result[1].toNumber().should.be.equal(5);
     });
 
-    it2('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
+    it('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5*50 * 25 + 18*1000 *(4*10+ 6 * 2 -100) = 386000
@@ -115,7 +115,7 @@ contract('Championships', (accounts) => {
         result[1].toNumber().should.be.equal(5);
     });
 
-    it2('computeLeagueLeaderBoard almost no clashes', async () =>  {
+    it('computeLeagueLeaderBoard almost no clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
         matchDay = 13;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
@@ -170,13 +170,13 @@ contract('Championships', (accounts) => {
         debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
 
-    it2('check initial constants', async () =>  {
+    it('check initial constants', async () =>  {
         MATCHDAYS.toNumber().should.be.equal(14);
         MATCHES_PER_DAY.toNumber().should.be.equal(4);
         TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
     });
 
-    it2('getTeamsInCupPlayoffMatch', async () => {
+    it('getTeamsInCupPlayoffMatch', async () => {
         teamsExpected = [0,7,9,14,4,11,13,18,8,15,17,22,12,19,21,26,16,23,25,30,20,27,29,34,24,31,33,38,28,35,37,42,32,39,41,46,36,43,45,50,40,47,49,54,44,51,53,58,48,55,57,62,52,59,61,2,56,63,1,6,60,3,5,10];
         for (t = 0; t < 32; t++) {
             team = await champs.getTeamsInCupPlayoffMatch(matchIdxInDay = t).should.be.fulfilled;
@@ -190,7 +190,7 @@ contract('Championships', (accounts) => {
         }
     });
     
-    it2('get all teams for groups', async () => {
+    it('get all teams for groups', async () => {
         teamsExpected = [ 0, 8, 16, 24, 32, 40, 48, 56 ]
         for (t = 0; t < teamsExpected.length; t++) {
             team = await champs.getTeamIdxInCup(groupIdx = 0, posInGroup = t).should.be.fulfilled;
@@ -209,7 +209,7 @@ contract('Championships', (accounts) => {
         }
     });
 
-    it2('get all teams for particular matches', async () => {
+    it('get all teams for particular matches', async () => {
         teams = await champs.getTeamsInCupLeagueMatch(groupIdx = 0, day = 0, matchIdxInDay = 0).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(0);
         teams[1].toNumber().should.be.equal(8);
@@ -219,17 +219,17 @@ contract('Championships', (accounts) => {
         teams[1].toNumber().should.be.equal(79);
     });
 
-    it2('get teams for match in wrong day', async () => {
+    it('get teams for match in wrong day', async () => {
         await champs.getTeamsInLeagueMatch(day = MATCHDAYS-1, matchIdxInDay = 0).should.be.fulfilled;
         await champs.getTeamsInLeagueMatch(day = MATCHDAYS, matchIdxInDay = 0).should.be.rejected;
     });
 
-    it2('get teams for match in wrong match in day', async () => {
+    it('get teams for match in wrong match in day', async () => {
         await champs.getTeamsInLeagueMatch(day = 0, matchIdxInDay = MATCHES_PER_DAY-1).should.be.fulfilled;
         await champs.getTeamsInLeagueMatch(day = 0, matchIdxInDay = MATCHES_PER_DAY).should.be.rejected;
     });
 
-    it2('get teams for match in league day', async () => {
+    it('get teams for match in league day', async () => {
         teams = await champs.getTeamsInLeagueMatch(day = 0, matchIdxInDay = 0).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(0);
         teams[1].toNumber().should.be.equal(1);
