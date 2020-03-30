@@ -320,6 +320,8 @@ spec:
         - http://universeapi:4000/graphql
         - -m
         - http://trader:4000/graphql
+        - -r
+        - http://relayactions:4000/graphql
         envFrom:
         - configMapRef:
             name: freeverse-configmap
