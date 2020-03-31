@@ -59,7 +59,16 @@ contract Assets is AssetsView {
         emit DivisionCreation(tz, countryIdxInTZ, nDivs);
     }
 
-    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) external {
+    // this function will crash if it cannot handle all transfers in one single TX
+    // it is the responsibility of the caller to ensure that the arrays match correctly
+    function transferFirstBotsToAddresses(uint8[] calldata tz, uint256[] calldata countryIdxInTZ, address[] calldata addr) external {
+        for (uint256 i = 0; i < tz.length; i++) {
+            transferFirstBotToAddr(tz[i], countryIdxInTZ[i], addr[i]); 
+        }            
+    }
+
+    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public {
+        require(tzToNCountries[tz] != 0, "Timezone has not been initialized");
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
         uint256 firstBotIdx = countryIdToNHumanTeams[countryId];
         uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);

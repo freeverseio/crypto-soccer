@@ -16,14 +16,14 @@ const updateTrainingByTeamIdWrapper = propName => {
             throw "unexistent team";
         }
 
-        const allowedTP = result.rows[0];
+        const allowedTP = result.rows[0].training_points;
 
         isTrainingGroupValid(allowedTP, trainingPatch.attackersShoot, trainingPatch.attackersSpeed, trainingPatch.attackersPass, trainingPatch.attackersDefence, trainingPatch.attackersEndurance);
         isTrainingGroupValid(allowedTP, trainingPatch.defendersShoot, trainingPatch.defendersSpeed, trainingPatch.defendersPass, trainingPatch.defendersDefence, trainingPatch.defendersEndurance);
         isTrainingGroupValid(allowedTP, trainingPatch.goalkeepersShoot, trainingPatch.goalkeepersSpeed, trainingPatch.goalkeepersPass, trainingPatch.goalkeepersDefence, trainingPatch.goalkeepersEndurance);
         isTrainingGroupValid(allowedTP, trainingPatch.midfieldersShoot, trainingPatch.midfieldersSpeed, trainingPatch.midfieldersPass, trainingPatch.midfieldersDefence, trainingPatch.midfieldersEndurance);
 
-        isTrainingSpecialPlayerValid(allowedTP, trainingPatch.specialPlayersShoot, trainingPatch.specialPlayersSpeed, trainingPatch.specialPlayersPass, trainingPatch.specialPlayersDefence, trainingPatch.specialPlayersEndurance);
+        isTrainingSpecialPlayerValid(allowedTP, trainingPatch.specialPlayerShoot, trainingPatch.specialPlayerSpeed, trainingPatch.specialPlayerPass, trainingPatch.specialPlayerDefence, trainingPatch.specialPlayerEndurance);
 
         return resolve();
     };

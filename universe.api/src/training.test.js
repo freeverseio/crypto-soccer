@@ -63,5 +63,44 @@ describe('training', () => {
         test('group with sum < TP', () => {
             expect(() => isTrainingSpecialPlayerValid(TP, 2, 2, 2, 1, 2)).not.toThrow();
         });
+
+        test('all null', () => {
+            expect(() => isTrainingSpecialPlayerValid(47, undefined, undefined, undefined, undefined, undefined)).toThrow("invalid params");
+        });
+    });
+    
+    describe('low TPs: special player', () => {
+        const TP = 7;
+
+        test('group with sum 0', () => {
+            expect(() => isTrainingSpecialPlayerValid(TP, 0, 0, 0, 0, 0)).not.toThrow();
+        });
+
+        test('group with sum = TP', () => {
+            expect(() => isTrainingSpecialPlayerValid(TP, 3, 4, 0, 0, 0)).not.toThrow();
+        });
+
+        test('group with sum = TP + 1', () => {
+            expect(() => isTrainingSpecialPlayerValid(TP, 4, 4, 0, 0, 0)).toThrow("group sum 8 exceeds available TP 7");
+        });
+    });
+    
+    describe('super low TP vals: TP = 1', () => {
+        const TP = 1;
+
+        test('group with small sums', () => {
+            expect(() => isTrainingGroupValid(TP, 0, 0, 0, 0, 0)).not.toThrow();
+            expect(() => isTrainingGroupValid(TP, 1, 0, 0, 0, 0)).not.toThrow();
+            expect(() => isTrainingGroupValid(TP, 2, 0, 0, 0, 0)).toThrow("group sum 2 exceeds available TP 1");
+        });
+    });
+
+    describe('super low TP vals: TP = 0', () => {
+        const TP = 0;
+
+        test('group with small sums', () => {
+            expect(() => isTrainingGroupValid(TP, 0, 0, 0, 0, 0)).not.toThrow();
+            expect(() => isTrainingGroupValid(TP, 1, 0, 0, 0, 0)).toThrow("group sum 1 exceeds available TP 0");
+        });
     });
 });

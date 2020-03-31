@@ -239,10 +239,13 @@ contract('Assets', (accounts) => {
         teamIdxInCountry2 = 1;
         teamId1 = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry1);
         teamId2 = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
-        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, BOB).should.be.fulfilled;
+        addresses = [ALICE, BOB];
+        teamIds = [teamId1, teamId2];
+        tx = await assets.transferFirstBotsToAddresses([tz, tz], [countryIdxInTZ, countryIdxInTZ], addresses).should.be.fulfilled;
+        let count = -1;
         truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
-            return event.teamId.toNumber() == teamId2 && event.to == BOB;
+            count++;
+            return event.teamId.toNumber() == teamIds[count] && event.to == addresses[count];
         });
         isBot = await assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
         isBot.should.be.equal(false);
@@ -634,7 +637,14 @@ contract('Assets', (accounts) => {
     it('transfer invalid team 0', async () => {
         await market.transferTeam(teamId = 0, BOB).should.be.rejected;
     });
-        
+
+    it('transfer bot from a not-initialized tz', async () => {
+        teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled; 
+        teamId = await assets.encodeTZCountryAndVal(tz = 26, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.rejected; 
+    });
+
     it('transfer fails when team is a bot', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
         await market.transferTeam(teamId, BOB).should.be.rejected;

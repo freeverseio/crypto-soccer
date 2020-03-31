@@ -79,9 +79,9 @@ contract('Championships', (accounts) => {
     it('computeTeamRankingPoints with no previous points', async () =>  {
         // teamSkills = 5*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*20-100) = 143000
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5 * 25 + 18*1000 *(6*20-100) = 43000
         result = await champs.computeTeamRankingPointsPure(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(143000);
+        result[0].toNumber().should.be.equal(385000);
         // prevPerfPoints = 0.6 * 20 = 12
         result[1].toNumber().should.be.equal(12);
     });
@@ -89,9 +89,9 @@ contract('Championships', (accounts) => {
     it('computeTeamRankingPoints with previous points', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5*50 * 25 + 18*1000 *(4*10+ 6 * 2 -100) = 6206800
         result = await champs.computeTeamRankingPointsPure(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(6206800);
+        result[0].toNumber().should.be.equal(386000);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
         result[1].toNumber().should.be.equal(5);
     });
@@ -99,7 +99,7 @@ contract('Championships', (accounts) => {
     it('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5*50 * 25 + 18*1000 *(4*10+ 6 * 2 -100) = 386000
         TWO_TO_28 = 2**28;
         MAX_TEAMIDX_IN_COUNTRY = TWO_TO_28 - 1;
         teamId = await champs.encodeTZCountryAndVal(tz = INIT_TZ, countryIdxInTZ = 0, teamIdxInCountry = 0)
@@ -110,14 +110,14 @@ contract('Championships', (accounts) => {
         // make it human:
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, accounts[0]).should.be.fulfilled;
         result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(6206800*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
+        result[0].toNumber().should.be.equal(386000*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
         result[1].toNumber().should.be.equal(5);
     });
 
     it('computeLeagueLeaderBoard almost no clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
-        matchDay = 13;
+        matchDay = 12;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
         expectedPoints =  [26000000000, 24000000000, 23000000000, 21000000000, 15000000000, 14000000000, 12001081423, 12000075754];
@@ -125,10 +125,32 @@ contract('Championships', (accounts) => {
         debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
         debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
+
+    it('computeLeagueLeaderBoard at start', async () =>  {
+        MATCHES_PER_LEAGUE = 56;
+        matchDay = 0;
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [0,0]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [ 1000000802, 1000000754, 1000000610, 1000000441, 1000000423, 1000000402, 1000000389, 1000000110 ];
+        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+    });
+
+    it('computeLeagueLeaderBoard at end of league', async () =>  {
+        MATCHES_PER_LEAGUE = 56;
+        matchDay = 13;
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [5,5]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [14000070802, 14000070754, 14000070610, 14000070441, 14000070423, 14000070402, 14000070389, 14000070110 ];
+        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+    });
     
     it('computeLeagueLeaderBoard many clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
-        matchDay = 13;
+        matchDay = 12;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
         expectedPoints =  [27000000000, 22000052441, 22000051610, 18000000000, 16002047402, 16001047423, 16000049802, 15000000000];
@@ -139,7 +161,7 @@ contract('Championships', (accounts) => {
 
     it('computeLeagueLeaderBoard all clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
-        matchDay = 13;
+        matchDay = 12;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 1), getRand(2*i+3, 0, 1)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
         expectedPoints =  [ 13000000802, 13000000754, 13000000610, 13000000441, 13000000423, 13000000402, 13000000389, 13000000110 ];
