@@ -117,7 +117,7 @@ contract('Championships', (accounts) => {
 
     it('computeLeagueLeaderBoard almost no clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
-        matchDay = 13;
+        matchDay = 12;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
         expectedPoints =  [26000000000, 24000000000, 23000000000, 21000000000, 15000000000, 14000000000, 12001081423, 12000075754];

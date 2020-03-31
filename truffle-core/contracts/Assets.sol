@@ -68,6 +68,7 @@ contract Assets is AssetsView {
     }
 
     function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public {
+        require(tzToNCountries[tz] != 0, "Timezone has not been initialized");
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
         uint256 firstBotIdx = countryIdToNHumanTeams[countryId];
         uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
