@@ -49,12 +49,12 @@ func (b *Consumer) Start() {
 		event := <-b.ch
 		switch ev := event.(type) {
 		case gql.TransferFirstBotToAddrInput:
-			log.Info("Received TransferFirstBotAddrInput")
+			log.Debug("Received TransferFirstBotAddrInput")
 			if err := firstBotTransfer.Process(ev); err != nil {
 				log.Fatal(err)
 			}
 		case submitactions.SubmitActionsEvent:
-			log.Info("Relay sumbit action event")
+			log.Debug("Relay sumbit action event")
 			tx, err := b.db.Begin()
 			if err != nil {
 				log.Fatal(err)
