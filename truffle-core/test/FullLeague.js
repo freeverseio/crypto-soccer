@@ -357,8 +357,13 @@ contract('Evolution', (accounts) => {
   
     // leafsLeague[128] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13], 0,...]
     it2('create real data for an entire league', async () => {
-        champs = await Championships.new().should.be.fulfilled;
+        mode = 0; // 0 for testing, 1 for re-building testdata
+        // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
+        // => all assingments to 0, but with a special player chosen
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        almostNullTraning = await training.encodeTP(TP = 0, TPperSkill, specialPlayer = 21).should.be.fulfilled;
 
+        champs = await Championships.new().should.be.fulfilled;
         let secsBetweenMatches = 12*3600;
         var leagueData = {
             seeds: [], // [2 * nMatchDays]
@@ -395,20 +400,18 @@ contract('Evolution', (accounts) => {
         tact = tactics442NoChanges;
         for (day = 0; day < 2 * nMatchdays; day++) {
             leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => tact));
-            leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
+            leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => almostNullTraning));
         }
 
         // we just need to build, across the league: teamStates, points, teamIds
         // for (day = 0; day < 2; day++) {
         for (day = 0; day < nMatchdays; day++) {
-            console.log("day ", day)
             // 1st half
             for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
-                console.log("matchIdxInDay 1st half ", matchIdxInDay)
                 var {0: t0, 1: t1} = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
                 t0 = t0.toNumber();
                 t1 = t1.toNumber();
-                console.log(t0, t1);
+                console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 0,  teams:", t0, t1);
                 var {0: newSkills, 1: newLogs} =  await play.play1stHalfAndEvolve(
                     leagueData.seeds[2 * day], leagueData.startTimes[2 * day], 
                     [allTeamsStates[t0], allTeamsStates[t1]], 
@@ -427,11 +430,10 @@ contract('Evolution', (accounts) => {
             leagueData.matchLogs.push(allMatchLogs);        
             // 2nd half
             for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
-                console.log("matchIdxInDay 2nd half ", matchIdxInDay)
                 var {0: t0, 1: t1} = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
                 t0 = t0.toNumber();
                 t1 = t1.toNumber();
-                console.log(t0, t1);
+                console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 1,  teams:", t0, t1);
                 var {0: newSkills, 1: newLogs} =  await play.play2ndHalfAndEvolve(
                     leagueData.seeds[2*day + 1], leagueData.startTimes[2*day + 1], 
                     [allTeamsStates[t0], allTeamsStates[t1]], 
@@ -453,11 +455,19 @@ contract('Evolution', (accounts) => {
             var {0: rnking, 1: lPoints} = await champs.computeLeagueLeaderBoard([...leagueData.results], day, leagueData.seeds[2*day + 1]).should.be.fulfilled;
             leagueData.points.push(lPoints);   
         }
-        fs.writeFile('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
-            if (err) {
-                console.log(err);
-            }
-        });
+        if (mode == 1) {
+            fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+        expectedData = fs.readFileSync('test/testdata/fullleague.json', 'utf8');
+        assert.equal(
+            web3.utils.keccak256(expectedData),
+            web3.utils.keccak256(JSON.stringify(leagueData)),
+            "leafs do not coincide with expected"
+        );
     });
 
     it('read an entire league and organize data in the leaf format required', async () => {
@@ -471,7 +481,7 @@ contract('Evolution', (accounts) => {
             leafs.push([...dayLeafs]);
         }
         if (mode == 1) {
-            fs.writeFile('test/testdata/leafsPerHalf.json', JSON.stringify(leafs), function(err) {
+            fs.writeFileSync('test/testdata/leafsPerHalf.json', JSON.stringify(leafs), function(err) {
                 if (err) {
                     console.log(err);
                 }
@@ -484,6 +494,8 @@ contract('Evolution', (accounts) => {
     it('test day 0', async () => {
         leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
+        assert.equal(leafs[0].length, nLeafs);
+        for (i = 0; i < leafs.length; i++) assert.equal(leafs[0][i], 0, "unexpected non-null leaf at start of league");
     });
     
 });
