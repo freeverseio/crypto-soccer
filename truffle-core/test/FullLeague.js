@@ -3,6 +3,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
+const fs = require('fs');
 const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
@@ -279,8 +280,8 @@ contract('Evolution', (accounts) => {
     function buildLeafs(leagueData, day, half) {
         nTeamsInLeague = 8;
         nPlayersInTeam = 25;
-        var leafs;
-        if ((half == 0) && (day == 0)) { 
+        var isNoPointsYet = (half == 0) && (day == 0);
+        if (isNoPointsYet) { 
             leafs =  Array.from(new Array(nTeamsInLeague), (x,i) => 0);
         } else {
             lastDayToCount = (half == 0) ? day - 1 : day;
@@ -291,20 +292,20 @@ contract('Evolution', (accounts) => {
             }
         }
         leafs = zeroPadToLength(leafs, 128);
-
         for (extraHalf = 0; extraHalf < 2; extraHalf++) {
             for (team = 0; team < nTeamsInLeague; team++) {
                 teamData = [];
                 for (p = 0; p < nPlayersInTeam; p++) {
                     teamData.push(leagueData.teamStates[2*day + half + extraHalf][team][p])
                 }
-                teamData.push(leagueData.tactics[2*day + half + extraHalf]);
-                teamData.push(leagueData.trainings[2*day + half + extraHalf]);
+                teamData.push(leagueData.tactics[2*day + half + extraHalf][team]);
+                teamData.push(leagueData.trainings[2*day + half + extraHalf][team]);
                 teamData.push(leagueData.matchLogs[2*day + half + extraHalf][team]);
-                leafs.push(zeroPadToLength(teamData, 32));
+                leafs = leafs.concat(zeroPadToLength(teamData, 32));
             }
         }
-        return leafs
+        return zeroPadToLength(leafs, 1024);
+        // toni
     }
 
     
@@ -452,7 +453,6 @@ contract('Evolution', (accounts) => {
             var {0: rnking, 1: lPoints} = await champs.computeLeagueLeaderBoard([...leagueData.results], day, leagueData.seeds[2*day + 1]).should.be.fulfilled;
             leagueData.points.push(lPoints);   
         }
-        var fs = require('fs');
         fs.writeFile('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
             if (err) {
                 console.log(err);
@@ -461,11 +461,25 @@ contract('Evolution', (accounts) => {
     });
 
     it('read an entire league and organize data in the leaf format required', async () => {
-        var fs = require('fs');
+        mode = 0; // 0 for testing, 1 for re-building testdata
         leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
-        // build leafs
-        leafs = buildLeafs(leagueData, day = 1, matchIdxInDay = 0, half = 0);
-        console.log(leafs)
+        var leafs = [];
+        nMatchdays = 14;
+        for (day = 0; day < nMatchdays; day++) {
+            dayLeafs = buildLeafs(leagueData, day, half = 0);
+            leafs.push([...dayLeafs]);
+            dayLeafs = buildLeafs(leagueData, day, half = 1);
+            leafs.push([...dayLeafs]);
+        }
+        if (mode == 1) {
+            fs.writeFile('test/testdata/leafsPerHalf.json', JSON.stringify(leafs), function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+        expectedLeafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
+        assert.equal(JSON.stringify(expectedLeafs), JSON.stringify(leafs), "leafs do not coincide with expected");
     });
     
 });
