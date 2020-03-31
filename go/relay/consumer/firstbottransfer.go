@@ -32,7 +32,7 @@ func NewFirstBotTransfer(
 }
 
 func (b FirstBotTransfer) Process(event gql.TransferFirstBotToAddrInput) error {
-	log.Infof("Trasfer First Bot TX: %v Country: %v to %v", event.Timezone, event.CountryIdxInTimezone, event.address)
+	log.Infof("Trasfer First Bot TX: %v Country: %v to %v", event.Timezone, event.CountryIdxInTimezone, event.Address)
 	timezone := uint8(event.Timezone)
 	countryIdxInTimezone, _ := new(big.Int).SetString(event.CountryIdxInTimezone, 10)
 	if countryIdxInTimezone == nil {
