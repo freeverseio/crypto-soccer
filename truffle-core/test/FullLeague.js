@@ -23,6 +23,12 @@ const Championships = artifacts.require('Championships');
 
 
 contract('Evolution', (accounts) => {
+    const nLeafs = 1024;
+    const nMatchdays = 14;
+    const nMatchesPerDay = 4;
+    const nTeamsInLeague = 8;
+    const nMatchesPerLeague = nMatchesPerDay * nMatchdays;
+    const nPlayersInTeam = 25;
     const substitutions = [6, 10, 0];
     const subsRounds = [3, 7, 1];
     const noSubstitutions = [11, 11, 11];
@@ -278,8 +284,6 @@ contract('Evolution', (accounts) => {
     //  - sorting results:
     //      - idx = day * nMatchesPerDay * 2 + matchInDay * 2 + teamHomeOrAway
     function buildLeafs(leagueData, day, half) {
-        nTeamsInLeague = 8;
-        nPlayersInTeam = 25;
         var isNoPointsYet = (half == 0) && (day == 0);
         if (isNoPointsYet) { 
             leafs =  Array.from(new Array(nTeamsInLeague), (x,i) => 0);
@@ -304,7 +308,7 @@ contract('Evolution', (accounts) => {
                 leafs = leafs.concat(zeroPadToLength(teamData, 32));
             }
         }
-        return zeroPadToLength(leafs, 1024);
+        return zeroPadToLength(leafs, nLeafs);
         // toni
     }
 
@@ -355,11 +359,7 @@ contract('Evolution', (accounts) => {
     it2('create real data for an entire league', async () => {
         champs = await Championships.new().should.be.fulfilled;
 
-        let nMatchdays = 14;
-        let nMatchesPerDay = 4;
         let secsBetweenMatches = 12*3600;
-        let nTeamsInLeague = 8;
-        let nMatchesPerLeague = nMatchesPerDay * nMatchdays;
         var leagueData = {
             seeds: [], // [2 * nMatchDays]
             teamIds: [], // [nTeamsInLeague]
@@ -464,7 +464,6 @@ contract('Evolution', (accounts) => {
         mode = 0; // 0 for testing, 1 for re-building testdata
         leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
         var leafs = [];
-        nMatchdays = 14;
         for (day = 0; day < nMatchdays; day++) {
             dayLeafs = buildLeafs(leagueData, day, half = 0);
             leafs.push([...dayLeafs]);
@@ -480,6 +479,11 @@ contract('Evolution', (accounts) => {
         }
         expectedLeafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(JSON.stringify(expectedLeafs), JSON.stringify(leafs), "leafs do not coincide with expected");
+    });
+    
+    it('test day 0', async () => {
+        leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
+        assert.equal(leafs.length, nMatchdays * 2);
     });
     
 });
