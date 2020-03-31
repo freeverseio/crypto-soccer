@@ -637,7 +637,14 @@ contract('Assets', (accounts) => {
     it('transfer invalid team 0', async () => {
         await market.transferTeam(teamId = 0, BOB).should.be.rejected;
     });
-        
+
+    it('transfer bot from a not-initialized tz', async () => {
+        teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled; 
+        teamId = await assets.encodeTZCountryAndVal(tz = 26, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.rejected; 
+    });
+
     it('transfer fails when team is a bot', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
         await market.transferTeam(teamId, BOB).should.be.rejected;
