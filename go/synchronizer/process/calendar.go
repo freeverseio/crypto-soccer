@@ -63,6 +63,11 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 		return errors.New("Unexistent league")
 	}
 
+	matchesStart, err := b.contracts.Updates.GetAllMatchdaysUTCInCurrentRound(&bind.CallOpts{}, timezoneIdx)
+	if err != nil {
+		return err
+	}
+
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
 			teams, err := b.contracts.Leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
@@ -77,7 +82,7 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 			if err != nil {
 				return err
 			}
-			err = storage.MatchSetTeams(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID)
+			err = storage.MatchSetTeams(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID, matchesStart[matchDay])
 			if err != nil {
 				return err
 			}
