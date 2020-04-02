@@ -71,16 +71,27 @@ func MatchReset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 	return err
 }
 
-func MatchSetTeams(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8, matchIdx uint8, homeTeamID *big.Int, visitorTeamID *big.Int) error {
+func MatchSetTeams(
+	tx *sql.Tx,
+	timezoneIdx uint8,
+	countryIdx uint32,
+	leagueIdx uint32,
+	matchDayIdx uint8,
+	matchIdx uint8,
+	homeTeamID *big.Int,
+	visitorTeamID *big.Int,
+	startTime *big.Int,
+) error {
 	if homeTeamID == nil {
 		return errors.New("nill home team id")
 	}
 	if visitorTeamID == nil {
 		return errors.New("nill visitor team id")
 	}
-	_, err := tx.Exec("UPDATE matches SET home_team_id = $1, visitor_team_id = $2 WHERE (timezone_idx = $3 AND country_idx = $4 AND league_idx = $5 AND match_day_idx = $6 AND match_idx = $7);",
+	_, err := tx.Exec("UPDATE matches SET home_team_id = $1, visitor_team_id = $2, start_epoch =$3 WHERE (timezone_idx = $4 AND country_idx = $5 AND league_idx = $6 AND match_day_idx = $7 AND match_idx = $8);",
 		homeTeamID.String(),
 		visitorTeamID.String(),
+		startTime.Int64(),
 		timezoneIdx,
 		countryIdx,
 		leagueIdx,

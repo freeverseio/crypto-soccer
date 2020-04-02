@@ -14,7 +14,8 @@
 		HomeGoals: (uint8) 0,
 		VisitorGoals: (uint8) 3,
 		State: (storage.MatchState) (len=4) "half",
-		StateExtra: (string) ""
+		StateExtra: (string) "",
+		StartEpoch: (int64) 0
 	},
 	StartTime: (*big.Int)(1790899200),
 	HomeTeam: (engine.Team) {

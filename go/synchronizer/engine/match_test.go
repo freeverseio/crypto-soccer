@@ -282,7 +282,7 @@ func TestMatchHash(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
 	fmt.Sprintf("%x", m.Hash())
-	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "85c2d53e96bc7afd2c8753a0df53db4529bab8b9057af1c9c5519693c9f6c93a")
+	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "191607c1c3760dbeedca48c9bd33d2a793d34c19b7f01469aafdf08ee309fb5a")
 }
 
 func TestMatchError1stHalf(t *testing.T) {
