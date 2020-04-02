@@ -102,7 +102,7 @@ contract UpdatesView is Storage, AssetsLib {
     }
 
     function getMatchUTCInCurrentRound(uint8 tz, uint8 matchDay) public view returns(uint256 timeUTC) {
-        return getMatchUTC(tz, getCurrentRound(), matchDay);
+        return getMatchUTC(tz, getCurrentRound(tz), matchDay);
     }
 
 }

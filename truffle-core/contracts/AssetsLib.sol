@@ -69,5 +69,23 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
     }
     
-    function getCurrentRound() public view returns (uint256) { return currentVerse % VERSES_PER_ROUND; }
+    function getCurrentRound(uint8 tz) public view returns (uint256) {
+        return getCurrentRoundPure(tz, timeZoneForRound1, currentVerse);
+    }
+
+    function getCurrentRoundPure(uint8 tz, uint8 tz1, uint256 verse) public pure returns (uint256) { 
+        // first, compute "roundTZ1" for the first timezone that played a match
+        // first, ensure that round is always >= 1.
+        if (verse < VERSES_PER_ROUND) return 0;
+        uint256 roundTZ1 = verse / VERSES_PER_ROUND;
+        // Next, note that verses where this tz plays first matches of rounds:
+        //   verses(round) = deltaN * 4 + VERSES_PER_ROUND * round
+        uint8 deltaN = (tz >= tz1) ? (tz - tz1) : ((tz + 24) - tz1);
+        if (verse < 4 * deltaN + roundTZ1 * VERSES_PER_ROUND) {
+            return roundTZ1 - 1;
+        } else {
+            return roundTZ1;
+        }
+    }
+
 }

@@ -54,6 +54,40 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
 
     });
+    
+    it('test getCurrentRoundPure', async () =>  {
+        result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRoundPure(tz = 4, tz1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        VERSES_DAY = 24*4;
+        VERSES_ROUND = 7 * VERSES_DAY;
+        // move to start of round 1 for 1st tz:
+        result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 4, tz1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        // move to start of round 1 for 1st tz after tz1:
+        result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = VERSES_ROUND + 4).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 6, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 7, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        // move to start of round 1 for last tz to reach it:
+        result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = 2 * VERSES_ROUND - 4).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 4, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+    });
 
     it('test getMatchUTC', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
@@ -80,6 +114,8 @@ contract('Updates', (accounts) => {
         utc = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
         utc.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
     });
+
+
     
     it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
@@ -214,7 +250,9 @@ contract('Updates', (accounts) => {
     });
 
     it('update Timezone many times', async () =>  {
-        result = await assets.getCurrentRound().should.be.fulfilled;
+        result = await assets.getCurrentRound(tz = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRound(tz = 24).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
