@@ -77,13 +77,28 @@ contract UpdatesView is Storage, AssetsLib {
     function getCurrentVerse() public view returns (uint256) { return currentVerse; }
     function getCurrentVerseSeed() public view returns (bytes32) { return currentVerseSeed; }
 
-    // function getTimeZonesPlayingInNextRound() public view returns (uint8[] memory) {
-    //     // morning 11am - evening 20 pm
-    //     // so if the first match is in the morning => 11am, then the next one is at +9h
-    //     uint8[] memory tzs = new uint8[](2);
-    //     (tzs[0], , ) = nextTimeZoneToUpdate();
-    //     tzs[1] = normalizeTZ(tzs[0] - 9);
-    //     return tzs; 
-    // }
+    // tz(n0)   : 11.30 = 0
+    //          : 21.00 = 11.30 + 9.30h
+    // tz(n)    : 11.30 + (n-n0)*1h
+    //          : 21.00 + (n-n0)*1h
+    //          : 11.30 + (n-n0)*1h + 24h * day (day = mDay/2)
+    //              = 11.30 + ( deltaN + 12 * mDay ) * 1h
+    //          : 21.00 + (n-n0) + 24h * day (day = (mDay-1)/2)
+    //              = 11.30 + (9.5 + deltaN + 12 * (mDay-1) ) * 1h
+    // add round * T_round = round * 7 * 24 * 3600 = round * DAYS_PER_ROUND * 24 * 1h
+    // 
+    // if even: 11.30 + ( deltaN + 12 * mDay + 24 * round * DAYS_PER_ROUND ) * 1h
+    // if odd:  11.30 + (9.5 + deltaN + 12 * (mDay-1) + 24 * round * DAYS_PER_ROUND ) * 1h
+    //        = 11.30 + (19 + 2*deltaN + 24 * (mDay-1) + 48 * round * DAYS_PER_ROUND ) * (1h/2)
+    
+    function getMatchUTC(uint8 tz, uint256 round, uint8 matchDay) public view returns(uint256 timeUTC) {
+        require(tz > 0 && tz < 25, "timezone out of range");
+        uint8 deltaN = (tz >= timeZoneForRound1) ? (tz - timeZoneForRound1) : ((tz + 24) - timeZoneForRound1);
+        if (matchDay % 2 == 0) {
+            return firstVerseTimeStamp + (deltaN + 12 * matchDay + 24 * DAYS_PER_ROUND * round) * 3600;
+        } else {
+            return firstVerseTimeStamp + (19 + 2*deltaN + 24 * (matchDay-1) + 48 * DAYS_PER_ROUND * round) * 1800;
+        }
+    }
 
 }

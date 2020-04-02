@@ -54,6 +54,34 @@ contract('Updates', (accounts) => {
 
     });
 
+    it('test getMatchUTC', async () =>  {
+        nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
+        nextVerseTimestamp = nextVerseTimestamp.toNumber();
+        timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
+        // tests for init timezone
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 0).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp);
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 2).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + 24*3600);
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 1).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600);
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 1, matchDay = 1).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600 + 7*24*3600);
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 1, matchDay = 2).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + 24*3600 + 7*24*3600);
+        // tests for other timezones
+        tz = 1;
+        deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
+        utc = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+        tz = 24;
+        deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
+        utc = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+    });
+    
+return
+    
     it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
     });
