@@ -91,9 +91,9 @@ contract UpdatesView is Storage, AssetsLib {
     // if odd:  11.30 + (9.5 + deltaN + 12 * (mDay-1) + 24 * round * DAYS_PER_ROUND ) * 1h
     //        = 11.30 + (19 + 2*deltaN + 24 * (mDay-1) + 48 * round * DAYS_PER_ROUND ) * (1h/2)
     
-    function getMatchUTC(uint8 tz, uint256 round, uint8 matchDay) public view returns(uint256 timeUTC) {
+    function getMatchUTC(uint8 tz, uint256 round, uint256 matchDay) public view returns(uint256 timeUTC) {
         require(tz > 0 && tz < 25, "timezone out of range");
-        uint8 deltaN = (tz >= timeZoneForRound1) ? (tz - timeZoneForRound1) : ((tz + 24) - timeZoneForRound1);
+        uint256 deltaN = (tz >= timeZoneForRound1) ? (tz - timeZoneForRound1) : ((tz + 24) - timeZoneForRound1);
         if (matchDay % 2 == 0) {
             return firstVerseTimeStamp + (deltaN + 12 * matchDay + 24 * DAYS_PER_ROUND * round) * 3600;
         } else {
@@ -101,8 +101,16 @@ contract UpdatesView is Storage, AssetsLib {
         }
     }
 
-    function getMatchUTCInCurrentRound(uint8 tz, uint8 matchDay) public view returns(uint256 timeUTC) {
+    function getMatchUTCInCurrentRound(uint8 tz, uint256 matchDay) public view returns(uint256 timeUTC) {
         return getMatchUTC(tz, getCurrentRound(tz), matchDay);
+    }
+    
+    function getAllMatchdaysUTCInRound(uint8 tz, uint256 round) public view returns(uint256[MATCHDAYS_PER_ROUND] memory timesUTC) {
+        for (uint8 m = 0; m < MATCHDAYS_PER_ROUND; m++) timesUTC[m] = getMatchUTC(tz, round, m);
+    }
+
+    function getAllMatchdaysUTCInCurrentRound(uint8 tz) public view returns(uint256[MATCHDAYS_PER_ROUND] memory timesUTC) {
+        for (uint8 m = 0; m < MATCHDAYS_PER_ROUND; m++) timesUTC[m] = getMatchUTC(tz, getCurrentRound(tz), m);
     }
 
 }

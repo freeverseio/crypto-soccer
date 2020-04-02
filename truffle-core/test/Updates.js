@@ -55,6 +55,33 @@ contract('Updates', (accounts) => {
 
     });
     
+    it('test getAllMatchdaysUTCInRound', async () =>  {
+        nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
+        nextVerseTimestamp = nextVerseTimestamp.toNumber();
+        timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
+        // tests for init timezone
+        utc = await updates.getAllMatchdaysUTCInRound(tz = timeZoneForRound1, round = 0).should.be.fulfilled;
+        nMatchesPerRound = 14;
+        for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
+            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay);
+        }
+        // tests for last timezone
+        utc = await updates.getAllMatchdaysUTCInRound(tz = (timeZoneForRound1 - 1), round = 0).should.be.fulfilled;
+        nMatchesPerRound = 14;
+        for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
+            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay + 23*3600);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay + 23*3600);
+        }
+        // tests for first timezone, round = 1
+        utc = await updates.getAllMatchdaysUTCInRound(tz = timeZoneForRound1, round = 1).should.be.fulfilled;
+        nMatchesPerRound = 14;
+        for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
+            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay + 7*24*3600);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay + 24*3600);
+        }    
+    });
+     
     it('test getCurrentRoundPure', async () =>  {
         result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(0);

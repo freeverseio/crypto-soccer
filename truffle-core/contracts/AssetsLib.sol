@@ -80,7 +80,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         uint256 roundTZ1 = verse / VERSES_PER_ROUND;
         // Next, note that verses where this tz plays first matches of rounds:
         //   verses(round) = deltaN * 4 + VERSES_PER_ROUND * round
-        uint8 deltaN = (tz >= tz1) ? (tz - tz1) : ((tz + 24) - tz1);
+        uint256 deltaN = (tz >= tz1) ? (tz - tz1) : ((tz + 24) - tz1);
         if (verse < 4 * deltaN + roundTZ1 * VERSES_PER_ROUND) {
             return roundTZ1 - 1;
         } else {
