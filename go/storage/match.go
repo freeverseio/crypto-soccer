@@ -31,6 +31,7 @@ type Match struct {
 	VisitorGoals  uint8
 	State         MatchState
 	StateExtra    string
+	StartEpoch    int64
 }
 
 func NewMatch() *Match {
@@ -43,7 +44,7 @@ func NewMatch() *Match {
 
 func (b *Match) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create Match Day %v", b)
-	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, state, state_extra) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, state, state_extra, start_epoch) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		b.TimezoneIdx,
 		b.CountryIdx,
 		b.LeagueIdx,
@@ -51,6 +52,7 @@ func (b *Match) Insert(tx *sql.Tx) error {
 		b.MatchIdx,
 		b.State,
 		b.StateExtra,
+		b.StartEpoch,
 	)
 	if err != nil {
 		return err
