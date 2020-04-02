@@ -61,7 +61,7 @@ func (b *Match) Insert(tx *sql.Tx) error {
 }
 
 func MatchReset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8, matchIdx uint8) error {
-	_, err := tx.Exec("UPDATE matches SET home_team_id = NULL, visitor_team_id = NULL, home_goals = 0, visitor_goals = 0, state = 'begin', state_extra = '' WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);",
+	_, err := tx.Exec("UPDATE matches SET home_team_id = NULL, visitor_team_id = NULL, home_goals = 0, visitor_goals = 0, state = 'begin', state_extra = '', start_epoch = 0 WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);",
 		timezoneIdx,
 		countryIdx,
 		leagueIdx,
