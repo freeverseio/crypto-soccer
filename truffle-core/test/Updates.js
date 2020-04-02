@@ -78,10 +78,10 @@ contract('Updates', (accounts) => {
         nMatchesPerRound = 14;
         for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
             utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay + 7*24*3600);
-            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay + 24*3600);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay + 7*24*3600);
         }    
     });
-     
+    
     it('test getCurrentRoundPure', async () =>  {
         result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
