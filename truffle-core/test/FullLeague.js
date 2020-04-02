@@ -23,6 +23,8 @@ const Championships = artifacts.require('Championships');
 
 
 contract('Evolution', (accounts) => {
+    const JUST_CHECK_AGAINST_EXPECTED_RESULTS = 0;
+    const WRITE_NEW_EXPECTED_RESULTS = 1;
     const nLeafs = 1024;
     const nMatchdays = 14;
     const nMatchesPerDay = 4;
@@ -357,7 +359,7 @@ contract('Evolution', (accounts) => {
   
     // leafsLeague[128] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13], 0,...]
     it2('create real data for an entire league', async () => {
-        mode = 0; // 0 for testing, 1 for re-building testdata
+        mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
         TPperSkill =  Array.from(new Array(25), (x,i) => 0);
@@ -383,10 +385,10 @@ contract('Evolution', (accounts) => {
         leagueData.seeds = Array.from(new Array(2 * nMatchdays), (x,i) => web3.utils.keccak256(i.toString()));
         leagueData.startTimes = Array.from(new Array(2 * nMatchdays), (x,i) => now + i * secsBetweenMatches);
         allMatchLogs = Array.from(new Array(nTeamsInLeague), (x,i) => 0);
-        leagueData.matchLogs.push(allMatchLogs);
+        leagueData.matchLogs.push([...allMatchLogs]);
         teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         allTeamsStates = Array.from(new Array(nTeamsInLeague), (x,i) => teamState442);
-        leagueData.teamStates.push(allTeamsStates);
+        leagueData.teamStates.push([...allTeamsStates]);
         // nosub = [NO_SUBST, NO_SUBST, NO_SUBST];
         // tact = await engine.encodeTactics(nosub , ro = [0, 0, 0], setNoSubstInLineUp(lineupConsecutive, nosub), extraAttackNull, tacticsId = 0).should.be.fulfilled;
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
@@ -404,7 +406,7 @@ contract('Evolution', (accounts) => {
         }
 
         // we just need to build, across the league: teamStates, points, teamIds
-        // for (day = 0; day < 2; day++) {
+        // for (day = 0; day < 1; day++) {
         for (day = 0; day < nMatchdays; day++) {
             // 1st half
             for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
@@ -426,8 +428,8 @@ contract('Evolution', (accounts) => {
                 allMatchLogs[t0] = newLogs[0];
                 allMatchLogs[t1] = newLogs[1];
             }
-            leagueData.teamStates.push(allTeamsStates);        
-            leagueData.matchLogs.push(allMatchLogs);        
+            leagueData.teamStates.push([...allTeamsStates]);        
+            leagueData.matchLogs.push([...allMatchLogs]);        
             // 2nd half
             for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
                 var {0: t0, 1: t1} = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
@@ -450,12 +452,12 @@ contract('Evolution', (accounts) => {
                 goals1 = await encodeLog.getNGoals(newLogs[1]).should.be.fulfilled;
                 leagueData.results[nMatchesPerDay * day + matchIdxInDay] = [goals0.toNumber(), goals1.toNumber()];
             }
-            leagueData.teamStates.push(allTeamsStates);        
-            leagueData.matchLogs.push(allMatchLogs);   
+            leagueData.teamStates.push([...allTeamsStates]);        
+            leagueData.matchLogs.push([...allMatchLogs]);   
             var {0: rnking, 1: lPoints} = await champs.computeLeagueLeaderBoard([...leagueData.results], day, leagueData.seeds[2*day + 1]).should.be.fulfilled;
             leagueData.points.push(lPoints);   
         }
-        if (mode == 1) {
+        if (mode == WRITE_NEW_EXPECTED_RESULTS) {
             fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
                 if (err) {
                     console.log(err);
@@ -470,8 +472,8 @@ contract('Evolution', (accounts) => {
         );
     });
 
-    it('read an entire league and organize data in the leaf format required', async () => {
-        mode = 0; // 0 for testing, 1 for re-building testdata
+    it2('read an entire league and organize data in the leaf format required', async () => {
+        mode = WRITE_NEW_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
         var leafs = [];
         for (day = 0; day < nMatchdays; day++) {
@@ -491,11 +493,31 @@ contract('Evolution', (accounts) => {
         assert.equal(JSON.stringify(expectedLeafs), JSON.stringify(leafs), "leafs do not coincide with expected");
     });
     
-    it('test day 0', async () => {
+    it('test day 0, half 0', async () => {
         leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
         assert.equal(leafs[0].length, nLeafs);
-        for (i = 0; i < leafs.length; i++) assert.equal(leafs[0][i], 0, "unexpected non-null leaf at start of league");
+        // at end of 1st half we still do not have end-game results
+        for (i = 0; i < 128; i++) assert.equal(leafs[0][i], 0, "unexpected non-null leaf at start of league");
+        // BEFORE first half ---------
+        for (team = 0; team < nTeamsInLeague; team++) {
+            off = 128 + 32 * team;
+            // ...player 0...10 are non-null, and different among them because of the different playerId
+            for (i = off; i < off + 11; i++) assert.notEqual(leafs[0][i], 0, "unexpected teamstate leaf at start of league");
+            // ...player 11...25 are identical because we used the same playerId for all of them
+            for (i = off + 12; i < off + 25; i++) assert.equal(leafs[0][i], leafs[0][128+12], "unexpected teamstate leaf at start of league");
+            assert.equal(leafs[0][off + 26],0, "unexpected nonnull tactics leaf at start of league");
+            assert.equal(leafs[0][off + 27],0, "unexpected nonnull training leaf at start of league");
+            assert.equal(leafs[0][off + 28],0, "unexpected nonnull matchLog leaf at start of league");
+            // AFTER first half ---------
+            // ...player 0...10 are non-null, and different among them because of the different playerId
+            // for (i = off; i < off + 11; i++) assert.notEqual(leafs[0][i], 0, "unexpected teamstate leaf at start of league");
+            // // ...player 11...25 are identical because we used the same playerId for all of them
+            // for (i = off + 12; i < off + 25; i++) assert.equal(leafs[0][i], leafs[0][128+12], "unexpected teamstate leaf at start of league");
+            // assert.equal(leafs[0][off + 26],0, "unexpected nonnull tactics leaf at start of league");
+            // assert.equal(leafs[0][off + 27],0, "unexpected nonnull training leaf at start of league");
+            // assert.equal(leafs[0][off + 28],0, "unexpected nonnull matchLog leaf at start of league");
+        }
     });
     
 });
