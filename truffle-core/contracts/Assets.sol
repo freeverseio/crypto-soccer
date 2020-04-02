@@ -55,7 +55,7 @@ contract Assets is AssetsView {
         uint256 nDivs = countryIdToNDivisions[countryId];
         uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, nDivs);
         countryIdToNDivisions[countryId] = nDivs + 1;
-        divisionIdToRound[divisionId] = currentRound + 1;
+        divisionIdToRound[divisionId] = getCurrentRound() + 1;
         emit DivisionCreation(tz, countryIdxInTZ, nDivs);
     }
 

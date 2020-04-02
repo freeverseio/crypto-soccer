@@ -42,6 +42,7 @@ contract('Updates', (accounts) => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
         proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
+        assets = depl[0];
         updates = depl[2];
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
@@ -79,8 +80,6 @@ contract('Updates', (accounts) => {
         utc = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
         utc.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
     });
-    
-return
     
     it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
@@ -215,6 +214,8 @@ return
     });
 
     it('update Timezone many times', async () =>  {
+        result = await assets.getCurrentRound().should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
         console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;

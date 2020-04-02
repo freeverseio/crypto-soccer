@@ -69,4 +69,5 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
     }
     
+    function getCurrentRound() public view returns (uint256) { return currentVerse % VERSES_PER_ROUND; }
 }

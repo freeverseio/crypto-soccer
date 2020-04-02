@@ -28,7 +28,6 @@ contract Storage is ProxyStorage, Constants{
 
     TimeZone[25] public _timeZones;
     uint256 public gameDeployDay;
-    uint256 public currentRound;
 
     mapping (uint256 => uint256) countryIdToNDivisions;
     mapping (uint256 => uint256) countryIdToNHumanTeams;
