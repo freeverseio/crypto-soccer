@@ -298,8 +298,8 @@ contract('Evolution', (accounts) => {
             }
         }
         leafs = zeroPadToLength(leafs, 128);
-        for (extraHalf = 0; extraHalf < 2; extraHalf++) {
-            for (team = 0; team < nTeamsInLeague; team++) {
+        for (team = 0; team < nTeamsInLeague; team++) {
+            for (extraHalf = 0; extraHalf < 2; extraHalf++) {
                 teamData = [];
                 for (p = 0; p < nPlayersInTeam; p++) {
                     teamData.push(leagueData.teamStates[2*day + half + extraHalf][team][p])
@@ -311,7 +311,6 @@ contract('Evolution', (accounts) => {
             }
         }
         return zeroPadToLength(leafs, nLeafs);
-        // toni
     }
 
     
@@ -499,24 +498,25 @@ contract('Evolution', (accounts) => {
         assert.equal(leafs[0].length, nLeafs);
         // at end of 1st half we still do not have end-game results
         for (i = 0; i < 128; i++) assert.equal(leafs[0][i], 0, "unexpected non-null leaf at start of league");
-        // BEFORE first half ---------
         for (team = 0; team < nTeamsInLeague; team++) {
-            off = 128 + 32 * team;
+            // BEFORE first half ---------
+            off = 128 + 64 * team;
             // ...player 0...10 are non-null, and different among them because of the different playerId
             for (i = off; i < off + 11; i++) assert.notEqual(leafs[0][i], 0, "unexpected teamstate leaf at start of league");
             // ...player 11...25 are identical because we used the same playerId for all of them
-            for (i = off + 12; i < off + 25; i++) assert.equal(leafs[0][i], leafs[0][128+12], "unexpected teamstate leaf at start of league");
+            for (i = off + 12; i < off + 25; i++) assert.equal(leafs[0][i], leafs[0][off+12], "unexpected teamstate leaf at start of league");
             assert.equal(leafs[0][off + 26],0, "unexpected nonnull tactics leaf at start of league");
             assert.equal(leafs[0][off + 27],0, "unexpected nonnull training leaf at start of league");
             assert.equal(leafs[0][off + 28],0, "unexpected nonnull matchLog leaf at start of league");
             // AFTER first half ---------
+            off += 32;
             // ...player 0...10 are non-null, and different among them because of the different playerId
-            // for (i = off; i < off + 11; i++) assert.notEqual(leafs[0][i], 0, "unexpected teamstate leaf at start of league");
-            // // ...player 11...25 are identical because we used the same playerId for all of them
-            // for (i = off + 12; i < off + 25; i++) assert.equal(leafs[0][i], leafs[0][128+12], "unexpected teamstate leaf at start of league");
-            // assert.equal(leafs[0][off + 26],0, "unexpected nonnull tactics leaf at start of league");
-            // assert.equal(leafs[0][off + 27],0, "unexpected nonnull training leaf at start of league");
-            // assert.equal(leafs[0][off + 28],0, "unexpected nonnull matchLog leaf at start of league");
+            for (i = off; i < off + 11; i++) assert.notEqual(leafs[0][i], 0, "unexpected teamstate leaf at start of league");
+            // ...player 11...25 are identical because we used the same playerId for all of them
+            for (i = off + 12; i < off + 25; i++) assert.equal(leafs[0][i], leafs[0][off+12], "unexpected teamstate leaf at start of league");
+            assert.equal(leafs[0][off + 26], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
+            assert.equal(leafs[0][off + 27], almostNullTraning, "unexpected training leaf after 1st half of league");
+            assert.notEqual(leafs[0][off + 28], 0, "unexpected null matchLog leaf after 1st half of league");
         }
     });
     
