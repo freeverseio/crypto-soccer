@@ -17,7 +17,7 @@ spec:
       containers:
       - name: xdai
         image: parity/parity:v2.7.2-stable
-        args: ["--chain","xdai","--jsonrpc-interface","all"]
+        args: ["--chain","xdai","--jsonrpc-interface","all", "--no-warp"]
         ports:
         - containerPort: 8545
         volumeMounts:
