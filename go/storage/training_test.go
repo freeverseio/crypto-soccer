@@ -66,7 +66,7 @@ func TestTrainingReset(t *testing.T) {
 	trainings, err = storage.TrainingsByTimezone(tx, int(timezoneIdx))
 	assert.NilError(t, err)
 	assert.Equal(t, len(trainings), 1)
-	assert.Equal(t, training.Defenders.Speed, trainings[0].Defenders.Speed)
+	assert.Equal(t, 0, trainings[0].Defenders.Speed)
 }
 
 func TestTrainingDeleteTrainingsByTimezone(t *testing.T) {
