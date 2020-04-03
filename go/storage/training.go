@@ -88,6 +88,41 @@ func CreateDefaultTrainingByTimezone(tx *sql.Tx, timezone uint8) error {
 	return nil
 }
 
+func ResetTrainingByTimezone(tx *sql.Tx, timezone uint8) error {
+	log.Debugf("[DBMS] Create a default training for each Team in timezone %v", timezone)
+	if _, err := tx.Exec(`
+		UPDATE trainings (
+    		special_player_shirt,
+    		goalkeepers_shoot,
+    		goalkeepers_speed,
+    		goalkeepers_pass,
+			goalkeepers_defence,
+    		goalkeepers_endurance,
+    		defenders_shoot,
+    		defenders_speed,
+    		defenders_pass,
+    		defenders_defence,
+    		defenders_endurance,
+    		midfielders_shoot,
+    		midfielders_speed,
+    		midfielders_pass,
+    		midfielders_defence,
+    		midfielders_endurance,
+    		attackers_shoot,
+    		attackers_speed,
+    		attackers_pass,
+    		attackers_defence,
+    		attackers_endurance,
+    		special_player_shoot,
+    		special_player_speed,
+    		special_player_pass,
+    		special_player_defence,
+			special_player_endurance) = (-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) WHERE timezone_idx = $1`, timezone); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (b *Training) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create training %v", b)
 	_, err := tx.Exec(

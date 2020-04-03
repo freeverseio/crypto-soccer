@@ -45,6 +45,30 @@ func TestTrainingTrainingsByTimezone(t *testing.T) {
 	assert.Equal(t, len(trainings), 1)
 }
 
+func TestTrainingReset(t *testing.T) {
+	tx, err := s.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	createMinimumUniverse(t, tx)
+
+	training := storage.NewTraining()
+	training.TeamID = teamID
+	training.Defenders.Speed = 3
+	assert.NilError(t, training.Insert(tx))
+
+	trainings, err := storage.TrainingsByTimezone(tx, int(timezoneIdx))
+	assert.NilError(t, err)
+	assert.Equal(t, len(trainings), 1)
+	assert.Equal(t, training.Defenders.Speed, trainings[0].Defenders.Speed)
+
+	assert.NilError(t, storage.ResetTrainingByTimezone(tx, timezoneIdx))
+	trainings, err = storage.TrainingsByTimezone(tx, int(timezoneIdx))
+	assert.NilError(t, err)
+	assert.Equal(t, len(trainings), 1)
+	assert.Equal(t, training.Defenders.Speed, trainings[0].Defenders.Speed)
+}
+
 func TestTrainingDeleteTrainingsByTimezone(t *testing.T) {
 	tx, err := s.Begin()
 	assert.NilError(t, err)
