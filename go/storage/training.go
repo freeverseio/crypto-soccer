@@ -42,14 +42,6 @@ func NewTraining() *Training {
 	return &training
 }
 
-func DeleteTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
-	log.Debugf("[DBMS] Delete trainings by Timezone %v", timezone)
-	if _, err := tx.Exec(`DELETE FROM trainings USING teams WHERE trainings.team_id = teams.team_id AND teams.timezone_idx = $1`, timezone); err != nil {
-		return err
-	}
-	return nil
-}
-
 // order: shoot, speed, pass, defence, endurance
 func CreateDefaultTrainingByTimezone(tx *sql.Tx, timezone uint8) error {
 	log.Debugf("[DBMS] Create a default training for each Team in timezone %v", timezone)
@@ -88,10 +80,10 @@ func CreateDefaultTrainingByTimezone(tx *sql.Tx, timezone uint8) error {
 	return nil
 }
 
-func ResetTrainingByTimezone(tx *sql.Tx, timezone uint8) error {
+func ResetTrainingsByTimezone(tx *sql.Tx, timezone uint8) error {
 	log.Debugf("[DBMS] Create a default training for each Team in timezone %v", timezone)
 	if _, err := tx.Exec(`
-		UPDATE trainings (
+		UPDATE trainings SET (
     		special_player_shirt,
     		goalkeepers_shoot,
     		goalkeepers_speed,
@@ -117,7 +109,7 @@ func ResetTrainingByTimezone(tx *sql.Tx, timezone uint8) error {
     		special_player_speed,
     		special_player_pass,
     		special_player_defence,
-			special_player_endurance) = (-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) WHERE timezone_idx = $1`, timezone); err != nil {
+			special_player_endurance) = (-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) FROM teams WHERE teams.team_id = trainings.team_id AND teams.timezone_idx = $1`, timezone); err != nil {
 		return err
 	}
 	return nil
