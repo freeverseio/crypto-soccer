@@ -28,8 +28,12 @@ func main() {
 	log.Infof("[PARAM] ethereum_client   : %v", *ethereumClient)
 	log.Infof("[PARAM] market_address    : %v", *marketContractAddress)
 	log.Infof("[PARAM] constantsgetters_address    : %v", *constantsgettersContractAddress)
+	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Infof("[PARAM] Address : %v", crypto.PubkeyToAddress(privateKey.PublicKey).Hex())
 	log.Infof("[PARAM] debug             : %v", *debug)
-	log.Infof("[PARAM] privatekey        : %v", *privateKeyHex)
 	log.Infof("-------------------------------------------------------------------")
 
 	if *debug {
@@ -37,7 +41,6 @@ func main() {
 	}
 
 	log.Info("Create the connection to DBMS")
-	var err error
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
@@ -64,12 +67,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	processor, err := processor.NewProcessor(sto, contracts, privateKey)
 	if err != nil {
 		log.Fatal(err)

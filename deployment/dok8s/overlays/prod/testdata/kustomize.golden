@@ -499,7 +499,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/relay.actions:0.14.0
+        image: freeverseio/relay.actions:0.14.1
         imagePullPolicy: Always
         name: relayactions
         ports:

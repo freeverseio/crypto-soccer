@@ -19,7 +19,7 @@ images:
 - name: freeverseio/market.trader
   newTag: 0.14.0
 - name: freeverseio/relay.actions
-  newTag: 0.14.0
+  newTag: 0.14.1
 - name: freeverseio/synchronizer
   newTag: 0.14.0
 - name: freeverseio/universe.api

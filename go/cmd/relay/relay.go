@@ -30,10 +30,6 @@ func main() {
 	// sender := flag.String("sender", "sender address", "")
 	flag.Parse()
 
-	if *updatesContractAddress == "" {
-		log.Fatal("no updates contract address")
-	}
-
 	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
 	if err != nil {
 		log.Fatal("Unable to obtain privateLey")
@@ -51,6 +47,7 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 	auth := bind.NewKeyedTransactor(privateKey)
+	log.Infof("Address : %v", crypto.PubkeyToAddress(privateKey.PublicKey).Hex())
 
 	log.Info("Creating Updates bindings to: ", *updatesContractAddress)
 	updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
