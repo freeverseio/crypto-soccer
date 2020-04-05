@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: xdai
-        image: parity/parity:v2.7.2-stable
+        image: freeverseio/parity:v2.7.2-posdao-stable
         args: ["--chain","xdai","--jsonrpc-interface","all", "--no-warp"]
         ports:
         - containerPort: 8545

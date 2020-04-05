@@ -1,7 +1,7 @@
 version: '3'
 services:
   ethereum: 
-    image: parity/parity:v2.7.2-stable
+    image: freeverseio/parity:v2.7.2-posdao-stable
     command: --chain xdai --jsonrpc-interface all --no-warp
     volumes:
       - ethereum-data:/home/parity
