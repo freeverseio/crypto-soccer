@@ -233,7 +233,11 @@ func (b *Matches) SetTrainings(contracts contracts.Contracts, trainings []sto.Tr
 func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
 	for _, match := range b {
 		if err := match.ToStorage(contracts, tx, blockNumber); err != nil {
-			return err
+			filename := fmt.Sprintf("/tmp/%x", match.Hash()) + ".toStorage.error.json"
+			log.Errorf("match to storage: %v: saving match state to %v", err.Error(), filename)
+			if err := ioutil.WriteFile(filename, match.ToJson(), 0644); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
