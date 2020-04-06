@@ -32,7 +32,7 @@ type MatchEvent struct {
 	TeamID            string         `json:"team_id"`             // team_id
 	ManageToShoot     bool           `json:"manage_to_shoot"`     // manage_to_shoot
 	IsGoal            bool           `json:"is_goal"`             // is_goal
-	PrimaryPlayerID   string         `json:"primary_player_id"`   // primary_player_id
+	PrimaryPlayerID   sql.NullString `json:"primary_player_id"`   // primary_player_id
 	SecondaryPlayerID sql.NullString `json:"secondary_player_id"` // secondary_player_id
 }
 
