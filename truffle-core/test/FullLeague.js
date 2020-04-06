@@ -302,9 +302,11 @@ contract('FullLeague', (accounts) => {
         } else {
             lastDayToCount = (half == 0) ? day - 1 : day;
             leafs = leagueData.points[lastDayToCount]; 
-            for (d = 0; d < lastDayToCount; d++) {
-                leafs.push(leagueData.results[d][0]);
-                leafs.push(leagueData.results[d][1]);
+            for (d = 0; d <= lastDayToCount; d++) {
+                for (m = 0; m < nMatchesPerDay; m++) {
+                    leafs.push(leagueData.results[d * nMatchesPerDay + m][0]);
+                    leafs.push(leagueData.results[d * nMatchesPerDay + m][1]);
+                }
             }
         }
         leafs = zeroPadToLength(leafs, 128);
@@ -328,6 +330,10 @@ contract('FullLeague', (accounts) => {
         for (i = 0; i < y.length; i++) yStr[i] = y[i].toString();
         return yStr;
     }
+    
+    function clone(a) {
+        return JSON.parse(JSON.stringify(a));
+     }
     
     beforeEach(async () => {
         training = await TrainingPoints.new().should.be.fulfilled;
@@ -375,7 +381,7 @@ contract('FullLeague', (accounts) => {
 
     });
   
-    // leafsLeague[128] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13], 0,...]
+    // League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
     it2('create real data for an entire league', async () => {
         mode = WRITE_NEW_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
@@ -494,9 +500,9 @@ contract('FullLeague', (accounts) => {
         leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
         var leafs = [];
         for (day = 0; day < nMatchdays; day++) {
-            dayLeafs = buildLeafs(leagueData, day, half = 0);
+            dayLeafs = buildLeafs(clone(leagueData), day, half = 0);
             leafs.push([...dayLeafs]);
-            dayLeafs = buildLeafs(leagueData, day, half = 1);
+            dayLeafs = buildLeafs(clone(leagueData), day, half = 1);
             leafs.push([...dayLeafs]);
         }
         if (mode == WRITE_NEW_EXPECTED_RESULTS) {
@@ -514,11 +520,11 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it('test day 0, half 0', async () => {
+    it2('test day 0, half 0', async () => {
         leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
         assert.equal(leafs[0].length, nLeafs);
-        // at end of 1st half we still do not have end-game results
+        // at end of 1st half we still do not have end-game results nor league points
         for (i = 0; i < 128; i++) {
             assert.equal(leafs[0][i], 0, "unexpected non-null leaf at start of league");
         }
@@ -542,6 +548,41 @@ contract('FullLeague', (accounts) => {
             assert.equal(leafs[0][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
             assert.notEqual(leafs[0][off + 27], 0, "unexpected null matchLog leaf after 1st half of league");
         }
+    });
+    
+
+    it('test day 0, half 1', async () => {
+        leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
+        assert.equal(leafs.length, nMatchdays * 2);
+        assert.equal(leafs[0].length, nLeafs);
+        // at end of 2nd half we already league points (8 first entries) and have end-game results (8 following entries)
+        // On league points, at least 7 should be non-null
+        for (i = 0; i < 7; i++) {
+            assert.notEqual(leafs[1][i], 0, "unexpected non-null leaf at start of league");
+        }
+        // for (i = 4; i < 128; i++) {
+        //     assert.equal(leafs[1][i], 0, "unexpected non-null leaf at start of league");
+        // }
+        // for (team = 0; team < nTeamsInLeague; team++) {
+        //     // BEFORE first half ---------
+        //     off = 128 + 64 * team;
+        //     // ...player 0...10 are non-null, and different among them because of the different playerId
+        //     for (i = off; i < off + 11; i++) assert.notEqual(leafs[0][i], 0, "unexpected teamstate leaf at start of league");
+        //     // ...player 11...25 are identical because we used the same playerId for all of them
+        //     for (i = off + 12; i < off + 25; i++) assert.equal(leafs[0][i], leafs[0][off+12], "unexpected teamstate leaf at start of league");
+        //     assert.equal(leafs[0][off + 25], 0, "unexpected nonnull tactics leaf at start of league");
+        //     assert.equal(leafs[0][off + 26], 0, "unexpected nonnull training leaf at start of league");
+        //     assert.equal(leafs[0][off + 27], 0, "unexpected nonnull matchLog leaf at start of league");
+        //     // AFTER first half ---------
+        //     off += 32;
+        //     // ...player 0...10 are non-null, and different among them because of the different playerId
+        //     for (i = off; i < off + 11; i++) assert.notEqual(leafs[0][i], 0, "unexpected teamstate leaf at start of league");
+        //     // ...player 11...25 are identical because we used the same playerId for all of them
+        //     for (i = off + 12; i < off + 25; i++) assert.equal(leafs[0][i], leafs[0][off+12], "unexpected teamstate leaf at start of league");
+        //     assert.equal(leafs[0][off + 25], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
+        //     assert.equal(leafs[0][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
+        //     assert.notEqual(leafs[0][off + 27], 0, "unexpected null matchLog leaf after 1st half of league");
+        // }
     });
     
 });
