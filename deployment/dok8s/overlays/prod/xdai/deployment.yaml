@@ -17,6 +17,7 @@ spec:
       containers:
       - name: xdai
         image: freeverseio/parity:v2.7.2-posdao-stable
+        imagePullPolicy: Always
         ports:
         - containerPort: 8545
         volumeMounts:
