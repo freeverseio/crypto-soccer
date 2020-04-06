@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"os"
 	"time"
@@ -14,25 +13,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 )
-
-func run(
-	universedb *sql.DB,
-	processor *process.EventProcessor,
-	delta uint64,
-) (uint64, error) {
-	tx, err := universedb.Begin()
-	if err != nil {
-		return 0, err
-	}
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			return
-		}
-		err = tx.Commit()
-	}()
-	return processor.Process(tx, delta)
-}
 
 func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
@@ -151,11 +131,18 @@ func main() {
 
 		log.Info("On Going ...")
 		for {
-			processedBlocks, err := run(universedb, processor, uint64(*delta))
+			tx, err := universedb.Begin()
 			if err != nil {
-				log.Error(err)
-				break
+				log.Fatal(err)
 			}
+			processedBlocks, err := processor.Process(tx, uint64(*delta))
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err := tx.Commit(); err != nil {
+				log.Fatal(err)
+			}
+
 			if processedBlocks == 0 {
 				time.Sleep(2 * time.Second)
 			}
