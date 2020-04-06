@@ -264,10 +264,16 @@ contract('Evolution', (accounts) => {
         return OK;
     }
     
-    function areEqualBigNum(x, y) {
-        return web3.utils.toBN(x) == web3.utils.toBN(y); 
+    function assertStr(cond, x, y, msg) {
+        if (cond == "eq") assert(x.toString() == y.toString(), msg);
+        else assert(!(x.toString() == y.toString()), msg);
     }
-    
+
+    function assertBN(cond, x, y, msg) {
+        if (cond == "eq") assert(web3.utils.toBN(x).eq(web3.utils.toBN(y)), msg);
+        else assert(!web3.utils.toBN(x).eq(web3.utils.toBN(y)), msg);
+    }
+
     function zeroPadToLength(x, desiredLength) {
         return x.concat(Array.from(new Array(desiredLength - x.length), (x,i) => 0))
     }
@@ -358,6 +364,10 @@ contract('Evolution', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
+
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        almostNullTraning = await training.encodeTP(TP = 0, TPperSkill, specialPlayer = 21).should.be.fulfilled;
+
     });
   
     // leafsLeague[128] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13], 0,...]
@@ -365,8 +375,6 @@ contract('Evolution', (accounts) => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
-        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
-        almostNullTraning = await training.encodeTP(TP = 0, TPperSkill, specialPlayer = 21).should.be.fulfilled;
 
         champs = await Championships.new().should.be.fulfilled;
         let secsBetweenMatches = 12*3600;
@@ -503,27 +511,30 @@ contract('Evolution', (accounts) => {
         // at end of 1st half we still do not have end-game results
         for (i = 0; i < 128; i++) {
             console.log(leafs[0][i]);
-            assert(areEqualBigNum(leafs[0][i], 0), "unexpected non-null leaf at start of league");
+            assertBN('eq', leafs[0][i], 0, "unexpected non-null leaf at start of league");
         }
         for (team = 0; team < nTeamsInLeague; team++) {
             // BEFORE first half ---------
             off = 128 + 64 * team;
             // ...player 0...10 are non-null, and different among them because of the different playerId
-            for (i = off; i < off + 11; i++) assert(!areEqualBigNum(leafs[0][i], 0), "unexpected teamstate leaf at start of league");
+            for (i = off; i < off + 11; i++) assertBN('neq', leafs[0][i], 0, "unexpected teamstate leaf at start of league");
             // ...player 11...25 are identical because we used the same playerId for all of them
-            for (i = off + 12; i < off + 25; i++) assert(areEqualBigNum(leafs[0][i], leafs[0][off+12]), "unexpected teamstate leaf at start of league");
-            assert(areEqualBigNum(leafs[0][off + 25],0), "unexpected nonnull tactics leaf at start of league");
-            assert(areEqualBigNum(leafs[0][off + 26],0), "unexpected nonnull training leaf at start of league");
-            assert(areEqualBigNum(leafs[0][off + 27],0), "unexpected nonnull matchLog leaf at start of league");
+            for (i = off + 12; i < off + 25; i++) assertBN('eq',leafs[0][i], leafs[0][off+12], "unexpected teamstate leaf at start of league");
+            assertBN('eq', leafs[0][off + 25], 0, "unexpected nonnull tactics leaf at start of league");
+            assertBN('eq', leafs[0][off + 26], 0, "unexpected nonnull training leaf at start of league");
+            assertBN('eq', leafs[0][off + 27], 0, "unexpected nonnull matchLog leaf at start of league");
             // AFTER first half ---------
             off += 32;
             // ...player 0...10 are non-null, and different among them because of the different playerId
-            for (i = off; i < off + 11; i++) assert(!areEqualBigNum(leafs[0][i], 0), "unexpected teamstate leaf at start of league");
+            for (i = off; i < off + 11; i++) assertBN('neq', leafs[0][i], 0, "unexpected teamstate leaf at start of league");
             // ...player 11...25 are identical because we used the same playerId for all of them
-            for (i = off + 12; i < off + 25; i++) assert(areEqualBigNum(leafs[0][i], leafs[0][off+12]), "unexpected teamstate leaf at start of league");
-            assert(areEqualBigNum(leafs[0][off + 25], tactics442NoChanges), "unexpected tactics leaf after 1st half of league");
-            assert(areEqualBigNum(leafs[0][off + 26], almostNullTraning), "unexpected training leaf after 1st half of league");
-            assert(!areEqualBigNum(leafs[0][off + 27], 0), "unexpected null matchLog leaf after 1st half of league");
+            for (i = off + 12; i < off + 25; i++) assertBN('eq', leafs[0][i], leafs[0][off+12], "unexpected teamstate leaf at start of league");
+            console.log(leafs[0][off + 26], almostNullTraning)
+            console.log(web3.utils.toBN(leafs[0][off + 26]), web3.utils.toBN(almostNullTraning))
+            console.log(leafs[0][off + 26].toString(), almostNullTraning.toString())
+            assertBN('eq', leafs[0][off + 25], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
+            assertBN('eq', leafs[0][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
+            assertBN('neq', leafs[0][off + 27], 0, "unexpected null matchLog leaf after 1st half of league");
         }
     });
     
