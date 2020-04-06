@@ -87,14 +87,18 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber 
 		event := storage.MatchEvent{}
 		if computedEvent.Team == 0 {
 			event.TeamID = b.HomeTeam.TeamID
-			event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
+			if computedEvent.PrimaryPlayer >= 0 && int(computedEvent.PrimaryPlayer) < len(b.HomeTeam.Players) {
+				event.PrimaryPlayerID = b.HomeTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
+			}
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else if computedEvent.Team == 1 {
 			event.TeamID = b.VisitorTeam.TeamID
-			event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
+			if computedEvent.PrimaryPlayer >= 0 && int(computedEvent.PrimaryPlayer) < len(b.VisitorTeam.Players) {
+				event.PrimaryPlayerID = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
+			}
 			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
