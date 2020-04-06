@@ -22,7 +22,7 @@ const Shop = artifacts.require('Shop');
 const Championships = artifacts.require('Championships');
 
 
-contract('Evolution', (accounts) => {
+contract('FullLeague', (accounts) => {
     const JUST_CHECK_AGAINST_EXPECTED_RESULTS = 0;
     const WRITE_NEW_EXPECTED_RESULTS = 1;
     const nLeafs = 1024;
@@ -376,7 +376,7 @@ contract('Evolution', (accounts) => {
     });
   
     // leafsLeague[128] = [Points[team=0,..,7], ML[team = 0,1; matchInDay = 0,1,2,3; matchDay = 0,..13], 0,...]
-    it('create real data for an entire league', async () => {
+    it2('create real data for an entire league', async () => {
         mode = WRITE_NEW_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
@@ -499,15 +499,19 @@ contract('Evolution', (accounts) => {
             dayLeafs = buildLeafs(leagueData, day, half = 1);
             leafs.push([...dayLeafs]);
         }
-        if (mode == 1) {
+        if (mode == WRITE_NEW_EXPECTED_RESULTS) {
             fs.writeFileSync('test/testdata/leafsPerHalf.json', JSON.stringify(leafs), function(err) {
                 if (err) {
                     console.log(err);
                 }
             });
         }
-        expectedLeafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
-        assert.equal(JSON.stringify(expectedLeafs), JSON.stringify(leafs), "leafs do not coincide with expected");
+        expectedLeafs = fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8');
+        assert.equal(
+            web3.utils.keccak256(expectedLeafs),
+            web3.utils.keccak256(JSON.stringify(leafs)),
+            "leafs do not coincide with expected"
+        );
     });
     
     it2('test day 0, half 0', async () => {
