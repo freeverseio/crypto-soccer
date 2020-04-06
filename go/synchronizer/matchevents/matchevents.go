@@ -99,11 +99,11 @@ func Generate(
 	// - per-round (always 12 per half)
 	// - cards & injuries
 	// - substitutions
-	events, rounds2mins := addEventsInRound(seed0, blockchainEvents, lineup0, lineup1, NULL)
+	events, rounds2mins := addEventsInRound(seed0, blockchainEvents, lineup0, lineup1, NULL, NOONE)
 	events = addCardsAndInjuries(0, events, seed1, matchLog0, rounds2mins, lineup0, NULL, NOONE)
 	events = addCardsAndInjuries(1, events, seed2, matchLog1, rounds2mins, lineup1, NULL, NOONE)
-	events = addSubstitutions(0, events, matchLog0, rounds2mins, lineup0, substitutions0, subsRounds0)
-	events = addSubstitutions(1, events, matchLog1, rounds2mins, lineup1, substitutions1, subsRounds1)
+	events = addSubstitutions(0, events, matchLog0, rounds2mins, lineup0, substitutions0, subsRounds0, NULL, NOONE)
+	events = addSubstitutions(1, events, matchLog1, rounds2mins, lineup1, substitutions1, subsRounds1, NULL, NOONE)
 
 	if is2ndHalf {
 		for e := range events {
@@ -119,7 +119,9 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 	// note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
 	// eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
 	outOfGamePlayer := int16(matchLog[4])
-	thereWasAnOutOfGame := outOfGamePlayer < NOONE
+	// convert player in the lineUp to shirtNum before storing it as match event:
+	primaryPlayer := toShirtNum(uint8(outOfGamePlayer), lineUp, NULL, NOONE)
+	thereWasAnOutOfGame := primaryPlayer != NULL
 	outOfGameMinute := int16(0)
 	if thereWasAnOutOfGame {
 		var typeOfEvent int16
@@ -131,15 +133,17 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 			typeOfEvent = EVNT_RED
 		}
 		outOfGameMinute = int16(rounds2mins[matchLog[6]])
-		// convert player in the lineUp to shirtNum before storing it as match event:
-		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, int16(lineUp[outOfGamePlayer]), NULL}
+		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 
 	// First yellow card:
 	yellowCardPlayer := int16(matchLog[7])
+	// convert player in the lineUp to shirtNum before storing it as match event:
+	primaryPlayer = toShirtNum(uint8(yellowCardPlayer), lineUp, NULL, NOONE)
+	thereWasYellowCard := primaryPlayer != NULL
 	firstYellowCoincidesWithRed := false
-	if yellowCardPlayer < 14 {
+	if thereWasYellowCard {
 		maxMinute := int16(45)
 		if yellowCardPlayer == outOfGamePlayer {
 			if outOfGameMinute > 0 {
@@ -152,20 +156,22 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := EVNT_YELLOW
-		// convert player in the lineUp to shirtNum before storing it as match event:
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, int16(lineUp[yellowCardPlayer]), NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 
 	// Second second yellow card:
 	yellowCardPlayer = int16(matchLog[8])
-	if yellowCardPlayer < 14 {
+	// convert player in the lineUp to shirtNum before storing it as match event:
+	primaryPlayer = toShirtNum(uint8(yellowCardPlayer), lineUp, NULL, NOONE)
+	thereWasYellowCard = primaryPlayer != NULL
+	if thereWasYellowCard {
 		maxMinute := int16(45)
 		typeOfEvent := EVNT_YELLOW
 		if yellowCardPlayer == outOfGamePlayer {
 			if firstYellowCoincidesWithRed {
 				minute := outOfGameMinute
-				thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
+				thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
 				events = append(events, thisEvent)
 				return events
 			} else {
@@ -175,7 +181,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		// convert player in the lineUp to shirtNum before storing it as match event:
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, int16(lineUp[yellowCardPlayer]), NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 	return events
@@ -183,7 +189,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 
 // output event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
 // eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
-func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]uint8, lineup1 [14]uint8, NULL int16) ([]MatchEvent, []uint64) {
+func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]uint8, lineup1 [14]uint8, NULL int16, NOONE int16) ([]MatchEvent, []uint64) {
 	var events []MatchEvent
 	nEvents := (len(blockchainEvents) - 2) / 5
 	deltaMinutes := float64(45.0 / ((nEvents - 1) * 1.0))
@@ -217,12 +223,12 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]ui
 		thisEvent.IsGoal = isGoal.Int64() != 0
 		if managesToShoot.Int64() == 1 {
 			// select the players from the team that attacks:
-			thisEvent.PrimaryPlayer = int16(lineUps[thisEvent.Team][shooter.Int64()])
-			thisEvent.SecondaryPlayer = int16(lineUps[thisEvent.Team][assister.Int64()])
+			thisEvent.PrimaryPlayer = toShirtNum(uint8(shooter.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
+			thisEvent.SecondaryPlayer = toShirtNum(uint8(assister.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
 		} else {
 			salt := "b" + strconv.Itoa(int(e))
 			// select the player from the team that defends:
-			thisEvent.PrimaryPlayer = int16(lineUps[1-thisEvent.Team][1+GenerateRnd(seed, salt, 9)])
+			thisEvent.PrimaryPlayer = toShirtNum(uint8(1+GenerateRnd(seed, salt, 9)), lineUps[1-thisEvent.Team], NULL, NOONE)
 			thisEvent.SecondaryPlayer = NULL
 		}
 		events = append(events, thisEvent)
@@ -230,34 +236,52 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]ui
 	return events, rounds2mins
 }
 
-func addSubstitutions(team int16, events []MatchEvent, matchLog [15]uint32, rounds2mins []uint64, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8) []MatchEvent {
+func toShirtNum(posInLineUp uint8, lineUp [14]uint8, NULL int16, NOONE int16) int16 {
+	if int16(posInLineUp) < NOONE {
+		return preventNoPlayer(int16(lineUp[posInLineUp]), NULL)
+	} else {
+		return NULL
+	}
+}
+
+func preventNoPlayer(inPlayer int16, NULL int16) int16 {
+	if inPlayer < 25 {
+		return inPlayer
+	} else {
+		return NULL
+	}
+}
+
+func addSubstitutions(team int16, events []MatchEvent, matchLog [15]uint32, rounds2mins []uint64, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, NULL int16, NOONE int16) []MatchEvent {
 	// matchLog:	9,10,11 ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
 	// halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
 	for i := 0; i < 3; i++ {
 		subHappened := matchLog[9+i] == 1
 		if subHappened {
 			minute := int16(rounds2mins[subsRounds[i]])
-			leavingPlayer := int16(lineup[substitutions[i]])
-			enteringPlayer := int16(lineup[11+i])
+			leavingPlayer := toShirtNum(substitutions[i], lineup, NULL, NOONE)
+			enteringPlayer := toShirtNum(uint8(11+i), lineup, NULL, NOONE)
 			typeOfEvent := EVNT_SUBST
 			thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer}
 			events = append(events, thisEvent)
 		}
 	}
-	return adjustSubstitutions(team, events)
+	return adjustSubstitutions(team, events, NULL)
 }
 
 // make sure that if a player that enters via a substitution appears in any other action (goal, pass, cards & injuries),
 // then the substitution time must take place at least before that minute.
-func adjustSubstitutions(team int16, events []MatchEvent) []MatchEvent {
+func adjustSubstitutions(team int16, events []MatchEvent, NULL int16) []MatchEvent {
 	adjustedEvents := events
 	for e := 0; e < len(events); e++ {
 		if (events[e].Type == EVNT_SUBST) && (events[e].Team == team) {
 			enteringPlayer := events[e].SecondaryPlayer
-			enteringMin := events[e].Minute
-			for e2 := 0; e2 < len(events); e2++ {
-				if (e != e2) && (events[e2].Team == team) && (enteringPlayer == events[e2].PrimaryPlayer) && (enteringMin >= events[e2].Minute-1) {
-					adjustedEvents[e].Minute = events[e2].Minute - 1
+			if enteringPlayer != NULL {
+				enteringMin := events[e].Minute
+				for e2 := 0; e2 < len(events); e2++ {
+					if (e != e2) && (events[e2].Team == team) && (enteringPlayer == events[e2].PrimaryPlayer) && (enteringMin >= events[e2].Minute-1) {
+						adjustedEvents[e].Minute = events[e2].Minute - 1
+					}
 				}
 			}
 		}

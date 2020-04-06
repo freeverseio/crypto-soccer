@@ -90,7 +90,7 @@ func TestMatchEventsTwoYellows(t *testing.T) {
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[1, 0, 0, true, true, 10, 15][7, 0, 1, false, false, 7, -1][10, 0, 1, true, false, 8, 3][13, 0, 0, false, false, 4, -1][16, 0, 0, false, false, 1, -1][23, 0, 0, false, false, 0, -1][26, 0, 0, false, false, 14, -1][29, 0, 0, false, false, 2, -1][32, 0, 0, false, false, 8, -1][39, 0, 0, false, false, 14, -1][41, 0, 0, false, false, 8, -1][46, 0, 0, false, false, 0, -1][23, 2, 0, false, false, 14, -1][19, 1, 0, false, false, 14, -1][23, 1, 0, false, false, 3, -1][23, 2, 1, false, false, 6, -1][6, 1, 1, false, false, 6, -1][23, 1, 1, false, false, 3, -1][16, 5, 0, false, false, 11, 19][26, 5, 0, false, false, 16, 12][16, 5, 1, false, false, 1, 17][26, 5, 1, false, false, 4, 18]"
+	expected := "[1, 0, 0, true, true, 10, 15][7, 0, 1, false, false, 7, -1][10, 0, 1, true, false, 8, 3][13, 0, 0, false, false, 4, -1][16, 0, 0, false, false, 1, -1][23, 0, 0, false, false, 0, -1][26, 0, 0, false, false, 14, -1][29, 0, 0, false, false, 2, -1][32, 0, 0, false, false, 8, -1][39, 0, 0, false, false, 14, -1][41, 0, 0, false, false, 8, -1][46, 0, 0, false, false, 0, -1][23, 2, 0, false, false, 14, -1][19, 1, 0, false, false, 14, -1][23, 1, 0, false, false, 14, -1][23, 2, 1, false, false, 6, -1][6, 1, 1, false, false, 6, -1][23, 1, 1, false, false, 6, -1][16, 5, 0, false, false, 11, 19][26, 5, 0, false, false, 16, 12][16, 5, 1, false, false, 1, 17][26, 5, 1, false, false, 4, 18]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)
