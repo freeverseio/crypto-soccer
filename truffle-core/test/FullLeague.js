@@ -558,7 +558,11 @@ contract('FullLeague', (accounts) => {
         // at end of 2nd half we already league points (8 first entries) and have end-game results (8 following entries)
         // On league points, at least 7 should be non-null
         for (i = 0; i < 7; i++) {
-            assert.notEqual(leafs[1][i], 0, "unexpected non-null leaf at start of league");
+            assert.notEqual(leafs[1][i], 0, "unexpected null leaf in league points at the end of 1st match");
+        }
+        goals = [ 2, 2, 1, 1, 2, 3, 0, 0 ];
+        for (i = 0; i < 7; i++) {
+            assert.notEqual(leafs[1][8+i], goals[i],"unexpected goals at the end of 1st match");
         }
         // for (i = 4; i < 128; i++) {
         //     assert.equal(leafs[1][i], 0, "unexpected non-null leaf at start of league");
