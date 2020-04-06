@@ -93,6 +93,7 @@ func main() {
 		if err != nil {
 			return err
 		}
+		defer client.Close()
 
 		contracts, err := contracts.New(
 			client,
