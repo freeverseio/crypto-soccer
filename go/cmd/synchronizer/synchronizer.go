@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -84,13 +85,15 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	for {
-		log.Info("Starting ...")
+	log.Info("Starting ...")
+
+	if err := func() error {
 		log.Info("Dial the Ethereum client: ", *ethereumClient)
 		client, err := ethclient.Dial(*ethereumClient)
 		if err != nil {
-			log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+			return err
 		}
+
 		contracts, err := contracts.New(
 			client,
 			*leaguesContractAddress,
@@ -107,47 +110,48 @@ func main() {
 			*constantsgettersContractAddress,
 		)
 		if err != nil {
-			log.Fatalf(err.Error())
+			return err
 		}
 
 		log.Info("Connecting to universe DBMS: ", *postgresURL)
 		universedb, err := storage.New(*postgresURL)
 		if err != nil {
-			log.Fatalf("Failed to connect to universe DBMS: %v", err)
+			return err
 		}
+		defer universedb.Close()
 
 		namesdb, err := names.New(*namesDatabase)
 		if err != nil {
-			log.Fatalf("Failed to connect to names DBMS: %v", err)
+			return err
 		}
-
-		log.Info("All is ready ... 5 seconds to start ...")
-		time.Sleep(5 * time.Second)
+		defer namesdb.Close()
 
 		processor, err := process.NewEventProcessor(contracts, namesdb, *ipfsURL)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-
 		log.Info("On Going ...")
+
 		for {
 			tx, err := universedb.Begin()
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			processedBlocks, err := processor.Process(tx, uint64(*delta))
 			if err != nil {
-				log.Fatal(err)
+				tx.Rollback()
+				return err
 			}
 			if err := tx.Commit(); err != nil {
-				log.Fatal(err)
+				return err
 			}
 
 			if processedBlocks == 0 {
 				time.Sleep(2 * time.Second)
 			}
 		}
-		log.Warning("Waiting 2 secs and retry ...")
-		time.Sleep(2 * time.Second)
+	}(); err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
 }
