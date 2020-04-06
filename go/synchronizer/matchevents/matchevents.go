@@ -120,8 +120,6 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 	// eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
 	outOfGamePlayer := int16(matchLog[4])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
-	// convert player in the lineUp to shirtNum:
-	outOfGamePlayer = int16(lineUp[outOfGamePlayer])
 	outOfGameMinute := int16(0)
 	if thereWasAnOutOfGame {
 		var typeOfEvent int16
@@ -133,7 +131,8 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 			typeOfEvent = EVNT_RED
 		}
 		outOfGameMinute = int16(rounds2mins[matchLog[6]])
-		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, outOfGamePlayer, NULL}
+		// convert player in the lineUp to shirtNum before storing it as match event:
+		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, int16(lineUp[outOfGamePlayer]), NULL}
 		events = append(events, thisEvent)
 	}
 
@@ -153,7 +152,8 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := EVNT_YELLOW
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
+		// convert player in the lineUp to shirtNum before storing it as match event:
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, int16(lineUp[yellowCardPlayer]), NULL}
 		events = append(events, thisEvent)
 	}
 
@@ -174,7 +174,8 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		}
 		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
+		// convert player in the lineUp to shirtNum before storing it as match event:
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, int16(lineUp[yellowCardPlayer]), NULL}
 		events = append(events, thisEvent)
 	}
 	return events
