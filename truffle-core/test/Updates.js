@@ -221,7 +221,6 @@ contract('Updates', (accounts) => {
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
         // First challenge fails because the TZ has not been updated yet with a root
-        forceSuccess = true;
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1]).should.be.rejected;
 
         // We update with the correct root...
@@ -271,9 +270,9 @@ contract('Updates', (accounts) => {
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
         // I cannot submit roots that are compatible with the previous
-        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitA, forceSuccess).should.be.rejected; // fails because we already are at last level
+        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitA).should.be.rejected; // fails because we already are at last level
         extraData = [];
-        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitA, extraData, forceSuccess).should.be.rejected;
+        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitA, extraData, forceSuccess = true).should.be.rejected;
 
         // but I can submit different ones. In this case the BC decides according to forceSuccess
         await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitB, extraData, forceSuccess = false).should.be.rejected;
@@ -356,9 +355,9 @@ contract('Updates', (accounts) => {
             level.toNumber().should.be.equal(0);
             isSet.should.be.equal(false);
             // challenge 0 -> 1
-            await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1], forceSuccess).should.be.fulfilled;
+            await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1]).should.be.fulfilled;
             // challenge 1 -> 2
-            await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA, forceSuccess).should.be.fulfilled;
+            await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA).should.be.fulfilled;
             var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
             level.toNumber().should.be.equal(2);
             nJumps.toNumber().should.be.equal(0);
@@ -421,9 +420,9 @@ contract('Updates', (accounts) => {
             level.toNumber().should.be.equal(0);
             isSet.should.be.equal(false);
             // challenge 0 -> 1
-            await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1], forceSuccess).should.be.fulfilled;
+            await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1]).should.be.fulfilled;
             // challenge 1 -> 2
-            await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA, forceSuccess).should.be.fulfilled;
+            await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA).should.be.fulfilled;
             var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
             level.toNumber().should.be.equal(2);
             nJumps.toNumber().should.be.equal(0);
