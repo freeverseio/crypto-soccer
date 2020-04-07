@@ -520,7 +520,7 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it('test day 0, half 0', async () => {
+    it2('test day 0, half 0', async () => {
         day = 0;
         leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
@@ -552,20 +552,34 @@ contract('FullLeague', (accounts) => {
     });
     
 
-    it('test day 0, half 1', async () => {
+    it('test days odd => so half 1', async () => {
         day = 1;
         leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
         assert.equal(leafs[day].length, nLeafs);
         // at end of 2nd half we already league points (8 first entries) and have end-game results (8 following entries)
         // On league points, at least 7 should be non-null
-        for (i = 0; i < 7; i++) {
-            assert.notEqual(leafs[1][i], 0, "unexpected null leaf in league points at the end of 1st match");
+        for (day = 1; day < 14; day += 2) {
+            for (i = 0; i < 7; i++) {
+                assert.notEqual(leafs[day][i], 0, "unexpected null leaf in league points at the end of a match");
+            }
         }
+        day=1;
         goals = [ 2, 2, 1, 1, 2, 3, 0, 0 ];
         for (i = 0; i < 7; i++) {
-            assert.equal(leafs[1][8+i], goals[i],"unexpected goals at the end of 1st match");
+            assert.equal(leafs[day][8+i], goals[i], "unexpected goals at the end of 1st match");
         }
+        off = 0;
+        for (day = 1; day < 14; day += 2) {
+            goalsInLeague = 0;
+            for (i = off; i < off+7; i++) {
+                goalsInLeague += leafs[day][8+i];
+            }
+            assert.equal(goalsInLeague > 5, true, "unexpected goals at the end of a match");
+            off += 8;
+        }
+        day = 1;
+        
         for (team = 0; team < nTeamsInLeague; team++) {
             // BEFORE second half ---------
             off = 128 + 64 * team;
