@@ -227,10 +227,48 @@ function readCreatedLeagueLeafs() {
   return JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
 }
 
+function assertExpectedZeroValues(leafs, day, half) {
+  assert.equal(leafs.length, nMatchdays * 2);
+  dayLeaf = leafs[2 * day + half];
+  if (day==0 && half == 0) {
+      // at end of 1st half we still do not have league points
+      for (i = 0; i < 8; i++) {
+          assert.equal(dayLeaf[i], 0, "unexpected non-null leaf at start of league");
+      }
+      // we do not have tactics, nor training, nor ML before
+      for (team = 0; team < nTeamsInLeague; team++) {
+          off = 128 + 64 * team;
+          for (i = 25; i < 28; i++) {
+              assert.equal(dayLeaf[off + i], 0, "unexpected nonnull element");
+          }
+      }
+  }
+  // every element of team from 28 to 32 is 0
+  for (team = 0; team < nTeamsInLeague; team++) {
+      off = 128 + 64 * team;
+      for (i = 28; i < 32; i++) {
+          assert.equal(dayLeaf[off + i], 0, "unexpected nonnull element");
+          assert.equal(dayLeaf[off+ 32 + i], 0, "unexpected nonnull element");
+      }
+  }
+  // no goals after this day
+  off = 8 + 8 * Math.floor(day);
+  if (half == 1) off += 8;
+  for (i = off; i < 128; i++) {
+      assert.equal(dayLeaf[i], 0, "unexpected nonnull element");
+  }
+  // no elements beyond last team
+  off = 128 + 32 * 2 * 8;
+  for (i = off; i < 1024; i++) {
+      assert.equal(dayLeaf[i], 0, "unexpected nonnull element");
+  }        
+}
+
   module.exports = {
     createUniverse,
     createLeagueData,
     buildLeafs,
     readCreatedLeagueData,
     readCreatedLeagueLeafs,
+    assertExpectedZeroValues
   }

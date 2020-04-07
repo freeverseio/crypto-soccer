@@ -98,8 +98,11 @@ contract Updates is UpdatesView, Merkle {
             providedRoots
         );
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
-              
+    
         bool success = forceSuccess;
+        // if (!forceSuccess) {
+        //     if (extraData[0] == 0) success = challenge
+        // }
         require(success, "challenge was not successful according to blockchain computation");
 
         _roots[intData[0]][intData[3]][intData[1]] = 0;
