@@ -42,6 +42,7 @@ contract('Updates', (accounts) => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
         proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
+        assets = depl[0];
         updates = depl[2];
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
@@ -53,7 +54,96 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
 
     });
+    
+    it('test getAllMatchdaysUTCInRound', async () =>  {
+        nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
+        nextVerseTimestamp = nextVerseTimestamp.toNumber();
+        timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
+        // tests for init timezone
+        utc = await updates.getAllMatchdaysUTCInRound(tz = timeZoneForRound1, round = 0).should.be.fulfilled;
+        nMatchesPerRound = 14;
+        for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
+            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay);
+        }
+        // tests for last timezone
+        utc = await updates.getAllMatchdaysUTCInRound(tz = (timeZoneForRound1 - 1), round = 0).should.be.fulfilled;
+        nMatchesPerRound = 14;
+        for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
+            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay + 23*3600);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay + 23*3600);
+        }
+        // tests for first timezone, round = 1
+        utc = await updates.getAllMatchdaysUTCInRound(tz = timeZoneForRound1, round = 1).should.be.fulfilled;
+        nMatchesPerRound = 14;
+        for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
+            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay + 7*24*3600);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay + 7*24*3600);
+        }    
+    });
+    
+    it('test getCurrentRoundPure', async () =>  {
+        result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRoundPure(tz = 4, tz1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        VERSES_DAY = 24*4;
+        VERSES_ROUND = 7 * VERSES_DAY;
+        // move to start of round 1 for 1st tz:
+        result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 4, tz1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        // move to start of round 1 for 1st tz after tz1:
+        result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = VERSES_ROUND + 4).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 6, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 7, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        // move to start of round 1 for last tz to reach it:
+        result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = 2 * VERSES_ROUND - 4).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 4, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+    });
 
+    it('test getMatchUTC', async () =>  {
+        nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
+        nextVerseTimestamp = nextVerseTimestamp.toNumber();
+        timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
+        // tests for init timezone
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 0).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp);
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 2).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + 24*3600);
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 1).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600);
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 1, matchDay = 1).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600 + 7*24*3600);
+        utc = await updates.getMatchUTC(tz = timeZoneForRound1, round = 1, matchDay = 2).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + 24*3600 + 7*24*3600);
+        // tests for other timezones
+        tz = 1;
+        deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
+        utc = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+        tz = 24;
+        deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
+        utc = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
+        utc.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+    });
+
+
+    
     it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
     });
@@ -187,6 +277,10 @@ contract('Updates', (accounts) => {
     });
 
     it('update Timezone many times', async () =>  {
+        result = await assets.getCurrentRound(tz = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRound(tz = 24).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
         console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;

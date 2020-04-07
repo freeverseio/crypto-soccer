@@ -47,7 +47,8 @@ func TestMatchEventsTwoYellows(t *testing.T) {
 	}
 
 	NO_SUBS := uint8(11)
-	lineup := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 12, 21}
+	lineup0 := [14]uint8{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21}
+	lineup1 := [14]uint8{3, 4, 5, 6, 0, 1, 2, 14, 8, 0, 10, 17, 18, 19}
 	substitutions := [3]uint8{5, 1, NO_SUBS}
 	subsRounds := [3]uint8{4, 6, 7}
 
@@ -60,8 +61,8 @@ func TestMatchEventsTwoYellows(t *testing.T) {
 		matchLog,
 		matchLog,
 		events,
-		lineup,
-		lineup,
+		lineup0,
+		lineup1,
 		substitutions,
 		substitutions,
 		subsRounds,
@@ -89,7 +90,7 @@ func TestMatchEventsTwoYellows(t *testing.T) {
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[1, 0, 0, true, true, 10, 2][6, 0, 1, false, false, 4, -1][11, 0, 1, true, false, 8, 0][12, 0, 0, false, false, 2, -1][17, 0, 0, false, false, 8, -1][22, 0, 0, false, false, 9, -1][27, 0, 0, false, false, 6, -1][28, 0, 0, false, false, 7, -1][33, 0, 0, false, false, 4, -1][38, 0, 0, false, false, 5, -1][42, 0, 0, false, false, 7, -1][45, 0, 0, false, false, 6, -1][22, 2, 0, false, false, 3, -1][15, 1, 0, false, false, 3, -1][22, 1, 0, false, false, 3, -1][22, 2, 1, false, false, 3, -1][15, 1, 1, false, false, 3, -1][22, 1, 1, false, false, 3, -1][17, 5, 0, false, false, 5, 19][27, 5, 0, false, false, 1, 12][17, 5, 1, false, false, 5, 19][27, 5, 1, false, false, 1, 12]"
+	expected := "[1, 0, 0, true, true, 10, 15][7, 0, 1, false, false, 7, -1][10, 0, 1, true, false, 8, 3][13, 0, 0, false, false, 4, -1][16, 0, 0, false, false, 1, -1][23, 0, 0, false, false, 0, -1][26, 0, 0, false, false, 14, -1][29, 0, 0, false, false, 2, -1][32, 0, 0, false, false, 8, -1][39, 0, 0, false, false, 14, -1][41, 0, 0, false, false, 8, -1][46, 0, 0, false, false, 0, -1][23, 2, 0, false, false, 14, -1][19, 1, 0, false, false, 14, -1][23, 1, 0, false, false, 14, -1][23, 2, 1, false, false, 6, -1][6, 1, 1, false, false, 6, -1][23, 1, 1, false, false, 6, -1][16, 5, 0, false, false, 11, 19][26, 5, 0, false, false, 16, 12][16, 5, 1, false, false, 1, 17][26, 5, 1, false, false, 4, 18]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)
@@ -112,8 +113,8 @@ func TestMatchEvent2Events(t *testing.T) {
 		0, 0, 0} // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
 	var events []*big.Int
 	events64 := []int64{
-		4324,           // seed
-		34234,          // starttime
+		4324,  // seed
+		34234, // starttime
 	}
 	var NROUNDS = 12
 	for i := 0; i < 5*(NROUNDS-3); i++ {
@@ -124,7 +125,8 @@ func TestMatchEvent2Events(t *testing.T) {
 	}
 
 	NO_SUBS := uint8(11)
-	lineup := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 12, 21}
+	lineup0 := [14]uint8{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21}
+	lineup1 := [14]uint8{3, 4, 5, 6, 0, 1, 2, 14, 8, 0, 10, 17, 18, 19}
 	substitutions := [3]uint8{5, 1, NO_SUBS}
 	subsRounds := [3]uint8{4, 6, 7}
 
@@ -137,8 +139,8 @@ func TestMatchEvent2Events(t *testing.T) {
 		matchLog,
 		matchLog,
 		events,
-		lineup,
-		lineup,
+		lineup0,
+		lineup1,
 		substitutions,
 		substitutions,
 		subsRounds,
@@ -178,7 +180,8 @@ func TestMatchEvents(t *testing.T) {
 	}
 
 	NO_SUBS := uint8(11)
-	lineup := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 12, 21}
+	lineup0 := [14]uint8{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21}
+	lineup1 := [14]uint8{3, 4, 5, 6, 0, 1, 2, 14, 8, 0, 10, 17, 18, 19}
 	substitutions := [3]uint8{5, 1, NO_SUBS}
 	subsRounds := [3]uint8{4, 6, 7}
 
@@ -191,8 +194,8 @@ func TestMatchEvents(t *testing.T) {
 		matchLog,
 		matchLog,
 		events,
-		lineup,
-		lineup,
+		lineup0,
+		lineup1,
 		substitutions,
 		substitutions,
 		subsRounds,
@@ -220,7 +223,7 @@ func TestMatchEvents(t *testing.T) {
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[1, 0, 0, true, true, 10, 2][6, 0, 1, false, false, 4, -1][11, 0, 1, true, false, 8, 0][12, 0, 0, false, false, 2, -1][17, 0, 0, false, false, 8, -1][22, 0, 0, false, false, 9, -1][27, 0, 0, false, false, 6, -1][28, 0, 0, false, false, 7, -1][33, 0, 0, false, false, 4, -1][38, 0, 0, false, false, 5, -1][42, 0, 0, false, false, 7, -1][45, 0, 0, false, false, 6, -1][22, 2, 0, false, false, 12, -1][30, 1, 0, false, false, 4, -1][22, 2, 1, false, false, 12, -1][30, 1, 1, false, false, 4, -1][17, 5, 0, false, false, 5, 19][21, 5, 0, false, false, 1, 12][17, 5, 1, false, false, 5, 19][21, 5, 1, false, false, 1, 12]"
+	expected := "[1, 0, 0, true, true, 10, 15][7, 0, 1, false, false, 7, -1][10, 0, 1, true, false, 8, 3][13, 0, 0, false, false, 4, -1][16, 0, 0, false, false, 1, -1][23, 0, 0, false, false, 0, -1][26, 0, 0, false, false, 14, -1][29, 0, 0, false, false, 2, -1][32, 0, 0, false, false, 8, -1][39, 0, 0, false, false, 14, -1][41, 0, 0, false, false, 8, -1][46, 0, 0, false, false, 0, -1][23, 2, 0, false, false, 12, -1][19, 1, 0, false, false, 13, -1][23, 2, 1, false, false, 18, -1][37, 1, 1, false, false, 0, -1][16, 5, 0, false, false, 11, 19][22, 5, 0, false, false, 16, 12][16, 5, 1, false, false, 1, 17][22, 5, 1, false, false, 4, 18]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)
@@ -259,7 +262,8 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 	}
 
 	NO_SUBS := uint8(11)
-	lineup := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 12, 21}
+	lineup0 := [14]uint8{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21}
+	lineup1 := [14]uint8{3, 4, 5, 6, 0, 1, 2, 14, 8, 0, 10, 17, 18, 19}
 	substitutions := [3]uint8{5, 1, NO_SUBS}
 	subsRounds := [3]uint8{4, 6, 7}
 
@@ -271,8 +275,8 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 		matchLog,
 		matchLog,
 		events,
-		lineup,
-		lineup,
+		lineup0,
+		lineup1,
 		substitutions,
 		substitutions,
 		subsRounds,
@@ -300,7 +304,7 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[46, 0, 0, true, true, 10, 2][51, 0, 1, false, false, 4, -1][56, 0, 1, true, false, 8, 0][57, 0, 0, false, false, 2, -1][62, 0, 0, false, false, 8, -1][67, 0, 0, false, false, 9, -1][72, 0, 0, false, false, 6, -1][73, 0, 0, false, false, 7, -1][78, 0, 0, false, false, 4, -1][83, 0, 0, false, false, 5, -1][87, 0, 0, false, false, 7, -1][90, 0, 0, false, false, 6, -1][67, 2, 0, false, false, 12, -1][75, 1, 0, false, false, 4, -1][67, 2, 1, false, false, 12, -1][75, 1, 1, false, false, 4, -1][62, 5, 0, false, false, 5, 19][66, 5, 0, false, false, 1, 12][62, 5, 1, false, false, 5, 19][66, 5, 1, false, false, 1, 12]"
+	expected := "[46, 0, 0, true, true, 10, 15][52, 0, 1, false, false, 7, -1][55, 0, 1, true, false, 8, 3][58, 0, 0, false, false, 4, -1][61, 0, 0, false, false, 1, -1][68, 0, 0, false, false, 0, -1][71, 0, 0, false, false, 14, -1][74, 0, 0, false, false, 2, -1][77, 0, 0, false, false, 8, -1][84, 0, 0, false, false, 14, -1][86, 0, 0, false, false, 8, -1][91, 0, 0, false, false, 0, -1][68, 2, 0, false, false, 12, -1][64, 1, 0, false, false, 13, -1][68, 2, 1, false, false, 18, -1][82, 1, 1, false, false, 0, -1][61, 5, 0, false, false, 11, 19][67, 5, 0, false, false, 16, 12][61, 5, 1, false, false, 1, 17][67, 5, 1, false, false, 4, 18]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)
@@ -347,7 +351,8 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 	}
 
 	NO_SUBS := uint8(11)
-	lineup := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 12, 21}
+	lineup0 := [14]uint8{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21}
+	lineup1 := [14]uint8{3, 4, 5, 6, 0, 1, 2, 14, 8, 0, 10, 17, 18, 19}
 	substitutions := [3]uint8{5, 1, NO_SUBS}
 	subsRounds := [3]uint8{4, 6, 7}
 
@@ -359,8 +364,8 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 		matchLog,
 		matchLog,
 		events,
-		lineup,
-		lineup,
+		lineup0,
+		lineup1,
 		substitutions,
 		substitutions,
 		subsRounds,
@@ -392,7 +397,7 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[46, 0, 1, false, false, 3, -1][51, 0, 1, false, false, 4, -1][56, 0, 0, true, true, 7, 7][57, 0, 1, false, false, 2, -1][62, 0, 0, false, false, 8, -1][67, 0, 1, false, false, 9, -1][72, 0, 1, false, false, 6, -1][73, 0, 0, true, true, 10, 10][78, 0, 0, true, true, 7, 7][83, 0, 0, false, false, 5, -1][87, 0, 1, false, false, 7, -1][90, 0, 0, false, false, 6, -1][67, 2, 0, false, false, 12, -1][75, 1, 0, false, false, 4, -1][67, 2, 1, false, false, 12, -1][75, 1, 1, false, false, 4, -1][62, 5, 0, false, false, 5, 19][66, 5, 0, false, false, 1, 12][62, 5, 1, false, false, 5, 19][66, 5, 1, false, false, 1, 12]"
+	expected := "[46, 0, 1, false, false, 0, -1][52, 0, 1, false, false, 7, -1][55, 0, 0, true, true, 8, 8][58, 0, 1, false, false, 16, -1][61, 0, 0, false, false, 1, -1][68, 0, 1, false, false, 13, -1][71, 0, 1, false, false, 8, -1][74, 0, 0, true, true, 10, 10][77, 0, 0, true, true, 8, 8][84, 0, 0, false, false, 14, -1][86, 0, 1, false, false, 7, -1][91, 0, 0, false, false, 0, -1][68, 2, 0, false, false, 12, -1][64, 1, 0, false, false, 13, -1][68, 2, 1, false, false, 18, -1][82, 1, 1, false, false, 0, -1][61, 5, 0, false, false, 11, 19][67, 5, 0, false, false, 16, 12][61, 5, 1, false, false, 1, 17][67, 5, 1, false, false, 4, 18]"
 	allOK := (concat == expected) && (nGoals[0] == 3) && (nGoals[1] == 0)
 	if !allOK {
 		fmt.Println("the obtained result is: ")

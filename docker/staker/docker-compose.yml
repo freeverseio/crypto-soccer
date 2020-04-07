@@ -2,9 +2,8 @@ version: '3'
 services:
   ethereum: 
     image: freeverseio/parity:v2.7.2-posdao-stable
-    command: --chain xdai --jsonrpc-interface all --no-warp
     volumes:
-      - ethereum-data:/home/parity
+      - ethereum-data:/home/parity/.local/share/io.parity.ethereum
   universe.db:
     build: 
       context: ../../universe.db/
