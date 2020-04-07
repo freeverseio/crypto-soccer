@@ -383,7 +383,7 @@ contract('FullLeague', (accounts) => {
   
     // League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
     it2('create real data for an entire league', async () => {
-        mode = WRITE_NEW_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
+        mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
 
@@ -425,7 +425,11 @@ contract('FullLeague', (accounts) => {
         tact = tactics442NoChanges.toString();
         for (day = 0; day < 2 * nMatchdays; day++) {
             leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => tact));
+        }
+        // trainings after 2nd half are required to be 0
+        for (day = 0; day < nMatchdays; day++) {
             leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => almostNullTraning.toString()));
+            leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
         }
 
         // we just need to build, across the league: teamStates, points, teamIds
@@ -495,8 +499,8 @@ contract('FullLeague', (accounts) => {
         );
     });
 
-    it2('read an entire league and organize data in the leaf format required', async () => {
-        mode = WRITE_NEW_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
+    it('read an entire league and organize data in the leaf format required', async () => {
+        mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
         var leafs = [];
         for (day = 0; day < nMatchdays; day++) {
@@ -520,7 +524,7 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it2('test day 0, half 0', async () => {
+    it('test day 0, half 0', async () => {
         day = 0;
         leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
@@ -595,7 +599,6 @@ contract('FullLeague', (accounts) => {
 
         for (day = 1; day < 14; day += 2) {
             for (team = 0; team < nTeamsInLeague; team++) {
-                console.log(day, team)
                 // BEFORE second half ---------
                 off = 128 + 64 * team;
                 // ...player 0...10 are non-null, and different among them because of the different playerId
@@ -612,7 +615,7 @@ contract('FullLeague', (accounts) => {
                 // ...player 11...25 are identical because we used the same playerId for all of them
                 for (i = off + 12; i < off + 25; i++) assert.equal(leafs[day][i], leafs[day][off+12], "players that did not play changed unexpectedly");
                 assert.equal(leafs[day][off + 25], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
-                assert.equal(leafs[day][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
+                assert.equal(leafs[day][off + 26], 0, "unexpected training leaf after 1st half of league");
                 assert.notEqual(leafs[day][off + 27], 0, "unexpected null matchLog leaf after 1st half of league");
             }
         }
