@@ -7,6 +7,7 @@ const fs = require('fs');
 const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
+const chllUtils = require('../utils/challengeUtils.js');
 
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');
@@ -274,66 +275,7 @@ contract('FullLeague', (accounts) => {
         else assert(!web3.utils.toBN(x).eq(web3.utils.toBN(y)), msg);
     }
 
-    function zeroPadToLength(x, desiredLength) {
-        return x.concat(Array.from(new Array(desiredLength - x.length), (x,i) => 0))
-    }
-    
-    // var leagueData = {
-    //     seeds: [], // [2 * nMatchDays]
-    //     teamIds: [], // [nTeamsInLeague]
-    //     startTimes: [], // [2 * nMatchDays]
-    //     teamStates: [], // [2 * nMatchdays + 1][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
-    //     matchLogs: [], // [2 * nMatchdays+ 1][nTeamsInLeague]
-    //     results: [], // [nMatchesPerLeague][2]  -> goals per team per match
-    //     points: [], // [2 * nMatchdays][nTeamsInLeague]
-    //     tactics: [], // [2 * nMatchdays + 1][nTeamsInLeague]
-    //     trainings: [] // [2 * nMatchdays + 1][nTeamsInLeague]
-    // }
-    // - Data[1024] = [League[512], Team$_{i, aft}$[32], Team$_{i, bef}$[32]]
-    // League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
-    // 
-    // returns leafs AFTER having played the matches at matchday = day, half = half.
-    //  - sorting results:
-    //      - idx = day * nMatchesPerDay * 2 + matchInDay * 2 + teamHomeOrAway
-    function buildLeafs(leagueData, day, half) {
-        var isNoPointsYet = (half == 0) && (day == 0);
-        if (isNoPointsYet) { 
-            leafs =  Array.from(new Array(nTeamsInLeague), (x,i) => 0);
-        } else {
-            lastDayToCount = (half == 0) ? day - 1 : day;
-            leafs = leagueData.points[lastDayToCount]; 
-            for (d = 0; d <= lastDayToCount; d++) {
-                for (m = 0; m < nMatchesPerDay; m++) {
-                    leafs.push(leagueData.results[d * nMatchesPerDay + m][0]);
-                    leafs.push(leagueData.results[d * nMatchesPerDay + m][1]);
-                }
-            }
-        }
-        leafs = zeroPadToLength(leafs, 128);
-        for (team = 0; team < nTeamsInLeague; team++) {
-            for (extraHalf = 0; extraHalf < 2; extraHalf++) {
-                teamData = [];
-                for (p = 0; p < nPlayersInTeam; p++) {
-                    teamData.push(leagueData.teamStates[2*day + half + extraHalf][team][p])
-                }
-                teamData.push(leagueData.tactics[2*day + half + extraHalf][team]);
-                teamData.push(leagueData.trainings[2*day + half + extraHalf][team]);
-                teamData.push(leagueData.matchLogs[2*day + half + extraHalf][team]);
-                leafs = leafs.concat(zeroPadToLength(teamData, 32));
-            }
-        }
-        return zeroPadToLength(leafs, nLeafs);
-    }
 
-    function vec2str(y) {
-        yStr = [...y];
-        for (i = 0; i < y.length; i++) yStr[i] = y[i].toString();
-        return yStr;
-    }
-    
-    function clone(a) {
-        return JSON.parse(JSON.stringify(a));
-     }
     
     beforeEach(async () => {
         training = await TrainingPoints.new().should.be.fulfilled;
@@ -388,102 +330,8 @@ contract('FullLeague', (accounts) => {
         // => all assingments to 0, but with a special player chosen
 
         champs = await Championships.new().should.be.fulfilled;
-        let secsBetweenMatches = 12*3600;
-        var leagueData = {
-            seeds: [], // [2 * nMatchDays]
-            teamIds: [], // [nTeamsInLeague]
-            startTimes: [], // [2 * nMatchDays]
-            teamStates: [], // [1 + 2 * nMatchdays][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
-            matchLogs: [], // [1 + 2 * nMatchdays][nTeamsInLeague]
-            results: [], // [nMatchesPerLeague][2]  ->  per team per match
-            points: [], // [2 * nMatchdays][nTeamsInLeague]
-            tactics: [], // [2 * nMatchdays + 1][nTeamsInLeague]
-            trainings: [] // [2 * nMatchdays + 1][nTeamsInLeague]
-        }
-        // on starting points: if we query computeLeagueLeaderBoard, I would get 
-        // a non-null value, sorting because of all tied, which would depend on a seed.
-        // we don't have that seed before a match starts, so we set all points to 0.
-
-        leagueData.seeds = Array.from(new Array(2 * nMatchdays), (x,i) => web3.utils.keccak256(i.toString()).toString());
-        leagueData.startTimes = Array.from(new Array(2 * nMatchdays), (x,i) => now + i * secsBetweenMatches);
-        allMatchLogs = Array.from(new Array(nTeamsInLeague), (x,i) => 0);
-        leagueData.matchLogs.push([...allMatchLogs]);
-        teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
-        teamState442 = vec2str(teamState442);
-        allTeamsSkills = Array.from(new Array(nTeamsInLeague), (x,i) => teamState442);
-        leagueData.teamStates.push([...allTeamsSkills]);
-        // nosub = [NO_SUBST, NO_SUBST, NO_SUBST];
-        // tact = await engine.encodeTactics(nosub , ro = [0, 0, 0], setNoSubstInLineUp(lineupConsecutive, nosub), extraAttackNull, tacticsId = 0).should.be.fulfilled;
-        teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
-        leagueData.teamIds = Array.from(new Array(nTeamsInLeague), (x,i) => teamId.toNumber() + i);
-        leagueData.results = Array.from(new Array(nMatchesPerLeague), (x,i) => [0,0]);
-
-        // tactics and trainings start at all 0 (undefined until we play the first match)
-        leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
-        leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
-        // same tactics and trainings for all matchdays:
-        tact = tactics442NoChanges.toString();
-        for (day = 0; day < 2 * nMatchdays; day++) {
-            leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => tact));
-        }
-        // trainings after 2nd half are required to be 0
-        for (day = 0; day < nMatchdays; day++) {
-            leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => almostNullTraning.toString()));
-            leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
-        }
-
-        // we just need to build, across the league: teamStates, points, teamIds
-        // for (day = 0; day < 1; day++) {
-        for (day = 0; day < nMatchdays; day++) {
-            // 1st half
-            for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
-                var {0: t0, 1: t1} = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
-                t0 = t0.toNumber();
-                t1 = t1.toNumber();
-                console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 0,  teams:", t0, t1);
-                var {0: newSkills, 1: newLogs} =  await play.play1stHalfAndEvolve(
-                    leagueData.seeds[2 * day], leagueData.startTimes[2 * day], 
-                    [allTeamsSkills[t0], allTeamsSkills[t1]], 
-                    [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
-                    [leagueData.tactics[2 * day + 1][t0], leagueData.tactics[2 * day + 1][t1]], 
-                    [allMatchLogs[t0], allMatchLogs[t1]],
-                    [is2nd = false, isHom = true, isPlay = false],
-                    [tp = 0, tp = 0]
-                ).should.be.fulfilled;
-                allTeamsSkills[t0] = vec2str(newSkills[0]);
-                allTeamsSkills[t1] = vec2str(newSkills[1]);
-                allMatchLogs[t0] = newLogs[0].toString();
-                allMatchLogs[t1] = newLogs[1].toString();
-            }
-            leagueData.teamStates.push([...allTeamsSkills]);        
-            leagueData.matchLogs.push([...allMatchLogs]);        
-            // 2nd half
-            for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
-                var {0: t0, 1: t1} = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
-                t0 = t0.toNumber();
-                t1 = t1.toNumber();
-                console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 1,  teams:", t0, t1);
-                var {0: newSkills, 1: newLogs} =  await play.play2ndHalfAndEvolve(
-                    leagueData.seeds[2*day + 1], leagueData.startTimes[2*day + 1], 
-                    [allTeamsSkills[t0], allTeamsSkills[t1]], 
-                    [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
-                    [leagueData.tactics[2 * day + 1][t0], leagueData.tactics[2 * day + 1][t1]], 
-                    [allMatchLogs[t0], allMatchLogs[t1]],
-                    [is2nd = true, isHom = true, isPlay = false]
-                ).should.be.fulfilled;
-                allTeamsSkills[t0] = vec2str(newSkills[0]);
-                allTeamsSkills[t1] = vec2str(newSkills[1]);
-                allMatchLogs[t0] = newLogs[0].toString();
-                allMatchLogs[t1] = newLogs[1].toString(); 
-                goals0 = await encodeLog.getNGoals(newLogs[0]).should.be.fulfilled;
-                goals1 = await encodeLog.getNGoals(newLogs[1]).should.be.fulfilled;
-                leagueData.results[nMatchesPerDay * day + matchIdxInDay] = [goals0.toNumber(), goals1.toNumber()];
-            }
-            leagueData.teamStates.push([...allTeamsSkills]);        
-            leagueData.matchLogs.push([...allMatchLogs]);   
-            var {0: rnking, 1: lPoints} = await champs.computeLeagueLeaderBoard([...leagueData.results], day, leagueData.seeds[2*day + 1]).should.be.fulfilled;
-            leagueData.points.push(vec2str(lPoints));   
-        }
+        leagueData = await chllUtils.createLeagueData(champs, play, encodeLog).should.be.fulfilled;
+        
         if (mode == WRITE_NEW_EXPECTED_RESULTS) {
             fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
                 if (err) {
@@ -501,12 +349,12 @@ contract('FullLeague', (accounts) => {
 
     it('read an entire league and organize data in the leaf format required', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
-        leagueData = JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
+        leagueData = chllUtils.readCreatedLeagueData();
         var leafs = [];
         for (day = 0; day < nMatchdays; day++) {
-            dayLeafs = buildLeafs(clone(leagueData), day, half = 0);
+            dayLeafs = chllUtils.buildLeafs(leagueData, day, half = 0);
             leafs.push([...dayLeafs]);
-            dayLeafs = buildLeafs(clone(leagueData), day, half = 1);
+            dayLeafs = chllUtils.buildLeafs(leagueData, day, half = 1);
             leafs.push([...dayLeafs]);
         }
         if (mode == WRITE_NEW_EXPECTED_RESULTS) {
@@ -525,8 +373,8 @@ contract('FullLeague', (accounts) => {
     });
     
     it('test day 0, half 0', async () => {
+        leafs = chllUtils.readCreatedLeagueLeafs();
         day = 0;
-        leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
         assert.equal(leafs[day].length, nLeafs);
         // at end of 1st half we still do not have end-game results nor league points
@@ -557,8 +405,8 @@ contract('FullLeague', (accounts) => {
     
 
     it('test all days after 2nd half (day = odd)', async () => {
+        leafs = chllUtils.readCreatedLeagueLeafs();
         day = 1;
-        leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
         assert.equal(leafs[day].length, nLeafs);
         // at end of 2nd half we already league points (8 first entries) and have end-game results (8 following entries)
