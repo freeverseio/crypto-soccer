@@ -570,46 +570,51 @@ contract('FullLeague', (accounts) => {
         for (i = 0; i < 7; i++) {
             assert.equal(leafs[day][8+i], goals[i], "unexpected goals at the end of 1st match");
         }
-        // after 1st half, all results should be 0:
-        off = 0;
-        for (day = 0; day < 14; day += 2) {
+
+        // Check results for all days
+        for (day = 1; day < 14; day += 1) {
+            // check that all previous league results are not null
+            for (league  = 0; league < Math.floor(day/2); league++) {
+                off = 8 * league;
+                goalsInLeague = 0;
+                for (i = off; i < off+8; i++) {
+                    goalsInLeague += leafs[day][8+i];
+                }
+                assert.equal(goalsInLeague > 5, true, "unexpected league without goals");
+            }                
+            off = 8 * Math.floor(day/2);
             goalsInLeague = 0;
             for (i = off; i < off+8; i++) {
                 goalsInLeague += leafs[day][8+i];
             }
-            assert.equal(goalsInLeague, 0, "unexpected goals at the end of a match");
-            off += 8;
+            // after 1st half, all results should be 0:
+            // after 2nd half, sum of all goals should be at least 5:
+            if (day % 2 == 0) { assert.equal(goalsInLeague, 0, "unexpected goals at the end of a match"); }
+            else { assert.equal(goalsInLeague > 5, true, "unexpected league without goals");}
         }
-        // after 2nd halfs we should have fresh results:
-        off = 0;
+
         for (day = 1; day < 14; day += 2) {
-            goalsInLeague = 0;
-            for (i = off; i < off+7; i++) {
-                goalsInLeague += leafs[day][8+i];
+            for (team = 0; team < nTeamsInLeague; team++) {
+                console.log(day, team)
+                // BEFORE second half ---------
+                off = 128 + 64 * team;
+                // ...player 0...10 are non-null, and different among them because of the different playerId
+                for (i = off; i < off + 25; i++) {
+                    assert.equal(leafs[day][i], leafs[day-1][i + 32], "skills at start of 2nd half not equal to end of previous half");
+                }
+                assert.equal(leafs[day][off + 25], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
+                assert.equal(leafs[day][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
+                assert.equal(leafs[day][off + 27], leafs[day-1][off + 32 + 27], "matchlog at start of 2nd half not equal to end of previous half");
+                // AFTER second half ---------
+                off += 32;
+                // ...player 0...10 are non-null, and different among them because of the different playerId
+                for (i = off; i < off + 11; i++) assert.notEqual(leafs[day][i], leafs[day][i-32], "states did not change after 1st half");
+                // ...player 11...25 are identical because we used the same playerId for all of them
+                for (i = off + 12; i < off + 25; i++) assert.equal(leafs[day][i], leafs[day][off+12], "players that did not play changed unexpectedly");
+                assert.equal(leafs[day][off + 25], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
+                assert.equal(leafs[day][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
+                assert.notEqual(leafs[day][off + 27], 0, "unexpected null matchLog leaf after 1st half of league");
             }
-            assert.equal(goalsInLeague > 5, true, "unexpected goals at the end of a match");
-            off += 8;
-        }
-        day = 1;
-        for (team = 0; team < nTeamsInLeague; team++) {
-            // BEFORE second half ---------
-            off = 128 + 64 * team;
-            // ...player 0...10 are non-null, and different among them because of the different playerId
-            for (i = off; i < off + 25; i++) {
-                assert.equal(leafs[day][i], leafs[day-1][i + 32], "skills at start of 2nd half not equal to end of previous half");
-            }
-            assert.equal(leafs[day][off + 25], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
-            assert.equal(leafs[day][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
-            assert.equal(leafs[day][off + 27], leafs[day-1][off + 32 + 27], "matchlog at start of 2nd half not equal to end of previous half");
-            // AFTER second half ---------
-            off += 32;
-            // ...player 0...10 are non-null, and different among them because of the different playerId
-            for (i = off; i < off + 11; i++) assert.notEqual(leafs[day][i], leafs[day][i-32], "states did not change after 1st half");
-            // ...player 11...25 are identical because we used the same playerId for all of them
-            for (i = off + 12; i < off + 25; i++) assert.equal(leafs[day][i], leafs[day][off+12], "players that did not play changed unexpectedly");
-            assert.equal(leafs[day][off + 25], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
-            assert.equal(leafs[day][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
-            assert.notEqual(leafs[day][off + 27], 0, "unexpected null matchLog leaf after 1st half of league");
         }
     });
     
