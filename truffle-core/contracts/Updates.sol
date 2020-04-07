@@ -72,37 +72,68 @@ contract Updates is UpdatesView, Merkle {
     }
 
     // TODO: specify which leaf you challenge!!! And bring Merkle proof!
-    function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots, bool forceSuccess) public {
-        (uint8 tz,,) = prevTimeZoneToUpdate();
-        require(tz != NULL_TIMEZONE, "cannot challenge the null timezone");
-        (uint8 newIdx, uint8 level, uint8 levelVerifiable) = getChallengeData(tz, true);
+    function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots) public {
+        // intData = [tz, level, levelVerifiable, newIdx]
+        (bytes32 root , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
+            challLeaveVal, 
+            challLeavePos, 
+            proofChallLeave, 
+            providedRoots
+        );
+        require(intData[1] < intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges");        
+        // accept the challenge and store new root, or let the BC verify challenge and revert to level - 1
+        uint8 level = intData[1] + 1;
+        _roots[intData[0]][intData[3]][level] = root;
+        _challengeLevel[intData[0]][intData[3]] = level;
+        emit ChallengeAccepted(intData[0], level, root, providedRoots);
+        _lastUpdateTime[intData[0]] = now;
+    }
+
+    function BCVerifableChallenge(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots, uint256[] memory extraData, bool forceSuccess) public {
+        // intData = [tz, level, levelVerifiable, newIdx]
+        ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
+            challLeaveVal, 
+            challLeavePos, 
+            proofChallLeave, 
+            providedRoots
+        );
+        require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
+              
+        bool success = forceSuccess;
+        require(success, "challenge was not successful according to blockchain computation");
+
+        _roots[intData[0]][intData[3]][intData[1]] = 0;
+        _challengeLevel[intData[0]][intData[3]] = intData[1] - 1;
+        emit ChallengeResolved(intData[0], intData[1] + 1, true);
+        emit ChallengeResolved(intData[0], intData[1], false);
+    }
+
+
+    function _assertFormallyCorrectChallenge(
+        bytes32 challLeaveVal, 
+        uint256 challLeavePos, 
+        bytes32[] memory proofChallLeave, 
+        bytes32[] memory providedRoots
+    ) 
+        private 
+        returns (bytes32, uint8[4] memory intData)
+    {
+        // intData = [tz, level, levelVerifiable, newIdx]
+        (intData[0],,) = prevTimeZoneToUpdate();
+        require(intData[0] != NULL_TIMEZONE, "cannot challenge the null timezone");
+        (intData[3], intData[1], intData[2]) = getChallengeData(intData[0], true);
         bool isSettled;
-        (level, isSettled) = _cleanTimeAcceptedChallenges(tz, level);
+        (intData[1], isSettled) = _cleanTimeAcceptedChallenges(intData[0], intData[1]);
         require(!isSettled, "challenging time is over for the current timezone");
         // verify provided roots are an actual challenge (they lead to a root different from the one provided by previous challenge/update)
         bytes32 root = merkleRoot(providedRoots, LEVELS_IN_ONE_CHALLENGE);
-        if (level == 0) require(root != getRoot(tz, 0, true), "provided leafs lead to same root being challenged");
+        if (intData[1] == 0) require(root != getRoot(intData[0], 0, true), "provided leafs lead to same root being challenged");
         else {
             require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
-            bytes32 prevRoot = getRoot(tz, level, true);
+            bytes32 prevRoot = getRoot(intData[0], intData[1], true);
             require(verify(prevRoot, proofChallLeave, challLeaveVal, challLeavePos), "merkle proof not correct");
         }
-        // accept the challenge and store new root, or let the BC verify challenge and revert to level - 1
-        if (level < levelVerifiable - 1) {
-           level += 1;
-            _roots[tz][newIdx][level] = root;
-            _challengeLevel[tz][newIdx] = level;
-            emit ChallengeAccepted(tz, level, root, providedRoots);
-        } else {
-            // bool success = computeChallenge(challLeaveVal, challLeavePos, providedRoots);
-            bool success = forceSuccess;
-            require(success, "challenge was not successful according to blockchain computation");
-            _roots[tz][newIdx][level] = 0;
-            _challengeLevel[tz][newIdx] = level - 1;
-            emit ChallengeResolved(tz, level + 1, true);
-            emit ChallengeResolved(tz, level, false);
-        }
-        _lastUpdateTime[tz] = now;
+        return (root, intData);        
     }
     
     function _cleanTimeAcceptedChallenges(uint8 tz, uint8 writtenLevel) internal returns (uint8, bool) {

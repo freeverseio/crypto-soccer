@@ -60,11 +60,11 @@ contract('Updates', (accounts) => {
 
     });
 
-    it('test that cannot initialize updates twice', async () =>  {
+    it2('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates().should.be.rejected;
     });
     
-    it('check timezones for this verse', async () =>  {
+    it2('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
@@ -81,7 +81,7 @@ contract('Updates', (accounts) => {
         result.should.be.equal(expected);
     });
     
-    it('require that BC and local time are less than 15 sec out of sync', async () =>  {
+    it2('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await updates.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
         // the substraction is in miliseconds:
@@ -101,7 +101,7 @@ contract('Updates', (accounts) => {
         (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 20*1000).should.be.equal(true);
     });
     
-    it('check BC is set up in agreement with the local time', async () =>  {
+    it2('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
         localTimeMs = Date.now();
@@ -121,7 +121,7 @@ contract('Updates', (accounts) => {
         timeZoneForRound1.toNumber().should.be.equal(expectedHour);
     });
     
-    it('wait some minutes', async () =>  {
+    it2('wait some minutes', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
         extraTime = 3*60
@@ -136,7 +136,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    it('submitActions to timezone', async () =>  {
+    it2('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verseBefore = await updates.getCurrentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -157,7 +157,7 @@ contract('Updates', (accounts) => {
         });
     });
 
-    it('update Timezone once', async () =>  {
+    it2('update Timezone once', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = -10);
@@ -173,7 +173,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
     });
 
-    it('moveToNextVerse', async () =>  {
+    it2('moveToNextVerse', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
@@ -183,7 +183,7 @@ contract('Updates', (accounts) => {
         
     });
 
-    it('update Timezone many times', async () =>  {
+    it2('update Timezone many times', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -194,7 +194,7 @@ contract('Updates', (accounts) => {
         }
     });
 
-    it('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
+    it2('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -221,19 +221,20 @@ contract('Updates', (accounts) => {
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
         // First challenge fails because the TZ has not been updated yet with a root
-        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1], forceSuccess = true).should.be.rejected;
+        forceSuccess = true;
+        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1]).should.be.rejected;
 
         // We update with the correct root...
         await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
         // ...so that we cannot challenge with the correct set of hashes
-        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1], forceSuccess).should.be.rejected;
+        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1]).should.be.rejected;
         // ...but we can challenge with one of them being wrong
         // we will lie in a bottom leave that leads to root 7 in the first level
         // so being at pos = 7, leads to pos 7 * nLeafsPerRoot, which leads at 7*nLeafsPerRoot^2
         assert.notEqual(merkleUtils.merkleRoot(leafsB, nTotalLevels), merkleUtils.merkleRoot(leafsA, nTotalLevels), "wrong leafsA should lead to different root");
         assert.notEqual(merkleUtils.merkleRoot(merkleStructB[1], nLevelsPerRoot), merkleUtils.merkleRoot(merkleStructA[1], nLevelsPerRoot), "wrong leafsA should lead to different merkle structs");
 
-        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1], forceSuccess).should.be.fulfilled;
+        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1]).should.be.fulfilled;
 
         // we can now challenge the challenger :-) with the correct hashes  
         // TODO: test that vals are gotten from events
@@ -245,7 +246,7 @@ contract('Updates', (accounts) => {
 
         // as always, first check that we cannot submit roots that coinicide with previous:
         assert.notEqual(merkleUtils.merkleRoot(roots2SubmitB, nLevelsPerRoot), merkleUtils.merkleRoot(roots2SubmitA, nLevelsPerRoot), "wrong choice of slice");
-        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitB, forceSuccess).should.be.rejected;
+        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitB).should.be.rejected;
         
 
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
@@ -255,7 +256,7 @@ contract('Updates', (accounts) => {
         isSet.should.be.equal(false);
 
         // but we can with differing ones:
-        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA, forceSuccess).should.be.fulfilled;
+        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA).should.be.fulfilled;
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
         challValB_backup = challValB;
@@ -270,11 +271,13 @@ contract('Updates', (accounts) => {
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
         // I cannot submit roots that are compatible with the previous
-        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitA, forceSuccess).should.be.rejected;
+        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitA, forceSuccess).should.be.rejected; // fails because we already are at last level
+        extraData = [];
+        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitA, extraData, forceSuccess).should.be.rejected;
 
         // but I can submit different ones. In this case the BC decides according to forceSuccess
-        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = false).should.be.rejected;
-        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;
+        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitB, extraData, forceSuccess = false).should.be.rejected;
+        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitB, extraData, forceSuccess = true).should.be.fulfilled;
         
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(1);
@@ -283,7 +286,7 @@ contract('Updates', (accounts) => {
         isSet.should.be.equal(false);
         
         // challenge again to move to level2, and now we will wait time
-        await updates.challengeTZ(challValB_backup, newChallengePos_backup, proofB_backup, roots2SubmitA_backup, forceSuccess).should.be.fulfilled;
+        await updates.challengeTZ(challValB_backup, newChallengePos_backup, proofB_backup, roots2SubmitA_backup).should.be.fulfilled;
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
@@ -318,7 +321,7 @@ contract('Updates', (accounts) => {
     
     
     
-    it('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
+    it2('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -381,7 +384,7 @@ contract('Updates', (accounts) => {
     });
     
     
-    it('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
+    it2('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
         // identical to previous test but we wait 1 challenge time less!
         // so at the very end, we're not allowed to submit actions because the time has not come for next timezone
         await moveToNextVerse(updates, extraSecs = 2);
@@ -446,7 +449,7 @@ contract('Updates', (accounts) => {
     });
 
     
-    it('true status of timezone challenge', async () =>  {
+    it2('true status of timezone challenge', async () =>  {
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
@@ -502,7 +505,7 @@ contract('Updates', (accounts) => {
     });
     
     
-    it('vefiable challenge', async () =>  {
+    it2('vefiable challenge', async () =>  {
         await updates.setLevelVerifiableByBC(4).should.be.fulfilled;
         
         return;
