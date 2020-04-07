@@ -205,7 +205,7 @@ contract('Updates', (accounts) => {
         (turnInDayAfter.toNumber() - turnInDayBefore.toNumber()).should.be.equal(1);
     });
     
-    it('challenging a tz', async () =>  {
+    it2('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -504,14 +504,12 @@ contract('Updates', (accounts) => {
     });
     
     
-    it2('vefiable challenge', async () =>  {
-        await updates.setLevelVerifiableByBC(4).should.be.fulfilled;
-        
-        return;
+    it('vefiable challenge', async () =>  {
+        // preparation
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif = "ciao3").should.be.fulfilled;
-
+        const cif = "ciao3";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
         nLeafsPerRoot = 16;
         nChallenges = 3;
         nTotalLeafs = nLeafsPerRoot**3;
@@ -521,26 +519,19 @@ contract('Updates', (accounts) => {
         leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
+
+        // submissions
         await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
-        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1], forceSuccess = false).should.be.fulfilled;
+        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1]).should.be.fulfilled;
         newChallengePos = 7;
         challengePos = [];
         challengePos.push(newChallengePos);
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
-        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
-        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA, forceSuccess).should.be.fulfilled;
-        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
-        lev.toNumber().should.be.equal(2);
-        challValB_backup = challValB;
-        newChallengePos_backup = newChallengePos;
-        proofB_backup = [...proofB];
-        roots2SubmitA_backup = [...roots2SubmitA];
-        
+        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA).should.be.fulfilled;
         newChallengePos = 3;
         challengePos.push(newChallengePos);
-        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
-        await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;
+        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitB, extraData, forceSuccess = true).should.be.fulfilled;
     });
     
     
