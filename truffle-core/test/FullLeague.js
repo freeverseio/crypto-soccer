@@ -552,7 +552,7 @@ contract('FullLeague', (accounts) => {
     });
     
 
-    it('test days odd => so half 1', async () => {
+    it('test all days after 2nd half (day = odd)', async () => {
         day = 1;
         leafs = JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
         assert.equal(leafs.length, nMatchdays * 2);
@@ -562,6 +562,7 @@ contract('FullLeague', (accounts) => {
         for (day = 1; day < 14; day += 2) {
             for (i = 0; i < 7; i++) {
                 assert.notEqual(leafs[day][i], 0, "unexpected null leaf in league points at the end of a match");
+                if (day < 13) assert.equal(leafs[day][i], leafs[day+1][i], "league points at end of 1st half is not as end of previous 2nd half");
             }
         }
         day=1;
@@ -569,6 +570,17 @@ contract('FullLeague', (accounts) => {
         for (i = 0; i < 7; i++) {
             assert.equal(leafs[day][8+i], goals[i], "unexpected goals at the end of 1st match");
         }
+        // after 1st half, all results should be 0:
+        off = 0;
+        for (day = 0; day < 14; day += 2) {
+            goalsInLeague = 0;
+            for (i = off; i < off+8; i++) {
+                goalsInLeague += leafs[day][8+i];
+            }
+            assert.equal(goalsInLeague, 0, "unexpected goals at the end of a match");
+            off += 8;
+        }
+        // after 2nd halfs we should have fresh results:
         off = 0;
         for (day = 1; day < 14; day += 2) {
             goalsInLeague = 0;
@@ -579,7 +591,6 @@ contract('FullLeague', (accounts) => {
             off += 8;
         }
         day = 1;
-        
         for (team = 0; team < nTeamsInLeague; team++) {
             // BEFORE second half ---------
             off = 128 + 64 * team;
