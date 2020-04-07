@@ -323,14 +323,15 @@ contract('FullLeague', (accounts) => {
 
     });
   
-    // League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
     it2('create real data for an entire league', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
 
         champs = await Championships.new().should.be.fulfilled;
-        leagueData = await chllUtils.createLeagueData(champs, play, encodeLog).should.be.fulfilled;
+        teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
+        teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
+        leagueData = await chllUtils.createLeagueData(champs, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
         
         if (mode == WRITE_NEW_EXPECTED_RESULTS) {
             fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {

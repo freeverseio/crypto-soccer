@@ -121,7 +121,7 @@ function clone(a) {
   return JSON.parse(JSON.stringify(a));
 }
 
-async function createLeagueData(champs, play, encodeLog) {
+async function createLeagueData(champs, play, encodeLog, now, teamState442, teamId) {
   let secsBetweenMatches = 12*3600;
   var leagueData = {
       seeds: [], // [2 * nMatchDays]
@@ -142,13 +142,11 @@ async function createLeagueData(champs, play, encodeLog) {
   leagueData.startTimes = Array.from(new Array(2 * nMatchdays), (x,i) => now + i * secsBetweenMatches);
   allMatchLogs = Array.from(new Array(nTeamsInLeague), (x,i) => 0);
   leagueData.matchLogs.push([...allMatchLogs]);
-  teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
   teamState442 = vec2str(teamState442);
   allTeamsSkills = Array.from(new Array(nTeamsInLeague), (x,i) => teamState442);
   leagueData.teamStates.push([...allTeamsSkills]);
   // nosub = [NO_SUBST, NO_SUBST, NO_SUBST];
   // tact = await engine.encodeTactics(nosub , ro = [0, 0, 0], setNoSubstInLineUp(lineupConsecutive, nosub), extraAttackNull, tacticsId = 0).should.be.fulfilled;
-  teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
   leagueData.teamIds = Array.from(new Array(nTeamsInLeague), (x,i) => teamId.toNumber() + i);
   leagueData.results = Array.from(new Array(nMatchesPerLeague), (x,i) => [0,0]);
 
@@ -218,6 +216,7 @@ async function createLeagueData(champs, play, encodeLog) {
       var {0: rnking, 1: lPoints} = await champs.computeLeagueLeaderBoard([...leagueData.results], day, leagueData.seeds[2*day + 1]).should.be.fulfilled;
       leagueData.points.push(vec2str(lPoints));   
   }
+  return leagueData;
 }
 
 function readCreatedLeagueData() {
