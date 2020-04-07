@@ -89,20 +89,20 @@ contract Updates is UpdatesView, Merkle {
         _lastUpdateTime[intData[0]] = now;
     }
 
-    function BCVerifableChallenge(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots, uint256[] memory extraData, bool forceSuccess) public {
+    function BCVerifableChallenge(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory leagueLeafs, uint256[] memory extraData, bool forceSuccess) public {
         // intData = [tz, level, levelVerifiable, newIdx]
         ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
             challLeaveVal, 
             challLeavePos, 
             proofChallLeave, 
-            providedRoots
+            leagueLeafs
         );
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
     
         bool success = forceSuccess;
-        // if (!forceSuccess) {
-        //     if (extraData[0] == 0) success = challenge
-        // }
+        if (!forceSuccess) {
+            if (extraData[0] == 0) success = assertExpectedZeroValues(leagueLeafs);
+        }
         require(success, "challenge was not successful according to blockchain computation");
 
         _roots[intData[0]][intData[3]][intData[1]] = 0;

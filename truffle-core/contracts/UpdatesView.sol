@@ -98,5 +98,10 @@ contract UpdatesView is Storage, AssetsLib {
         nJumps = (writtenLevel - finalLevel) / 2;
         isSettled = nowTime > lastUpdate + (nJumps + 1) * CHALLENGE_TIME;
     }
+    
+    function assertExpectedZeroValues(bytes32[] memory leagueLeafs) public pure returns(bool) {
+        if (leagueLeafs.length != 1024) return false;
+        return true;
+    }
 
 }
