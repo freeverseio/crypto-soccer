@@ -28,6 +28,8 @@ func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec int
 		receipt, err := client.TransactionReceipt(ctx, tx.Hash())
 		if err == nil && receipt != nil {
 			return receipt, nil
+		} else if err != nil {
+			return nil, err
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
