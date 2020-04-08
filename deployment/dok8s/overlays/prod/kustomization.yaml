@@ -7,27 +7,27 @@ resources:
 - ../../base
 images:
 - name: freeverseio/authproxy
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/dashboard
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/horizon
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/market.db
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/market.notary
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/market.trader
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/relay.actions
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/synchronizer
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/universe.api
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/universe.db
-  newTag: 0.15.0
+  newTag: 0.15.2
 - name: freeverseio/dashboard
-  newTag: 0.15.0
+  newTag: 0.15.2
 patchesStrategicMerge:
 - configmap.yaml
 patchesJson6902:
