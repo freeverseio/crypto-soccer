@@ -51,6 +51,7 @@ contract('Updates', (accounts) => {
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
         await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
+        await updates.setLevelsInOneChallenge(4).should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
@@ -271,12 +272,11 @@ contract('Updates', (accounts) => {
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
         // I cannot submit roots that are compatible with the previous
         await updates.challengeTZ(challValA, newChallengePos, proofA, roots2SubmitA).should.be.rejected; // fails because we already are at last level
-        extraData = [];
-        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitA, extraData, forceSuccess = true).should.be.rejected;
+        await updates.BCVerifableChallengeFake(challValA, newChallengePos, proofA, roots2SubmitA, forceSuccess = true).should.be.rejected;
 
         // but I can submit different ones. In this case the BC decides according to forceSuccess
-        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitB, extraData, forceSuccess = false).should.be.rejected;
-        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitB, extraData, forceSuccess = true).should.be.fulfilled;
+        await updates.BCVerifableChallengeFake(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = false).should.be.rejected;
+        await updates.BCVerifableChallengeFake(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;
         
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(1);
@@ -506,15 +506,22 @@ contract('Updates', (accounts) => {
     
     it('vefiable challenge', async () =>  {
         // preparation
+        nLevelsPerRoot = 11;
+        nChallenges = 5;
+        await updates.setLevelVerifiableByBC(nChallenges).should.be.fulfilled;
+        await updates.setLevelsInOneChallenge(nLevelsPerChallenge).should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, cif).should.be.fulfilled;
-        nLeafsPerRoot = 16;
-        nChallenges = 3;
-        nTotalLeafs = nLeafsPerRoot**3;
+        nLeafsPerRoot = 2**nLevelsPerChallenge;
+        nTotalLeafs = nLeafsPerRoot**nChallenges;
         nTotalLevels = Math.log2(nTotalLeafs);
         nLevelsPerRoot = Math.log2(nLeafsPerRoot);
+        // number of leagues = 1, per TZ
+        
+        
+        
         leafsA = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
         leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
@@ -531,7 +538,7 @@ contract('Updates', (accounts) => {
         newChallengePos = 3;
         challengePos.push(newChallengePos);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
-        await updates.BCVerifableChallenge(challValA, newChallengePos, proofA, roots2SubmitB, extraData, forceSuccess = true).should.be.fulfilled;
+        await updates.BCVerifableChallengeZeros(challValA, newChallengePos, proofA, roots2SubmitB).should.be.fulfilled;
     });
     
     

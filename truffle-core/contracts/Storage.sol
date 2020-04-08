@@ -38,6 +38,7 @@ contract Storage is ProxyStorage, Constants{
 
 
     uint8 _levelVerifiableByBC;
+    uint16 _levelsInOneChallenge;
     mapping (uint256 => bytes32[MAX_CHALLENGE_LEVELS][2]) _roots;
     mapping (uint256 => uint8[2]) _challengeLevel;
     mapping (uint256 => uint8) _newestOrgMapIdx;
@@ -47,4 +48,6 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => bytes32) _actionsRoot;
     mapping (uint256 => bytes32) _activeTeamsRoot;
     mapping (uint256 => bytes32[2]) _orgMapRoot;
+    
+    
 }

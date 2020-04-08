@@ -89,7 +89,7 @@ contract Updates is UpdatesView, Merkle {
         _lastUpdateTime[intData[0]] = now;
     }
 
-    function BCVerifableChallenge(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory leagueLeafs, uint256[] memory extraData, bool forceSuccess) public {
+    function BCVerifableChallengeFake(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory leagueLeafs, bool forceSuccess) public {
         // intData = [tz, level, levelVerifiable, newIdx]
         ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
             challLeaveVal, 
@@ -98,19 +98,30 @@ contract Updates is UpdatesView, Merkle {
             leagueLeafs
         );
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
-    
-        bool success = forceSuccess;
-        if (!forceSuccess) {
-            if (extraData[0] == 0) success = assertExpectedZeroValues(leagueLeafs);
-        }
-        require(success, "challenge was not successful according to blockchain computation");
+        require(forceSuccess, "fake challenge failed because it was told to fail");
+        _completeSuccessfulVerifiableChallenge(intData);
+    }
 
+    function BCVerifableChallengeZeros(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory leagueLeafs) public {
+        // intData = [tz, level, levelVerifiable, newIdx]
+        ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
+            challLeaveVal, 
+            challLeavePos, 
+            proofChallLeave, 
+            leagueLeafs
+        );
+        require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
+        assertExpectedZeroValues(leagueLeafs);
+        _completeSuccessfulVerifiableChallenge(intData);
+    }
+
+    function _completeSuccessfulVerifiableChallenge(uint8[4] memory intData) internal {
+        // intData = [tz, level, levelVerifiable, newIdx]
         _roots[intData[0]][intData[3]][intData[1]] = 0;
         _challengeLevel[intData[0]][intData[3]] = intData[1] - 1;
         emit ChallengeResolved(intData[0], intData[1] + 1, true);
         emit ChallengeResolved(intData[0], intData[1], false);
     }
-
 
     function _assertFormallyCorrectChallenge(
         bytes32 challLeaveVal, 
@@ -129,7 +140,7 @@ contract Updates is UpdatesView, Merkle {
         (intData[1], isSettled) = _cleanTimeAcceptedChallenges(intData[0], intData[1]);
         require(!isSettled, "challenging time is over for the current timezone");
         // verify provided roots are an actual challenge (they lead to a root different from the one provided by previous challenge/update)
-        bytes32 root = merkleRoot(providedRoots, LEVELS_IN_ONE_CHALLENGE);
+        bytes32 root = merkleRoot(providedRoots, _levelsInOneChallenge);
         if (intData[1] == 0) require(root != getRoot(intData[0], 0, true), "provided leafs lead to same root being challenged");
         else {
             require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
@@ -172,4 +183,9 @@ contract Updates is UpdatesView, Merkle {
     function setLevelVerifiableByBC(uint8 newVal) public {
         _levelVerifiableByBC = newVal;
     }
+    
+    function setLevelsInOneChallenge(uint16 newVal) public {
+        _levelsInOneChallenge = newVal;
+    }
+    
 }

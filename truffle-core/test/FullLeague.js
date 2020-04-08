@@ -275,7 +275,21 @@ contract('FullLeague', (accounts) => {
         else assert(!web3.utils.toBN(x).eq(web3.utils.toBN(y)), msg);
     }
 
-
+    async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
+        orgMapHeader = [];
+        orgMap = [];
+        userActions = [];
+        for (tz = 1; tz < 25; tz++) {
+            orgMapHeader.push(nCountriesPerTZ); // nCountriesInTZ
+            for (c = 0; c < nCountriesPerTZ; c++) { 
+                firstTeamIdInCountry = await assets.encodeTZCountryAndVal(tz, c, teamIdxInCountry = 0);
+                orgMapHeader.push(nActiveUsersPerCountry); 
+                orgMap.push(Array.from(new Array(8), (x,i) => firstTeamIdInCountry.add(web3.utils.toBN(i))));
+                userActions.push(Array.from(new Array(8), (x,i) => [tactics442NoChanges, almostNullTraning]));
+            }
+        }
+        return [orgMapHeader, orgMap, userActions];
+    }
 
     
     beforeEach(async () => {
@@ -471,12 +485,25 @@ contract('FullLeague', (accounts) => {
         }
     });
     
-    it('challenge unexpected zero values', async () => {
+    it2('challenge unexpected zero values', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         for (d = 0; d < nMatchdays; d++) {
             chllUtils.assertExpectedZeroValues([...leafs], d,  half = 1);
             chllUtils.assertExpectedZeroValues([...leafs], d,  half = 0);
         }
+    });
+    
+    // - **OrgMapHeader** = [**nCountriesTZ1**, nActiveUsersCountry0, nActiveUsersCountry1, ...; **nCountriesTZ2**, nActiveUsersCountry0, nActiveUsersCountry1, ...;]
+    // - **OrgMap** = [tIdx0, ....tIdxNActive; ...]; max = 34 levels
+    // - **UserActions** = [UA$_{tact,0}$, UA$_{train,0}$, ...]; max = 35 levels
+    // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
+    it('create orgmap', async () => {
+        nCountriesPerTZ = 2;
+        nActiveUsersPerCountry = 6; // league0: 6 users + 2 bots
+        var {0: orgMapHeader, 1: orgMap, 2: userActions} = await createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        console.log(orgMapHeader)
+        console.log(orgMap)
+        console.log(userActions)
     });
     
 });
