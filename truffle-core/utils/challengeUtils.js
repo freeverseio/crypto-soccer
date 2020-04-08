@@ -264,11 +264,29 @@ function assertExpectedZeroValues(leafs, day, half) {
   }        
 }
 
+async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
+  orgMapHeader = [];
+  orgMap = [];
+  userActions = [];
+  for (tz = 1; tz < 25; tz++) {
+      orgMapHeader.push(nCountriesPerTZ); // nCountriesInTZ
+      for (c = 0; c < nCountriesPerTZ; c++) { 
+          firstTeamIdInCountry = await assets.encodeTZCountryAndVal(tz, c, teamIdxInCountry = 0);
+          orgMapHeader.push(nActiveUsersPerCountry); 
+          orgMap.push(Array.from(new Array(8), (x,i) => firstTeamIdInCountry.add(web3.utils.toBN(i))));
+          userActions.push(Array.from(new Array(8), (x,i) => [tactics442NoChanges, almostNullTraning]));
+      }
+  }
+  return [orgMapHeader, orgMap, userActions];
+}
+
+
   module.exports = {
     createUniverse,
     createLeagueData,
     buildLeafs,
     readCreatedLeagueData,
     readCreatedLeagueLeafs,
-    assertExpectedZeroValues
+    assertExpectedZeroValues,
+    createOrgMap
   }

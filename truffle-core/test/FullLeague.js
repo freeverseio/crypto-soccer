@@ -275,23 +275,6 @@ contract('FullLeague', (accounts) => {
         else assert(!web3.utils.toBN(x).eq(web3.utils.toBN(y)), msg);
     }
 
-    async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
-        orgMapHeader = [];
-        orgMap = [];
-        userActions = [];
-        for (tz = 1; tz < 25; tz++) {
-            orgMapHeader.push(nCountriesPerTZ); // nCountriesInTZ
-            for (c = 0; c < nCountriesPerTZ; c++) { 
-                firstTeamIdInCountry = await assets.encodeTZCountryAndVal(tz, c, teamIdxInCountry = 0);
-                orgMapHeader.push(nActiveUsersPerCountry); 
-                orgMap.push(Array.from(new Array(8), (x,i) => firstTeamIdInCountry.add(web3.utils.toBN(i))));
-                userActions.push(Array.from(new Array(8), (x,i) => [tactics442NoChanges, almostNullTraning]));
-            }
-        }
-        return [orgMapHeader, orgMap, userActions];
-    }
-
-    
     beforeEach(async () => {
         training = await TrainingPoints.new().should.be.fulfilled;
         evo = await Evolution.new().should.be.fulfilled;
@@ -500,10 +483,13 @@ contract('FullLeague', (accounts) => {
     it('create orgmap', async () => {
         nCountriesPerTZ = 2;
         nActiveUsersPerCountry = 6; // league0: 6 users + 2 bots
-        var {0: orgMapHeader, 1: orgMap, 2: userActions} = await createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
-        console.log(orgMapHeader)
-        console.log(orgMap)
-        console.log(userActions)
+        var {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        h = web3.utils.keccak256(
+            JSON.stringify(orgMapHeader) + 
+            JSON.stringify(orgMap) + 
+            JSON.stringify(userActions) 
+        );
+        assert.equal(h, '0xe9387f06dd609a02d87ad4f8a86f6b9b759e45b805151f92bab17eff819797ba', "orgmap not as  expected");
     });
     
 });
