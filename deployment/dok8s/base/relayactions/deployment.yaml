@@ -22,7 +22,7 @@ spec:
           - configMapRef:
               name: freeverse-configmap
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
-               -ethereum, http://xdai:8545,
+               -ethereum, https://xdai.poanetwork.dev/,
                -updatesContractAddress, "$(UPDATES_CONTRACT_ADDRESS)",
                -assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
                -ipfs, ipfsnode:5001]
