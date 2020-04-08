@@ -2,14 +2,23 @@ package helper
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uint8) (*types.Receipt, error) {
+func TransactionToString(tx *types.Transaction) (string, error) {
+	b, err := json.MarshalIndent(tx, "", "\t")
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec int) (*types.Receipt, error) {
 	receiptTimeout := time.Second * time.Duration(timeoutSec)
 	start := time.Now()
 	ctx := context.TODO()
@@ -22,10 +31,16 @@ func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uin
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
-	return nil, errors.New("Timeout waiting for receipt")
+
+	dump, err := TransactionToString(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, fmt.Errorf("Timout in transaction:ºn%s", dump)
 }
 
-func WaitReceipts(client *ethclient.Client, txs []*types.Transaction, timeoutSec uint8) error {
+func WaitReceipts(client *ethclient.Client, txs []*types.Transaction, timeoutSec int) error {
 	for _, tx := range txs {
 		_, err := WaitReceipt(client, tx, timeoutSec)
 		if err != nil {
