@@ -37,7 +37,7 @@ func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec int
 		return nil, err
 	}
 
-	return nil, fmt.Errorf("Timout in transaction:ºn%s", dump)
+	return nil, fmt.Errorf("Timout in transaction:\n%s", dump)
 }
 
 func WaitReceipts(client *ethclient.Client, txs []*types.Transaction, timeoutSec int) error {
