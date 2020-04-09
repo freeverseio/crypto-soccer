@@ -489,7 +489,7 @@ spec:
         - -postgres
         - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
         - -ethereum
-        - https://xdai.poanetwork.dev/
+        - http://xdai:8545
         - -updatesContractAddress
         - $(UPDATES_CONTRACT_ADDRESS)
         - -assetsContractAddress

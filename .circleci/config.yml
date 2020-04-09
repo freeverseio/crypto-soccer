@@ -80,7 +80,7 @@ jobs:
     steps:
       - checkout
       - install_kustomize
-      # - run: kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
+      - run: kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
       - run: kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
     executor: freeverse_ethereum
