@@ -37,7 +37,7 @@ contract Updates is UpdatesView, Merkle {
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
     }
     
-    function submitActionsRoot(bytes32 actionsRoot, bytes32 activeTeamsRoot, string memory ipfsCid) public {
+    function submitActionsRoot(bytes32 actionsRoot, bytes32 activeTeamsPerCountryRoot, bytes32 orgMapRoot, uint8 levelVerifiableByBC, string memory ipfsCid) public {
         require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
         (uint8 prevTz,,) = prevTimeZoneToUpdate();
@@ -47,8 +47,12 @@ contract Updates is UpdatesView, Merkle {
             require(isSettled, "last verse is still under challenge period");
         }
         if(newTZ != NULL_TIMEZONE) {
-            _actionsRoot[newTZ] = actionsRoot;
-            _activeTeamsRoot[newTZ] = activeTeamsRoot;
+            uint8 idx = 1 - _newestRootsIdx[newTZ];
+            _newestRootsIdx[newTZ] = idx;
+            _actionsRoot[newTZ][idx] = actionsRoot;
+            _activeTeamsPerCountryRoot[newTZ][idx] = activeTeamsPerCountryRoot;
+            _orgMapRoot[newTZ][idx] = orgMapRoot;
+            _levelVerifiableByBC[newTZ][idx] = levelVerifiableByBC;
             _lastActionsSubmissionTime[newTZ] = now;
         }
         _incrementVerse();
@@ -73,7 +77,7 @@ contract Updates is UpdatesView, Merkle {
 
     // TODO: specify which leaf you challenge!!! And bring Merkle proof!
     function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots) public {
-        // intData = [tz, level, levelVerifiable, newIdx]
+        // intData = [tz, level, levelVerifiable, idx]
         (bytes32 root , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
             challLeaveVal, 
             challLeavePos, 
@@ -90,7 +94,7 @@ contract Updates is UpdatesView, Merkle {
     }
 
     function BCVerifableChallengeFake(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory leagueLeafs, bool forceSuccess) public {
-        // intData = [tz, level, levelVerifiable, newIdx]
+        // intData = [tz, level, levelVerifiable, idx]
         ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
             challLeaveVal, 
             challLeavePos, 
@@ -103,7 +107,7 @@ contract Updates is UpdatesView, Merkle {
     }
 
     function BCVerifableChallengeZeros(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory leagueLeafs) public {
-        // intData = [tz, level, levelVerifiable, newIdx]
+        // intData = [tz, level, levelVerifiable, idx]
         ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
             challLeaveVal, 
             challLeavePos, 
@@ -111,12 +115,19 @@ contract Updates is UpdatesView, Merkle {
             leagueLeafs
         );
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
+        (, uint8 day, uint8 half) = prevTimeZoneToUpdate();
+        require(areThereUnexpectedZeros(leagueLeafs, day, half), "challenge to unexpected zeros failed");
         assertExpectedZeroValues(leagueLeafs);
         _completeSuccessfulVerifiableChallenge(intData);
     }
+    
+    function areThereUnexpectedZeros(bytes32[] memory leagueLeafs, uint8 day, uint8 half) public pure returns(bool) {
+        return true;
+    }
+    
 
     function _completeSuccessfulVerifiableChallenge(uint8[4] memory intData) internal {
-        // intData = [tz, level, levelVerifiable, newIdx]
+        // intData = [tz, level, levelVerifiable, idx]
         _roots[intData[0]][intData[3]][intData[1]] = 0;
         _challengeLevel[intData[0]][intData[3]] = intData[1] - 1;
         emit ChallengeResolved(intData[0], intData[1] + 1, true);
@@ -132,7 +143,7 @@ contract Updates is UpdatesView, Merkle {
         private 
         returns (bytes32, uint8[4] memory intData)
     {
-        // intData = [tz, level, levelVerifiable, newIdx]
+        // intData = [tz, level, levelVerifiable, idx]
         (intData[0],,) = prevTimeZoneToUpdate();
         require(intData[0] != NULL_TIMEZONE, "cannot challenge the null timezone");
         (intData[3], intData[1], intData[2]) = getChallengeData(intData[0], true);
@@ -169,10 +180,9 @@ contract Updates is UpdatesView, Merkle {
     }
     
     function _setTZRoot(uint8 tz, bytes32 root) internal {
-        uint8 newIdx = 1 - _newestRootsIdx[tz];
-        _newestRootsIdx[tz] = newIdx;
-        _roots[tz][newIdx][0] = root;
-        for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][newIdx][level] = 0;
+        uint8 idx = _newestRootsIdx[tz];
+        _roots[tz][idx][0] = root;
+        for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][idx][level] = 0;
         _lastUpdateTime[tz] = now;
     }
 

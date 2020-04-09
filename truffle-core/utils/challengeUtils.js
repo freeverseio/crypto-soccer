@@ -10,6 +10,8 @@ const nMatchesPerDay = 4;
 const nTeamsInLeague = 8;
 const nMatchesPerLeague = nMatchesPerDay * nMatchdays;
 const nPlayersInTeam = 25;
+const tactics442NoChanges = web3.utils.toBN('117807001437318021721223080181760');
+const almostNullTraning = web3.utils.toBN('579746693130407358144519492431270138005893153662312470633652034799140864');
 
 function readTeam442(filepath = 'test/testdata/team442.json'){
   return JSON.parse(fs.readFileSync(filepath, 'utf8'));
