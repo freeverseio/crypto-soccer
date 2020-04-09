@@ -496,8 +496,8 @@ contract('FullLeague', (accounts) => {
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         tzZeroBased = 2;
         const {0: leafs, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased]);
-        console.log(nLeaguesInTz, levelVerifiableByBC, leafs.length)
-        // h = web3.utils.keccak256(nLeaguesInTz.toString() + levelVerifiableByBC.toString() +  JSON.stringify(leafs));
+        // console.log(nLeaguesInTz, levelVerifiableByBC, leafs.length)
+        h = web3.utils.keccak256(nLeaguesInTz.toString() + levelVerifiableByBC.toString() +  JSON.stringify(leafs));
         assert.equal(h, '0xbd81df41ebe2658c29d577a2668cb64a49c973edbd3cf6e117a137efab970755', "leafs not as expected");
     });
     
