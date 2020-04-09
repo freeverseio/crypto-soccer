@@ -523,14 +523,10 @@ contract('Updates', (accounts) => {
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafs, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tz - 1]);
-        console.log('rooting..')
+        // FIX the need to use arrayToHex when internally it tries to encode as bytes32??!!!
         activeTeamsPerCountryRoot = merkleUtils.merkleRoot(arrayToHex(orgMapHeader[tz-1]),-1);
-        console.log('rooting..')
-        console.log(orgMap[tz-1])
         orgMapRoot = merkleUtils.merkleRoot(arrayToHex(orgMap[tz-1]), -1);
-        console.log('rooting..')
-        actionsRoot = merkleUtils.merkleRoot(arrayToHex(userActions), -1);
-        console.log('submitActionsRoot...')
+        actionsRoot = merkleUtils.merkleRoot(arrayToHex(userActions[tz-1]), -1);
         await updates.submitActionsRoot(actionsRoot, activeTeamsPerCountryRoot, orgMapRoot, levelVerifiableByBC, cif = "ciao3").should.be.fulfilled;
 
         nLevelsPerChallenge = 11;
@@ -539,9 +535,10 @@ contract('Updates', (accounts) => {
         nLeafsPerRoot = 2**nLevelsPerChallenge;
         nTotalLeafs = nLeafsPerRoot**levelVerifiableByBC;
         nTotalLevels = Math.log2(nTotalLeafs);
+        console.log(nTotalLevels)
         nLevelsPerRoot = Math.log2(nLeafsPerRoot);
         
-        leafsA = [...leafs];
+        leafsA = arrayToHex([...leafs]);
         leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
         console.log('building structs...')
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
