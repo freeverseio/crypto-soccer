@@ -18,10 +18,6 @@ spec:
   - host: k8s.gorengine.com
     http:
       paths:
-      - path: /xdai
-        backend:
-          serviceName: xdai
-          servicePort: 8545
       - path: /auth
         backend:
           serviceName: authproxy
