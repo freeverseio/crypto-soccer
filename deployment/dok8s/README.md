@@ -3,7 +3,7 @@
 - dev: contains customization from base
 
 
-Create Cluster
+# Cluster creation
 
 ```bash
 helm install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true
