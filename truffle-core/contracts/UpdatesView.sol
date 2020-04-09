@@ -83,7 +83,7 @@ contract UpdatesView is Storage, AssetsLib {
 
     function getChallengeData(uint8 tz, bool current) public view returns(uint8, uint8, uint8) { 
         uint8 idx = current ? _newestRootsIdx[tz] : 1 - _newestRootsIdx[tz];
-        return (idx, _challengeLevel[tz][idx], _levelVerifiableByBC);
+        return (idx, _challengeLevel[tz][idx], _levelVerifiableByBC[tz][idx]);
     }
 
     function getStatus(uint8 tz, bool current) public view returns(uint8, uint8, bool) { 

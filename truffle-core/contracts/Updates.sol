@@ -180,8 +180,12 @@ contract Updates is UpdatesView, Merkle {
         currentVerseSeed = seed;
     }
 
+    // TODO: remove this test function
     function setLevelVerifiableByBC(uint8 newVal) public {
-        _levelVerifiableByBC = newVal;
+        for (uint8 tz = 1; tz < 25; tz++) {
+            _levelVerifiableByBC[tz][0] = newVal;
+            _levelVerifiableByBC[tz][1] = newVal;
+        }
     }
     
     function setLevelsInOneChallenge(uint16 newVal) public {

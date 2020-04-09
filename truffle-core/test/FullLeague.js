@@ -8,6 +8,7 @@ const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
 const chllUtils = require('../utils/challengeUtils.js');
+const merkleUtils = require('../utils/merkleUtils.js');
 
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');
@@ -480,9 +481,7 @@ contract('FullLeague', (accounts) => {
     // - **OrgMap** = [tIdx0, ....tIdxNActive; ...]; max = 34 levels
     // - **UserActions** = [UA$_{tact,0}$, UA$_{train,0}$, ...]; max = 35 levels
     // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
-    it('create orgmap', async () => {
-        nCountriesPerTZ = 2;
-        nActiveUsersPerCountry = 6; // league0: 6 users + 2 bots
+    it2('create orgmap', async () => {
         var {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         h = web3.utils.keccak256(
             JSON.stringify(orgMapHeader) + 
@@ -491,5 +490,25 @@ contract('FullLeague', (accounts) => {
         );
         assert.equal(h, '0xe9387f06dd609a02d87ad4f8a86f6b9b759e45b805151f92bab17eff819797ba', "orgmap not as  expected");
     });
+
+    it('create struct given an orgmap based on repeated league', async () => {
+        var {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        league = chllUtils.readCreatedLeagueLeafs();
+        // - **OrgMapHeader** = [**nCountriesTZ1**, nActiveUsersCountry0, nActiveUsersCountry1, ...; **nCountriesTZ2**, nActiveUsersCountry0, nActiveUsersCountry1, ...;]
+        day = 3;
+        leafs = [];
+        counter = 0;
+        for (tz = 1; tz < 25; tz++) {
+            nCountries = orgMapHeader[counter];
+            counter++;
+            for (c = 0; c < nCountriesPerTZ; c++) { 
+                nLeagues = Math.ceil(orgMapHeader[counter]/8);
+                counter++;
+                for (l = 0; l < nLeagues; l++) leafs = leafs.concat([...league[day]]);
+            }
+        }        
+        
+    });
+    
     
 });
