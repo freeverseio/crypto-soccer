@@ -6,28 +6,32 @@ const Schema = `
 		ping: Boolean!,
 	}
 
-	input AuctionInput {
+	scalar Sign	
+
+	input CreateAuctionInput {
+  		signature: Sign!
   		playerId: String!
   		currencyId: Int!
   		price: Int!
-  		rnd: Int!
   		validUntil: String!
-  		signature: String!
+  		rnd: Int!
 	}
 
-	input BidInput {
-		auction: ID!
+	input CancelAuctionInput {
+		signature: Sign!
+	}
+
+	input CreateBidInput {
+  		signature: Sign!
+		auction: Sign!
   		extraPrice: Int!
   		rnd: Int!
   		teamId: String!
-  		signature: String!
 	}
 
-	scalar UUID 
-
 	type Mutation {
-        createAuction(input: AuctionInput!): UUID!
-        // deleteAuction(uuid: UUID!): Boolean!
-        // createBid(input: BidInput!): Boolean!
+        createAuction(input: CreateAuctionInput!): Sign!
+        cancelAuction(input: CancelAuctionInput!): Sign!
+        createBid(input: CreateBidInput!): Sign!
 	}
 `

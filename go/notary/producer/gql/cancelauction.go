@@ -6,16 +6,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type CreateAuctionInput struct {
-	Signature  Sign
-	PlayerId   string
-	CurrencyId int
-	Price      int
-	Rnd        int
-	ValidUntil string
+type CancelAuctionInput struct {
+	Signature Sign
 }
 
-func (b *Resolver) CreateAuction(args struct{ Input CreateAuctionInput }) (Sign, error) {
+func (b *Resolver) CancelAuction(args struct{ Input CancelAuctionInput }) (Sign, error) {
 	if b.c != nil {
 		select {
 		case b.c <- args.Input:
