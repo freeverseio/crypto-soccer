@@ -477,37 +477,28 @@ contract('FullLeague', (accounts) => {
         }
     });
     
-    // - **OrgMapHeader** = [**nCountriesTZ1**, nActiveUsersCountry0, nActiveUsersCountry1, ...; **nCountriesTZ2**, nActiveUsersCountry0, nActiveUsersCountry1, ...;]
+    // - **OrgMapHeader** = [nActiveUsersCountry0, nActiveUsersCountry1, ...]
     // - **OrgMap** = [tIdx0, ....tIdxNActive; ...]; max = 34 levels
     // - **UserActions** = [UA$_{tact,0}$, UA$_{train,0}$, ...]; max = 35 levels
     // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
     it2('create orgmap', async () => {
-        var {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        // all returns of this function are arrays as a function of TZ_0-based!!!
+        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         h = web3.utils.keccak256(
             JSON.stringify(orgMapHeader) + 
             JSON.stringify(orgMap) + 
             JSON.stringify(userActions) 
         );
-        assert.equal(h, '0xe9387f06dd609a02d87ad4f8a86f6b9b759e45b805151f92bab17eff819797ba', "orgmap not as  expected");
+        assert.equal(h, '0x2be9c0fa4bfe7f8362158c078745862c1f650851442b25210378f596f78cf9dc', "orgmap not as expected");
     });
 
     it('create struct given an orgmap based on repeated league', async () => {
-        var {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
-        league = chllUtils.readCreatedLeagueLeafs();
-        // - **OrgMapHeader** = [**nCountriesTZ1**, nActiveUsersCountry0, nActiveUsersCountry1, ...; **nCountriesTZ2**, nActiveUsersCountry0, nActiveUsersCountry1, ...;]
-        day = 3;
-        leafs = [];
-        counter = 0;
-        for (tz = 1; tz < 25; tz++) {
-            nCountries = orgMapHeader[counter];
-            counter++;
-            for (c = 0; c < nCountriesPerTZ; c++) { 
-                nLeagues = Math.ceil(orgMapHeader[counter]/8);
-                counter++;
-                for (l = 0; l < nLeagues; l++) leafs = leafs.concat([...league[day]]);
-            }
-        }        
-        
+        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        tzZeroBased = 2;
+        const {0: leafs, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased]);
+        console.log(nLeaguesInTz, levelVerifiableByBC, leafs.length)
+        // h = web3.utils.keccak256(nLeaguesInTz.toString() + levelVerifiableByBC.toString() +  JSON.stringify(leafs));
+        assert.equal(h, '0xbd81df41ebe2658c29d577a2668cb64a49c973edbd3cf6e117a137efab970755', "leafs not as expected");
     });
     
     

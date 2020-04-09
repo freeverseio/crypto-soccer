@@ -264,22 +264,47 @@ function assertExpectedZeroValues(leafs, day, half) {
   }        
 }
 
+// all returns of this function are arrays as a function of TZ_0-based!!!
 async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
   orgMapHeader = [];
   orgMap = [];
   userActions = [];
   for (tz = 1; tz < 25; tz++) {
-      orgMapHeader.push(nCountriesPerTZ); // nCountriesInTZ
-      for (c = 0; c < nCountriesPerTZ; c++) { 
-          firstTeamIdInCountry = await assets.encodeTZCountryAndVal(tz, c, teamIdxInCountry = 0);
-          orgMapHeader.push(nActiveUsersPerCountry); 
-          orgMap.push(Array.from(new Array(8), (x,i) => firstTeamIdInCountry.add(web3.utils.toBN(i))));
-          userActions.push(Array.from(new Array(8), (x,i) => [tactics442NoChanges, almostNullTraning]));
-      }
+    orgMapHeaderThisTZ = []
+    orgMapThisTZ = [];
+    userActionsThisTZ = [];
+    for (c = 0; c < nCountriesPerTZ; c++) { 
+      orgMapHeaderThisTZ.push(nActiveUsersPerCountry); 
+      firstTeamIdInCountry = await assets.encodeTZCountryAndVal(tz, c, teamIdxInCountry = 0);
+      orgMapThisTZ.push(Array.from(new Array(8), (x,i) => firstTeamIdInCountry.add(web3.utils.toBN(i))));
+      userActionsThisTZ.push(Array.from(new Array(8), (x,i) => [tactics442NoChanges, almostNullTraning]));
+    }
+    orgMapHeader.push(orgMapHeaderThisTZ);
+    orgMap.push(orgMapThisTZ);
+    userActions.push(userActionsThisTZ);
   }
   return [orgMapHeader, orgMap, userActions];
 }
 
+
+function getBaseLog(x, base) {
+  return Math.log(x) / Math.log(base);
+}
+
+function createLeafsForOrgMap(day, half, nActiveUsersPerCountry) {
+  league = readCreatedLeagueLeafs();
+  // - **nActiveUsersPerCountry** = [nActiveUsersCountry0, nActiveUsersCountry1, ...;]
+  leafs = [];
+  nCountriesInTZ = nActiveUsersPerCountry.length;
+  nLeaguesInTz = 0;
+  for (c = 0; c < nCountriesInTZ; c++) { 
+      nLeaguesInCountry = Math.ceil(nActiveUsersPerCountry[c]/8);
+      for (l = 0; l < nLeaguesInCountry; l++) leafs = leafs.concat([...league[2 * day + half]]);
+      nLeaguesInTz += nLeaguesInCountry;
+  }
+  levelVerifiableByBC = 1+ Math.ceil(getBaseLog(nLeaguesInTz, 2048));
+  return [leafs, levelVerifiableByBC, nLeaguesInTz];
+}                
 
   module.exports = {
     createUniverse,
@@ -288,5 +313,6 @@ async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
     readCreatedLeagueData,
     readCreatedLeagueLeafs,
     assertExpectedZeroValues,
-    createOrgMap
+    createOrgMap,
+    createLeafsForOrgMap
   }
