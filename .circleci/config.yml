@@ -89,6 +89,7 @@ jobs:
       - generate_contracts_code
       - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/notary/producer && go test ./... 
+      - run: cd go/notary/consumer && go test ./... 
   relay-actions:
     executor: freeverse_ethereum
     steps:
