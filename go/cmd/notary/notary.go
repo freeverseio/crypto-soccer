@@ -7,7 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/processor"
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
@@ -79,4 +81,18 @@ func main() {
 		}
 		time.Sleep(2 * time.Second)
 	}
+
+	ch := make(chan interface{}, 100000)
+
+	go gql.NewServer(ch)
+	// go submitactions.NewSubmitTimer(ch, 5*time.Second)
+
+	consumer.NewConsumer(
+		ch,
+		client,
+		auth,
+		marketContractAddress,
+		constantsgettersContractAddress,
+		db,
+	).Start()
 }
