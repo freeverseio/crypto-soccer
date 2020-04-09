@@ -42,6 +42,14 @@ contract('Updates', (accounts) => {
         return closeEnough;
     };
     
+    function arrayToHex(x) {
+        y = [...x];
+        for (i = 0; i < x.length; i++) {
+            y[i] = web3.utils.toHex(x[i]);
+        }
+        return y;
+    }
+    
     beforeEach(async () => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
@@ -515,12 +523,18 @@ contract('Updates', (accounts) => {
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafs, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tz - 1]);
-        actionsRoot = merkleUtils.merkleRoot(userActions);
-        activeTeamsPerCountryRoot = merkleUtils.merkleRoot(activeTeamsPerCountryRoot);
-        orgMapRoot = merkleUtils.merkleRoot(orgMapRoot);
+        console.log('rooting..')
+        activeTeamsPerCountryRoot = merkleUtils.merkleRoot(arrayToHex(orgMapHeader[tz-1]),-1);
+        console.log('rooting..')
+        console.log(orgMap[tz-1])
+        orgMapRoot = merkleUtils.merkleRoot(arrayToHex(orgMap[tz-1]), -1);
+        console.log('rooting..')
+        actionsRoot = merkleUtils.merkleRoot(arrayToHex(userActions), -1);
+        console.log('submitActionsRoot...')
         await updates.submitActionsRoot(actionsRoot, activeTeamsPerCountryRoot, orgMapRoot, levelVerifiableByBC, cif = "ciao3").should.be.fulfilled;
 
         nLevelsPerChallenge = 11;
+        console.log('setLevelsInOneChallenge...')
         await updates.setLevelsInOneChallenge(nLevelsPerChallenge).should.be.fulfilled;
         nLeafsPerRoot = 2**nLevelsPerChallenge;
         nTotalLeafs = nLeafsPerRoot**levelVerifiableByBC;
@@ -529,21 +543,31 @@ contract('Updates', (accounts) => {
         
         leafsA = [...leafs];
         leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
+        console.log('building structs...')
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
+        console.log('building structs...done A')
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
+        console.log('building structs...done B')
 
         // submissions
+        console.log('updating...')
         await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
+        console.log('challenging...')
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1]).should.be.fulfilled;
+        console.log('challenging...done')
         newChallengePos = 7;
         challengePos = [];
         challengePos.push(newChallengePos);
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
+        console.log('challenging...')
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA).should.be.fulfilled;
+        console.log('challenging...done')
         newChallengePos = 3;
         challengePos.push(newChallengePos);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
+        console.log('challenging...')
         await updates.BCVerifableChallengeZeros(challValA, newChallengePos, proofA, roots2SubmitB).should.be.fulfilled;
+        console.log('challenging...done')
     });
     
     

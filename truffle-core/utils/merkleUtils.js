@@ -13,7 +13,18 @@ function hash_node(x, y) {
   return web3.utils.keccak256(web3.eth.abi.encodeParameters(['bytes32', 'bytes32'], [x,y]));
 }
 
+function zeroPadToLength(x, desiredLength) {
+  return x.concat(Array.from(new Array(desiredLength - x.length), (x,i) => 0))
+}
+
 function merkleRoot(leafs, nLevels) {
+  // in general, it will enforce that leafs have the length as specified by nLevels.
+  // unless nLevels = -1
+  if (nLevels == -1) {
+    nLevels =  Math.ceil(Math.log2(leafs.length));
+    leafs = zeroPadToLength(leafs, 2**nLevels)       
+  }
+  
   _leafs = [...leafs];
   nLeafs = 2**nLevels;
   assert.equal(_leafs.length, nLeafs, "number of leafs is not = pow(2,nLevels)");

@@ -278,8 +278,11 @@ async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
     for (c = 0; c < nCountriesPerTZ; c++) { 
       orgMapHeaderThisTZ.push(nActiveUsersPerCountry); 
       firstTeamIdInCountry = await assets.encodeTZCountryAndVal(tz, c, teamIdxInCountry = 0);
-      orgMapThisTZ.push(Array.from(new Array(8), (x,i) => firstTeamIdInCountry.add(web3.utils.toBN(i))));
-      userActionsThisTZ.push(Array.from(new Array(8), (x,i) => [tactics442NoChanges, almostNullTraning]));
+      orgMapThisTZ = orgMapThisTZ.concat(Array.from(new Array(8), (x,i) => firstTeamIdInCountry.add(web3.utils.toBN(i))));
+      for (team = 0; team < 8; team++) {
+        userActionsThisTZ.push(tactics442NoChanges);
+        userActionsThisTZ.push(almostNullTraning);
+      }
     }
     orgMapHeader.push(orgMapHeaderThisTZ);
     orgMap.push(orgMapThisTZ);

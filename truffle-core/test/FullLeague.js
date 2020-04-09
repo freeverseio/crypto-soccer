@@ -488,7 +488,7 @@ contract('FullLeague', (accounts) => {
             JSON.stringify(orgMap) + 
             JSON.stringify(userActions) 
         );
-        assert.equal(h, '0x2be9c0fa4bfe7f8362158c078745862c1f650851442b25210378f596f78cf9dc', "orgmap not as expected");
+        assert.equal(h, '0xaa5ce6abd5de9979adba0ff58246086f9cbd5c970670c834b8045986e19ac063', "orgmap not as expected");
     });
 
     it('create struct given an orgmap based on repeated league', async () => {
