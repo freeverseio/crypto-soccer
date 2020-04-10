@@ -709,10 +709,6 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: xdai
-          servicePort: 8545
-        path: /xdai
-      - backend:
           serviceName: authproxy
           servicePort: 8080
         path: /auth
