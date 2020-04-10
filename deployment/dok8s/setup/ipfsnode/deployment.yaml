@@ -16,11 +16,25 @@ spec:
     spec:
       containers:
       - name: ipfsnode
-        image: ipfs/go-ipfs:v0.4.23
+        image: ipfs/go-ipfs:v0.5.0-rc1
         env:
         - name: IPFS_PROFILE
           value: server
         - name: IPFS_PATH
           value: /data 
         ports:
-        - containerPort: 4001
+        - name: swarm
+          protocol: TCP
+          containerPort: 4001
+        - name: swarm-udp
+          protocol: UDP
+          containerPort: 4002
+        - name: api
+          protocol: TCP
+          containerPort: 5001
+        - name: ws
+          protocol: TCP
+          containerPort: 8081
+        - name: http
+          protocol: TCP
+          containerPort: 8080
