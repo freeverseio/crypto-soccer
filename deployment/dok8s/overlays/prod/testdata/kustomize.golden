@@ -19,7 +19,6 @@ data:
   UTILS_CONTRACT_ADDRESS: 0x44ecFbf798dba485cAfEb408c48B6749B69A6071
   freeverse_password: freeverse
   freeverse_username: freeverse
-  sender: 0xeb3ce112d8610382a994646872c4361a96c82cf8
 kind: ConfigMap
 metadata:
   labels:
