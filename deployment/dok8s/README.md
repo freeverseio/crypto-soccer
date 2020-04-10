@@ -18,3 +18,14 @@ helm repo add jetstack https://charts.jetstack.io
 helm install cert-manager --version v0.11.0 --namespace cert-manager jetstack/cert-manager
 kubectl apply -f cert-issuer.yaml
 ```
+
+# CircleCI
+Create a service account to be used in circleci
+```bash
+kubectl -n freeverse -f ./cicd/cicd-serviceaccount.yaml apply
+```
+
+Get the tocken of cicd
+```bash
+kubectl -n freeverse get secrets | grep cicd
+```
