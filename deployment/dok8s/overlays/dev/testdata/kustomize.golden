@@ -19,8 +19,8 @@ data:
   UTILS_CONTRACT_ADDRESS: 0xbb9DC6E1f938677e066C77caAF66468779903C27
   freeverse_password: freeverse
   freeverse_username: freeverse
-  notary_private_key: 0x363bd383b24285cba965d524f54413c3369d8fb244b57359767a0da31ce6e7d3
-  relay_private_key: 0x0eec2a97925bcb1c636e63bc1db8b80f02dc8840e6a77b760b1c640b5f607f00
+  notary_private_key: 363bd383b24285cba965d524f54413c3369d8fb244b57359767a0da31ce6e7d3
+  relay_private_key: 0eec2a97925bcb1c636e63bc1db8b80f02dc8840e6a77b760b1c640b5f607f00
 kind: ConfigMap
 metadata:
   labels:
