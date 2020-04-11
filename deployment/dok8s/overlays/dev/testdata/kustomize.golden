@@ -19,6 +19,8 @@ data:
   UTILS_CONTRACT_ADDRESS: 0xbb9DC6E1f938677e066C77caAF66468779903C27
   freeverse_password: freeverse
   freeverse_username: freeverse
+  notary_private_key: 0x363bd383b24285cba965d524f54413c3369d8fb244b57359767a0da31ce6e7d3
+  relay_private_key: 0x0eec2a97925bcb1c636e63bc1db8b80f02dc8840e6a77b760b1c640b5f607f00
 kind: ConfigMap
 metadata:
   labels:
@@ -396,7 +398,7 @@ spec:
         - -ethereum
         - http://xdai:8545
         - -private_key
-        - 3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54
+        - $(notary_private_key)
         - -market_address
         - $(MARKET_CONTRACT_ADDRESS)
         - -constantsgetters_address
@@ -495,6 +497,8 @@ spec:
         - $(ASSETS_CONTRACT_ADDRESS)
         - -ipfs
         - ipfsnode:5001
+        - -private_key
+        - $(relay_private_key)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
