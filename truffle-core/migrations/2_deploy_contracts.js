@@ -58,9 +58,6 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
-    const value = "1000000000000000000";
-    const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
-
     // Initializing Assets differently in XDAI or testing:
     console.log("Setting up ... done");
     if (deployer.network === "xdai") {
@@ -68,13 +65,13 @@ module.exports = function (deployer, network, accounts) {
     } else if (deployer.network === "local") {
       console.log("WARNING ... only timezone 1")
       await assets.initSingleTZ(1).should.be.fulfilled;
+      const value = "1000000000000000000";
+      const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
       console.log("Transfer " + value + " to " + to);
       await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
     } else {
       console.log("WARNING ... only timezone 10")
       await assets.initSingleTZ(10).should.be.fulfilled;
-      console.log("Transfer " + value + " to " + to);
-      await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
     }
     console.log("Initing ... done");
 

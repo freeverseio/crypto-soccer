@@ -19,7 +19,8 @@ data:
   UTILS_CONTRACT_ADDRESS: 0x44ecFbf798dba485cAfEb408c48B6749B69A6071
   freeverse_password: freeverse
   freeverse_username: freeverse
-  sender: 0xeb3ce112d8610382a994646872c4361a96c82cf8
+  notary_private_key: 0xd8613b2faa11de35a952cf98986fb681738cc2386e71b6c12798def5ce233c1f
+  relay_private_key: 0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54
 kind: ConfigMap
 metadata:
   labels:
@@ -397,7 +398,7 @@ spec:
         - -ethereum
         - http://xdai:8545
         - -private_key
-        - 3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54
+        - $(notary_private_key)
         - -market_address
         - $(MARKET_CONTRACT_ADDRESS)
         - -constantsgetters_address
@@ -496,6 +497,8 @@ spec:
         - $(ASSETS_CONTRACT_ADDRESS)
         - -ipfs
         - ipfsnode:5001
+        - -private_key
+        - $(relay_private_key)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -708,10 +711,6 @@ spec:
   - host: k8s.goalrevolution.live
     http:
       paths:
-      - backend:
-          serviceName: xdai
-          servicePort: 8545
-        path: /xdai
       - backend:
           serviceName: authproxy
           servicePort: 8080
