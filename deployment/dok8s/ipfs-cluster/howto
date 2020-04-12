@@ -1,6 +1,13 @@
-IPFS_FD_MAX=4096
-CLUSTER_SECRET=09968797372bbfe9c4b7bb70b738e61db814fa44cb33b4faea520496607c63ed
+# apply config to kubernetes:
+kubectl apply -f ipfs-cluster.yaml -n <namespace>
+
+
+export IPFS_FD_MAX=4096
+export CLUSTER_SECRET=09968797372bbfe9c4b7bb70b738e61db814fa44cb33b4faea520496607c63ed
 
 # first time connect with
-ipfs-cluster-service daemon --upgrade --bootstrap /ip4/134.209.137.130/tcp/9096/p2p/QmZyN2aLhjCKrvpJ1R1gqrEevDN9fz3eHnnK1dDAuGtrGy --leave
+ipfs-cluster-service daemon --upgrade --bootstrap /ip4/178.128.141.147/tcp/9096/p2p/QmZyN2aLhjCKrvpJ1R1gqrEevDN9fz3eHnnK1dDAuGtrGy --leave
 
+
+# ipf-cluster-follow:
+ipfs-cluster-follow ipfs-cluster run --init goalrevolution.collab.ipfs.cluster.io.gorengine.com
