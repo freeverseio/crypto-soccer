@@ -89,10 +89,5 @@ func main() {
 
 	consumer.NewConsumer(
 		ch,
-		client,
-		auth,
-		marketContractAddress,
-		constantsgettersContractAddress,
-		db,
 	).Start()
 }
