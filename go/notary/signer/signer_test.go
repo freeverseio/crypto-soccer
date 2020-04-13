@@ -64,7 +64,6 @@ func TestAuctionMsg(t *testing.T) {
 	rnd := big.NewInt(42321)
 
 	hash, err := signer.HashSellMessage(
-		bc.Contracts.Market,
 		currencyId,
 		price,
 		rnd,

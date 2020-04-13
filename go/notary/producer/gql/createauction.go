@@ -23,7 +23,6 @@ func (b *Resolver) CreateAuction(args struct{ Input CreateAuctionInput }) (graph
 	}
 
 	hash, err := signer.HashSellMessage(
-		b.market,
 		args.Input.CurrencyId,
 		args.Input.Price,
 		args.Input.Rnd,

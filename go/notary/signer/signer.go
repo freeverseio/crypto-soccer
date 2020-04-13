@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -69,7 +70,6 @@ func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) []byte {
 }
 
 func HashSellMessage(
-	market *market.Market,
 	currencyId uint8,
 	price *big.Int,
 	rnd *big.Int,
@@ -77,25 +77,37 @@ func HashSellMessage(
 	playerId *big.Int,
 ) ([32]byte, error) {
 	var hash [32]byte
-	hashPrivateMessage, err := market.HashPrivateMsg(
-		&bind.CallOpts{},
+	var err error
+	hashPrivateMessage := HashPrivateMsg(
 		currencyId,
 		price,
 		rnd,
 	)
-	if err != nil {
-		return hash, err
+	copy(hash[:], hashPrivateMessage)
+
+	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	arguments := abi.Arguments{
+		{
+			Type: bytes32Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
 	}
-	hash, err = market.BuildPutAssetForSaleTxMsg(
-		&bind.CallOpts{},
-		hashPrivateMessage,
+
+	bytes, _ := arguments.Pack(
+		hash,
 		big.NewInt(validUntil),
 		playerId,
 	)
-	if err != nil {
-		return hash, err
-	}
-	hash, err = market.Prefixed(&bind.CallOpts{}, hash)
+	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
+
+	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
+	copy(hash[:], crypto.Keccak256Hash([]byte(ss)).Bytes())
 	return hash, err
 }
 
@@ -113,7 +125,6 @@ func (b *Signer) HashBidMessage(
 ) ([32]byte, error) {
 	var hash [32]byte
 	auctionHashMsg, err := HashSellMessage(
-		market,
 		currencyID,
 		price,
 		auctionRnd,
