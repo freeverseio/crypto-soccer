@@ -75,9 +75,8 @@ func HashSellMessage(
 	rnd *big.Int,
 	validUntil int64,
 	playerId *big.Int,
-) ([32]byte, error) {
+) [32]byte {
 	var hash [32]byte
-	var err error
 	hashPrivateMessage := HashPrivateMsg(
 		currencyId,
 		price,
@@ -108,7 +107,7 @@ func HashSellMessage(
 
 	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
 	copy(hash[:], crypto.Keccak256Hash([]byte(ss)).Bytes())
-	return hash, err
+	return hash
 }
 
 func (b *Signer) HashBidMessage(
@@ -124,16 +123,13 @@ func (b *Signer) HashBidMessage(
 	isOffer2StartAuction bool,
 ) ([32]byte, error) {
 	var hash [32]byte
-	auctionHashMsg, err := HashSellMessage(
+	auctionHashMsg := HashSellMessage(
 		currencyID,
 		price,
 		auctionRnd,
 		validUntil,
 		playerID,
 	)
-	if err != nil {
-		return hash, err
-	}
 	bidHiddenPrice, err := market.HashBidHiddenPrice(
 		&bind.CallOpts{},
 		extraPrice,
