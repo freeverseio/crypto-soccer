@@ -25,5 +25,5 @@ func (b *Resolver) CreateAuction(args struct{ Input CreateAuctionInput }) (graph
 			return graphql.ID("ciao"), errors.New("channel is full")
 		}
 	}
-	return graphql.ID("cippo"), nil
+	return graphql.ID(args.Input.Signature), nil
 }
