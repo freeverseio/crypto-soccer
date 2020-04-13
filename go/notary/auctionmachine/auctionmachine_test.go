@@ -29,24 +29,27 @@ func newTestMarket() *marketpay.MarketPay {
 }
 
 func TestAuctionStarted(t *testing.T) {
-	market := newMarket(t)
+	t.Run("not expired", func(t *testing.T) {
+		auction := storage.NewAuction()
+		auction.ValidUntil = time.Now().Unix() + 100
+		m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
+		assert.NilError(t, err)
+		assert.Equal(t, m.State(), storage.AUCTION_STARTED)
+		assert.NilError(t, err)
+		assert.NilError(t, m.Process(nil))
+		assert.Equal(t, m.State(), storage.AUCTION_STARTED)
+	})
 
-	auction := storage.NewAuction()
-	auction.ValidUntil = time.Now().Unix() + 100
-	m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
-	assert.NilError(t, err)
-	assert.Equal(t, m.State(), storage.AUCTION_STARTED)
-	assert.NilError(t, err)
-	assert.NilError(t, m.Process(market))
-	assert.Equal(t, m.State(), storage.AUCTION_STARTED)
-
-	auction.ValidUntil = time.Now().Unix() - 10
-	m, err = auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
-	assert.NilError(t, err)
-	assert.Equal(t, m.State(), storage.AUCTION_STARTED)
-	assert.NilError(t, err)
-	assert.NilError(t, m.Process(market))
-	assert.Equal(t, m.State(), storage.AUCTION_NO_BIDS)
+	t.Run("expired", func(t *testing.T) {
+		auction := storage.NewAuction()
+		auction.ValidUntil = time.Now().Unix() - 10
+		m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
+		assert.NilError(t, err)
+		assert.Equal(t, m.State(), storage.AUCTION_STARTED)
+		assert.NilError(t, err)
+		assert.NilError(t, m.Process(nil))
+		assert.Equal(t, m.State(), storage.AUCTION_NO_BIDS)
+	})
 }
 
 func TestAuctionWithNoBids(t *testing.T) {
