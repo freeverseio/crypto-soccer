@@ -1,12 +1,14 @@
 package signer_test
 
 import (
+	"crypto/ecdsa"
 	"encoding/hex"
 	"math/big"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"gotest.tools/assert"
 )
 
 func TestRSV(t *testing.T) {
@@ -85,6 +87,19 @@ func TestAuctionMsg(t *testing.T) {
 	if result != "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c" {
 		t.Fatalf("Sign error %v", result)
 	}
+}
+
+func TestPublicKeyBytesToAddress(t *testing.T) {
+	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	assert.NilError(t, err)
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	assert.Equal(t, ok, true)
+
+	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	address := signer.PublicKeyBytesToAddress(publicKeyBytes)
+	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
 }
 
 func TestHashBidMessage(t *testing.T) {

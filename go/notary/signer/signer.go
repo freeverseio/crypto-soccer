@@ -7,8 +7,10 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"golang.org/x/crypto/sha3"
 )
 
 type Signer struct {
@@ -135,6 +137,34 @@ func (b *Signer) BidHiddenPrice(extraPrice *big.Int, rnd *big.Int) ([32]byte, er
 		extraPrice,
 		rnd,
 	)
+}
+
+func PublicKeyBytesToAddress(publicKey []byte) common.Address {
+	var buf []byte
+
+	hash := sha3.NewLegacyKeccak256()
+	hash.Write(publicKey[1:]) // remove EC prefix 04
+	buf = hash.Sum(nil)
+	address := buf[12:]
+
+	return common.HexToAddress(hex.EncodeToString(address))
+}
+
+func VerifySignature(hash []byte, signature []byte) (bool, error) {
+	sigPublicKey, err := crypto.Ecrecover(hash, signature)
+	if err != nil {
+		return false, err
+	}
+	signatureNoRecoverID := signature[:len(signature)-1] // remove recovery id
+	return crypto.VerifySignature(sigPublicKey, hash[:], signatureNoRecoverID), nil
+}
+
+func AddressFromSignature(hash, signature []byte) (common.Address, error) {
+	sigPublicKey, err := crypto.Ecrecover(hash, signature)
+	if err != nil {
+		return common.Address{}, err
+	}
+	return PublicKeyBytesToAddress(sigPublicKey), nil
 }
 
 // func (b *Signer) HashBuyMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, teamId *big.Int) ([32]byte, error) {
