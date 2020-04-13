@@ -28,12 +28,18 @@ type Auction struct {
 	CurrencyID uint8
 	Price      *big.Int
 	Rnd        *big.Int
-	ValidUntil *big.Int
+	ValidUntil int64
 	Signature  string
 	State      AuctionState
 	StateExtra string
 	PaymentURL string
 	Seller     string
+}
+
+func NewAuction() *Auction {
+	auction := Auction{}
+	auction.State = AUCTION_STARTED
+	return &auction
 }
 
 func (b *Storage) CreateAuction(order Auction) error {
@@ -44,7 +50,7 @@ func (b *Storage) CreateAuction(order Auction) error {
 		order.CurrencyID,
 		order.Price.String(),
 		order.Rnd.String(),
-		order.ValidUntil.String(),
+		order.ValidUntil,
 		order.Signature,
 		order.State,
 		order.StateExtra,
@@ -91,14 +97,13 @@ func (b *Storage) GetAuctions() ([]*Auction, error) {
 		var playerID sql.NullString
 		var price sql.NullString
 		var rnd sql.NullString
-		var validUntil sql.NullString
 		err = rows.Scan(
 			&order.UUID,
 			&playerID,
 			&order.CurrencyID,
 			&price,
 			&rnd,
-			&validUntil,
+			&order.ValidUntil,
 			&order.Signature,
 			&order.State,
 			&order.PaymentURL,
@@ -111,7 +116,6 @@ func (b *Storage) GetAuctions() ([]*Auction, error) {
 		order.PlayerID, _ = new(big.Int).SetString(playerID.String, 10)
 		order.Price, _ = new(big.Int).SetString(price.String, 10)
 		order.Rnd, _ = new(big.Int).SetString(rnd.String, 10)
-		order.ValidUntil, _ = new(big.Int).SetString(validUntil.String, 10)
 		orders = append(orders, &order)
 	}
 	return orders, nil

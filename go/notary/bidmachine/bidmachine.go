@@ -24,7 +24,7 @@ type BidMachine struct {
 	contracts       *contracts.Contracts
 	freeverse       *ecdsa.PrivateKey
 	signer          *signer.Signer
-	postAuctionTime *big.Int
+	postAuctionTime int64
 }
 
 func New(
@@ -54,7 +54,7 @@ func New(
 		contracts,
 		freeverse,
 		signer.NewSigner(contracts, freeverse),
-		postAuctionTime,
+		postAuctionTime.Int64(),
 	}, nil
 }
 
@@ -102,7 +102,7 @@ func (b *BidMachine) Process() error {
 
 func (b *BidMachine) processPaying() error {
 	now := time.Now().Unix()
-	if now > b.bid.PaymentDeadline.Int64() {
+	if now > b.bid.PaymentDeadline {
 		b.bid.State = storage.BIDFAILED
 		b.bid.StateExtra = "Expired"
 		return nil
@@ -157,7 +157,7 @@ func (b *BidMachine) processPaying() error {
 			tx, err := b.contracts.Market.CompletePlayerAuction(
 				bind.NewKeyedTransactor(b.freeverse),
 				auctionHiddenPrice,
-				b.auction.ValidUntil,
+				big.NewInt(b.auction.ValidUntil),
 				b.auction.PlayerID,
 				bidHiddenPrice,
 				b.bid.TeamID,
@@ -189,10 +189,7 @@ func (b *BidMachine) processPaying() error {
 }
 
 func (b *BidMachine) processAccepted() error {
-	if b.auction.ValidUntil == nil {
-		return errors.New("nil valid until")
-	}
 	b.bid.State = storage.BIDPAYING
-	b.bid.PaymentDeadline = new(big.Int).Add(b.auction.ValidUntil, b.postAuctionTime)
+	b.bid.PaymentDeadline = b.auction.ValidUntil + b.postAuctionTime
 	return nil
 }

@@ -2,6 +2,7 @@ package auctionmachine
 
 import (
 	"errors"
+	"math/big"
 	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/helper"
@@ -18,7 +19,7 @@ func (m *AuctionMachine) processStarted() error {
 	now := time.Now().Unix()
 
 	if len(m.Bids) == 0 {
-		if now > m.Auction.ValidUntil.Int64() {
+		if now > m.Auction.ValidUntil {
 			log.Infof("Auction %v STARTED -> %v", m.Auction.UUID, m.Auction.State)
 			m.Auction.State = storage.AUCTION_NO_BIDS
 		}
@@ -53,7 +54,7 @@ func (m *AuctionMachine) processStarted() error {
 	tx, err := m.contracts.Market.FreezePlayer(
 		bind.NewKeyedTransactor(m.freeverse),
 		auctionHiddenPrice,
-		m.Auction.ValidUntil,
+		big.NewInt(m.Auction.ValidUntil),
 		m.Auction.PlayerID,
 		sig,
 		sigV,

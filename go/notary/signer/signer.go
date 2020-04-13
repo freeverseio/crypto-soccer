@@ -50,7 +50,7 @@ func (b *Signer) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) 
 	return privateHash, err
 }
 
-func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int) ([32]byte, error) {
+func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil int64, playerId *big.Int) ([32]byte, error) {
 	var hash [32]byte
 	hashPrivateMessage, err := b.contracts.Market.HashPrivateMsg(
 		&bind.CallOpts{},
@@ -64,7 +64,7 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	hash, err = b.contracts.Market.BuildPutAssetForSaleTxMsg(
 		&bind.CallOpts{},
 		hashPrivateMessage,
-		validUntil,
+		big.NewInt(validUntil),
 		playerId,
 	)
 	if err != nil {
@@ -78,7 +78,7 @@ func (b *Signer) HashBidMessage(
 	currencyID uint8,
 	price *big.Int,
 	auctionRnd *big.Int,
-	validUntil *big.Int,
+	validUntil int64,
 	playerID *big.Int,
 	extraPrice *big.Int,
 	bidRnd *big.Int,

@@ -13,7 +13,7 @@ func (m *AuctionMachine) processAssetFrozen() error {
 	}
 
 	now := time.Now().Unix()
-	if now > m.Auction.ValidUntil.Int64() {
+	if now > m.Auction.ValidUntil {
 		m.Auction.State = storage.AUCTION_PAYING
 	}
 

@@ -60,3 +60,7 @@ func (b *AuctionMachine) processUnknownState() error {
 	b.Auction.State = storage.AUCTION_FAILED
 	return nil
 }
+
+func (b AuctionMachine) State() storage.AuctionState {
+	return b.Auction.State
+}

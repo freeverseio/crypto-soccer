@@ -16,6 +16,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+
+	"gotest.tools/assert"
 )
 
 func newTestMarket() *marketpay.MarketPay {
@@ -26,10 +28,31 @@ func newTestMarket() *marketpay.MarketPay {
 	return market
 }
 
+func TestAuctionStarted(t *testing.T) {
+	market := newMarket(t)
+
+	auction := storage.NewAuction()
+	auction.ValidUntil = time.Now().Unix() + 100
+	m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.Equal(t, m.State(), storage.AUCTION_STARTED)
+	assert.NilError(t, err)
+	assert.NilError(t, m.Process(market))
+	assert.Equal(t, m.State(), storage.AUCTION_STARTED)
+
+	auction.ValidUntil = time.Now().Unix() - 10
+	m, err = auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.Equal(t, m.State(), storage.AUCTION_STARTED)
+	assert.NilError(t, err)
+	assert.NilError(t, m.Process(market))
+	assert.Equal(t, m.State(), storage.AUCTION_NO_BIDS)
+}
+
 func TestAuctionWithNoBids(t *testing.T) {
 	auction := storage.Auction{
 		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(time.Now().Unix() + 100),
+		ValidUntil: time.Now().Unix() + 100,
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []*storage.Bid{}
@@ -54,7 +77,7 @@ func TestAuctionWithNoBids(t *testing.T) {
 func TestAuctionOutdatedWithNoBids(t *testing.T) {
 	auction := storage.Auction{
 		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(time.Now().Unix() - 10),
+		ValidUntil: time.Now().Unix() - 10,
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []*storage.Bid{}
@@ -93,7 +116,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 		CurrencyID: uint8(1),
 		Price:      big.NewInt(41234),
 		Rnd:        big.NewInt(42321),
-		ValidUntil: big.NewInt(2000000000),
+		ValidUntil: 2000000000,
 		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
 		State:      storage.AUCTION_STARTED,
 	}
@@ -119,7 +142,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 func TestFrozenAuction(t *testing.T) {
 	auction := storage.Auction{
 		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(time.Now().Unix() + 100),
+		ValidUntil: time.Now().Unix() + 100,
 		State:      storage.AUCTION_ASSET_FROZEN,
 	}
 	bids := []*storage.Bid{
@@ -144,7 +167,7 @@ func TestFrozenAuction(t *testing.T) {
 func TestOutdatedFrozenAuction(t *testing.T) {
 	auction := storage.Auction{
 		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(time.Now().Unix() - 100),
+		ValidUntil: time.Now().Unix() - 100,
 		State:      storage.AUCTION_ASSET_FROZEN,
 	}
 	bids := []*storage.Bid{
@@ -169,7 +192,7 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 func TestPayingAuction(t *testing.T) {
 	auction := storage.Auction{
 		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(time.Now().Unix() - 1),
+		ValidUntil: time.Now().Unix() - 1,
 		State:      storage.AUCTION_PAYING,
 	}
 	bids := []*storage.Bid{
@@ -224,7 +247,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	}
 
 	now := time.Now().Unix()
-	validUntil := big.NewInt(now + 8)
+	validUntil := now + 8
 	playerID := big.NewInt(274877906944)
 	currencyID := uint8(1)
 	price := big.NewInt(41234)
@@ -321,7 +344,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if machine.Bids[0].State != storage.BIDPAYING {
 		t.Fatalf("Expected not %v", machine.Bids[0].State)
 	}
-	if machine.Bids[0].PaymentDeadline.String() == "0" {
+	if machine.Bids[0].PaymentDeadline == 0 {
 		t.Fatalf("Wrong bid timeout %v", machine.Bids[0].PaymentDeadline)
 	}
 	// following is commented because we need an action from the user to make marketpay set it as PAID
