@@ -8,7 +8,6 @@ import (
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func newTestMarket() *marketpay.MarketPay {
@@ -20,13 +19,9 @@ func newTestMarket() *marketpay.MarketPay {
 }
 
 func TestNotPayingAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{State: storage.AUCTION_ASSET_FROZEN}
 	bid := &storage.Bid{}
-	_, err = bidmachine.New(
+	_, err := bidmachine.New(
 		newTestMarket(),
 		auction,
 		bid,
@@ -39,13 +34,9 @@ func TestNotPayingAuction(t *testing.T) {
 }
 
 func TestPayingAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{State: storage.AUCTION_PAYING}
 	bid := &storage.Bid{}
-	_, err = bidmachine.New(
+	_, err := bidmachine.New(
 		newTestMarket(),
 		auction,
 		bid,
@@ -90,10 +81,6 @@ func TestFirstAlive(t *testing.T) {
 }
 
 func TestExpiredBidNoTransit(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{State: storage.AUCTION_PAYING}
 	bid := &storage.Bid{State: storage.BIDFAILED}
 	machine, err := bidmachine.New(
@@ -116,10 +103,6 @@ func TestExpiredBidNoTransit(t *testing.T) {
 }
 
 func TestAcceptBidTransitToPaying(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{
 		State:      storage.AUCTION_PAYING,
 		ValidUntil: big.NewInt(10),
@@ -151,10 +134,6 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 }
 
 func TestBidPayingExpires(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	now := time.Now().Unix()
 	auction := &storage.Auction{
 		Price:      big.NewInt(3),
