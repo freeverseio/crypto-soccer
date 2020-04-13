@@ -18,19 +18,22 @@ type Consumer struct {
 func New(
 	ch chan interface{},
 	db *sql.DB,
-) *Consumer {
+) (*Consumer, error) {
 	consumer := Consumer{}
 	consumer.ch = ch
 	consumer.db = db
-	return &consumer
+	return &consumer, nil
 }
 
 func (b *Consumer) Start() {
 	for {
 		event := <-b.ch
-		switch event.(type) {
+		switch ev := event.(type) {
 		case gql.CreateAuctionInput:
 			log.Debug("Received CreateAuctionInput")
+			if err := CreateAuction(ev); err != nil {
+				log.Fatal(err)
+			}
 		case gql.CancelAuctionInput:
 			log.Debug("Received CancelAuctionInput")
 		case gql.CreateBidInput:

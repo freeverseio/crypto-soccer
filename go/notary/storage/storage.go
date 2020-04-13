@@ -15,6 +15,19 @@ type Storage struct {
 	db *sql.DB
 }
 
+func New(url string) (*sql.DB, error) {
+	var err error
+	db, err := sql.Open("postgres", url)
+	if err != nil {
+		return nil, err
+	}
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	log.Info("[DBMS] ... connected")
+	return db, nil
+}
+
 func NewPostgres(url string) (*Storage, error) {
 	var err error
 	storage := &Storage{}
