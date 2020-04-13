@@ -44,7 +44,7 @@ func RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
 	return r, s, v, err
 }
 
-func (b *Signer) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) []byte {
+func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) []byte {
 	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	arguments := abi.Arguments{
@@ -66,13 +66,6 @@ func (b *Signer) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) 
 	)
 
 	return crypto.Keccak256Hash(bytes).Bytes()
-	// privateHash, err := b.contracts.Market.HashPrivateMsg(
-	// 	&bind.CallOpts{},
-	// 	currencyId,
-	// 	price,
-	// 	rnd,
-	// )
-
 }
 
 func HashSellMessage(

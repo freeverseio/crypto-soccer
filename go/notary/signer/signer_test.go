@@ -35,7 +35,6 @@ func TestRSV(t *testing.T) {
 }
 
 func TestAuctionHiddenPrice(t *testing.T) {
-	signer := signer.NewSigner(bc.Contracts, nil)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
