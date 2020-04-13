@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"gotest.tools/assert"
@@ -39,40 +39,21 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
-	privHash, err := signer.HashPrivateMsg(
+	hash := signer.HashPrivateMsg(
+		currencyId,
+		price,
+		rnd,
+	)
+	assert.Equal(t, hex.EncodeToString(hash), "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
+
+	bcHash, err := bc.Contracts.Market.HashPrivateMsg(
+		&bind.CallOpts{},
 		currencyId,
 		price,
 		rnd,
 	)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(privHash[:]), "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
-
-	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
-	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
-	arguments := abi.Arguments{
-		{
-			Type: uint8Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
-	}
-
-	bytes, _ := arguments.Pack(
-		currencyId,
-		price,
-		rnd,
-	)
-
-	hash := crypto.Keccak256Hash(bytes)
-	assert.Equal(t, hash.Hex(), "0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
-	// var encoded []byte
-	// b, err := rlp.EncodeToBytes(currencyId)
-	// assert.NilError(err)
-	// // abi.Pack(currencyId, price, rnd)
+	assert.Equal(t, hex.EncodeToString(bcHash[:]), hex.EncodeToString(hash))
 }
 
 func TestAuctionMsg(t *testing.T) {

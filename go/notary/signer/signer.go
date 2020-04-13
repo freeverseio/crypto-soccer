@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -43,15 +44,35 @@ func RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
 	return r, s, v, err
 }
 
-func (b *Signer) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) ([32]byte, error) {
-	privateHash, err := b.contracts.Market.HashPrivateMsg(
-		&bind.CallOpts{},
+func (b *Signer) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) []byte {
+	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	arguments := abi.Arguments{
+		{
+			Type: uint8Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+	}
+
+	bytes, _ := arguments.Pack(
 		currencyId,
 		price,
 		rnd,
 	)
 
-	return privateHash, err
+	return crypto.Keccak256Hash(bytes).Bytes()
+	// privateHash, err := b.contracts.Market.HashPrivateMsg(
+	// 	&bind.CallOpts{},
+	// 	currencyId,
+	// 	price,
+	// 	rnd,
+	// )
+
 }
 
 func HashSellMessage(
