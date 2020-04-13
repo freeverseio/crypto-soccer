@@ -7,7 +7,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestRSV(t *testing.T) {
@@ -34,12 +33,6 @@ func TestRSV(t *testing.T) {
 }
 
 func TestAuctionHiddenPrice(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = bc.DeployContracts(bc.Owner)
 	signer := signer.NewSigner(bc.Contracts, nil)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
@@ -59,14 +52,8 @@ func TestAuctionHiddenPrice(t *testing.T) {
 }
 
 func TestAuctionMsg(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = bc.DeployContracts(bc.Owner)
 	signer := signer.NewSigner(bc.Contracts, nil)
-	validUntil := big.NewInt(2000000000)
+	validUntil := int64(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
@@ -101,14 +88,9 @@ func TestAuctionMsg(t *testing.T) {
 }
 
 func TestHashBidMessage(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
 	signer := signer.NewSigner(bc.Contracts, nil)
 
-	validUntil := big.NewInt(2000000000)
+	validUntil := int64(2000000000)
 	playerId := big.NewInt(274877906944)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
@@ -148,14 +130,6 @@ func TestHashBidMessage(t *testing.T) {
 }
 
 func TestBidHiddenPrice(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
 	signer := signer.NewSigner(bc.Contracts, nil)
 	extraPrice := big.NewInt(332)
 	buyerRandom := big.NewInt(1243523)
