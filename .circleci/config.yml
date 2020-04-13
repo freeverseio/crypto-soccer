@@ -16,7 +16,6 @@ executors:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
       - image: postgres:11.6-alpine
-        name: cryptosoccer
         environment:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
