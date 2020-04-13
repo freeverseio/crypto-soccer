@@ -87,7 +87,7 @@ func main() {
 	go gql.NewServer(ch)
 	// go submitactions.NewSubmitTimer(ch, 5*time.Second)
 
-	consumer.NewConsumer(
+	consumer.New(
 		ch,
 	).Start()
 }

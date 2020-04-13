@@ -20,6 +20,8 @@ const (
 	AUCTION_WITHDRAWAL          AuctionState = "WITHDRAWAL"
 	AUCTION_FAILED              AuctionState = "FAILED"
 	AuctionEnded                AuctionState = "Ended"
+	AuctionCancelled            AuctionState = "Cancelled"
+	AuctionFailed               AuctionState = "Failed"
 )
 
 type Auction struct {
@@ -83,6 +85,10 @@ func (b *Storage) UpdateAuctionState(uuid uuid.UUID, state AuctionState, stateEx
 func (b *Storage) UpdateAuctionPaymentUrl(uuid uuid.UUID, url string) error {
 	_, err := b.db.Exec("UPDATE auctions SET payment_url=$1 WHERE uuid=$2;", url, uuid)
 	return err
+}
+
+func GetPendingAuctions() ([]*Auction, error) {
+	return nil, nil
 }
 
 func (b *Storage) GetAuctions() ([]*Auction, error) {

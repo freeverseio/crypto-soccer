@@ -21,7 +21,7 @@ func (m *AuctionMachine) processStarted() error {
 	if len(m.Bids) == 0 {
 		if now > m.Auction.ValidUntil {
 			log.Infof("Auction %v STARTED -> %v", m.Auction.UUID, m.Auction.State)
-			m.Auction.State = storage.AUCTION_NO_BIDS
+			m.Auction.State = storage.AuctionEnded
 		}
 		return nil
 	}
