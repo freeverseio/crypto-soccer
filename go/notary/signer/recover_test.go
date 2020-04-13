@@ -46,14 +46,14 @@ func TestVerifySignature(t *testing.T) {
 }
 
 func TestVerifyAuctionSignature(t *testing.T) {
-	sign := signer.NewSigner(bc.Contracts, nil)
 	validUntil := int64(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
 
-	hash, err := sign.HashSellMessage(
+	hash, err := signer.HashSellMessage(
+		bc.Contracts.Market,
 		currencyId,
 		price,
 		rnd,

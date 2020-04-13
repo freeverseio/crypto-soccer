@@ -6,13 +6,13 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"gotest.tools/assert"
 )
 
 func TestRSV(t *testing.T) {
-	signer := signer.NewSigner(nil, nil)
 	_, _, _, err := signer.RSV("0x0")
 	if err == nil {
 		t.Fatal("No error on wrong signature")
@@ -44,17 +44,39 @@ func TestAuctionHiddenPrice(t *testing.T) {
 		price,
 		rnd,
 	)
-	if err != nil {
-		t.Fatal(err)
+	assert.NilError(t, err)
+	assert.Equal(t, hex.EncodeToString(privHash[:]), "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
+
+	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	arguments := abi.Arguments{
+		{
+			Type: uint8Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
 	}
-	result := hex.EncodeToString(privHash[:])
-	if result != "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa" {
-		t.Fatalf("Hash private error %v", result)
-	}
+
+	bytes, _ := arguments.Pack(
+		currencyId,
+		price,
+		rnd,
+	)
+
+	hash := crypto.Keccak256Hash(bytes)
+	assert.Equal(t, hash.Hex(), "0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
+	// var encoded []byte
+	// b, err := rlp.EncodeToBytes(currencyId)
+	// assert.NilError(err)
+	// // abi.Pack(currencyId, price, rnd)
 }
 
 func TestAuctionMsg(t *testing.T) {
-	signer := signer.NewSigner(bc.Contracts, nil)
+	sign := signer.NewSigner(bc.Contracts, nil)
 	validUntil := int64(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
@@ -62,6 +84,7 @@ func TestAuctionMsg(t *testing.T) {
 	rnd := big.NewInt(42321)
 
 	hash, err := signer.HashSellMessage(
+		bc.Contracts.Market,
 		currencyId,
 		price,
 		rnd,
@@ -79,7 +102,7 @@ func TestAuctionMsg(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sig, err := signer.Sign(hash, pvr)
+	sig, err := sign.Sign(hash, pvr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,6 +139,7 @@ func TestHashBidMessage(t *testing.T) {
 	isOffer2StartAuction := true
 
 	hash, err := signer.HashBidMessage(
+		bc.Contracts.Market,
 		currencyId,
 		price,
 		auctionRnd,
