@@ -16,7 +16,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func newTestMarket() *marketpay.MarketPay {
@@ -28,10 +27,6 @@ func newTestMarket() *marketpay.MarketPay {
 }
 
 func TestAuctionWithNoBids(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() + 100),
@@ -57,10 +52,6 @@ func TestAuctionWithNoBids(t *testing.T) {
 }
 
 func TestAuctionOutdatedWithNoBids(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 10),
@@ -86,10 +77,6 @@ func TestAuctionOutdatedWithNoBids(t *testing.T) {
 }
 
 func TestStartedAuctionWithBids(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
@@ -130,14 +117,6 @@ func TestStartedAuctionWithBids(t *testing.T) {
 }
 
 func TestFrozenAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() + 100),
@@ -163,14 +142,6 @@ func TestFrozenAuction(t *testing.T) {
 }
 
 func TestOutdatedFrozenAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 100),
@@ -196,14 +167,6 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 }
 
 func TestPayingAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
 	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 1),
@@ -230,10 +193,6 @@ func TestPayingAuction(t *testing.T) {
 }
 
 func TestPayingPaymentDoneAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	bob, _ := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
 
