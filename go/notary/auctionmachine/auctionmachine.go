@@ -13,7 +13,7 @@ import (
 )
 
 type AuctionMachine struct {
-	Auction   *storage.Auction
+	Auction   storage.Auction
 	Bids      []*storage.Bid
 	contracts *contracts.Contracts
 	freeverse *ecdsa.PrivateKey
@@ -21,7 +21,7 @@ type AuctionMachine struct {
 }
 
 func New(
-	auction *storage.Auction,
+	auction storage.Auction,
 	bids []*storage.Bid,
 	contracts *contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,

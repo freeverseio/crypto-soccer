@@ -27,7 +27,7 @@ func newTestMarket() *marketpay.MarketPay {
 }
 
 func TestAuctionWithNoBids(t *testing.T) {
-	auction := &storage.Auction{
+	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() + 100),
 		State:      storage.AUCTION_STARTED,
@@ -52,7 +52,7 @@ func TestAuctionWithNoBids(t *testing.T) {
 }
 
 func TestAuctionOutdatedWithNoBids(t *testing.T) {
-	auction := &storage.Auction{
+	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 10),
 		State:      storage.AUCTION_STARTED,
@@ -87,7 +87,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := &storage.Auction{
+	auction := storage.Auction{
 		UUID:       uuid.New(),
 		PlayerID:   big.NewInt(274877906944),
 		CurrencyID: uint8(1),
@@ -117,7 +117,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 }
 
 func TestFrozenAuction(t *testing.T) {
-	auction := &storage.Auction{
+	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() + 100),
 		State:      storage.AUCTION_ASSET_FROZEN,
@@ -142,7 +142,7 @@ func TestFrozenAuction(t *testing.T) {
 }
 
 func TestOutdatedFrozenAuction(t *testing.T) {
-	auction := &storage.Auction{
+	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 100),
 		State:      storage.AUCTION_ASSET_FROZEN,
@@ -167,7 +167,7 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 }
 
 func TestPayingAuction(t *testing.T) {
-	auction := &storage.Auction{
+	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 1),
 		State:      storage.AUCTION_PAYING,
@@ -249,7 +249,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := &storage.Auction{
+	auction := storage.Auction{
 		UUID:       uuid.New(),
 		PlayerID:   playerID,
 		CurrencyID: currencyID,

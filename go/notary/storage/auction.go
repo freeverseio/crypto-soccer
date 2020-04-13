@@ -19,6 +19,7 @@ const (
 	AUCTION_CANCELLED_BY_SELLER AuctionState = "CANCELLED_BY_SELLER"
 	AUCTION_WITHDRAWAL          AuctionState = "WITHDRAWAL"
 	AUCTION_FAILED              AuctionState = "FAILED"
+	AuctionEnded                AuctionState = "Ended"
 )
 
 type Auction struct {
