@@ -25,7 +25,7 @@ func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) 
 		return graphql.ID(id), err
 	}
 	if !isValid {
-		return graphql.ID(id), errors.New("Invalgraphql.ID(id) signature")
+		return graphql.ID(id), errors.New("Invalid signature")
 	}
 
 	signerAddress, err := args.Input.SignerAddress()

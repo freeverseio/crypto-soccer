@@ -26,3 +26,12 @@ func (b CancelAuctionInput) VerifySignature() (bool, error) {
 	}
 	return signer.VerifySignature(hash[:], sign)
 }
+
+func (b CancelAuctionInput) SignerAddress() (common.Address, error) {
+	hash := b.Hash()
+	sign, err := hex.DecodeString(b.Signature)
+	if err != nil {
+		return common.Address{}, err
+	}
+	return signer.AddressFromSignature(hash[:], sign)
+}
