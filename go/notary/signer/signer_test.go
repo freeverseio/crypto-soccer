@@ -1,17 +1,18 @@
 package signer_test
 
 import (
+	"crypto/ecdsa"
 	"encoding/hex"
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
+	"gotest.tools/assert"
 )
 
 func TestRSV(t *testing.T) {
-	signer := signer.NewSigner(nil, nil)
 	_, _, _, err := signer.RSV("0x0")
 	if err == nil {
 		t.Fatal("No error on wrong signature")
@@ -34,39 +35,30 @@ func TestRSV(t *testing.T) {
 }
 
 func TestAuctionHiddenPrice(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Contracts, nil)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
-	privHash, err := signer.HashPrivateMsg(
+	hash, err := signer.HashPrivateMsg(
 		currencyId,
 		price,
 		rnd,
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result := hex.EncodeToString(privHash[:])
-	if result != "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa" {
-		t.Fatalf("Hash private error %v", result)
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, hash.Hex(), "0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
+
+	bcHash, err := bc.Contracts.Market.HashPrivateMsg(
+		&bind.CallOpts{},
+		currencyId,
+		price,
+		rnd,
+	)
+	assert.NilError(t, err)
+	assert.Equal(t, "0x"+hex.EncodeToString(bcHash[:]), hash.Hex())
 }
 
 func TestAuctionMsg(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Contracts, nil)
-	validUntil := big.NewInt(2000000000)
+	sign := signer.NewSigner(bc.Contracts, nil)
+	validUntil := int64(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
@@ -79,9 +71,7 @@ func TestAuctionMsg(t *testing.T) {
 		validUntil,
 		playerId,
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	result := hex.EncodeToString(hash[:])
 	if result != "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796" {
 		t.Fatalf("Hash error %v", result)
@@ -90,7 +80,7 @@ func TestAuctionMsg(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sig, err := signer.Sign(hash, pvr)
+	sig, err := sign.Sign(hash, pvr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,15 +90,23 @@ func TestAuctionMsg(t *testing.T) {
 	}
 }
 
+func TestPublicKeyBytesToAddress(t *testing.T) {
+	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	assert.NilError(t, err)
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	assert.Equal(t, ok, true)
+
+	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	address := signer.PublicKeyBytesToAddress(publicKeyBytes)
+	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
+}
+
 func TestHashBidMessage(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
 	signer := signer.NewSigner(bc.Contracts, nil)
 
-	validUntil := big.NewInt(2000000000)
+	validUntil := int64(2000000000)
 	playerId := big.NewInt(274877906944)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
@@ -119,6 +117,7 @@ func TestHashBidMessage(t *testing.T) {
 	isOffer2StartAuction := true
 
 	hash, err := signer.HashBidMessage(
+		bc.Contracts.Market,
 		currencyId,
 		price,
 		auctionRnd,
@@ -148,14 +147,6 @@ func TestHashBidMessage(t *testing.T) {
 }
 
 func TestBidHiddenPrice(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
 	signer := signer.NewSigner(bc.Contracts, nil)
 	extraPrice := big.NewInt(332)
 	buyerRandom := big.NewInt(1243523)

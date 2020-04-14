@@ -3,17 +3,16 @@ package auctionmachine
 import (
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type AuctionMachine struct {
-	Auction   *storage.Auction
+	Auction   storage.Auction
 	Bids      []*storage.Bid
 	contracts *contracts.Contracts
 	freeverse *ecdsa.PrivateKey
@@ -21,7 +20,7 @@ type AuctionMachine struct {
 }
 
 func New(
-	auction *storage.Auction,
+	auction storage.Auction,
 	bids []*storage.Bid,
 	contracts *contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
@@ -49,14 +48,17 @@ func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 		return b.processAssetFrozen()
 	case storage.AUCTION_PAYING:
 		return b.processPaying(market)
+	case storage.AuctionCancelled:
+		return nil
+	case storage.AuctionFailed:
+		return nil
+	case storage.AuctionEnded:
+		return nil
 	default:
-		return b.processUnknownState()
+		return fmt.Errorf("Unknown auction state %v", b.State())
 	}
 }
 
-func (b *AuctionMachine) processUnknownState() error {
-	log.Infof("[auction] %v: unknown state %v", b.Auction.UUID, b.Auction.State)
-	b.Auction.StateExtra = "Unknown state " + string(b.Auction.State)
-	b.Auction.State = storage.AUCTION_FAILED
-	return nil
+func (b AuctionMachine) State() storage.AuctionState {
+	return b.Auction.State
 }

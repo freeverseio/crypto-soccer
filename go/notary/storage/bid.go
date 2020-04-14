@@ -30,7 +30,7 @@ type Bid struct {
 	StateExtra      string
 	PaymentID       string
 	PaymentURL      string
-	PaymentDeadline *big.Int
+	PaymentDeadline int64
 }
 
 func (b *Storage) CreateBid(bid Bid) error {
@@ -79,7 +79,6 @@ func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]*Bid, error) {
 	for rows.Next() {
 		var bid Bid
 		var teamID sql.NullString
-		var paymentDeadline sql.NullString
 		err = rows.Scan(
 			&bid.ExtraPrice,
 			&bid.Rnd,
@@ -89,14 +88,13 @@ func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]*Bid, error) {
 			&bid.StateExtra,
 			&bid.PaymentID,
 			&bid.PaymentURL,
-			&paymentDeadline,
+			&bid.PaymentDeadline,
 		)
 		if err != nil {
 			return bids, err
 		}
 		bid.Auction = auctionUUID
 		bid.TeamID, _ = new(big.Int).SetString(teamID.String, 10)
-		bid.PaymentDeadline, _ = new(big.Int).SetString(paymentDeadline.String, 10)
 		bids = append(bids, &bid)
 	}
 	return bids, nil

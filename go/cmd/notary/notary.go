@@ -7,7 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/processor"
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
@@ -49,6 +51,7 @@ func main() {
 		log.Info("Connecting to DBMS: ", *postgresURL)
 		sto, err = storage.NewPostgres(*postgresURL)
 	}
+	db, err := storage.New(*postgresURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
@@ -79,4 +82,18 @@ func main() {
 		}
 		time.Sleep(2 * time.Second)
 	}
+
+	ch := make(chan interface{}, 100000)
+
+	go gql.NewServer(ch, *contracts)
+	// go submitactions.NewSubmitTimer(ch, 5*time.Second)
+
+	cn, err := consumer.New(
+		ch,
+		db,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cn.Start()
 }

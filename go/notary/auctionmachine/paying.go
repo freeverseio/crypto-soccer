@@ -25,7 +25,7 @@ func (m *AuctionMachine) processPaying(market marketpay.IMarketPay) error {
 
 	bidMachine, err := bidmachine.New(
 		market,
-		m.Auction,
+		&m.Auction,
 		bid,
 		m.contracts,
 		m.freeverse,

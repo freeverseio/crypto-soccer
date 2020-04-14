@@ -2,11 +2,13 @@ package auctionmachine
 
 import (
 	"errors"
+	"math/big"
 	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/helper"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,15 +20,15 @@ func (m *AuctionMachine) processStarted() error {
 	now := time.Now().Unix()
 
 	if len(m.Bids) == 0 {
-		if now > m.Auction.ValidUntil.Int64() {
+		if now > m.Auction.ValidUntil {
 			log.Infof("Auction %v STARTED -> %v", m.Auction.UUID, m.Auction.State)
-			m.Auction.State = storage.AUCTION_NO_BIDS
+			m.Auction.State = storage.AuctionEnded
 		}
 		return nil
 	}
 
 	// TODO trying to freeze the asset
-	auctionHiddenPrice, err := m.signer.HashPrivateMsg(
+	auctionHiddenPrice, err := signer.HashPrivateMsg(
 		m.Auction.CurrencyID,
 		m.Auction.Price,
 		m.Auction.Rnd,
@@ -36,7 +38,7 @@ func (m *AuctionMachine) processStarted() error {
 	}
 	var sig [2][32]byte
 	var sigV uint8
-	_, err = m.signer.HashSellMessage(
+	_, err = signer.HashSellMessage(
 		m.Auction.CurrencyID,
 		m.Auction.Price,
 		m.Auction.Rnd,
@@ -46,14 +48,14 @@ func (m *AuctionMachine) processStarted() error {
 	if err != nil {
 		return err
 	}
-	sig[0], sig[1], sigV, err = m.signer.RSV(m.Auction.Signature)
+	sig[0], sig[1], sigV, err = signer.RSV(m.Auction.Signature)
 	if err != nil {
 		return err
 	}
 	tx, err := m.contracts.Market.FreezePlayer(
 		bind.NewKeyedTransactor(m.freeverse),
 		auctionHiddenPrice,
-		m.Auction.ValidUntil,
+		big.NewInt(m.Auction.ValidUntil),
 		m.Auction.PlayerID,
 		sig,
 		sigV,

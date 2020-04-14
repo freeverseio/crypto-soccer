@@ -19,7 +19,7 @@ func TestGetAuction(t *testing.T) {
 		CurrencyID: 2,
 		Price:      big.NewInt(44),
 		Rnd:        big.NewInt(2233),
-		ValidUntil: big.NewInt(5),
+		ValidUntil: 5,
 		Signature:  "0x",
 		State:      storage.AUCTION_STARTED,
 		StateExtra: "pippo",
@@ -51,7 +51,7 @@ func TestUpdateState(t *testing.T) {
 		CurrencyID: 2,
 		Price:      big.NewInt(44),
 		Rnd:        big.NewInt(2233),
-		ValidUntil: big.NewInt(5),
+		ValidUntil: 5,
 		Signature:  "0x",
 		State:      storage.AUCTION_STARTED,
 	}
@@ -83,7 +83,7 @@ func TestOpenAuction(t *testing.T) {
 		CurrencyID: 2,
 		Price:      big.NewInt(44),
 		Rnd:        big.NewInt(2233),
-		ValidUntil: big.NewInt(5),
+		ValidUntil: 5,
 		Signature:  "0x",
 		State:      storage.AUCTION_NO_BIDS,
 	}
@@ -104,7 +104,7 @@ func TestOpenAuction(t *testing.T) {
 		CurrencyID: 2,
 		Price:      big.NewInt(44),
 		Rnd:        big.NewInt(2233),
-		ValidUntil: big.NewInt(5),
+		ValidUntil: 5,
 		Signature:  "0x",
 		State:      storage.AUCTION_STARTED,
 	}

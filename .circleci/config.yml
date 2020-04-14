@@ -23,6 +23,18 @@ executors:
       - image: ipfs/go-ipfs:v0.4.23
         environment:
           - IPFS_PROFILE=server
+  freeverse_market:
+    docker:
+      - image: freeverseio/circleci
+      - image: freeverseio/xdai:dev
+        auth:
+          username: $DOCKER_ID
+          password: $DOCKER_PASSWD
+      - image: postgres:11.6-alpine
+        environment:
+          - POSTGRES_USER=freeverse
+          - POSTGRES_PASSWORD=freeverse
+          - POSTGRES_DB=market
 
 commands:
   submit_universe_db_schema:
@@ -83,12 +95,18 @@ jobs:
       - run: kustomize build ./deployment/dok8s/overlays/dev/. | diff ./deployment/dok8s/overlays/dev/testdata/kustomize.golden -
       - run: kustomize build ./deployment/dok8s/overlays/prod/. | diff ./deployment/dok8s/overlays/prod/testdata/kustomize.golden -
   market-notary:
-    executor: freeverse_ethereum
+    executor: freeverse_market
     steps:
       - checkout
       - generate_contracts_code
       - run: cd go/cmd/notary && go build ./notary.go
-      # - run: cd go/notary && go test ./... -p 1
+      - run: cd go/notary/auctionmachine && go test ./...
+      - run: cd go/notary/bidmachine && go test ./...
+      - run: cd go/notary/consumer && go test ./... 
+      - run: cd go/notary/processor && go test ./... 
+      - run: cd go/notary/producer && go test ./... 
+      - run: cd go/notary/signer && go test ./...
+      - run: cd go/notary/storage && go test ./...
   relay-actions:
     executor: freeverse_ethereum
     steps:
