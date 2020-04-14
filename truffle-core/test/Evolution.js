@@ -1067,7 +1067,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(sumSkills1, expectedSums, toNum = true, verbose = false, isBigNumber = false);
 
         // check that the game is played, ends up in 2-2, and that there are no TPs assigned (this is 1st half)
-        expectedGoals = [1, 2];
+        expectedGoals = [1, 0];
         expectedPoints = [0, 0];
         goals = []
         points = []
@@ -1080,7 +1080,8 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(goals, expectedGoals, toNum = true, verbose = false, isBigNumber = false);
         debug.compareArrays(points, expectedPoints, toNum = true, verbose = false, isBigNumber = false);
         // check that the events are generated, and match whatever we got once.
-        expected = [ 1, 1, 8, 1, 8, 1, 1, 7, 1, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 1, 9, 0, 0 ];
+        expected = [ 1, 1, 8, 0, 0, 1, 1, 7, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 1, 9, 0, 0 ]
+        
         debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, verbose = false, isBigNumber = false);
 
         // check that all 3 substitutions took place
@@ -1176,7 +1177,7 @@ contract('Evolution', (accounts) => {
             nGoals = await encodeLog.getNGoals(matchLogsAndEvents0[team]);
             goals.push(nGoals);
         }
-        debug.compareArrays(goals, [1,2], toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(goals, [1,0], toNum = true, verbose = false, isBigNumber = false);
 
         // first: check correct properties for team1:
             // recall:   lineUp = consecutive,  subst = [6, NO_SUBST, NO_SUBST]
@@ -1211,8 +1212,8 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, verbose = false, isBigNumber = false);
 
         // check Training Points (and Goals)
-        expectedGoals = [2, 5];
-        expectedPoints = [17, 49];
+        expectedGoals = [2, 3];
+        expectedPoints = [19, 40];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
