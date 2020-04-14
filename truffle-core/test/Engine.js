@@ -845,7 +845,7 @@ contract('Engine', (accounts) => {
     it('play a match in home stadium, check that max goals is applied', async () => {
         // note: the home team is much better than the away team
         log = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2nd = false, isHome = true, isPlayoff]).should.be.fulfilled;
-        expected = [10, 0];
+        expected = [11, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -860,7 +860,7 @@ contract('Engine', (accounts) => {
     
     it('play a match', async () => {
         log = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expected = [10, 0];
+        expected = [11, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -1223,14 +1223,16 @@ contract('Engine', (accounts) => {
 
     it('different team state => different result', async () => {
         matchLog = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [2, 2];
+        expectedResult = [0, 2];
+        result = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expectedResult[team]);
+            result.push(nGoals);
         }
+        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
 
         matchLog = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [11, 0];
+        expectedResult = [12, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             nGoals.toNumber().should.be.equal(expectedResult[team]);
@@ -1239,13 +1241,16 @@ contract('Engine', (accounts) => {
 
     it('different seeds => different result', async () => {
         matchLog = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [2, 2];
+        expectedResult = [0, 2];
+        result = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expectedResult[team]);
+            result.push(nGoals);
         }
+        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+
         matchLog = await engine.playHalfMatch(654322, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [1, 1];
+        expectedResult = [1, 0];
         result = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
@@ -1254,17 +1259,17 @@ contract('Engine', (accounts) => {
         debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
         // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
         expected = [ 
-            1, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 
-            1, 1, 7, 1, 9, 
-            0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 
-            1, 0, 0, 0, 0, 
-            0, 1, 10, 1, 10, 
-            1, 0, 0, 0, 0, 
-            1, 0, 0, 0, 0, 
-            1, 1, 8, 0, 0, 
-            1, 1, 10, 0, 0, 
+            1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            1, 1, 7, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 1, 8, 0, 0,
+            1, 0, 0, 0, 0,
+            0, 1, 10, 1, 10,
+            1, 0, 0, 0, 0,
+            1, 0, 0, 0, 0,
+            1, 1, 8, 0, 0,
+            1, 1, 10, 0, 0,
             1, 0, 0, 0, 0 
         ];
         goals = [0,0];
