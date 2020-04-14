@@ -3,15 +3,19 @@ package gql
 import (
 	"net/http"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
 	log "github.com/sirupsen/logrus"
 )
 
-func NewServer(c chan interface{}) error {
+func NewServer(
+	ch chan interface{},
+	contracts contracts.Contracts,
+) error {
 	log.Info("New GraphQL server staring ...")
 
-	resolver := NewResolver(c)
+	resolver := NewResolver(ch, contracts)
 	schema := graphql.MustParseSchema(Schema, resolver)
 
 	handler := relay.Handler{Schema: schema}

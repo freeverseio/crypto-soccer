@@ -1,13 +1,22 @@
 package gql
 
+import (
+	"github.com/freeverseio/crypto-soccer/go/contracts"
+)
+
 type Resolver struct {
-	c chan interface{}
+	ch        chan interface{}
+	contracts contracts.Contracts
 }
 
 func NewResolver(
-	c chan interface{},
+	ch chan interface{},
+	contracts contracts.Contracts,
 ) *Resolver {
-	return &Resolver{c}
+	resolver := Resolver{}
+	resolver.ch = ch
+	resolver.contracts = contracts
+	return &resolver
 }
 
 func (b *Resolver) Ping() bool {
