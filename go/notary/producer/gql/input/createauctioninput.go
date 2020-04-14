@@ -12,9 +12,9 @@ import (
 type CreateAuctionInput struct {
 	Signature  string
 	PlayerId   string
-	CurrencyId int
-	Price      int
-	Rnd        int
+	CurrencyId int32
+	Price      int32
+	Rnd        int32
 	ValidUntil string
 }
 
