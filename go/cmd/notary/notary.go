@@ -51,6 +51,7 @@ func main() {
 		log.Info("Connecting to DBMS: ", *postgresURL)
 		sto, err = storage.NewPostgres(*postgresURL)
 	}
+	db, err := storage.New(*postgresURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
@@ -84,10 +85,15 @@ func main() {
 
 	ch := make(chan interface{}, 100000)
 
-	go gql.NewServer(ch)
+	go gql.NewServer(ch, *contracts)
 	// go submitactions.NewSubmitTimer(ch, 5*time.Second)
 
-	consumer.New(
+	cn, err := consumer.New(
 		ch,
-	).Start()
+		db,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cn.Start()
 }

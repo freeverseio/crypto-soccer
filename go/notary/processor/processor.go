@@ -2,6 +2,7 @@ package processor
 
 import (
 	"crypto/ecdsa"
+	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
@@ -42,7 +43,7 @@ func (b *Processor) Process() error {
 		}
 
 		machine, err := auctionmachine.New(
-			auction,
+			*auction,
 			bids,
 			b.contracts,
 			b.freeverse,
@@ -91,7 +92,7 @@ func (b *Processor) updateBids(bids []*storage.Bid) error {
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidPaymentDeadline(bid.Auction, bid.ExtraPrice, bid.PaymentDeadline)
+		err = b.db.UpdateBidPaymentDeadline(bid.Auction, bid.ExtraPrice, big.NewInt(bid.PaymentDeadline))
 		if err != nil {
 			return err
 		}
