@@ -323,6 +323,8 @@ spec:
         - http://trader:4000/graphql
         - -r
         - http://relayactions:4000/graphql
+        - -n
+        - http://notary:4000/graphql
         envFrom:
         - configMapRef:
             name: freeverse-configmap
