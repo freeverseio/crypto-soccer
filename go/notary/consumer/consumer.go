@@ -47,7 +47,7 @@ func (b *Consumer) Start() {
 		// case gql.CreateBidInput:
 		// 	log.Debug("Received CreateBidInput")
 		case producer.ProcessEvent:
-			log.Debug("Received ProcessEvent")
+			log.Info("Received ProcessEvent")
 			// auctions, err := storage.GetPendingAuctions()
 			// if err != nil {
 			// 	log.Fatal(err)
