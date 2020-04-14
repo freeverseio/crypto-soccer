@@ -21,7 +21,7 @@ func (b CreateAuctionInput) Hash() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
 	if err != nil {
-		return [32]byte{}, err
+		return common.Hash{}, err
 	}
 	hash, err := signer.HashSellMessage(
 		uint8(b.CurrencyId),
