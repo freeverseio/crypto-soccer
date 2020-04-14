@@ -24,10 +24,10 @@ const (
 type Auction struct {
 	ID         string
 	PlayerID   string
-	CurrencyID uint8
-	Price      string
-	Rnd        string
-	ValidUntil int64
+	CurrencyID int
+	Price      int
+	Rnd        int
+	ValidUntil string
 	Signature  string
 	State      AuctionState
 	StateExtra string
@@ -37,8 +37,6 @@ type Auction struct {
 
 func NewAuction() *Auction {
 	auction := Auction{}
-	auction.Price = "0"
-	auction.Rnd = "0"
 	auction.State = AuctionStarted
 	return &auction
 }

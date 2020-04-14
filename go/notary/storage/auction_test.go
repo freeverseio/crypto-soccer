@@ -14,12 +14,11 @@ func TestAuctionInsert(t *testing.T) {
 
 	auction := storage.NewAuction()
 	auction.ID = "ciao"
-	auction.Rnd = "4"
+	auction.Rnd = 4
 	auction.PlayerID = "3"
 	auction.CurrencyID = 3
-	auction.Price = "3"
-	auction.Rnd = "3"
-	auction.ValidUntil = 3
+	auction.Price = 3
+	auction.ValidUntil = "3"
 	auction.Signature = "3"
 	auction.State = storage.AuctionStarted
 	auction.StateExtra = "3"
