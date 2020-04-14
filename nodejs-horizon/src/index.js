@@ -20,7 +20,7 @@ program
   .option("-u, --universeUrl <url>", "graphql universe url", "http://localhost:4001/graphql")
   .option("-m, --marketUrl <url>", "graphql market url", "http://localhost:4002/graphql")
   .option("-r, --relayUrl <url>", "graphql relay url", "http://localhost:4003/graphql")
-  .option("-r, --notaryUrl <url>", "graphql notary url", "http://localhost:4004/graphql")
+  .option("-n, --notaryUrl <url>", "graphql notary url", "http://localhost:4004/graphql")
   .parse(process.argv);
 
 const { universeUrl, marketUrl, relayUrl } = program;
