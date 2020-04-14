@@ -5,7 +5,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
-	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -28,16 +28,13 @@ func New(
 func (b *Consumer) Start() {
 	for {
 		event := <-b.ch
-		switch ev := event.(type) {
-		case gql.CreateAuctionInput:
+		switch event.(type) {
+		case input.CreateAuctionInput:
 			log.Debug("Received CreateAuctionInput")
-			if err := CreateAuction(ev); err != nil {
-				log.Fatal(err)
-			}
-		case gql.CancelAuctionInput:
-			log.Debug("Received CancelAuctionInput")
-		case gql.CreateBidInput:
-			log.Debug("Received CreateBidInput")
+		// case gql.CancelAuctionInput:
+		// 	log.Debug("Received CancelAuctionInput")
+		// case gql.CreateBidInput:
+		// 	log.Debug("Received CreateBidInput")
 		case producer.ProcessEvent:
 			log.Debug("Received ProcessEvent")
 			auctions, err := storage.GetPendingAuctions()
