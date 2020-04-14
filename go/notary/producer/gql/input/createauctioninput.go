@@ -17,20 +17,20 @@ type CreateAuctionInput struct {
 	ValidUntil string
 }
 
-func (b CreateAuctionInput) Hash() ([32]byte, error) {
+func (b CreateAuctionInput) Hash() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	hash := signer.HashSellMessage(
+	hash, err := signer.HashSellMessage(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
 		validUntil,
 		playerId,
 	)
-	return hash, nil
+	return hash, err
 }
 
 func (b CreateAuctionInput) VerifySignature() (bool, error) {

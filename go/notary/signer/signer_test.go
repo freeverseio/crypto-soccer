@@ -38,12 +38,13 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
-	hash := signer.HashPrivateMsg(
+	hash, err := signer.HashPrivateMsg(
 		currencyId,
 		price,
 		rnd,
 	)
-	assert.Equal(t, hex.EncodeToString(hash), "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
+	assert.NilError(t, err)
+	assert.Equal(t, hash.Hex(), "0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
 
 	bcHash, err := bc.Contracts.Market.HashPrivateMsg(
 		&bind.CallOpts{},
@@ -52,7 +53,7 @@ func TestAuctionHiddenPrice(t *testing.T) {
 		rnd,
 	)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(bcHash[:]), hex.EncodeToString(hash))
+	assert.Equal(t, "0x"+hex.EncodeToString(bcHash[:]), hash.Hex())
 }
 
 func TestAuctionMsg(t *testing.T) {
@@ -70,9 +71,7 @@ func TestAuctionMsg(t *testing.T) {
 		validUntil,
 		playerId,
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	result := hex.EncodeToString(hash[:])
 	if result != "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796" {
 		t.Fatalf("Hash error %v", result)

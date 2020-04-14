@@ -45,7 +45,7 @@ func RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
 	return r, s, v, err
 }
 
-func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) []byte {
+func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) (common.Hash, error) {
 	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	arguments := abi.Arguments{
@@ -60,13 +60,16 @@ func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) []byte {
 		},
 	}
 
-	bytes, _ := arguments.Pack(
+	bytes, err := arguments.Pack(
 		currencyId,
 		price,
 		rnd,
 	)
+	if err != nil {
+		return common.Hash{}, err
+	}
 
-	return crypto.Keccak256Hash(bytes).Bytes()
+	return crypto.Keccak256Hash(bytes), nil
 }
 
 func HashSellMessage(
@@ -75,14 +78,16 @@ func HashSellMessage(
 	rnd *big.Int,
 	validUntil int64,
 	playerId *big.Int,
-) [32]byte {
+) (common.Hash, error) {
 	var hash [32]byte
-	hashPrivateMessage := HashPrivateMsg(
+	hashPrivateMessage, err := HashPrivateMsg(
 		currencyId,
 		price,
 		rnd,
 	)
-	copy(hash[:], hashPrivateMessage)
+	if err != nil {
+		return [32]byte{}, err
+	}
 
 	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
@@ -99,15 +104,14 @@ func HashSellMessage(
 	}
 
 	bytes, _ := arguments.Pack(
-		hash,
+		hashPrivateMessage,
 		big.NewInt(validUntil),
 		playerId,
 	)
 	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
 
 	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
-	copy(hash[:], crypto.Keccak256Hash([]byte(ss)).Bytes())
-	return hash
+	return crypto.Keccak256Hash([]byte(ss)), nil
 }
 
 func (b *Signer) HashBidMessage(
@@ -123,13 +127,16 @@ func (b *Signer) HashBidMessage(
 	isOffer2StartAuction bool,
 ) ([32]byte, error) {
 	var hash [32]byte
-	auctionHashMsg := HashSellMessage(
+	auctionHashMsg, err := HashSellMessage(
 		currencyID,
 		price,
 		auctionRnd,
 		validUntil,
 		playerID,
 	)
+	if err != nil {
+		return [32]byte{}, err
+	}
 	bidHiddenPrice, err := market.HashBidHiddenPrice(
 		&bind.CallOpts{},
 		extraPrice,
