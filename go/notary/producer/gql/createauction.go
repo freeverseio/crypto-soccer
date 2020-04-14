@@ -12,6 +12,7 @@ import (
 )
 
 func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) (graphql.ID, error) {
+	log.Infof("CreateAuction %v", args)
 	if b.ch == nil {
 		return graphql.ID(""), errors.New("internal error: no channel")
 	}

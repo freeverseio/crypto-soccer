@@ -2,13 +2,11 @@ package main
 
 import (
 	"flag"
-	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
-	"github.com/freeverseio/crypto-soccer/go/notary/processor"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
@@ -43,14 +41,14 @@ func main() {
 	}
 
 	log.Info("Create the connection to DBMS")
-	var sto *storage.Storage
-	if *inMemoryDatabase {
-		log.Warning("Using in memory DBMS (no persistence)")
-		sto, err = storage.NewSqlite3("../../../market.db/00_schema.sql")
-	} else {
-		log.Info("Connecting to DBMS: ", *postgresURL)
-		sto, err = storage.NewPostgres(*postgresURL)
-	}
+	// var sto *storage.Storage
+	// if *inMemoryDatabase {
+	// 	log.Warning("Using in memory DBMS (no persistence)")
+	// 	sto, err = storage.NewSqlite3("../../../market.db/00_schema.sql")
+	// } else {
+	// 	log.Info("Connecting to DBMS: ", *postgresURL)
+	// 	sto, err = storage.NewPostgres(*postgresURL)
+	// }
 	db, err := storage.New(*postgresURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
@@ -70,18 +68,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	processor, err := processor.NewProcessor(sto, contracts, privateKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for {
-		err = processor.Process()
-		if err != nil {
-			log.Error(err)
-		}
-		time.Sleep(2 * time.Second)
-	}
+	// processor, err := processor.NewProcessor(sto, contracts, privateKey)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	ch := make(chan interface{}, 100000)
 
