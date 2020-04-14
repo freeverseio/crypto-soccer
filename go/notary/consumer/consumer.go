@@ -42,10 +42,6 @@ func (b *Consumer) Start() {
 			if err = tx.Commit(); err != nil {
 				log.Error(err)
 			}
-		// case gql.CancelAuctionInput:
-		// 	log.Debug("Received CancelAuctionInput")
-		// case gql.CreateBidInput:
-		// 	log.Debug("Received CreateBidInput")
 		case producer.ProcessEvent:
 			log.Info("Received ProcessEvent")
 			// auctions, err := storage.GetPendingAuctions()
