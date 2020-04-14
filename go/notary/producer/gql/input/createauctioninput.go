@@ -51,5 +51,9 @@ func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return signer.AddressFromSignature(hash[:], []byte(b.Signature))
+	sign, err := hex.DecodeString(b.Signature)
+	if err != nil {
+		return common.Address{}, err
+	}
+	return signer.AddressFromSignature(hash[:], sign)
 }

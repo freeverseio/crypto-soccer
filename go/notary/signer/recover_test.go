@@ -3,6 +3,7 @@ package signer_test
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"encoding/hex"
 	"math/big"
 	"testing"
 
@@ -65,6 +66,7 @@ func TestVerifyAuctionSignature(t *testing.T) {
 
 	signature, err := crypto.Sign(hash[:], privateKey)
 	assert.NilError(t, err)
+	assert.Equal(t, hex.EncodeToString(signature), "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e5301")
 	// sigPublicKey, err := crypto.Ecrecover(hash[:], signature)
 	// assert.NilError(t, err)
 	// address := signer.PublicKeyBytesToAddress(sigPublicKey)
