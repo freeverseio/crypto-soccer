@@ -8,6 +8,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -27,7 +28,7 @@ func (m *AuctionMachine) processStarted() error {
 	}
 
 	// TODO trying to freeze the asset
-	auctionHiddenPrice, err := m.signer.HashPrivateMsg(
+	auctionHiddenPrice, err := signer.HashPrivateMsg(
 		m.Auction.CurrencyID,
 		m.Auction.Price,
 		m.Auction.Rnd,
@@ -37,7 +38,7 @@ func (m *AuctionMachine) processStarted() error {
 	}
 	var sig [2][32]byte
 	var sigV uint8
-	_, err = m.signer.HashSellMessage(
+	_, err = signer.HashSellMessage(
 		m.Auction.CurrencyID,
 		m.Auction.Price,
 		m.Auction.Rnd,
@@ -47,7 +48,7 @@ func (m *AuctionMachine) processStarted() error {
 	if err != nil {
 		return err
 	}
-	sig[0], sig[1], sigV, err = m.signer.RSV(m.Auction.Signature)
+	sig[0], sig[1], sigV, err = signer.RSV(m.Auction.Signature)
 	if err != nil {
 		return err
 	}

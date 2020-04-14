@@ -124,13 +124,8 @@ func TestAuctionOutdatedWithNoBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if machine.Auction.State != storage.AUCTION_NO_BIDS {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, machine.Auction.State)
-	}
-	err = machine.Process(market)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Equal(t, machine.State(), storage.AuctionEnded)
+	assert.NilError(t, machine.Process(market))
 }
 
 func TestStartedAuctionWithBids(t *testing.T) {
@@ -291,7 +286,6 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	teamID := big.NewInt(274877906945)
 	isOffer2StartAuction := false
 
-	signer := signer.NewSigner(bc.Contracts, nil)
 	hashAuctionMsg, err := signer.HashSellMessage(
 		currencyID,
 		price,
@@ -302,6 +296,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	signer := signer.NewSigner(bc.Contracts, nil)
 	signAuctionMsg, err := signer.Sign(hashAuctionMsg, alice)
 	if err != nil {
 		t.Fatal(err)
@@ -318,6 +313,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	}
 
 	hashBidMsg, err := signer.HashBidMessage(
+		bc.Contracts.Market,
 		currencyID,
 		price,
 		auctionRnd,
