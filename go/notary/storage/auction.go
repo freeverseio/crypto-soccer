@@ -47,7 +47,9 @@ func AuctionByID(tx *sql.Tx, ID string) (*Auction, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	rows.Next()
+	if !rows.Next() {
+		return nil, nil
+	}
 	var auction Auction
 	auction.ID = ID
 	err = rows.Scan(

@@ -7,6 +7,16 @@ import (
 	"gotest.tools/assert"
 )
 
+func TestAuctionByIDUnexistent(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction, err := storage.AuctionByID(tx, "4343")
+	assert.NilError(t, err)
+	assert.Assert(t, auction == nil)
+}
+
 func TestAuctionInsert(t *testing.T) {
 	tx, err := db.Begin()
 	assert.NilError(t, err)
