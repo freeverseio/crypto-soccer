@@ -23,7 +23,7 @@ program
   .option("-n, --notaryUrl <url>", "graphql notary url", "http://localhost:4004/graphql")
   .parse(process.argv);
 
-const { universeUrl, marketUrl, relayUrl } = program;
+const { universeUrl, marketUrl, relayUrl, notaryUrl } = program;
 
 console.log("--------------------------------------------------------");
 console.log("universeUrl       : ", universeUrl);
