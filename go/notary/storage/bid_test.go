@@ -27,7 +27,7 @@ func TestGetbids(t *testing.T) {
 		CurrencyID: 1,
 		Price:      big.NewInt(3),
 		Rnd:        big.NewInt(7),
-		ValidUntil: big.NewInt(8),
+		ValidUntil: 8,
 		Signature:  "0x0",
 		State:      storage.AUCTION_STARTED,
 	})
@@ -74,7 +74,7 @@ func TestUpdateBidState(t *testing.T) {
 		CurrencyID: 1,
 		Price:      big.NewInt(3),
 		Rnd:        big.NewInt(7),
-		ValidUntil: big.NewInt(8),
+		ValidUntil: 8,
 		Signature:  "0x0",
 		State:      storage.AUCTION_STARTED,
 	})
@@ -127,7 +127,7 @@ func TestUpdatePaymentId(t *testing.T) {
 		CurrencyID: 1,
 		Price:      big.NewInt(3),
 		Rnd:        big.NewInt(7),
-		ValidUntil: big.NewInt(8),
+		ValidUntil: 8,
 		Signature:  "0x0",
 		State:      storage.AUCTION_STARTED,
 	})
@@ -169,7 +169,7 @@ func TestUpdatePaymentDeadline(t *testing.T) {
 		CurrencyID: 1,
 		Price:      big.NewInt(3),
 		Rnd:        big.NewInt(7),
-		ValidUntil: big.NewInt(8),
+		ValidUntil: 8,
 		Signature:  "0x0",
 		State:      storage.AUCTION_STARTED,
 	})
@@ -194,7 +194,7 @@ func TestUpdatePaymentDeadline(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bids[0].PaymentDeadline.Cmp(paymentDeadline) != 0 {
+	if bids[0].PaymentDeadline != paymentDeadline.Int64() {
 		t.Fatalf("Wrong paymentDeadline %v", bids[0].PaymentDeadline)
 	}
 }
