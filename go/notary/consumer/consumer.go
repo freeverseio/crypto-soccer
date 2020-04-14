@@ -43,7 +43,7 @@ func (b *Consumer) Start() {
 				log.Error(err)
 			}
 		case producer.ProcessEvent:
-			log.Info("Received ProcessEvent")
+			log.Debug("Received ProcessEvent")
 			// auctions, err := storage.GetPendingAuctions()
 			// if err != nil {
 			// 	log.Fatal(err)
