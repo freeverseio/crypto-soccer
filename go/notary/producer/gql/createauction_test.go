@@ -1,21 +1,15 @@
 package gql_test
 
-import (
-	"testing"
+// func TestCreateAuctionReturnTheSignature(t *testing.T) {
+// 	ch := make(chan interface{}, 10)
+// 	r := gql.NewResolver(ch)
 
-	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
-	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
-	"gotest.tools/assert"
-)
+// 	in := input.CreateAuctionInput{}
+// 	in.Signature = "534523re32"
+// 	in.ValidUntil = "0"
+// 	in.PlayerId = "0"
 
-func TestCreateAuctionReturnTheSignature(t *testing.T) {
-	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch)
-
-	in := input.CreateAuctionInput{}
-	in.Signature = "534523re32"
-
-	id, err := r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
-	assert.NilError(t, err)
-	assert.Equal(t, string(id), in.Signature)
-}
+// 	id, err := r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
+// 	assert.NilError(t, err)
+// 	assert.Equal(t, string(id), in.Signature)
+// }
