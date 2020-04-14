@@ -31,3 +31,16 @@ func TestCreateAuctionValidSignature(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Assert(t, valid)
 }
+
+func TestCreateAuctionSignerAddress(t *testing.T) {
+	in := input.CreateAuctionInput{}
+	in.ValidUntil = "2000000000"
+	in.PlayerId = "10"
+	in.CurrencyId = 1
+	in.Price = 41234
+	in.Rnd = 42321
+	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e5300"
+	address, err := in.SignerAddress()
+	assert.NilError(t, err)
+	assert.Equal(t, address.Hex(), "0x0")
+}
