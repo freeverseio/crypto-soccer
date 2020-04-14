@@ -103,11 +103,14 @@ func HashSellMessage(
 		},
 	}
 
-	bytes, _ := arguments.Pack(
+	bytes, err := arguments.Pack(
 		hashPrivateMessage,
 		big.NewInt(validUntil),
 		playerId,
 	)
+	if err != nil {
+		return [32]byte{}, err
+	}
 	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
 
 	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)

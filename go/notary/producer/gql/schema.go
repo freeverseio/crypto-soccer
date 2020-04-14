@@ -16,6 +16,7 @@ const Schema = `
 	}
 
 	input CancelAuctionInput {
+  		signature: String!
 		id: ID!
 	}
 

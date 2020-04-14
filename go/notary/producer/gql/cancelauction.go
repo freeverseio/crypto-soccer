@@ -3,15 +3,12 @@ package gql
 import (
 	"errors"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
-type CancelAuctionInput struct {
-	ID graphql.ID
-}
-
-func (b *Resolver) CancelAuction(args struct{ Input CancelAuctionInput }) (graphql.ID, error) {
+func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) (graphql.ID, error) {
 	if b.ch != nil {
 		select {
 		case b.ch <- args.Input:
