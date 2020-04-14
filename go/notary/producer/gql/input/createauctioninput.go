@@ -1,6 +1,7 @@
 package input
 
 import (
+	"encoding/hex"
 	"math/big"
 	"strconv"
 
@@ -38,7 +39,11 @@ func (b CreateAuctionInput) VerifySignature() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return signer.VerifySignature(hash[:], []byte(b.Signature))
+	sign, err := hex.DecodeString(b.Signature)
+	if err != nil {
+		return false, err
+	}
+	return signer.VerifySignature(hash[:], sign)
 }
 
 func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
