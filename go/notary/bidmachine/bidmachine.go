@@ -130,13 +130,14 @@ func (b *BidMachine) processPaying() error {
 			if err != nil {
 				return err
 			}
-			auctionHiddenPrice, err := b.signer.HashPrivateMsg(b.auction.CurrencyID, b.auction.Price, b.auction.Rnd)
+			auctionHiddenPrice, err := signer.HashPrivateMsg(b.auction.CurrencyID, b.auction.Price, b.auction.Rnd)
 			if err != nil {
 				return err
 			}
 			var sig [2][32]byte
 			var sigV uint8
 			_, err = b.signer.HashBidMessage(
+				b.contracts.Market,
 				b.auction.CurrencyID,
 				b.auction.Price,
 				b.auction.Rnd,
@@ -150,7 +151,7 @@ func (b *BidMachine) processPaying() error {
 			if err != nil {
 				return err
 			}
-			sig[0], sig[1], sigV, err = b.signer.RSV(b.bid.Signature)
+			sig[0], sig[1], sigV, err = signer.RSV(b.bid.Signature)
 			if err != nil {
 				return err
 			}

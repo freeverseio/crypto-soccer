@@ -105,11 +105,11 @@ func TestExpiredBidNoTransit(t *testing.T) {
 func TestAcceptBidTransitToPaying(t *testing.T) {
 	auction := &storage.Auction{
 		State:      storage.AUCTION_PAYING,
-		ValidUntil: big.NewInt(10),
+		ValidUntil: 10,
 	}
 	bid := &storage.Bid{
 		State:           storage.BIDACCEPTED,
-		PaymentDeadline: big.NewInt(3),
+		PaymentDeadline: 3,
 	}
 	machine, err := bidmachine.New(
 		newTestMarket(),
@@ -128,7 +128,7 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	if bid.State != storage.BIDPAYING {
 		t.Fatalf("Wrong state %v", bid.State)
 	}
-	if bid.PaymentDeadline.String() != "21610" {
+	if bid.PaymentDeadline != 21610 {
 		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
 	}
 }
@@ -138,11 +138,11 @@ func TestBidPayingExpires(t *testing.T) {
 	auction := &storage.Auction{
 		Price:      big.NewInt(3),
 		State:      storage.AUCTION_PAYING,
-		ValidUntil: big.NewInt(now - 3),
+		ValidUntil: now - 3,
 	}
 	bid := &storage.Bid{
 		State:           storage.BIDPAYING,
-		PaymentDeadline: big.NewInt(now - 1),
+		PaymentDeadline: now - 1,
 	}
 	machine, err := bidmachine.New(
 		newTestMarket(),
@@ -158,7 +158,7 @@ func TestBidPayingExpires(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bid.PaymentDeadline.String() != big.NewInt(now-1).String() {
+	if bid.PaymentDeadline != now-1 {
 		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
 	}
 	if bid.State != storage.BIDFAILED {
