@@ -183,6 +183,11 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	}
 	// ordening all the teams by ranking points
 	sort.Slice(orgMap[:], func(i, j int) bool {
+		if orgMap[i].RankingPoints == orgMap[j].RankingPoints {
+			teamID0, _ := new(big.Int).SetString(orgMap[i].TeamID, 10)
+			teamID1, _ := new(big.Int).SetString(orgMap[j].TeamID, 10)
+			return teamID0.Cmp(teamID1) > 1
+		}
 		return orgMap[i].RankingPoints > orgMap[j].RankingPoints
 	})
 	// create the new leagues
