@@ -35,9 +35,7 @@ const deployContractsToDelegateTo = async (proxyAddress, Assets, Market = "", Up
     return [assets, market, updates, addresses, allSelectors, names];
 }
 
-const deactivateAndActivate = async (proxy, addresses, allSelectors, names, deactivateContractIds, firstNewContractId) => {
-    if (firstNewContractId <= Math.max.apply(null, deactivateContractIds)) throw new Error("newContractId should be larger than any contract to deactivate!!");
-
+const addContracts = async (proxy, addresses, allSelectors, names, firstNewContractId) => {
     // Add all contracts to ids = [firstNewContractId, firstNewContractId+1,...]
     nContracts = namesStr.length;
     newContractIds = [];
@@ -47,8 +45,7 @@ const deactivateAndActivate = async (proxy, addresses, allSelectors, names, deac
             tx0 = await proxy.addContract(newContractIds[c], addresses[c], allSelectors[c], names[c]).should.be.fulfilled;
         }
     }
-    // Activate all contracts atomically
-    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds, newContractIds).should.be.fulfilled;
+    return newContractIds;
 }
 
 function extractSelectorsFromAbi(abi) {
@@ -104,15 +101,57 @@ function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates) {
     console.log("No collisions were found with the proxy.")
 }
 
+function appendVersionNumberToNames(names, versionNumber) {
+    newNames = [...names];
+    for (n = 0; n < newNames.length; n++) newNames[n] = newNames[n] + versionNumber.toString();
+    return newNames;
+}
 
-const firstDeploy = async (deployer, Proxy, Assets, Market = "", Updates = "") => {
+// - versionNumber = 0 for first deploy
+// - proxyAddress needs only be specified if versionNumber > 0.
+const firstDeploy = async (versionNumber, deployer, Proxy, proxyAddress = "0x0", Assets, Market = "", Updates = "") => {
+    // Inform about possible collisions between contracts to delegate (among them, and with proxy)
     informNoCollisions(Proxy, Assets, Market, Updates);
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
-    const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
-    const proxy = await deployer.deploy(Proxy, proxySelectors).should.be.fulfilled;
+    
+    // Next: proxy is built either by deploy, or by assignement to already deployed address
+    var proxy;
+    if (versionNumber == 0) {
+        const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
+        proxy = await deployer.deploy(Proxy, proxySelectors).should.be.fulfilled;
+    } else {
+        proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
+    }
+    
+    // The following line does:
+    //  - deploy new contracts (not proxy) to delegate to, and return their addresses
+    //  - build interfaces to those contracts which point to the proxy address
     const {0: assets, 1: market, 2: updates, 3: addresses, 4: allSelectors, 5: names} = await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates);
-    // contactId = 0 is null, so the first available contract on a clean deploy is 1
-    await deactivateAndActivate(proxy, addresses, allSelectors, names, deactivateContractIds = [], firstNewContractId = 1);
+    const versionedNames = appendVersionNumberToNames(names, versionNumber);
+
+    // Add contracts to the list of contracts that proxy may delegate to (do not activate yet)
+    //  - contactId = 0 is null, so the first available contract on a clean deploy is 1, and every version adds 3 contracts
+    const firstNewContractId = 1 + versionNumber * 3;
+    const nContractsNum = await proxy.countContracts().should.be.fulfilled;
+    if (firstNewContractId != nContractsNum.toNumber()) throw new Error("mismatch between firstNewContractId and nContractsNum");
+    const newContractIds = await addContracts(proxy, addresses, allSelectors, versionedNames, firstNewContractId);
+
+    // Build list of contracts to deactivate
+    //  - example: when deploying v1, we have activated already [0,1,2,3]
+    //  - so newId = 4, and we need to deactivate [1,2,3]
+    var deactivateContractIds;
+    if (versionNumber == 0) {
+        deactivateContractIds = [];
+    } else {
+        deactivateContractIds = Array.from(new Array(3), (x,i) => firstNewContractId - 3 + i);
+    }
+
+    // Deactivate and Activate all contracts atomically
+    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds = [], newContractIds).should.be.fulfilled;
+
+    if (versionNumber != 0) return [assets, market, updates];
+    
+    // If this is the first deploy, init the universe:
     
     await updates.initUpdates().should.be.fulfilled;
     await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
@@ -133,26 +172,6 @@ const firstDeploy = async (deployer, Proxy, Assets, Market = "", Updates = "") =
       await assets.initSingleTZ(10).should.be.fulfilled;
     }
     console.log("Initing ... done");
-
-    return [assets, market, updates];
-}
-
-const deployUpdate = async (deployer, proxyAddress, Assets, Market = "", Updates = "") => {
-    informNoCollisions(Proxy, Assets, Market, Updates);
-    assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
-    const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
-
-    const proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
-    const {0: assets, 1: market, 2: updates} = await deployDelegate(proxy, Assets, Market, Updates);
-
-    result = await proxy.countContracts().should.be.fulfilled;
-    if (result.toNumber() != 4) throw new Error("there should be 4 contracts inside Proxy: null + assets + market + updates, but it is not the case");
-
-    selectors = delegateUtils.extractSelectorsFromAbi(Assets.abi);
-    tx0 = await proxy.addContract(contractId = 0, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.rejected;
-    tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.rejected;
-    contractId = 1;
-    tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
 
     return [assets, market, updates];
 }

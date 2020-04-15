@@ -26,8 +26,8 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
     
-    const {0: assets, 1: market, 2: updates} = await delegateUtils.firstDeploy(deployer, Proxy, Assets, Market, Updates);
-    // const {0: assets, 1: market, 2: updates} = await delegateUtils.deployUpdate(deployer, proxyAddress, Assets, Market, Updates);
+    const {0: assets, 1: market, 2: updates} = await delegateUtils.firstDeploy(versionNumber = 0, deployer, Proxy, proxyAddress = "0x0", Assets, Market, Updates);
+    // const {0: assets, 1: market, 2: updates} = await delegateUtils.firstDeploy(versionNumber = 1, deployer, Proxy, proxyAddress, Assets, Market, Updates);
 
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
