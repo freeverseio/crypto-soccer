@@ -5,7 +5,7 @@ CREATE TABLE auctions (
     currency_id INT NOT NULL,
     price INT NOT NULL,
     rnd INT NOT NULL,
-    valid_until TEXT NOT NULL,
+    valid_until BIGINT NOT NULL,
     signature TEXT NOT NULL,
     state auction_state NOT NULL,
     state_extra TEXT NOT NULL DEFAULT '',

@@ -2,6 +2,8 @@ package consumer
 
 import (
 	"database/sql"
+	"fmt"
+	"strconv"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -18,7 +20,9 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 	auction.PlayerID = in.PlayerId
 	auction.CurrencyID = int(in.CurrencyId)
 	auction.Price = int(in.Price)
-	auction.ValidUntil = in.ValidUntil
+	if auction.ValidUntil, err = strconv.ParseInt(in.ValidUntil, 10, 64); err != nil {
+		fmt.Printf("%d of type %T", auction.ValidUntil, auction.ValidUntil)
+	}
 	auction.Signature = in.Signature
 	auction.State = storage.AuctionStarted
 	auction.StateExtra = ""

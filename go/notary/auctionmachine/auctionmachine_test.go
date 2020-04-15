@@ -37,7 +37,7 @@ func TestAuctionStarted(t *testing.T) {
 		m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
-		assert.Equal(t, m.State(), storage.AUCTION_STARTED)
+		assert.Equal(t, m.State(), storage.AuctionStarted)
 	})
 
 	t.Run("expired", func(t *testing.T) {
