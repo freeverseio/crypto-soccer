@@ -140,6 +140,16 @@ contract('Proxy', (accounts) => {
         contractId = 3;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         tx1 = await proxy.deactivateAndActivateContracts(deactivate = [2], activate = [3]).should.be.fulfilled;
+
+        now = Math.floor(Date.now()/1000);
+        truffleAssert.eventEmitted(tx1, "ContractsActivated", (event) => { 
+            console.log();
+            return event.contractIds[0].toNumber().should.be.equal(3) && (Math.abs(event.time.toNumber()-now) < 30).should.be.equal(true)
+        });
+        truffleAssert.eventEmitted(tx1, "ContractsDeactivated", (event) => { 
+            return event.contractIds[0].toNumber().should.be.equal(2) && (Math.abs(event.time.toNumber()-now) < 30).should.be.equal(true)
+        });
+
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(2).should.be.fulfilled;
         isActive.should.be.equal(false);
         await assets.init().should.be.rejected;
