@@ -14,8 +14,9 @@ func (b *AuctionMachine) processStarted() error {
 	if b.Auction.State != storage.AuctionStarted {
 		return errors.New("Started: wrong state")
 	}
-	now := time.Now().Unix()
 
+	// check if expired
+	now := time.Now().Unix()
 	if now > b.Auction.ValidUntil {
 		b.Auction.State = storage.AuctionEnded
 		return nil
@@ -25,6 +26,19 @@ func (b *AuctionMachine) processStarted() error {
 	if playerId == nil {
 		return fmt.Errorf("Invalid PlayerId %x", b.Auction.PlayerID)
 	}
+
+	// check if is frozen
+	isFrozen, err := b.contracts.Market.IsPlayerFrozenInAnyMarket(&bind.CallOpts{}, playerId)
+	if err != nil {
+		return err
+	}
+	if isFrozen {
+		b.Auction.State = storage.AuctionFailed
+		b.Auction.StateExtra = "auction is frozen in other market"
+		return nil
+	}
+
+	// check if seller is the owner
 	owner, err := b.contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
 	if err != nil {
 		return err

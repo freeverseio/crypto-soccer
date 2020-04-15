@@ -41,6 +41,10 @@ commands:
     description: "Submit cryptosoccer schema in database"
     steps:
       - run: cd universe.db && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f $f; done
+  submit_market_db_schema:
+    description: "Submit cryptosoccer schema in database"
+    steps:
+      - run: cd market.db && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d market -h localhost -p 5432 -f $f; done
   generate_contracts_code:
     description: "Compile and generate code for the services that need to communicate with them"
     steps:
@@ -99,6 +103,7 @@ jobs:
     steps:
       - checkout
       - generate_contracts_code
+      - submit_market_db_schema
       - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/notary/auctionmachine && go test ./...
       - run: cd go/notary/bidmachine && go test ./...
