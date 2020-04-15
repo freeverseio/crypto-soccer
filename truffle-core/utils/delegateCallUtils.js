@@ -48,6 +48,13 @@ const addContracts = async (proxy, addresses, allSelectors, names, firstNewContr
     return newContractIds;
 }
 
+const assertActiveStatusIs = async (contractIds, status, proxy) => {
+    for (c = 0; c < contractIds.length; c++) {
+        var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractIds[c]).should.be.fulfilled;
+        if (isActive != status) throw new Error("unexpected contract state");
+    }
+}
+
 function extractSelectorsFromAbi(abi) {
     functions = [];
     for (i = 0; i < abi.length; i++) { 
@@ -151,9 +158,14 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
         deactivateContractIds = Array.from(new Array(3), (x,i) => firstNewContractId - 3 + i);
     }
 
+    // await assertActiveStatusIs(deactivateContractIds, true, proxy);
     // Deactivate and Activate all contracts atomically
     tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds, newContractIds).should.be.fulfilled;
 
+    // await assertActiveStatusIs(deactivateContractIds, false, proxy);
+    // await assertActiveStatusIs(newContractIds, true, proxy);
+
+    
     return [proxy, assets, market, updates];
 }
 
