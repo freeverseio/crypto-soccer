@@ -13,6 +13,7 @@ const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
+const Updates = artifacts.require('Updates');
 const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
 
@@ -239,16 +240,16 @@ async function completePlayerAuction(
 
 contract("Market", accounts => {
   let ok;
-
+  
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
+    depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates);
+    proxy  = depl[0];
+    assets = depl[1];
+    market = depl[2];
+    
     constants = await ConstantsGetters.new().should.be.fulfilled;
-    depl = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
-    proxy = depl[0]
-    assets = depl[1]
-    market = depl[2]
-
     marketCrypto = await MarketCrypto.new().should.be.fulfilled;
 
     // done with delegate calls
