@@ -42,12 +42,14 @@ func New(
 
 func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 	switch b.Auction.State {
-	case storage.AUCTION_STARTED:
+	case storage.AuctionStarted:
 		return b.processStarted()
 	case storage.AUCTION_ASSET_FROZEN:
-		return b.processAssetFrozen()
+		// return b.processAssetFrozen()
+		return nil
 	case storage.AUCTION_PAYING:
-		return b.processPaying(market)
+		// return b.processPaying(market)
+		return nil
 	case storage.AuctionCancelled:
 		return nil
 	case storage.AuctionFailed:

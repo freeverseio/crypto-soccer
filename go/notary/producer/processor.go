@@ -6,19 +6,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type ProcessEvent struct {
-	c chan interface{}
-}
+type ProcessEvent struct{}
 
-func NewProcessor(c chan interface{}, duration time.Duration) {
+func NewProcessor(ch chan interface{}, duration time.Duration) {
+	if ch == nil {
+		log.Error("Nil channer")
+		return
+	}
+
 	for {
 		time.Sleep(duration)
-		if c != nil {
-			select {
-			case c <- ProcessEvent{}:
-			default:
-				log.Warning("channel is full")
-			}
+		select {
+		case ch <- ProcessEvent{}:
+		default:
+			log.Warning("channel is full")
 		}
 	}
 }

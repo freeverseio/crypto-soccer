@@ -3,22 +3,33 @@ package gql
 import (
 	"errors"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
-type CancelAuctionInput struct {
-	ID graphql.ID
-}
+func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) (graphql.ID, error) {
+	log.Debugf("CancelAuction %v", args)
 
-func (b *Resolver) CancelAuction(args struct{ Input CancelAuctionInput }) (graphql.ID, error) {
-	if b.ch != nil {
-		select {
-		case b.ch <- args.Input:
-		default:
-			log.Warning("channel is full")
-			return "ciao", errors.New("channel is full")
-		}
+	id := args.Input.ID
+
+	if b.ch == nil {
+		return graphql.ID(id), errors.New("internal error: no channel")
 	}
-	return "cippo", nil
+
+	isValid, err := args.Input.VerifySignature()
+	if err != nil {
+		return graphql.ID(id), err
+	}
+	if !isValid {
+		return graphql.ID(id), errors.New("Invalid signature")
+	}
+
+	select {
+	case b.ch <- args.Input:
+	default:
+		log.Warning("channel is full")
+		return graphql.ID(id), errors.New("channel is full")
+	}
+	return graphql.ID(id), nil
 }

@@ -1,7 +1,9 @@
 package input
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"math/big"
 	"strconv"
 
@@ -16,6 +18,13 @@ type CreateAuctionInput struct {
 	Price      int32
 	Rnd        int32
 	ValidUntil string
+}
+
+func (b CreateAuctionInput) ID() string {
+	h := sha256.New()
+
+	h.Write([]byte(fmt.Sprintf("%s%s%d%d%d%s", b.Signature, b.PlayerId, b.CurrencyId, b.Price, b.Rnd, b.ValidUntil)))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (b CreateAuctionInput) Hash() (common.Hash, error) {
