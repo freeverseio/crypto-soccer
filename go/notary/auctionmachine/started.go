@@ -2,8 +2,11 @@ package auctionmachine
 
 import (
 	"errors"
+	"fmt"
+	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
@@ -18,7 +21,17 @@ func (b *AuctionMachine) processStarted() error {
 		return nil
 	}
 
-	if len(b.Bids) == 0 {
+	playerId, _ := new(big.Int).SetString(b.Auction.PlayerID, 10)
+	if playerId == nil {
+		return fmt.Errorf("Invalid PlayerId %x", b.Auction.PlayerID)
+	}
+	owner, err := b.contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
+	if err != nil {
+		return err
+	}
+	if owner.String() != b.Auction.Seller {
+		b.Auction.State = storage.AuctionFailed
+		b.Auction.StateExtra = fmt.Sprintf("seller %s is not the owner %s", b.Auction.Seller, owner.String())
 		return nil
 	}
 

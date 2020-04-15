@@ -25,6 +25,8 @@ func TestAuctionStarted(t *testing.T) {
 	t.Run("not expired", func(t *testing.T) {
 		auction := storage.NewAuction()
 		auction.ValidUntil = time.Now().Unix() + 100
+		auction.PlayerID = "274877906944"
+		auction.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"
 		m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
@@ -38,6 +40,17 @@ func TestAuctionStarted(t *testing.T) {
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.State(), storage.AuctionEnded)
+	})
+
+	t.Run("seller is not the owner", func(t *testing.T) {
+		auction := storage.NewAuction()
+		auction.ValidUntil = time.Now().Unix() + 100
+		auction.PlayerID = "274877906944"
+		m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
+		assert.NilError(t, err)
+		assert.NilError(t, m.Process(nil))
+		assert.Equal(t, m.State(), storage.AuctionFailed)
+		assert.Equal(t, m.Auction.StateExtra, "seller  is not the owner 0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
 	})
 }
 
