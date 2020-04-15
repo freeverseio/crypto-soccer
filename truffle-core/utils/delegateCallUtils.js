@@ -9,7 +9,7 @@ const deployPair = async (proxyAddress, Contr) => {
     return [contr, contrAsLib, selectors];
 };
 
-const deployContractsToDelegateTo = async (proxyAddress, Assets, Market = "", Updates = "") => {
+const deployContractsToDelegateTo = async (proxyAddress, Assets, Market, Updates) => {
     // setting up StorageProxy delegate calls to Assets
     const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(proxyAddress, Assets);
     const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(proxyAddress, Market);
@@ -99,7 +99,7 @@ function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates) {
     duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Updates.abi)));
     if (duplicates.length != 0) throw new Error("duplicates found proxy-Updates!!!");
 
-    console.log("No collisions were found with the proxy.")
+    // console.log("No collisions were found with the proxy.")
 }
 
 function appendVersionNumberToNames(names, versionNumber) {
@@ -112,9 +112,9 @@ function appendVersionNumberToNames(names, versionNumber) {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified if versionNumber > 0.
-const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market = "", Updates = "") => {
+const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market, Updates) => {
     // Inform about possible collisions between contracts to delegate (among them, and with proxy)
-    informNoCollisions(Proxy, Assets, Market, Updates);
+    // informNoCollisions(Proxy, Assets, Market, Updates);
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
     
     // Next: proxy is built either by deploy, or by assignement to already deployed address
