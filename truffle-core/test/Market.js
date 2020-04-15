@@ -248,11 +248,11 @@ contract("Market", accounts => {
     proxy  = depl[0];
     assets = depl[1];
     market = depl[2];
+    // done with delegate calls
     
     constants = await ConstantsGetters.new().should.be.fulfilled;
     marketCrypto = await MarketCrypto.new().should.be.fulfilled;
 
-    // done with delegate calls
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     await assets.init().should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;

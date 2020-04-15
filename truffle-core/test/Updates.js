@@ -39,12 +39,14 @@ contract('Updates', (accounts) => {
     };
     
     beforeEach(async () => {
-        constants = await ConstantsGetters.new().should.be.fulfilled;
-        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
-        depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
-        assets = depl[0];
-        updates = depl[2];
+        depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates);
+        proxy  = depl[0];
+        assets = depl[1];
+        market = depl[2];
+        updates = depl[3];
         // // done with delegate calls
+
+        constants = await ConstantsGetters.new().should.be.fulfilled;
         await updates.initUpdates().should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
