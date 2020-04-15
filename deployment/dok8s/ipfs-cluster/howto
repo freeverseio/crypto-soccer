@@ -11,3 +11,10 @@ ipfs-cluster-service daemon --upgrade --bootstrap /ip4/178.128.141.147/tcp/9096/
 
 # ipf-cluster-follow:
 ipfs-cluster-follow ipfs-cluster run --init goalrevolution.collab.ipfs.cluster.io.gorengine.com
+
+# configuration available thru gateway
+https://gateway.ipfs.io/ipfs/QmbWX9fm2vMuydURH5Qr5j9BZZHh15z5cTa5ac6EhpoQzR
+https://ipfs.io/ipfs/QmbWX9fm2vMuydURH5Qr5j9BZZHh15z5cTa5ac6EhpoQzR
+
+# resolve ipns
+ipfs name resolve goalrevolution.collab.ipfs.cluster.io.gorengine.com

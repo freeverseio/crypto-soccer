@@ -78,6 +78,9 @@ spec:
   - name: swarm
     port: 4001
     targetPort: swarm
+  - name: api
+    port: 5001
+    targetPort: api
   - name: cluster-swarm
     port: 9096
     targetPort: cluster-swarm
