@@ -28,7 +28,7 @@ module.exports = function (deployer, network, accounts) {
     
     const versionNumber = 0;
     const proxyAddress  = "0x0";
-    const {0: assets, 1: market, 2: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
+    const {0: proxy, 1: assets, 2: market, 3: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
   
     if (versionNumber == 0) {
       await updates.initUpdates().should.be.fulfilled;
@@ -79,6 +79,7 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
     namesAndAddresses = [
+      ["PROXY", proxy.address],
       ["ASSETS", assets.address],
       ["MARKET", market.address],
       ["ENGINE", engine.address],

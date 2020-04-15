@@ -59,6 +59,7 @@ function extractSelectorsFromAbi(abi) {
 }
 
 function toBytes32(name) { return web3.utils.utf8ToHex(name); }
+function fromBytes32(name) { return web3.utils.hexToUtf8(name); }
 
 
 function findDuplicates(data) {
@@ -103,7 +104,9 @@ function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates) {
 
 function appendVersionNumberToNames(names, versionNumber) {
     newNames = [...names];
-    for (n = 0; n < newNames.length; n++) newNames[n] = newNames[n] + versionNumber.toString();
+    for (n = 0; n < newNames.length; n++) {
+        newNames[n] = toBytes32( fromBytes32(newNames[n]) + versionNumber.toString() );
+    }
     return newNames;
 }
 
@@ -151,7 +154,7 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
     // Deactivate and Activate all contracts atomically
     tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds, newContractIds).should.be.fulfilled;
 
-    return [assets, market, updates];
+    return [proxy, assets, market, updates];
 }
 
 module.exports = {
