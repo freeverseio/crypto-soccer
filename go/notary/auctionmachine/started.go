@@ -18,13 +18,9 @@ func (b *AuctionMachine) processStarted() error {
 		return nil
 	}
 
-	// 	if len(m.Bids) == 0 {
-	// 		if now > m.Auction.ValidUntil {
-	// 			log.Infof("Auction %v STARTED -> %v", m.Auction.UUID, m.Auction.State)
-	// 			m.Auction.State = storage.AuctionEnded
-	// 		}
-	// 		return nil
-	// 	}
+	if len(b.Bids) == 0 {
+		return nil
+	}
 
 	// 	// TODO trying to freeze the asset
 	// 	auctionHiddenPrice, err := signer.HashPrivateMsg(
