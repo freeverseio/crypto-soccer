@@ -109,7 +109,7 @@ function appendVersionNumberToNames(names, versionNumber) {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified if versionNumber > 0.
-const firstDeploy = async (versionNumber, deployer, Proxy, proxyAddress = "0x0", Assets, Market = "", Updates = "") => {
+const deploy = async (versionNumber, deployer, Proxy, proxyAddress = "0x0", Assets, Market = "", Updates = "") => {
     // Inform about possible collisions between contracts to delegate (among them, and with proxy)
     informNoCollisions(Proxy, Assets, Market, Updates);
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
@@ -122,18 +122,20 @@ const firstDeploy = async (versionNumber, deployer, Proxy, proxyAddress = "0x0",
     } else {
         proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
     }
-    
+
+    // Check that the number of contracts already declared in Proxy is as expected.
+    //  - contactId = 0 is null, so the first available contract on a clean deploy is 1, and every version adds 3 contracts
+    const firstNewContractId = 1 + versionNumber * 3;
+    const nContractsNum = await proxy.countContracts().should.be.fulfilled;
+    if (firstNewContractId != nContractsNum.toNumber()) throw new Error("mismatch between firstNewContractId and nContractsNum");
+
     // The following line does:
     //  - deploy new contracts (not proxy) to delegate to, and return their addresses
     //  - build interfaces to those contracts which point to the proxy address
     const {0: assets, 1: market, 2: updates, 3: addresses, 4: allSelectors, 5: names} = await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates);
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
-    // Add contracts to the list of contracts that proxy may delegate to (do not activate yet)
-    //  - contactId = 0 is null, so the first available contract on a clean deploy is 1, and every version adds 3 contracts
-    const firstNewContractId = 1 + versionNumber * 3;
-    const nContractsNum = await proxy.countContracts().should.be.fulfilled;
-    if (firstNewContractId != nContractsNum.toNumber()) throw new Error("mismatch between firstNewContractId and nContractsNum");
+    // Adds new contracts to proxy
     const newContractIds = await addContracts(proxy, addresses, allSelectors, versionedNames, firstNewContractId);
 
     // Build list of contracts to deactivate
@@ -147,7 +149,7 @@ const firstDeploy = async (versionNumber, deployer, Proxy, proxyAddress = "0x0",
     }
 
     // Deactivate and Activate all contracts atomically
-    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds = [], newContractIds).should.be.fulfilled;
+    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds, newContractIds).should.be.fulfilled;
 
     if (versionNumber != 0) return [assets, market, updates];
     
@@ -180,6 +182,6 @@ module.exports = {
     extractSelectorsFromAbi,
     informNoCollisions,
     assertNoCollisionsWithProxy,
-    firstDeploy,
+    deploy,
 }
 
