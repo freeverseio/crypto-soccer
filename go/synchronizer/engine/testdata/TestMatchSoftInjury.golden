@@ -1203,10 +1203,10 @@
 			Minute: (int16) 3,
 			Type: (int16) 0,
 			Team: (int16) 1,
-			ManagesToShoot: (bool) false,
+			ManagesToShoot: (bool) true,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 4,
-			SecondaryPlayer: (int16) -1
+			PrimaryPlayer: (int16) 11,
+			SecondaryPlayer: (int16) 0
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 4,

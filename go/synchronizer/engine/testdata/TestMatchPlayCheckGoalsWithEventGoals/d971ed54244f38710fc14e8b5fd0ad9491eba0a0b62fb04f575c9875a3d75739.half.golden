@@ -11,8 +11,8 @@
 			00000000  d9 71 ed 54 24 4f 38 71  0f c1 4e 8b 5f d0 ad 94  |.q.T$O8q..N._...|
 			00000010  91 eb a0 a0 b6 2f b0 4f  57 5c 98 75 a3 d7 57 39  |...../.OW\.u..W9|
 		},
-		HomeGoals: (uint8) 1,
-		VisitorGoals: (uint8) 1,
+		HomeGoals: (uint8) 2,
+		VisitorGoals: (uint8) 2,
 		State: (storage.MatchState) (len=4) "half",
 		StateExtra: (string) "",
 		StartEpoch: (int64) 0
@@ -37,7 +37,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1809253036428145466620021171343706341282187766857867072281976231223967613041"
+			MatchLog: (string) (len=76) "1809253036428145466620021171343706341282187782069674275021449625124785359474"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -627,7 +627,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1809253036428145466620021171349682940995393973859798644779054999306825105553"
+			MatchLog: (string) (len=76) "1809253036428145466620021171349682940995393985268654046833772634723122678114"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -1203,10 +1203,10 @@
 			Minute: (int16) 2,
 			Type: (int16) 0,
 			Team: (int16) 1,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 9,
-			SecondaryPlayer: (int16) -1
+			ManagesToShoot: (bool) true,
+			IsGoal: (bool) true,
+			PrimaryPlayer: (int16) 12,
+			SecondaryPlayer: (int16) 8
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 5,
@@ -1266,19 +1266,19 @@
 			Minute: (int16) 31,
 			Type: (int16) 0,
 			Team: (int16) 0,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 10,
-			SecondaryPlayer: (int16) -1
+			ManagesToShoot: (bool) true,
+			IsGoal: (bool) true,
+			PrimaryPlayer: (int16) 12,
+			SecondaryPlayer: (int16) 12
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 34,
 			Type: (int16) 0,
 			Team: (int16) 0,
-			ManagesToShoot: (bool) false,
+			ManagesToShoot: (bool) true,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 10,
-			SecondaryPlayer: (int16) -1
+			PrimaryPlayer: (int16) 9,
+			SecondaryPlayer: (int16) 0
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 37,
