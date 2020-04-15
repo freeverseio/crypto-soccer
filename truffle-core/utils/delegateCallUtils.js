@@ -109,7 +109,7 @@ function appendVersionNumberToNames(names, versionNumber) {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified if versionNumber > 0.
-const deploy = async (versionNumber, deployer, Proxy, proxyAddress = "0x0", Assets, Market = "", Updates = "") => {
+const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market = "", Updates = "") => {
     // Inform about possible collisions between contracts to delegate (among them, and with proxy)
     informNoCollisions(Proxy, Assets, Market, Updates);
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
@@ -118,7 +118,7 @@ const deploy = async (versionNumber, deployer, Proxy, proxyAddress = "0x0", Asse
     var proxy;
     if (versionNumber == 0) {
         const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
-        proxy = await deployer.deploy(Proxy, proxySelectors).should.be.fulfilled;
+        proxy = await Proxy.new(proxySelectors).should.be.fulfilled;
     } else {
         proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
     }
@@ -150,30 +150,6 @@ const deploy = async (versionNumber, deployer, Proxy, proxyAddress = "0x0", Asse
 
     // Deactivate and Activate all contracts atomically
     tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds, newContractIds).should.be.fulfilled;
-
-    if (versionNumber != 0) return [assets, market, updates];
-    
-    // If this is the first deploy, init the universe:
-    
-    await updates.initUpdates().should.be.fulfilled;
-    await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
-
-    // Initializing Assets differently in XDAI or testing:
-    console.log("Setting up ... done");
-    if (deployer.network === "xdai") {
-      await assets.init().should.be.fulfilled;
-    } else if (deployer.network === "local") {
-      console.log("WARNING ... only timezone 1")
-      await assets.initSingleTZ(1).should.be.fulfilled;
-      const value = "1000000000000000000";
-      const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
-      console.log("Transfer " + value + " to " + to);
-      await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
-    } else {
-      console.log("WARNING ... only timezone 10")
-      await assets.initSingleTZ(10).should.be.fulfilled;
-    }
-    console.log("Initing ... done");
 
     return [assets, market, updates];
 }

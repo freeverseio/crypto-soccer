@@ -56,7 +56,7 @@ contract('Proxy', (accounts) => {
     });
 
     it('full deploy and tests selectors against expected hardcoded selectors', async () => {
-        const {0: ass, 1: mkt, 2: updt, 3: allSelectors} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
+        const {0: ass, 1: mkt, 2: updt, 3: allSelectors} = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
         var result = JSON.stringify(allSelectors);
         var fs = require('fs');
         var expected;
@@ -80,7 +80,7 @@ contract('Proxy', (accounts) => {
     });
     
     it('permissions check on full deploy: everyone can call delegates, currently, until we set restrictions inside Assets contract', async () => {
-        depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
+        depl = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
         assets = depl[0]
         await assets.init({from: ALICE}).should.be.fulfilled;
         await assets.countCountries(tz = 1, {from: ALICE}).should.be.fulfilled;

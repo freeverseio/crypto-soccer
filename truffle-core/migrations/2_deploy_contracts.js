@@ -28,8 +28,30 @@ module.exports = function (deployer, network, accounts) {
     
     const versionNumber = 0;
     const proxyAddress  = "0x0";
-    const {0: assets, 1: market, 2: updates} = await delegateUtils.deploy(versionNumber, deployer, Proxy, proxyAddress, Assets, Market, Updates);
+    const {0: assets, 1: market, 2: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
+  
+    if (versionNumber == 0) {
+      await updates.initUpdates().should.be.fulfilled;
+      await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
 
+      // Initializing Assets differently in XDAI or testing:
+      console.log("Setting up ... done");
+      if (deployer.network === "xdai") {
+        await assets.init().should.be.fulfilled;
+      } else if (deployer.network === "local") {
+        console.log("WARNING ... only timezone 1")
+        await assets.initSingleTZ(1).should.be.fulfilled;
+        const value = "1000000000000000000";
+        const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
+        console.log("Transfer " + value + " to " + to);
+        await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
+      } else {
+        console.log("WARNING ... only timezone 10")
+        await assets.initSingleTZ(10).should.be.fulfilled;
+      }
+      console.log("Initing ... done");
+    }
+    
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
