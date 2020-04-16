@@ -296,18 +296,35 @@ function getBaseLog(x, base) {
   return Math.log(x) / Math.log(base);
 }
 
-function createLeafsForOrgMap(day, half, nActiveUsersPerCountry) {
+function trimToLength(x, N) {
+  for (i = x.length; i < N; i++) {
+    assert.equal(x[i], 0, "unexpected non null element");
+  }
+  return Array.from(x, (y,i) => y);
+}
+
+function resizeToLength(x, N) {
+  if (N > x.length) { return zeroPadToLength(x, N); }
+  else { return trimToLength(x, N); }
+}
+
+function createLeafsForOrgMap(day, half, nActiveUsersPerCountry, nExplicitLeaves) {
   league = readCreatedLeagueLeafs();
   // - **nActiveUsersPerCountry** = [nActiveUsersCountry0, nActiveUsersCountry1, ...;]
   leafs = [];
+  leafsRoots = [];
   nCountriesInTZ = nActiveUsersPerCountry.length;
   nLeaguesInTz = 0;
   for (c = 0; c < nCountriesInTZ; c++) { 
       nLeaguesInCountry = Math.ceil(nActiveUsersPerCountry[c]/8);
-      for (l = 0; l < nLeaguesInCountry; l++) leafs = leafs.concat([...league[2 * day + half]]);
+      for (l = 0; l < nLeaguesInCountry; l++) {
+        thisLeague = resizeToLength([...league[2 * day + half]], nExplicitLeaves);
+        leafs.push(thisLeague);
+        leafsRoots = leafsRoots.concat();
+      }
       nLeaguesInTz += nLeaguesInCountry;
   }
-  levelVerifiableByBC = 1+ Math.ceil(getBaseLog(nLeaguesInTz, 2048));
+  levelVerifiableByBC = 2+ Math.ceil(getBaseLog(nLeaguesInTz, 2048));
   return [leafs, levelVerifiableByBC, nLeaguesInTz];
 }                
 

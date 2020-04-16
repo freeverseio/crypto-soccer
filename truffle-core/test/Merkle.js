@@ -3,14 +3,20 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
+
+function nocache(module) {require("fs").watchFile(require("path").resolve(module), () => {delete require.cache[require.resolve(module)]})}
+nocache('../utils/merkleUtils.js');
+delete require.cache['../utils/merkleUtils.js'];
+    
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const merkleUtils = require('../utils/merkleUtils.js');
 
 const Merkle = artifacts.require('Merkle');
+const NULL_BYTES32 = web3.eth.abi.encodeParameter('bytes32','0x0');
 
 
-contract('Assets', (accounts) => {
+contract('Merkle', (accounts) => {
     
     const it2 = async(text, f) => {};
     const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
@@ -37,6 +43,16 @@ contract('Assets', (accounts) => {
         resultBC.should.be.equal(nullHash)
     });
 
+    it('get merkle root with padding', async () => {
+        leafs = Array.from(new Array(16), (x,i) => (i < 6 ? web3.utils.keccak256(i.toString()): NULL_BYTES32));
+        root1 = await merkleUtils.merkleRoot(leafs, nLevels = 4);
+        leafs = Array.from(new Array(6), (x,i) => (i < 6 ? web3.utils.keccak256(i.toString()): NULL_BYTES32));
+        root2 = await merkleUtils.merkleRoot(leafs, nLevels = 4);
+        root1.should.be.equal(root2);
+        root3 = await merkleUtils.merkleRootZeroPad(leafs, nLevels = 4);
+        root1.should.be.equal(root3);
+    });
+    
     it('get merkle root', async () => {
         leafs = Array.from(new Array(4), (x,i) => web3.utils.keccak256(i.toString()));
         rootBC = await merkle.merkleRoot(leafs, nLevels = 2).should.be.fulfilled;

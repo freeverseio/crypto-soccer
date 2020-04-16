@@ -17,14 +17,8 @@ function zeroPadToLength(x, desiredLength) {
   return x.concat(Array.from(new Array(desiredLength - x.length), (x,i) => 0))
 }
 
-function merkleRoot(leafs, nLevels) {
-  // in general, it will enforce that leafs have the length as specified by nLevels.
-  // unless nLevels = -1
-  if (nLevels == -1) {
-    nLevels =  Math.ceil(Math.log2(leafs.length));
-    leafs = zeroPadToLength(leafs, 2**nLevels)       
-  }
-  
+function merkleRootZeroPad(leafs, nLevels) {
+  leafs = zeroPadToLength(leafs, 2**nLevels)       
   _leafs = [...leafs];
   nLeafs = 2**nLevels;
   assert.equal(_leafs.length, nLeafs, "number of leafs is not = pow(2,nLevels)");
@@ -32,6 +26,27 @@ function merkleRoot(leafs, nLevels) {
       nLeafs = Math.floor(nLeafs/2);
       for (pos = 0; pos < nLeafs; pos++) {
         _leafs[pos] = hash_node(_leafs[2 * pos], _leafs[2 * pos + 1]);      
+      }
+  }
+  return _leafs[0];
+}
+
+
+function merkleRoot(leafs, nLevels) {
+  nLeafsNonNull = leafs.length;
+  nLeafs = 2**nLevels;
+  assert.equal(nLeafsNonNull % 2, 0, "only even nLeafsNonNull accepted");
+  assert.equal(nLeafs >= nLeafsNonNull, true, "not enough levels for so many leafs");
+  _leafs = [...leafs];
+
+  for (level = 0; level < nLevels; level++) {
+      nLeafs = Math.floor(nLeafs/2);
+      nLeafsNonNull = Math.min(Math.ceil(nLeafsNonNull/2), nLeafs);
+      for (pos = 0; pos < nLeafsNonNull; pos++) {
+        _leafs[pos] = hash_node(_leafs[2 * pos], _leafs[2 * pos + 1]);      
+      }
+      for (pos = nLeafsNonNull; pos < nLeafs; pos++) {
+        _leafs[pos] = NULL_BYTES32;      
       }
   }
   return _leafs[0];
@@ -160,10 +175,10 @@ function getDataToChallenge(posArray, merkleStruct, nLeafsPerRoot) {
   return [root, proof, roots2submit];
 }
 
-
   module.exports = {
     hash_node,
     merkleRoot,
+    merkleRootZeroPad,
     verify,
     buildProof,
     buildMerkleStruct,
