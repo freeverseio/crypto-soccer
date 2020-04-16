@@ -18,16 +18,16 @@
     "disable_repinning": true,
     "follower_mode": true,
     "peer_addresses": [
-      "/ip4/178.128.141.147/tcp/9096/p2p/12D3KooW9qyokQDee1H7Z3ym1RWXdxzuZpQzmJrp78vnnEKW49F9",
-      "/ip4/178.128.141.147/tcp/9096/p2p/12D3KooWBQ2jpp812nNp1PfzWXaoqnWVm3faMsT4xgrP3EUmPKN4"
+      "/ip4/188.166.134.17/tcp/9096/p2p/12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ",
+      "/ip4/188.166.134.17/tcp/9096/p2p/12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs"
     ]
   },
   "consensus": {
     "crdt": {
-      "cluster_name": "ipfs-cluster",
+      "cluster_name": "gr-ipfs-cluster",
       "trusted_peers": [
-          "12D3KooW9qyokQDee1H7Z3ym1RWXdxzuZpQzmJrp78vnnEKW49F9",
-	  "12D3KooWBQ2jpp812nNp1PfzWXaoqnWVm3faMsT4xgrP3EUmPKN4"
+          "12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ",
+          "12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs"
       ],
       "rebroadcast_interval": "10s",
       "peerset_metric": "ping"

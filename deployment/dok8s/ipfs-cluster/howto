@@ -17,11 +17,19 @@ ipfs-cluster-service daemon --upgrade --bootstrap /ip4/178.128.141.147/tcp/9096/
 
 
 # ipf-cluster-follow:
-ipfs-cluster-follow ipfs-cluster run --init goalrevolution.collab.ipfs.cluster.io.gorengine.com
+ipfs-cluster-follow gr-ipfs-cluster run --init goalrevolution.collab.ipfs.cluster.io.gorengine.com
 
 # configuration available thru gateway
-https://gateway.ipfs.io/ipfs/QmbWX9fm2vMuydURH5Qr5j9BZZHh15z5cTa5ac6EhpoQzR
-https://ipfs.io/ipfs/QmbWX9fm2vMuydURH5Qr5j9BZZHh15z5cTa5ac6EhpoQzR
+https://gateway.ipfs.io/ipfs/QmSQoHyHrzUMijrMgjY3TR9CSupaowy9Mv8pfpVyExGtN5
+https://ipfs.io/ipfs/QmSQoHyHrzUMijrMgjY3TR9CSupaowy9Mv8pfpVyExGtN5
+
+# add configuration
+https://medium.com/coinmonks/how-to-add-site-to-ipfs-and-ipns-f121b4cfc8ee
+ipfs add <config.json>
+ipfs pin add <config_hash>
+ipfs name publish <config_hash>
+ipfs name resolve <peerID>
+https://ipfs.io/ipns/<peerID> or ipfs cat /ipns/<peerID>
 
 # resolve ipns
 ipfs name resolve goalrevolution.collab.ipfs.cluster.io.gorengine.com
