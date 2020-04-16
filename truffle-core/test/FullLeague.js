@@ -27,6 +27,7 @@ const Championships = artifacts.require('Championships');
 contract('FullLeague', (accounts) => {
     const JUST_CHECK_AGAINST_EXPECTED_RESULTS = 0;
     const WRITE_NEW_EXPECTED_RESULTS = 1;
+    const nNonNullLeafsInLeague = 640;
     const nLeafs = 1024;
     const nMatchdays = 14;
     const nMatchesPerDay = 4;
@@ -351,9 +352,9 @@ contract('FullLeague', (accounts) => {
         leagueData = chllUtils.readCreatedLeagueData();
         var leafs = [];
         for (day = 0; day < nMatchdays; day++) {
-            dayLeafs = chllUtils.buildLeafs(leagueData, day, half = 0);
+            dayLeafs = chllUtils.buildLeafs(leagueData, day, half = 0, nNonNullLeafs = nNonNullLeafsInLeague);
             leafs.push([...dayLeafs]);
-            dayLeafs = chllUtils.buildLeafs(leagueData, day, half = 1);
+            dayLeafs = chllUtils.buildLeafs(leagueData, day, half = 1, nNonNullLeafs = nNonNullLeafsInLeague);
             leafs.push([...dayLeafs]);
         }
         if (mode == WRITE_NEW_EXPECTED_RESULTS) {
@@ -371,11 +372,11 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it2('test day 0, half 0', async () => {
+    it('test day 0, half 0', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 0;
         assert.equal(leafs.length, nMatchdays * 2);
-        assert.equal(leafs[day].length, nLeafs);
+        assert.equal(leafs[day].length, nNonNullLeafsInLeague);
         // at end of 1st half we still do not have end-game results nor league points
         for (i = 0; i < 128; i++) {
             assert.equal(leafs[day][i], 0, "unexpected non-null leaf at start of league");
@@ -403,11 +404,11 @@ contract('FullLeague', (accounts) => {
     });
     
 
-    it2('test all days after 2nd half (day = odd)', async () => {
+    it('test all days after 2nd half (day = odd)', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 1;
         assert.equal(leafs.length, nMatchdays * 2);
-        assert.equal(leafs[day].length, nLeafs);
+        assert.equal(leafs[day].length, nNonNullLeafsInLeague);
         // at end of 2nd half we already league points (8 first entries) and have end-game results (8 following entries)
         // On league points, at least 7 should be non-null
         for (day = 1; day < 14; day += 2) {
@@ -468,11 +469,14 @@ contract('FullLeague', (accounts) => {
         }
     });
     
-    it2('challenge unexpected zero values', async () => {
+    it('challenge unexpected zero values', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
-        for (d = 0; d < nMatchdays; d++) {
-            chllUtils.assertExpectedZeroValues([...leafs], d,  half = 1);
-            chllUtils.assertExpectedZeroValues([...leafs], d,  half = 0);
+        for (day = 0; day < nMatchdays; day++) {
+            for (half = 0; half < 2; half++) {
+                leafsThisDay = [...leafs[2 * day + half]];
+                assert.equal(leafsThisDay.length, nNonNullLeafsInLeague);
+                chllUtils.assertExpectedZeroValues(leafsThisDay, day, half, nNonNullLeafsInLeague);
+            }
         }
     });
     
@@ -480,7 +484,7 @@ contract('FullLeague', (accounts) => {
     // - **OrgMap** = [tIdx0, ....tIdxNActive; ...]; max = 34 levels
     // - **UserActions** = [UA$_{tact,0}$, UA$_{train,0}$, ...]; max = 35 levels
     // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
-    it2('create orgmap', async () => {
+    it('create orgmap', async () => {
         // all returns of this function are arrays as a function of TZ_0-based!!!
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         h = web3.utils.keccak256(
@@ -491,15 +495,17 @@ contract('FullLeague', (accounts) => {
         assert.equal(h, '0xaa5ce6abd5de9979adba0ff58246086f9cbd5c970670c834b8045986e19ac063', "orgmap not as expected");
     });
 
-    // level 0: Root
-    // level 1: 2048 leagueRoots (only 24 TZs x 2 Countries = 48 are nonzero)
-    // level 2: 2048 x 640 leagueLeafs
-    it('create struct given an orgmap based on repeated league', async () => {
+    // level 0: Root => emit Root
+    // level 1: 2048 leagueRoots (only 24 TZs x 2 Countries = 48 are nonzero) => Emit 2048 leagueRoots, store new Root
+    // level 2: 2048 x 640 leagueLeafs => emit one of these => only 640 leagueLeafs for one of those roots, store that leagueRoot
+    // level 3: provide 640 leagueLeafs, and BC-challenge.
+    
+    it2('create struct given an orgmap based on repeated league', async () => {
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         tzZeroBased = 2;
         const {0: leafs, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nExplicitLeaves = 640);
         assert.equal(nLeaguesInTz, 2, "nLeagues not as expected");
-        assert.equal(levelVerifiableByBC, 2, "levelVerifiableByBC not as expected");
+        assert.equal(levelVerifiableByBC, 3, "levelVerifiableByBC not as expected");
         assert.equal(leafs.length, 2048, "leafs.length not as expected");
         h = web3.utils.keccak256(nLeaguesInTz.toString() + levelVerifiableByBC.toString() +  JSON.stringify(leafs));
         assert.equal(h, '0xbd81df41ebe2658c29d577a2668cb64a49c973edbd3cf6e117a137efab970755', "leafs not as expected");

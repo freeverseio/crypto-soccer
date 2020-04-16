@@ -61,6 +61,7 @@ function createUniverse(nLevels) {
 
 
 function zeroPadToLength(x, desiredLength) {
+  if (desiredLength <= x.length) return x;
   return x.concat(Array.from(new Array(desiredLength - x.length), (x,i) => 0))
 }
 
@@ -81,7 +82,7 @@ function zeroPadToLength(x, desiredLength) {
 // returns leafs AFTER having played the matches at matchday = day, half = half.
 //  - sorting results:
 //      - idx = day * nMatchesPerDay * 2 + matchInDay * 2 + teamHomeOrAway
-function buildLeafs(leagueDataIn, day, half) {
+function buildLeafs(leagueDataIn, day, half, nNonNullLeafs) {
   // oprate on cloned input for safety:
   lData = clone(leagueDataIn)
   var isNoPointsYet = (half == 0) && (day == 0);
@@ -110,7 +111,7 @@ function buildLeafs(leagueDataIn, day, half) {
           leafs = leafs.concat(zeroPadToLength(teamData, 32));
       }
   }
-  return zeroPadToLength(leafs, nLeafs);
+  return zeroPadToLength(leafs, nNonNullLeafs);
 }
 
 function vec2str(y) {
@@ -229,9 +230,8 @@ function readCreatedLeagueLeafs() {
   return JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
 }
 
-function assertExpectedZeroValues(leafs, day, half) {
-  assert.equal(leafs.length, nMatchdays * 2);
-  dayLeaf = leafs[2 * day + half];
+function assertExpectedZeroValues(dayLeaf, day, half, expectedLength) {
+  assert.equal(dayLeaf.length, expectedLength);
   if (day==0 && half == 0) {
       // at end of 1st half we still do not have league points
       for (i = 0; i < 8; i++) {
@@ -259,11 +259,6 @@ function assertExpectedZeroValues(leafs, day, half) {
   for (i = off; i < 128; i++) {
       assert.equal(dayLeaf[i], 0, "unexpected nonnull element");
   }
-  // no elements beyond last team
-  off = 128 + 32 * 2 * 8;
-  for (i = off; i < 1024; i++) {
-      assert.equal(dayLeaf[i], 0, "unexpected nonnull element");
-  }        
 }
 
 // all returns of this function are arrays as a function of TZ_0-based!!!

@@ -214,20 +214,26 @@ contract('Updates', (accounts) => {
         (turnInDayAfter.toNumber() - turnInDayBefore.toNumber()).should.be.equal(1);
     });
     
-    it2('challenging a tz', async () =>  {
+    // level 0: root
+    // level 1: 2048 league Roots
+    // level 2: 640 leafs for each
+    
+    it('challenging a tz', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
         await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
 
+        nLeafsInLeague = 640;
         nLeafsPerRoot = 16;
-        nChallenges = 3;
-        nTotalLeafs = nLeafsPerRoot**3;
-        nTotalLevels = Math.log2(nTotalLeafs);
+        levelVerifiableByBC = 3; 
+        nMaxLeagues = nLeafsPerRoot**(levelVerifiableByBC-2);
         nLevelsPerRoot = Math.log2(nLeafsPerRoot);
+
         leafsA = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
         leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
+
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
         // First challenge fails because the TZ has not been updated yet with a root
