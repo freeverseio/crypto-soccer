@@ -13,6 +13,7 @@ const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
+const Updates = artifacts.require('Updates');
 const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
 
@@ -239,19 +240,19 @@ async function completePlayerAuction(
 
 contract("Market", accounts => {
   let ok;
-
+  
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
+    depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates);
+    proxy  = depl[0];
+    assets = depl[1];
+    market = depl[2];
+    // done with delegate calls
+    
     constants = await ConstantsGetters.new().should.be.fulfilled;
-    proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
-    depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
-    assets = depl[0];
-    market = depl[1];
-
     marketCrypto = await MarketCrypto.new().should.be.fulfilled;
 
-    // done with delegate calls
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     await assets.init().should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;

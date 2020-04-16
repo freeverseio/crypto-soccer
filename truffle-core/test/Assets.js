@@ -11,6 +11,7 @@ const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
+const Updates = artifacts.require('Updates');
 
 
 
@@ -39,10 +40,10 @@ contract('Assets', (accounts) => {
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
-        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
-        depl = await delegateUtils.deployDelegate(proxy, Assets, Market);
-        assets = depl[0]
-        market = depl[1]
+        depl = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
+        proxy = depl[0]
+        assets = depl[1]
+        market = depl[2]
         
         constants = await ConstantsGetters.new().should.be.fulfilled;
         initTx = await assets.init().should.be.fulfilled;
@@ -97,9 +98,7 @@ contract('Assets', (accounts) => {
     });
 
     it('check DivisionCreation event on initSingleTz', async () => {
-        proxy2 = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
-        depl2 = await delegateUtils.deployDelegate(proxy2, Assets, Market);
-        assets2 = depl2[0];
+        const {0: proxy2, 1: assets2, 2: markV0, 3: updV0} =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates);
         tx = await assets2.initSingleTZ(tz = 4).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
             return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
