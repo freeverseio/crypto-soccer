@@ -274,7 +274,7 @@ contract('Updates', (accounts) => {
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitB).should.be.rejected;
         
         // but we can with differing ones:
-        console.log("bye")
+        console.log("bye", roots2SubmitA.length)
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA).should.be.fulfilled;
         console.log("bye")
 

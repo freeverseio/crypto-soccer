@@ -147,6 +147,10 @@ contract Updates is UpdatesView, Merkle {
         (intData[0],,) = prevTimeZoneToUpdate();
         require(intData[0] != NULL_TIMEZONE, "cannot challenge the null timezone");
         (intData[3], intData[1], intData[2]) = getChallengeData(intData[0], true);
+        if (intData[1] + 2 == intData[2]) {
+            require(providedRoots.length == 640, "league leafs must have len 640");
+        }
+
         bool isSettled;
         (intData[1], isSettled) = _cleanTimeAcceptedChallenges(intData[0], intData[1]);
         require(!isSettled, "challenging time is over for the current timezone");
