@@ -9,7 +9,6 @@ import (
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
-	"gotest.tools/assert"
 )
 
 // var db *sql.DB
@@ -31,7 +30,6 @@ func TestMain(m *testing.M) {
 }
 
 func newMarket(t *testing.T) *marketpay.MarketPay {
-	market, err := marketpay.New()
-	assert.NilError(t, err)
+	market := marketpay.New()
 	return market
 }

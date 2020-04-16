@@ -24,15 +24,11 @@ type MarketPay struct {
 	publicKey string
 }
 
-func NewMarketPay() (*MarketPay, error) {
+func New() *MarketPay {
 	return &MarketPay{
 		sandboxURL,
 		sandboxPublicKey,
-	}, nil
-}
-
-func New() (*MarketPay, error) {
-	return NewMarketPay()
+	}
 }
 
 func (b *MarketPay) CreateOrder(

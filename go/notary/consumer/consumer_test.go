@@ -12,6 +12,8 @@ func TestConsumerNew(t *testing.T) {
 	_, err := consumer.New(
 		ch,
 		db,
+		*bc.Contracts,
+		bc.Owner,
 	)
 	assert.NilError(t, err)
 }
