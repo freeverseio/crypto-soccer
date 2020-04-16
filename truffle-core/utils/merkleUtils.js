@@ -17,6 +17,10 @@ function zeroPadToLength(x, desiredLength) {
   return x.concat(Array.from(new Array(desiredLength - x.length), (x,i) => 0))
 }
 
+function computeLevelVerifiableByBC(nLeaguesInTz, nLeafsPerRoot) {
+  return 2+ Math.ceil(getBaseLog(nLeafsPerRoot, nLeaguesInTz));
+}
+
 function merkleRootZeroPad(leafs, nLevels) {
   leafs = zeroPadToLength(leafs, 2**nLevels)       
   _leafs = [...leafs];
@@ -106,16 +110,20 @@ function revertArray(arr) {
 function buildMerkleStruct(leafs, nLeafsPerRoot) {
   levelsPerRoot = Math.floor(Math.log2(nLeafsPerRoot));
   assert.equal(nLeafsPerRoot, 2**levelsPerRoot, "nLeafsPerRoot must be a power of 2");
+  levelVerifiableByBC = computeLevelVerifiableByBC(nTotalLeagues);
   
-  nTotalLeafs = leafs.length;
-  nChallenges = getBaseLog(nLeafsPerRoot, nTotalLeafs);
-  assert.equal(nTotalLeafs, nLeafsPerRoot**nChallenges, "nTotalLeafs should be a power of nLeafsPerRoot");
-
+  nTotalLeagues = leafs.length;
+  nRootsAtBottomLevel = nLeafsPerRoot**(levelVerifiableByBC-2);
+  rootsAtBottomLevel = Array.from(new Array(nRootsAtBottomLevel), (x,i) => NULL_BYTES32);
+  
+  for (l = 0; l < nTotalLeagues; l++) {
+    rootsAtBottomLevel[l] = merkleRoot(leafs[l], 10);
+  }
   rootsPerLevel = [];
-  rootsPerLevel.push([...leafs]);
-  leafsAtThisLevel = [...leafs];
+  rootsPerLevel.push([...rootsAtBottomLevel]);
+  leafsAtThisLevel = [...rootsAtBottomLevel];
 
-  for (ch = 0; ch < nChallenges; ch++) {
+  for (ch = 0; ch < (levelVerifiableByBC-2); ch++) {
       rootsAtThisLevel = [];
       assert.equal(leafsAtThisLevel.length % nLeafsPerRoot, 0, "wrong number of leafs");
       nRootsToCompute = leafsAtThisLevel.length/nLeafsPerRoot;
@@ -131,7 +139,7 @@ function buildMerkleStruct(leafs, nLeafsPerRoot) {
   // check that the last value coinicides with the merkle root computed from the ground up
   assert.equal(
       rootsAtThisLevel[0],
-      merkleRoot(leafs, nLev = Math.log2(nTotalLeafs)),
+      merkleRoot(rootsAtBottomLevel, nLev = Math.log2(nRootsAtBottomLevel)),
       "the merkle struct built does not have a correct merkle root"
   );
   return revertArray(rootsPerLevel);
@@ -183,5 +191,6 @@ function getDataToChallenge(posArray, merkleStruct, nLeafsPerRoot) {
     buildProof,
     buildMerkleStruct,
     getRootsBelowRootAtLevel,
-    getDataToChallenge
+    getDataToChallenge,
+    computeLevelVerifiableByBC
   }

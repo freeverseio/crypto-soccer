@@ -286,11 +286,6 @@ async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
   return [orgMapHeader, orgMap, userActions];
 }
 
-
-function getBaseLog(x, base) {
-  return Math.log(x) / Math.log(base);
-}
-
 function trimToLength(x, N) {
   for (i = x.length; i < N; i++) {
     assert.equal(x[i], 0, "unexpected non null element");
@@ -302,6 +297,7 @@ function resizeToLength(x, N) {
   if (N > x.length) { return zeroPadToLength(x, N); }
   else { return trimToLength(x, N); }
 }
+
 
 function createLeafsForOrgMap(day, half, nActiveUsersPerCountry, nExplicitLeaves) {
   league = readCreatedLeagueLeafs();
@@ -317,8 +313,7 @@ function createLeafsForOrgMap(day, half, nActiveUsersPerCountry, nExplicitLeaves
       }
       nLeaguesInTz += nLeaguesInCountry;
   }
-  levelVerifiableByBC = 2+ Math.ceil(getBaseLog(nLeaguesInTz, 2048));
-  return [leafsPerLeague, levelVerifiableByBC, nLeaguesInTz];
+  return [leafsPerLeague, nLeaguesInTz];
 }                
 
   module.exports = {
@@ -329,5 +324,5 @@ function createLeafsForOrgMap(day, half, nActiveUsersPerCountry, nExplicitLeaves
     readCreatedLeagueLeafs,
     assertExpectedZeroValues,
     createOrgMap,
-    createLeafsForOrgMap
+    createLeafsForOrgMap,
   }

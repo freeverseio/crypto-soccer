@@ -503,7 +503,8 @@ contract('FullLeague', (accounts) => {
     it('create struct given an orgmap based on repeated league', async () => {
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         tzZeroBased = 2;
-        const {0: leafsPerLeague, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nExplicitLeaves = 640);
+        const {0: leafsPerLeague, 1: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nExplicitLeaves = nNonNullLeafsInLeague);
+        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTz, nLeafsPerRoot = 2048);
         assert.equal(nLeaguesInTz, 2, "nLeagues not as expected");
         assert.equal(leafsPerLeague.length, nLeaguesInTz, "leafsPerLeague.length not as expected");
         assert.equal(leafsPerLeague[0].length, nNonNullLeafsInLeague, "leafsInLeague length not as expected");

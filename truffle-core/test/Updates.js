@@ -20,6 +20,7 @@ const Merkle = artifacts.require('Merkle');
 
 contract('Updates', (accounts) => {
     const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
+    const nNonNullLeafsInLeague = 640;
     
     const it2 = async(text, f) => {};
     
@@ -225,17 +226,18 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
         await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
 
-        nLeafsInLeague = 640;
-        nLeafsPerRoot = 16;
-        levelVerifiableByBC = 3; 
-        nMaxLeagues = nLeafsPerRoot**(levelVerifiableByBC-2);
-        nLevelsPerRoot = Math.log2(nLeafsPerRoot);
+        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        tzZeroBased = 2;
+        const {0: leafsA, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
 
-        leafsA = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256(i.toString()));
-        leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
-
-        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
-        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
+        leafsB = [...leafsPerLeagueA];
+        // TODO: corrupt leafsB
+        
+        nLeafsPerRoot = 2048;
+        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, nNonNullLeafsInLeague);
+        return
+        
+        // merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
         // First challenge fails because the TZ has not been updated yet with a root
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1]).should.be.rejected;
 
