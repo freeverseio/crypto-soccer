@@ -168,18 +168,20 @@ function getRootsBelowRootAtLevel(merkleStruct, level, pos, nLeafsPerRoot) {
 //     .        o        .        .  (ch = 7, provided ..x.)
 //  . . . .  . . x .  . . . .  . . . . (comes from 7) (ch = 3)
 //  .... .... .... ....    .... .... ....
-function getDataToChallenge(posArray, merkleStruct, nLeafsPerRoot) {
+function getDataToChallenge(posArray, leafs, merkleStruct, nLeafsPerRoot, levelVerifiableByBC) {
   // first it returns the proof needed to verify that 
   // merkleStruct[level][pos] was part of the previous commit
   // then it provides de leafs that form merkleStruct[level][pos]
   // only works for level > 0
   // build posInLevels = [0, pos0, pos0*nLevels + pos1, ...]
+  const nLevelsPerRoot = Math.log2(nLeafsPerRoot);
   const level = posArray.length;
   posInLevels = [];
   posInLevels = [0];
   for (l = 0; l < level; l++) {
     posInLevels.push(posInLevels[l] * nLeafsPerRoot + posArray[l]);
   }
+
   root = merkleStruct[level][posInLevels[level]];  // . . X .
   rootsSubmitted = getRootsBelowRootAtLevel(merkleStruct, level-1, posInLevels[level-1], nLeafsPerRoot);
   assert.equal(rootsSubmitted[posArray[level-1]], root, "wrong slice submitted");
@@ -188,9 +190,17 @@ function getDataToChallenge(posArray, merkleStruct, nLeafsPerRoot) {
   rootFromStruct = merkleRoot(rootsSubmitted, nLevelsPerRoot);
   assert.equal(verify(rootFromStruct, proof, root, posArray[level-1]), true, "proof not working");
   // done with checks
-  roots2submit = getRootsBelowRootAtLevel(merkleStruct, level, posInLevels[level], nLeafsPerRoot);
-  // double check proof before returning:
-  assert.equal(merkleRoot(roots2submit, nLevelsPerRoot), root, "wrong choice of slice");
+  var roots2submit;
+  if (level == (levelVerifiableByBC-2)) {
+    assert.equal(posInLevels[level] < leafs.length, true, "cannot query for a non existent league: TODO protect");
+    roots2submit = leafs[posInLevels[level]]; 
+    // double check proof before returning:
+    assert.equal(merkleRoot(roots2submit, 10), root, "wrong choice of slice");
+  } else {
+    roots2submit = getRootsBelowRootAtLevel(merkleStruct, level, posInLevels[level], nLeafsPerRoot);
+    // double check proof before returning:
+    assert.equal(merkleRoot(roots2submit, nLevelsPerRoot), root, "wrong choice of slice");
+  }
   return [root, proof, roots2submit];
 }
 

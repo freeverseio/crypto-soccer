@@ -259,11 +259,12 @@ contract('Updates', (accounts) => {
         console.log('hi')
         // we can now challenge the challenger :-) with the correct hashes  
         // TODO: test that vals are gotten from events
-        newChallengePos = 7;
+        newChallengePos = 1;
         challengePos = [];
         challengePos.push(newChallengePos);
-        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
-        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
+        console.log(leafsA.length)
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
 
         // as always, first check that we cannot submit roots that coinicide with previous:
         assert.notEqual(merkleUtils.merkleRoot(roots2SubmitB, nLevelsPerRoot), merkleUtils.merkleRoot(roots2SubmitA, nLevelsPerRoot), "wrong choice of slice");
