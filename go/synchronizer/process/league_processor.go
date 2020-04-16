@@ -144,7 +144,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
-	var orgMap []storage.Team
+	var orgMap OrgMap
 	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
@@ -178,24 +178,20 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 				}
 			}
 			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
-			orgMap = append(orgMap, team)
+			if err := orgMap.Append(team); err != nil {
+				return err
+			}
 		}
 	}
-	// ordening all the teams by ranking points
-	sort.Slice(orgMap[:], func(i, j int) bool {
-		if orgMap[i].RankingPoints == orgMap[j].RankingPoints {
-			teamID0, _ := new(big.Int).SetString(orgMap[i].TeamID, 10)
-			teamID1, _ := new(big.Int).SetString(orgMap[j].TeamID, 10)
-			return teamID0.Cmp(teamID1) > 1
-		}
-		return orgMap[i].RankingPoints > orgMap[j].RankingPoints
-	})
+
+	orgMap.Sort()
+
 	// create the new leagues
-	for i, team := range orgMap {
+	for i := 0; i < orgMap.Size(); i++ {
+		team := orgMap.At(i)
 		team.LeagueIdx = uint32(i / 8)
 		team.TeamIdxInLeague = uint32(i % 8)
-		err = team.Update(tx)
-		if err != nil {
+		if err := team.Update(tx); err != nil {
 			return err
 		}
 	}
