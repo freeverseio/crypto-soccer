@@ -149,7 +149,10 @@ spec:
               key: bootstrap-peer-priv-key
               name: secret-config
         - name: BOOTSTRAP_PEER_ID
-          value: QmZyN2aLhjCKrvpJ1R1gqrEevDN9fz3eHnnK1dDAuGtrGy
+          valueFrom:
+            configMapKeyRef:
+              key: bootstrap-peer-id
+              name: env-config
         - name: CLUSTER_SECRET
           valueFrom:
             secretKeyRef:
