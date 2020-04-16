@@ -314,7 +314,23 @@ function createLeafsForOrgMap(day, half, nActiveUsersPerCountry, nExplicitLeaves
       nLeaguesInTz += nLeaguesInCountry;
   }
   return [leafsPerLeague, nLeaguesInTz];
-}                
+}       
+
+function arrayToHex(x) {
+  y = [...x];
+  for (i = 0; i < x.length; i++) {
+      y[i] = web3.utils.toHex(x[i]);
+  }
+  return y;
+}
+
+function leafsToHex(leafs) {
+  hexLeafs = [];
+  for (league = 0; league < leafs.length; league++) {
+    hexLeafs.push(arrayToHex(leafs[league]));
+  }
+  return hexLeafs;
+}
 
   module.exports = {
     createUniverse,
@@ -325,4 +341,5 @@ function createLeafsForOrgMap(day, half, nActiveUsersPerCountry, nExplicitLeaves
     assertExpectedZeroValues,
     createOrgMap,
     createLeafsForOrgMap,
+    leafsToHex,
   }

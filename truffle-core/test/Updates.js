@@ -227,7 +227,8 @@ contract('Updates', (accounts) => {
 
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         tzZeroBased = 2;
-        const {0: leafsA, 1: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        const {0: leafsADecimal, 1: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        leafsA = chllUtils.leafsToHex(leafsADecimal);
         nLeafsPerRoot = 2048;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTz, nLeafsPerRoot);
         await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;

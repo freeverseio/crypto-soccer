@@ -76,6 +76,8 @@ function verify(root, proof, leafHash, leafPos) {
   return root == leafHash;   
 }
 
+
+
 // proof that leafs[leafPos] is the correct leaf in its MerkleTree
 function buildProof(leafPos, leafs, nLevels) {
   _leafs = [...leafs];
@@ -123,11 +125,10 @@ function buildMerkleStruct(leafs, nLeafsPerRoot, levelVerifiableByBC) {
   nTotalLeagues = leafs.length;
   
   nRootsAtBottomLevel = nLeafsPerRoot**(levelVerifiableByBC-2);
-  console.log(levelVerifiableByBC, nRootsAtBottomLevel)
   rootsAtBottomLevel = Array.from(new Array(nRootsAtBottomLevel), (x,i) => NULL_BYTES32);
   
   for (l = 0; l < nTotalLeagues; l++) {
-    rootsAtBottomLevel[l] = merkleRoot(arrayToHex(leafs[l]), 10);
+    rootsAtBottomLevel[l] = merkleRoot(leafs[l], 10);
   }
   rootsPerLevel = [];
   rootsPerLevel.push([...rootsAtBottomLevel]);
