@@ -158,6 +158,8 @@ spec:
             secretKeyRef:
               key: cluster-secret
               name: secret-config
+        - name: CLUSTER_CRDT_CLUSTERNAME
+          value: gr-ipfs-cluster
         - name: CLUSTER_MONITOR_PING_INTERVAL
           value: 3m
         - name: SVC_NAME
@@ -212,7 +214,7 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 5Gi
+          storage: 50Gi
       storageClassName: do-block-storage
   - metadata:
       name: ipfs-storage
