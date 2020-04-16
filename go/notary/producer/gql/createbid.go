@@ -31,6 +31,14 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql
 		return id, errors.New("unexistent auction")
 	}
 
+	isValid, err := args.Input.VerifySignature(b.contracts, *auction)
+	if err != nil {
+		return graphql.ID(id), err
+	}
+	if !isValid {
+		return graphql.ID(id), errors.New("Invalid signature")
+	}
+
 	select {
 	case b.ch <- args.Input:
 	default:
