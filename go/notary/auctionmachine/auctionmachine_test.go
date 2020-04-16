@@ -4,20 +4,11 @@ import (
 	"testing"
 	"time"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	"gotest.tools/assert"
 )
-
-func newTestMarket() *marketpay.MarketPay {
-	market, err := marketpay.New()
-	if err != nil {
-		panic(err)
-	}
-	return market
-}
 
 func TestAuctionStarted(t *testing.T) {
 	t.Parallel()
@@ -27,7 +18,7 @@ func TestAuctionStarted(t *testing.T) {
 		auction.ValidUntil = time.Now().Unix() + 100
 		auction.PlayerID = "274877906944"
 		auction.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"
-		m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
+		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.State(), storage.AuctionStarted)
@@ -36,7 +27,7 @@ func TestAuctionStarted(t *testing.T) {
 	t.Run("expired", func(t *testing.T) {
 		auction := storage.NewAuction()
 		auction.ValidUntil = time.Now().Unix() - 10
-		m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
+		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.State(), storage.AuctionEnded)
@@ -46,7 +37,7 @@ func TestAuctionStarted(t *testing.T) {
 		auction := storage.NewAuction()
 		auction.ValidUntil = time.Now().Unix() + 100
 		auction.PlayerID = "274877906944"
-		m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
+		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.State(), storage.AuctionFailed)

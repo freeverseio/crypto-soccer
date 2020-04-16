@@ -8,9 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
-	"gotest.tools/assert"
 )
 
 // var db *sql.DB
@@ -36,10 +34,4 @@ func TestMain(m *testing.M) {
 		crypto.PubkeyToAddress(bc.Owner.PublicKey),
 	)
 	os.Exit(m.Run())
-}
-
-func newMarket(t *testing.T) *marketpay.MarketPay {
-	market, err := marketpay.New()
-	assert.NilError(t, err)
-	return market
 }
