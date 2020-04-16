@@ -13,16 +13,16 @@ import (
 
 type AuctionMachine struct {
 	Auction   storage.Auction
-	Bids      []*storage.Bid
-	contracts *contracts.Contracts
+	Bids      []storage.Bid
+	contracts contracts.Contracts
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
 }
 
 func New(
 	auction storage.Auction,
-	bids []*storage.Bid,
-	contracts *contracts.Contracts,
+	bids []storage.Bid,
+	contracts contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
 ) (*AuctionMachine, error) {
 	if contracts.Market == nil {

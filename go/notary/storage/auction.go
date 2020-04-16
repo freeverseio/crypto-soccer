@@ -41,6 +41,33 @@ func NewAuction() *Auction {
 	return &auction
 }
 
+func PendingAuctions(tx *sql.Tx) ([]Auction, error) {
+	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' AND state = 'failed' AND state = 'ended');")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var auctions []Auction
+	for rows.Next() {
+		var auction Auction
+		err = rows.Scan(
+			&auction.ID,
+			&auction.PlayerID,
+			&auction.CurrencyID,
+			&auction.Price,
+			&auction.Rnd,
+			&auction.ValidUntil,
+			&auction.Signature,
+			&auction.State,
+			&auction.PaymentURL,
+			&auction.StateExtra,
+			&auction.Seller,
+		)
+		auctions = append(auctions, auction)
+	}
+	return auctions, err
+}
+
 func AuctionByID(tx *sql.Tx, ID string) (*Auction, error) {
 	rows, err := tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE id = $1;", ID)
 	if err != nil {

@@ -17,11 +17,11 @@ import (
 )
 
 type Signer struct {
-	contracts *contracts.Contracts
+	contracts contracts.Contracts
 	pvr       *ecdsa.PrivateKey
 }
 
-func NewSigner(contracts *contracts.Contracts, pvr *ecdsa.PrivateKey) *Signer {
+func NewSigner(contracts contracts.Contracts, pvr *ecdsa.PrivateKey) *Signer {
 	return &Signer{contracts, pvr}
 }
 

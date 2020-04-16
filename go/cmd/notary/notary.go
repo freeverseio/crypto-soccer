@@ -69,10 +69,6 @@ func main() {
 		if err != nil {
 			return err
 		}
-		// processor, err := processor.NewProcessor(sto, contracts, privateKey)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
 
 		ch := make(chan interface{}, *bufferSize)
 
@@ -82,6 +78,8 @@ func main() {
 		cn, err := consumer.New(
 			ch,
 			db,
+			*contracts,
+			privateKey,
 		)
 		if err != nil {
 			return err

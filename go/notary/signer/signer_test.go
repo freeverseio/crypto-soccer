@@ -57,7 +57,7 @@ func TestAuctionHiddenPrice(t *testing.T) {
 }
 
 func TestAuctionMsg(t *testing.T) {
-	sign := signer.NewSigner(bc.Contracts, nil)
+	sign := signer.NewSigner(*bc.Contracts, nil)
 	validUntil := int64(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
@@ -104,7 +104,7 @@ func TestPublicKeyBytesToAddress(t *testing.T) {
 }
 
 func TestHashBidMessage(t *testing.T) {
-	signer := signer.NewSigner(bc.Contracts, nil)
+	signer := signer.NewSigner(*bc.Contracts, nil)
 
 	validUntil := int64(2000000000)
 	playerId := big.NewInt(274877906944)
@@ -147,7 +147,7 @@ func TestHashBidMessage(t *testing.T) {
 }
 
 func TestBidHiddenPrice(t *testing.T) {
-	signer := signer.NewSigner(bc.Contracts, nil)
+	signer := signer.NewSigner(*bc.Contracts, nil)
 	extraPrice := big.NewInt(332)
 	buyerRandom := big.NewInt(1243523)
 
