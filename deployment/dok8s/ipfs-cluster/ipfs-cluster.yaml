@@ -187,6 +187,8 @@ spec:
               name: secret-config
         - name: CLUSTER_CRDT_CLUSTERNAME
           value: gr-ipfs-cluster
+        - name: CLUSTER_CRDT_TRUSTEDPEERS
+          value: "*" # change to the peer id that is allowed to change pinset i.e. "12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ"
         - name: CLUSTER_IPFSHTTP_NODEMULTIADDRESS
           value: /ip4/127.0.0.1/tcp/5001
         - name: CLUSTER_MONITOR_PING_INTERVAL
