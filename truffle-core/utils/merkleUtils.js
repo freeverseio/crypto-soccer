@@ -21,6 +21,14 @@ function computeLevelVerifiableByBC(nLeaguesInTz, nLeafsPerRoot) {
   return 2+ Math.ceil(getBaseLog(nLeafsPerRoot, nLeaguesInTz));
 }
 
+function arrayToHex(x) {
+  y = [...x];
+  for (i = 0; i < x.length; i++) {
+      y[i] = web3.utils.toHex(x[i]);
+  }
+  return y;
+}
+
 function merkleRootZeroPad(leafs, nLevels) {
   leafs = zeroPadToLength(leafs, 2**nLevels)       
   _leafs = [...leafs];
@@ -100,6 +108,8 @@ function revertArray(arr) {
   n = arr.length;
   return Array.from(arr, (x,i) => arr[n-1-i]);
 }
+
+
 // it returns a struct where:
 //  * $L_{ch} = 0$: one Merkle Root H
 //  * $L_{ch} = 1$: $N_{leafs/root}$ roots
@@ -107,17 +117,17 @@ function revertArray(arr) {
 //  * ...
 //  * $L_{ch} = N_{ch}$: $(N_{leafs/root})^{N_{ch}} = N_{leafs}$ roots (aka leafs)function buildMerkleStruct(leafs, nLeafsPerRoot) {
 // Note that it builds them from the bottom to the top, and at the end, reverts them.
-function buildMerkleStruct(leafs, nLeafsPerRoot) {
+function buildMerkleStruct(leafs, nLeafsPerRoot, levelVerifiableByBC) {
   levelsPerRoot = Math.floor(Math.log2(nLeafsPerRoot));
   assert.equal(nLeafsPerRoot, 2**levelsPerRoot, "nLeafsPerRoot must be a power of 2");
-  levelVerifiableByBC = computeLevelVerifiableByBC(nTotalLeagues);
-  
   nTotalLeagues = leafs.length;
+  
   nRootsAtBottomLevel = nLeafsPerRoot**(levelVerifiableByBC-2);
+  console.log(levelVerifiableByBC, nRootsAtBottomLevel)
   rootsAtBottomLevel = Array.from(new Array(nRootsAtBottomLevel), (x,i) => NULL_BYTES32);
   
   for (l = 0; l < nTotalLeagues; l++) {
-    rootsAtBottomLevel[l] = merkleRoot(leafs[l], 10);
+    rootsAtBottomLevel[l] = merkleRoot(arrayToHex(leafs[l]), 10);
   }
   rootsPerLevel = [];
   rootsPerLevel.push([...rootsAtBottomLevel]);

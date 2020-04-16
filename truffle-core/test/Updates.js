@@ -224,17 +224,18 @@ contract('Updates', (accounts) => {
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
-        await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
 
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         tzZeroBased = 2;
-        const {0: leafsA, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
-
-        leafsB = [...leafsPerLeagueA];
+        const {0: leafsA, 1: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        nLeafsPerRoot = 2048;
+        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTz, nLeafsPerRoot);
+        await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
+        
+        leafsB = [...leafsA];
         // TODO: corrupt leafsB
         
-        nLeafsPerRoot = 2048;
-        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, nNonNullLeafsInLeague);
+        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
         return
         
         // merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
@@ -526,7 +527,7 @@ contract('Updates', (accounts) => {
     });
     
     
-    it('vefiable challenge', async () =>  {
+    it2('vefiable challenge', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
