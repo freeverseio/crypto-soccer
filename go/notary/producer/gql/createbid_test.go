@@ -11,9 +11,9 @@ import (
 
 func TestCreateBidUnexistentAuction(t *testing.T) {
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts)
+	r := gql.NewResolver(ch, *bc.Contracts, db)
 
 	in := input.CreateBidInput{}
 	_, err := r.CreateBid(struct{ Input input.CreateBidInput }{in})
-	assert.Error(t, err, "")
+	assert.Error(t, err, "unexistent auction")
 }

@@ -4,18 +4,38 @@ import (
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
 func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql.ID, error) {
-	if b.ch != nil {
-		select {
-		case b.ch <- args.Input:
-		default:
-			log.Warning("channel is full")
-			return "ciao", errors.New("channel is full")
-		}
+	log.Debugf("CreateBid %v", args)
+
+	id := graphql.ID(args.Input.ID())
+
+	if b.ch == nil {
+		return id, errors.New("internal error: no channel")
 	}
-	return "cippo", nil
+
+	tx, err := b.db.Begin()
+	if err != nil {
+		return id, err
+	}
+	defer tx.Rollback()
+	auction, err := storage.AuctionByID(tx, string(args.Input.Auction))
+	if err != nil {
+		return id, err
+	}
+	if auction == nil {
+		return id, errors.New("unexistent auction")
+	}
+
+	select {
+	case b.ch <- args.Input:
+	default:
+		log.Warning("channel is full")
+		return "ciao", errors.New("channel is full")
+	}
+	return id, nil
 }
