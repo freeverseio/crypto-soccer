@@ -20,6 +20,7 @@ const Merkle = artifacts.require('Merkle');
 
 contract('Updates', (accounts) => {
     const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
+    const nLevelsInOneChallenge = 11;
     const nNonNullLeafsInLeague = 640;
     
     const it2 = async(text, f) => {};
@@ -60,7 +61,7 @@ contract('Updates', (accounts) => {
         updates = depl[2];
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
-        await updates.setLevelsInOneChallenge(4).should.be.fulfilled;
+        await updates.setLevelsInOneChallenge(nLevelsInOneChallenge).should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
@@ -224,37 +225,38 @@ contract('Updates', (accounts) => {
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        tzZeroBased = 2;
 
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
-        tzZeroBased = 2;
-        const {0: leafsADecimal, 1: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 3, half = 0, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
         leafsA = chllUtils.leafsToHex(leafsADecimal);
-        nLeafsPerRoot = 2048;
-        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTz, nLeafsPerRoot);
+        const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        leafsB = chllUtils.leafsToHex(leafsBDecimal);
+
+        nLeafsPerRoot = 2**nLevelsInOneChallenge;
+        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
         await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
         
-        leafsB = [...leafsA];
-        // TODO: corrupt leafsB
-        
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
-        return
-        
-        // merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
+        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot, levelVerifiableByBC);
+
+        console.log(merkleStructA.length, merkleStructA[0].length,merkleStructA[1].length, merkleStructA[0])
         // First challenge fails because the TZ has not been updated yet with a root
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1]).should.be.rejected;
 
         // We update with the correct root...
-        await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
+        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.fulfilled;
         // ...so that we cannot challenge with the correct set of hashes
+
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructA[1]).should.be.rejected;
         // ...but we can challenge with one of them being wrong
         // we will lie in a bottom leave that leads to root 7 in the first level
         // so being at pos = 7, leads to pos 7 * nLeafsPerRoot, which leads at 7*nLeafsPerRoot^2
-        assert.notEqual(merkleUtils.merkleRoot(leafsB, nTotalLevels), merkleUtils.merkleRoot(leafsA, nTotalLevels), "wrong leafsA should lead to different root");
-        assert.notEqual(merkleUtils.merkleRoot(merkleStructB[1], nLevelsPerRoot), merkleUtils.merkleRoot(merkleStructA[1], nLevelsPerRoot), "wrong leafsA should lead to different merkle structs");
+        assert.notEqual(merkleStructA[lev = 0][pos = 0], merkleStructB[lev = 0][pos = 0], "wrong leafsA should lead to different root");
 
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1]).should.be.fulfilled;
 
+        console.log('hi')
         // we can now challenge the challenger :-) with the correct hashes  
         // TODO: test that vals are gotten from events
         newChallengePos = 7;
