@@ -26,6 +26,11 @@ contract('Merkle', (accounts) => {
         merkle = await Merkle.new().should.be.fulfilled;
     });
 
+    it('compatibility of NULL_BYTES32', async () => {
+        resultBC = await merkle.hash_node(NULL_BYTES32, NULL_BYTES32).should.be.fulfilled;
+        resultBC.should.be.equal(NULL_BYTES32);
+    });
+    
     it('compatibility of hash function', async () => {
         leafs = Array.from(new Array(2), (x,i) => web3.utils.keccak256(i.toString()));
         resultBC = await merkle.hash_node(leafs[0], leafs[1]).should.be.fulfilled;
@@ -62,6 +67,26 @@ contract('Merkle', (accounts) => {
         rootHandMade = await merkle.hash_node(root1, root2).should.be.fulfilled;
         rootHandMade.should.be.equal(rootBC)
         rootHandMade.should.be.equal(rootJS)
+    });
+
+    it('get merkle root high count', async () => {
+        leafs = Array.from(new Array(640), (x,i) => web3.utils.keccak256(i.toString()));
+        rootBC = await merkle.merkleRoot(leafs, nLevels = 10).should.be.fulfilled;
+        rootJS = merkleUtils.merkleRoot(leafs, nLevels);
+        rootBC.should.be.equal(rootJS)
+
+        leafs[1] = NULL_BYTES32;
+        leafs[638] = web3.eth.abi.encodeParameter('bytes32', '0x0');
+        leafs[639] = web3.eth.abi.encodeParameter('bytes32', '0x0');
+        rootBC = await merkle.merkleRoot(leafs, nLevels = 10).should.be.fulfilled;
+        rootJS = merkleUtils.merkleRoot(leafs, nLevels);
+        rootBC.should.be.equal(rootJS)
+
+        leafs[638] = '0x0';
+        leafs[639] = '0x0';
+        rootBC = await merkle.merkleRoot(leafs, nLevels = 10).should.be.fulfilled;
+        rootJS = merkleUtils.merkleRoot(leafs, nLevels);
+        rootBC.should.not.be.equal(rootJS)
     });
 
     it('verify', async () => {

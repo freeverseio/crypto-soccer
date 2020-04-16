@@ -147,15 +147,21 @@ contract Updates is UpdatesView, Merkle {
         (intData[0],,) = prevTimeZoneToUpdate();
         require(intData[0] != NULL_TIMEZONE, "cannot challenge the null timezone");
         (intData[3], intData[1], intData[2]) = getChallengeData(intData[0], true);
-        if (intData[1] + 2 == intData[2]) {
-            require(providedRoots.length == 640, "league leafs must have len 640");
-        }
-
         bool isSettled;
         (intData[1], isSettled) = _cleanTimeAcceptedChallenges(intData[0], intData[1]);
         require(!isSettled, "challenging time is over for the current timezone");
+
         // verify provided roots are an actual challenge (they lead to a root different from the one provided by previous challenge/update)
-        bytes32 root = merkleRoot(providedRoots, _levelsInOneChallenge);
+        bytes32 root;
+        if (intData[1] + 2 == intData[2]) {
+            require(providedRoots.length == _leafsInLeague, "league leafs must have len 640");
+            root = merkleRoot(providedRoots, _levelsInLastChallenge);
+            require(_levelsInLastChallenge == 10,"---++");
+        } else {
+            require(providedRoots.length == 2**uint256(_levelsInOneChallenge), "league leafs must have len 640");
+            root = merkleRoot(providedRoots, _levelsInOneChallenge);
+        }
+
         if (intData[1] == 0) require(root != getRoot(intData[0], 0, true), "provided leafs lead to same root being challenged");
         else {
             require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
@@ -202,8 +208,10 @@ contract Updates is UpdatesView, Merkle {
         }
     }
     
-    function setLevelsInOneChallenge(uint16 newVal) public {
-        _levelsInOneChallenge = newVal;
+    function setChallengeLevels(uint16 levelsInOneChallenge, uint16 leafsInLeague, uint16 levelsInLastChallenge) public {
+        _levelsInOneChallenge   = levelsInOneChallenge;
+        _leafsInLeague          = leafsInLeague;
+        _levelsInLastChallenge  = levelsInLastChallenge;
     }
     
 }

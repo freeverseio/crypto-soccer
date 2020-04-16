@@ -7,17 +7,25 @@ pragma solidity >=0.5.12 <=0.6.3;
 contract Merkle {
     
     bytes32 constant private NULL_BYTES32 = bytes32(0);
+
     // This function will revert if nLevels = 0.
     // nLeafs = 2**nLevels
     //  nLevels = 1 => 3 leafs = lev1 - root // lev0 - 2 leafs
     //  nLevels = 2 => 7 leafs = lev2 - root // lev1 - 2 leafs // lev0 - 4 leafs
     function merkleRoot(bytes32[] memory leafs, uint256 nLevels) public pure returns(bytes32) {
         uint256 nLeafs = 2**nLevels;
-        require(leafs.length == nLeafs, "number of leafs is not = pow(2,nLevels)");
+        uint256 nLeafsNonNull = leafs.length;
+
         for (uint8 level = 0; level < nLevels; level++) {
             nLeafs /= 2;
-            for (uint256 pos = 0; pos < nLeafs; pos++) {
+            nLeafsNonNull = (nLeafsNonNull % 2 == 0) ? (nLeafsNonNull / 2) : ((nLeafsNonNull / 2) + 1);
+            if (nLeafsNonNull > nLeafs) nLeafsNonNull = nLeafs;
+
+            for (uint256 pos = 0; pos < nLeafsNonNull; pos++) {
                 leafs[pos] = hash_node(leafs[2 * pos], leafs[2 * pos + 1]);      
+            }
+            for (uint256 pos = nLeafsNonNull; pos < nLeafs; pos++) {
+                leafs[pos] = NULL_BYTES32;      
             }
         }
         return leafs[0];

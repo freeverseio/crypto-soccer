@@ -9,7 +9,7 @@ function hashUint256(x) {
 }
 
 function hash_node(x, y) {
-  if (x == NULL_BYTES32 &&  y == NULL_BYTES32) return NULL_BYTES32; 
+  if ((x == NULL_BYTES32) &&  (y == NULL_BYTES32)) return NULL_BYTES32; 
   return web3.utils.keccak256(web3.eth.abi.encodeParameters(['bytes32', 'bytes32'], [x,y]));
 }
 
@@ -59,7 +59,7 @@ function merkleRoot(leafs, nLevels) {
       }
       for (pos = nLeafsNonNull; pos < nLeafs; pos++) {
         _leafs[pos] = NULL_BYTES32;      
-      }
+      } 
   }
   return _leafs[0];
 }

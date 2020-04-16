@@ -332,6 +332,23 @@ function leafsToHex(leafs) {
   return hexLeafs;
 }
 
+function leafsToBytes32(leafs) {
+  hexLeafs = [];
+  for (league = 0; league < leafs.length; league++) {
+    hexLeafs.push(arrayToBytes32(leafs[league]));
+  }
+  return hexLeafs;
+}
+
+function arrayToBytes32(x) {
+  y = [...x];
+  for (i = 0; i < x.length; i++) {
+      y[i] = web3.eth.abi.encodeParameter('bytes32', web3.utils.toHex(x[i]));
+  }
+  return y;
+}
+
+
   module.exports = {
     createUniverse,
     createLeagueData,
@@ -342,4 +359,5 @@ function leafsToHex(leafs) {
     createOrgMap,
     createLeafsForOrgMap,
     leafsToHex,
+    leafsToBytes32,
   }

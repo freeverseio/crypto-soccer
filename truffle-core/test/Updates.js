@@ -22,6 +22,7 @@ contract('Updates', (accounts) => {
     const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
     const nLevelsInOneChallenge = 11;
     const nNonNullLeafsInLeague = 640;
+    const nLevelsInLastChallenge = 10; // must be nearest exponent to 640 ... 1024
     
     const it2 = async(text, f) => {};
     
@@ -52,6 +53,7 @@ contract('Updates', (accounts) => {
         return y;
     }
     
+    
     beforeEach(async () => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
@@ -61,7 +63,7 @@ contract('Updates', (accounts) => {
         updates = depl[2];
         // // done with delegate calls
         await updates.initUpdates().should.be.fulfilled;
-        await updates.setLevelsInOneChallenge(nLevelsInOneChallenge).should.be.fulfilled;
+        await updates.setChallengeLevels(nLevelsInOneChallenge, nNonNullLeafsInLeague, nLevelsInLastChallenge).should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
@@ -229,9 +231,9 @@ contract('Updates', (accounts) => {
 
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 3, half = 0, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
-        leafsA = chllUtils.leafsToHex(leafsADecimal);
+        leafsA = chllUtils.leafsToBytes32(leafsADecimal);
         const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
-        leafsB = chllUtils.leafsToHex(leafsBDecimal);
+        leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
 
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
@@ -270,6 +272,20 @@ contract('Updates', (accounts) => {
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
 
+        assert.equal(merkleUtils.merkleRoot(roots2SubmitB, nLevelsInLastChallenge), merkleStructB[1][1], "wrong selection of roots2submit");
+        assert.equal(merkleUtils.merkleRoot(roots2SubmitB, nLevelsInLastChallenge), challValB, "wrong selection of roots2submit");
+
+        console.log(roots2SubmitB.length)
+
+        assert.equal(
+            merkleUtils.merkleRoot(roots2SubmitB, nLevelsInLastChallenge), 
+            await merkle.merkleRoot(roots2SubmitB, nLevelsInLastChallenge), 
+            "nonmatching merkleRoots"
+        );
+
+        assert.equal(merkleUtils.merkleRoot(roots2SubmitA, nLevelsInLastChallenge), merkleStructA[1][1], "wrong selection of roots2submit");
+        assert.equal(merkleUtils.merkleRoot(roots2SubmitA, nLevelsInLastChallenge), challValA, "wrong selection of roots2submit");
+        
         // as always, first check that we cannot submit roots that coinicide with previous:
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitB).should.be.rejected;
         
@@ -543,8 +559,8 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot, activeTeamsPerCountryRoot, orgMapRoot, levelVerifiableByBC, cif = "ciao3").should.be.fulfilled;
 
         nLevelsPerChallenge = 11;
-        console.log('setLevelsInOneChallenge...')
-        await updates.setLevelsInOneChallenge(nLevelsPerChallenge).should.be.fulfilled;
+        console.log('setChallengeLevels...')
+        await updates.setChallengeLevels(nLevelsPerChallenge).should.be.fulfilled;
         nLeafsPerRoot = 2**nLevelsPerChallenge;
         nTotalLeafs = nLeafsPerRoot**levelVerifiableByBC;
         nTotalLevels = Math.log2(nTotalLeafs);
