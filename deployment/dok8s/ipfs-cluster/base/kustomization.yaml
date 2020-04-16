@@ -1,0 +1,15 @@
+resources:
+  - service.yaml
+  - setup-configmap.yaml
+  - statefulset.yaml
+  - env-configmap.yaml
+  - secret.yaml # move to overlay
+
+vars:
+  - name: CLUSTER_SVC_NAME
+    objref:
+      kind: Service
+      name: ipfs-cluster
+      apiVersion: v1
+    fieldref:
+      fieldpath: metadata.name
