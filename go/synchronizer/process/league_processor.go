@@ -191,6 +191,8 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		team := orgMap.At(i)
 		team.LeagueIdx = uint32(i / 8)
 		team.TeamIdxInLeague = uint32(i % 8)
+		// calculate the real Ranking points
+		team.RankingPoints = team.RankingPoints / uint64(48318382080000)
 		if err := team.Update(tx); err != nil {
 			return err
 		}
