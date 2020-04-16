@@ -1,3 +1,10 @@
+# using ipfs-cluster-service version 0.12.1+git5d2ff3402e3ca01c80248c3f083ad10b5de28da1
+
+# to generate a bootstrap private key for the cluster
+1. ipfs-key -type RSA | base64
+2. copy ID to yaml as bootstrap_peer_id
+3. copy private key and re-encode it to with base64 so it can be copied into the secret yaml bootstrap_peer_priv_key
+
 # apply config to kubernetes:
 kubectl apply -f ipfs-cluster.yaml -n <namespace>
 
