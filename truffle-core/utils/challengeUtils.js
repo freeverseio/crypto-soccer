@@ -306,21 +306,19 @@ function resizeToLength(x, N) {
 function createLeafsForOrgMap(day, half, nActiveUsersPerCountry, nExplicitLeaves) {
   league = readCreatedLeagueLeafs();
   // - **nActiveUsersPerCountry** = [nActiveUsersCountry0, nActiveUsersCountry1, ...;]
-  leafs = [];
-  leafsRoots = [];
+  leafsPerLeague = [];
   nCountriesInTZ = nActiveUsersPerCountry.length;
   nLeaguesInTz = 0;
   for (c = 0; c < nCountriesInTZ; c++) { 
       nLeaguesInCountry = Math.ceil(nActiveUsersPerCountry[c]/8);
       for (l = 0; l < nLeaguesInCountry; l++) {
         thisLeague = resizeToLength([...league[2 * day + half]], nExplicitLeaves);
-        leafs.push(thisLeague);
-        leafsRoots = leafsRoots.concat();
+        leafsPerLeague.push(thisLeague);
       }
       nLeaguesInTz += nLeaguesInCountry;
   }
   levelVerifiableByBC = 2+ Math.ceil(getBaseLog(nLeaguesInTz, 2048));
-  return [leafs, levelVerifiableByBC, nLeaguesInTz];
+  return [leafsPerLeague, levelVerifiableByBC, nLeaguesInTz];
 }                
 
   module.exports = {

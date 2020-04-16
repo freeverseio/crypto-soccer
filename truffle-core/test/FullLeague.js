@@ -372,7 +372,7 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it('test day 0, half 0', async () => {
+    it2('test day 0, half 0', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 0;
         assert.equal(leafs.length, nMatchdays * 2);
@@ -404,7 +404,7 @@ contract('FullLeague', (accounts) => {
     });
     
 
-    it('test all days after 2nd half (day = odd)', async () => {
+    it2('test all days after 2nd half (day = odd)', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 1;
         assert.equal(leafs.length, nMatchdays * 2);
@@ -469,7 +469,7 @@ contract('FullLeague', (accounts) => {
         }
     });
     
-    it('challenge unexpected zero values', async () => {
+    it2('challenge unexpected zero values', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         for (day = 0; day < nMatchdays; day++) {
             for (half = 0; half < 2; half++) {
@@ -484,7 +484,7 @@ contract('FullLeague', (accounts) => {
     // - **OrgMap** = [tIdx0, ....tIdxNActive; ...]; max = 34 levels
     // - **UserActions** = [UA$_{tact,0}$, UA$_{train,0}$, ...]; max = 35 levels
     // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
-    it('create orgmap', async () => {
+    it2('create orgmap', async () => {
         // all returns of this function are arrays as a function of TZ_0-based!!!
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         h = web3.utils.keccak256(
@@ -500,15 +500,16 @@ contract('FullLeague', (accounts) => {
     // level 2: 2048 x 640 leagueLeafs => emit one of these => only 640 leagueLeafs for one of those roots, store that leagueRoot
     // level 3: provide 640 leagueLeafs, and BC-challenge.
     
-    it2('create struct given an orgmap based on repeated league', async () => {
+    it('create struct given an orgmap based on repeated league', async () => {
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         tzZeroBased = 2;
-        const {0: leafs, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nExplicitLeaves = 640);
+        const {0: leafsPerLeague, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nExplicitLeaves = 640);
         assert.equal(nLeaguesInTz, 2, "nLeagues not as expected");
+        assert.equal(leafsPerLeague.length, nLeaguesInTz, "leafsPerLeague.length not as expected");
+        assert.equal(leafsPerLeague[0].length, nNonNullLeafsInLeague, "leafsInLeague length not as expected");
         assert.equal(levelVerifiableByBC, 3, "levelVerifiableByBC not as expected");
-        assert.equal(leafs.length, 2048, "leafs.length not as expected");
-        h = web3.utils.keccak256(nLeaguesInTz.toString() + levelVerifiableByBC.toString() +  JSON.stringify(leafs));
-        assert.equal(h, '0xbd81df41ebe2658c29d577a2668cb64a49c973edbd3cf6e117a137efab970755', "leafs not as expected");
+        h = web3.utils.keccak256(JSON.stringify(leafsPerLeague));
+        assert.equal(h, '0x265c6fbcc77b18e6831221ff78f0044a4ded80eae9f2f651334b8f6fe808abf0', "leafs not as expected");
     });
     
     
