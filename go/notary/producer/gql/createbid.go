@@ -3,19 +3,12 @@ package gql
 import (
 	"errors"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
-type CreateBidInput struct {
-	Signature  string
-	Auction    graphql.ID
-	ExtraPrice int
-	Rnd        int
-	TeamId     string
-}
-
-func (b *Resolver) CreateBid(args struct{ Input CreateBidInput }) (graphql.ID, error) {
+func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql.ID, error) {
 	if b.ch != nil {
 		select {
 		case b.ch <- args.Input:

@@ -44,3 +44,10 @@ func TestCreateAuctionSignerAddress(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
 }
+
+func TestCreateAuctionID(t *testing.T) {
+	in := input.CreateAuctionInput{}
+	in.PlayerId = "10"
+	in.ValidUntil = "1000"
+	assert.Equal(t, in.ID(), "1f6beaf1c921f0bec83203b2d59d508a097aae5a452d443fccbf09716682bea1")
+}
