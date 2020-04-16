@@ -3,6 +3,7 @@ package input
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -29,6 +30,9 @@ func (b CreateAuctionInput) ID() string {
 
 func (b CreateAuctionInput) Hash() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return common.Hash{}, errors.New("invalid playerId")
+	}
 	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
 	if err != nil {
 		return common.Hash{}, err

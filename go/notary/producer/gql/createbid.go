@@ -35,7 +35,7 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql
 	case b.ch <- args.Input:
 	default:
 		log.Warning("channel is full")
-		return "ciao", errors.New("channel is full")
+		return id, errors.New("channel is full")
 	}
 	return id, nil
 }

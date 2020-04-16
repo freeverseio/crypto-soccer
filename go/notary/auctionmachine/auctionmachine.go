@@ -7,7 +7,6 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
-	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
@@ -16,7 +15,6 @@ type AuctionMachine struct {
 	Bids      []storage.Bid
 	contracts contracts.Contracts
 	freeverse *ecdsa.PrivateKey
-	signer    *signer.Signer
 }
 
 func New(
@@ -36,7 +34,6 @@ func New(
 		bids,
 		contracts,
 		freeverse,
-		signer.NewSigner(contracts, freeverse),
 	}, nil
 }
 
