@@ -256,8 +256,12 @@ contract('Updates', (accounts) => {
 
         await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1]).should.be.fulfilled;
 
-        console.log('hi')
-        // we can now challenge the challenger :-) with the correct hashes  
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        level.toNumber().should.be.equal(1);
+        isSet.should.be.equal(false);
+
         // TODO: test that vals are gotten from events
         newChallengePos = 1;
         challengePos = [];
@@ -267,18 +271,14 @@ contract('Updates', (accounts) => {
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
 
         // as always, first check that we cannot submit roots that coinicide with previous:
-        assert.notEqual(merkleUtils.merkleRoot(roots2SubmitB, nLevelsPerRoot), merkleUtils.merkleRoot(roots2SubmitA, nLevelsPerRoot), "wrong choice of slice");
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitB).should.be.rejected;
         
-
-        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
-        lev.toNumber().should.be.equal(1);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        level.toNumber().should.be.equal(1);
-        isSet.should.be.equal(false);
-
         // but we can with differing ones:
+        console.log("bye")
         await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA).should.be.fulfilled;
+        console.log("bye")
+
+        
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
         challValB_backup = challValB;
