@@ -21,6 +21,7 @@ data:
     fi
 
     PEER_HOSTNAME=`cat /proc/sys/kernel/hostname`
+    export CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/ip4/127.0.0.1/tcp/5001
 
     grep -q ".*ipfs-cluster-0.*" /proc/sys/kernel/hostname
     if [ $? -eq 0 ]; then
