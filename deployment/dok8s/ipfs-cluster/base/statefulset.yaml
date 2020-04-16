@@ -70,10 +70,40 @@ spec:
                 secretKeyRef:
                   key: bootstrap-peer-priv-key
                   name: secret-config
+            - name: PEER_PRIV_KEY_0
+              valueFrom:
+                secretKeyRef:
+                  key: peer-priv-key-0
+                  name: secret-config
+            - name: PEER_PRIV_KEY_1
+              valueFrom:
+                secretKeyRef:
+                  key: peer-priv-key-1
+                  name: secret-config
+            - name: PEER_PRIV_KEY_2
+              valueFrom:
+                secretKeyRef:
+                  key: peer-priv-key-2
+                  name: secret-config
             - name: BOOTSTRAP_PEER_ID
               valueFrom:
                 configMapKeyRef:
                   key: bootstrap-peer-id
+                  name: env-config
+            - name: PEER_ID_0
+              valueFrom:
+                configMapKeyRef:
+                  key: peer-id-0
+                  name: env-config
+            - name: PEER_ID_1
+              valueFrom:
+                configMapKeyRef:
+                  key: peer-id-1
+                  name: env-config
+            - name: PEER_ID_2
+              valueFrom:
+                configMapKeyRef:
+                  key: peer-id-2
                   name: env-config
             - name: CLUSTER_SECRET
               valueFrom:

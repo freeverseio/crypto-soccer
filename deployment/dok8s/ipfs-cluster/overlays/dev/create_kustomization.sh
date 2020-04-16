@@ -22,4 +22,5 @@ kustomize edit set image ipfs/go-ipfs:${TAG}
 kustomize edit set replicas ipfs-cluster=3
 
 # patching
-#kustomize edit add patch env-configmap.yaml
+kustomize edit add patch env-configmap.yaml
+kustomize edit add patch secret.yaml
