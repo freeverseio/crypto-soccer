@@ -4,25 +4,29 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/graph-gophers/graphql-go"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
 func TestCreateBidInputHash(t *testing.T) {
-	auction := storage.NewAuction()
-	auction.ValidUntil = int64(2000000000)
-	auction.PlayerID = "274877906944"
-	auction.CurrencyID = 1
+	auction := input.CreateAuctionInput{}
+	auction.ValidUntil = "2000000000"
+	auction.PlayerId = "274877906944"
+	auction.CurrencyId = 1
 	auction.Price = 41234
 	auction.Rnd = 42321
+	hash, err := auction.Hash()
+	assert.NilError(t, err)
 
 	in := input.CreateBidInput{}
+	in.Auction = graphql.ID(hash.String())
 	in.ExtraPrice = 332
 	in.Rnd = 1243523
 	in.TeamId = "274877906945"
 
-	hash, err := in.Hash(*bc.Contracts, *auction)
+	hash, err = in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0xc0ad1683b9afe071d698763b7143e7cff7bcc661c7074497d870964dd58d9976")
 }

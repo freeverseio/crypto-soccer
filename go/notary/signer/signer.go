@@ -107,6 +107,37 @@ func HashSellMessage(
 	return crypto.Keccak256Hash([]byte(ss)), nil
 }
 
+func HashBidMessage2(
+	market *market.Market,
+	auctionHashMsg [32]byte,
+	extraPrice *big.Int,
+	bidRnd *big.Int,
+	teamID *big.Int,
+	isOffer2StartAuction bool,
+) ([32]byte, error) {
+	var hash [32]byte
+	bidHiddenPrice, err := market.HashBidHiddenPrice(
+		&bind.CallOpts{},
+		extraPrice,
+		bidRnd,
+	)
+	if err != nil {
+		return hash, err
+	}
+	hash, err = market.BuildAgreeToBuyPlayerTxMsg(
+		&bind.CallOpts{},
+		auctionHashMsg,
+		bidHiddenPrice,
+		teamID,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		return hash, err
+	}
+	hash, err = market.Prefixed(&bind.CallOpts{}, hash)
+	return hash, err
+}
+
 func HashBidMessage(
 	market *market.Market,
 	currencyID uint8,

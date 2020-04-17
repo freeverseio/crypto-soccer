@@ -11,7 +11,11 @@ import (
 func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql.ID, error) {
 	log.Debugf("CreateBid %v", args)
 
-	id := graphql.ID(args.Input.ID())
+	// hash, err := args.Input.Hash(b.contracts, nil)
+	// if err != nil {
+	// 	return graphql.ID(""), err
+	// }
+	id := graphql.ID(hash.String())
 
 	if b.ch == nil {
 		return id, errors.New("internal error: no channel")

@@ -22,24 +22,17 @@ type CreateBidInput struct {
 
 func (b CreateBidInput) Hash(
 	contracts contracts.Contracts,
-	auction storage.Auction,
 ) (common.Hash, error) {
 	teamId, _ := new(big.Int).SetString(b.TeamId, 10)
 	if teamId == nil {
 		return common.Hash{}, errors.New("invalid teamId")
 	}
-	playerId, _ := new(big.Int).SetString(auction.PlayerID, 10)
-	if playerId == nil {
-		return common.Hash{}, errors.New("invalid playerId")
-	}
 	isOffer2StartAuction := false
-	hash, err := signer.HashBidMessage(
+	var auctionHashMsg [32]byte
+	copy(auctionHashMsg[:], b.Auction)
+	hash, err := signer.HashBidMessage2(
 		contracts.Market,
-		uint8(auction.CurrencyID),
-		big.NewInt(int64(auction.Price)),
-		big.NewInt(int64(auction.Rnd)),
-		auction.ValidUntil,
-		playerId,
+		auctionHashMsg,
 		big.NewInt(int64(b.ExtraPrice)),
 		big.NewInt(int64(b.Rnd)),
 		teamId,
@@ -55,7 +48,7 @@ func (b CreateBidInput) VerifySignature(
 	contracts contracts.Contracts,
 	auction storage.Auction,
 ) (bool, error) {
-	hash, err := b.Hash(contracts, auction)
+	hash, err := b.Hash(contracts)
 	if err != nil {
 		return false, err
 	}
