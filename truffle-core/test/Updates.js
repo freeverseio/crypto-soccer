@@ -547,6 +547,10 @@ contract('Updates', (accounts) => {
     });
     
     
+    // A = correct day and half
+    // B = correct day, incorrect half
+    // C = incorrect day and incorrect half
+    // 0: A, 1: B, 2: A => so the leafs provided by A are the correct ones and everyone fails to challenge A.
     it('vefiable challenge', async () =>  {
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
@@ -558,6 +562,7 @@ contract('Updates', (accounts) => {
         tz      = tz.toNumber();
         day     = day.toNumber();
         half    = half.toNumber();
+        differentDay = (day == 7) ? 8 : 7;
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
         tzZeroBased = tz-1;
@@ -565,8 +570,10 @@ contract('Updates', (accounts) => {
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
         const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day, 1 - half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        const {0: leafsCDecimal, 1: nLeaguesInTzC} = chllUtils.createLeafsForOrgMap(differentDay, 1 - half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
         leafsA = chllUtils.leafsToBytes32(leafsADecimal);
         leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
+        leafsC = chllUtils.leafsToBytes32(leafsCDecimal);
 
         // set the levelVerifiableByBC to adjust to as many leagues as you have
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
@@ -576,26 +583,52 @@ contract('Updates', (accounts) => {
         // build merkle structs for 2 different days
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot, levelVerifiableByBC);
+        merkleStructC = merkleUtils.buildMerkleStruct(leafsC, nLeafsPerRoot, levelVerifiableByBC);
         
         // get data to challenge at level 0 (level is inferred from the length of challengePos).
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
 
-        // So let's update with rootA...
+        // Level0: A
         await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.fulfilled;
 
-        // ...we can challenge with rootsB, that differ from rootsA:
+        // Level1: B
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB).should.be.fulfilled;
 
         var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(1);
         level = lev.toNumber();
         
-        // Challenge one of the leagues:
+        // Level2: C
         challengePos.push(newChallengePos = 1);
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
+        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitC).should.be.fulfilled;
+
+        // Check that we move to level 2
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
         
-        // But we can with differing ones:
+        // finally, the last challenge, is one that the BC can check
+        // must provide the same leafs as the last person (C)
+        await updates.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
+        await updates.BCVerifableChallengeZeros([...roots2SubmitB]).should.be.rejected;
+
+        // we succed to prove that C was wrong:
+        await updates.BCVerifableChallengeZeros([...roots2SubmitC]).should.be.fulfilled;
+
+        // we go back to level 1
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        isSet.should.be.equal(false);
+        level = lev.toNumber();
+
+
+        // Level2: B
         await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA).should.be.fulfilled;
 
         // Check that we move to level 2
@@ -603,16 +636,16 @@ contract('Updates', (accounts) => {
         lev.toNumber().should.be.equal(2);
         
         // finally, the last challenge, is one that the BC can check
-        // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
-        await updates.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.fulfilled;
-        
-        // var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
-        // lev.toNumber().should.be.equal(1);
-        // var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        // lev.toNumber().should.be.equal(1);
-        // isSet.should.be.equal(false);
-        // level = lev.toNumber();
-        
+        // must provide the same leafs as the last person (C)
+        console.log("fasd--")
+        await updates.BCVerifableChallengeZeros([...roots2SubmitB]).should.be.rejected;
+        await updates.BCVerifableChallengeZeros([...roots2SubmitC]).should.be.rejected;
+
+        console.log("fasd---")
+        // we fail to succed to prove that A was wrong with zeros:
+        chllUtils.assertExpectedZeroValues([...roots2SubmitA], day, half, nNonNullLeafsInLeague);
+        console.log("fasd---")
+        await updates.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
     });
     
     

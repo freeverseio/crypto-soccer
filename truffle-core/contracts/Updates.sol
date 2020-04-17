@@ -108,7 +108,6 @@ contract Updates is UpdatesView, Merkle {
 
         (, uint8 day, uint8 half) = prevTimeZoneToUpdate();
         require(areThereUnexpectedZeros(leagueLeafs, day, half), "challenge to unexpected zeros failed");
-        assertExpectedZeroValues(leagueLeafs);
         _completeSuccessfulVerifiableChallenge(intData);
     }
     
