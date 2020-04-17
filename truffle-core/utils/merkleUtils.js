@@ -164,6 +164,14 @@ function getRootsBelowRootAtLevel(merkleStruct, level, pos, nLeafsPerRoot) {
   return merkleStruct[level + 1].slice(left,right);
 }
 
+function getCallengedPosPerLevel(currentLevel, posArray, nLeafsPerRoot) {
+  posInLevels = [0];
+  for (l = 0; l <= currentLevel; l++) {
+    posInLevels.push(posInLevels[l] * nLeafsPerRoot + posArray[l]);
+  }
+  return posInLevels;  
+}
+
 //                      .
 //     .        o        .        .  (ch = 7, provided ..x.)
 //  . . . .  . . x .  . . . .  . . . . (comes from 7) (ch = 3)
@@ -177,6 +185,9 @@ function getDataToChallenge(posArray, leafs, merkleStruct, nLeafsPerRoot, levelV
   assert.equal(posArray[0], 0, "zeroth level only has 1 root, so only leaf 0 can be challenged");
   posArray = posArray.slice(1);
   const level = posArray.length;
+
+  assert.equal(level < (levelVerifiableByBC-1), true, "this function should not be used to prepare final BC-verifiable challenges");
+
   if (level == 0) {
     root = merkleStruct[0][0];
     proof = [];
@@ -185,21 +196,7 @@ function getDataToChallenge(posArray, leafs, merkleStruct, nLeafsPerRoot, levelV
   }
 
   const nLevelsPerRoot = Math.log2(nLeafsPerRoot);
-  posInLevels = [0];
-  for (l = 0; l <= level; l++) {
-    posInLevels.push(posInLevels[l] * nLeafsPerRoot + posArray[l]);
-  }
-  var root;
-  var proof;
-  var roots2submit;
-
-  // if (level == (levelVerifiableByBC-1)) {
-  //   assert.equal(posInLevels[level-1] < leafs.length, true, "cannot query for a non existent league: TODO protect");
-  //   root = 
-  //   roots2submit = leafs[posInLevels[level]]; 
-  //   // double check proof before returning:
-  //   assert.equal(merkleRoot(roots2submit, 10), root, "wrong choice of slice");
-  // }  
+  posInLevels = getCallengedPosPerLevel(level, posArray, nLeafsPerRoot)
 
   root = merkleStruct[level][posInLevels[level]];  // . . X .
   rootsSubmitted = getRootsBelowRootAtLevel(merkleStruct, level-1, posInLevels[level-1], nLeafsPerRoot);
@@ -210,6 +207,7 @@ function getDataToChallenge(posArray, leafs, merkleStruct, nLeafsPerRoot, levelV
   assert.equal(verify(rootFromStruct, proof, root, posArray[level-1]), true, "proof not working");
   // done with checks
 
+  var roots2submit;
   if (level == (levelVerifiableByBC-2)) {
     assert.equal(posInLevels[level] < leafs.length, true, "cannot query for a non existent league: TODO protect");
     roots2submit = leafs[posInLevels[level]]; 
@@ -232,5 +230,6 @@ function getDataToChallenge(posArray, leafs, merkleStruct, nLeafsPerRoot, levelV
     buildMerkleStruct,
     getRootsBelowRootAtLevel,
     getDataToChallenge,
-    computeLevelVerifiableByBC
+    computeLevelVerifiableByBC,
+    getCallengedPosPerLevel
   }
