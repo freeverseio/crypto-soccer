@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/graph-gophers/graphql-go"
 )
 
 type CreateAuctionInput struct {
@@ -17,6 +18,14 @@ type CreateAuctionInput struct {
 	Price      int32
 	Rnd        int32
 	ValidUntil string
+}
+
+func (b CreateAuctionInput) ID() (graphql.ID, error) {
+	hash, err := b.Hash()
+	if err != nil {
+		return graphql.ID(""), err
+	}
+	return graphql.ID(hash.String()[2:]), nil
 }
 
 func (b CreateAuctionInput) Hash() (common.Hash, error) {
