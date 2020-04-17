@@ -230,18 +230,18 @@ function readCreatedLeagueLeafs() {
   return JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
 }
 
-function assertExpectedZeroValues(dayLeaf, day, half, expectedLength) {
+function areThereUnexpectedZeros(dayLeaf, day, half, expectedLength) {
   assert.equal(dayLeaf.length, expectedLength);
   if (day==0 && half == 0) {
       // at end of 1st half we still do not have league points
       for (i = 0; i < 8; i++) {
-          assert.equal(dayLeaf[i], 0, "unexpected non-null leaf at start of league");
+          if (dayLeaf[i] != 0) return true;
       }
       // we do not have tactics, nor training, nor ML before
       for (team = 0; team < nTeamsInLeague; team++) {
           off = 128 + 64 * team;
           for (i = 25; i < 28; i++) {
-              assert.equal(dayLeaf[off + i], 0, "unexpected nonnull element");
+            if (dayLeaf[off + i] != 0) return true;
           }
       }
   }
@@ -249,16 +249,17 @@ function assertExpectedZeroValues(dayLeaf, day, half, expectedLength) {
   for (team = 0; team < nTeamsInLeague; team++) {
       off = 128 + 64 * team;
       for (i = 28; i < 32; i++) {
-          assert.equal(dayLeaf[off + i], 0, "unexpected nonnull element");
-          assert.equal(dayLeaf[off+ 32 + i], 0, "unexpected nonnull element");
+        if (dayLeaf[off + i] != 0) return true;
+        if (dayLeaf[off + 32 + i] != 0) return true;
       }
   }
   // no goals after this day
   off = 8 + 8 * day;
   if (half == 1) off += 8;
   for (i = off; i < 128; i++) {
-      assert.equal(dayLeaf[i], 0, "unexpected nonnull element");
+    if (dayLeaf[i] != 0) return true;
   }
+  return false;
 }
 
 // all returns of this function are arrays as a function of TZ_0-based!!!
@@ -355,7 +356,7 @@ function arrayToBytes32(x) {
     buildLeafs,
     readCreatedLeagueData,
     readCreatedLeagueLeafs,
-    assertExpectedZeroValues,
+    areThereUnexpectedZeros,
     createOrgMap,
     createLeafsForOrgMap,
     leafsToHex,

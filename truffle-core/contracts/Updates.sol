@@ -107,6 +107,8 @@ contract Updates is UpdatesView, Merkle {
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
 
         (, uint8 day, uint8 half) = prevTimeZoneToUpdate();
+        require(day==0,"--");
+        require(half==0,"--++");
         require(areThereUnexpectedZeros(leagueLeafs, day, half), "challenge to unexpected zeros failed");
         _completeSuccessfulVerifiableChallenge(intData);
     }

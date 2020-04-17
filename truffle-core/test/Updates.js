@@ -605,6 +605,7 @@ contract('Updates', (accounts) => {
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
         var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
+
         await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitC).should.be.fulfilled;
 
         // Check that we move to level 2
@@ -627,7 +628,6 @@ contract('Updates', (accounts) => {
         isSet.should.be.equal(false);
         level = lev.toNumber();
 
-
         // Level2: B
         await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA).should.be.fulfilled;
 
@@ -637,14 +637,21 @@ contract('Updates', (accounts) => {
         
         // finally, the last challenge, is one that the BC can check
         // must provide the same leafs as the last person (C)
-        console.log("fasd--")
         await updates.BCVerifableChallengeZeros([...roots2SubmitB]).should.be.rejected;
         await updates.BCVerifableChallengeZeros([...roots2SubmitC]).should.be.rejected;
 
-        console.log("fasd---")
         // we fail to succed to prove that A was wrong with zeros:
-        chllUtils.assertExpectedZeroValues([...roots2SubmitA], day, half, nNonNullLeafsInLeague);
-        console.log("fasd---")
+        console.log(day, half)
+        assert.equal(
+            chllUtils.areThereUnexpectedZeros([...roots2SubmitA], day, half, nNonNullLeafsInLeague),
+            false,
+            "unexpected"
+        );
+        console.log("fasd-----3")
+        result = await updates.areThereUnexpectedZeros([...roots2SubmitA], day, half).should.be.fulfilled;
+        result.should.be.equal(false);
+
+        console.log("fasd-----4")
         await updates.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
     });
     

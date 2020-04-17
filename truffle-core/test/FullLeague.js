@@ -9,10 +9,13 @@ const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
 const chllUtils = require('../utils/challengeUtils.js');
 const merkleUtils = require('../utils/merkleUtils.js');
+const delegateUtils = require('../utils/delegateCallUtils.js');
 
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
+const Proxy = artifacts.require('Proxy');
+const Updates = artifacts.require('Updates');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
@@ -470,12 +473,24 @@ contract('FullLeague', (accounts) => {
     });
     
     it('challenge unexpected zero values', async () => {
-        leafs = chllUtils.readCreatedLeagueLeafs();
+        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
+        depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
+        updates = depl[2];
+
+        leafsDecimal = chllUtils.readCreatedLeagueLeafs();
+        leafs = chllUtils.leafsToBytes32(leafsDecimal);
+        
         for (day = 0; day < nMatchdays; day++) {
             for (half = 0; half < 2; half++) {
                 leafsThisDay = [...leafs[2 * day + half]];
                 assert.equal(leafsThisDay.length, nNonNullLeafsInLeague);
-                chllUtils.assertExpectedZeroValues(leafsThisDay, day, half, nNonNullLeafsInLeague);
+                assert.equal(
+                    chllUtils.areThereUnexpectedZeros(leafsThisDay, day, half, nNonNullLeafsInLeague),
+                    false,
+                    "wrong leafs"
+                )
+                result = await updates.areThereUnexpectedZeros(leafsThisDay, day, half).should.be.fulfilled;
+                result.should.be.equal(false);
             }
         }
     });
