@@ -101,15 +101,11 @@ contract Updates is UpdatesView, Merkle {
         _completeSuccessfulVerifiableChallenge(intData);
     }
 
-    function BCVerifableChallengeZeros(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory leagueLeafs) public {
+    function BCVerifableChallengeZeros(bytes32[] memory leagueLeafs) public {
         // intData = [tz, level, levelVerifiable, idx]
-        ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
-            challLeaveVal, 
-            challLeavePos, 
-            proofChallLeave, 
-            leagueLeafs
-        );
+        ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(0, 0, new bytes32[](0) , leagueLeafs);
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
+
         (, uint8 day, uint8 half) = prevTimeZoneToUpdate();
         require(areThereUnexpectedZeros(leagueLeafs, day, half), "challenge to unexpected zeros failed");
         assertExpectedZeroValues(leagueLeafs);

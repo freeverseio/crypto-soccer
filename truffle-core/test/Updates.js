@@ -221,7 +221,7 @@ contract('Updates', (accounts) => {
     // level 1: 2048 league Roots
     // level 2: 640 leafs for each
     
-    it('challenging a tz', async () =>  {
+    it2('challenging a tz', async () =>  {
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
         var level = 0;
@@ -236,9 +236,8 @@ contract('Updates', (accounts) => {
         // create leafs by building them from an orgmap:
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 3, half = 0, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
-
-        leafsA = chllUtils.leafsToBytes32(leafsADecimal);
         const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        leafsA = chllUtils.leafsToBytes32(leafsADecimal);
         leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
 
         // set the levelVerifiableByBC to adjust to as many leagues as you have
@@ -307,7 +306,6 @@ contract('Updates', (accounts) => {
         
         // finally, the last challenge, is one that the BC can check
         // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
-        leafsSubmitted = [...roots2SubmitA];
         // try with wrong leaves:
         await updates.BCVerifableChallengeFake([...roots2SubmitB], forceSuccess = true).should.be.rejected;
         // but I can submit different ones. In this case the BC decides according to forceSuccess
@@ -549,53 +547,72 @@ contract('Updates', (accounts) => {
     });
     
     
-    it2('vefiable challenge', async () =>  {
+    it('vefiable challenge', async () =>  {
+        // level 0 can only challenge leaf 0, as there is only 1 root
+        challengePos = [0];
+        var level = 0;
+
+        // move to next verse adn submit actions
         await moveToNextVerse(updates, extraSecs = 2);
-        var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        var {0: tz,  1: day, 2: half} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        tz      = tz.toNumber();
+        day     = day.toNumber();
+        half    = half.toNumber();
+        const cif = "ciao3";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        tzZeroBased = tz-1;
+        // create leafs by building them from an orgmap:
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
-        const {0: leafs, 1: levelVerifiableByBC, 2: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tz - 1]);
-        // FIX the need to use arrayToHex when internally it tries to encode as bytes32??!!!
-        activeTeamsPerCountryRoot = merkleUtils.merkleRoot(arrayToHex(orgMapHeader[tz-1]),-1);
-        orgMapRoot = merkleUtils.merkleRoot(arrayToHex(orgMap[tz-1]), -1);
-        actionsRoot = merkleUtils.merkleRoot(arrayToHex(userActions[tz-1]), -1);
-        await updates.submitActionsRoot(actionsRoot, activeTeamsPerCountryRoot, orgMapRoot, levelVerifiableByBC, cif = "ciao3").should.be.fulfilled;
+        const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day, 1 - half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        leafsA = chllUtils.leafsToBytes32(leafsADecimal);
+        leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
 
-        nLevelsPerChallenge = 11;
-        console.log('setChallengeLevels...')
-        await updates.setChallengeLevels(nLevelsPerChallenge).should.be.fulfilled;
-        nLeafsPerRoot = 2**nLevelsPerChallenge;
-        nTotalLeafs = nLeafsPerRoot**levelVerifiableByBC;
-        nTotalLevels = Math.log2(nTotalLeafs);
-        console.log(nTotalLevels)
-        nLevelsPerRoot = Math.log2(nLeafsPerRoot);
+        // set the levelVerifiableByBC to adjust to as many leagues as you have
+        nLeafsPerRoot = 2**nLevelsInOneChallenge;
+        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
+        await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
+
+        // build merkle structs for 2 different days
+        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
+        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot, levelVerifiableByBC);
         
-        leafsA = arrayToHex([...leafs]);
-        leafsB = Array.from(new Array(nTotalLeafs), (x,i) => web3.utils.keccak256((i+1).toString()));
-        console.log('building structs...')
-        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot);
-        console.log('building structs...done A')
-        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot);
-        console.log('building structs...done B')
+        // get data to challenge at level 0 (level is inferred from the length of challengePos).
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
 
-        // submissions
-        console.log('updating...')
-        await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
-        console.log('challenging...')
-        await updates.challengeTZ(challVal = nullHash, challengePos = 0, proof = [], merkleStructB[1]).should.be.fulfilled;
-        console.log('challenging...done')
-        newChallengePos = 7;
-        challengePos = [];
-        challengePos.push(newChallengePos);
-        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, merkleStructA, nLeafsPerRoot);
-        console.log('challenging...')
-        await updates.challengeTZ(challValB, newChallengePos, proofB, roots2SubmitA).should.be.fulfilled;
-        console.log('challenging...done')
-        newChallengePos = 3;
-        challengePos.push(newChallengePos);
-        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, merkleStructB, nLeafsPerRoot);
-        console.log('challenging...')
-        await updates.BCVerifableChallengeZeros(challValA, newChallengePos, proofA, roots2SubmitB).should.be.fulfilled;
-        console.log('challenging...done')
+        // So let's update with rootA...
+        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.fulfilled;
+
+        // ...we can challenge with rootsB, that differ from rootsA:
+        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB).should.be.fulfilled;
+
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        level = lev.toNumber();
+        
+        // Challenge one of the leagues:
+        challengePos.push(newChallengePos = 1);
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        
+        // But we can with differing ones:
+        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA).should.be.fulfilled;
+
+        // Check that we move to level 2
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
+        
+        // finally, the last challenge, is one that the BC can check
+        // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
+        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = true).should.be.fulfilled;
+        
+        // var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        // lev.toNumber().should.be.equal(1);
+        // var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        // lev.toNumber().should.be.equal(1);
+        // isSet.should.be.equal(false);
+        // level = lev.toNumber();
+        
     });
     
     
