@@ -114,7 +114,7 @@ func HashBidMessage2(
 	bidRnd *big.Int,
 	teamID *big.Int,
 	isOffer2StartAuction bool,
-) ([32]byte, error) {
+) (common.Hash, error) {
 	var hash [32]byte
 	bidHiddenPrice, err := market.HashBidHiddenPrice(
 		&bind.CallOpts{},
@@ -149,7 +149,7 @@ func HashBidMessage(
 	bidRnd *big.Int,
 	teamID *big.Int,
 	isOffer2StartAuction bool,
-) ([32]byte, error) {
+) (common.Hash, error) {
 	var hash [32]byte
 	auctionHashMsg, err := HashSellMessage(
 		currencyID,
@@ -183,14 +183,15 @@ func HashBidMessage(
 	return hash, err
 }
 
-func Sign(hash [32]byte, pvr *ecdsa.PrivateKey) ([]byte, error) {
-	sig, err := crypto.Sign(hash[:], pvr)
-	last := len(sig) - 1
-	if sig[last] == 0x00 {
-		sig[last] = 0x1B
-	} else {
-		sig[last] = 0x1C
+func Sign(hash []byte, pvr *ecdsa.PrivateKey) ([]byte, error) {
+	sig, err := crypto.Sign(hash, pvr)
+	if len(sig) != 65 {
+		return []byte{}, fmt.Errorf("signature must be 65 bytes long")
 	}
+	if sig[64] != 0 && sig[64] != 1 {
+		return []byte{}, fmt.Errorf("invalid Ethereum signature (V is not 0 or 1)")
+	}
+	sig[64] += 27
 	return sig, err
 }
 

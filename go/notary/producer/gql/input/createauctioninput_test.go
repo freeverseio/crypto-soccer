@@ -38,7 +38,8 @@ func TestCreateAuctionValidSignature(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e5301"
+
+	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	valid, err := in.VerifySignature()
 	assert.NilError(t, err)
 	assert.Assert(t, valid)
@@ -51,7 +52,7 @@ func TestCreateAuctionSignerAddress(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e5301"
+	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	address, err := in.SignerAddress()
 	assert.NilError(t, err)
 	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")

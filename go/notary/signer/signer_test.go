@@ -79,7 +79,7 @@ func TestAuctionMsg(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sig, err := signer.Sign(hash, pvr)
+	sig, err := signer.Sign(hash.Bytes(), pvr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,7 +133,7 @@ func TestHashBidMessage(t *testing.T) {
 		t.Fatalf("Hash error %v", result)
 	}
 	pvr, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
-	sig, err := signer.Sign(hash, pvr)
+	sig, err := signer.Sign(hash.Bytes(), pvr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +180,7 @@ func TestHashBidMessage2(t *testing.T) {
 		t.Fatalf("Hash error %v", result)
 	}
 	pvr, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
-	sig, err := signer.Sign(hash, pvr)
+	sig, err := signer.Sign(hash.Bytes(), pvr)
 	if err != nil {
 		t.Fatal(err)
 	}

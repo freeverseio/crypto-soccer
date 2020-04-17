@@ -2,6 +2,7 @@ package input
 
 import (
 	"encoding/hex"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -11,7 +12,7 @@ import (
 
 type CancelAuctionInput struct {
 	Signature string
-	ID        graphql.ID
+	AuctionId graphql.ID
 }
 
 func (b CancelAuctionInput) Hash() common.Hash {
@@ -24,6 +25,13 @@ func (b CancelAuctionInput) VerifySignature() (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	if len(sign) != 65 {
+		return false, fmt.Errorf("signature must be 65 bytes long")
+	}
+	if sign[64] != 27 && sign[64] != 28 {
+		return false, fmt.Errorf("invalid Ethereum signature (V is not 27 or 28)")
+	}
+	sign[64] -= 27 // Transform yellow paper V from 27/28 to 0/
 	return signer.VerifySignature(hash[:], sign)
 }
 
@@ -33,5 +41,5 @@ func (b CancelAuctionInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return signer.AddressFromSignature(hash[:], sign)
+	return signer.AddressFromSignature(hash.Bytes(), sign)
 }

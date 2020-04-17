@@ -21,7 +21,7 @@ func TestCreateBidInputHash(t *testing.T) {
 	assert.Equal(t, string(auctionId), "55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a")
 
 	in := input.CreateBidInput{}
-	in.Auction = auctionId
+	in.AuctionId = auctionId
 	in.ExtraPrice = 332
 	in.Rnd = 1243523
 	in.TeamId = "274877906945"
@@ -43,7 +43,7 @@ func TestCreateBidInputSign(t *testing.T) {
 	in.ExtraPrice = 332
 	in.Rnd = 1243523
 	in.TeamId = "274877906945"
-	in.Signature = "4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f01"
+	in.Signature = "4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b"
 
 	isValid, err := in.VerifySignature(*bc.Contracts)
 	assert.NilError(t, err)

@@ -11,25 +11,25 @@ import (
 func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) (graphql.ID, error) {
 	log.Debugf("CancelAuction %v", args)
 
-	id := args.Input.ID
+	id := args.Input.AuctionId
 
 	if b.ch == nil {
-		return graphql.ID(id), errors.New("internal error: no channel")
+		return id, errors.New("internal error: no channel")
 	}
 
 	isValid, err := args.Input.VerifySignature()
 	if err != nil {
-		return graphql.ID(id), err
+		return id, err
 	}
 	if !isValid {
-		return graphql.ID(id), errors.New("Invalid signature")
+		return id, errors.New("Invalid signature")
 	}
 
 	select {
 	case b.ch <- args.Input:
 	default:
 		log.Warning("channel is full")
-		return graphql.ID(id), errors.New("channel is full")
+		return id, errors.New("channel is full")
 	}
-	return graphql.ID(id), nil
+	return id, nil
 }

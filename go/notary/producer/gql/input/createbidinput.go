@@ -3,6 +3,7 @@ package input
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -13,7 +14,7 @@ import (
 
 type CreateBidInput struct {
 	Signature  string
-	Auction    graphql.ID
+	AuctionId  graphql.ID
 	ExtraPrice int32
 	Rnd        int32
 	TeamId     string
@@ -33,7 +34,7 @@ func (b CreateBidInput) Hash(contracts contracts.Contracts) (common.Hash, error)
 		return common.Hash{}, errors.New("invalid teamId")
 	}
 	isOffer2StartAuction := false
-	auctionHash := common.HexToHash(string(b.Auction))
+	auctionHash := common.HexToHash(string(b.AuctionId))
 	hash, err := signer.HashBidMessage2(
 		contracts.Market,
 		auctionHash,
@@ -57,5 +58,12 @@ func (b CreateBidInput) VerifySignature(contracts contracts.Contracts) (bool, er
 	if err != nil {
 		return false, err
 	}
-	return signer.VerifySignature(hash[:], sign)
+	if len(sign) != 65 {
+		return false, fmt.Errorf("signature must be 65 bytes long")
+	}
+	if sign[64] != 27 && sign[64] != 28 {
+		return false, fmt.Errorf("invalid Ethereum signature (V is not 27 or 28)")
+	}
+	sign[64] -= 27 // Transform yellow paper V from 27/28 to 0/1
+	return signer.VerifySignature(hash.Bytes(), sign)
 }
