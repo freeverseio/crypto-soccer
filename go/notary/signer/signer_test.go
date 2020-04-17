@@ -57,7 +57,6 @@ func TestAuctionHiddenPrice(t *testing.T) {
 }
 
 func TestAuctionMsg(t *testing.T) {
-	sign := signer.NewSigner(*bc.Contracts, nil)
 	validUntil := int64(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
@@ -80,7 +79,7 @@ func TestAuctionMsg(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sig, err := sign.Sign(hash, pvr)
+	sig, err := signer.Sign(hash, pvr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,8 +103,6 @@ func TestPublicKeyBytesToAddress(t *testing.T) {
 }
 
 func TestHashBidMessage(t *testing.T) {
-	signer := signer.NewSigner(*bc.Contracts, nil)
-
 	validUntil := int64(2000000000)
 	playerId := big.NewInt(274877906944)
 	currencyId := uint8(1)
@@ -146,12 +143,58 @@ func TestHashBidMessage(t *testing.T) {
 	}
 }
 
+func TestHashBidMessage2(t *testing.T) {
+	validUntil := int64(2000000000)
+	playerId := big.NewInt(274877906944)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	auctionRnd := big.NewInt(42321)
+	extraPrice := big.NewInt(332)
+	bidRnd := big.NewInt(1243523)
+	teamID := big.NewInt(274877906945)
+	isOffer2StartAuction := false
+
+	auctionHash, err := signer.HashSellMessage(
+		currencyId,
+		price,
+		auctionRnd,
+		validUntil,
+		playerId,
+	)
+	assert.NilError(t, err)
+	assert.Equal(t, auctionHash.Hex(), "0x55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a")
+
+	hash, err := signer.HashBidMessage2(
+		bc.Contracts.Market,
+		auctionHash,
+		extraPrice,
+		bidRnd,
+		teamID,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(hash[:])
+	if result != "c0ad1683b9afe071d698763b7143e7cff7bcc661c7074497d870964dd58d9976" {
+		t.Fatalf("Hash error %v", result)
+	}
+	pvr, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
+	sig, err := signer.Sign(hash, pvr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result = hex.EncodeToString(sig)
+	if result != "4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1c" {
+		t.Fatalf("Sign error %v", result)
+	}
+}
+
 func TestBidHiddenPrice(t *testing.T) {
-	signer := signer.NewSigner(*bc.Contracts, nil)
 	extraPrice := big.NewInt(332)
 	buyerRandom := big.NewInt(1243523)
 
-	hash, err := signer.BidHiddenPrice(extraPrice, buyerRandom)
+	hash, err := signer.BidHiddenPrice(bc.Contracts.Market, extraPrice, buyerRandom)
 	if err != nil {
 		t.Fatal(err)
 	}

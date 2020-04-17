@@ -1,14 +1,14 @@
 package input
 
 import (
-	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
+	"errors"
 	"math/big"
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/graph-gophers/graphql-go"
 )
 
 type CreateAuctionInput struct {
@@ -20,15 +20,19 @@ type CreateAuctionInput struct {
 	ValidUntil string
 }
 
-func (b CreateAuctionInput) ID() string {
-	h := sha256.New()
-
-	h.Write([]byte(fmt.Sprintf("%s%s%d%d%d%s", b.Signature, b.PlayerId, b.CurrencyId, b.Price, b.Rnd, b.ValidUntil)))
-	return hex.EncodeToString(h.Sum(nil))
+func (b CreateAuctionInput) ID() (graphql.ID, error) {
+	hash, err := b.Hash()
+	if err != nil {
+		return graphql.ID(""), err
+	}
+	return graphql.ID(hash.String()[2:]), nil
 }
 
 func (b CreateAuctionInput) Hash() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return common.Hash{}, errors.New("invalid playerId")
+	}
 	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
 	if err != nil {
 		return common.Hash{}, err

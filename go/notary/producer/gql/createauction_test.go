@@ -43,5 +43,7 @@ func TestCreateAuctionReturnTheSignature(t *testing.T) {
 
 	id, err := r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
 	assert.NilError(t, err)
-	assert.Equal(t, string(id), in.ID())
+	id2, err := in.ID()
+	assert.NilError(t, err)
+	assert.Equal(t, id, id2)
 }
