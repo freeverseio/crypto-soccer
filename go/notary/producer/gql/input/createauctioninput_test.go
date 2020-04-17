@@ -49,5 +49,5 @@ func TestCreateAuctionID(t *testing.T) {
 	in := input.CreateAuctionInput{}
 	in.PlayerId = "10"
 	in.ValidUntil = "1000"
-	assert.Equal(t, in.ID(), "1f6beaf1c921f0bec83203b2d59d508a097aae5a452d443fccbf09716682bea1")
+	assert.Equal(t, in.ID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 }

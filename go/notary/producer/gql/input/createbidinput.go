@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -24,7 +23,7 @@ type CreateBidInput struct {
 
 func (b CreateBidInput) ID() string {
 	h := sha256.New()
-	h.Write([]byte(fmt.Sprintf("%s%s%d%d%s", b.Signature, string(b.Auction), b.ExtraPrice, b.Rnd, b.TeamId)))
+	h.Write([]byte(b.Signature))
 	return hex.EncodeToString(h.Sum(nil))
 }
 

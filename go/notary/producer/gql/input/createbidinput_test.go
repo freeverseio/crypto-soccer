@@ -11,7 +11,7 @@ import (
 
 func TestCreateBidInputID(t *testing.T) {
 	in := input.CreateBidInput{}
-	assert.Equal(t, in.ID(), "f1534392279bddbf9d43dde8701cb5be14b82f76ec6607bf8d6ad557f60f304e")
+	assert.Equal(t, in.ID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 }
 
 func TestCreateBidInputHash(t *testing.T) {
