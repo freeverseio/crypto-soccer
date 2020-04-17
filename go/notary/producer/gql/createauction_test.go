@@ -17,7 +17,7 @@ import (
 
 func TestCreateAuctionReturnTheSignature(t *testing.T) {
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts, db)
+	r := gql.NewResolver(ch, *bc.Contracts)
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = fmt.Sprintf("%v", time.Now().Unix()+1000)

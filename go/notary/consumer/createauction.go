@@ -15,7 +15,11 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 		return err
 	}
 	auction := storage.NewAuction()
-	auction.ID = in.ID()
+	id, err := in.ID()
+	if err != nil {
+		return err
+	}
+	auction.ID = string(id)
 	auction.Rnd = int(in.Rnd)
 	auction.PlayerID = in.PlayerId
 	auction.CurrencyID = int(in.CurrencyId)
