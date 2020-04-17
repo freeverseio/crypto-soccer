@@ -14,7 +14,7 @@ import (
 
 type CreateBidInput struct {
 	Signature  string
-	Auction    graphql.ID
+	AuctionId  graphql.ID
 	ExtraPrice int32
 	Rnd        int32
 	TeamId     string
@@ -34,7 +34,7 @@ func (b CreateBidInput) Hash(contracts contracts.Contracts) (common.Hash, error)
 		return common.Hash{}, errors.New("invalid teamId")
 	}
 	isOffer2StartAuction := false
-	auctionHash := common.HexToHash(string(b.Auction))
+	auctionHash := common.HexToHash(string(b.AuctionId))
 	hash, err := signer.HashBidMessage2(
 		contracts.Market,
 		auctionHash,

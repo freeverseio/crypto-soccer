@@ -11,7 +11,7 @@ import (
 
 type CancelAuctionInput struct {
 	Signature string
-	ID        graphql.ID
+	AuctionId graphql.ID
 }
 
 func (b CancelAuctionInput) Hash() common.Hash {

@@ -33,7 +33,7 @@ func TestCreateBid(t *testing.T) {
 	assert.NilError(t, err)
 
 	in := input.CreateBidInput{}
-	in.Auction = auctionId
+	in.AuctionId = auctionId
 	in.ExtraPrice = 332
 	in.Rnd = 1243523
 	in.TeamId = "274877906945"
