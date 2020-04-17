@@ -45,7 +45,7 @@ func TestCreateBidInputSign(t *testing.T) {
 	in.TeamId = "274877906945"
 	in.Signature = "4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f01"
 
-	isValid, err := in.VerifySignature(*bc.Contracts, *auction)
+	isValid, err := in.VerifySignature(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Assert(t, isValid)
 }
