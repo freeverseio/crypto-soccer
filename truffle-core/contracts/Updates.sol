@@ -165,12 +165,7 @@ contract Updates is UpdatesView, Merkle {
         returns (bytes32, uint8[4] memory intData)
     {
         // intData = [tz, level, levelVerifiable, idx]
-        (intData[0],,) = prevTimeZoneToUpdate();
-        require(intData[0] != NULL_TIMEZONE, "cannot challenge the null timezone");
-        (intData[3], intData[1], intData[2]) = getChallengeData(intData[0], true);
-        bool isSettled;
-        (intData[1], isSettled) = _cleanTimeAcceptedChallenges(intData[0], intData[1]);
-        require(!isSettled, "challenging time is over for the current timezone");
+        intData = _cleanTimeAcceptedChallenges();
 
         // build the root of the providedData
         bytes32 root;
@@ -201,22 +196,28 @@ contract Updates is UpdatesView, Merkle {
         return (root, intData);        
     }
     
-    function _cleanTimeAcceptedChallenges(uint8 tz, uint8 writtenLevel) internal returns (uint8, bool) {
-        (uint8 finalLevel, uint8 nJumps, bool isSettled) = getStatus(tz, true);
+    function _cleanTimeAcceptedChallenges() internal returns (uint8[4] memory intData) {
+        // intData = [tz, level, levelVerifiable, idx]
+        (intData[0],,) = prevTimeZoneToUpdate();
+        require(intData[0] != NULL_TIMEZONE, "cannot challenge the null timezone");
+        (intData[3], intData[1], intData[2]) = getChallengeData(intData[0], true);
+
+        (uint8 finalLevel, uint8 nJumps, bool isSettled) = getStatus(intData[0], true);
+        require(!isSettled, "challenging time is over for the current timezone");
         // if there was 0 jumps, do nothing
-        if (nJumps == 0) return (writtenLevel, isSettled);
+        if (nJumps == 0) return intData;
         // otherwise clean all data except for the lowest level
-        require(writtenLevel == finalLevel + 2 * nJumps, "challenge status: nJumps incompatible with writtenLevel and finalLevel");
-        uint8 idx = _newestRootsIdx[tz];
+        require(intData[1] == finalLevel + 2 * nJumps, "challenge status: nJumps incompatible with writtenLevel and finalLevel");
+        uint8 idx = _newestRootsIdx[intData[0]];
         for (uint8 j = 0; j < nJumps; j++) {
             uint8 levelAccepted = finalLevel + 2 * (j + 1);
-            _roots[tz][idx][levelAccepted] = 0;
-            _roots[tz][idx][levelAccepted-1] = 0;
-            emit ChallengeResolved(tz, levelAccepted, true);
-            emit ChallengeResolved(tz, levelAccepted - 1, false);
+            _roots[intData[0]][idx][levelAccepted] = 0;
+            _roots[intData[0]][idx][levelAccepted-1] = 0;
+            emit ChallengeResolved(intData[0], levelAccepted, true);
+            emit ChallengeResolved(intData[0], levelAccepted - 1, false);
         }
-        _challengeLevel[tz][idx] = finalLevel;
-        return (finalLevel, isSettled);
+        _challengeLevel[intData[0]][idx] = finalLevel;
+        intData[1] = finalLevel;
     }
     
     function _setTZRoot(uint8 tz, bytes32 root) internal {

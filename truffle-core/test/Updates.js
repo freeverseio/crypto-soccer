@@ -221,7 +221,7 @@ contract('Updates', (accounts) => {
     // level 1: 2048 league Roots
     // level 2: 640 leafs for each
     
-    it2('challenging a tz', async () =>  {
+    it('challenging a tz', async () =>  {
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
         var level = 0;
