@@ -40,7 +40,7 @@ func TestCreateAuction(t *testing.T) {
 	assert.NilError(t, err)
 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
-	signature, err := crypto.Sign(hash.Bytes(), privateKey)
+	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
