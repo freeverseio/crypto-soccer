@@ -65,5 +65,5 @@ func (b CreateBidInput) VerifySignature(contracts contracts.Contracts) (bool, er
 		return false, fmt.Errorf("invalid Ethereum signature (V is not 27 or 28)")
 	}
 	sign[64] -= 27 // Transform yellow paper V from 27/28 to 0/1
-	return signer.VerifySignature(hash[:], sign)
+	return signer.VerifySignature(hash.Bytes(), sign)
 }
