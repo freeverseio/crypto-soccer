@@ -114,7 +114,7 @@ func HashBidMessage2(
 	bidRnd *big.Int,
 	teamID *big.Int,
 	isOffer2StartAuction bool,
-) ([32]byte, error) {
+) (common.Hash, error) {
 	var hash [32]byte
 	bidHiddenPrice, err := market.HashBidHiddenPrice(
 		&bind.CallOpts{},
@@ -149,7 +149,7 @@ func HashBidMessage(
 	bidRnd *big.Int,
 	teamID *big.Int,
 	isOffer2StartAuction bool,
-) ([32]byte, error) {
+) (common.Hash, error) {
 	var hash [32]byte
 	auctionHashMsg, err := HashSellMessage(
 		currencyID,
@@ -183,8 +183,8 @@ func HashBidMessage(
 	return hash, err
 }
 
-func Sign(hash common.Hash, pvr *ecdsa.PrivateKey) ([]byte, error) {
-	sig, err := crypto.Sign(hash.Bytes(), pvr)
+func Sign(hash []byte, pvr *ecdsa.PrivateKey) ([]byte, error) {
+	sig, err := crypto.Sign(hash, pvr)
 	if len(sig) != 65 {
 		return []byte{}, fmt.Errorf("signature must be 65 bytes long")
 	}

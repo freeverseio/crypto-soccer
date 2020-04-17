@@ -10,6 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+
+	"github.com/ethereum/go-ethereum/common"
 	"gotest.tools/assert"
 )
 
@@ -61,6 +63,8 @@ func TestVerifyAuctionSignature(t *testing.T) {
 		playerId,
 	)
 	assert.NilError(t, err)
+	assert.Equal(t, hash.Hex(), "0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+
 	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	assert.NilError(t, err)
 
@@ -75,4 +79,17 @@ func TestVerifyAuctionSignature(t *testing.T) {
 	address, err := signer.AddressFromSignature(hash.Bytes(), signature)
 	assert.NilError(t, err)
 	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
+}
+
+func TestSignatureInvalidId(t *testing.T) {
+	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	assert.NilError(t, err)
+
+	hash := common.HexToHash("0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	signature, err := signer.Sign(hash.Bytes(), privateKey)
+	assert.NilError(t, err)
+	assert.Equal(t, hex.EncodeToString(signature), "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c")
+
+	_, err = signer.VerifySignature(hash.Bytes(), signature)
+	assert.Error(t, err, "invalid signature recovery id")
 }
