@@ -78,7 +78,9 @@ contract Updates is UpdatesView, Merkle {
     // TODO: specify which leaf you challenge!!! And bring Merkle proof!
     function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots) public {
         // intData = [tz, level, levelVerifiable, idx]
-        (bytes32 root , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
+        uint8[4] memory intData = _cleanTimeAcceptedChallenges();
+        bytes32 root = _assertFormallyCorrectChallenge(
+            intData,
             challLeaveVal, 
             challLeavePos, 
             proofChallLeave, 
@@ -95,7 +97,8 @@ contract Updates is UpdatesView, Merkle {
 
     function BCVerifableChallengeFake(bytes32[] memory leagueLeafs, bool forceSuccess) public {
         // intData = [tz, level, levelVerifiable, idx]
-        ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(0, 0, new bytes32[](0) , leagueLeafs);
+        uint8[4] memory intData = _cleanTimeAcceptedChallenges();
+        _assertFormallyCorrectChallenge(intData, 0, 0, new bytes32[](0) , leagueLeafs);
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
         require(forceSuccess, "fake challenge failed because it was told to fail");
         _completeSuccessfulVerifiableChallenge(intData);
@@ -103,8 +106,8 @@ contract Updates is UpdatesView, Merkle {
 
     function BCVerifableChallengeZeros(bytes32[] memory leagueLeafs) public {
         // intData = [tz, level, levelVerifiable, idx]
-        // PROBLEM: leagueleafs changes in the Merkle root!!
-        ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(0, 0, new bytes32[](0), leagueLeafs);
+        uint8[4] memory intData = _cleanTimeAcceptedChallenges();
+        _assertFormallyCorrectChallenge(intData, 0, 0, new bytes32[](0), leagueLeafs);
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
 
         (, uint8 day, uint8 half) = prevTimeZoneToUpdate();
@@ -156,13 +159,14 @@ contract Updates is UpdatesView, Merkle {
     }
 
     function _assertFormallyCorrectChallenge(
+        uint8[4] memory intData,
         bytes32 challLeaveVal, 
         uint256 challLeavePos, 
         bytes32[] memory proofChallLeave, 
         bytes32[] memory providedRoots
     ) 
         private 
-        returns (bytes32, uint8[4] memory intData)
+        returns (bytes32)
     {
         // intData = [tz, level, levelVerifiable, idx]
         intData = _cleanTimeAcceptedChallenges();
@@ -193,7 +197,7 @@ contract Updates is UpdatesView, Merkle {
             bytes32 prevRoot = getRoot(intData[0], intData[1], true);
             require(verify(prevRoot, proofChallLeave, challLeaveVal, challLeavePos), "merkle proof not correct");
         }
-        return (root, intData);        
+        return root;        
     }
     
     function _cleanTimeAcceptedChallenges() internal returns (uint8[4] memory intData) {
