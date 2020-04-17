@@ -1,7 +1,6 @@
 package input
 
 import (
-	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"math/big"
@@ -18,13 +17,6 @@ type CreateAuctionInput struct {
 	Price      int32
 	Rnd        int32
 	ValidUntil string
-}
-
-func (b CreateAuctionInput) ID() string {
-	h := sha256.New()
-
-	h.Write([]byte(b.Signature))
-	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (b CreateAuctionInput) Hash() (common.Hash, error) {

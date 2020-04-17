@@ -9,11 +9,6 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestCreateBidInputID(t *testing.T) {
-	in := input.CreateBidInput{}
-	assert.Equal(t, in.ID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-}
-
 func TestCreateBidInputHash(t *testing.T) {
 	auction := storage.NewAuction()
 	auction.ValidUntil = int64(2000000000)

@@ -1,7 +1,6 @@
 package input
 
 import (
-	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"math/big"
@@ -19,12 +18,6 @@ type CreateBidInput struct {
 	ExtraPrice int32
 	Rnd        int32
 	TeamId     string
-}
-
-func (b CreateBidInput) ID() string {
-	h := sha256.New()
-	h.Write([]byte(b.Signature))
-	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (b CreateBidInput) Hash(
