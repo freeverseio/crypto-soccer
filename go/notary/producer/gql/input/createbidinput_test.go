@@ -21,7 +21,7 @@ func TestCreateBidInputHash(t *testing.T) {
 	assert.Equal(t, string(auctionId), "55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a")
 
 	in := input.CreateBidInput{}
-	in.Auction = auctionId
+	in.AuctionId = auctionId
 	in.ExtraPrice = 332
 	in.Rnd = 1243523
 	in.TeamId = "274877906945"
