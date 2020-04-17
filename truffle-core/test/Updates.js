@@ -89,7 +89,6 @@ contract('Updates', (accounts) => {
                 ", turn = " + turn.toNumber();
             result += thisResult;
         }
-        // console.log(result)
         expected = " | verse = 0, tz = 2, matchday = 0, turn = 0 | verse = 13, tz = 5, matchday = 0, turn = 1 | verse = 26, tz = 0, matchday = 0, turn = 0 | verse = 39, tz = 2, matchday = 1, turn = 1 | verse = 52, tz = 15, matchday = 0, turn = 0 | verse = 65, tz = 18, matchday = 0, turn = 1 | verse = 78, tz = 12, matchday = 1, turn = 0 | verse = 91, tz = 15, matchday = 1, turn = 1 | verse = 104, tz = 4, matchday = 2, turn = 0 | verse = 117, tz = 7, matchday = 2, turn = 1 | verse = 130, tz = 1, matchday = 1, turn = 0 | verse = 143, tz = 4, matchday = 3, turn = 1 | verse = 156, tz = 17, matchday = 2, turn = 0 | verse = 169, tz = 20, matchday = 2, turn = 1 | verse = 182, tz = 14, matchday = 3, turn = 0 | verse = 195, tz = 17, matchday = 3, turn = 1 | verse = 208, tz = 6, matchday = 4, turn = 0 | verse = 221, tz = 9, matchday = 4, turn = 1 | verse = 234, tz = 3, matchday = 5, turn = 0 | verse = 247, tz = 6, matchday = 5, turn = 1 | verse = 260, tz = 19, matchday = 4, turn = 0 | verse = 273, tz = 22, matchday = 4, turn = 1 | verse = 286, tz = 16, matchday = 5, turn = 0 | verse = 299, tz = 19, matchday = 5, turn = 1 | verse = 312, tz = 8, matchday = 6, turn = 0 | verse = 325, tz = 11, matchday = 6, turn = 1 | verse = 338, tz = 5, matchday = 7, turn = 0 | verse = 351, tz = 8, matchday = 7, turn = 1 | verse = 364, tz = 21, matchday = 6, turn = 0 | verse = 377, tz = 24, matchday = 6, turn = 1 | verse = 390, tz = 18, matchday = 7, turn = 0 | verse = 403, tz = 21, matchday = 7, turn = 1 | verse = 416, tz = 10, matchday = 8, turn = 0 | verse = 429, tz = 13, matchday = 8, turn = 1 | verse = 442, tz = 7, matchday = 9, turn = 0 | verse = 455, tz = 10, matchday = 9, turn = 1 | verse = 468, tz = 23, matchday = 8, turn = 0 | verse = 481, tz = 2, matchday = 10, turn = 1 | verse = 494, tz = 20, matchday = 9, turn = 0 | verse = 507, tz = 23, matchday = 9, turn = 1 | verse = 520, tz = 12, matchday = 10, turn = 0 | verse = 533, tz = 15, matchday = 10, turn = 1 | verse = 546, tz = 9, matchday = 11, turn = 0 | verse = 559, tz = 12, matchday = 11, turn = 1 | verse = 572, tz = 1, matchday = 10, turn = 0 | verse = 585, tz = 4, matchday = 12, turn = 1 | verse = 598, tz = 22, matchday = 11, turn = 0 | verse = 611, tz = 1, matchday = 11, turn = 1 | verse = 624, tz = 14, matchday = 12, turn = 0 | verse = 637, tz = 17, matchday = 12, turn = 1 | verse = 650, tz = 11, matchday = 13, turn = 0 | verse = 663, tz = 14, matchday = 13, turn = 1 | verse = 676, tz = 3, matchday = 0, turn = 0 | verse = 689, tz = 6, matchday = 0, turn = 1 | verse = 702, tz = 24, matchday = 13, turn = 0 | verse = 715, tz = 3, matchday = 1, turn = 1 | verse = 728, tz = 16, matchday = 0, turn = 0 | verse = 741, tz = 19, matchday = 0, turn = 1 | verse = 754, tz = 13, matchday = 1, turn = 0 | verse = 767, tz = 16, matchday = 1, turn = 1 | verse = 780, tz = 5, matchday = 2, turn = 0 | verse = 793, tz = 8, matchday = 2, turn = 1 | verse = 806, tz = 2, matchday = 3, turn = 0 | verse = 819, tz = 5, matchday = 3, turn = 1 | verse = 832, tz = 18, matchday = 2, turn = 0 | verse = 845, tz = 21, matchday = 2, turn = 1 | verse = 858, tz = 15, matchday = 3, turn = 0 | verse = 871, tz = 18, matchday = 3, turn = 1 | verse = 884, tz = 7, matchday = 4, turn = 0 | verse = 897, tz = 10, matchday = 4, turn = 1 | verse = 910, tz = 4, matchday = 5, turn = 0 | verse = 923, tz = 7, matchday = 5, turn = 1 | verse = 936, tz = 20, matchday = 4, turn = 0 | verse = 949, tz = 23, matchday = 4, turn = 1";
         result.should.be.equal(expected);
     });
@@ -226,7 +225,6 @@ contract('Updates', (accounts) => {
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
         var level = 0;
-        console.log("sdd-90", level)
 
         // move to next verse adn submit actions
         await moveToNextVerse(updates, extraSecs = 2);
@@ -234,52 +232,40 @@ contract('Updates', (accounts) => {
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
         tzZeroBased = 2;
-        console.log("sdd-90", level)
 
         // create leafs by building them from an orgmap:
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 3, half = 0, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
-        console.log("sdd-90", level)
+
         leafsA = chllUtils.leafsToBytes32(leafsADecimal);
         const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
         leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
-        console.log("sdd-90", level)
 
         // set the levelVerifiableByBC to adjust to as many leagues as you have
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
         await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
-        console.log("sdd-90", level)
 
         // build merkle structs for 2 different days
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
-        console.log("sdd-901", level)
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot, levelVerifiableByBC);
-        console.log("sdd-902", level)
-
         
         // get data to challenge at level 0 (level is inferred from the length of challengePos).
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
-        console.log("sdd-903", level)
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
 
         // First challenge fails because the TZ has not been updated yet with a root
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA).should.be.rejected;
-        console.log("sdd-90", level)
 
         // So let's update with rootA...
         await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.fulfilled;
-        console.log("sdd-80", level)
 
         // We can not challenge with something compatible with rootA:
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA).should.be.rejected;
-        console.log("sdd-70", level)
 
         // ...but we can challenge with rootsB, that differ from rootsA:
         assert.notEqual(merkleStructA[lev = 0][pos = 0], merkleStructB[lev = 0][pos = 0], "wrong leafsA should lead to different root");
-        console.log(level, challengePos, challengePos[level])
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB).should.be.fulfilled;
-        console.log("sdd-60")
 
         // check that level increased:
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
@@ -294,7 +280,6 @@ contract('Updates', (accounts) => {
         challengePos.push(newChallengePos = 1);
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
-        console.log("sdd-50")
 
         assert.equal(merkleUtils.merkleRoot(roots2SubmitB, nLevelsInLastChallenge), merkleStructB[1][1], "wrong selection of roots2submit");
         assert.equal(merkleUtils.merkleRoot(roots2SubmitB, nLevelsInLastChallenge), challValB, "wrong selection of roots2submit");
@@ -305,16 +290,13 @@ contract('Updates', (accounts) => {
         );
         assert.equal(merkleUtils.merkleRoot(roots2SubmitA, nLevelsInLastChallenge), merkleStructA[1][1], "wrong selection of roots2submit");
         assert.equal(merkleUtils.merkleRoot(roots2SubmitA, nLevelsInLastChallenge), challValA, "wrong selection of roots2submit");
-        console.log("sdd-40")
         
         // As always, first check that we cannot submit roots that coinicide with previous:
         await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitB).should.be.rejected;
-        console.log("sdd-30")
         
         // But we can with differing ones:
         await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA).should.be.fulfilled;
 
-        console.log("sdd-32")
         // Check that we move to level 2
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
@@ -322,7 +304,6 @@ contract('Updates', (accounts) => {
         newChallengePos_backup = newChallengePos;
         proofB_backup = [...proofB];
         roots2SubmitA_backup = [...roots2SubmitA];
-        console.log("sdd-20")
         
         // finally, the last challenge, is one that the BC can check
         // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
@@ -332,7 +313,6 @@ contract('Updates', (accounts) => {
         // but I can submit different ones. In this case the BC decides according to forceSuccess
         await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = false).should.be.rejected;
         await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = true).should.be.fulfilled;
-        console.log("sdd-10")
         
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(1);
@@ -340,8 +320,6 @@ contract('Updates', (accounts) => {
         lev.toNumber().should.be.equal(1);
         isSet.should.be.equal(false);
         level = lev.toNumber();
-
-        console.log("sdd-0")
         
         // challenge again to move to level2, and now we will wait time
         await updates.challengeTZ(challValB_backup, newChallengePos_backup, proofB_backup, roots2SubmitA_backup).should.be.fulfilled;
@@ -356,7 +334,6 @@ contract('Updates', (accounts) => {
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
 
-        console.log("sdd-1")
         // note that getStatus realises that we moved to level 0, but not the written stuff
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
@@ -365,20 +342,15 @@ contract('Updates', (accounts) => {
         nJumps.toNumber().should.be.equal(1);
         isSet.should.be.equal(false);
         level = lev.toNumber();
-        console.log("sdd-2")
 
         // I should not be able to provide a new update, nor new actionRoots, for 2 reasons:
         //      we're not in the next verse yet
         //      the previous verse is not settled yet
         // In this case, it fails because of the first reason. TODO: add test for 2nd.
-        console.log("sdd-3")
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
-        console.log("sdd")
         await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
-        console.log("sdd")
 
         await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.rejected;
-        console.log("sdd")
         
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
