@@ -604,7 +604,7 @@ contract('Updates', (accounts) => {
         
         // finally, the last challenge, is one that the BC can check
         // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
-        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = true).should.be.fulfilled;
+        await updates.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.fulfilled;
         
         // var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         // lev.toNumber().should.be.equal(1);

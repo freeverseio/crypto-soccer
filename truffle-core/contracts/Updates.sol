@@ -112,8 +112,36 @@ contract Updates is UpdatesView, Merkle {
         _completeSuccessfulVerifiableChallenge(intData);
     }
     
+    // check that leagueLeafs.length == 640 has been done before calling this function (to preserve it being pure)
     function areThereUnexpectedZeros(bytes32[] memory leagueLeafs, uint8 day, uint8 half) public pure returns(bool) {
-        return true;
+        if ((day == 0) && (half == 0)) {
+            // at end of 1st half we still do not have league points
+            for (uint16 i = 0; i < 8; i++) {
+                if (leagueLeafs[i] != 0) return true;
+            }
+            // we do not have tactics, nor training, nor ML before
+            for (uint16 team = 0; team < TEAMS_PER_LEAGUE; team++) {
+                uint16 off = 128 + 64 * team;
+                for (uint16 i = 25; i < 28; i++) {
+                    if (leagueLeafs[off + i] != 0) return true;
+                }
+            }
+        }
+        // every element of team from 28 to 32 is 0
+        for (uint16 team = 0; team < TEAMS_PER_LEAGUE; team++) {
+            uint16 off = 128 + 64 * team;
+            for (uint16 i = 28; i < 32; i++) {
+                if (leagueLeafs[off + i] != 0) return true;
+                if (leagueLeafs[off+ 32 + i] != 0) return true;
+            }
+        }
+        // no goals after this day
+        uint16 off = 8 + 8 * day;
+        if (half == 1) off += 8;
+        for (uint16 i = off; i < 128; i++) {
+            if (leagueLeafs[i] != 0) return true;
+        }
+        return false;
     }
     
 

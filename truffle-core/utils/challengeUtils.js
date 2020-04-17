@@ -254,7 +254,7 @@ function assertExpectedZeroValues(dayLeaf, day, half, expectedLength) {
       }
   }
   // no goals after this day
-  off = 8 + 8 * Math.floor(day);
+  off = 8 + 8 * day;
   if (half == 1) off += 8;
   for (i = off; i < 128; i++) {
       assert.equal(dayLeaf[i], 0, "unexpected nonnull element");
