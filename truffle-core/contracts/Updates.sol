@@ -93,14 +93,9 @@ contract Updates is UpdatesView, Merkle {
         _lastUpdateTime[intData[0]] = now;
     }
 
-    function BCVerifableChallengeFake(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory leagueLeafs, bool forceSuccess) public {
+    function BCVerifableChallengeFake(bytes32[] memory leagueLeafs, bool forceSuccess) public {
         // intData = [tz, level, levelVerifiable, idx]
-        ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(
-            challLeaveVal, 
-            challLeavePos, 
-            leagueLeafs, 
-            leagueLeafs
-        );
+        ( , uint8[4] memory intData) = _assertFormallyCorrectChallenge(0, 0, new bytes32[](0) , leagueLeafs);
         require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
         require(forceSuccess, "fake challenge failed because it was told to fail");
         _completeSuccessfulVerifiableChallenge(intData);
@@ -153,7 +148,7 @@ contract Updates is UpdatesView, Merkle {
 
         // build the root of the providedData
         bytes32 root;
-        if (intData[1] + 2 == intData[2]) {
+        if (intData[1] + 2 >= intData[2]) {
             require(providedRoots.length == _leafsInLeague, "league leafs must have len 640");
             root = merkleRoot(providedRoots, _levelsInLastChallenge);
         } else {
@@ -167,8 +162,12 @@ contract Updates is UpdatesView, Merkle {
             // at level 0, the value one challenges is the one written in the BC, so we don't use challLeaveVal (could be anything)
             // and we don't need to verifiy that it belonged to a previous commit.
             require(root != getRoot(intData[0], 0, true), "provided leafs lead to same root being challenged");
+        } else if ((intData[1] + 1) == intData[2]) {
+            // at last level, we just provide the league leaves provided by the last challenger,
+            // and we verify that they DO match with what is written.
+            require(root == getRoot(intData[0], intData[1], true), "provided leafs lead to same root being challenged");
         } else {
-            // beyond level 0, we also check that the challVal belonged to a previous commit
+            // otherwise we also check that the challVal belonged to a previous commit
             require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
             bytes32 prevRoot = getRoot(intData[0], intData[1], true);
             require(verify(prevRoot, proofChallLeave, challLeaveVal, challLeavePos), "merkle proof not correct");

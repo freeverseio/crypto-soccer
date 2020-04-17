@@ -225,7 +225,8 @@ contract('Updates', (accounts) => {
     it('challenging a tz', async () =>  {
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
-        level = 0;
+        var level = 0;
+        console.log("sdd-90", level)
 
         // move to next verse adn submit actions
         await moveToNextVerse(updates, extraSecs = 2);
@@ -233,39 +234,52 @@ contract('Updates', (accounts) => {
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
         tzZeroBased = 2;
+        console.log("sdd-90", level)
 
         // create leafs by building them from an orgmap:
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 3, half = 0, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        console.log("sdd-90", level)
         leafsA = chllUtils.leafsToBytes32(leafsADecimal);
         const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
         leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
+        console.log("sdd-90", level)
 
         // set the levelVerifiableByBC to adjust to as many leagues as you have
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
         await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
-        
+        console.log("sdd-90", level)
+
         // build merkle structs for 2 different days
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
+        console.log("sdd-901", level)
         merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot, levelVerifiableByBC);
+        console.log("sdd-902", level)
 
+        
         // get data to challenge at level 0 (level is inferred from the length of challengePos).
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        console.log("sdd-903", level)
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
 
         // First challenge fails because the TZ has not been updated yet with a root
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA).should.be.rejected;
+        console.log("sdd-90", level)
 
         // So let's update with rootA...
         await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.fulfilled;
+        console.log("sdd-80", level)
 
         // We can not challenge with something compatible with rootA:
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA).should.be.rejected;
+        console.log("sdd-70", level)
 
         // ...but we can challenge with rootsB, that differ from rootsA:
         assert.notEqual(merkleStructA[lev = 0][pos = 0], merkleStructB[lev = 0][pos = 0], "wrong leafsA should lead to different root");
+        console.log(level, challengePos, challengePos[level])
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB).should.be.fulfilled;
+        console.log("sdd-60")
 
         // check that level increased:
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
@@ -278,9 +292,9 @@ contract('Updates', (accounts) => {
         // TODO: test that vals are gotten from events
         // Challenge one of the leagues:
         challengePos.push(newChallengePos = 1);
-        console.log(leafsA.length)
         var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
         var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
+        console.log("sdd-50")
 
         assert.equal(merkleUtils.merkleRoot(roots2SubmitB, nLevelsInLastChallenge), merkleStructB[1][1], "wrong selection of roots2submit");
         assert.equal(merkleUtils.merkleRoot(roots2SubmitB, nLevelsInLastChallenge), challValB, "wrong selection of roots2submit");
@@ -291,15 +305,16 @@ contract('Updates', (accounts) => {
         );
         assert.equal(merkleUtils.merkleRoot(roots2SubmitA, nLevelsInLastChallenge), merkleStructA[1][1], "wrong selection of roots2submit");
         assert.equal(merkleUtils.merkleRoot(roots2SubmitA, nLevelsInLastChallenge), challValA, "wrong selection of roots2submit");
+        console.log("sdd-40")
         
         // As always, first check that we cannot submit roots that coinicide with previous:
-        console.log(",,,", leafsA.length)
         await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitB).should.be.rejected;
-        console.log(leafsA.length)
+        console.log("sdd-30")
         
         // But we can with differing ones:
         await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA).should.be.fulfilled;
 
+        console.log("sdd-32")
         // Check that we move to level 2
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
@@ -307,62 +322,68 @@ contract('Updates', (accounts) => {
         newChallengePos_backup = newChallengePos;
         proofB_backup = [...proofB];
         roots2SubmitA_backup = [...roots2SubmitA];
-        
-        console.log("bye", proofB.length)
+        console.log("sdd-20")
         
         // finally, the last challenge, is one that the BC can check
         // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
         leafsSubmitted = [...roots2SubmitA];
-        posInLevels = merkleUtils.getCallengedPosPerLevel(level-1, posArray, nLeafsPerRoot)
-        console.log("bye")
-        await updates.BCVerifableChallengeFake(challValA, challengePos[level-1], leafsSubmitted, forceSuccess = true).should.be.rejected;
-        console.log("bye...done")
-
+        // try with wrong leaves:
+        await updates.BCVerifableChallengeFake([...roots2SubmitB], forceSuccess = true).should.be.rejected;
         // but I can submit different ones. In this case the BC decides according to forceSuccess
-        await updates.BCVerifableChallengeFake(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = false).should.be.rejected;
-        console.log("bye")
-        await updates.BCVerifableChallengeFake(challValA, newChallengePos, proofA, roots2SubmitB, forceSuccess = true).should.be.fulfilled;
-        console.log("bye")
+        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = false).should.be.rejected;
+        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = true).should.be.fulfilled;
+        console.log("sdd-10")
         
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(1);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        level.toNumber().should.be.equal(1);
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
         isSet.should.be.equal(false);
-        console.log("bye")
+        level = lev.toNumber();
+
+        console.log("sdd-0")
         
         // challenge again to move to level2, and now we will wait time
         await updates.challengeTZ(challValB_backup, newChallengePos_backup, proofB_backup, roots2SubmitA_backup).should.be.fulfilled;
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        level.toNumber().should.be.equal(2);
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
         isSet.should.be.equal(false);
+        level = lev.toNumber();
         
         challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
 
+        console.log("sdd-1")
         // note that getStatus realises that we moved to level 0, but not the written stuff
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        level.toNumber().should.be.equal(0);
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(0);
         nJumps.toNumber().should.be.equal(1);
         isSet.should.be.equal(false);
+        level = lev.toNumber();
+        console.log("sdd-2")
 
         // I should not be able to provide a new update, nor new actionRoots, for 2 reasons:
         //      we're not in the next verse yet
         //      the previous verse is not settled yet
         // In this case, it fails because of the first reason. TODO: add test for 2nd.
+        console.log("sdd-3")
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+        console.log("sdd")
         await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
-        await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.rejected;
+        console.log("sdd")
+
+        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.rejected;
+        console.log("sdd")
         
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        level.toNumber().should.be.equal(0);
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(0);
         isSet.should.be.equal(true);
     });
     
