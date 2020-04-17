@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/graph-gophers/graphql-go"
 )
 
@@ -20,9 +19,15 @@ type CreateBidInput struct {
 	TeamId     string
 }
 
-func (b CreateBidInput) Hash(
-	contracts contracts.Contracts,
-) (common.Hash, error) {
+func (b CreateBidInput) ID(contracts contracts.Contracts) (graphql.ID, error) {
+	hash, err := b.Hash(contracts)
+	if err != nil {
+		return graphql.ID(""), err
+	}
+	return graphql.ID(hash.String()[2:]), nil
+}
+
+func (b CreateBidInput) Hash(contracts contracts.Contracts) (common.Hash, error) {
 	teamId, _ := new(big.Int).SetString(b.TeamId, 10)
 	if teamId == nil {
 		return common.Hash{}, errors.New("invalid teamId")
@@ -43,10 +48,7 @@ func (b CreateBidInput) Hash(
 	return common.Hash(hash), nil
 }
 
-func (b CreateBidInput) VerifySignature(
-	contracts contracts.Contracts,
-	auction storage.Auction,
-) (bool, error) {
+func (b CreateBidInput) VerifySignature(contracts contracts.Contracts) (bool, error) {
 	hash, err := b.Hash(contracts)
 	if err != nil {
 		return false, err
