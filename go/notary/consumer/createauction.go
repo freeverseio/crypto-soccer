@@ -10,10 +10,6 @@ import (
 )
 
 func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
-	signerAddress, err := in.SignerAddress()
-	if err != nil {
-		return err
-	}
 	auction := storage.NewAuction()
 	id, err := in.ID()
 	if err != nil {
@@ -31,6 +27,10 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 	auction.State = storage.AuctionStarted
 	auction.StateExtra = ""
 	auction.PaymentURL = ""
+	signerAddress, err := in.SignerAddress()
+	if err != nil {
+		return err
+	}
 	auction.Seller = signerAddress.Hex()
 	if err = auction.Insert(tx); err != nil {
 		return err

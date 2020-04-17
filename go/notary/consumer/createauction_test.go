@@ -45,7 +45,9 @@ func TestCreateAuction(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	assert.NilError(t, consumer.CreateAuction(tx, in))
-	auction, err := storage.AuctionByID(tx, in.ID())
+	id, err := in.ID()
+	assert.NilError(t, err)
+	auction, err := storage.AuctionByID(tx, string(id))
 	assert.NilError(t, err)
 	assert.Assert(t, auction != nil)
 	assert.Equal(t, auction.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
