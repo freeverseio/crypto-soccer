@@ -7,18 +7,14 @@ import (
 type AuctionState string
 
 const (
-	AUCTION_STARTED             AuctionState = "STARTED"
-	AUCTION_ASSET_FROZEN        AuctionState = "ASSET_FROZEN"
-	AUCTION_PAYING              AuctionState = "PAYING"
-	AUCTION_PAID                AuctionState = "PAID"
-	AUCTION_NO_BIDS             AuctionState = "NO_BIDS"
-	AUCTION_CANCELLED_BY_SELLER AuctionState = "CANCELLED_BY_SELLER"
-	AUCTION_WITHDRAWAL          AuctionState = "WITHDRAWAL"
-	AUCTION_FAILED              AuctionState = "FAILED"
-	AuctionStarted              AuctionState = "started"
-	AuctionEnded                AuctionState = "ended"
-	AuctionCancelled            AuctionState = "cancelled"
-	AuctionFailed               AuctionState = "failed"
+	AuctionAssetFrozen        AuctionState = "asset_frozen"
+	AuctionPaying             AuctionState = "paying"
+	AuctionWithdrableBySeller AuctionState = "withadrable_by_seller"
+	AuctionWithdrableByBuyer  AuctionState = "withadrable_by_buyer"
+	AuctionStarted            AuctionState = "started"
+	AuctionEnded              AuctionState = "ended"
+	AuctionCancelled          AuctionState = "cancelled"
+	AuctionFailed             AuctionState = "failed"
 )
 
 type Auction struct {
@@ -42,7 +38,7 @@ func NewAuction() *Auction {
 }
 
 func PendingAuctions(tx *sql.Tx) ([]Auction, error) {
-	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' AND state = 'failed' AND state = 'ended');")
+	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
 	if err != nil {
 		return nil, err
 	}
