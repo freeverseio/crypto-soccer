@@ -56,3 +56,7 @@ func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 func (b AuctionMachine) State() storage.AuctionState {
 	return b.auction.State
 }
+
+func (b AuctionMachine) StateExtra() string {
+	return b.auction.StateExtra
+}
