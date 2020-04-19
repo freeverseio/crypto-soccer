@@ -41,21 +41,13 @@ func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 	switch b.Auction.State {
 	case storage.AuctionStarted:
 		return b.processStarted()
-	case storage.AUCTION_ASSET_FROZEN:
-		// return b.processAssetFrozen()
-		return nil
-	case storage.AUCTION_PAYING:
-		// return b.processPaying(market)
-		return nil
 	case storage.AuctionCancelled:
-		return nil
 	case storage.AuctionFailed:
-		return nil
 	case storage.AuctionEnded:
-		return nil
 	default:
 		return fmt.Errorf("Unknown auction state %v", b.State())
 	}
+	return nil
 }
 
 func (b AuctionMachine) State() storage.AuctionState {
