@@ -43,12 +43,12 @@ func TestBidsByAuctionID(t *testing.T) {
 	auction.ID = "1"
 	assert.NilError(t, auction.Insert(tx))
 
-	bid := storage.NewBid()
+	bid = storage.NewBid()
 	bid.AuctionID = auction.ID
 	assert.NilError(t, bid.Insert(tx))
 
 	bids, err = storage.BidsByAuctionID(tx, auction.ID)
 	assert.NilError(t, err)
-	assert.Equal(t, len(bids), 2)
+	assert.Equal(t, len(bids), 1)
 
 }
