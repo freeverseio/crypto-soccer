@@ -8,8 +8,8 @@ CREATE TABLE auctions (
     valid_until BIGINT NOT NULL,
     signature TEXT NOT NULL,
     state auction_state NOT NULL,
-    state_extra TEXT NOT NULL DEFAULT '',
-    payment_url TEXT NOT NULL DEFAULT '',
+    state_extra TEXT NOT NULL,
+    payment_url TEXT NOT NULL,
     seller TEXT NOT NULL,
     PRIMARY KEY(id)
 );
