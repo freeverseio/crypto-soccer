@@ -50,6 +50,21 @@ func (b *Consumer) Start() {
 			if err = tx.Commit(); err != nil {
 				log.Error(err)
 			}
+		case input.CancelAuctionInput:
+			log.Debug("Received CancelAuctionInput")
+			tx, err := b.db.Begin()
+			if err != nil {
+				log.Error(err)
+				break
+			}
+			if err := CancelAuction(tx, in); err != nil {
+				log.Error(err)
+				tx.Rollback()
+				break
+			}
+			if err = tx.Commit(); err != nil {
+				log.Error(err)
+			}
 		case producer.ProcessEvent:
 			log.Debug("Received ProcessEvent")
 			tx, err := b.db.Begin()
