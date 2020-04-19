@@ -1,5 +1,26 @@
 package storage_test
 
+import (
+	"testing"
+
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"gotest.tools/assert"
+)
+
+func TestBidInsert(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction := storage.NewAuction()
+	auction.ID = "0"
+	assert.NilError(t, auction.Insert(tx))
+
+	bid := storage.NewBid()
+	bid.AuctionID = auction.ID
+	assert.NilError(t, bid.Insert(tx))
+}
+
 // func TestGetbids(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 // 	if err != nil {

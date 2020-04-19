@@ -14,6 +14,7 @@ const (
 	BIDPAYING   BidState = "PAYING"
 	BIDPAID     BidState = "PAID"
 	BIDFAILED   BidState = "FAILED"
+	BidAccepted BidState = "accepted"
 )
 
 type Bid struct {
@@ -32,18 +33,33 @@ type Bid struct {
 
 func NewBid() *Bid {
 	bid := Bid{}
+	bid.State = BidAccepted
 	return &bid
 }
 
 func (b Bid) Insert(tx *sql.Tx) error {
 	log.Infof("[DBMS] + create Bid %v", b)
-	_, err := tx.Exec("INSERT INTO bids (auction, extra_price, rnd, team_id, signature, state) VALUES ($1, $2, $3, $4, $5, $6);",
+	_, err := tx.Exec(`INSERT INTO bids 
+			(auction_id, 
+			extra_price,
+			rnd, team_id, 
+			signature, 
+			state,
+			state_extra,
+			payment_id,
+			payment_url,
+			payment_deadline) 
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
 		b.AuctionID,
 		b.ExtraPrice,
 		b.Rnd,
 		b.TeamID,
 		b.Signature,
 		b.State,
+		b.StateExtra,
+		b.PaymentID,
+		b.PaymentURL,
+		b.PaymentDeadline,
 	)
 	return err
 }
