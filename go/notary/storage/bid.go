@@ -37,6 +37,36 @@ func NewBid() *Bid {
 	return &bid
 }
 
+func BidsByAuctionID(tx *sql.Tx, ID string) ([]Bid, error) {
+	rows, err := tx.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1;", ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var bids []Bid
+	for rows.Next() {
+		var bid Bid
+		bid.AuctionID = ID
+		err = rows.Scan(
+			&bid.ExtraPrice,
+			&bid.Rnd,
+			&bid.TeamID,
+			&bid.Signature,
+			&bid.State,
+			&bid.StateExtra,
+			&bid.PaymentID,
+			&bid.PaymentURL,
+			&bid.PaymentDeadline,
+		)
+		if err != nil {
+			return bids, err
+		}
+		bids = append(bids, bid)
+	}
+	return bids, nil
+}
+
 func (b Bid) Insert(tx *sql.Tx) error {
 	log.Infof("[DBMS] + create Bid %v", b)
 	_, err := tx.Exec(`INSERT INTO bids 
