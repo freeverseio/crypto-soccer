@@ -21,8 +21,8 @@ type Auction struct {
 	ID         string
 	PlayerID   string
 	CurrencyID int
-	Price      int
-	Rnd        int
+	Price      int64
+	Rnd        int64
 	ValidUntil int64
 	Signature  string
 	State      AuctionState
