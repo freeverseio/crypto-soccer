@@ -11,20 +11,20 @@ import (
 )
 
 func (b *AuctionMachine) processStarted() error {
-	if b.Auction.State != storage.AuctionStarted {
+	if b.auction.State != storage.AuctionStarted {
 		return errors.New("Started: wrong state")
 	}
 
 	// check if expired
 	now := time.Now().Unix()
-	if now > b.Auction.ValidUntil {
-		b.Auction.State = storage.AuctionEnded
+	if now > b.auction.ValidUntil {
+		b.auction.State = storage.AuctionEnded
 		return nil
 	}
 
-	playerId, _ := new(big.Int).SetString(b.Auction.PlayerID, 10)
+	playerId, _ := new(big.Int).SetString(b.auction.PlayerID, 10)
 	if playerId == nil {
-		return fmt.Errorf("Invalid PlayerId %x", b.Auction.PlayerID)
+		return fmt.Errorf("Invalid PlayerId %x", b.auction.PlayerID)
 	}
 
 	// check if is frozen
@@ -33,8 +33,8 @@ func (b *AuctionMachine) processStarted() error {
 		return err
 	}
 	if isFrozen {
-		b.Auction.State = storage.AuctionFailed
-		b.Auction.StateExtra = "auction is frozen in other market"
+		b.auction.State = storage.AuctionFailed
+		b.auction.StateExtra = "auction is frozen in other market"
 		return nil
 	}
 
@@ -43,17 +43,17 @@ func (b *AuctionMachine) processStarted() error {
 	if err != nil {
 		return err
 	}
-	if owner.String() != b.Auction.Seller {
-		b.Auction.State = storage.AuctionFailed
-		b.Auction.StateExtra = fmt.Sprintf("seller %s is not the owner %s", b.Auction.Seller, owner.String())
+	if owner.String() != b.auction.Seller {
+		b.auction.State = storage.AuctionFailed
+		b.auction.StateExtra = fmt.Sprintf("seller %s is not the owner %s", b.auction.Seller, owner.String())
 		return nil
 	}
 
 	// 	// TODO trying to freeze the asset
 	// 	auctionHiddenPrice, err := signer.HashPrivateMsg(
-	// 		m.Auction.CurrencyID,
-	// 		m.Auction.Price,
-	// 		m.Auction.Rnd,
+	// 		m.auction.CurrencyID,
+	// 		m.auction.Price,
+	// 		m.auction.Rnd,
 	// 	)
 	// 	if err != nil {
 	// 		return err
@@ -61,48 +61,48 @@ func (b *AuctionMachine) processStarted() error {
 	// 	var sig [2][32]byte
 	// 	var sigV uint8
 	// 	_, err = signer.HashSellMessage(
-	// 		m.Auction.CurrencyID,
-	// 		m.Auction.Price,
-	// 		m.Auction.Rnd,
-	// 		m.Auction.ValidUntil,
-	// 		m.Auction.PlayerID,
+	// 		m.auction.CurrencyID,
+	// 		m.auction.Price,
+	// 		m.auction.Rnd,
+	// 		m.auction.ValidUntil,
+	// 		m.auction.PlayerID,
 	// 	)
 	// 	if err != nil {
 	// 		return err
 	// 	}
-	// 	sig[0], sig[1], sigV, err = signer.RSV(m.Auction.Signature)
+	// 	sig[0], sig[1], sigV, err = signer.RSV(m.auction.Signature)
 	// 	if err != nil {
 	// 		return err
 	// 	}
 	// 	tx, err := m.contracts.Market.FreezePlayer(
 	// 		bind.NewKeyedTransactor(m.freeverse),
 	// 		auctionHiddenPrice,
-	// 		big.NewInt(m.Auction.ValidUntil),
-	// 		m.Auction.PlayerID,
+	// 		big.NewInt(m.auction.ValidUntil),
+	// 		m.auction.PlayerID,
 	// 		sig,
 	// 		sigV,
 	// 	)
 	// 	if err != nil {
 	// 		log.Error(err)
-	// 		m.Auction.State = storage.AUCTION_FAILED
-	// 		m.Auction.StateExtra = "Failed to freeze: " + err.Error()
+	// 		m.auction.State = storage.AUCTION_FAILED
+	// 		m.auction.StateExtra = "Failed to freeze: " + err.Error()
 	// 		return nil
 	// 	}
 	// 	receipt, err := helper.WaitReceipt(m.contracts.Client, tx, 60)
 	// 	if err != nil {
 	// 		log.Error("Timeout waiting receipt for freeze")
-	// 		m.Auction.State = storage.AUCTION_FAILED
-	// 		m.Auction.State = "Failed to Freeze: waiting for receipt timeout"
+	// 		m.auction.State = storage.AUCTION_FAILED
+	// 		m.auction.State = "Failed to Freeze: waiting for receipt timeout"
 	// 		return nil
 	// 	}
 	// 	if receipt.Status == 0 {
 	// 		log.Error("Freeze mined but failed")
-	// 		m.Auction.State = storage.AUCTION_FAILED
-	// 		m.Auction.State = "Failed to Freeze: mined but receipt status is failed"
+	// 		m.auction.State = storage.AUCTION_FAILED
+	// 		m.auction.State = "Failed to Freeze: mined but receipt status is failed"
 	// 		return nil
 	// 	}
 
-	// 	log.Infof("[auction] %v STARTER -> ASSET_FROZEN", m.Auction.UUID)
-	// 	m.Auction.State = storage.AUCTION_ASSET_FROZEN
+	// 	log.Infof("[auction] %v STARTER -> ASSET_FROZEN", m.auction.UUID)
+	// 	m.auction.State = storage.AUCTION_ASSET_FROZEN
 	return nil
 }

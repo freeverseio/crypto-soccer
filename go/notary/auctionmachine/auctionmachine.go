@@ -8,10 +8,12 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type AuctionMachine struct {
-	Auction   storage.Auction
+	auction   storage.Auction
 	Bids      []storage.Bid
 	contracts contracts.Contracts
 	freeverse *ecdsa.PrivateKey
@@ -38,26 +40,27 @@ func New(
 }
 
 func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
-	switch b.Auction.State {
+	log.Infof("Process auction %v in state %v", b.auction.ID, b.State())
+	switch b.auction.State {
 	case storage.AuctionStarted:
 		return b.processStarted()
-	case storage.AUCTION_ASSET_FROZEN:
-		// return b.processAssetFrozen()
-		return nil
-	case storage.AUCTION_PAYING:
-		// return b.processPaying(market)
-		return nil
 	case storage.AuctionCancelled:
-		return nil
 	case storage.AuctionFailed:
-		return nil
 	case storage.AuctionEnded:
-		return nil
 	default:
 		return fmt.Errorf("Unknown auction state %v", b.State())
 	}
+	return nil
 }
 
 func (b AuctionMachine) State() storage.AuctionState {
-	return b.Auction.State
+	return b.auction.State
+}
+
+func (b AuctionMachine) StateExtra() string {
+	return b.auction.StateExtra
+}
+
+func (b AuctionMachine) Auction() storage.Auction {
+	return b.auction
 }
