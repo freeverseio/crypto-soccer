@@ -107,6 +107,11 @@ func (b Auction) Insert(tx *sql.Tx) error {
 	return err
 }
 
+func (b Auction) Update(tx *sql.Tx) error {
+	_, err := tx.Exec("UPDATE auctions SET state=$1, state_extra=$2 WHERE id=$3;", b.State, b.StateExtra, b.ID)
+	return err
+}
+
 // func (b *Storage) CreateAuction(order Auction) error {
 // 	log.Infof("[DBMS] + create Auction %v", order)
 // 	_, err := b.db.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",

@@ -105,6 +105,31 @@ func TestPendingAuctions(t *testing.T) {
 
 }
 
+func TestAuctionUpdate(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction := storage.NewAuction()
+	auction.ID = "ciao"
+	auction.State = storage.AuctionStarted
+	auction.StateExtra = "priva"
+	assert.NilError(t, auction.Insert(tx))
+	result, err := storage.AuctionByID(tx, auction.ID)
+	assert.NilError(t, err)
+	assert.Equal(t, result.State, storage.AuctionStarted)
+	assert.Equal(t, result.StateExtra, "priva")
+
+	auction.State = storage.AuctionCancelled
+	auction.StateExtra = "privato"
+	assert.NilError(t, auction.Update(tx))
+
+	result, err = storage.AuctionByID(tx, auction.ID)
+	assert.NilError(t, err)
+	assert.Equal(t, result.State, storage.AuctionCancelled)
+	assert.Equal(t, result.StateExtra, "privato")
+}
+
 // func TestGetAuction(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 // 	if err != nil {

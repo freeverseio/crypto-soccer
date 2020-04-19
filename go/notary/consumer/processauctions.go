@@ -23,8 +23,14 @@ func ProcessAuctions(
 	for _, auction := range auctions {
 		bids := []storage.Bid{}
 		am, err := auctionmachine.New(auction, bids, contracts, pvc)
-		if err = am.Process(marketpay.New()); err != nil {
-
+		if err != nil {
+			return err
+		}
+		if err := am.Process(marketpay.New()); err != nil {
+			return err
+		}
+		if err := am.Auction().Update(tx); err != nil {
+			return err
 		}
 	}
 	return nil

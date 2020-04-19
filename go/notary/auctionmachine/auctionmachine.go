@@ -60,3 +60,7 @@ func (b AuctionMachine) State() storage.AuctionState {
 func (b AuctionMachine) StateExtra() string {
 	return b.auction.StateExtra
 }
+
+func (b AuctionMachine) Auction() storage.Auction {
+	return b.auction
+}
