@@ -94,6 +94,10 @@ func (b Bid) Insert(tx *sql.Tx) error {
 	return err
 }
 
+func (b Bid) Update(tx *sql.Tx) error {
+	return nil
+}
+
 // func (b *Storage) CreateBid(bid Bid) error {
 // 	log.Infof("[DBMS] + create Bid %v", bid)
 // 	_, err := b.db.Exec("INSERT INTO bids (auction, extra_price, rnd, team_id, signature, state) VALUES ($1, $2, $3, $4, $5, $6);",

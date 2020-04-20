@@ -49,5 +49,10 @@ func processAuction(
 	if err := am.Auction().Update(tx); err != nil {
 		return err
 	}
+	for _, bid := range am.Bids() {
+		if err := bid.Update(tx); err != nil {
+			return err
+		}
+	}
 	return nil
 }
