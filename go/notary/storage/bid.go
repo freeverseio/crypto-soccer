@@ -15,6 +15,7 @@ const (
 	BIDPAID     BidState = "PAID"
 	BIDFAILED   BidState = "FAILED"
 	BidAccepted BidState = "accepted"
+	BidPaid     BidState = "paid"
 )
 
 type Bid struct {
@@ -67,7 +68,7 @@ func BidsByAuctionID(tx *sql.Tx, ID string) ([]Bid, error) {
 }
 
 func (b Bid) Insert(tx *sql.Tx) error {
-	log.Infof("[DBMS] + create Bid %v", b)
+	log.Debugf("[DBMS] + create Bid %v", b)
 	_, err := tx.Exec(`INSERT INTO bids 
 			(auction_id, 
 			extra_price,
@@ -94,7 +95,23 @@ func (b Bid) Insert(tx *sql.Tx) error {
 }
 
 func (b Bid) Update(tx *sql.Tx) error {
-	return nil
+	log.Debugf("[DBMS] + update Bid %v", b)
+	_, err := tx.Exec(`UPDATE bids SET 
+		state=$1, 
+		state_extra=$2,
+		payment_id=$3,
+		payment_url=$4,
+		payment_deadline=$5
+		WHERE auction_id=$6 AND extra_price=$7;`,
+		b.State,
+		b.StateExtra,
+		b.PaymentID,
+		b.PaymentURL,
+		b.PaymentDeadline,
+		b.AuctionID,
+		b.ExtraPrice,
+	)
+	return err
 }
 
 // func (b *Storage) CreateBid(bid Bid) error {

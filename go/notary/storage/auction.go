@@ -2,6 +2,8 @@ package storage
 
 import (
 	"database/sql"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type AuctionState string
@@ -91,6 +93,7 @@ func AuctionByID(tx *sql.Tx, ID string) (*Auction, error) {
 }
 
 func (b Auction) Insert(tx *sql.Tx) error {
+	log.Debugf("[DBMS] + create Auction %v", b)
 	_, err := tx.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, payment_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 		b.ID,
 		b.PlayerID,
@@ -108,6 +111,7 @@ func (b Auction) Insert(tx *sql.Tx) error {
 }
 
 func (b Auction) Update(tx *sql.Tx) error {
+	log.Debugf("[DBMS] + update Auction %v", b)
 	_, err := tx.Exec("UPDATE auctions SET state=$1, state_extra=$2 WHERE id=$3;", b.State, b.StateExtra, b.ID)
 	return err
 }
