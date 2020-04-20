@@ -2,11 +2,9 @@ package consumer_test
 
 import (
 	"encoding/hex"
-	"fmt"
 	"math/big"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
@@ -22,7 +20,7 @@ func TestCreateAuction(t *testing.T) {
 	defer tx.Rollback()
 
 	in := input.CreateAuctionInput{}
-	in.ValidUntil = fmt.Sprintf("%v", time.Now().Unix()+1000)
+	in.ValidUntil = "999999999999"
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -42,6 +40,7 @@ func TestCreateAuction(t *testing.T) {
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
+	assert.Equal(t, hex.EncodeToString(signature), "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b")
 	in.Signature = hex.EncodeToString(signature)
 
 	assert.NilError(t, consumer.CreateAuction(tx, in))

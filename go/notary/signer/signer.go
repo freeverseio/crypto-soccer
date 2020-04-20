@@ -3,7 +3,6 @@ package signer
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"math/big"
 
@@ -16,10 +15,12 @@ import (
 )
 
 func RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
-	if len(signature) != 132 {
-		return r, s, v, errors.New("wrong signature length")
+	if len(signature) != 132 && len(signature) != 130 {
+		return r, s, v, fmt.Errorf("wrong signature length %v", len(signature))
 	}
-	signature = signature[2:] // remove 0x
+	if len(signature) == 132 {
+		signature = signature[2:] // remove 0x
+	}
 	vect, err := hex.DecodeString(signature[0:64])
 	if err != nil {
 		return r, s, v, err
