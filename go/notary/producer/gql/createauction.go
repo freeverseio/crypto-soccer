@@ -3,9 +3,7 @@ package gql
 import (
 	"errors"
 	"fmt"
-	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
@@ -31,19 +29,12 @@ func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) 
 		return id, errors.New("Invalid signature")
 	}
 
-	signerAddress, err := args.Input.SignerAddress()
+	isOwner, err := args.Input.IsSignerOwner(b.contracts)
 	if err != nil {
 		return id, err
 	}
-
-	playerId, _ := new(big.Int).SetString(args.Input.PlayerId, 10)
-	owner, err := b.contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
-	if err != nil {
-		return id, err
-	}
-
-	if signerAddress != owner {
-		return id, fmt.Errorf("signer %v is not the owner (%v) of playerId %v", signerAddress.Hex(), owner.Hex(), args.Input.PlayerId)
+	if !isOwner {
+		return id, fmt.Errorf("signer is not the owner of playerId %v", args.Input.PlayerId)
 	}
 
 	select {
