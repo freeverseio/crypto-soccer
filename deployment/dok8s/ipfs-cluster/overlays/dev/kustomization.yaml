@@ -4,9 +4,9 @@ resources:
 - ../../base
 images:
 - name: ipfs/go-ipfs
-  newTag: latest
+  newTag: v0.4.23
 - name: ipfs/ipfs-cluster
-  newTag: latest
+  newTag: v0.12.1
 replicas:
 - count: 3
   name: ipfs-cluster
