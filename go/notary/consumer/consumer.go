@@ -65,6 +65,9 @@ func (b *Consumer) Start() {
 			if err = tx.Commit(); err != nil {
 				log.Error(err)
 			}
+		case input.CreateBidInput:
+			log.Debug("Received CreateBidInput")
+
 		case producer.ProcessEvent:
 			log.Debug("Received ProcessEvent")
 			tx, err := b.db.Begin()
