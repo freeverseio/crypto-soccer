@@ -13,6 +13,10 @@ contract Updates is UpdatesView, Merkle {
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
     event ChallengeResolved(uint8 tz, uint8 resolvedLevel, bool isSuccessful);
 
+    function setStakersAddress(address addr) public {
+        _stakers = Stakers(addr);
+    }
+
     function initUpdates() public {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.

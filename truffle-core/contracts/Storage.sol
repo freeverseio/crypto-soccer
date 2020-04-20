@@ -2,6 +2,7 @@ pragma solidity >=0.5.12 <=0.6.3;
 
 import "./ProxyStorage.sol";
 import "./Constants.sol";
+import "./Stakers.sol";
 
 /**
 * @title Storage common to all project, with setters managed by StorageProxy.
@@ -11,7 +12,7 @@ contract Storage is ProxyStorage, Constants{
     uint256[2**12] _slotReserve;
    
     address internal _academyAddr;
-    
+
     mapping(uint256 => uint256) internal _playerIdToState;
     mapping (uint256 => uint256) internal _playerIdToAuctionData;
     mapping (uint256 => bool) internal _playerIdToIsFrozenCrypto;
@@ -51,5 +52,7 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => uint8) _newestRootsIdx;
     mapping (uint256 => uint256) _lastActionsSubmissionTime;
     mapping (uint256 => uint256) _lastUpdateTime;
+ 
+    Stakers internal _stakers;
     
 }

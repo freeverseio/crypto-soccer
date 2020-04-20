@@ -248,11 +248,12 @@ contract('Updates', (accounts) => {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         stakers  = await Stakers.new({from:owner});
         stake = await stakers.kRequiredStake();
-        stakers.setGame(gameAddr, {from:owner}).should.be.fulfilled;
+        await stakers.setGame(gameAddr, {from:owner}).should.be.fulfilled;
         parties = [alice, bob, carol, dave, erin, frank]
         await addTrustedParties(stakers, owner, parties);
         await enroll(stakers, stake, parties);
-
+        await updates.setStakersAddress(stakers.address).should.be.fulfilled;
+        
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
         var level = 0;
