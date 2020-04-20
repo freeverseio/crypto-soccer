@@ -324,11 +324,17 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         // endurance is converted to a percentage, 
         // used to multiply (and hence decrease) the start endurance.
         // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
+        // 20000*11 is super-endurant => 100%
+        // 1000*11 is starting => 65%
+        // 100*11 is terrible => 20%
+        
         if (globSkills[IDX_ENDURANCE] > 0) {
-            if (globSkills[IDX_ENDURANCE] < 500) {
-                globSkills[IDX_ENDURANCE] = 70;
-            } else if (globSkills[IDX_ENDURANCE] < 1400) {
-                globSkills[IDX_ENDURANCE] = 100 - (1400-globSkills[IDX_ENDURANCE])/30;
+            if (globSkills[IDX_ENDURANCE] < 1000) {
+                globSkills[IDX_ENDURANCE] = 20;
+            } else if (globSkills[IDX_ENDURANCE] < 10000) {
+                globSkills[IDX_ENDURANCE] = 65 - ((10000-globSkills[IDX_ENDURANCE])*45)/9000;
+            } else if (globSkills[IDX_ENDURANCE] < 200000) {
+                globSkills[IDX_ENDURANCE] = 100 - ((200000-globSkills[IDX_ENDURANCE])*35)/190000;
             } else {
                 globSkills[IDX_ENDURANCE] = 100;
             }
