@@ -21,6 +21,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
     uint8 constant public IDX_F  = 3;
     uint8 constant public IDX_MD = 4;
     uint8 constant public IDX_MF = 5;
+    // forward modifier
+    uint8 constant public IDX_BOOST = 0;
+    uint8 constant public IDX_TRIM = 1;
     
     
     uint256 private constant ONE256            = uint256(1); 
@@ -309,7 +312,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
             else globSkills[IDX_BLOCK_SHOOT] = getSkill(playerSkills, SK_SHO);
         }
                 
-        uint256[3] memory fwdModFactors;
+        uint256[2] memory fwdModFactors;
 
         for (uint8 p = 1; p < 11; p++){
             playerSkills = skills[p];
@@ -402,18 +405,18 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         }
     }
 
-    // recall order: [MOVE2ATTACK, CREATE_SHOOT, DEFEND_SHOOT, BLOCK_SHOOT, ENDURANCE]
-    // the forward modifier factors only change the first 3.
-    function getExtraAttackFactors(bool extraAttack) public pure returns (uint256[3] memory fwdModFactors) {
-        if (extraAttack)    {fwdModFactors = [uint256(11000), uint256(11000), uint256(9000)];}
-        else                {fwdModFactors = [TEN_TO_4, TEN_TO_4, TEN_TO_4];}
+    // If extraAttack is active, it will boost 35% some addition of this player to global stats, and decrease by 35% some others.
+    // So, relative to 1e4, this is 1.35*1e4 and 1e4/1.35
+    function getExtraAttackFactors(bool extraAttack) public pure returns (uint256[2] memory fwdModFactors) {
+        if (extraAttack)    {fwdModFactors = [uint256(13500), uint256(7407)];}
+        else                {fwdModFactors = [TEN_TO_4,TEN_TO_4];}
     }
   
     function computeDefenderGlobSkills(
         uint256[5] memory globSkills,
         uint256 playerSkills, 
         uint256 penalty, 
-        uint256[3] memory fwdModFactors
+        uint256[2] memory fwdModFactors
     ) 
         private 
         pure
@@ -423,8 +426,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         //  - less defend_shoot
         //  - less endurance
         if (penalty != 0) { 
-            globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_8;
-            globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * penalty * fwdModFactors[IDX_DEFEND_SHOOT])/TEN_TO_8;
+            globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_BOOST])/TEN_TO_8;
+            globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * penalty * fwdModFactors[IDX_TRIM])/TEN_TO_8;
             globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_4;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 30;
@@ -438,7 +441,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         uint256[5] memory globSkills,
         uint256 playerSkills, 
         uint256 penalty, 
-        uint256[3] memory fwdModFactors
+        uint256[2] memory fwdModFactors
     ) 
         private 
         pure
@@ -448,8 +451,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         //  - less defend_shoot, less endurance
         if (penalty != 0) {
             globSkills[IDX_MOVE2ATTACK] += ((2*getSkill(playerSkills, SK_DEF) + 2*getSkill(playerSkills, SK_SPE) + 3*getSkill(playerSkills, SK_PAS)) * penalty)/TEN_TO_4;
-            globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_CREATE_SHOOT])/(5 * TEN_TO_8);
-            globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * penalty * fwdModFactors[IDX_DEFEND_SHOOT])/(5 * TEN_TO_8);
+            globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_BOOST])/(5 * TEN_TO_8);
+            globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * penalty * fwdModFactors[IDX_TRIM])/(5 * TEN_TO_8);
             globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_4;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 50;
@@ -462,7 +465,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         uint256[5] memory globSkills,
         uint256 playerSkills, 
         uint256 penalty, 
-        uint256[3] memory fwdModFactors
+        uint256[2] memory fwdModFactors
     ) 
         private 
         pure
@@ -471,8 +474,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         //  - by disconnecting them from midifield => less move2attack
         //  - but once ball is in attack => more likely to create shoot
         if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF)) * penalty * fwdModFactors[IDX_DEFEND_SHOOT])/TEN_TO_8;
-            globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_CREATE_SHOOT])/TEN_TO_8;
+            globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF)) * penalty * fwdModFactors[IDX_TRIM])/TEN_TO_8;
+            globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * penalty * fwdModFactors[IDX_BOOST])/TEN_TO_8;
             globSkills[IDX_ENDURANCE] += ((getSkill(playerSkills, SK_END)) * penalty)/TEN_TO_4;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 10;
