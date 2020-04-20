@@ -743,7 +743,7 @@ contract('Engine', (accounts) => {
         result.should.be.bignumber.equal('0');
         });
 
-    it('computePenaltyBadPositionAndCondition for GK ', async () => {
+    it('computeModifierBadPositionAndCondition for GK ', async () => {
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 232131, [potential = 1,
             forwardness = 0, leftishness = 0, aggr = 0], 
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
@@ -753,14 +753,14 @@ contract('Engine', (accounts) => {
         expected = [ 10000, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 ];
         pen = [];
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             pen.push(penalty);
             // penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
         debug.compareArrays(pen, expected, toNum = true, verbose = false);
     });
 
-    it('computePenaltyBadPositionAndCondition for DL ', async () => {
+    it('computeModifierBadPositionAndCondition for DL ', async () => {
             // for a DL:
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 312321, [potential = 1,
             forwardness = 1, leftishness = 4, aggr = 0], alignedEndOfLastHalf = false, 
@@ -778,14 +778,14 @@ contract('Engine', (accounts) => {
             2000, 3000, 4000
         ];
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
 
-    it('computePenaltyBadPositionAndCondition for DL with gamesNonStopping', async () => {
+    it('computeModifierBadPositionAndCondition for DL with gamesNonStopping', async () => {
         // for a DL:
         expected442 = [MAX_PENALTY-10, 
             0, 1000, 1000, 2000, 
@@ -803,7 +803,7 @@ contract('Engine', (accounts) => {
                 redCardLastGame = false, games, injuryWeeksLeft = 0, subLastHalf, sumSkills = 5
             ).should.be.fulfilled;            
             for (p=0; p < 11; p+=3) {
-                penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+                penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
                 if (expected442[p] == MAX_PENALTY-10) {
                     penalty.toNumber().should.be.equal(10);
                 } else {
@@ -814,7 +814,7 @@ contract('Engine', (accounts) => {
     });
 
 
-    it('computePenaltyBadPositionAndCondition for MFLCR ', async () => {
+    it('computeModifierBadPositionAndCondition for MFLCR ', async () => {
         // for a DL:
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 312321, [potential = 1,
             forwardness = 5, leftishness = 7, aggr = 0], alignedEndOfLastHalf = false, 
@@ -827,9 +827,9 @@ contract('Engine', (accounts) => {
         ];
         expected433 = expected442;
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
