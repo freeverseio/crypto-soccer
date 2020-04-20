@@ -504,15 +504,15 @@ contract('Engine', (accounts) => {
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsDefault);
         
-        seedDraw = 12;
+        seedDraw= seed;
         teamStateAll50Half2[9] = 0;
         log2 = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], [log0, log0], [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
         nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
         nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
         nGoals0.toNumber().should.be.equal(nGoals1.toNumber());
 
-        expected1 = [true, false, true, false, false, true, true ];
-        expected2 = [false, false, true, false, true, true, false];
+        expected1 = [ true, false, true, true, true, false, false ];
+        expected2 = [ true, true, true, true, true, false, false ];
 
         pen1 = [];
         pen2 = [];
@@ -527,7 +527,7 @@ contract('Engine', (accounts) => {
 
         for (team = 0; team < 2; team++){
             win = await encodingLog.getWinner(log2[team]).should.be.fulfilled;
-            win.toNumber().should.be.equal(0);
+            win.toNumber().should.be.equal(1);
             nDefs = await encodingLog.getNDefs(log2[team], is2nd = false);
             nDefs.toNumber().should.be.equal(4);
             nDefs = await encodingLog.getNDefs(log2[team], is2nd = true);
@@ -618,17 +618,22 @@ contract('Engine', (accounts) => {
     it('TONI: find 1-1 goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 13;
         log0 =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        log1 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         log12 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        // for this seed: 1-2
-        expected = [1, 2]
-        goals = [];
+        expected1 = [1, 2];
+        expected2 = [0, 1];
+        goals1 = [];
+        goals2 = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log0[team]);
-            goals.push(nGoals)
+            goals1.push(nGoals)
+            nGoals = await encodingLog.getNGoals(log1[team]);
+            goals2.push(nGoals)
         }
-        debug.compareArrays(goals, expected, toNum = true, verbose = false);
-        // so the final result should be 2-2
-        expected = [2, 4]
+        debug.compareArrays(goals1, expected1, toNum = true, verbose = false);
+        debug.compareArrays(goals2, expected2, toNum = true, verbose = false);
+
+        expected = [1, 3];
         goals = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log12[team]);
