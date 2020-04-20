@@ -14,7 +14,7 @@ import (
 
 type AuctionMachine struct {
 	auction   storage.Auction
-	Bids      []storage.Bid
+	bids      []storage.Bid
 	contracts contracts.Contracts
 	freeverse *ecdsa.PrivateKey
 }
@@ -63,4 +63,8 @@ func (b AuctionMachine) StateExtra() string {
 
 func (b AuctionMachine) Auction() storage.Auction {
 	return b.auction
+}
+
+func (b AuctionMachine) Bids() []storage.Bid {
+	return b.bids
 }

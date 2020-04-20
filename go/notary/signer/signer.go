@@ -234,39 +234,3 @@ func AddressFromSignature(hash, signature []byte) (common.Address, error) {
 	}
 	return PublicKeyBytesToAddress(sigPublicKey), nil
 }
-
-// func (b *Signer) HashBuyMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, teamId *big.Int) ([32]byte, error) {
-// 	var hash [32]byte
-// 	hashPrivateMessage, err := b.contracts.Market.HashPrivateMsg(
-// 		&bind.CallOpts{},
-// 		currencyId,
-// 		price,
-// 		rnd,
-// 	)
-// 	if err != nil {
-// 		return hash, err
-// 	}
-// 	sellMsgHash, err := b.assets.BuildPutForSaleTxMsg(
-// 		&bind.CallOpts{},
-// 		hashPrivateMessage,
-// 		validUntil,
-// 		playerId,
-// 	)
-// 	if err != nil {
-// 		return hash, err
-// 	}
-// 	prefixedHash, err := b.assets.Prefixed(&bind.CallOpts{}, sellMsgHash)
-// 	if err != nil {
-// 		return hash, err
-// 	}
-// 	hash, err = b.assets.BuildAgreeToBuyTxMsg(
-// 		&bind.CallOpts{},
-// 		prefixedHash,
-// 		teamId,
-// 	)
-// 	if err != nil {
-// 		return hash, err
-// 	}
-// 	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
-// 	return hash, err
-// }

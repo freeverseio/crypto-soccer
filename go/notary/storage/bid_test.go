@@ -1,192 +1,54 @@
 package storage_test
 
-// func TestGetbids(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	auctionUuid := uuid.New()
-// 	result, err := sto.GetBidsOfAuction(auctionUuid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(result) != 0 {
-// 		t.Fatalf("Expected 0 got %v", len(result))
-// 	}
-// 	err = sto.CreateAuction(storage.Auction{
-// 		UUID:       auctionUuid,
-// 		PlayerID:   big.NewInt(5),
-// 		CurrencyID: 1,
-// 		Price:      big.NewInt(3),
-// 		Rnd:        big.NewInt(7),
-// 		ValidUntil: 8,
-// 		Signature:  "0x0",
-// 		State:      storage.AUCTION_STARTED,
-// 	})
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	err = sto.CreateBid(storage.Bid{
-// 		Auction: auctionUuid,
-// 		TeamID:  big.NewInt(2),
-// 		State:   storage.BIDACCEPTED,
-// 	})
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result, err = sto.GetBidsOfAuction(auctionUuid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(result) != 1 {
-// 		t.Fatalf("Expected 1 got %v", len(result))
-// 	}
-// 	bid := result[0]
-// 	if bid.Is2StartAuction != false {
-// 		t.Fatal("Expected false but true")
-// 	}
-// }
+import (
+	"testing"
 
-// func TestUpdateBidState(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	auctionUuid := uuid.New()
-// 	result, err := sto.GetBidsOfAuction(auctionUuid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(result) != 0 {
-// 		t.Fatalf("Expected 0 got %v", len(result))
-// 	}
-// 	err = sto.CreateAuction(storage.Auction{
-// 		UUID:       auctionUuid,
-// 		PlayerID:   big.NewInt(5),
-// 		CurrencyID: 1,
-// 		Price:      big.NewInt(3),
-// 		Rnd:        big.NewInt(7),
-// 		ValidUntil: 8,
-// 		Signature:  "0x0",
-// 		State:      storage.AUCTION_STARTED,
-// 	})
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	bid := storage.Bid{
-// 		Auction: auctionUuid,
-// 		TeamID:  big.NewInt(2),
-// 		State:   storage.BIDACCEPTED,
-// 	}
-// 	err = sto.CreateBid(bid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	bidState := storage.BIDFAILED
-// 	bidStateExtra := "it's just a game dude!"
-// 	err = sto.UpdateBidState(bid.Auction, bid.ExtraPrice, bidState, bidStateExtra)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	bids, err := sto.GetBidsOfAuction(auctionUuid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if bids[0].State != bidState {
-// 		t.Fatalf("Wrong bid state %v", bids[0].State)
-// 	}
-// 	if bids[0].StateExtra != bidStateExtra {
-// 		t.Fatalf("Wrong bid state extra %v", bidStateExtra)
-// 	}
-// }
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"gotest.tools/assert"
+)
 
-// func TestUpdatePaymentId(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	auctionUuid := uuid.New()
-// 	result, err := sto.GetBidsOfAuction(auctionUuid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(result) != 0 {
-// 		t.Fatalf("Expected 0 got %v", len(result))
-// 	}
-// 	err = sto.CreateAuction(storage.Auction{
-// 		UUID:       auctionUuid,
-// 		PlayerID:   big.NewInt(5),
-// 		CurrencyID: 1,
-// 		Price:      big.NewInt(3),
-// 		Rnd:        big.NewInt(7),
-// 		ValidUntil: 8,
-// 		Signature:  "0x0",
-// 		State:      storage.AUCTION_STARTED,
-// 	})
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	bid := storage.Bid{
-// 		Auction: auctionUuid,
-// 		TeamID:  big.NewInt(2),
-// 		State:   storage.BIDACCEPTED,
-// 	}
-// 	err = sto.CreateBid(bid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	paymentID := "35565645"
-// 	err = sto.UpdateBidPaymentID(bid.Auction, bid.ExtraPrice, paymentID)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	bids, err := sto.GetBidsOfAuction(auctionUuid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if bids[0].PaymentID != paymentID {
-// 		t.Fatalf("Wrong paymentID %v", bids[0].PaymentID)
-// 	}
-// }
+func TestBidInsert(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
 
-// func TestUpdatePaymentDeadline(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	auctionUuid := uuid.New()
-// 	err = sto.CreateAuction(storage.Auction{
-// 		UUID:       auctionUuid,
-// 		PlayerID:   big.NewInt(5),
-// 		CurrencyID: 1,
-// 		Price:      big.NewInt(3),
-// 		Rnd:        big.NewInt(7),
-// 		ValidUntil: 8,
-// 		Signature:  "0x0",
-// 		State:      storage.AUCTION_STARTED,
-// 	})
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	bid := storage.Bid{
-// 		Auction: auctionUuid,
-// 		TeamID:  big.NewInt(2),
-// 		State:   storage.BIDACCEPTED,
-// 	}
-// 	err = sto.CreateBid(bid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	paymentDeadline := big.NewInt(555)
-// 	err = sto.UpdateBidPaymentDeadline(bid.Auction, bid.ExtraPrice, paymentDeadline)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	bids, err := sto.GetBidsOfAuction(auctionUuid)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if bids[0].PaymentDeadline != paymentDeadline.Int64() {
-// 		t.Fatalf("Wrong paymentDeadline %v", bids[0].PaymentDeadline)
-// 	}
-// }
+	auction := storage.NewAuction()
+	auction.ID = "0"
+	assert.NilError(t, auction.Insert(tx))
+
+	bid := storage.NewBid()
+	bid.AuctionID = auction.ID
+	assert.NilError(t, bid.Insert(tx))
+}
+
+func TestBidsByAuctionID(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction := storage.NewAuction()
+	auction.ID = "0"
+	assert.NilError(t, auction.Insert(tx))
+
+	bid := storage.NewBid()
+	bid.AuctionID = auction.ID
+	assert.NilError(t, bid.Insert(tx))
+	bid.ExtraPrice = 10
+	assert.NilError(t, bid.Insert(tx))
+
+	bids, err := storage.BidsByAuctionID(tx, auction.ID)
+	assert.NilError(t, err)
+	assert.Equal(t, len(bids), 2)
+
+	auction.ID = "1"
+	assert.NilError(t, auction.Insert(tx))
+
+	bid = storage.NewBid()
+	bid.AuctionID = auction.ID
+	assert.NilError(t, bid.Insert(tx))
+
+	bids, err = storage.BidsByAuctionID(tx, auction.ID)
+	assert.NilError(t, err)
+	assert.Equal(t, len(bids), 1)
+
+}

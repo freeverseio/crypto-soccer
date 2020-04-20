@@ -8,6 +8,7 @@ import (
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 func ProcessAuctions(
@@ -21,15 +22,35 @@ func ProcessAuctions(
 	}
 
 	for _, auction := range auctions {
-		bids := []storage.Bid{}
-		am, err := auctionmachine.New(auction, bids, contracts, pvc)
-		if err != nil {
-			return err
+		if err := processAuction(tx, auction, pvc, contracts); err != nil {
+			log.Error(err)
 		}
-		if err := am.Process(marketpay.New()); err != nil {
-			return err
-		}
-		if err := am.Auction().Update(tx); err != nil {
+	}
+	return nil
+}
+
+func processAuction(
+	tx *sql.Tx,
+	auction storage.Auction,
+	pvc *ecdsa.PrivateKey,
+	contracts contracts.Contracts,
+) error {
+	bids, err := storage.BidsByAuctionID(tx, auction.ID)
+	if err != nil {
+		return err
+	}
+	am, err := auctionmachine.New(auction, bids, contracts, pvc)
+	if err != nil {
+		return err
+	}
+	if err := am.Process(marketpay.New()); err != nil {
+		return err
+	}
+	if err := am.Auction().Update(tx); err != nil {
+		return err
+	}
+	for _, bid := range am.Bids() {
+		if err := bid.Update(tx); err != nil {
 			return err
 		}
 	}

@@ -16,10 +16,10 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 		return err
 	}
 	auction.ID = string(id)
-	auction.Rnd = int(in.Rnd)
+	auction.Rnd = int64(in.Rnd)
 	auction.PlayerID = in.PlayerId
 	auction.CurrencyID = int(in.CurrencyId)
-	auction.Price = int(in.Price)
+	auction.Price = int64(in.Price)
 	if auction.ValidUntil, err = strconv.ParseInt(in.ValidUntil, 10, 64); err != nil {
 		fmt.Printf("%d of type %T", auction.ValidUntil, auction.ValidUntil)
 	}
