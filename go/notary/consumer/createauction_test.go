@@ -35,6 +35,7 @@ func TestCreateAuction(t *testing.T) {
 		validUntil,
 		playerId,
 	)
+	assert.Equal(t, hash.Hex(), "0xf1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a")
 	assert.NilError(t, err)
 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
