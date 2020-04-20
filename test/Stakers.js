@@ -59,23 +59,25 @@ contract('Stakers', (accounts) => {
       stakers.enroll({from:alice, value: stake}),
       "failed to enroll alice"
     )
-  })
+  });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests stake", async () => {
-    assert.equal(0, await web3.eth.getBalance(stakers.address));
+    assert.equal(0, await web3.eth.getBalance(stakers.address), "Initial contract should have 0 stake in place");
 
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
 
     assert.equal(parties.length*Number(stake),
-                 await web3.eth.getBalance(stakers.address));
+      await web3.eth.getBalance(stakers.address),
+      "Total stake is not the sum of all enrolled stakers stake"
+    );
 
     await unenroll(stakers, parties);
     assert.equal(0, await web3.eth.getBalance(stakers.address));
-  })
+  });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -83,13 +85,13 @@ contract('Stakers', (accounts) => {
     stakers.setGame(gameAddr, {from:owner}),
     await stakers.addTrustedParty(alice, {from:owner});
     await stakers.enroll({from:alice, value: stake});
-    await stakers.update(0, alice, {from:gameAddr}),
+    await stakers.update(level = 0, alice, {from:gameAddr}),
     await expect.reverts(
       stakers.unEnroll({from:alice}),
       "failed to unenroll: staker currently updating",
       "alice is currently updating, so it should revert"
     )
-    await stakers.start({from:gameAddr});
+    await stakers.finalize({from:gameAddr});
     await expect.passes(
       stakers.unEnroll({from:alice}),
       "failed unenrolling alice"
@@ -142,7 +144,7 @@ contract('Stakers', (accounts) => {
     for (i=0; i<10; i++) {
       // start new verse
       await expect.passes(
-        stakers.start({from:gameAddr}),
+        stakers.finalize({from:gameAddr}),
         "failed starting new verse"
       )
 
@@ -207,7 +209,7 @@ contract('Stakers', (accounts) => {
 
     // ------------- start new verse ----------------
     await expect.passes(
-      stakers.start({from:gameAddr}),
+      stakers.finalize({from:gameAddr}),
       "failed starting new verse"
     )
 
@@ -285,7 +287,7 @@ contract('Stakers', (accounts) => {
 
     daveBalance = Number(await web3.eth.getBalance(dave));
     await expect.passes(
-      stakers.start({from:gameAddr}),
+      stakers.finalize({from:gameAddr}),
       "failed to start from L3"
     )
     assert.isBelow(daveBalance, Number(await web3.eth.getBalance(dave)),
@@ -346,7 +348,7 @@ contract('Stakers', (accounts) => {
 
     // start new verse
     await expect.passes(
-      stakers.start({from:gameAddr}),
+      stakers.finalize({from:gameAddr}),
       "failed starting new verse"
     )
 
@@ -419,7 +421,7 @@ contract('Stakers', (accounts) => {
 
     frankBalance = Number(await web3.eth.getBalance(frank));
     await expect.passes(
-      stakers.start({from:gameAddr}),
+      stakers.finalize({from:gameAddr}),
       "failed calling start from L3"
     )
 
@@ -487,7 +489,7 @@ contract('Stakers', (accounts) => {
     bobBalance = Number(await web3.eth.getBalance(bob));
     erinBalance = Number(await web3.eth.getBalance(erin));
     await expect.passes(
-      stakers.start({from:gameAddr}),
+      stakers.finalize({from:gameAddr}),
       "failed to start new verse from L4"
     )
     assert.isBelow(bobBalance, Number(await web3.eth.getBalance(bob)),

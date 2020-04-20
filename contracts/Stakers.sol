@@ -169,21 +169,21 @@ contract Stakers {
     }
   }
 
-  /// @notice start new verse
+  /// @notice finalize current game, get ready for next one.
   /// @dev current state will be resolved at this point.
   /// If called from level 1, then staker is rewardeds.
   /// When called from any other level, means that everys
   /// other staker told the truth but the one in between
   /// told a lie.
-  function start() external onlyGame {
-    require (level() > 0, "failed to start: wrong level");
+  function finalize() external onlyGame {
+    require (level() > 0, "failed to finalize: wrong level");
     while (level() > 1) {
       resolve();
     }
     if (level() == 1) {
       rewards.push(updaters.pop());
     }
-    require (level() == 0, "failed to start: no updaters should have been left");
+    require (level() == 0, "failed to finalize: no updaters should have been left");
   }
 
   /// @notice get the current level
