@@ -77,6 +77,7 @@ contract Updates is UpdatesView, Merkle {
         require(accept, "TZ has already been updated once");
         _setTZRoot(tz, root); // first time that we update this TZ
         emit TimeZoneUpdate(tz, root, now);
+        _stakers.update(0, msg.sender);
     }
 
     // TODO: specify which leaf you challenge!!! And bring Merkle proof!
@@ -97,6 +98,7 @@ contract Updates is UpdatesView, Merkle {
         _challengeLevel[intData[0]][intData[3]] = level;
         emit ChallengeAccepted(intData[0], level, root, providedRoots);
         _lastUpdateTime[intData[0]] = now;
+        _stakers.update(level, msg.sender);
     }
 
     function BCVerifableChallengeFake(bytes32[] memory leagueLeafs, bool forceSuccess) public {

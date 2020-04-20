@@ -54,5 +54,4 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => uint256) _lastUpdateTime;
  
     Stakers internal _stakers;
-    
 }

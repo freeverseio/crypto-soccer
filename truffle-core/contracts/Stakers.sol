@@ -18,6 +18,10 @@ contract Rewards {
   }
 
   receive() external payable {}
+  
+  function setOwnerAddress(address newAddress) external onlyOwner {
+    owner = newAddress;
+  }
 
   function execute() external onlyOwner {
     require (toBeRewarded.length != 0, "failed to execute reward: empty array");
@@ -97,6 +101,11 @@ contract Stakers {
 
   constructor() public {
     owner = msg.sender;
+  }
+
+  function setOwnerAddress(address newAddress) external onlyOwner {
+    owner = newAddress;
+    rewards.setOwnerAddress(newAddress);    
   }
 
   /// @notice adds amount to rewards contract

@@ -32,6 +32,27 @@ contract('Stakers', (accounts) => {
       "failed to set game address"
     )
   })
+  
+  it("Tests owner address change", async () => {
+    await expect.reverts(
+      stakers.setOwnerAddress(alice, {from:alice}),
+      "Only owner can call this function",
+      "wrong sender, so it should revert"
+    )
+    await expect.passes(
+      stakers.setOwnerAddress(alice, {from:owner}),
+      "failed to set new owner address"
+    )
+    await expect.reverts(
+      stakers.setGame(gameAddr, {from:owner}),
+      "Only owner can call this function",
+      "owner is not true owner anymore, so it should revert"
+    )
+    await expect.passes(
+      stakers.setGame(gameAddr, {from:alice}),
+      "failed to set game address by updated owner"
+    )
+  })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
