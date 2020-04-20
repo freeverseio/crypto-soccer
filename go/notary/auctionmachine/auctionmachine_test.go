@@ -1,26 +1,30 @@
 package auctionmachine_test
 
 import (
+	"encoding/hex"
+	"math/big"
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	"gotest.tools/assert"
 )
 
 func TestAuctionStarted(t *testing.T) {
-	t.Parallel()
-
 	t.Run("not expired", func(t *testing.T) {
 		auction := storage.NewAuction()
 		auction.ValidUntil = time.Now().Unix() + 100
 		auction.PlayerID = "274877906944"
 		auction.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"
+		auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
 		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
+		assert.Equal(t, m.StateExtra(), "")
 		assert.Equal(t, m.State(), storage.AuctionStarted)
 	})
 
@@ -30,6 +34,7 @@ func TestAuctionStarted(t *testing.T) {
 		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
+		assert.Equal(t, m.StateExtra(), "")
 		assert.Equal(t, m.State(), storage.AuctionEnded)
 	})
 
@@ -40,9 +45,61 @@ func TestAuctionStarted(t *testing.T) {
 		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
-		assert.Equal(t, m.State(), storage.AuctionFailed)
 		assert.Equal(t, m.StateExtra(), "seller  is not the owner 0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
+		assert.Equal(t, m.State(), storage.AuctionFailed)
 	})
+}
+
+func TestAuctionStartedGoFrozen(t *testing.T) {
+	auction := storage.NewAuction()
+	auction.ID = "f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a"
+	auction.ValidUntil = time.Now().Unix() + 100
+	auction.PlayerID = "274877906944"
+	auction.CurrencyID = 1
+	auction.Price = 41234
+	auction.Rnd = 4232
+	auction.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"
+	auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
+
+	playerId, _ := new(big.Int).SetString(auction.PlayerID, 10)
+	assert.Assert(t, playerId != nil)
+	hash, err := signer.HashSellMessage(
+		uint8(auction.CurrencyID),
+		big.NewInt(auction.Price),
+		big.NewInt(auction.Rnd),
+		auction.ValidUntil,
+		playerId,
+	)
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	assert.NilError(t, err)
+	auction.Signature = hex.EncodeToString(signature)
+
+	signature[64] -= 27 // Transform yellow paper V from 27/28 to 0/1
+
+	// check the signature is valid
+	isValid, err := signer.VerifySignature(hash.Bytes(), signature)
+	assert.NilError(t, err)
+	assert.Assert(t, isValid)
+
+	// check the seller is the signer
+	signer, err := signer.AddressFromSignature(hash.Bytes(), signature)
+	assert.NilError(t, err)
+	assert.Equal(t, signer.Hex(), auction.Seller)
+
+	// check the player owner is the seller
+	assert.Assert(t, playerId != nil)
+	owner, err := bc.Contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
+	assert.NilError(t, err)
+	assert.Equal(t, owner.Hex(), auction.Seller)
+
+	bid := storage.NewBid()
+	bids := []storage.Bid{*bid}
+
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.NilError(t, m.Process(nil))
+	assert.Equal(t, m.State(), storage.AuctionAssetFrozen)
 }
 
 // func TestAuctionCancelled(t *testing.T) {
@@ -130,37 +187,30 @@ func TestAuctionStarted(t *testing.T) {
 // 		big.NewInt(0),
 // 		common.HexToAddress("0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7"),
 // 	)
+// 	assert.NilError(t, err)
 // 	_, err = helper.WaitReceipt(bc.Client, tx, 5)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+// 	assert.NilError(t, err)
 // 	auction := storage.Auction{
-// 		UUID:       uuid.New(),
-// 		PlayerID:   big.NewInt(274877906944),
-// 		CurrencyID: uint8(1),
-// 		Price:      big.NewInt(41234),
-// 		Rnd:        big.NewInt(42321),
+// 		// UUID:       uuid.New(),
+// 		PlayerID:   "274877906944",
+// 		CurrencyID: 1,
+// 		Price:      41234,
+// 		Rnd:        42321,
 // 		ValidUntil: 2000000000,
 // 		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
-// 		State:      storage.AUCTION_STARTED,
+// 		State:      storage.AuctionStarted,
+// 		Seller:     "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7",
 // 	}
-// 	bids := []*storage.Bid{
-// 		&storage.Bid{
-// 			Auction: auction.UUID,
+// 	bids := []storage.Bid{
+// 		storage.Bid{
+// 			// Auction: auction.UUID,
 // 		},
 // 	}
-// 	machine, err := auctionmachine.New(auction, bids, bc.Contracts, bc.Owner)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	market := newTestMarket()
-// 	err = machine.Process(market)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if machine.Auction.State != storage.AUCTION_FAILED {
-// 		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED, machine.Auction.State)
-// 	}
+// 	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner)
+// 	assert.NilError(t, err)
+// 	err = machine.Process(nil)
+// 	assert.NilError(t, err)
+// 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
 // }
 
 // func TestFrozenAuction(t *testing.T) {

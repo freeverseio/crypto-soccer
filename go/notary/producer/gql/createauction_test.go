@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -17,7 +18,7 @@ func TestCreateAuctionReturnTheSignature(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts)
 
 	in := input.CreateAuctionInput{}
-	in.ValidUntil = "5453636457457456"
+	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -36,7 +37,6 @@ func TestCreateAuctionReturnTheSignature(t *testing.T) {
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(signature), "e04252b5dc5efdefb97d53e135add1a7cd3e15279dbe6519847d86d4fd52fbb5777e4880c9c8166f27490d73c7e687d41089b26e2572f19c17f1956ddef6b49c1c")
 	in.Signature = hex.EncodeToString(signature)
 
 	id, err := r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})

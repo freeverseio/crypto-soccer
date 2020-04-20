@@ -7,7 +7,11 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/helper"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func (b *AuctionMachine) processStarted() error {
@@ -48,6 +52,77 @@ func (b *AuctionMachine) processStarted() error {
 		b.auction.StateExtra = fmt.Sprintf("seller %s is not the owner %s", b.auction.Seller, owner.String())
 		return nil
 	}
+
+	// // check the signature
+	// id, err := hex.DecodeString(b.auction.ID)
+	// if err != nil {
+	// 	return err
+	// }
+	// signature, err := hex.DecodeString(b.auction.Signature)
+	// if err != nil {
+	// 	return err
+	// }
+	// isValid, err := signer.VerifySignature(id, signature)
+	// if err != nil {
+	// 	b.auction.State = storage.AuctionFailed
+	// 	b.auction.StateExtra = err.Error()
+	// 	return err
+	// }
+	// if !isValid {
+	// 	b.auction.State = storage.AuctionFailed
+	// 	b.auction.StateExtra = "Invalid signature"
+	// 	return err
+	// }
+
+	if len(b.bids) == 0 {
+		return nil
+	}
+
+	// if has bids let's freeze it
+	auctionHiddenPrice, err := signer.HashPrivateMsg(
+		uint8(b.auction.CurrencyID),
+		big.NewInt(b.auction.Price),
+		big.NewInt(b.auction.Rnd),
+	)
+	if err != nil {
+		return err
+	}
+	var sig [2][32]byte
+	var sigV uint8
+	sig[0], sig[1], sigV, err = signer.RSV(b.auction.Signature)
+	if err != nil {
+		return err
+	}
+	tx, err := b.contracts.Market.FreezePlayer(
+		bind.NewKeyedTransactor(b.freeverse),
+		auctionHiddenPrice,
+		big.NewInt(b.auction.ValidUntil),
+		playerId,
+		sig,
+		sigV,
+	)
+	if err != nil {
+		b.auction.State = storage.AuctionFailed
+		b.auction.StateExtra = "Failed to freeze: " + err.Error()
+		log.Error(b.auction.StateExtra)
+		return err
+	}
+	receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
+	if err != nil {
+		b.auction.State = storage.AuctionFailed
+		b.auction.State = "Failed to Freeze: waiting for receipt timeout"
+		log.Error(b.auction.StateExtra)
+		return err
+	}
+	if receipt.Status == 0 {
+		b.auction.State = storage.AuctionFailed
+		b.auction.State = "Failed to Freeze: mined but receipt status is failed"
+		log.Error(b.auction.StateExtra)
+		return err
+	}
+
+	b.auction.State = storage.AuctionAssetFrozen
+	return nil
 
 	// 	// TODO trying to freeze the asset
 	// 	auctionHiddenPrice, err := signer.HashPrivateMsg(
@@ -104,5 +179,4 @@ func (b *AuctionMachine) processStarted() error {
 
 	// 	log.Infof("[auction] %v STARTER -> ASSET_FROZEN", m.auction.UUID)
 	// 	m.auction.State = storage.AUCTION_ASSET_FROZEN
-	return nil
 }
