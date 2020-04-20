@@ -1,9 +1,13 @@
 package input_test
 
 import (
+	"encoding/hex"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"gotest.tools/assert"
 )
 
@@ -56,4 +60,41 @@ func TestCreateAuctionSignerAddress(t *testing.T) {
 	address, err := in.SignerAddress()
 	assert.NilError(t, err)
 	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
+}
+
+func TestCreateAuctionIsSignerOwner(t *testing.T) {
+	in := input.CreateAuctionInput{}
+	in.ValidUntil = "2000000000"
+	in.PlayerId = "274877906944"
+	in.CurrencyId = 1
+	in.Price = 41234
+	in.Rnd = 42321
+
+	hash, err := in.Hash()
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+	isOwner, err := in.IsSignerOwner(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Assert(t, isOwner)
+}
+
+func TestCreateAuctionIsValidBlockchain(t *testing.T) {
+	in := input.CreateAuctionInput{}
+	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
+	in.PlayerId = "274877906944"
+	in.CurrencyId = 1
+	in.Price = 41234
+	in.Rnd = 42321
+
+	hash, err := in.Hash()
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	isValid, err := in.IsValidForBlockchain(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Assert(t, isValid)
 }
