@@ -34,6 +34,24 @@ func TestRSV(t *testing.T) {
 	}
 }
 
+func TestRSV2(t *testing.T) {
+	r, s, v, err := signer.RSV("405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(r[:])
+	if result != "405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce" {
+		t.Fatalf("r error %v", result)
+	}
+	result = hex.EncodeToString(s[:])
+	if result != "229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c738400" {
+		t.Fatalf("s error %v", result)
+	}
+	if v != 0x1b {
+		t.Fatalf("Error in v %v", v)
+	}
+}
+
 func TestAuctionHiddenPrice(t *testing.T) {
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
@@ -202,4 +220,17 @@ func TestBidHiddenPrice(t *testing.T) {
 	if result != "d46585a1479af8dcc6f2ce8495174282f8c874f1583182bbe2c9df7ae2358edc" {
 		t.Fatalf("Hash error %v", result)
 	}
+}
+
+func TestAuctionHiddenPrice2(t *testing.T) {
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(4232)
+	hash, err := signer.HashPrivateMsg(
+		currencyId,
+		price,
+		rnd,
+	)
+	assert.NilError(t, err)
+	assert.Equal(t, hash.Hex(), "0x233c8f4c0d172a80f6dcca6359a08182a64d4201d33359e112e99c0025b3ed86")
 }
