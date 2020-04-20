@@ -12,7 +12,7 @@
 			00000010  bc ac a2 2d fe 66 e6 46  74 5e e4 37 1c 63 3f c8  |...-.f.Ft^.7.c?.|
 		},
 		HomeGoals: (uint8) 0,
-		VisitorGoals: (uint8) 2,
+		VisitorGoals: (uint8) 3,
 		State: (storage.MatchState) (len=3) "end",
 		StateExtra: (string) "",
 		StartEpoch: (int64) 0
@@ -32,12 +32,12 @@
 			D: (uint32) 0,
 			L: (uint32) 1,
 			GoalsForward: (uint32) 0,
-			GoalsAgainst: (uint32) 2,
+			GoalsAgainst: (uint32) 3,
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
-			TrainingPoints: (uint16) 4,
+			TrainingPoints: (uint16) 3,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1811019883486470387763871531653902887601364645893941041270726597327626174464"
+			MatchLog: (string) (len=76) "1810578171720275791681475707278717157972407774919722136531196195777303019520"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -621,13 +621,13 @@
 			W: (uint32) 1,
 			D: (uint32) 0,
 			L: (uint32) 0,
-			GoalsForward: (uint32) 2,
+			GoalsForward: (uint32) 3,
 			GoalsAgainst: (uint32) 0,
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
-			TrainingPoints: (uint16) 76,
+			TrainingPoints: (uint16) 84,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1842823130652481305696370888066424174642070669684761550138837431927720380546"
+			MatchLog: (string) (len=76) "1846356824782038074355537483067910011673725678043331995366491942757056153731"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -1375,9 +1375,9 @@
 			Type: (int16) 0,
 			Team: (int16) 1,
 			ManagesToShoot: (bool) true,
-			IsGoal: (bool) false,
+			IsGoal: (bool) true,
 			PrimaryPlayer: (int16) 9,
-			SecondaryPlayer: (int16) 0
+			SecondaryPlayer: (int16) 10
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 66,
