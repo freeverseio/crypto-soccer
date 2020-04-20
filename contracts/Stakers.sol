@@ -1,4 +1,4 @@
-pragma solidity ^ 0.5.0;
+pragma solidity >=0.5.12 <=0.6.3;
 
 // TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
 
