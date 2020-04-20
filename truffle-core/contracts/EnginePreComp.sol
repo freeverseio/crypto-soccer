@@ -329,12 +329,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         // 100*11 is terrible => 20%
         
         if (globSkills[IDX_ENDURANCE] > 0) {
-            if (globSkills[IDX_ENDURANCE] < 1000) {
-                globSkills[IDX_ENDURANCE] = 20;
-            } else if (globSkills[IDX_ENDURANCE] < 10000) {
-                globSkills[IDX_ENDURANCE] = 65 - ((10000-globSkills[IDX_ENDURANCE])*45)/9000;
+            if (globSkills[IDX_ENDURANCE] < 11000) {
+                globSkills[IDX_ENDURANCE] = 65 - ((11000-globSkills[IDX_ENDURANCE])*65)/11000;
             } else if (globSkills[IDX_ENDURANCE] < 200000) {
-                globSkills[IDX_ENDURANCE] = 100 - ((200000-globSkills[IDX_ENDURANCE])*35)/190000;
+                globSkills[IDX_ENDURANCE] = 100 - ((220000-globSkills[IDX_ENDURANCE])*35)/209000;
             } else {
                 globSkills[IDX_ENDURANCE] = 100;
             }
