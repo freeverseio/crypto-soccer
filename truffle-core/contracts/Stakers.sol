@@ -17,7 +17,7 @@ contract Rewards {
     owner = msg.sender;
   }
 
-  function() external payable { }
+  receive() external payable {}
 
   function execute() external onlyOwner {
     require (toBeRewarded.length != 0, "failed to execute reward: empty array");
@@ -45,8 +45,8 @@ contract AddressStack {
     array[length++] = _address;
   }
 
-  /// @notice removes the last element that was pushed. Reverts in case it is empty.
-  /// @return the element that has been removed from the array
+  /// notice: removes the last element that was pushed. Reverts in case it is empty.
+  /// returns the element that has been removed from the array
   function pop() external returns (address _address) {
     require (length > 0, "cannot pop from an empty AddressStack");
     _address = array[--length];
