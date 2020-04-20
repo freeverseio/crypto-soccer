@@ -23,7 +23,6 @@ func CreateBid(tx *sql.Tx, in input.CreateBidInput) error {
 	bid.ExtraPrice = int64(in.ExtraPrice)
 	bid.Rnd = int64(in.Rnd)
 	bid.TeamID = in.TeamId
-	bid.Is2StartAuction = false
 	bid.Signature = in.Signature
 	bid.State = storage.BidAccepted
 	bid.StateExtra = ""

@@ -22,7 +22,6 @@ type Bid struct {
 	ExtraPrice      int64
 	Rnd             int64
 	TeamID          string
-	Is2StartAuction bool
 	Signature       string
 	State           BidState
 	StateExtra      string
