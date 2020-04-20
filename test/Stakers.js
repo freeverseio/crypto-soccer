@@ -81,7 +81,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests can't unenroll during update", async () => {
+  it("Tests stakers can't unenroll after having done an update", async () => {
     stakers.setGame(gameAddr, {from:owner}),
     await stakers.addTrustedParty(alice, {from:owner});
     await stakers.enroll({from:alice, value: stake});
@@ -101,7 +101,6 @@ contract('Stakers', (accounts) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests adding reward", async () => {
-
     assert.equal(0, Number(await web3.eth.getBalance(await stakers.rewards())));
     await expect.passes(
       stakers.addReward({value: stake}),
@@ -129,14 +128,14 @@ contract('Stakers', (accounts) => {
     // L0
     assert.equal(0, (await stakers.level()).toNumber());
     await expect.passes(
-      stakers.update(0, alice, {from:gameAddr}),
+      stakers.update(level = 0, alice, {from:gameAddr}),
       "alice failed to update"
     )
 
     // L1
     assert.equal(1, (await stakers.level()).toNumber());
     await expect.reverts(
-      stakers.update(0, bob, {from:gameAddr}),
+      stakers.update(level = 0, bob, {from:gameAddr}),
       "failed to update: resolving wrong level",
       "level 0 cannot be updated without starting a new verse, it should revert"
     )
@@ -151,7 +150,7 @@ contract('Stakers', (accounts) => {
       // L0
       assert.equal(0, (await stakers.level()).toNumber());
       await expect.passes(
-        stakers.update(0, alice, {from:gameAddr}),
+        stakers.update(level = 0, alice, {from:gameAddr}),
         "alice failed to update"
       )
 
@@ -159,15 +158,14 @@ contract('Stakers', (accounts) => {
       assert.equal(1, (await stakers.level()).toNumber());
     }
 
-
     // execute reward and test that alice has more balance
-    aliceBalance = Number(await web3.eth.getBalance(alice));
+    aliceBalanceBeforeRewarded = Number(await web3.eth.getBalance(alice));
     await expect.passes(
       stakers.executeReward({from:owner}),
       "failed to execute reward"
     )
 
-    assert.isBelow(aliceBalance, Number(await web3.eth.getBalance(alice)),
+    assert.isBelow(aliceBalanceBeforeRewarded, Number(await web3.eth.getBalance(alice)),
                  "Alice's current balance should be higher since she was rewarded");
   })
 
@@ -180,24 +178,25 @@ contract('Stakers', (accounts) => {
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
 
-    // L0
+    // L0: first updater lies
     assert.equal(0, (await stakers.level()).toNumber());
     await expect.passes(
-      stakers.update(0, alice, {from:gameAddr}),
+      stakers.update(level = 0, alice, {from:gameAddr}),
       "alice failed to update"
     )
 
-    // L1
+    // L1: second updater (1st challenger) tells truth
     assert.equal(1, (await stakers.level()).toNumber());
     await expect.passes(
-      stakers.update(1, bob, {from:gameAddr}),
+      stakers.update(level = 1, bob, {from:gameAddr}),
       "bob failed to update"
     )
 
-    // L2
+    // Ensure that nobody can update lev = 0 nor lev = 1 again, 
+    // since we are at level = 2
     assert.equal(2, (await stakers.level()).toNumber());
     await expect.reverts(
-      stakers.update(0, carol, {from:gameAddr}),
+      stakers.update(level = 0, carol, {from:gameAddr}),
       "failed to update: resolving wrong level",
       "level 0 cannot be updated without starting a new verse, it should revert"
     )
@@ -208,18 +207,20 @@ contract('Stakers', (accounts) => {
     )
 
     // ------------- start new verse ----------------
+    // which implicitly slashes alice, the first updater
     await expect.passes(
       stakers.finalize({from:gameAddr}),
       "failed starting new verse"
     )
 
-    // L0
+    // L0: check that Alice is not registered as staker anymore
     assert.equal(0, (await stakers.level()).toNumber());
     await expect.reverts(
       stakers.update(0, alice, {from:gameAddr}),
       "failed to update: staker not registered",
       "alice was slashed by bob and therefore it is removed from registered stakers, so it should revert"
     )
+    // check that Alice cannot enroll again
     await expect.reverts(
       stakers.enroll({from:alice, value: stake}),
       "failed to enroll: staker was slashed",

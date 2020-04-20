@@ -198,6 +198,8 @@ contract Stakers {
 
   // ----------------- private functions -----------------------
 
+  // WARNING: careful with this list ever-growing and not being able to check in one TX.
+  // TODO: create a mapping isSlashed(address => bool) instead of an array.
   function contains(address[] storage _array, address _value) private view returns (bool) {
     for (uint i=0; i<_array.length; i++) {
       if (_array[i] == _value) {
