@@ -7,7 +7,11 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/helper"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func (b *AuctionMachine) processStarted() error {
@@ -48,6 +52,62 @@ func (b *AuctionMachine) processStarted() error {
 		b.auction.StateExtra = fmt.Sprintf("seller %s is not the owner %s", b.auction.Seller, owner.String())
 		return nil
 	}
+
+	auctionHiddenPrice, err := signer.HashPrivateMsg(
+		uint8(b.auction.CurrencyID),
+		big.NewInt(b.auction.Price),
+		big.NewInt(b.auction.Rnd),
+	)
+	if err != nil {
+		return err
+	}
+	var sig [2][32]byte
+	var sigV uint8
+	_, err = signer.HashSellMessage(
+		uint8(b.auction.CurrencyID),
+		big.NewInt(b.auction.Price),
+		big.NewInt(b.auction.Rnd),
+		b.auction.ValidUntil,
+		playerId,
+	)
+	if err != nil {
+		return err
+	}
+	sig[0], sig[1], sigV, err = signer.RSV(b.auction.Signature)
+	if err != nil {
+		return err
+	}
+	// if has bids let's freeze it
+	tx, err := b.contracts.Market.FreezePlayer(
+		bind.NewKeyedTransactor(b.freeverse),
+		auctionHiddenPrice,
+		big.NewInt(b.auction.ValidUntil),
+		playerId,
+		sig,
+		sigV,
+	)
+	if err != nil {
+		log.Error(err)
+		b.auction.State = storage.AuctionFailed
+		b.auction.StateExtra = "Failed to freeze: " + err.Error()
+		return nil
+	}
+	receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
+	if err != nil {
+		log.Error("Timeout waiting receipt for freeze")
+		b.auction.State = storage.AuctionFailed
+		b.auction.State = "Failed to Freeze: waiting for receipt timeout"
+		return nil
+	}
+	if receipt.Status == 0 {
+		log.Error("Freeze mined but failed")
+		b.auction.State = storage.AuctionFailed
+		b.auction.State = "Failed to Freeze: mined but receipt status is failed"
+		return nil
+	}
+
+	b.auction.State = storage.AuctionAssetFrozen
+	return nil
 
 	// 	// TODO trying to freeze the asset
 	// 	auctionHiddenPrice, err := signer.HashPrivateMsg(
@@ -104,5 +164,4 @@ func (b *AuctionMachine) processStarted() error {
 
 	// 	log.Infof("[auction] %v STARTER -> ASSET_FROZEN", m.auction.UUID)
 	// 	m.auction.State = storage.AUCTION_ASSET_FROZEN
-	return nil
 }
