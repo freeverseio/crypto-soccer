@@ -37,6 +37,14 @@ func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) 
 		return id, fmt.Errorf("signer is not the owner of playerId %v", args.Input.PlayerId)
 	}
 
+	isValidForBlockchain, err := args.Input.IsValidForBlockchain(b.contracts)
+	if err != nil {
+		return id, err
+	}
+	if !isValidForBlockchain {
+		return id, fmt.Errorf("blockchain says no")
+	}
+
 	select {
 	case b.ch <- args.Input:
 	default:
