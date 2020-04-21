@@ -247,8 +247,8 @@ contract('Updates', (accounts) => {
         // toni
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         stakers  = await Stakers.new({from:owner});
+        stakers.setGameOwner(updates.address, {from:owner}).should.be.fulfilled;
         stake = await stakers.kRequiredStake();
-        await stakers.setGame(gameAddr, {from:owner}).should.be.fulfilled;
         parties = [alice, bob, carol, dave, erin, frank]
         await addTrustedParties(stakers, owner, parties);
         await enroll(stakers, stake, parties);
@@ -289,14 +289,20 @@ contract('Updates', (accounts) => {
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA).should.be.rejected;
 
         // So let's update with rootA...
-        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.fulfilled;
+        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
 
         // We can not challenge with something compatible with rootA:
-        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA).should.be.rejected;
+        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA, {from:bob}).should.be.rejected;
+
+        // We can not challenge with by alice again:
+        console.log("alice")
+        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA, {from:alice}).should.be.rejected;
 
         // ...but we can challenge with rootsB, that differ from rootsA:
         assert.notEqual(merkleStructA[lev = 0][pos = 0], merkleStructB[lev = 0][pos = 0], "wrong leafsA should lead to different root");
-        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB).should.be.fulfilled;
+        console.log("bob")
+        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.fulfilled;
+        console.log("bob...done")
 
         // check that level increased:
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
@@ -323,10 +329,13 @@ contract('Updates', (accounts) => {
         assert.equal(merkleUtils.merkleRoot(roots2SubmitA, nLevelsInLastChallenge), challValA, "wrong selection of roots2submit");
         
         // As always, first check that we cannot submit roots that coinicide with previous:
-        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitB).should.be.rejected;
+        console.log("carol")
+        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitB, {from:carol}).should.be.rejected;
         
         // But we can with differing ones:
-        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA).should.be.fulfilled;
+        console.log("carol again")
+        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA, {from:carol}).should.be.fulfilled;
+        console.log("carol done")
 
         // Check that we move to level 2
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
@@ -339,10 +348,11 @@ contract('Updates', (accounts) => {
         // finally, the last challenge, is one that the BC can check
         // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
         // try with wrong leaves:
-        await updates.BCVerifableChallengeFake([...roots2SubmitB], forceSuccess = true).should.be.rejected;
+        await updates.BCVerifableChallengeFake([...roots2SubmitB], forceSuccess = true, {from: dave}).should.be.rejected;
         // but I can submit different ones. In this case the BC decides according to forceSuccess
-        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = false).should.be.rejected;
-        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = true).should.be.fulfilled;
+        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = false, {from: dave}).should.be.rejected;
+        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = true, {from: dave}).should.be.fulfilled;
+        console.log("dave...done")
         
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(1);
@@ -352,7 +362,7 @@ contract('Updates', (accounts) => {
         level = lev.toNumber();
         
         // challenge again to move to level2, and now we will wait time
-        await updates.challengeTZ(challValB_backup, newChallengePos_backup, proofB_backup, roots2SubmitA_backup).should.be.fulfilled;
+        await updates.challengeTZ(challValB_backup, newChallengePos_backup, proofB_backup, roots2SubmitA_backup, {from: erin}).should.be.fulfilled;
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(2);
         var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
@@ -380,7 +390,7 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
         await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
 
-        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0]).should.be.rejected;
+        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0], {from: erin}).should.be.rejected;
         
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;

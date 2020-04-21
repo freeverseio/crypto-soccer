@@ -162,6 +162,7 @@ contract Updates is UpdatesView, Merkle {
         _challengeLevel[intData[0]][intData[3]] = intData[1] - 1;
         emit ChallengeResolved(intData[0], intData[1] + 1, true);
         emit ChallengeResolved(intData[0], intData[1], false);
+        _stakers.update(intData[1]-1, msg.sender);
     }
 
     function _assertFormallyCorrectChallenge(
