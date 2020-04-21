@@ -6,6 +6,7 @@ import (
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 func (m *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
@@ -20,25 +21,24 @@ func (m *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 		return nil
 	}
 
-	// bidMachine, err := bidmachine.New(
-	// 	market,
-	// 	&m.Auction,
-	// 	bid,
-	// 	m.contracts,
-	// 	m.freeverse,
-	// )
-	// if err != nil {
-	// 	return err
-	// }
+	bidMachine, err := bidmachine.New(
+		market,
+		m.auction,
+		bid,
+		m.contracts,
+		m.freeverse,
+	)
+	if err != nil {
+		return err
+	}
 
-	// err = bidMachine.Process()
-	// if err != nil {
-	// 	return err
-	// }
-	// if bid.State == storage.BIDPAID {
-	// 	log.Infof("[auction] %v PAYING -> PAID", m.Auction.UUID)
-	// 	m.Auction.State = storage.AUCTION_PAID
-	// }
+	err = bidMachine.Process()
+	if err != nil {
+		return err
+	}
+	if bid.State == storage.BidPaid {
+		log.Infof("[auction] PAYING -> PAID TODO transfer")
+	}
 
 	return nil
 }
