@@ -7,9 +7,11 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
+
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 )
 
-func TestAssetFrozen(t *testing.T) {
+func TestPaying(t *testing.T) {
 	auction := storage.NewAuction()
 	auction.ID = "f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a"
 	auction.ValidUntil = time.Now().Unix() + 100
@@ -23,10 +25,5 @@ func TestAssetFrozen(t *testing.T) {
 	auction.State = storage.AuctionStarted
 	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.Error(t, m.ProcessAssetFrozen(), "AssetFrozen: wrong state")
-
-	auction.State = storage.AuctionAssetFrozen
-	m, err = auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
-	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessAssetFrozen())
+	assert.Error(t, m.ProcessPaying(marketpay.New()), "Paying: wrong state")
 }

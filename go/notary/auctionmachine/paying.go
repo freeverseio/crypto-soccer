@@ -1,37 +1,43 @@
 package auctionmachine
 
-// func (m *AuctionMachine) processPaying(market marketpay.IMarketPay) error {
+import (
+	"errors"
 
-// 	if m.Auction.State != storage.AUCTION_PAYING {
-// 		return errors.New("Paying: wrong state : " + string(m.Auction.State))
-// 	}
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+)
 
-// 	bid := bidmachine.FirstAlive(m.Bids)
-// 	if bid == nil {
-// 		m.Auction.State = storage.AUCTION_FAILED
-// 		m.Auction.StateExtra = "Failed to pay"
-// 		return nil
-// 	}
+func (m *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
+	if m.auction.State != storage.AuctionPaying {
+		return errors.New("Paying: wrong state")
+	}
 
-// 	bidMachine, err := bidmachine.New(
-// 		market,
-// 		&m.Auction,
-// 		bid,
-// 		m.contracts,
-// 		m.freeverse,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
+	// bid := bidmachine.FirstAlive(m.Bids)
+	// if bid == nil {
+	// 	m.auction.State = storage.AuctionFailed
+	// 	m.auction.StateExtra = "Failed to pay"
+	// 	return nil
+	// }
 
-// 	err = bidMachine.Process()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if bid.State == storage.BIDPAID {
-// 		log.Infof("[auction] %v PAYING -> PAID", m.Auction.UUID)
-// 		m.Auction.State = storage.AUCTION_PAID
-// 	}
+	// bidMachine, err := bidmachine.New(
+	// 	market,
+	// 	&m.Auction,
+	// 	bid,
+	// 	m.contracts,
+	// 	m.freeverse,
+	// )
+	// if err != nil {
+	// 	return err
+	// }
 
-// 	return nil
-// }
+	// err = bidMachine.Process()
+	// if err != nil {
+	// 	return err
+	// }
+	// if bid.State == storage.BIDPAID {
+	// 	log.Infof("[auction] %v PAYING -> PAID", m.Auction.UUID)
+	// 	m.Auction.State = storage.AUCTION_PAID
+	// }
+
+	return nil
+}
