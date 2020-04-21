@@ -1,84 +1,72 @@
 package bidmachine_test
 
-// import (
-// 	"math/big"
-// 	"testing"
-// 	"time"
+import (
+	"testing"
 
-// 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
-// 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
-// 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-// )
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
-// func newTestMarket() *marketpay.MarketPay {
-// 	market, err := marketpay.New()
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return market
-// }
+	"gotest.tools/assert"
+)
 
-// func TestNotPayingAuction(t *testing.T) {
-// 	auction := &storage.Auction{State: storage.AUCTION_ASSET_FROZEN}
-// 	bid := &storage.Bid{}
-// 	_, err := bidmachine.New(
-// 		newTestMarket(),
-// 		auction,
-// 		bid,
-// 		bc.Contracts,
-// 		bc.Owner,
-// 	)
-// 	if err == nil {
-// 		t.Fatalf("Accepting %v auction", auction.State)
-// 	}
-// }
+func TestNotPayingAuction(t *testing.T) {
+	auction := storage.Auction{State: storage.AuctionAssetFrozen}
+	bid := storage.NewBid()
+	_, err := bidmachine.New(
+		marketpay.NewMockMarketPay(),
+		auction,
+		bid,
+		*bc.Contracts,
+		bc.Owner,
+	)
+	assert.Error(t, err, "Auction is not in PAYING state")
+}
 
-// func TestPayingAuction(t *testing.T) {
-// 	auction := &storage.Auction{State: storage.AUCTION_PAYING}
-// 	bid := &storage.Bid{}
-// 	_, err := bidmachine.New(
-// 		newTestMarket(),
-// 		auction,
-// 		bid,
-// 		bc.Contracts,
-// 		bc.Owner,
-// 	)
-// 	if err != nil {
-// 		t.Fatalf("Not accepting %v auction", auction.State)
-// 	}
-// }
+func TestPayingAuction(t *testing.T) {
+	auction := storage.Auction{State: storage.AuctionPaying}
+	bid := storage.NewBid()
+	_, err := bidmachine.New(
+		marketpay.NewMockMarketPay(),
+		auction,
+		bid,
+		*bc.Contracts,
+		bc.Owner,
+	)
+	assert.NilError(t, err)
+}
 
-// func TestFirstAlive(t *testing.T) {
-// 	bid := bidmachine.FirstAlive(nil)
-// 	if bid != nil {
-// 		t.Fatalf("Wrong result: %v", bid)
-// 	}
-// 	bids := []*storage.Bid{}
-// 	bid = bidmachine.FirstAlive(bids)
-// 	if bid != nil {
-// 		t.Fatalf("Wrong result: %v", bid)
-// 	}
-// 	bids = []*storage.Bid{&storage.Bid{State: storage.BIDFAILED}}
-// 	bid = bidmachine.FirstAlive(bids)
-// 	if bid != nil {
-// 		t.Fatalf("Wrong result: %v", bid)
-// 	}
-// 	bids = append(bids, &storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 10})
-// 	bid = bidmachine.FirstAlive(bids)
-// 	if bid != bids[1] {
-// 		t.Fatalf("Expected %v result: %v", bids[0], bid)
-// 	}
-// 	bids = append(bids, &storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 11})
-// 	bid = bidmachine.FirstAlive(bids)
-// 	if bid != bids[2] {
-// 		t.Fatalf("Wrong result: %v", bid)
-// 	}
-// 	bids = append(bids, &storage.Bid{State: storage.BIDPAYING, ExtraPrice: 11})
-// 	bid = bidmachine.FirstAlive(bids)
-// 	if bid != bids[3] {
-// 		t.Fatalf("Wrong result: %v", bid)
-// 	}
-// }
+func TestFirstAlive(t *testing.T) {
+	bid := bidmachine.FirstAlive(nil)
+	if bid != nil {
+		t.Fatalf("Wrong result: %v", bid)
+	}
+	bids := []storage.Bid{}
+	bid = bidmachine.FirstAlive(bids)
+	if bid != nil {
+		t.Fatalf("Wrong result: %v", bid)
+	}
+	bids = []storage.Bid{storage.Bid{State: storage.BidFailed}}
+	bid = bidmachine.FirstAlive(bids)
+	if bid != nil {
+		t.Fatalf("Wrong result: %v", bid)
+	}
+	bids = append(bids, storage.Bid{State: storage.BidAccepted, ExtraPrice: 10})
+	bid = bidmachine.FirstAlive(bids)
+	if *bid != bids[1] {
+		t.Fatalf("Expected %v result: %v", bids[0], bid)
+	}
+	bids = append(bids, storage.Bid{State: storage.BidAccepted, ExtraPrice: 11})
+	bid = bidmachine.FirstAlive(bids)
+	if *bid != bids[2] {
+		t.Fatalf("Wrong result: %v", bid)
+	}
+	bids = append(bids, storage.Bid{State: storage.BidPaying, ExtraPrice: 11})
+	bid = bidmachine.FirstAlive(bids)
+	if *bid != bids[3] {
+		t.Fatalf("Wrong result: %v", bid)
+	}
+}
 
 // func TestExpiredBidNoTransit(t *testing.T) {
 // 	auction := &storage.Auction{State: storage.AUCTION_PAYING}
