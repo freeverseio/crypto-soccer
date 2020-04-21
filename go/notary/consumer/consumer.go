@@ -67,7 +67,19 @@ func (b *Consumer) Start() {
 			}
 		case input.CreateBidInput:
 			log.Debug("Received CreateBidInput")
-
+			tx, err := b.db.Begin()
+			if err != nil {
+				log.Error(err)
+				break
+			}
+			if err := CreateBid(tx, in); err != nil {
+				log.Error(err)
+				tx.Rollback()
+				break
+			}
+			if err = tx.Commit(); err != nil {
+				log.Error(err)
+			}
 		case producer.ProcessEvent:
 			log.Debug("Received ProcessEvent")
 			tx, err := b.db.Begin()
@@ -83,15 +95,6 @@ func (b *Consumer) Start() {
 			if err = tx.Commit(); err != nil {
 				log.Error(err)
 			}
-			// for _, auction := range auctions {
-			// 	auctionMachine, err := auctionmachine.New(*auction, nil, nil, nil)
-			// 	if err != nil {
-			// 		log.Fatal(err)
-			// 	}
-			// 	if err := auctionMachine.Process(nil); err != nil {
-			// 		log.Fatal(err)
-			// 	}
-			// }
 		default:
 			log.Errorf("unknown event: %v", event)
 		}

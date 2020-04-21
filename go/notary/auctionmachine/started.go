@@ -53,27 +53,6 @@ func (b *AuctionMachine) processStarted() error {
 		return nil
 	}
 
-	// // check the signature
-	// id, err := hex.DecodeString(b.auction.ID)
-	// if err != nil {
-	// 	return err
-	// }
-	// signature, err := hex.DecodeString(b.auction.Signature)
-	// if err != nil {
-	// 	return err
-	// }
-	// isValid, err := signer.VerifySignature(id, signature)
-	// if err != nil {
-	// 	b.auction.State = storage.AuctionFailed
-	// 	b.auction.StateExtra = err.Error()
-	// 	return err
-	// }
-	// if !isValid {
-	// 	b.auction.State = storage.AuctionFailed
-	// 	b.auction.StateExtra = "Invalid signature"
-	// 	return err
-	// }
-
 	if len(b.bids) == 0 {
 		return nil
 	}
@@ -123,60 +102,4 @@ func (b *AuctionMachine) processStarted() error {
 
 	b.auction.State = storage.AuctionAssetFrozen
 	return nil
-
-	// 	// TODO trying to freeze the asset
-	// 	auctionHiddenPrice, err := signer.HashPrivateMsg(
-	// 		m.auction.CurrencyID,
-	// 		m.auction.Price,
-	// 		m.auction.Rnd,
-	// 	)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	var sig [2][32]byte
-	// 	var sigV uint8
-	// 	_, err = signer.HashSellMessage(
-	// 		m.auction.CurrencyID,
-	// 		m.auction.Price,
-	// 		m.auction.Rnd,
-	// 		m.auction.ValidUntil,
-	// 		m.auction.PlayerID,
-	// 	)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	sig[0], sig[1], sigV, err = signer.RSV(m.auction.Signature)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	tx, err := m.contracts.Market.FreezePlayer(
-	// 		bind.NewKeyedTransactor(m.freeverse),
-	// 		auctionHiddenPrice,
-	// 		big.NewInt(m.auction.ValidUntil),
-	// 		m.auction.PlayerID,
-	// 		sig,
-	// 		sigV,
-	// 	)
-	// 	if err != nil {
-	// 		log.Error(err)
-	// 		m.auction.State = storage.AUCTION_FAILED
-	// 		m.auction.StateExtra = "Failed to freeze: " + err.Error()
-	// 		return nil
-	// 	}
-	// 	receipt, err := helper.WaitReceipt(m.contracts.Client, tx, 60)
-	// 	if err != nil {
-	// 		log.Error("Timeout waiting receipt for freeze")
-	// 		m.auction.State = storage.AUCTION_FAILED
-	// 		m.auction.State = "Failed to Freeze: waiting for receipt timeout"
-	// 		return nil
-	// 	}
-	// 	if receipt.Status == 0 {
-	// 		log.Error("Freeze mined but failed")
-	// 		m.auction.State = storage.AUCTION_FAILED
-	// 		m.auction.State = "Failed to Freeze: mined but receipt status is failed"
-	// 		return nil
-	// 	}
-
-	// 	log.Infof("[auction] %v STARTER -> ASSET_FROZEN", m.auction.UUID)
-	// 	m.auction.State = storage.AUCTION_ASSET_FROZEN
 }

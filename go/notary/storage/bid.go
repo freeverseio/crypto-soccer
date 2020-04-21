@@ -16,6 +16,8 @@ const (
 	BIDFAILED   BidState = "FAILED"
 	BidAccepted BidState = "accepted"
 	BidPaid     BidState = "paid"
+	BidPaying   BidState = "paying"
+	BidFailed   BidState = "failed"
 )
 
 type Bid struct {

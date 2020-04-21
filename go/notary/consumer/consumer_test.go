@@ -8,7 +8,7 @@ import (
 )
 
 func TestConsumerNew(t *testing.T) {
-	ch := make(chan interface{}, 100000)
+	ch := make(chan interface{}, 10)
 	_, err := consumer.New(
 		ch,
 		db,

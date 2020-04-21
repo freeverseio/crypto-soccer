@@ -102,39 +102,6 @@ func TestAuctionStartedGoFrozen(t *testing.T) {
 	assert.Equal(t, m.State(), storage.AuctionAssetFrozen)
 }
 
-// func TestAuctionCancelled(t *testing.T) {
-// 	t.Parallel()
-
-// 	auction := storage.NewAuction()
-// 	auction.State = storage.AuctionCancelled
-// 	m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
-// 	assert.NilError(t, err)
-// 	assert.NilError(t, m.Process(nil))
-// 	assert.Equal(t, m.State(), storage.AuctionCancelled)
-// }
-
-// func TestAuctionFailed(t *testing.T) {
-// 	t.Parallel()
-
-// 	auction := storage.NewAuction()
-// 	auction.State = storage.AuctionFailed
-// 	m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
-// 	assert.NilError(t, err)
-// 	assert.NilError(t, m.Process(nil))
-// 	assert.Equal(t, m.State(), storage.AuctionFailed)
-// }
-
-// func TestAuctionEnded(t *testing.T) {
-// 	t.Parallel()
-
-// 	auction := storage.NewAuction()
-// 	auction.State = storage.AuctionEnded
-// 	m, err := auctionmachine.New(*auction, nil, bc.Contracts, bc.Owner)
-// 	assert.NilError(t, err)
-// 	assert.NilError(t, m.Process(nil))
-// 	assert.Equal(t, m.State(), storage.AuctionEnded)
-// }
-
 // func TestAuctionWithNoBids(t *testing.T) {
 // 	auction := storage.Auction{
 // 		UUID:       uuid.New(),
