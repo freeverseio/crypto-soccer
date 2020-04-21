@@ -101,7 +101,7 @@ func (b *BidMachine) Process() error {
 func (b *BidMachine) processPaying() error {
 	now := time.Now().Unix()
 	if now > b.bid.PaymentDeadline {
-		b.bid.State = storage.BIDFAILED
+		b.bid.State = storage.BidFailed
 		b.bid.StateExtra = "Expired"
 		return nil
 	}
@@ -173,30 +173,30 @@ func (b *BidMachine) processPaying() error {
 				isOffer2StartAuction,
 			)
 			if err != nil {
-				b.bid.State = storage.BIDFAILED
+				b.bid.State = storage.BidFailed
 				b.bid.StateExtra = err.Error()
 				return err
 			}
 			receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
 			if err != nil {
-				b.bid.State = storage.BIDFAILED
+				b.bid.State = storage.BidFailed
 				b.bid.StateExtra = "Timeout waiting for the receipt"
 				return err
 			}
 			if receipt.Status == 0 {
-				b.bid.State = storage.BIDFAILED
+				b.bid.State = storage.BidFailed
 				b.bid.StateExtra = "Mined but receipt.Status == 0"
 				return err
 			}
 			b.auction.PaymentURL = order.SettlorShortlink.ShortURL
-			b.bid.State = storage.BIDPAID
+			b.bid.State = storage.BidPaid
 		}
 	}
 	return nil
 }
 
 func (b *BidMachine) processAccepted() error {
-	b.bid.State = storage.BIDPAYING
+	b.bid.State = storage.BidPaying
 	b.bid.PaymentDeadline = b.auction.ValidUntil + b.postAuctionTime
 	return nil
 }

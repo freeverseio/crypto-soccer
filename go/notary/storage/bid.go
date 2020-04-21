@@ -9,11 +9,7 @@ import (
 type BidState string
 
 const (
-	BIDACCEPTED BidState = "ACCEPTED"
 	BIDREFUSED  BidState = "REFUSED"
-	BIDPAYING   BidState = "PAYING"
-	BIDPAID     BidState = "PAID"
-	BIDFAILED   BidState = "FAILED"
 	BidAccepted BidState = "accepted"
 	BidPaid     BidState = "paid"
 	BidPaying   BidState = "paying"
