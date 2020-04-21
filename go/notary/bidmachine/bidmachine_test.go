@@ -2,6 +2,7 @@ package bidmachine_test
 
 import (
 	"testing"
+	"time"
 
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
@@ -114,35 +115,35 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	}
 }
 
-// func TestBidPayingExpires(t *testing.T) {
-// 	now := time.Now().Unix()
-// 	auction := &storage.Auction{
-// 		Price:      big.NewInt(3),
-// 		State:      storage.AUCTION_PAYING,
-// 		ValidUntil: now - 3,
-// 	}
-// 	bid := &storage.Bid{
-// 		State:           storage.BIDPAYING,
-// 		PaymentDeadline: now - 1,
-// 	}
-// 	machine, err := bidmachine.New(
-// 		newTestMarket(),
-// 		auction,
-// 		bid,
-// 		bc.Contracts,
-// 		bc.Owner,
-// 	)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	err = machine.Process()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if bid.PaymentDeadline != now-1 {
-// 		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
-// 	}
-// 	if bid.State != storage.BIDFAILED {
-// 		t.Fatalf("Wrong state %v", bid.State)
-// 	}
-// }
+func TestBidPayingExpires(t *testing.T) {
+	now := time.Now().Unix()
+	auction := storage.Auction{
+		Price:      3,
+		State:      storage.AuctionPaying,
+		ValidUntil: now - 3,
+	}
+	bid := &storage.Bid{
+		State:           storage.BidPaying,
+		PaymentDeadline: now - 1,
+	}
+	machine, err := bidmachine.New(
+		marketpay.NewMockMarketPay(),
+		auction,
+		bid,
+		*bc.Contracts,
+		bc.Owner,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bid.PaymentDeadline != now-1 {
+		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
+	}
+	if bid.State != storage.BidFailed {
+		t.Fatalf("Wrong state %v", bid.State)
+	}
+}
