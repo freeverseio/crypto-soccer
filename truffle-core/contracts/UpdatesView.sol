@@ -5,7 +5,7 @@ import "./AssetsLib.sol";
  * @title Entry point to submit user actions, and tz root updates, which makes time evolve.
  */
 
-contract UpdatesView is Storage, AssetsLib {
+contract UpdatesView is AssetsLib {
 
     function getNow() public view returns(uint256) {
         return now;

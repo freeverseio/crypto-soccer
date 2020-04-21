@@ -13,6 +13,7 @@ const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
+const Challenges = artifacts.require('Challenges');
 
 contract('Proxy', (accounts) => {
     const FREEVERSE = accounts[0];
@@ -56,11 +57,11 @@ contract('Proxy', (accounts) => {
     });
 
     it('full deploy should work', async () => {
-        const {0: prox, 1: ass, 2: mkt, 3: updt} = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
+        const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
     });
     
     it('permissions check on full deploy: everyone can call delegates, currently, until we set restrictions inside Assets contract', async () => {
-        depl = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
+        depl = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         assets = depl[1]
         await assets.init({from: ALICE}).should.be.fulfilled;
         await assets.countCountries(tz = 1, {from: ALICE}).should.be.fulfilled;
@@ -159,31 +160,33 @@ contract('Proxy', (accounts) => {
     
     it('deploy and redeploy', async () => {
         // contact[0] is the NULL contract
+        const nContractsToProxy = 4;
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
-        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0} = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
+        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
-        assert.equal(await proxyV0.countContracts(), '4', "wrong V0 number of contracts in proxy");
+        assert.equal(await proxyV0.countContracts(), '5', "wrong V0 number of contracts in proxy");
 
-        expectedNamesV0 = ['Assets0', 'Market0', 'Updates0'];
-        for (c = 1; c < 4; c++) {
+        expectedNamesV0 = ['Assets0', 'Market0', 'Updates0', 'Challenges0'];
+        for (c = 1; c < 1+nContractsToProxy; c++) {
             var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxyV0.getContractInfo(c).should.be.fulfilled;
             isActive.should.be.equal(true);
             assert(fromBytes32(nom) == expectedNamesV0[c-1] , "wrong contract name");
         }    
 
-        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1} = await delegateUtils.deploy(versionNumber = 1, Proxy, proxyV0.address, Assets, Market, Updates);
+        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await delegateUtils.deploy(versionNumber = 1, Proxy, proxyV0.address, Assets, Market, Updates, Challenges);
         assert.equal(await proxyV1.address, proxyV0.address);
-        assert.equal(await proxyV0.countContracts(), '7', "wrong V1 number of contracts in proxyV0");
-        assert.equal(await proxyV1.countContracts(), '7', "wrong V1 number of contracts in proxyV1");
+        assert.equal(await proxyV0.countContracts(), '9', "wrong V1 number of contracts in proxyV0");
+        assert.equal(await proxyV1.countContracts(), '9', "wrong V1 number of contracts in proxyV1");
         assert.equal(await assV1.address, assV0.address);
         assert.equal(await markV1.address, markV0.address);
         assert.equal(await updV1.address, updV0.address);
-        expectedNamesV1 = ['Assets1', 'Market1', 'Updates1'];
-        for (c = 1; c < 4; c++) {
+        assert.equal(await chllV1.address, chllV0.address);
+        expectedNamesV1 = ['Assets1', 'Market1', 'Updates1', 'Challenges1'];
+        for (c = 1; c < 1+nContractsToProxy; c++) {
             var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxyV1.getContractInfo(c).should.be.fulfilled;
             isActive.should.be.equal(false);
             assert(fromBytes32(nom) == expectedNamesV0[c-1] , "wrong contract name");
-            var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxyV1.getContractInfo(c+3).should.be.fulfilled;
+            var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxyV1.getContractInfo(c+nContractsToProxy).should.be.fulfilled;
             isActive.should.be.equal(true);
             assert(fromBytes32(nom) == expectedNamesV1[c-1] , "wrong contract name");
         }    

@@ -13,6 +13,7 @@ const Privileged = artifacts.require('Privileged');
 const Utils = artifacts.require('Utils');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const Merkle = artifacts.require('Merkle');
+const Challenges = artifacts.require('Challenges');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -29,7 +30,8 @@ module.exports = function (deployer, network, accounts) {
     
     const versionNumber = 0;
     const proxyAddress  = "0x0";
-    const {0: proxy, 1: assets, 2: market, 3: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
+    const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
+      await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
@@ -98,7 +100,8 @@ module.exports = function (deployer, network, accounts) {
       ["PLAYANDEVOLVE", playAndEvolve.address],
       ["MERKLE", merkle.address],
       ["CONSTANTSGETTERS", constantsGetters.address],
-      ["PROXY", proxy.address]
+      ["PROXY", proxy.address],
+      ["CHALLENGES", challenges.address]
     ]
 
     // Build arrays "names" and "addresses" and store in Directory contract

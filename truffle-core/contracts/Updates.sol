@@ -1,17 +1,14 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
-import "./UpdatesView.sol";
-import "./Merkle.sol";
+import "./UpdatesBase.sol";
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
  */
 
-contract Updates is UpdatesView, Merkle {
-    event TeamTransfer(uint256 teamId, address to);
+contract Updates is UpdatesBase {
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
-    event ChallengeResolved(uint8 tz, uint8 resolvedLevel, bool isSuccessful);
 
     function setStakersAddress(address addr) public {
         _stakers = Stakers(addr);
@@ -102,136 +99,6 @@ contract Updates is UpdatesView, Merkle {
         _stakers.update(level, msg.sender);
     }
 
-    function BCVerifableChallengeFake(bytes32[] memory leagueLeafs, bool forceSuccess) public {
-        // intData = [tz, level, levelVerifiable, idx]
-        uint8[4] memory intData = _cleanTimeAcceptedChallenges();
-        _assertFormallyCorrectChallenge(intData, 0, 0, new bytes32[](0) , leagueLeafs);
-        require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
-        require(forceSuccess, "fake challenge failed because it was told to fail");
-        _completeSuccessfulVerifiableChallenge(intData);
-    }
-
-    function BCVerifableChallengeZeros(bytes32[] memory leagueLeafs) public {
-        // intData = [tz, level, levelVerifiable, idx]
-        uint8[4] memory intData = _cleanTimeAcceptedChallenges();
-        require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
-
-        (, uint8 day, uint8 half) = prevTimeZoneToUpdate();
-        require(day==0,"--");
-        require(half==0,"--++");
-        require(areThereUnexpectedZeros(leagueLeafs, day, half), "challenge to unexpected zeros failed");
-        _assertFormallyCorrectChallenge(intData, 0, 0, new bytes32[](0), leagueLeafs);
-        _completeSuccessfulVerifiableChallenge(intData);
-    }
-    
-    // check that leagueLeafs.length == 640 has been done before calling this function (to preserve it being pure)
-    function areThereUnexpectedZeros(bytes32[] memory leagueLeafs, uint8 day, uint8 half) public pure returns(bool) {
-        if ((day == 0) && (half == 0)) {
-            // at end of 1st half we still do not have league points
-            for (uint16 i = 0; i < 8; i++) {
-                if (leagueLeafs[i] != 0) return true;
-            }
-            // we do not have tactics, nor training, nor ML before
-            for (uint16 team = 0; team < TEAMS_PER_LEAGUE; team++) {
-                uint16 off = 128 + 64 * team;
-                for (uint16 i = 25; i < 28; i++) {
-                    if (leagueLeafs[off + i] != 0) return true;
-                }
-            }
-        }
-        // every element of team from 28 to 32 is 0
-        for (uint16 team = 0; team < TEAMS_PER_LEAGUE; team++) {
-            uint16 off = 128 + 64 * team;
-            for (uint16 i = 28; i < 32; i++) {
-                if (leagueLeafs[off + i] != 0) return true;
-                if (leagueLeafs[off+ 32 + i] != 0) return true;
-            }
-        }
-        // no goals after this day
-        uint16 off = 8 + 8 * day;
-        if (half == 1) off += 8;
-        for (uint16 i = off; i < 128; i++) {
-            if (leagueLeafs[i] != 0) return true;
-        }
-        return false;
-    }
-    
-
-    function _completeSuccessfulVerifiableChallenge(uint8[4] memory intData) internal {
-        // intData = [tz, level, levelVerifiable, idx]
-        _roots[intData[0]][intData[3]][intData[1]] = 0;
-        _challengeLevel[intData[0]][intData[3]] = intData[1] - 1;
-        emit ChallengeResolved(intData[0], intData[1] + 1, true);
-        emit ChallengeResolved(intData[0], intData[1], false);
-        _stakers.update(intData[1]-1, msg.sender);
-    }
-
-    function _assertFormallyCorrectChallenge(
-        uint8[4] memory intData,
-        bytes32 challLeaveVal, 
-        uint256 challLeavePos, 
-        bytes32[] memory proofChallLeave, 
-        bytes32[] memory providedRoots
-    ) 
-        private 
-        returns (bytes32)
-    {
-        // intData = [tz, level, levelVerifiable, idx]
-        intData = _cleanTimeAcceptedChallenges();
-
-        // build the root of the providedData
-        bytes32 root;
-        if (intData[1] + 2 >= intData[2]) {
-            require(providedRoots.length == _leafsInLeague, "league leafs must have len 640");
-            root = merkleRoot(providedRoots, _levelsInLastChallenge);
-        } else {
-            require(providedRoots.length == 2**uint256(_levelsInOneChallenge), "league leafs must have len 640");
-            root = merkleRoot(providedRoots, _levelsInOneChallenge);
-        }
-
-        // We first check that the provided roots are an actual challenge,
-        // hence leading to a root different from the one provided by previous challenge/update)
-        if (intData[1] == 0) {
-            // at level 0, the value one challenges is the one written in the BC, so we don't use challLeaveVal (could be anything)
-            // and we don't need to verifiy that it belonged to a previous commit.
-            require(root != getRoot(intData[0], 0, true), "provided leafs lead to same root being challenged");
-        } else if ((intData[1] + 1) == intData[2]) {
-            // at last level, we just provide the league leaves provided by the last challenger,
-            // and we verify that they DO match with what is written.
-            require(root == getRoot(intData[0], intData[1], true), "provided leafs lead to same root being challenged");
-        } else {
-            // otherwise we also check that the challVal belonged to a previous commit
-            require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
-            bytes32 prevRoot = getRoot(intData[0], intData[1], true);
-            require(verify(prevRoot, proofChallLeave, challLeaveVal, challLeavePos), "merkle proof not correct");
-        }
-        return root;        
-    }
-    
-    function _cleanTimeAcceptedChallenges() internal returns (uint8[4] memory intData) {
-        // intData = [tz, level, levelVerifiable, idx]
-        (intData[0],,) = prevTimeZoneToUpdate();
-        require(intData[0] != NULL_TIMEZONE, "cannot challenge the null timezone");
-        (intData[3], intData[1], intData[2]) = getChallengeData(intData[0], true);
-
-        (uint8 finalLevel, uint8 nJumps, bool isSettled) = getStatus(intData[0], true);
-        require(!isSettled, "challenging time is over for the current timezone");
-        // if there was 0 jumps, do nothing
-        if (nJumps == 0) return intData;
-        // otherwise clean all data except for the lowest level
-        require(intData[1] == finalLevel + 2 * nJumps, "challenge status: nJumps incompatible with writtenLevel and finalLevel");
-        uint8 idx = _newestRootsIdx[intData[0]];
-        for (uint8 j = 0; j < nJumps; j++) {
-            uint8 levelAccepted = finalLevel + 2 * (j + 1);
-            _roots[intData[0]][idx][levelAccepted] = 0;
-            _roots[intData[0]][idx][levelAccepted-1] = 0;
-            emit ChallengeResolved(intData[0], levelAccepted, true);
-            emit ChallengeResolved(intData[0], levelAccepted - 1, false);
-        }
-        _challengeLevel[intData[0]][idx] = finalLevel;
-        intData[1] = finalLevel;
-    }
-    
     function _setTZRoot(uint8 tz, bytes32 root) internal {
         uint8 idx = _newestRootsIdx[tz];
         _roots[tz][idx][0] = root;

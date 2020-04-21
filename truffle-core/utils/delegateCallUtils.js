@@ -9,15 +9,16 @@ const deployPair = async (proxyAddress, Contr) => {
     return [contr, contrAsLib, selectors];
 };
 
-const deployContractsToDelegateTo = async (proxyAddress, Assets, Market, Updates) => {
+const deployContractsToDelegateTo = async (proxyAddress, Assets, Market, Updates, Challenges) => {
     // setting up StorageProxy delegate calls to Assets
     const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(proxyAddress, Assets);
     const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(proxyAddress, Market);
     const {0: updates, 1: updatesAsLib, 2: selectorsUpdates} = await deployPair(proxyAddress, Updates);
+    const {0: challenges, 1: challengesAsLib, 2: selectorsChallenges} = await deployPair(proxyAddress, Challenges);
     
-    namesStr            = ['Assets', 'Market', 'Updates'];
-    contractsAsLib      = [assetsAsLib, marketAsLib, updatesAsLib];
-    allSelectors        = [selectorsAssets, selectorsMarket, selectorsUpdates];
+    namesStr            = ['Assets', 'Market', 'Updates', 'Challenges'];
+    contractsAsLib      = [assetsAsLib, marketAsLib, updatesAsLib, challengesAsLib];
+    allSelectors        = [selectorsAssets, selectorsMarket, selectorsUpdates, selectorsChallenges];
 
     addresses = [];                 
     names = [];
@@ -32,7 +33,7 @@ const deployContractsToDelegateTo = async (proxyAddress, Assets, Market, Updates
             contractIds.push(c+1);
         }
     }
-    return [assets, market, updates, addresses, allSelectors, names];
+    return [assets, market, updates, challenges, addresses, allSelectors, names];
 }
 
 const addContracts = async (proxy, addresses, allSelectors, names, firstNewContractId) => {
@@ -94,7 +95,7 @@ function informNoCollisions(Assets, Market, Updates) {
     }
 }
 
-function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates) {
+function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges) {
     proxySelectors = extractSelectorsFromAbi(Proxy.abi);
 
     duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Assets.abi)));
@@ -105,6 +106,9 @@ function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates) {
 
     duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Updates.abi)));
     if (duplicates.length != 0) throw new Error("duplicates found proxy-Updates!!!");
+
+    duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Challenges.abi)));
+    if (duplicates.length != 0) throw new Error("duplicates found proxy-Challenges!!!");
 
     // console.log("No collisions were found with the proxy.")
 }
@@ -119,10 +123,10 @@ function appendVersionNumberToNames(names, versionNumber) {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified if versionNumber > 0.
-const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market, Updates) => {
+const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market, Updates, Challenges) => {
     // Inform about possible collisions between contracts to delegate (among them, and with proxy)
     // informNoCollisions(Proxy, Assets, Market, Updates);
-    assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
+    assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
     
     // Next: proxy is built either by deploy, or by assignement to already deployed address
     var proxy;
@@ -135,14 +139,17 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
 
     // Check that the number of contracts already declared in Proxy is as expected.
     //  - contactId = 0 is null, so the first available contract on a clean deploy is 1, and every version adds 3 contracts
-    const firstNewContractId = 1 + versionNumber * 3;
+    const nContractsToProxy = 4;
+    const firstNewContractId = 1 + versionNumber * nContractsToProxy;
     const nContractsNum = await proxy.countContracts().should.be.fulfilled;
     if (firstNewContractId != nContractsNum.toNumber()) throw new Error("mismatch between firstNewContractId and nContractsNum");
 
     // The following line does:
     //  - deploy new contracts (not proxy) to delegate to, and return their addresses
     //  - build interfaces to those contracts which point to the proxy address
-    const {0: assets, 1: market, 2: updates, 3: addresses, 4: allSelectors, 5: names} = await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates);
+    const {0: assets, 1: market, 2: updates, 3: challenges, 4: addresses, 5: allSelectors, 6: names} = 
+        await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates, Challenges);
+        
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
     // Adds new contracts to proxy
@@ -155,7 +162,7 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
     if (versionNumber == 0) {
         deactivateContractIds = [];
     } else {
-        deactivateContractIds = Array.from(new Array(3), (x,i) => firstNewContractId - 3 + i);
+        deactivateContractIds = Array.from(new Array(nContractsToProxy), (x,i) => firstNewContractId - nContractsToProxy + i);
     }
 
     // await assertActiveStatusIs(deactivateContractIds, true, proxy);
@@ -164,9 +171,7 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
 
     // await assertActiveStatusIs(deactivateContractIds, false, proxy);
     // await assertActiveStatusIs(newContractIds, true, proxy);
-
-    
-    return [proxy, assets, market, updates];
+    return [proxy, assets, market, updates, challenges];
 }
 
 module.exports = {
