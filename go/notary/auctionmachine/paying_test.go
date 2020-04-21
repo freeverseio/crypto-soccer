@@ -27,3 +27,26 @@ func TestPaying(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Error(t, m.ProcessPaying(marketpay.New()), "Paying: wrong state")
 }
+
+func TestPayingNilBids(t *testing.T) {
+	auction := storage.NewAuction()
+	auction.State = storage.AuctionPaying
+	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.NilError(t, m.ProcessPaying(marketpay.New()))
+	assert.Equal(t, m.State(), storage.AuctionFailed)
+	assert.Equal(t, m.StateExtra(), "Failed to pay")
+}
+
+func TestPayingNoBidsAvailable(t *testing.T) {
+	auction := storage.NewAuction()
+	auction.State = storage.AuctionPaying
+	bid := storage.NewBid()
+	bid.State = storage.BidFailed
+	bids := []storage.Bid{*bid}
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.NilError(t, m.ProcessPaying(marketpay.New()))
+	assert.Equal(t, m.State(), storage.AuctionFailed)
+	assert.Equal(t, m.StateExtra(), "Failed to pay")
+}

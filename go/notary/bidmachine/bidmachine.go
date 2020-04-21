@@ -1,21 +1,8 @@
 package bidmachine
 
-// import (
-// 	"crypto/ecdsa"
-// 	"errors"
-// 	"fmt"
-// 	"math/big"
-// 	"time"
-
-// 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-// 	"github.com/freeverseio/crypto-soccer/go/contracts"
-// 	"github.com/freeverseio/crypto-soccer/go/helper"
-// 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
-// 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
-// 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-
-// 	log "github.com/sirupsen/logrus"
-// )
+import (
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+)
 
 // type BidMachine struct {
 // 	market          marketpay.IMarketPay
@@ -58,34 +45,34 @@ package bidmachine
 // 	}, nil
 // }
 
-// func FirstAlive(bids []*storage.Bid) *storage.Bid {
-// 	// first searching for PAYING bid
-// 	for i := range bids {
-// 		if bids[i].State == storage.BIDPAYING {
-// 			return bids[i]
-// 		}
-// 	}
-// 	// then search for the highest ACCEPTED bid
-// 	idx := -1
-// 	extraPrice := int64(-1)
-// 	for i, bid := range bids {
-// 		if bid.State == storage.BIDACCEPTED {
-// 			if idx == -1 {
-// 				idx = i
-// 				extraPrice = bid.ExtraPrice
-// 			} else {
-// 				if bid.ExtraPrice > extraPrice {
-// 					idx = i
-// 					extraPrice = bid.ExtraPrice
-// 				}
-// 			}
-// 		}
-// 	}
-// 	if idx == -1 {
-// 		return nil
-// 	}
-// 	return bids[idx]
-// }
+func FirstAlive(bids []storage.Bid) *storage.Bid {
+	// first searching for PAYING bid
+	for i := range bids {
+		if bids[i].State == storage.BidPaying {
+			return &bids[i]
+		}
+	}
+	// then search for the highest ACCEPTED bid
+	idx := -1
+	extraPrice := int64(-1)
+	for i, bid := range bids {
+		if bid.State == storage.BidAccepted {
+			if idx == -1 {
+				idx = i
+				extraPrice = bid.ExtraPrice
+			} else {
+				if bid.ExtraPrice > extraPrice {
+					idx = i
+					extraPrice = bid.ExtraPrice
+				}
+			}
+		}
+	}
+	if idx == -1 {
+		return nil
+	}
+	return &bids[idx]
+}
 
 // func (b *BidMachine) Process() error {
 // 	switch b.bid.State {
