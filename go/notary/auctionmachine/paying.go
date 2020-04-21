@@ -6,7 +6,6 @@ import (
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	log "github.com/sirupsen/logrus"
 )
 
 func (m *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
@@ -37,7 +36,8 @@ func (m *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 		return err
 	}
 	if bid.State == storage.BidPaid {
-		log.Infof("[auction] PAYING -> PAID TODO transfer")
+		m.auction.State = storage.AuctionWithdrableBySeller
+		return nil
 	}
 
 	return nil
