@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"gotest.tools/assert"
@@ -18,11 +19,11 @@ func TestCancelAuctionHash(t *testing.T) {
 	in.AuctionId = "43"
 	hash, err = in.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x5a24d5cbf413a599aac8109527f6af95eedc33b69f57f23e384ef20df5e9651e")
+	assert.Equal(t, hash.Hex(), "0x5757964f4d77a1fdc41d891587d2dd6fd593df7d2933a5d8f2ecab7ddf26c6fe")
 }
 func TestCancelAuctionValidSignature(t *testing.T) {
 	in := input.CancelAuctionInput{}
-	in.AuctionId = "434534534"
+	in.AuctionId = "4345345341"
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	valid, err := in.VerifySignature()
 	assert.NilError(t, err)
@@ -35,13 +36,15 @@ func TestCancelAuctionGetSigner(t *testing.T) {
 
 	hash, err := in.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xdebecc786086a1cf7be2b6d5d7f90bf93184f13239004fe5fe4dc2c30bc825ea")
+	assert.Equal(t, hash.Hex(), "0x20d4c8848f2c767dbe7dc79e56e05e61d717a27ec94d635d2ef888f20ed7335c")
 
-	sign, err := signer.Sign(hash.Bytes(), bc.Owner)
+	pvc, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	assert.NilError(t, err)
+	sign, err := signer.Sign(hash.Bytes(), pvc)
 	assert.NilError(t, err)
 
 	in.Signature = hex.EncodeToString(sign)
-	assert.Equal(t, in.Signature, "63288c53fa0a7be0f33b0bc39c3003ec133b3aec48cfe00904101cc8612750f15ed9e786430a06b7d5c5803b1c8c5220ed20a286817dabc1a37c5b4c18832e011b")
+	assert.Equal(t, in.Signature, "ae2431f4d5e8d8f05b3478bbaa293213c697c3d3ef09ff02b3a9b2ffb98199b25622dc55c1774809276149caac35cd1ccef358578a7c7b2aabd7ec0a15b017b81c")
 
 	address, err := in.SignerAddress()
 	assert.NilError(t, err)

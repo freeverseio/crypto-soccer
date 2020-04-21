@@ -24,7 +24,11 @@ func (b CancelAuctionInput) Hash() (common.Hash, error) {
 		},
 	}
 	idArray := [32]byte{}
-	copy(idArray[:], []byte(b.AuctionId))
+	auctionHex, err := hex.DecodeString(string(b.AuctionId))
+	if err != nil {
+		return common.Hash{}, err
+	}
+	copy(idArray[:], auctionHex)
 	bytes, err := arguments.Pack(idArray)
 	if err != nil {
 		return common.Hash{}, err
