@@ -76,7 +76,7 @@ contract Stakers {
   uint public constant kRequiredStake = 4 ether;
 
   address public owner = address(0x0);
-  address public game = address(0x0);
+  address public gameOwner = address(0x0);
   AddressStack private updaters = new AddressStack();
   Rewards public rewards = new Rewards();
   address[kNumStakers] public stakers;
@@ -92,8 +92,8 @@ contract Stakers {
     _;
   }
   modifier onlyGame {
-    require(msg.sender == game && game != address(0x0),
-            "Only game can call this function.");
+    require(msg.sender == gameOwner && gameOwner != address(0x0),
+            "Only gameOwner can call this function.");
     _;
   }
 
@@ -118,11 +118,11 @@ contract Stakers {
     rewards.execute();
   }
 
-  /// @notice sets the address of the game that interacts with this contract
-  function setGame(address _address) external onlyOwner {
-    require (game == address(0x0),     "game is already set");
+  /// @notice sets the address of the gameOwner that interacts with this contract
+  function setGameOwner(address _address) external onlyOwner {
+    require (gameOwner == address(0x0),     "gameOwner is already set");
     require (_address != address(0x0), "invalid address 0x0");
-    game = _address;
+    gameOwner = _address;
   }
 
   /// @notice adds address as trusted party

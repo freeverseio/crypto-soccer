@@ -19,20 +19,20 @@ contract('Stakers', (accounts) => {
   it("Tests game address", async () => {
     await expect.reverts(
       stakers.update(level = 1, alice),
-      "Only game can call this function",
+      "Only gameOwner can call this function",
       "game not set yet, so it should revert"
     )
     await expect.reverts(
-      stakers.setGame(gameAddr, {from:alice}),
+      stakers.setGameOwner(gameAddr, {from:alice}),
       "Only owner can call this function",
       "wrong sender, so it should revert"
     )
     await expect.passes(
-      stakers.setGame(gameAddr, {from:owner}),
+      stakers.setGameOwner(gameAddr, {from:owner}),
       "failed to set game address"
     )
   })
-  
+
   it("Tests owner address change", async () => {
     await expect.reverts(
       stakers.setOwnerAddress(alice, {from:alice}),
@@ -44,12 +44,12 @@ contract('Stakers', (accounts) => {
       "failed to set new owner address"
     )
     await expect.reverts(
-      stakers.setGame(gameAddr, {from:owner}),
+      stakers.setGameOwner(gameAddr, {from:owner}),
       "Only owner can call this function",
       "owner is not true owner anymore, so it should revert"
     )
     await expect.passes(
-      stakers.setGame(gameAddr, {from:alice}),
+      stakers.setGameOwner(gameAddr, {from:alice}),
       "failed to set game address by updated owner"
     )
   })
@@ -103,7 +103,7 @@ contract('Stakers', (accounts) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests stakers can't unenroll after having done an update", async () => {
-    stakers.setGame(gameAddr, {from:owner}),
+    stakers.setGameOwner(gameAddr, {from:owner}),
     await stakers.addTrustedParty(alice, {from:owner});
     await stakers.enroll({from:alice, value: stake});
     await stakers.update(level = 0, alice, {from:gameAddr}),
@@ -138,7 +138,7 @@ contract('Stakers', (accounts) => {
 
   it("Tests L0 -> L1 true -> start -> L1 true, the usual path", async () => {
 
-    stakers.setGame(gameAddr, {from:owner}),
+    stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
@@ -194,7 +194,7 @@ contract('Stakers', (accounts) => {
 
   it("Tests L0 -> L1 lie  -> L2 true -> start -> L1 lie  -> L2 true", async () => {
 
-    stakers.setGame(gameAddr, {from:owner}),
+    stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
@@ -266,7 +266,7 @@ contract('Stakers', (accounts) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
   it("Tests L0 -> L1 true -> L2 lie  -> L3 true -> start", async () => {
 
-    stakers.setGame(gameAddr, {from:owner}),
+    stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
@@ -320,7 +320,7 @@ contract('Stakers', (accounts) => {
 
   it("Tests L0 -> L1 lie  -> L2 lie  -> L3 true -> L1 -> L2 true", async () => {
 
-    stakers.setGame(gameAddr, {from:owner}),
+    stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
@@ -384,7 +384,7 @@ contract('Stakers', (accounts) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests L0 -> L1 true -> L2 lie  -> L3 lie  -> L4 true -> L2 -> L3 true -> start", async () => {
-    stakers.setGame(gameAddr, {from:owner}),
+    stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
@@ -461,7 +461,7 @@ contract('Stakers', (accounts) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests L0 -> L1 lie  -> L2 true -> L3 lie  -> L4 true -> start", async () => {
-    stakers.setGame(gameAddr, {from:owner})
+    stakers.setGameOwner(gameAddr, {from:owner})
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
@@ -536,7 +536,7 @@ contract('Stakers', (accounts) => {
   it("Tests L0 -> L1 lie  -> L2 lie  -> L3 true  -> L4 lie -> challenge -> L3", async () => {
 
     // start (L0) ->  alice updates (L1) -> bob updates (L2) -> carol updates (L3) -> dave updates (L4) -> erin challenges dave (L3) -> erin updates (L4)
-    stakers.setGame(gameAddr, {from:owner}),
+    stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
