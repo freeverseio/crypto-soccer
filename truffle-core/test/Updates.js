@@ -14,6 +14,7 @@ const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
+const Challenges = artifacts.require('Challenges');
 const Merkle = artifacts.require('Merkle');
 const Stakers = artifacts.require("Stakers")
 
@@ -87,11 +88,12 @@ contract('Updates', (accounts) => {
     }
     
     beforeEach(async () => {
-        depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates);
+        depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
         proxy  = depl[0];
         assets = depl[1];
         market = depl[2];
         updates = depl[3];
+        challenges = depl[4];
         // // done with delegate calls
 
         constants = await ConstantsGetters.new().should.be.fulfilled;
@@ -445,10 +447,10 @@ contract('Updates', (accounts) => {
         // finally, the last challenge, is one that the BC can check
         // we will to a challenge of level 3 that will instantaneously resolve into killing the level2 and reverting to level1
         // try with wrong leaves:
-        await updates.BCVerifableChallengeFake([...roots2SubmitB], forceSuccess = true, {from: dave}).should.be.rejected;
+        await challenges.BCVerifableChallengeFake([...roots2SubmitB], forceSuccess = true, {from: dave}).should.be.rejected;
         // but I can submit different ones. In this case the BC decides according to forceSuccess
-        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = false, {from: dave}).should.be.rejected;
-        await updates.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = true, {from: dave}).should.be.fulfilled;
+        await challenges.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = false, {from: dave}).should.be.rejected;
+        await challenges.BCVerifableChallengeFake([...roots2SubmitA], forceSuccess = true, {from: dave}).should.be.fulfilled;
         
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
         lev.toNumber().should.be.equal(1);
@@ -756,11 +758,11 @@ contract('Updates', (accounts) => {
         
         // finally, the last challenge, is one that the BC can check
         // must provide the same leafs as the last person (C)
-        await updates.BCVerifableChallengeZeros([...roots2SubmitA], {from: erin}).should.be.rejected;
-        await updates.BCVerifableChallengeZeros([...roots2SubmitB], {from: erin}).should.be.rejected;
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitA], {from: erin}).should.be.rejected;
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitB], {from: erin}).should.be.rejected;
 
         // we succed to prove that C was wrong:
-        await updates.BCVerifableChallengeZeros([...roots2SubmitC], {from: erin}).should.be.fulfilled;
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitC], {from: erin}).should.be.fulfilled;
 
         // we go back to level 1
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
@@ -779,8 +781,8 @@ contract('Updates', (accounts) => {
         
         // finally, the last challenge, is one that the BC can check
         // must provide the same leafs as the last person (C)
-        await updates.BCVerifableChallengeZeros([...roots2SubmitB]).should.be.rejected;
-        await updates.BCVerifableChallengeZeros([...roots2SubmitC]).should.be.rejected;
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitB]).should.be.rejected;
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitC]).should.be.rejected;
 
         // we fail to succed to prove that A was wrong with zeros:
         assert.equal(
@@ -788,9 +790,9 @@ contract('Updates', (accounts) => {
             false,
             "unexpected"
         );
-        result = await updates.areThereUnexpectedZeros([...roots2SubmitA], day, half).should.be.fulfilled;
+        result = await challenges.areThereUnexpectedZeros([...roots2SubmitA], day, half).should.be.fulfilled;
         result.should.be.equal(false);
-        await updates.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
     });
     
     

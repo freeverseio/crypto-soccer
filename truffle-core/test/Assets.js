@@ -12,6 +12,7 @@ const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
+const Challenges = artifacts.require('Challenges');
 
 
 
@@ -40,7 +41,7 @@ contract('Assets', (accounts) => {
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
-        depl = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
+        depl = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         proxy = depl[0]
         assets = depl[1]
         market = depl[2]
