@@ -477,6 +477,7 @@ contract('FullLeague', (accounts) => {
         depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
         proxy  = depl[0];
         updates = depl[3];
+        challenges = depl[4];
 
         leafsDecimal = chllUtils.readCreatedLeagueLeafs();
         leafs = chllUtils.leafsToBytes32(leafsDecimal);
@@ -490,7 +491,7 @@ contract('FullLeague', (accounts) => {
                     false,
                     "wrong leafs"
                 )
-                result = await updates.areThereUnexpectedZeros(leafsThisDay, day, half).should.be.fulfilled;
+                result = await challenges.areThereUnexpectedZeros(leafsThisDay, day, half).should.be.fulfilled;
                 result.should.be.equal(false);
             }
         }
