@@ -16,6 +16,7 @@ const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
 const Proxy = artifacts.require('Proxy');
 const Updates = artifacts.require('Updates');
+const Challenges = artifacts.require('Challenges');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
@@ -473,7 +474,7 @@ contract('FullLeague', (accounts) => {
     });
     
     it('challenge unexpected zero values', async () => {
-        depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates);
+        depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
         proxy  = depl[0];
         updates = depl[3];
 
