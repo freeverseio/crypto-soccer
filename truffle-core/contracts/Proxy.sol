@@ -8,8 +8,8 @@ import "./ProxyStorage.sol";
 contract Proxy is ProxyStorage {
 
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
-    event ContractsActivated(uint256[] contractIds);
-    event ContractsDeleted(uint256[] contractIds);
+    event ContractsActivated(uint256[] contractIds, uint256 time);
+    event ContractsDeactivated(uint256[] contractIds, uint256 time);
 
     address constant private NULL_ADDR  = address(0);
     address constant private PROXY_DUMMY_ADDR = address(1);
@@ -134,7 +134,7 @@ contract Proxy is ProxyStorage {
             }
             _contractsInfo[contractId].isActive = true;
         }
-        emit ContractsActivated(contractIds);        
+        emit ContractsActivated(contractIds, now);        
     }
 
     /**
@@ -153,7 +153,7 @@ contract Proxy is ProxyStorage {
             }
             _contractsInfo[contractId].isActive = false;
         }
-        emit ContractsDeleted(contractIds);        
+        emit ContractsDeactivated(contractIds, now);        
     }
 
 

@@ -34,6 +34,7 @@ contract Updates is UpdatesView, Merkle {
             timeZoneForRound1 = normalizeTZ(1+uint8(hour));
             nextVerseTimestamp = now + (29-minute)*60 + (60 - secs) + 3600;
         }
+        firstVerseTimeStamp = nextVerseTimestamp;
     }
  
     function _incrementVerse() private {

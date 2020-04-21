@@ -1,8 +1,8 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -14,25 +14,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 )
-
-func run(
-	universedb *sql.DB,
-	processor *process.EventProcessor,
-	delta uint64,
-) (uint64, error) {
-	tx, err := universedb.Begin()
-	if err != nil {
-		return 0, err
-	}
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			return
-		}
-		err = tx.Commit()
-	}()
-	return processor.Process(tx, delta)
-}
 
 func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
@@ -104,13 +85,16 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	for {
-		log.Info("Starting ...")
+	log.Info("Starting ...")
+
+	if err := func() error {
 		log.Info("Dial the Ethereum client: ", *ethereumClient)
 		client, err := ethclient.Dial(*ethereumClient)
 		if err != nil {
-			log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+			return err
 		}
+		defer client.Close()
+
 		contracts, err := contracts.New(
 			client,
 			*leaguesContractAddress,
@@ -127,40 +111,48 @@ func main() {
 			*constantsgettersContractAddress,
 		)
 		if err != nil {
-			log.Fatalf(err.Error())
+			return err
 		}
 
 		log.Info("Connecting to universe DBMS: ", *postgresURL)
 		universedb, err := storage.New(*postgresURL)
 		if err != nil {
-			log.Fatalf("Failed to connect to universe DBMS: %v", err)
+			return err
 		}
+		defer universedb.Close()
 
 		namesdb, err := names.New(*namesDatabase)
 		if err != nil {
-			log.Fatalf("Failed to connect to names DBMS: %v", err)
+			return err
 		}
-
-		log.Info("All is ready ... 5 seconds to start ...")
-		time.Sleep(5 * time.Second)
+		defer namesdb.Close()
 
 		processor, err := process.NewEventProcessor(contracts, namesdb, *ipfsURL)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-
 		log.Info("On Going ...")
+
 		for {
-			processedBlocks, err := run(universedb, processor, uint64(*delta))
+			tx, err := universedb.Begin()
 			if err != nil {
-				log.Error(err)
-				break
+				return err
 			}
+			processedBlocks, err := processor.Process(tx, uint64(*delta))
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+			if err := tx.Commit(); err != nil {
+				return err
+			}
+
 			if processedBlocks == 0 {
 				time.Sleep(2 * time.Second)
 			}
 		}
-		log.Warning("Waiting 2 secs and retry ...")
-		time.Sleep(2 * time.Second)
+	}(); err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
 }

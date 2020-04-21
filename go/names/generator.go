@@ -54,6 +54,10 @@ func New(db_filename string) (*Generator, error) {
 	return &generator, nil
 }
 
+func (b *Generator) Close() error {
+	return b.db.Close()
+}
+
 func (b *Generator) countPlayersDB() error {
 	var err error
 	rows, err := b.db.Query(`SELECT country_code, num_names FROM countries`)

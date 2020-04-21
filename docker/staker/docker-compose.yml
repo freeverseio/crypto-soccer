@@ -1,16 +1,13 @@
 version: '3'
 services:
   ethereum: 
-    image: parity/parity:v2.7.2-stable
-    command: --chain xdai --jsonrpc-interface all
+    image: freeverseio/parity:v2.7.2-posdao-stable
     volumes:
-      - ethereum-data:/home/parity
+      - ethereum-data:/home/parity/.local/share/io.parity.ethereum
   universe.db:
     build: 
       context: ../../universe.db/
     restart: always
-    ports: 
-      - "5432:5432"
     volumes:
       - universe.db-data:/var/lib/postgresql/data
   synchronizer:
@@ -47,16 +44,16 @@ services:
       - "40010:4001"
     volumes:
       - ipfs.node-data:/data
-  universe.api:
-    build: 
-      context: ../../universe.api/
-    ports:
-      - "4000:4000"
-    depends_on:
-      - ethereum
-    command: >
-      -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
-      --ethereum "http://ethereum:8545"
+  # universe.api:
+  #   build: 
+  #     context: ../../universe.api/
+  #   ports:
+  #     - "4000:4000"
+  #   depends_on:
+  #     - ethereum
+  #   command: >
+  #     -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
+  #     --ethereum "http://ethereum:8545"
 
 volumes:
   ethereum-data:

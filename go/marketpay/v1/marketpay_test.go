@@ -6,21 +6,8 @@ import (
 	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 )
 
-func TestCreation(t *testing.T) {
-	mp, err := v1.NewMarketPay()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if mp == nil {
-		t.Fatal("market pay instance is nil")
-	}
-}
-
 func TestCreateOrder(t *testing.T) {
-	mp, err := v1.NewMarketPay()
-	if err != nil {
-		t.Fatal(err)
-	}
+	mp := v1.New()
 	name := "pippo"
 	value := "134.10"
 	order, err := mp.CreateOrder(name, value)
@@ -36,10 +23,7 @@ func TestCreateOrder(t *testing.T) {
 }
 
 func TestGetOrder(t *testing.T) {
-	mp, err := v1.NewMarketPay()
-	if err != nil {
-		t.Fatal(err)
-	}
+	mp := v1.New()
 	name := "pippo"
 	value := "134.10"
 	order, err := mp.CreateOrder(name, value)
@@ -56,10 +40,7 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestIsPaid(t *testing.T) {
-	mp, err := v1.NewMarketPay()
-	if err != nil {
-		t.Fatal(err)
-	}
+	mp := v1.New()
 	name := "pippo"
 	value := "134.10"
 	order, err := mp.CreateOrder(name, value)

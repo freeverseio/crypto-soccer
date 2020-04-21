@@ -28,7 +28,6 @@ contract Storage is ProxyStorage, Constants{
     bytes32 internal currentVerseSeed;
 
     uint256 public gameDeployDay;
-    uint256 public currentRound;
 
     mapping (uint256 => uint256) countryIdToNDivisions;
     mapping (uint256 => uint256) countryIdToNHumanTeams;
@@ -37,8 +36,7 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => address) teamIdToOwner;
     mapping (uint8 => uint256) tzToNCountries;
 
-
-
+    uint256 firstVerseTimeStamp;
     uint16 _levelsInOneChallenge;
     uint16 _leafsInLeague;
     uint16 _levelsInLastChallenge;

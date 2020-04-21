@@ -26,12 +26,11 @@ const delegateUtils = require('../utils/delegateCallUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    delegateUtils.informNoCollisions(Proxy, Assets, Market, Updates);
-    delegateUtils.assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates);
-    const proxySelectors = delegateUtils.extractSelectorsFromAbi(Proxy.abi);
-    const proxy = await deployer.deploy(Proxy, proxySelectors).should.be.fulfilled;
-    const {0: assets, 1: market, 2: updates} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
-
+    
+    const versionNumber = 0;
+    const proxyAddress  = "0x0";
+    const {0: proxy, 1: assets, 2: market, 3: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
+  
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -50,7 +49,7 @@ module.exports = function (deployer, network, accounts) {
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
-    await updates.initUpdates().should.be.fulfilled;
+    if (versionNumber == 0) { await updates.initUpdates().should.be.fulfilled; }
     await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
     await trainingPoints.setMarketAddress(market.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
@@ -60,27 +59,26 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
-    const value = "1000000000000000000";
-    const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
-
-    // Initializing Assets differently in XDAI or testing:
-    console.log("Setting up ... done");
-    if (deployer.network === "xdai") {
-      await assets.init().should.be.fulfilled;
-    } else if (deployer.network === "local") {
-      console.log("WARNING ... only timezone 1")
-      await assets.initSingleTZ(1).should.be.fulfilled;
-      console.log("Transfer " + value + " to " + to);
-      await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
-    } else {
-      console.log("WARNING ... only timezone 10")
-      await assets.initSingleTZ(10).should.be.fulfilled;
-      console.log("Transfer " + value + " to " + to);
-      await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
+    if (versionNumber == 0) {
+      // Initializing Assets differently in XDAI or testing:
+      console.log("Setting up ... done");
+      if (deployer.network === "xdai") {
+        await assets.init().should.be.fulfilled;
+      } else if (deployer.network === "local") {
+        console.log("WARNING ... only timezone 1")
+        await assets.initSingleTZ(1).should.be.fulfilled;
+        const value = "1000000000000000000";
+        const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
+        console.log("Transfer " + value + " to " + to);
+        await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
+      } else {
+        console.log("WARNING ... only timezone 10")
+        await assets.initSingleTZ(10).should.be.fulfilled;
+      }
+      console.log("Initing ... done");
     }
-    console.log("Initing ... done");
-
-    await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
+ 
+    if (versionNumber == 0) { await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0"); }
     namesAndAddresses = [
       ["ASSETS", assets.address],
       ["MARKET", market.address],
@@ -99,7 +97,8 @@ module.exports = function (deployer, network, accounts) {
       ["PRIVILEGED", assets.address],
       ["PLAYANDEVOLVE", playAndEvolve.address],
       ["MERKLE", merkle.address],
-      ["CONSTANTSGETTERS", constantsGetters.address]
+      ["CONSTANTSGETTERS", constantsGetters.address],
+      ["PROXY", proxy.address]
     ]
 
     // Build arrays "names" and "addresses" and store in Directory contract

@@ -51,20 +51,22 @@ func (b *Consumer) Start() {
 		case gql.TransferFirstBotToAddrInput:
 			log.Debug("Received TransferFirstBotAddrInput")
 			if err := firstBotTransfer.Process(ev); err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
 		case submitactions.SubmitActionsEvent:
 			log.Debug("Relay sumbit action event")
 			tx, err := b.db.Begin()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				break
 			}
 			if err = actionsSubmitter.Process(tx); err != nil {
 				tx.Rollback()
-				log.Fatal(err)
+				log.Error(err)
+				break
 			}
 			if err = tx.Commit(); err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
 		default:
 			log.Errorf("unknown event: %v", event)

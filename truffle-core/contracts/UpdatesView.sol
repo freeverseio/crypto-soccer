@@ -98,5 +98,41 @@ contract UpdatesView is Storage, AssetsLib {
         nJumps = (writtenLevel - finalLevel) / 2;
         isSettled = nowTime > lastUpdate + (nJumps + 1) * CHALLENGE_TIME;
     }
+    
+    // tz(n0)   : 11.30 = 0
+    //          : 21.00 = 11.30 + 9.30h
+    // tz(n)    : 11.30 + (n-n0)*1h
+    //          : 21.00 + (n-n0)*1h
+    //          : 11.30 + (n-n0)*1h + 24h * day (day = mDay/2)
+    //              = 11.30 + ( deltaN + 12 * mDay ) * 1h
+    //          : 21.00 + (n-n0) + 24h * day (day = (mDay-1)/2)
+    //              = 11.30 + (9.5 + deltaN + 12 * (mDay-1) ) * 1h
+    // add round * T_round = round * 7 * 24 * 3600 = round * DAYS_PER_ROUND * 24 * 1h
+    // 
+    // if even: 11.30 + ( deltaN + 12 * mDay + 24 * round * DAYS_PER_ROUND ) * 1h
+    // if odd:  11.30 + (9.5 + deltaN + 12 * (mDay-1) + 24 * round * DAYS_PER_ROUND ) * 1h
+    //        = 11.30 + (19 + 2*deltaN + 24 * (mDay-1) + 48 * round * DAYS_PER_ROUND ) * (1h/2)
+    
+    function getMatchUTC(uint8 tz, uint256 round, uint256 matchDay) public view returns(uint256 timeUTC) {
+        require(tz > 0 && tz < 25, "timezone out of range");
+        uint256 deltaN = (tz >= timeZoneForRound1) ? (tz - timeZoneForRound1) : ((tz + 24) - timeZoneForRound1);
+        if (matchDay % 2 == 0) {
+            return firstVerseTimeStamp + (deltaN + 12 * matchDay + 24 * DAYS_PER_ROUND * round) * 3600;
+        } else {
+            return firstVerseTimeStamp + (19 + 2*deltaN + 24 * (matchDay-1) + 48 * DAYS_PER_ROUND * round) * 1800;
+        }
+    }
+
+    function getMatchUTCInCurrentRound(uint8 tz, uint256 matchDay) public view returns(uint256 timeUTC) {
+        return getMatchUTC(tz, getCurrentRound(tz), matchDay);
+    }
+    
+    function getAllMatchdaysUTCInRound(uint8 tz, uint256 round) public view returns(uint256[MATCHDAYS_PER_ROUND] memory timesUTC) {
+        for (uint8 m = 0; m < MATCHDAYS_PER_ROUND; m++) timesUTC[m] = getMatchUTC(tz, round, m);
+    }
+
+    function getAllMatchdaysUTCInCurrentRound(uint8 tz) public view returns(uint256[MATCHDAYS_PER_ROUND] memory timesUTC) {
+        for (uint8 m = 0; m < MATCHDAYS_PER_ROUND; m++) timesUTC[m] = getMatchUTC(tz, getCurrentRound(tz), m);
+    }
 
 }

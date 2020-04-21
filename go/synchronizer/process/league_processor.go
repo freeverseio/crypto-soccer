@@ -116,7 +116,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	switch turnInDay {
 	case 0:
 		log.Infof("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
-		if err = storage.DeleteTrainingsByTimezone(tx, timezoneIdx); err != nil {
+		if err = storage.ResetTrainingsByTimezone(tx, timezoneIdx); err != nil {
 			return err
 		}
 		if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
@@ -125,9 +125,6 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	case 1:
 		log.Infof("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
 		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
-			return err
-		}
-		if err := storage.CreateDefaultTrainingByTimezone(tx, timezoneIdx); err != nil {
 			return err
 		}
 	default:
@@ -147,7 +144,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
-	var orgMap []storage.Team
+	var orgMap OrgMap
 	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
@@ -181,19 +178,22 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 				}
 			}
 			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
-			orgMap = append(orgMap, team)
+			if err := orgMap.Append(team); err != nil {
+				return err
+			}
 		}
 	}
-	// ordening all the teams by ranking points
-	sort.Slice(orgMap[:], func(i, j int) bool {
-		return orgMap[i].RankingPoints > orgMap[j].RankingPoints
-	})
+
+	orgMap.Sort()
+
 	// create the new leagues
-	for i, team := range orgMap {
+	for i := 0; i < orgMap.Size(); i++ {
+		team := orgMap.At(i)
 		team.LeagueIdx = uint32(i / 8)
 		team.TeamIdxInLeague = uint32(i % 8)
-		err = team.Update(tx)
-		if err != nil {
+		// calculate the real Ranking points
+		team.RankingPoints = team.RankingPoints / uint64(48318382080000)
+		if err := team.Update(tx); err != nil {
 			return err
 		}
 	}
