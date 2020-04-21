@@ -50,3 +50,15 @@ func TestPayingNoBidsAvailable(t *testing.T) {
 	assert.Equal(t, m.State(), storage.AuctionFailed)
 	assert.Equal(t, m.StateExtra(), "Failed to pay")
 }
+
+func TestPayingWithBid(t *testing.T) {
+	auction := storage.NewAuction()
+	auction.State = storage.AuctionPaying
+	bid := storage.NewBid()
+	bid.State = storage.BidAccepted
+	bids := []storage.Bid{*bid}
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.NilError(t, m.ProcessPaying(marketpay.New()))
+	assert.Equal(t, m.State(), storage.AuctionPaying)
+}
