@@ -95,15 +95,6 @@ func (b *Consumer) Start() {
 			if err = tx.Commit(); err != nil {
 				log.Error(err)
 			}
-			// for _, auction := range auctions {
-			// 	auctionMachine, err := auctionmachine.New(*auction, nil, nil, nil)
-			// 	if err != nil {
-			// 		log.Fatal(err)
-			// 	}
-			// 	if err := auctionMachine.Process(nil); err != nil {
-			// 		log.Fatal(err)
-			// 	}
-			// }
 		default:
 			log.Errorf("unknown event: %v", event)
 		}
