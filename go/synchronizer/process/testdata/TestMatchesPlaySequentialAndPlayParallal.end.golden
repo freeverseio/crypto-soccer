@@ -12,7 +12,7 @@ Seed: ([32]uint8) (len=32 cap=32) {
 00000000  5f ec eb 66 ff c8 6f 38  d9 52 78 6c 6d 69 6c 79  |_..f..o8.Rxlmily|
 00000010  c2 db c2 39 dd 4e 91 b4  67 29 d7 3a 27 fb 57 e9  |...9.N..g).:'.W.|
 },
-HomeGoals: (uint8) 2,
+HomeGoals: (uint8) 3,
 VisitorGoals: (uint8) 2,
 State: (storage.MatchState) (len=3) "end",
 StateExtra: (string) "",
@@ -28,17 +28,17 @@ Name: (string) "",
 Owner: (string) "",
 LeagueIdx: (uint32) 0,
 TeamIdxInLeague: (uint32) 0,
-Points: (uint32) 1,
-W: (uint32) 0,
-D: (uint32) 1,
+Points: (uint32) 3,
+W: (uint32) 1,
+D: (uint32) 0,
 L: (uint32) 0,
-GoalsForward: (uint32) 2,
+GoalsForward: (uint32) 3,
 GoalsAgainst: (uint32) 2,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
-TrainingPoints: (uint16) 14,
+TrainingPoints: (uint16) 22,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=76) "1815436807117100967500498107807276745143403703865763320661145110572513101410"
+MatchLog: (string) (len=76) "1818970501246657736159664702808762582175058712224333765887718757491279947363"
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -618,17 +618,17 @@ Name: (string) "",
 Owner: (string) "",
 LeagueIdx: (uint32) 0,
 TeamIdxInLeague: (uint32) 0,
-Points: (uint32) 1,
+Points: (uint32) 0,
 W: (uint32) 0,
-D: (uint32) 1,
-L: (uint32) 0,
+D: (uint32) 0,
+L: (uint32) 1,
 GoalsForward: (uint32) 2,
-GoalsAgainst: (uint32) 2,
+GoalsAgainst: (uint32) 3,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
-TrainingPoints: (uint16) 11,
+TrainingPoints: (uint16) 10,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=76) "1814111671818517179253310637577605124756925695948621839597032789900313758370"
+MatchLog: (string) (len=76) "1813669960052322583170914813202419395127968824974402934857502388349990603426"
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -1349,9 +1349,9 @@ Minute: (int16) 50,
 Type: (int16) 0,
 Team: (int16) 0,
 ManagesToShoot: (bool) true,
-IsGoal: (bool) false,
+IsGoal: (bool) true,
 PrimaryPlayer: (int16) 9,
-SecondaryPlayer: (int16) 0
+SecondaryPlayer: (int16) 8
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 53,
@@ -1476,7 +1476,7 @@ Seed: ([32]uint8) (len=32 cap=32) {
 00000000  6b 86 b2 73 ff 34 fc e1  9d 6b 80 4e ff 5a 3f 57  |k..s.4...k.N.Z?W|
 00000010  47 ad a4 ea a2 2f 1d 49  c0 1e 52 dd b7 87 5b 4b  |G..../.I..R...[K|
 },
-HomeGoals: (uint8) 0,
+HomeGoals: (uint8) 1,
 VisitorGoals: (uint8) 0,
 State: (storage.MatchState) (len=3) "end",
 StateExtra: (string) "",
@@ -1492,17 +1492,17 @@ Name: (string) "",
 Owner: (string) "",
 LeagueIdx: (uint32) 0,
 TeamIdxInLeague: (uint32) 0,
-Points: (uint32) 1,
-W: (uint32) 0,
-D: (uint32) 1,
+Points: (uint32) 3,
+W: (uint32) 1,
+D: (uint32) 0,
 L: (uint32) 0,
-GoalsForward: (uint32) 0,
+GoalsForward: (uint32) 1,
 GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
-TrainingPoints: (uint16) 39,
+TrainingPoints: (uint16) 48,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=76) "1826479601271965869560393720037089026710730286771843946420748257834901176320"
+MatchLog: (string) (len=76) "1830455007167717234301956139413760593371342126807464689304760280483767517281"
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -2082,17 +2082,17 @@ Name: (string) "",
 Owner: (string) "",
 LeagueIdx: (uint32) 0,
 TeamIdxInLeague: (uint32) 0,
-Points: (uint32) 1,
+Points: (uint32) 0,
 W: (uint32) 0,
-D: (uint32) 1,
-L: (uint32) 0,
+D: (uint32) 0,
+L: (uint32) 1,
 GoalsForward: (uint32) 0,
-GoalsAgainst: (uint32) 0,
+GoalsAgainst: (uint32) 1,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
-TrainingPoints: (uint16) 37,
+TrainingPoints: (uint16) 3,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=76) "1825596177739576677395596561110297749994090962512232078224867504715556978688"
+MatchLog: (string) (len=76) "1810577977688960410594138532353982942609557349388789317080833852004569710592"
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -2858,9 +2858,9 @@ Minute: (int16) 65,
 Type: (int16) 0,
 Team: (int16) 0,
 ManagesToShoot: (bool) true,
-IsGoal: (bool) false,
+IsGoal: (bool) true,
 PrimaryPlayer: (int16) 4,
-SecondaryPlayer: (int16) 0
+SecondaryPlayer: (int16) 8
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 70,
@@ -2875,10 +2875,10 @@ SecondaryPlayer: (int16) -1
 Minute: (int16) 75,
 Type: (int16) 0,
 Team: (int16) 1,
-ManagesToShoot: (bool) true,
+ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
-PrimaryPlayer: (int16) 6,
-SecondaryPlayer: (int16) 0
+PrimaryPlayer: (int16) 11,
+SecondaryPlayer: (int16) -1
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 80,

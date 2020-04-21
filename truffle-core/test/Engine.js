@@ -504,14 +504,15 @@ contract('Engine', (accounts) => {
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsDefault);
         
-        seedDraw = 12;
+        seedDraw= seed;
         teamStateAll50Half2[9] = 0;
         log2 = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], [log0, log0], [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
         nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
         nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
         nGoals0.toNumber().should.be.equal(nGoals1.toNumber());
-        expected1 = [true, false, true, false, false, true, true ];
-        expected2 = [false, false, true, false, true, true, false];
+
+        expected1 = [ true, false, true, true, true, false, false ];
+        expected2 = [ true, true, true, true, true, false, false ];
 
         pen1 = [];
         pen2 = [];
@@ -526,7 +527,7 @@ contract('Engine', (accounts) => {
 
         for (team = 0; team < 2; team++){
             win = await encodingLog.getWinner(log2[team]).should.be.fulfilled;
-            win.toNumber().should.be.equal(0);
+            win.toNumber().should.be.equal(1);
             nDefs = await encodingLog.getNDefs(log2[team], is2nd = false);
             nDefs.toNumber().should.be.equal(4);
             nDefs = await encodingLog.getNDefs(log2[team], is2nd = true);
@@ -617,17 +618,22 @@ contract('Engine', (accounts) => {
     it('TONI: find 1-1 goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 13;
         log0 =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        log1 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         log12 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        // for this seed: 1-2
-        expected = [1, 2]
-        goals = [];
+        expected1 = [1, 2];
+        expected2 = [0, 1];
+        goals1 = [];
+        goals2 = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log0[team]);
-            goals.push(nGoals)
+            goals1.push(nGoals)
+            nGoals = await encodingLog.getNGoals(log1[team]);
+            goals2.push(nGoals)
         }
-        debug.compareArrays(goals, expected, toNum = true, verbose = false);
-        // so the final result should be 2-2
-        expected = [2, 4]
+        debug.compareArrays(goals1, expected1, toNum = true, verbose = false);
+        debug.compareArrays(goals2, expected2, toNum = true, verbose = false);
+
+        expected = [1, 3];
         goals = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log12[team]);
@@ -737,7 +743,7 @@ contract('Engine', (accounts) => {
         result.should.be.bignumber.equal('0');
         });
 
-    it('computePenaltyBadPositionAndCondition for GK ', async () => {
+    it('computeModifierBadPositionAndCondition for GK ', async () => {
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 232131, [potential = 1,
             forwardness = 0, leftishness = 0, aggr = 0], 
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
@@ -747,14 +753,14 @@ contract('Engine', (accounts) => {
         expected = [ 10000, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 ];
         pen = [];
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             pen.push(penalty);
             // penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
         debug.compareArrays(pen, expected, toNum = true, verbose = false);
     });
 
-    it('computePenaltyBadPositionAndCondition for DL ', async () => {
+    it('computeModifierBadPositionAndCondition for DL ', async () => {
             // for a DL:
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 312321, [potential = 1,
             forwardness = 1, leftishness = 4, aggr = 0], alignedEndOfLastHalf = false, 
@@ -772,14 +778,14 @@ contract('Engine', (accounts) => {
             2000, 3000, 4000
         ];
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
 
-    it('computePenaltyBadPositionAndCondition for DL with gamesNonStopping', async () => {
+    it('computeModifierBadPositionAndCondition for DL with gamesNonStopping', async () => {
         // for a DL:
         expected442 = [MAX_PENALTY-10, 
             0, 1000, 1000, 2000, 
@@ -797,7 +803,7 @@ contract('Engine', (accounts) => {
                 redCardLastGame = false, games, injuryWeeksLeft = 0, subLastHalf, sumSkills = 5
             ).should.be.fulfilled;            
             for (p=0; p < 11; p+=3) {
-                penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+                penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
                 if (expected442[p] == MAX_PENALTY-10) {
                     penalty.toNumber().should.be.equal(10);
                 } else {
@@ -808,7 +814,7 @@ contract('Engine', (accounts) => {
     });
 
 
-    it('computePenaltyBadPositionAndCondition for MFLCR ', async () => {
+    it('computeModifierBadPositionAndCondition for MFLCR ', async () => {
         // for a DL:
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 312321, [potential = 1,
             forwardness = 5, leftishness = 7, aggr = 0], alignedEndOfLastHalf = false, 
@@ -821,9 +827,9 @@ contract('Engine', (accounts) => {
         ];
         expected433 = expected442;
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
@@ -1181,8 +1187,24 @@ contract('Engine', (accounts) => {
         
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 70];
-        for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
+        expectedGlob = [42, 4, 8, 1, 1];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true, verbose = false);
+
+        teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000-1]).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        expectedGlob = [42, 4, 8, 1, 65];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true, verbose = false);
+
+        teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000]).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        expectedGlob = [42, 4, 8, 1, 65];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true, verbose = false);
+
+        teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,20000-1]).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        expectedGlob = [42, 4, 8, 1, 100];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true, verbose = false);
+
     });
 
     it('getLineUpAndPlayerPerZone', async () => {
