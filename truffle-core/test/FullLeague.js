@@ -473,9 +473,9 @@ contract('FullLeague', (accounts) => {
     });
     
     it('challenge unexpected zero values', async () => {
-        proxy = await Proxy.new(delegateUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
-        depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
-        updates = depl[2];
+        depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates);
+        proxy  = depl[0];
+        updates = depl[3];
 
         leafsDecimal = chllUtils.readCreatedLeagueLeafs();
         leafs = chllUtils.leafsToBytes32(leafsDecimal);
