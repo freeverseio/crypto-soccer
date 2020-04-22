@@ -218,35 +218,24 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	assert.Equal(t, machine.StateExtra(), "")
 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
 	time.Sleep(10 * time.Second)
-	err = machine.Process(market)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionPaying)
 	// if machine.bids[0].State != storage.BIDACCEPTED {
 	// 	t.Fatalf("Expected not %v", machine.Bids[0].State)
 	// }
+	assert.NilError(t, machine.Process(market))
+	assert.Equal(t, machine.State(), storage.AuctionPaying)
+	assert.Equal(t, machine.Bids()[0].State, storage.BidPaying)
+	assert.Equal(t, machine.Bids()[0].PaymentDeadline, 0)
+
+	// following is commented because we need an action from the user to make marketpay set it as PAID
+	market.SetOrderStatus(marketpay.PUBLISHED)
+
+	// time.Sleep(10 * time.Second)
 	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, machine.State(), storage.AuctionPaying)
-	if machine.Bids()[0].State != storage.BidPaying {
-		t.Fatalf("Expected not %v", machine.Bids()[0].State)
-	}
-	if machine.Bids()[0].PaymentDeadline == 0 {
-		t.Fatalf("Wrong bid timeout %v", machine.Bids()[0].PaymentDeadline)
-	}
-	// following is commented because we need an action from the user to make marketpay set it as PAID
-	// time.Sleep(10 * time.Second)
-	// err = machine.Process(market)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	// if machine.Auction.State != storage.AUCTION_PAID {
-	// 	t.Fatalf("Expected not %v", machine.Auction.State)
-	// }
-	// if machine.Bids[0].State != storage.BIDPAID {
-	// 	t.Fatalf("Expected not %v", machine.Bids[0].State)
-	// }
+	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
+	assert.Equal(t, machine.State(), storage.AuctionEnded)
 }
