@@ -59,7 +59,7 @@ func (b *MarketPay) CreateOrder(
 	}
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	// req.Header.Add("Accept", "application/json")
