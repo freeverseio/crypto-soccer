@@ -95,9 +95,7 @@ contract Market is MarketView {
         // require that team does not have any constraint from friendlies
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
         require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
-        // testing about the target team is already done in _assets.transferPlayer
-        require(teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
-        require(!isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
+        // testing require(teamExists(targetTeamId) and  require(!isBotTeam(targetTeamId) is already done in _assets.transferPlayer:
                 
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
         require(getOwnerTeam(targetTeamId) == 
