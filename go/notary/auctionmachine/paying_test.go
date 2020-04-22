@@ -35,7 +35,7 @@ func TestPayingNilBids(t *testing.T) {
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(marketpay.New()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
-	assert.Equal(t, m.StateExtra(), "Failed to pay")
+	assert.Equal(t, m.StateExtra(), "No available healty bid")
 }
 
 func TestPayingNoBidsAvailable(t *testing.T) {
@@ -48,7 +48,7 @@ func TestPayingNoBidsAvailable(t *testing.T) {
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(marketpay.New()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
-	assert.Equal(t, m.StateExtra(), "Failed to pay")
+	assert.Equal(t, m.StateExtra(), "No available healty bid")
 }
 
 func TestPayingWithBid(t *testing.T) {

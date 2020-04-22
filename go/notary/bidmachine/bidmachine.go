@@ -20,7 +20,7 @@ type BidMachine struct {
 	bid             *storage.Bid
 	contracts       contracts.Contracts
 	freeverse       *ecdsa.PrivateKey
-	postAuctionTime int64
+	PostAuctionTime int64
 }
 
 func New(
@@ -39,7 +39,7 @@ func New(
 	if auction.ID != bid.AuctionID {
 		return nil, errors.New("Bid of wrong auction")
 	}
-	postAuctionTime, err := contracts.ConstantsGetters.GetPOSTAUCTIONTIME(&bind.CallOpts{})
+	PostAuctionTime, err := contracts.ConstantsGetters.GetPOSTAUCTIONTIME(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func New(
 		bid,
 		contracts,
 		freeverse,
-		postAuctionTime.Int64(),
+		PostAuctionTime.Int64(),
 	}, nil
 }
 
@@ -129,7 +129,7 @@ func (b *BidMachine) processAccepted() error {
 	}
 	b.bid.PaymentID = order.TrusteeShortlink.Hash
 	b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
-	b.bid.PaymentDeadline = b.auction.ValidUntil + b.postAuctionTime
+	b.bid.PaymentDeadline = b.auction.ValidUntil + b.PostAuctionTime
 
 	b.bid.State = storage.BidPaying
 	return nil

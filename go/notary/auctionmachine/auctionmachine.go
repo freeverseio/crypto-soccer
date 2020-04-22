@@ -80,3 +80,11 @@ func (b AuctionMachine) Auction() storage.Auction {
 func (b AuctionMachine) Bids() []storage.Bid {
 	return b.bids
 }
+
+func (b *AuctionMachine) SetState(state storage.AuctionState, extra string) {
+	if state == storage.AuctionFailed {
+		log.Warnf("auction %v in state %v with %v", b.auction.ID, state, extra)
+	}
+	b.auction.State = state
+	b.auction.StateExtra = extra
+}

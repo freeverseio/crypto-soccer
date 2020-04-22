@@ -19,8 +19,7 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 
 	bid := bidmachine.FirstAlive(b.bids)
 	if bid == nil {
-		b.auction.State = storage.AuctionFailed
-		b.auction.StateExtra = "Failed to pay"
+		b.SetState(storage.AuctionFailed, "No available healty bid")
 		return nil
 	}
 
@@ -93,19 +92,16 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 			isOffer2StartAuction,
 		)
 		if err != nil {
-			b.auction.State = storage.AuctionWithdrableByBuyer
-			bid.StateExtra = err.Error()
+			b.SetState(storage.AuctionWithdrableByBuyer, err.Error())
 			return err
 		}
 		receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
 		if err != nil {
-			b.auction.State = storage.AuctionWithdrableByBuyer
-			bid.StateExtra = "Timeout waiting for the receipt"
+			b.SetState(storage.AuctionWithdrableByBuyer, "Timeout waiting for the receipt")
 			return err
 		}
 		if receipt.Status == 0 {
-			b.auction.State = storage.AuctionWithdrableByBuyer
-			bid.StateExtra = "Mined but receipt.Status == 0"
+			b.SetState(storage.AuctionWithdrableByBuyer, "Mined but receipt.Status == 0")
 			return err
 		}
 		order, err := market.GetOrder(bid.PaymentID)
@@ -115,7 +111,7 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 		b.auction.PaymentURL = order.SettlorShortlink.ShortURL
 		bid.State = storage.BidPaid
 
-		b.auction.State = storage.AuctionWithdrableBySeller
+		b.SetState(storage.AuctionWithdrableBySeller, "")
 	}
 
 	return nil
