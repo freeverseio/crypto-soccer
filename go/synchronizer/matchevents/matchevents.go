@@ -38,6 +38,7 @@ func NewMatchEvents(
 	if err != nil {
 		return nil, err
 	}
+
 	events, err := Generate(
 		verseSeed,
 		homeTeamID,
@@ -67,9 +68,9 @@ func RemoveFreeShirtsFromLineUp(lineUp [14]uint8, playerIDs [25]*big.Int) [14]ui
 	NO_LINEUP := uint8(25)
 	MIN_PLAYERID := new(big.Int).SetUint64(2)
 	for l := 0; l < len(lineUp); l++ {
-		if lineUp[l] < 25 {
+		if lineUp[l] < NO_LINEUP {
 			playerId := playerIDs[lineUp[l]]
-			if playerId != nil && playerId.Cmp(MIN_PLAYERID) == 1 {
+			if playerId == nil || playerId.Cmp(MIN_PLAYERID) != 1 {
 				lineUp[l] = NO_LINEUP
 			}
 		}
