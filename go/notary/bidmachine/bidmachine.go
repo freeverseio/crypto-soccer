@@ -98,39 +98,44 @@ func (b *BidMachine) Process() error {
 func (b *BidMachine) processPaying() error {
 	now := time.Now().Unix()
 	if now > b.bid.PaymentDeadline {
-		b.bid.State = storage.BidFailed
-		b.bid.StateExtra = "Expired"
+		b.setState(storage.BidFailed, "expired")
 		return nil
 	}
 
-	log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
+	log.Infof("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
 	order, err := b.market.GetOrder(b.bid.PaymentID)
 	if err != nil {
 		return err
 	}
 	isPaid := b.market.IsPaid(*order)
 	if isPaid {
-		b.bid.State = storage.BidPaid
-		b.bid.StateExtra = ""
+		b.setState(storage.BidPaid, "")
 	}
 
 	return nil
 }
 
 func (b *BidMachine) processAccepted() error {
-	log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.AuctionID, b.bid.ExtraPrice)
+	log.Infof("[bid] Auction %v extra_price %v create MarketPay order", b.bid.AuctionID, b.bid.ExtraPrice)
 	price := fmt.Sprintf("%.2f", float64(b.auction.Price+b.bid.ExtraPrice)/100.0)
 	name := "Freeverse Player transaction"
 	order, err := b.market.CreateOrder(name, price)
 	if err != nil {
-		b.bid.State = storage.BidFailed
-		b.bid.StateExtra = ""
+		b.setState(storage.BidFailed, err.Error())
 		return nil
 	}
 	b.bid.PaymentID = order.TrusteeShortlink.Hash
 	b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
 	b.bid.PaymentDeadline = b.auction.ValidUntil + b.PostAuctionTime
 
-	b.bid.State = storage.BidPaying
+	b.setState(storage.BidPaying, "")
 	return nil
+}
+
+func (b *BidMachine) setState(state storage.BidState, extra string) {
+	if state == storage.BidFailed {
+		log.Warnf("[bid] auction %v extra price %v in state %v with %v", b.auction.ID, b.bid.ExtraPrice, state, extra)
+	}
+	b.bid.State = state
+	b.bid.StateExtra = extra
 }
