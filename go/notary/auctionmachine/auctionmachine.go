@@ -47,14 +47,22 @@ func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 	case storage.AuctionAssetFrozen:
 		return b.ProcessAssetFrozen()
 	case storage.AuctionPaying:
-		// return b.ProcessPaying()
+		return b.ProcessPaying(market)
+	case storage.AuctionWithdrableBySeller:
+		log.Warn("auctionmachine AuctionWithdrabeBySeller not implemented")
+		return nil
+	case storage.AuctionWithdrableByBuyer:
+		log.Warn("auctionmachine AuctionWithdrabeByBuyer not implemented")
+		return nil
 	case storage.AuctionCancelled:
+		return nil
 	case storage.AuctionFailed:
+		return nil
 	case storage.AuctionEnded:
+		return nil
 	default:
 		return fmt.Errorf("Unknown auction state %v", b.State())
 	}
-	return nil
 }
 
 func (b AuctionMachine) State() storage.AuctionState {
@@ -71,4 +79,12 @@ func (b AuctionMachine) Auction() storage.Auction {
 
 func (b AuctionMachine) Bids() []storage.Bid {
 	return b.bids
+}
+
+func (b *AuctionMachine) SetState(state storage.AuctionState, extra string) {
+	if state == storage.AuctionFailed {
+		log.Warnf("auction %v in state %v with %v", b.auction.ID, state, extra)
+	}
+	b.auction.State = state
+	b.auction.StateExtra = extra
 }

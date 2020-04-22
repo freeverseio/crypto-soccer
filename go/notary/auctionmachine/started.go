@@ -10,8 +10,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (b *AuctionMachine) processStarted() error {
@@ -22,7 +20,7 @@ func (b *AuctionMachine) processStarted() error {
 	// check if expired
 	now := time.Now().Unix()
 	if now > b.auction.ValidUntil {
-		b.auction.State = storage.AuctionEnded
+		b.SetState(storage.AuctionEnded, "expired")
 		return nil
 	}
 
@@ -37,8 +35,7 @@ func (b *AuctionMachine) processStarted() error {
 		return err
 	}
 	if isFrozen {
-		b.auction.State = storage.AuctionFailed
-		b.auction.StateExtra = "auction is frozen in other market"
+		b.SetState(storage.AuctionFailed, "auction is frozen in other market")
 		return nil
 	}
 
@@ -48,11 +45,11 @@ func (b *AuctionMachine) processStarted() error {
 		return err
 	}
 	if owner.String() != b.auction.Seller {
-		b.auction.State = storage.AuctionFailed
-		b.auction.StateExtra = fmt.Sprintf("seller %s is not the owner %s", b.auction.Seller, owner.String())
+		b.SetState(storage.AuctionFailed, fmt.Sprintf("seller %s is not the owner %s", b.auction.Seller, owner.String()))
 		return nil
 	}
 
+	// if no bids do nothing
 	if len(b.bids) == 0 {
 		return nil
 	}
@@ -72,8 +69,10 @@ func (b *AuctionMachine) processStarted() error {
 	if err != nil {
 		return err
 	}
+	auth := bind.NewKeyedTransactor(b.freeverse)
+	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
 	tx, err := b.contracts.Market.FreezePlayer(
-		bind.NewKeyedTransactor(b.freeverse),
+		auth,
 		auctionHiddenPrice,
 		big.NewInt(b.auction.ValidUntil),
 		playerId,
@@ -81,22 +80,16 @@ func (b *AuctionMachine) processStarted() error {
 		sigV,
 	)
 	if err != nil {
-		b.auction.State = storage.AuctionFailed
-		b.auction.StateExtra = "Failed to freeze: " + err.Error()
-		log.Error(b.auction.StateExtra)
+		b.SetState(storage.AuctionFailed, "Failed to freeze: "+err.Error())
 		return err
 	}
 	receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
 	if err != nil {
-		b.auction.State = storage.AuctionFailed
-		b.auction.State = "Failed to Freeze: waiting for receipt timeout"
-		log.Error(b.auction.StateExtra)
+		b.SetState(storage.AuctionFailed, "Failed to Freeze: waiting for receipt timeout")
 		return err
 	}
 	if receipt.Status == 0 {
-		b.auction.State = storage.AuctionFailed
-		b.auction.State = "Failed to Freeze: mined but receipt status is failed"
-		log.Error(b.auction.StateExtra)
+		b.SetState(storage.AuctionFailed, "Failed to Freeze: mined but receipt status is failed")
 		return err
 	}
 
