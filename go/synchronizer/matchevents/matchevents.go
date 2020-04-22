@@ -18,6 +18,8 @@ func NewMatchEvents(
 	verseSeed [32]byte,
 	homeTeamID string,
 	visitorTeamID string,
+	homeTeamPlayerIDs [25]*big.Int,
+	visitorTeamPlayerIDs [25]*big.Int,
 	homeTactic *big.Int,
 	visitorTactic *big.Int,
 	logsAndEvents []*big.Int,
@@ -43,8 +45,8 @@ func NewMatchEvents(
 		homeDecodedMatchLog,
 		visitorDecodedMatchLog,
 		logsAndEvents,
-		decodedTactic0.Lineup,
-		decodedTactic1.Lineup,
+		RemoveFreeShirtsFromLineUp(decodedTactic0.Lineup, homeTeamPlayerIDs),
+		RemoveFreeShirtsFromLineUp(decodedTactic1.Lineup, visitorTeamPlayerIDs),
 		decodedTactic0.Substitutions,
 		decodedTactic1.Substitutions,
 		decodedTactic0.SubsRounds,
@@ -55,6 +57,25 @@ func NewMatchEvents(
 		return nil, err
 	}
 	return events, nil
+}
+
+// This function makes sure that all players in lineUp exist in the Universe.
+// To avoid, for example, selling a player after setting the lineUp.
+// It sets to NOONE all lineUp entries pointing to playerIds that are larger than 2.
+// (recall that playerID = 0 if not set, or = 1 if sold)
+func RemoveFreeShirtsFromLineUp(lineUp [14]uint8, playerIDs [25]*big.Int) [14]uint8 {
+	NO_LINEUP := uint8(25)
+	MIN_PLAYERID := new(big.Int).SetUint64(2)
+	}
+	for l := 0; l < len(lineUp); l++ {
+		if lineUp[l] < 25 {
+			playerId := playerIDs[lineUp[l]]
+			if playerId != nil && playerId.Cmp(MIN_PLAYERID) == 1 {
+				lineUp[l] = NO_LINEUP
+			}
+		}
+	}
+	return lineUp
 }
 
 func Generate(
