@@ -48,6 +48,9 @@ func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 		return b.ProcessAssetFrozen()
 	case storage.AuctionPaying:
 		return b.ProcessPaying(market)
+	case storage.AuctionWithdrableBySeller:
+		log.Warn("auctionmachine AuctionWithdrabeBySeller not implemented")
+		return nil
 	case storage.AuctionCancelled:
 		return nil
 	case storage.AuctionFailed:

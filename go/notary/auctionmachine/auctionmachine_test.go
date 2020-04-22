@@ -220,22 +220,19 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	time.Sleep(10 * time.Second)
 	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionPaying)
-	// if machine.bids[0].State != storage.BIDACCEPTED {
-	// 	t.Fatalf("Expected not %v", machine.Bids[0].State)
-	// }
+	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
 	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionPaying)
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaying)
-	assert.Equal(t, machine.Bids()[0].PaymentDeadline, 0)
+	assert.Assert(t, machine.Bids()[0].PaymentDeadline != 0)
 
-	// following is commented because we need an action from the user to make marketpay set it as PAID
 	market.SetOrderStatus(marketpay.PUBLISHED)
 
-	// time.Sleep(10 * time.Second)
-	err = machine.Process(market)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, machine.Process(market))
+	assert.NilError(t, machine.Process(market))
+	// assert.NilError(t, machine.Process(market))
+	// assert.NilError(t, machine.Process(market))
+	// assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
-	assert.Equal(t, machine.State(), storage.AuctionEnded)
+	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller)
 }
