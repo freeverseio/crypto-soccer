@@ -211,10 +211,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 		t.Fatal(err)
 	}
 	market := marketpay.NewMockMarketPay()
-	err = machine.Process(market)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.StateExtra(), "")
 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
 	time.Sleep(10 * time.Second)
@@ -229,10 +226,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	market.SetOrderStatus(marketpay.PUBLISHED)
 
 	assert.NilError(t, machine.Process(market))
-	assert.NilError(t, machine.Process(market))
-	// assert.NilError(t, machine.Process(market))
-	// assert.NilError(t, machine.Process(market))
-	// assert.NilError(t, machine.Process(market))
+	assert.NilError(t, machine.Process(market)) // TODO remove this ... why 2 times
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
 	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller)
 }
