@@ -4,7 +4,7 @@ import "encoding/json"
 
 type Order struct {
 	Name                string      `json:"name"`
-	Amount              string      `json:"amount"`
+	Amount              interface{} `json:"amount"`
 	Currency            string      `json:"currency"`
 	WithShipping        int         `json:"with_shipping"`
 	WithInsurance       int         `json:"with_insurance"`
