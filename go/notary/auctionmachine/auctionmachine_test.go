@@ -222,11 +222,8 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	assert.Equal(t, machine.State(), storage.AuctionPaying)
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaying)
 	assert.Assert(t, machine.Bids()[0].PaymentDeadline != 0)
-
 	market.SetOrderStatus(marketpay.PUBLISHED)
-
 	assert.NilError(t, machine.Process(market))
-	assert.NilError(t, machine.Process(market)) // TODO remove this ... why 2 times
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
 	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller)
 }
