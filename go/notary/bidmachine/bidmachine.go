@@ -4,12 +4,9 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/helper"
-	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -105,100 +102,35 @@ func (b *BidMachine) processPaying() error {
 		b.bid.StateExtra = "Expired"
 		return nil
 	}
-	if b.bid.PaymentID == "" { // create order
-		log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.AuctionID, b.bid.ExtraPrice)
-		price := fmt.Sprintf("%.2f", float64(b.auction.Price+b.bid.ExtraPrice)/100.0)
-		name := "Freeverse Player transaction"
-		order, err := b.market.CreateOrder(name, price)
-		if err != nil {
-			return err
-		}
-		b.bid.PaymentID = order.TrusteeShortlink.Hash
-		b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
-	} else { // check if order is paid
-		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
-		order, err := b.market.GetOrder(b.bid.PaymentID)
-		if err != nil {
-			return err
-		}
-		paid := b.market.IsPaid(*order)
-		if paid {
-			isOffer2StartAuction := false
-			bidHiddenPrice, err := signer.BidHiddenPrice(b.contracts.Market, big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))
-			if err != nil {
-				return err
-			}
-			auctionHiddenPrice, err := signer.HashPrivateMsg(uint8(b.auction.CurrencyID), big.NewInt(b.auction.Price), big.NewInt(b.auction.Rnd))
-			if err != nil {
-				return err
-			}
-			playerId, _ := new(big.Int).SetString(b.auction.PlayerID, 10)
-			if playerId == nil {
-				return errors.New("invalid playerid")
-			}
-			teamId, _ := new(big.Int).SetString(b.bid.TeamID, 10)
-			if playerId == nil {
-				return errors.New("invalid teamid")
-			}
-			var sig [2][32]byte
-			var sigV uint8
-			_, err = signer.HashBidMessage(
-				b.contracts.Market,
-				uint8(b.auction.CurrencyID),
-				big.NewInt(b.auction.Price),
-				big.NewInt(b.auction.Rnd),
-				b.auction.ValidUntil,
-				playerId,
-				big.NewInt(b.bid.ExtraPrice),
-				big.NewInt(b.bid.Rnd),
-				teamId,
-				isOffer2StartAuction,
-			)
-			if err != nil {
-				return err
-			}
-			sig[0], sig[1], sigV, err = signer.RSV(b.bid.Signature)
-			if err != nil {
-				return err
-			}
-			auth := bind.NewKeyedTransactor(b.freeverse)
-			auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
-			tx, err := b.contracts.Market.CompletePlayerAuction(
-				auth,
-				auctionHiddenPrice,
-				big.NewInt(b.auction.ValidUntil),
-				playerId,
-				bidHiddenPrice,
-				teamId,
-				sig,
-				sigV,
-				isOffer2StartAuction,
-			)
-			if err != nil {
-				b.bid.State = storage.BidFailed
-				b.bid.StateExtra = err.Error()
-				return err
-			}
-			receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
-			if err != nil {
-				b.bid.State = storage.BidFailed
-				b.bid.StateExtra = "Timeout waiting for the receipt"
-				return err
-			}
-			if receipt.Status == 0 {
-				b.bid.State = storage.BidFailed
-				b.bid.StateExtra = "Mined but receipt.Status == 0"
-				return err
-			}
-			b.auction.PaymentURL = order.SettlorShortlink.ShortURL
-			b.bid.State = storage.BidPaid
-		}
+
+	log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
+	order, err := b.market.GetOrder(b.bid.PaymentID)
+	if err != nil {
+		return err
 	}
+	isPaid := b.market.IsPaid(*order)
+	if isPaid {
+		b.bid.State = storage.BidPaid
+		b.bid.StateExtra = ""
+	}
+
 	return nil
 }
 
 func (b *BidMachine) processAccepted() error {
-	b.bid.State = storage.BidPaying
+	log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.AuctionID, b.bid.ExtraPrice)
+	price := fmt.Sprintf("%.2f", float64(b.auction.Price+b.bid.ExtraPrice)/100.0)
+	name := "Freeverse Player transaction"
+	order, err := b.market.CreateOrder(name, price)
+	if err != nil {
+		b.bid.State = storage.BidFailed
+		b.bid.StateExtra = ""
+		return nil
+	}
+	b.bid.PaymentID = order.TrusteeShortlink.Hash
+	b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
 	b.bid.PaymentDeadline = b.auction.ValidUntil + b.postAuctionTime
+
+	b.bid.State = storage.BidPaying
 	return nil
 }

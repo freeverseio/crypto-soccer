@@ -206,47 +206,42 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 			State:      storage.BidAccepted,
 		},
 	}
+
+	market := marketpay.NewMockMarketPay()
 	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	market := marketpay.NewMockMarketPay()
-	err = machine.Process(market)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, machine.StateExtra(), "")
+
+	assert.Equal(t, machine.State(), storage.AuctionStarted)
+
+	// machine freeze the asset cause of existent bid
+	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
+
+	// machine do nothing cause auction deadline is not passed
+	assert.NilError(t, machine.Process(market))
+	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
+
+	// waiting that the auction deadline
 	time.Sleep(10 * time.Second)
-	err = machine.Process(market)
-	if err != nil {
-		t.Fatal(err)
-	}
+
+	// machine put the auction in paying wait
+	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionPaying)
-	// if machine.bids[0].State != storage.BIDACCEPTED {
-	// 	t.Fatalf("Expected not %v", machine.Bids[0].State)
-	// }
-	err = machine.Process(market)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
+
+	// machine put the bid is paying state
+	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionPaying)
-	if machine.Bids()[0].State != storage.BidPaying {
-		t.Fatalf("Expected not %v", machine.Bids()[0].State)
-	}
-	if machine.Bids()[0].PaymentDeadline == 0 {
-		t.Fatalf("Wrong bid timeout %v", machine.Bids()[0].PaymentDeadline)
-	}
-	// following is commented because we need an action from the user to make marketpay set it as PAID
-	// time.Sleep(10 * time.Second)
-	// err = machine.Process(market)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	// if machine.Auction.State != storage.AUCTION_PAID {
-	// 	t.Fatalf("Expected not %v", machine.Auction.State)
-	// }
-	// if machine.Bids[0].State != storage.BIDPAID {
-	// 	t.Fatalf("Expected not %v", machine.Bids[0].State)
-	// }
+	assert.Equal(t, machine.Bids()[0].State, storage.BidPaying)
+	assert.Assert(t, machine.Bids()[0].PaymentDeadline != 0)
+
+	// set the market transaction as paid
+	market.SetOrderStatus(marketpay.PUBLISHED)
+
+	// machine set the bid to paid and set the auction as withdrable by seller
+	assert.NilError(t, machine.Process(market))
+	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
+	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller)
 }
