@@ -1000,38 +1000,32 @@ contract("Market", accounts => {
 
   });
 
-  it2("buy now player", async () => {
-    playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
-    // setTargetTeamId = 0
+  it("buy now player", async () => {
+    // TODO: add test that it fails if not sent from Academy address.
+    // CURRENTLY: it works regardless of: await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     
-    sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
-    sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
-
-    const sigSellerRS = [sigSeller.r, sigSeller.s];
-    const sigBuyerRS  = [sigBuyer.r, sigBuyer.s];
-
-    // it currently does not exist:
+    playerId = await createSpecialPlayerId(id = 4312432432);
+    // player currently does not exist:
     exists = await assets.playerExists(playerId).should.be.fulfilled;
-    exists.should.be.equal(false);
-    finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
-    exists = await assets.playerExists(finalPlayerId).should.be.fulfilled;
     exists.should.be.equal(false);
 
     // it currently has no owner:
     owner = await market.getOwnerPlayer(playerId).should.be.rejected;
-    // this will fail because we still haven't said that Freeverse owns the academy:
-    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.rejected;
-    // let's fix it:
-    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
-    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
-    // change of academy address immediately reflects in change of who owns the academy players
-    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
-    // when transferred, the "targetTeamId" is erased (set to zero)
-    finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
-    exists = await assets.playerExists(finalPlayerId).should.be.fulfilled;
-    exists.should.be.equal(true);
-    owner = await market.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
+    
+    // set target to a bot team => should fail
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 2);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
+
+    // set target to a human team => should work
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
+    
+    owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     owner.should.be.equal(buyerAccount.address);
+
+    // a non academy player would not work
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
   });
 
   it("promo players: cannot be used to transfer players that already belong to humans", async () => {
