@@ -63,6 +63,21 @@ contract Market is MarketView {
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
+    // function transferBuyNowPlayer(
+    //     uint256 playerId,
+    //     uint256 targetTeamId
+    //  ) public {
+    //     require(!isPlayerWritten(playerId), "buy-now player already in the universe");
+    //     require(isAcademyPlayer(playerId), "only Academy players can be sold via buy-now");
+    //     // teamExists(targetTeamId) => already part of transferPlayer
+    //     // !isBotTeam(targetTeamId) => already part of transferPlayer
+    //     // require that team does not have any constraint from friendlies:
+    //     (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
+    //     require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
+    //     transferPlayer(playerId, targetTeamId);
+    //     decreaseMaxAllowedAcquisitions(targetTeamId);
+    // }
+    
     function transferPromoPlayer(
         uint256 playerId,
         uint256 validUntil,
