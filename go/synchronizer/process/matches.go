@@ -238,6 +238,7 @@ func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumbe
 			if err := ioutil.WriteFile(filename, match.ToJson(), 0644); err != nil {
 				return err
 			}
+			return err
 		}
 	}
 	return nil
