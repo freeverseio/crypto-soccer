@@ -1036,17 +1036,15 @@ contract("Market", accounts => {
 
   it("promo players: cannot be used to transfer players that already belong to humans", async () => {
     // We try to transfer an existing player as if it was a promo player
+    // Note that teamIdx = 0 => seller, teamIdx = 1 => buyer
+    // ATTEMPT 1: Human to null team
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
 
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address).should.be.fulfilled;
-
-    result = await market.getOwnerTeam(targetTeamId).should.be.fulfilled;
-    console.log(result)
+    result = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    result.should.be.equal(sellerAccount.address);
 
     sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
-
     var sigSellerRS = [sigSeller.r, sigSeller.s];
     var sigBuyerRS  = [sigBuyer.r, sigBuyer.s];
 
@@ -1057,7 +1055,11 @@ contract("Market", accounts => {
     // this one fails because targetTeamId = 0 for a standard playerId created as part of a league.
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.rejected;
     
-    playerIdBackup = playerId;
+    // ATTEMPT 2: Human to bot team: player in teamIdx = 0, trying to transfer to a bot teamIdx = 2
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 2);
+    result = await market.getOwnerTeam(targetTeamId).should.be.fulfilled;
+    result.should.be.equal('0x0000000000000000000000000000000000000000')
+
     playerId = await market.setTargetTeamId(playerId, targetTeamId).should.be.fulfilled;
     sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
@@ -1069,17 +1071,36 @@ contract("Market", accounts => {
     exists.should.be.equal(true);
 
     // fails because targetTeam is a bot
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.rejected;
+
+    // ATTEMPT 3: Human to human team: player in teamIdx = 0, trying to transfer to a bot teamIdx = 1
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+
+    // make sure player belongs to "seller"
+    result = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    result.should.be.equal(sellerAccount.address);
+
     result = await market.getOwnerTeam(targetTeamId).should.be.fulfilled;
-    console.log(result, "owner")
+    result.should.be.equal(buyerAccount.address)
+
+    playerId = await market.setTargetTeamId(playerId, targetTeamId).should.be.fulfilled;
+    sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    var sigSellerRS = [sigSeller.r, sigSeller.s];
+    var sigBuyerRS  = [sigBuyer.r, sigBuyer.s];
+
+    exists = await assets.playerExists(playerId).should.be.fulfilled;
+    exists.should.be.equal(true);
+
     console.log(sellerAccount.address, "seller")
+    console.log(buyerAccount.address, "buyer")
     console.log(freeverseAccount.address, "fv")
+
     result = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     console.log(result, "player before")
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
     result = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     console.log(result, "player after")
-  
-    
   });
   
   it2("promo players: completes an offering and accepting", async () => {
