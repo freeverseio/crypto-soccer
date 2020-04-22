@@ -19,7 +19,8 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 
 	bid := bidmachine.FirstAlive(b.bids)
 	if bid == nil {
-		b.SetState(storage.AuctionFailed, "No available alive bid")
+		b.SetState(storage.AuctionFailed, "No available healty bid")
+		return nil
 	}
 
 	bidMachine, err := bidmachine.New(
