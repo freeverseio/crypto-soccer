@@ -141,7 +141,7 @@ func main() {
 			processedBlocks, err := processor.Process(tx, uint64(*delta))
 			if err != nil {
 				tx.Rollback()
-				return err
+				continue
 			}
 			if err := tx.Commit(); err != nil {
 				return err
