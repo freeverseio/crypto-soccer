@@ -316,6 +316,13 @@ func TestMatchError1stHalf(t *testing.T) {
 	}
 }
 
+func TestMatchWithNoGoalkeeper(t *testing.T) {
+	input := golden.Get(t, t.Name()+"/cc12f3ac3333a875de023a7f01f88344a03195a258ab68c3709675006614d57f.toStorage.error.json")
+	match, err := engine.NewMatchFromJson(input)
+	assert.NilError(t, err)
+	assert.Equal(t, match.Events[0].SecondaryPlayer, int16(-1))
+}
+
 func TestMatchError2ndHalf(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
