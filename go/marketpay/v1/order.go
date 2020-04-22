@@ -1,5 +1,7 @@
 package v1
 
+import "encoding/json"
+
 type Order struct {
 	Name                string      `json:"name"`
 	Amount              string      `json:"amount"`
@@ -64,4 +66,9 @@ type Order struct {
 		} `json:"source"`
 	} `json:"shortlink"`
 	Image interface{} `json:"image"`
+}
+
+func (b Order) ToJson() []byte {
+	s, _ := json.MarshalIndent(b, "", "\t")
+	return s
 }

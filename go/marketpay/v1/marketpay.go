@@ -8,6 +8,8 @@ import (
 	"net/http"
 
 	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const sandboxURL = "https://api-sandbox.truust.io/1.0"
@@ -35,6 +37,8 @@ func (b *MarketPay) CreateOrder(
 	name string,
 	value string,
 ) (*Order, error) {
+	log.Infof("[Marketpay] Create order name %v value %v", name, value)
+
 	url := b.endpoint + "/express"
 	method := "POST"
 
