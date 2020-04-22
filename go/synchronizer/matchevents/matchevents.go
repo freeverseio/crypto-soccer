@@ -66,7 +66,6 @@ func NewMatchEvents(
 func RemoveFreeShirtsFromLineUp(lineUp [14]uint8, playerIDs [25]*big.Int) [14]uint8 {
 	NO_LINEUP := uint8(25)
 	MIN_PLAYERID := new(big.Int).SetUint64(2)
-	}
 	for l := 0; l < len(lineUp); l++ {
 		if lineUp[l] < 25 {
 			playerId := playerIDs[lineUp[l]]
