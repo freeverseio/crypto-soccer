@@ -118,6 +118,8 @@ spec:
               value: /ip4/127.0.0.1/tcp/5001
             - name: CLUSTER_MONITOR_PING_INTERVAL
               value: 3m
+            - name: CLUSTER_METRICS_ENABLESTATS # enable disable for prometheus
+              value: true
             - name: SVC_NAME
               value: ipfs-cluster
           ports:
