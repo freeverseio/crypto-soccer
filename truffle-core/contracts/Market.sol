@@ -88,6 +88,7 @@ contract Market is MarketView {
      ) public {
         require(validUntil > now, "validUntil is in the past");
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
+        require(isAcademyPlayer(playerId), "only Academy Players can be offered as promo players");
         uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
         require(!isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
         uint256 targetTeamId = getTargetTeamId(playerId);
