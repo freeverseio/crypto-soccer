@@ -161,8 +161,10 @@ func (b *BidMachine) processPaying() error {
 			if err != nil {
 				return err
 			}
+			auth := bind.NewKeyedTransactor(b.freeverse)
+			auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
 			tx, err := b.contracts.Market.CompletePlayerAuction(
-				bind.NewKeyedTransactor(b.freeverse),
+				auth,
 				auctionHiddenPrice,
 				big.NewInt(b.auction.ValidUntil),
 				playerId,
