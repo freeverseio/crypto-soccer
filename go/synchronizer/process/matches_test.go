@@ -41,8 +41,8 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		for i := 0; i < 25; i++ {
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
 			match.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-			match.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-			match.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+			match.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+			match.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 		}
 		matches = append(matches, *match)
 	}
@@ -64,8 +64,8 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		for i := 0; i < 25; i++ {
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
 			match.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-			match.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-			match.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+			match.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+			match.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 		}
 		matches = append(matches, *match)
 	}

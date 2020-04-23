@@ -33,8 +33,8 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	match.HomeTeam.TeamID = "1"
 	match.VisitorTeam.TeamID = "2"
 	for i := 0; i < 25; i++ {
-		match.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-		match.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+		match.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		match.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
 	err := match.Play1stHalf(*bc.Contracts)
 	assert.NilError(t, err)
@@ -82,8 +82,8 @@ func TestPlayGame(t *testing.T) {
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-		m.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-		m.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
 	golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
 	err := m.Play1stHalf(*bc.Contracts)
@@ -134,8 +134,8 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 			for i := 0; i < 25; i++ {
 				m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
 				m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-				m.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-				m.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+				m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+				m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 			}
 			golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
 			err := m.Play1stHalf(*bc.Contracts)
@@ -178,8 +178,8 @@ func TestMatchTeamSkillsEvolution(t *testing.T) {
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-		m.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-		m.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
 	golden.Assert(t, dump.Sdump(m.HomeTeam.Skills()), t.Name()+".before.golden")
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
@@ -198,8 +198,8 @@ func TestMatchRedCards(t *testing.T) {
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-		m.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-		m.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
@@ -222,8 +222,8 @@ func TestMatchHardInjury(t *testing.T) {
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-		m.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-		m.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
@@ -246,8 +246,8 @@ func TestMatchSoftInjury(t *testing.T) {
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-		m.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-		m.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
 	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
@@ -270,8 +270,8 @@ func TestMatchEvents(t *testing.T) {
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
-		m.HomeTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
-		m.VisitorTeam.Players[i].SetPlayerId(*bc.Contracts, new(big.Int).SetUint64(21342314523))
+		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
 	golden.Assert(t, m.Events.DumpState(), t.Name()+".atStart.golden")
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))

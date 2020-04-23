@@ -28,7 +28,7 @@ func NewPlayerFromStorage(stoPlayer storage.Player) *Player {
 	return &player
 }
 
-func (b *Player) SetPlayerId(contracts contracts.Contracts, playerId *big.Int) {
+func (b *Player) SetPlayerId(playerId *big.Int) {
 	b.PlayerId = playerId
 }
 
