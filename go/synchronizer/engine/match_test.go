@@ -354,3 +354,18 @@ func TestMatchError2ndHalf(t *testing.T) {
 		})
 	}
 }
+
+func TestFromTheField(t *testing.T) {
+	input := golden.Get(t, t.Name()+"/be021ab477ff432a6152482cc409acfb3bf525037fbd69bc2b41f83c5d67433a.toStorage.error.json")
+	match, err := engine.NewMatchFromJson(input)
+	assert.NilError(t, err)
+	matchLog, _ := new(big.Int).SetString(match.HomeTeam.MatchLog, 10)
+	decodedHomeMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, matchLog, true)
+	assert.NilError(t, err)
+	matchLog, _ = new(big.Int).SetString(match.VisitorTeam.MatchLog, 10)
+	decodedVisitorMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, matchLog, true)
+	assert.NilError(t, err)
+
+	t.Log(decodedHomeMatchLog)
+	t.Log(decodedVisitorMatchLog)
+}
