@@ -12,6 +12,7 @@ import (
 )
 
 func ProcessAuctions(
+	market marketpay.IMarketPay,
 	tx *sql.Tx,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
@@ -22,7 +23,13 @@ func ProcessAuctions(
 	}
 
 	for _, auction := range auctions {
-		if err := processAuction(tx, auction, pvc, contracts); err != nil {
+		if err := processAuction(
+			market,
+			tx,
+			auction,
+			pvc,
+			contracts,
+		); err != nil {
 			log.Error(err)
 		}
 	}
@@ -30,6 +37,7 @@ func ProcessAuctions(
 }
 
 func processAuction(
+	market marketpay.IMarketPay,
 	tx *sql.Tx,
 	auction storage.Auction,
 	pvc *ecdsa.PrivateKey,
@@ -43,7 +51,7 @@ func processAuction(
 	if err != nil {
 		return err
 	}
-	if err := am.Process(marketpay.New()); err != nil {
+	if err := am.Process(market); err != nil {
 		return err
 	}
 	if err := am.Auction().Update(tx); err != nil {

@@ -12,9 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const sandboxURL = "https://api-sandbox.truust.io/1.0"
-const sandboxPublicKey = "pk_stage_ZkNpNElWeEg="
-
 type IMarketPay interface {
 	CreateOrder(name string, value string) (*Order, error)
 	GetOrder(hash string) (*Order, error)
@@ -26,7 +23,10 @@ type MarketPay struct {
 	publicKey string
 }
 
-func New() *MarketPay {
+func NewSandbox() *MarketPay {
+	sandboxURL := "https://api-sandbox.truust.io/1.0"
+	sandboxPublicKey := "pk_stage_ZkNpNElWeEg="
+
 	return &MarketPay{
 		sandboxURL,
 		sandboxPublicKey,
