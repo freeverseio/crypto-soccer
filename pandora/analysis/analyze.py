@@ -69,7 +69,6 @@ def getTopN(name, n):
     return (skill[sortedIdxs[-n:]], sortedIdxs)
 
 
-client = setClient(prodURL)
 # saveAllPlayers(client, "allplayersprod.txt")
 
 players = getSavedPlayers("allplayersprod.txt")
@@ -212,23 +211,27 @@ if False:
 # PLOT Level vs potential
 ########################
 
+def getSumSkills(player, skillNames):
+    return np.array([player[name] for name in skillNames]).sum()
+
 avgSkills = np.zeros(10)
 
 for potential in range(10):
     playersThisPot = [p for  p in players["allPlayers"]["nodes"] \
                       if (p["potential"] == potential) and (p["dayOfBirth"] > 17000) \
     ]
-    sumSkills = 0
-    for name in skillNames:
-        sumSkills += np.array([p[name] for p in playersThisPot]).sum()
-    avgSkills[potential] = sumSkills/(len(playersThisPot)*5)
+    print(len(playersThisPot))
+    sumSkillsThisPot = [getSumSkills(p, skillNames) for p in playersThisPot]
+    sumSkillsThisPot = np.array([s for s in sumSkillsThisPot if s > 5000])
+    avgSkills[potential] = (1.0*sumSkillsThisPot.sum())/(len(sumSkillsThisPot)*5)
 
 fig = plt.figure()
 
 potential = np.array(range(10))
 plt.plot(potential, avgSkills)
+plt.xlabel('potential', fontsize=18)
 plt.ylabel('skill value', fontsize=18)
-fig.suptitle('Average players skill as function of potential, at end of League 1', fontsize=20)
+fig.suptitle('Average skill vs potential, at end of League 1', fontsize=20)
 fig.savefig('skillVsPotential' + '.png')
 
 
