@@ -1,6 +1,8 @@
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 import json
+import matplotlib.pyplot as plt
+import numpy as np
 
 devURL  = 'https://k8s.gorengine.com/auth/'
 prodURL = 'https://k8s.goalrevolution.live/auth/'
@@ -49,12 +51,45 @@ def getSavedPlayers(filename):
         result = json.load(json_file)
     return result
 
-client = setClient(prodURL)
+def plotSkill(name):
+    skill = [p[name] for p in players["allPlayers"]["nodes"]]
+    fig = plt.figure()
+    plt.hist(skill, bins = 50)
+    fig.suptitle('All players at end of League 1', fontsize=20)
+    plt.xlim(xmin=0, xmax=3500)
+    # plt.ylim(ymin=0, ymax=100)
+    plt.xlabel(name, fontsize=18)
+    plt.ylabel('Num Players', fontsize=18)
+    fig.savefig(name + '.png')
+    # plt.show()
 
+def getTopN(name, n):
+    skill = np.array([p[name] for p in players["allPlayers"]["nodes"]])
+    sortedIdxs = np.argsort(skill)
+    return (skill[sortedIdxs[-n:]], sortedIdxs)
+
+
+client = setClient(prodURL)
 # saveAllPlayers(client, "allplayersprod.txt")
 
 players = getSavedPlayers("allplayersprod.txt")
 
+skillNames = ["shoot", "pass", "defence", "speed", "endurance"]
+
+# PLOT Skills Histograms
+# for name in skillNames:
+#     plotSkill(name)
+
+# PLOT Top20 players
+fig = plt.figure()
+for name in skillNames:
+    fig.suptitle('Top 20 players, per skill, at end of League 1', fontsize=20)
+    (top, topIdxs) = getTopN(name, 20)
+    plt.plot(top)
+plt.ylabel('skill value', fontsize=18)
+plt.legend((skillNames),
+           loc='upper left')
+fig.savefig('tops' + '.png')
 
 
 
