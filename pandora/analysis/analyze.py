@@ -22,11 +22,15 @@ def setClient(url):
     )
 
 def saveAllPlayers(client, filename):
+    # allPlayers(condition: { teamId: "1099511627776" }, orderBy: SHOOT_DESC) {
     query = gql('''
         query {
-            allPlayers(condition: { teamId: "1099511627776" }, orderBy: SHOOT_DESC) {
+            allPlayers {
                 nodes {
-                  shoot
+                  name
+                  preferredPosition
+                  potential
+                  shoot   
                   defence
                   pass
                   endurance
@@ -41,12 +45,15 @@ def saveAllPlayers(client, filename):
         json.dump(result, outfile)
 
 def getSavedPlayers(filename):
-    
-
+    with open(filename) as json_file:
+        result = json.load(json_file)
+    return result
 
 client = setClient(prodURL)
-saveAllPlayers(client, "allplayersprod.txt")
-getSavedPlayers(filename)
+
+# saveAllPlayers(client, "allplayersprod.txt")
+
+players = getSavedPlayers("allplayersprod.txt")
 
 
 
