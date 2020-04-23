@@ -122,10 +122,10 @@ func TestAuctionUpdate(t *testing.T) {
 
 	auction.State = storage.AuctionCancelled
 	auction.StateExtra = "privato"
+	auction.PaymentURL = "http"
 	assert.NilError(t, auction.Update(tx))
 
 	result, err = storage.AuctionByID(tx, auction.ID)
 	assert.NilError(t, err)
-	assert.Equal(t, result.State, storage.AuctionCancelled)
-	assert.Equal(t, result.StateExtra, "privato")
+	assert.Equal(t, *result, *auction)
 }
