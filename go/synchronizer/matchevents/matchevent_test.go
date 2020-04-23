@@ -50,8 +50,8 @@ func TestMatchEventsAlmostEmptyTeams(t *testing.T) {
 
 	is2ndHalf := false
 
-	for s := 0; s < 200; s++ {
-		verseSeed := [32]byte{0x2, 0x1}
+	for s := 0; s < 20; s++ {
+		verseSeed = [32]byte{0x2, 0x1} <--- FUCKING USE s here
 		computedEvents, err := matchevents.Generate(
 			verseSeed,
 			teamId0,
