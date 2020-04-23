@@ -35,6 +35,16 @@ func NewBid() *Bid {
 	return &bid
 }
 
+func FindBids(bids []Bid, state BidState) []*Bid {
+	result := []*Bid{}
+	for i := range bids {
+		if bids[i].State == state {
+			result = append(result, &bids[i])
+		}
+	}
+	return result
+}
+
 func BidsByAuctionID(tx *sql.Tx, ID string) ([]Bid, error) {
 	rows, err := tx.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1;", ID)
 	if err != nil {
