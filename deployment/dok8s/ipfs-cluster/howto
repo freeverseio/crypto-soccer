@@ -8,28 +8,37 @@
 # apply config to kubernetes:
 kubectl apply -f ipfs-cluster.yaml -n <namespace>
 
-
+####################################################################################################################################################
+# new peer with ipf-cluster-service
 export IPFS_FD_MAX=4096
 export CLUSTER_SECRET=09968797372bbfe9c4b7bb70b738e61db814fa44cb33b4faea520496607c63ed
 
+ipfs-cluster-service init
+
 # first time connect with
 ipfs-cluster-service daemon --upgrade --bootstrap /ip4/178.128.141.147/tcp/9096/p2p/QmZyN2aLhjCKrvpJ1R1gqrEevDN9fz3eHnnK1dDAuGtrGy --leave
+ipfs-cluster-service daemon --upgrade --bootstrap /dns4/ipfs-cluster.gorengine.com/tcp/9096/p2p/QmZyN2aLhjCKrvpJ1R1gqrEevDN9fz3eHnnK1dDAuGtrGy --leave
 
+####################################################################################################################################################
 
 # ipf-cluster-follow:
+ipfs-cluster-follow gr-ipfs-cluster run --init <configuration.json>
+
+# configuration.json should be publish as ipns
+# example:
 ipfs-cluster-follow gr-ipfs-cluster run --init goalrevolution.collab.ipfs.cluster.io.gorengine.com
+ipfs name resolve goalrevolution.collab.ipfs.cluster.io.gorengine.com
 
 # configuration available thru gateway
 https://gateway.ipfs.io/ipfs/QmSQoHyHrzUMijrMgjY3TR9CSupaowy9Mv8pfpVyExGtN5
 https://ipfs.io/ipfs/QmSQoHyHrzUMijrMgjY3TR9CSupaowy9Mv8pfpVyExGtN5
+https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
 
-# add configuration
+# add configuration published under PEER_ID
 https://medium.com/coinmonks/how-to-add-site-to-ipfs-and-ipns-f121b4cfc8ee
 ipfs add <config.json>
 ipfs pin add <config_hash>
 ipfs name publish <config_hash>
 ipfs name resolve <peerID>
+# watch
 https://ipfs.io/ipns/<peerID> or ipfs cat /ipns/<peerID>
-
-# resolve ipns
-ipfs name resolve goalrevolution.collab.ipfs.cluster.io.gorengine.com

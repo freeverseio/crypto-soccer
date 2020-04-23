@@ -18,8 +18,8 @@
     "disable_repinning": true,
     "follower_mode": true,
     "peer_addresses": [
-      "/ip4/188.166.134.17/tcp/9096/p2p/12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ",
-      "/ip4/188.166.134.17/tcp/9096/p2p/12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs"
+      "/dns4/ipfs-cluster.gorengine.com/tcp/9096/p2p/12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ",
+      "/dns4/ipfs-cluster.gorengine.com/tcp/9096/p2p/12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs"
     ]
   },
   "consensus": {
