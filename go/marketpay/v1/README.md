@@ -1,0 +1,1 @@
+https://docs.truust.io/payment-flows
