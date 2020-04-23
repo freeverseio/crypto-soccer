@@ -277,6 +277,8 @@ func (b *Match) processMatchEvents(
 		b.Seed,
 		b.HomeTeam.TeamID,
 		b.VisitorTeam.TeamID,
+		b.HomeTeam.PlayerIDs(),
+		b.VisitorTeam.PlayerIDs(),
 		homeTactic,
 		visitorTactic,
 		logsAndEvents,
