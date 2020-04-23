@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	log "github.com/sirupsen/logrus"
@@ -15,10 +16,12 @@ type Consumer struct {
 	db        *sql.DB
 	contracts contracts.Contracts
 	pvc       *ecdsa.PrivateKey
+	market    marketpay.IMarketPay
 }
 
 func New(
 	ch chan interface{},
+	market marketpay.IMarketPay,
 	db *sql.DB,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
@@ -28,6 +31,7 @@ func New(
 	consumer.db = db
 	consumer.contracts = contracts
 	consumer.pvc = pvc
+	consumer.market = market
 	return &consumer, nil
 }
 
@@ -87,7 +91,7 @@ func (b *Consumer) Start() {
 				log.Error(err)
 				break
 			}
-			if err := ProcessAuctions(tx, b.contracts, b.pvc); err != nil {
+			if err := ProcessAuctions(b.market, tx, b.contracts, b.pvc); err != nil {
 				log.Fatal(err)
 				tx.Rollback()
 				break

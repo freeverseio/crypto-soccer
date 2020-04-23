@@ -25,7 +25,7 @@ func TestPaying(t *testing.T) {
 	auction.State = storage.AuctionStarted
 	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.Error(t, m.ProcessPaying(marketpay.New()), "Paying: wrong state")
+	assert.Error(t, m.ProcessPaying(marketpay.NewMockMarketPay()), "Paying: wrong state")
 }
 
 func TestPayingNilBids(t *testing.T) {
@@ -33,7 +33,7 @@ func TestPayingNilBids(t *testing.T) {
 	auction.State = storage.AuctionPaying
 	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessPaying(marketpay.New()))
+	assert.NilError(t, m.ProcessPaying(marketpay.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
 	assert.Equal(t, m.StateExtra(), "No available healty bid")
 }
@@ -46,7 +46,7 @@ func TestPayingNoBidsAvailable(t *testing.T) {
 	bids := []storage.Bid{*bid}
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessPaying(marketpay.New()))
+	assert.NilError(t, m.ProcessPaying(marketpay.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
 	assert.Equal(t, m.StateExtra(), "No available healty bid")
 }
@@ -59,6 +59,6 @@ func TestPayingWithBid(t *testing.T) {
 	bids := []storage.Bid{*bid}
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessPaying(marketpay.New()))
+	assert.NilError(t, m.ProcessPaying(marketpay.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionPaying)
 }
