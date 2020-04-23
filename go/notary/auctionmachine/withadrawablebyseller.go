@@ -25,7 +25,16 @@ func (b *AuctionMachine) ProcessWithdrawableBySeller(market marketpay.IMarketPay
 		return err
 	}
 
-	log.Warningf("TODO auction %v in state %v order status is %v", b.auction.ID, b.auction.State, order.Status)
+	switch order.Status {
+	case "PENDING_RELEASE":
+		b.SetState(storage.AuctionEnded, "")
+	case "RELEASED":
+		b.SetState(storage.AuctionEnded, "")
+	case "PENDING_VALIDATE":
+		log.Infof("ACTION POINT: waiting validation ...")
+	default:
+		log.Errorf("Unknown state %v", order.Status)
+	}
 
 	return nil
 }
