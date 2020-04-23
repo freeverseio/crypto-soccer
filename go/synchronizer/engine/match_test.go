@@ -359,13 +359,39 @@ func TestFromTheField(t *testing.T) {
 	input := golden.Get(t, t.Name()+"/be021ab477ff432a6152482cc409acfb3bf525037fbd69bc2b41f83c5d67433a.toStorage.error.json")
 	match, err := engine.NewMatchFromJson(input)
 	assert.NilError(t, err)
-	matchLog, _ := new(big.Int).SetString(match.HomeTeam.MatchLog, 10)
-	decodedHomeMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, matchLog, true)
+	homeMatchLog, _ := new(big.Int).SetString(match.HomeTeam.MatchLog, 10)
+	decodedHomeMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, homeMatchLog, true)
 	assert.NilError(t, err)
-	matchLog, _ = new(big.Int).SetString(match.VisitorTeam.MatchLog, 10)
-	decodedVisitorMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, matchLog, true)
+	visitorMatchLog, _ := new(big.Int).SetString(match.VisitorTeam.MatchLog, 10)
+	decodedVisitorMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, visitorMatchLog, true)
+	assert.NilError(t, err)
+	homeTactic, _ := new(big.Int).SetString(match.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(match.VisitorTeam.Tactic, 10)
+
+	// err = match.ProcessMatchEvents(
+	// 	*bc.Contracts,
+	// 	[]*big.Int{homeMatchLog, visitorMatchLog},
+	// 	decodedHomeMatchLog,
+	// 	decodedVisitorMatchLog,
+	// 	true, // is2ndHalf bool,
+	// )
+	// assert.NilError(t, err)
+
+	_, err = matchevents.NewMatchEvents(
+		*bc.Contracts,
+		match.Seed,
+		match.HomeTeam.TeamID,
+		match.VisitorTeam.TeamID,
+		match.HomeTeam.PlayerIDs(),
+		match.VisitorTeam.PlayerIDs(),
+		homeTactic,
+		visitorTactic,
+		[]*big.Int{homeMatchLog, visitorMatchLog},
+		decodedHomeMatchLog,
+		decodedVisitorMatchLog,
+		false, // is2ndHalf bool,
+	)
 	assert.NilError(t, err)
 
-	t.Log(decodedHomeMatchLog)
-	t.Log(decodedVisitorMatchLog)
+	// t.Error(events)
 }
