@@ -79,3 +79,18 @@ func TestBidUpdate(t *testing.T) {
 	assert.Equal(t, len(bids), 1)
 	assert.Equal(t, bids[0], *bid)
 }
+
+func TestBidFindBids(t *testing.T) {
+	bids := []storage.Bid{}
+	bids = append(bids, *storage.NewBid())
+	bids = append(bids, *storage.NewBid())
+	bids = append(bids, *storage.NewBid())
+	bids = append(bids, *storage.NewBid())
+	result := storage.FindBids(bids, storage.BidPaid)
+	assert.Equal(t, len(result), 0)
+	result = storage.FindBids(bids, storage.BidAccepted)
+	assert.Equal(t, len(result), 4)
+	result[0].State = storage.BidPaid
+	result = storage.FindBids(bids, storage.BidPaid)
+	assert.Equal(t, len(result), 1)
+}

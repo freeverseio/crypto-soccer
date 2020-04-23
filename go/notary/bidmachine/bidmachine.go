@@ -55,11 +55,11 @@ func New(
 
 func FirstAlive(bids []storage.Bid) *storage.Bid {
 	// first searching for PAYING bid
-	for i := range bids {
-		if bids[i].State == storage.BidPaying {
-			return &bids[i]
-		}
+	payingBids := storage.FindBids(bids, storage.BidPaying)
+	if len(payingBids) != 0 {
+		return payingBids[0]
 	}
+
 	// then search for the highest ACCEPTED bid
 	idx := -1
 	extraPrice := int64(-1)
