@@ -106,7 +106,7 @@ func TestAuctionStartedGoFrozen(t *testing.T) {
 	assert.Equal(t, m.State(), storage.AuctionAssetFrozen)
 }
 
-func TestPayingPaymentDoneAuction(t *testing.T) {
+func TestAuctionMachineAllWorkflow(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	assert.NilError(t, err)
 	bc.DeployContracts(bc.Owner)
@@ -167,6 +167,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 		t.Fatal(err)
 	}
 	auction := storage.Auction{
+		ID:         "TheTestingAuction",
 		PlayerID:   playerID.String(),
 		CurrencyID: int(currencyID),
 		Price:      price.Int64(),
@@ -244,4 +245,10 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
 	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller)
+	assert.Equal(t, machine.StateExtra(), "")
+
+	t.Run("AuctionWithdrableBySeller", func(t *testing.T) {
+		auction := machine.Auction()
+		assert.Equal(t, auction.PaymentURL, "https://settlor.io/9136de")
+	})
 }
