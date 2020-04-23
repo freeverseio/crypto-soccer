@@ -131,7 +131,6 @@ func Generate(
 			events[e].Minute += 45
 		}
 	}
-
 	return events, nil
 }
 
@@ -259,14 +258,14 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]ui
 
 func toShirtNum(posInLineUp uint8, lineUp [14]uint8, NULL int16, NOONE int16) int16 {
 	if int16(posInLineUp) < NOONE {
-		return preventNoPlayer(int16(lineUp[posInLineUp]), NULL)
+		return preventNoPlayer(int16(lineUp[posInLineUp]), NULL, NOONE)
 	} else {
 		return NULL
 	}
 }
 
-func preventNoPlayer(inPlayer int16, NULL int16) int16 {
-	if inPlayer < 25 {
+func preventNoPlayer(inPlayer int16, NULL int16, NOONE int16) int16 {
+	if inPlayer < NOONE {
 		return inPlayer
 	} else {
 		return NULL

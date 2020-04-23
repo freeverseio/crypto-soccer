@@ -15,7 +15,6 @@ func int_hash(s string) uint64 {
 }
 
 func TestMatchEventsAlmostEmptyTeams(t *testing.T) {
-	verseSeed := [32]byte{0x2, 0x1}
 	teamId0 := "1"
 	teamId1 := "2"
 	matchLog := [15]uint32{
@@ -44,52 +43,43 @@ func TestMatchEventsAlmostEmptyTeams(t *testing.T) {
 	}
 	NO_PLAYER := uint8(25)
 	NO_SUBS := uint8(11)
-	lineup0 := [14]uint8{NO_PLAYER, NO_PLAYER, NO_PLAYER, NO_PLAYER, NO_PLAYER, 11, 9, NO_PLAYER, NO_PLAYER, 0, NO_PLAYER, NO_PLAYER, NO_PLAYER, NO_PLAYER}
-	lineup1 := [14]uint8{NO_PLAYER, NO_PLAYER, 5, 6, NO_PLAYER, NO_PLAYER, 2, 14, 8, NO_PLAYER, NO_PLAYER, NO_PLAYER, NO_PLAYER, NO_PLAYER}
+	lineup0 := [14]uint8{NO_PLAYER, 12, NO_PLAYER, NO_PLAYER, NO_PLAYER, 15, 16, NO_PLAYER, NO_PLAYER, 17, NO_PLAYER, NO_PLAYER, NO_PLAYER, NO_PLAYER}
+	lineup1 := [14]uint8{NO_PLAYER, 11, 15, 16, NO_PLAYER, NO_PLAYER, 17, 14, 12, NO_PLAYER, NO_PLAYER, NO_PLAYER, NO_PLAYER, NO_PLAYER}
 	substitutions := [3]uint8{NO_SUBS, NO_SUBS, NO_SUBS}
 	subsRounds := [3]uint8{NO_SUBS, NO_SUBS, NO_SUBS}
 
 	is2ndHalf := false
 
-	computedEvents, err := matchevents.Generate(
-		verseSeed,
-		teamId0,
-		teamId1,
-		matchLog,
-		matchLog,
-		events,
-		lineup0,
-		lineup1,
-		substitutions,
-		substitutions,
-		subsRounds,
-		subsRounds,
-		is2ndHalf,
-	)
-	if err != nil {
-		t.Fatalf("error: %s", err)
-	}
-	for i := 0; i < len(computedEvents); i++ {
-		pos := uint8(computedEvents[i].PrimaryPlayer)
-		if pos < NO_SUBS {
-			id := lineup0[pos]
-			if computedEvents[i].Team == 1 {
-				id = lineup1[pos]
-			}
-			if !((id < NO_PLAYER) && (id >= 0)) {
+	for s := 0; s < 200; s++ {
+		verseSeed := [32]byte{0x2, 0x1}
+		computedEvents, err := matchevents.Generate(
+			verseSeed,
+			teamId0,
+			teamId1,
+			matchLog,
+			matchLog,
+			events,
+			lineup0,
+			lineup1,
+			substitutions,
+			substitutions,
+			subsRounds,
+			subsRounds,
+			is2ndHalf,
+		)
+		if err != nil {
+			t.Fatalf("error: %s", err)
+		}
+		for i := 0; i < len(computedEvents); i++ {
+			id := computedEvents[i].PrimaryPlayer
+			if !((id < int16(NO_PLAYER)) && (id >= -1)) {
 				t.Log(id)
 				t.Fatal("wrong primary player")
 			}
-		}
-		pos = uint8(computedEvents[i].SecondaryPlayer)
-		if pos < NO_SUBS {
-			id := lineup0[pos]
-			if computedEvents[i].Team == 1 {
-				id = lineup1[pos]
-			}
-			if !((id < NO_PLAYER) && (id >= 0)) {
+			id = computedEvents[i].SecondaryPlayer
+			if !((id < int16(NO_PLAYER)) && (id >= -1)) {
 				t.Log(id)
-				t.Fatal("wrong secondary player")
+				t.Fatal("wrong sec player")
 			}
 		}
 	}
