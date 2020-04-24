@@ -140,6 +140,7 @@ func main() {
 			}
 			processedBlocks, err := processor.Process(tx, uint64(*delta))
 			if err != nil {
+				log.Error(err)
 				tx.Rollback()
 				continue
 			}
