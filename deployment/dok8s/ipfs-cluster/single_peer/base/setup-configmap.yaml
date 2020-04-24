@@ -16,7 +16,8 @@ data:
     EOF
 
     if [ ! -f /data/ipfs-cluster/service.json ]; then
-      ipfs-cluster-service init
+      #ipfs-cluster-service init
+      ipfs-cluster-service init --peers "/dns4/${GOALREV_IPFS_CLUSTER_DNS}/tcp/9096/p2p/${PEER_ID_1}, /dns4/${GOALREV_IPFS_CLUSTER_DNS}/tcp/9096/p2p/${PEER_ID_2}"
     fi
 
     BOOTSTRAP_ADDR=/dns4/${GOALREV_IPFS_CLUSTER_DNS}/tcp/9096/ipfs/${BOOTSTRAP_PEER_ID}

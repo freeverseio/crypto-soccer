@@ -105,6 +105,16 @@ spec:
                 configMapKeyRef:
                   key: peer-id-2
                   name: env-config
+            - name: TRUSTED_PEER_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: trusted-peer-id
+                  name: env-config
+            - name: TRUSTED_PEER_DNS
+              valueFrom:
+                configMapKeyRef:
+                  key: trusted-peer-dns
+                  name: env-config
             - name: CLUSTER_SECRET
               valueFrom:
                 secretKeyRef:

@@ -5,3 +5,5 @@ metadata:
 data:
   bootstrap-peer-id: QmZyN2aLhjCKrvpJ1R1gqrEevDN9fz3eHnnK1dDAuGtrGy
   peer-id: 12D3KooWR5rXWEyGHmWx1h7tHr9F6hJjikSt8XbSu5Vwc5KmxhzQ
+  trusted-peer-id-1: 12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ
+  trusted-peer-id-2: 12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs

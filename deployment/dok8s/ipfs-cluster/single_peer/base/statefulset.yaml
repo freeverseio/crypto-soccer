@@ -80,6 +80,16 @@ spec:
                 configMapKeyRef:
                   key: peer-id
                   name: env-config
+            - name: PEER_ID_1
+              valueFrom:
+                configMapKeyRef:
+                  key: trusted-peer-id-1
+                  name: env-config
+            - name: PEER_ID_2
+              valueFrom:
+                configMapKeyRef:
+                  key: trusted-peer-id-2
+                  name: env-config
             - name: CLUSTER_SECRET
               valueFrom:
                 secretKeyRef:
