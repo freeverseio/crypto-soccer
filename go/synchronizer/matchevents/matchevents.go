@@ -57,6 +57,11 @@ func NewMatchEvents(
 	if err != nil {
 		return nil, err
 	}
+
+	if !events.ArePlayerPositionConsistent(homeTeamPlayerIDs, visitorTeamPlayerIDs) {
+		return nil, errors.New("inconsistent events/player")
+	}
+
 	return events, nil
 }
 
@@ -336,4 +341,29 @@ func (b MatchEvents) DumpState() string {
 		state += fmt.Sprintf("Events[%d]: %+v\n", i, event)
 	}
 	return state
+}
+
+func (b MatchEvents) ArePlayerPositionConsistent(
+	homeTeamPlayerIDs [25]*big.Int,
+	visitorTeamPlayerIDs [25]*big.Int,
+) bool {
+	for _, event := range b {
+		var primaryPlayerTeam [25]*big.Int
+		var secondaryPlayerTeam [25]*big.Int
+		if event.Team == 0 {
+			primaryPlayerTeam = homeTeamPlayerIDs
+			secondaryPlayerTeam = visitorTeamPlayerIDs
+		} else {
+			primaryPlayerTeam = visitorTeamPlayerIDs
+			secondaryPlayerTeam = visitorTeamPlayerIDs
+		}
+
+		if event.PrimaryPlayer != -1 && primaryPlayerTeam[event.PrimaryPlayer] == nil {
+			return false
+		}
+		if event.SecondaryPlayer != -1 && secondaryPlayerTeam[event.SecondaryPlayer] == nil {
+			return false
+		}
+	}
+	return true
 }

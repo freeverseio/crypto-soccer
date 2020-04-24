@@ -354,3 +354,26 @@ func TestMatchError2ndHalf(t *testing.T) {
 		})
 	}
 }
+
+func TestMatchEventsGeneration(t *testing.T) {
+	t.Parallel()
+	for j := 0; j < 100; j++ {
+		t.Run(fmt.Sprintf("%d", j), func(t *testing.T) {
+			t.Parallel()
+			m := engine.NewMatch()
+			m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+			m.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", j)))
+			m.HomeTeam.TeamID = "274877906944"
+			m.VisitorTeam.TeamID = "274877906945"
+			for i := 0; i < 24; i++ {
+				m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
+				m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+			}
+			for i := 1; i < 4; i++ {
+				m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+				m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+			}
+			assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+		})
+	}
+}
