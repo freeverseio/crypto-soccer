@@ -87,21 +87,27 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber 
 		event := storage.MatchEvent{}
 		if computedEvent.Team == 0 {
 			event.TeamID = b.HomeTeam.TeamID
-			if computedEvent.PrimaryPlayer >= 0 && int(computedEvent.PrimaryPlayer) < len(b.HomeTeam.Players) {
+			if computedEvent.PrimaryPlayer >= 0 {
+				if b.HomeTeam.Players[computedEvent.PrimaryPlayer].PlayerId.Cmp(big.NewInt(10)) != 1 {
+					return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
+				}
 				event.PrimaryPlayerID.String = b.HomeTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
 				event.PrimaryPlayerID.Valid = true
 			}
-			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
+			if computedEvent.SecondaryPlayer >= 0 {
 				event.SecondaryPlayerID.String = b.HomeTeam.Players[computedEvent.SecondaryPlayer].PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}
 		} else if computedEvent.Team == 1 {
 			event.TeamID = b.VisitorTeam.TeamID
-			if computedEvent.PrimaryPlayer >= 0 && int(computedEvent.PrimaryPlayer) < len(b.VisitorTeam.Players) {
+			if computedEvent.PrimaryPlayer >= 0 {
+				if b.VisitorTeam.Players[computedEvent.PrimaryPlayer].PlayerId.Cmp(big.NewInt(10)) != 1 {
+					return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
+				}
 				event.PrimaryPlayerID.String = b.VisitorTeam.Players[computedEvent.PrimaryPlayer].PlayerId.String()
 				event.PrimaryPlayerID.Valid = true
 			}
-			if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
+			if computedEvent.SecondaryPlayer >= 0 {
 				event.SecondaryPlayerID.String = b.VisitorTeam.Players[computedEvent.SecondaryPlayer].PlayerId.String()
 				event.SecondaryPlayerID.Valid = true
 			}

@@ -357,7 +357,7 @@ func TestMatchError2ndHalf(t *testing.T) {
 
 func TestMatchEventsGeneration(t *testing.T) {
 	t.Parallel()
-	for j := 0; j < 100; j++ {
+	for j := 0; j < 10; j++ {
 		t.Run(fmt.Sprintf("%d", j), func(t *testing.T) {
 			t.Parallel()
 			m := engine.NewMatch()
