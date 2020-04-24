@@ -1,8 +1,8 @@
 echo '***************************************************************************************'
 echo copy the following ID to field bootstrap-peer-id in env-configmap.yaml
-echo copy the following encoded private key to field bootstrap-peer-priv-key in secret.yaml
+echo copy the following  private encode it with base64 and then copy it to field bootstrap-peer-priv-key in secret.yaml
 echo '***************************************************************************************'
-ipfs-key | base64 | base64
+ipfs-key | base64
 
 echo
 echo
