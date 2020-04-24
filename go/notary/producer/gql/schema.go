@@ -17,12 +17,12 @@ const Schema = `
 
 	input CancelAuctionInput {
   		signature: String!
-		id: ID!
+		auctionId: ID!
 	}
 
 	input CreateBidInput {
   		signature: String!
-		auction: ID!
+		auctionId: ID!
   		extraPrice: Int!
   		rnd: Int!
   		teamId: String!

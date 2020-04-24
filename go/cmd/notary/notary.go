@@ -14,6 +14,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -69,19 +70,19 @@ func main() {
 		if err != nil {
 			return err
 		}
-		// processor, err := processor.NewProcessor(sto, contracts, privateKey)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
 
 		ch := make(chan interface{}, *bufferSize)
 
 		go gql.NewServer(ch, *contracts)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 
+		market := marketpay.NewSandbox()
 		cn, err := consumer.New(
 			ch,
+			market,
 			db,
+			*contracts,
+			privateKey,
 		)
 		if err != nil {
 			return err

@@ -8,10 +8,9 @@ import (
 	"net/http"
 
 	"fmt"
-)
 
-const sandboxURL = "https://api-sandbox.truust.io/1.0"
-const sandboxPublicKey = "pk_stage_ZkNpNElWeEg="
+	log "github.com/sirupsen/logrus"
+)
 
 type IMarketPay interface {
 	CreateOrder(name string, value string) (*Order, error)
@@ -24,21 +23,22 @@ type MarketPay struct {
 	publicKey string
 }
 
-func NewMarketPay() (*MarketPay, error) {
+func NewSandbox() *MarketPay {
+	sandboxURL := "https://api-sandbox.truust.io/1.0"
+	sandboxPublicKey := "pk_stage_ZkNpNElWeEg="
+
 	return &MarketPay{
 		sandboxURL,
 		sandboxPublicKey,
-	}, nil
-}
-
-func New() (*MarketPay, error) {
-	return NewMarketPay()
+	}
 }
 
 func (b *MarketPay) CreateOrder(
 	name string,
 	value string,
 ) (*Order, error) {
+	log.Infof("[Marketpay] Create order name %v value %v", name, value)
+
 	url := b.endpoint + "/express"
 	method := "POST"
 
@@ -47,7 +47,7 @@ func (b *MarketPay) CreateOrder(
 	_ = writer.WriteField("name", name)
 	_ = writer.WriteField("amount", value)
 	_ = writer.WriteField("source", b.publicKey)
-	_ = writer.WriteField("trustee_confirmed_url", "https://freeverseio.github.io/buyer/success")
+	_ = writer.WriteField("trustee_confirmed_url", "https://www.goalrev.com/purchase")
 	_ = writer.WriteField("trustee_denied_url", "https://freeverseio.github.io/buyer/failure")
 	_ = writer.WriteField("settlor_confirmed_url", "https://freeverseio.github.io/seller/success")
 	_ = writer.WriteField("settlor_denied_url", "https://freeverseio.github.io/seller/failure")
@@ -63,7 +63,7 @@ func (b *MarketPay) CreateOrder(
 	}
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	// req.Header.Add("Accept", "application/json")

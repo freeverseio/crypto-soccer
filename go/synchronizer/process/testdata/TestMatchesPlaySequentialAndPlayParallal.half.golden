@@ -43,7 +43,7 @@ MatchLog: (string) (len=76) "180925284239024806730340468045534158960732937466013
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -64,7 +64,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -85,7 +85,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -106,7 +106,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -127,7 +127,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -148,7 +148,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -169,7 +169,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -190,7 +190,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -211,7 +211,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -232,7 +232,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -253,7 +253,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -274,7 +274,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -295,7 +295,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -316,7 +316,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -337,7 +337,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -358,7 +358,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -379,7 +379,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -400,7 +400,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -421,7 +421,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -442,7 +442,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -463,7 +463,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -484,7 +484,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -505,7 +505,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -526,7 +526,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -547,7 +547,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -633,7 +633,7 @@ MatchLog: (string) (len=76) "180925284239024806730340468042822388344591613818767
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -654,7 +654,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -675,7 +675,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -696,7 +696,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -717,7 +717,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -738,7 +738,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -759,7 +759,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -780,7 +780,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -801,7 +801,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -822,7 +822,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -843,7 +843,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -864,7 +864,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -885,7 +885,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -906,7 +906,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -927,7 +927,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -948,7 +948,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -969,7 +969,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -990,7 +990,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1011,7 +1011,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1032,7 +1032,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1053,7 +1053,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1074,7 +1074,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1095,7 +1095,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1116,7 +1116,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1137,7 +1137,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1207,7 +1207,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 6,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 5,
@@ -1216,7 +1218,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) true,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 9,
-SecondaryPlayer: (int16) 0
+SecondaryPlayer: (int16) 0,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) (len=11) "21342314523"
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 8,
@@ -1225,7 +1229,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 4,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 15,
@@ -1234,7 +1240,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 3,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 18,
@@ -1243,7 +1251,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 10,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 21,
@@ -1252,7 +1262,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) true,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 11,
-SecondaryPlayer: (int16) 0
+SecondaryPlayer: (int16) 0,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) (len=11) "21342314523"
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 24,
@@ -1261,7 +1273,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 8,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 31,
@@ -1270,7 +1284,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 7,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 34,
@@ -1279,7 +1295,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 7,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 37,
@@ -1288,7 +1306,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) true,
 IsGoal: (bool) true,
 PrimaryPlayer: (int16) 8,
-SecondaryPlayer: (int16) 8
+SecondaryPlayer: (int16) 8,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) (len=11) "21342314523"
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 43,
@@ -1297,7 +1317,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) true,
 IsGoal: (bool) true,
 PrimaryPlayer: (int16) 12,
-SecondaryPlayer: (int16) 12
+SecondaryPlayer: (int16) 12,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) (len=11) "21342314523"
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 44,
@@ -1306,7 +1328,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 4,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 31,
@@ -1315,7 +1339,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 8,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 35,
@@ -1324,7 +1350,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 8,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 33,
@@ -1333,7 +1361,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 10,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 }
 }
 },
@@ -1381,7 +1411,7 @@ MatchLog: (string) (len=76) "180925284239024806730340468042817928195551907313844
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1402,7 +1432,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1423,7 +1453,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1444,7 +1474,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1465,7 +1495,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1486,7 +1516,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1507,7 +1537,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1528,7 +1558,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1549,7 +1579,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1570,7 +1600,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1591,7 +1621,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1612,7 +1642,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1633,7 +1663,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1654,7 +1684,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1675,7 +1705,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1696,7 +1726,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1717,7 +1747,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1738,7 +1768,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1759,7 +1789,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1780,7 +1810,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1801,7 +1831,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1822,7 +1852,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1843,7 +1873,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1864,7 +1894,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1885,7 +1915,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 1,
 DayOfBirth: (uint64) 0,
@@ -1971,7 +2001,7 @@ MatchLog: (string) (len=76) "180925284239024806730340468043263568516693013207614
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -1992,7 +2022,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2013,7 +2043,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2034,7 +2064,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2055,7 +2085,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2076,7 +2106,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2097,7 +2127,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2118,7 +2148,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2139,7 +2169,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2160,7 +2190,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2181,7 +2211,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2202,7 +2232,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2223,7 +2253,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2244,7 +2274,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2265,7 +2295,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2286,7 +2316,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2307,7 +2337,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2328,7 +2358,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2349,7 +2379,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2370,7 +2400,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2391,7 +2421,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2412,7 +2442,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2433,7 +2463,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2454,7 +2484,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2475,7 +2505,7 @@ Tiredness: (int) 0
 }),
 (*engine.Player)({
 Player: (storage.Player) {
-PlayerId: (*big.Int)(<nil>),
+PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
 Potential: (uint64) 6,
 DayOfBirth: (uint64) 0,
@@ -2545,7 +2575,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 4,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 4,
@@ -2554,7 +2586,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 5,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 9,
@@ -2563,7 +2597,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 6,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 14,
@@ -2572,7 +2608,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 7,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 19,
@@ -2581,7 +2619,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 8,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 20,
@@ -2590,7 +2630,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) true,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 4,
-SecondaryPlayer: (int16) 0
+SecondaryPlayer: (int16) 0,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) (len=11) "21342314523"
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 25,
@@ -2599,7 +2641,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 10,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 30,
@@ -2608,7 +2652,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) true,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 6,
-SecondaryPlayer: (int16) 0
+SecondaryPlayer: (int16) 0,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) (len=11) "21342314523"
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 35,
@@ -2617,7 +2663,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 5,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 36,
@@ -2626,7 +2674,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 6,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 40,
@@ -2635,7 +2685,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 7,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 47,
@@ -2644,7 +2696,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 6,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 27,
@@ -2653,7 +2707,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 7,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 12,
@@ -2662,7 +2718,9 @@ Team: (int16) 0,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 10,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 47,
@@ -2671,7 +2729,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 10,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 5,
@@ -2680,7 +2740,9 @@ Team: (int16) 1,
 ManagesToShoot: (bool) false,
 IsGoal: (bool) false,
 PrimaryPlayer: (int16) 10,
-SecondaryPlayer: (int16) -1
+SecondaryPlayer: (int16) -1,
+PrimaryPlayerID: (string) (len=11) "21342314523",
+SecondaryPlayerID: (string) ""
 }
 }
 }

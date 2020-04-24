@@ -3,37 +3,29 @@ CREATE TABLE auctions (
     id TEXT NOT NULL,
     player_id TEXT NOT NULL,
     currency_id INT NOT NULL,
-    price INT NOT NULL,
-    rnd INT NOT NULL,
+    price BIGINT NOT NULL,
+    rnd BIGINT NOT NULL,
     valid_until BIGINT NOT NULL,
     signature TEXT NOT NULL,
     state auction_state NOT NULL,
-    state_extra TEXT NOT NULL DEFAULT '',
-    payment_url TEXT NOT NULL DEFAULT '',
+    state_extra TEXT NOT NULL,
+    payment_url TEXT NOT NULL,
     seller TEXT NOT NULL,
     PRIMARY KEY(id)
 );
 
-CREATE TABLE bid_states(
-    state TEXT NOT NULL PRIMARY KEY
-);
-INSERT INTO bid_states(state) VALUES ('ACCEPTED');
-INSERT INTO bid_states(state) VALUES ('REFUSED');
-INSERT INTO bid_states(state) VALUES ('PAYING');
-INSERT INTO bid_states(state) VALUES ('PAID');
-INSERT INTO bid_states(state) VALUES ('FAILED');
-
+CREATE TYPE bid_state AS ENUM ('accepted','paying','paid','failed');
 CREATE TABLE bids (
     auction_id TEXT NOT NULL REFERENCES auctions(id),
     extra_price INT NOT NULL,
     rnd INT NOT NULL,
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
-    state TEXT NOT NULL REFERENCES bid_states(state),
-    state_extra TEXT NOT NULL DEFAULT '',
-    payment_id TEXT NOT NULL DEFAULT '',
-    payment_url TEXT NOT NULL DEFAULT '',
-    payment_deadline TEXT NOT NULL DEFAULT '0',
+    state bid_state NOT NULL,
+    state_extra TEXT NOT NULL,
+    payment_id TEXT NOT NULL,
+    payment_url TEXT NOT NULL,
+    payment_deadline TEXT NOT NULL,
     PRIMARY KEY(auction_id, extra_price)
 );
 
