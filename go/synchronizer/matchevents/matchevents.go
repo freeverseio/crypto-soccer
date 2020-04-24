@@ -337,3 +337,7 @@ func (b MatchEvents) DumpState() string {
 	}
 	return state
 }
+
+func (b MatchEvents) arePlayerPositionConsistent() bool {
+
+}
