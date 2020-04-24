@@ -159,10 +159,9 @@ def getSavedPlayers(filename):
         result = json.load(json_file)
     return result
 
-def plotSkill(name, fixXrange = True):
-    skill = [p[name] for p in players["allPlayers"]["nodes"]]
+def plotHist(vec, name, fixXrange, nBins = 50):
     fig = plt.figure()
-    plt.hist(skill, bins = 50)
+    plt.hist(vec, bins = nBins)
     fig.suptitle('All players at end of League 1', fontsize=20)
     if fixXrange:
         plt.xlim(xmin=0, xmax=3500)
@@ -172,11 +171,18 @@ def plotSkill(name, fixXrange = True):
     fig.savefig(name + '.png')
     # plt.show()
 
+def plotSkill(name, fixXrange = True):
+    skill = [p[name] for p in players["allPlayers"]["nodes"]]
+    plotHist(skill, name, fixXrange)
+
 def getTopN(name, n):
     skill = np.array([p[name] for p in players["allPlayers"]["nodes"]])
     sortedIdxs = np.argsort(skill)
     return (skill[sortedIdxs[-n:]], sortedIdxs)
 
+
+def getSumSkills(player, skillNames):
+    return np.array([player[name] for name in skillNames]).sum()
 
 # saveAllPlayers(prodURL, "allplayersprod.txt")
 
@@ -191,6 +197,13 @@ if False:
     plotSkill("dayOfBirth", False)
     for name in skillNames:
         plotSkill(name)
+    sums = [getSumSkills(p, skillNames)/5 for p in players["allPlayers"]["nodes"]]
+    plotHist(sums, "avgSkill", False, 50)
+    sums2 = [s for s in sums if s < 990]
+    plotHist(sums2, "avgSkillBelow1000", False, 50)
+    sums1 = [s for s in sums if s > 1010]
+    plotHist(sums1, "avgSkillAbove1000", False, 50)
+
 
 
 ########################
@@ -210,9 +223,6 @@ if False:
 ########################
 # PLOT Level vs potential
 ########################
-
-def getSumSkills(player, skillNames):
-    return np.array([player[name] for name in skillNames]).sum()
 
 avgSkills = np.zeros(10)
 
