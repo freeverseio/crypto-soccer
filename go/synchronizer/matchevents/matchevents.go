@@ -58,8 +58,8 @@ func NewMatchEvents(
 		return nil, err
 	}
 
-	if !events.ArePlayerPositionConsistent(homeTeamPlayerIDs, visitorTeamPlayerIDs) {
-		return nil, errors.New("inconsistent events/player")
+	if err := events.populateWithPlayerID(homeTeamPlayerIDs, visitorTeamPlayerIDs); err != nil {
+		return nil, err
 	}
 
 	return events, nil
@@ -159,7 +159,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 			typeOfEvent = EVNT_RED
 		}
 		outOfGameMinute = int16(rounds2mins[matchLog[6]])
-		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, NULL}
+		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 		events = append(events, thisEvent)
 	}
 
@@ -182,7 +182,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := EVNT_YELLOW
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 		events = append(events, thisEvent)
 	}
 
@@ -197,7 +197,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		if yellowCardPlayer == outOfGamePlayer {
 			if firstYellowCoincidesWithRed {
 				minute := outOfGameMinute
-				thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
+				thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 				events = append(events, thisEvent)
 				return events
 			} else {
@@ -207,7 +207,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		// convert player in the lineUp to shirtNum before storing it as match event:
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 		events = append(events, thisEvent)
 	}
 	return events
@@ -288,7 +288,7 @@ func addSubstitutions(team int16, events []MatchEvent, matchLog [15]uint32, roun
 			leavingPlayer := toShirtNum(substitutions[i], lineup, NULL, NOONE)
 			enteringPlayer := toShirtNum(uint8(11+i), lineup, NULL, NOONE)
 			typeOfEvent := EVNT_SUBST
-			thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer}
+			thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer, "", ""}
 			events = append(events, thisEvent)
 		}
 	}
@@ -343,14 +343,14 @@ func (b MatchEvents) DumpState() string {
 	return state
 }
 
-func (b MatchEvents) ArePlayerPositionConsistent(
+func (b *MatchEvents) populateWithPlayerID(
 	homeTeamPlayerIDs [25]*big.Int,
 	visitorTeamPlayerIDs [25]*big.Int,
-) bool {
-	for _, event := range b {
+) error {
+	for i := range *b {
 		var primaryPlayerTeam [25]*big.Int
 		var secondaryPlayerTeam [25]*big.Int
-		if event.Team == 0 {
+		if (*b)[i].Team == 0 {
 			primaryPlayerTeam = homeTeamPlayerIDs
 			secondaryPlayerTeam = visitorTeamPlayerIDs
 		} else {
@@ -358,12 +358,18 @@ func (b MatchEvents) ArePlayerPositionConsistent(
 			secondaryPlayerTeam = visitorTeamPlayerIDs
 		}
 
-		if event.PrimaryPlayer != -1 && primaryPlayerTeam[event.PrimaryPlayer] == nil {
-			return false
+		if (*b)[i].PrimaryPlayer != -1 {
+			if primaryPlayerTeam[(*b)[i].PrimaryPlayer] == nil {
+				return errors.New("inconsistent event position/playerID")
+			}
+			(*b)[i].PrimaryPlayerID = primaryPlayerTeam[(*b)[i].PrimaryPlayer].String()
 		}
-		if event.SecondaryPlayer != -1 && secondaryPlayerTeam[event.SecondaryPlayer] == nil {
-			return false
+		if (*b)[i].SecondaryPlayer != -1 {
+			if secondaryPlayerTeam[(*b)[i].SecondaryPlayer] == nil {
+				return errors.New("inconsistent event position/playerID")
+			}
+			(*b)[i].SecondaryPlayerID = secondaryPlayerTeam[(*b)[i].SecondaryPlayer].String()
 		}
 	}
-	return true
+	return nil
 }
