@@ -360,13 +360,13 @@ func (b *MatchEvents) populateWithPlayerID(
 
 		if (*b)[i].PrimaryPlayer != -1 {
 			if primaryPlayerTeam[(*b)[i].PrimaryPlayer] == nil {
-				return errors.New("inconsistent event position/playerID")
+				return fmt.Errorf("inconsistent event %+v", (*b)[i])
 			}
 			(*b)[i].PrimaryPlayerID = primaryPlayerTeam[(*b)[i].PrimaryPlayer].String()
 		}
 		if (*b)[i].SecondaryPlayer != -1 {
 			if secondaryPlayerTeam[(*b)[i].SecondaryPlayer] == nil {
-				return errors.New("inconsistent event position/playerID")
+				return fmt.Errorf("inconsistent event %+v", (*b)[i])
 			}
 			(*b)[i].SecondaryPlayerID = secondaryPlayerTeam[(*b)[i].SecondaryPlayer].String()
 		}
