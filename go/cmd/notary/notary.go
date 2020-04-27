@@ -27,6 +27,7 @@ func main() {
 	debug := flag.Bool("debug", false, "print debug logs")
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
 	processWait := flag.Int("process_wait", 5, "secs to wait for next process")
+	testMarket := flag.Bool("testMarket", false, "using test market")
 	flag.Parse()
 
 	log.Infof("[PARAM] postgres                   : %v", *postgresURL)
@@ -41,6 +42,7 @@ func main() {
 	log.Infof("[PARAM] Buffer size                : %v", *bufferSize)
 	log.Infof("[PARAM] Process wait               : %v", *processWait)
 	log.Infof("[PARAM] debug                      : %v", *debug)
+	log.Infof("[PARAM] test market                : %v", *testMarket)
 	log.Infof("-------------------------------------------------------------------")
 
 	if *debug {
@@ -76,7 +78,13 @@ func main() {
 		go gql.NewServer(ch, *contracts)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 
-		market := marketpay.NewSandbox()
+		var market marketpay.IMarketPay
+		if *testMarket {
+			market = marketpay.NewSandbox()
+		} else {
+			market = marketpay.New()
+		}
+
 		cn, err := consumer.New(
 			ch,
 			market,
