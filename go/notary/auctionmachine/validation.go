@@ -9,7 +9,7 @@ import (
 )
 
 func (b *AuctionMachine) ProcessValidation(market marketpay.IMarketPay) error {
-	if b.State() != storage.AuctionWithdrableBySeller {
+	if b.State() != storage.AuctionValidation {
 		return fmt.Errorf("Wrong state %v", b.State())
 	}
 
@@ -26,11 +26,11 @@ func (b *AuctionMachine) ProcessValidation(market marketpay.IMarketPay) error {
 
 	switch order.Status {
 	case "PENDING_RELEASE":
-		log.Infof("auction %v pending release", b.auction.ID)
+		log.Infof("auction[%v|%v] pending release", b.auction.ID, b.auction.State)
 	case "RELEASED":
 		b.SetState(storage.AuctionEnded, "")
 	default:
-		log.Errorf("Unknown state %v", order.Status)
+		log.Errorf("auction[%v|%v] order in unknown state %v", b.auction.ID, b.auction.State, order.Status)
 	}
 
 	return nil

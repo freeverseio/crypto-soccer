@@ -29,7 +29,7 @@ func (b *AuctionMachine) ProcessWithdrawableBySeller(market marketpay.IMarketPay
 	case "PENDING_VALIDATE":
 		b.SetState(storage.AuctionValidation, "")
 	default:
-		log.Errorf("Unknown state %v", order.Status)
+		log.Errorf("Auction[%v] %v with order in unknow state %v", b.auction.ID, b.auction.State, order.Status)
 	}
 
 	return nil
