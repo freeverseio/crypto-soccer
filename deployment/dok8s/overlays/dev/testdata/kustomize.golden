@@ -426,6 +426,7 @@ spec:
         - $(MARKET_CONTRACT_ADDRESS)
         - -constantsgetters_address
         - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        - -realMarket
         envFrom:
         - configMapRef:
             name: freeverse-configmap
