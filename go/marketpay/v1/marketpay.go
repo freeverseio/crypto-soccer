@@ -23,6 +23,16 @@ type MarketPay struct {
 	publicKey string
 }
 
+func New() *MarketPay {
+	sandboxURL := "https://api.truust.io/"
+	sandboxPublicKey := "pk_production_Q2F2VlMxSEk="
+
+	return &MarketPay{
+		sandboxURL,
+		sandboxPublicKey,
+	}
+}
+
 func NewSandbox() *MarketPay {
 	sandboxURL := "https://api-sandbox.truust.io/1.0"
 	sandboxPublicKey := "pk_stage_ZkNpNElWeEg="
