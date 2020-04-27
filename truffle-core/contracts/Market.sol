@@ -63,6 +63,21 @@ contract Market is MarketView {
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
+    function transferBuyNowPlayer(
+        uint256 playerId,
+        uint256 targetTeamId
+     ) public {
+        // isAcademy checks that player isSpecial, and not written.
+        require(isAcademyPlayer(playerId), "only Academy players can be sold via buy-now");
+        require(getTargetTeamId(playerId) == 0, "cannot have buy-now players with non-null targetTeamId");
+
+        // note that teamExists(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
+        (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
+        require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
+        transferPlayer(playerId, targetTeamId);
+        decreaseMaxAllowedAcquisitions(targetTeamId);
+    }
+    
     function transferPromoPlayer(
         uint256 playerId,
         uint256 validUntil,
@@ -73,15 +88,14 @@ contract Market is MarketView {
      ) public {
         require(validUntil > now, "validUntil is in the past");
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
+        require(isAcademyPlayer(playerId), "only Academy Players can be offered as promo players");
         uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
         require(!isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
         uint256 targetTeamId = getTargetTeamId(playerId);
         // require that team does not have any constraint from friendlies
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
         require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
-        // testing about the target team is already done in _assets.transferPlayer
-        require(teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
-        require(!isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
+        // testing require(teamExists(targetTeamId) and  require(!isBotTeam(targetTeamId) is already done in _assets.transferPlayer:
                 
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
         require(getOwnerTeam(targetTeamId) == 

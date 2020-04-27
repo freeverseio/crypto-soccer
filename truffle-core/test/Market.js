@@ -1027,6 +1027,96 @@ contract("Market", accounts => {
 
   });
 
+  it("buy now player", async () => {
+    // TODO: add test that it fails if not sent from Academy address.
+    // CURRENTLY: it works regardless of: await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    
+    playerId = await createSpecialPlayerId(id = 4312432432);
+    // player currently does not exist:
+    exists = await assets.playerExists(playerId).should.be.fulfilled;
+    exists.should.be.equal(false);
+
+    // it currently has no owner:
+    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
+    
+    // set target to a bot team => should fail
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 2);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
+
+    // set target to a human team => should work
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
+    
+    owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    owner.should.be.equal(buyerAccount.address);
+
+    // a non academy player would not work
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
+  });
+
+  it("promo players: cannot be used to transfer players that already belong to humans", async () => {
+    // We try to transfer an existing player as if it was a promo player
+    // Note that teamIdx = 0 => seller, teamIdx = 1 => buyer
+    // ATTEMPT 1: Human to null team
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+
+    result = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    result.should.be.equal(sellerAccount.address);
+
+    sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    var sigSellerRS = [sigSeller.r, sigSeller.s];
+    var sigBuyerRS  = [sigBuyer.r, sigBuyer.s];
+
+    exists = await assets.playerExists(playerId).should.be.fulfilled;
+    exists.should.be.equal(true);
+
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    // this one fails because targetTeamId = 0 for a standard playerId created as part of a league.
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.rejected;
+    
+    // ATTEMPT 2: Human to bot team: player in teamIdx = 0, trying to transfer to a bot teamIdx = 2
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 2);
+    result = await market.getOwnerTeam(targetTeamId).should.be.fulfilled;
+    result.should.be.equal('0x0000000000000000000000000000000000000000')
+
+    playerId = await market.setTargetTeamId(playerId, targetTeamId).should.be.fulfilled;
+    sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+
+    sigSellerRS = [sigSeller.r, sigSeller.s];
+    sigBuyerRS  = [sigBuyer.r, sigBuyer.s];
+
+    exists = await assets.playerExists(playerId).should.be.fulfilled;
+    exists.should.be.equal(true);
+
+    // fails because targetTeam is a bot
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.rejected;
+
+    // ATTEMPT 3: Human to human team: player in teamIdx = 0, trying to transfer to a bot teamIdx = 1
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+
+    // make sure player belongs to "seller"
+    result = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    result.should.be.equal(sellerAccount.address);
+
+    result = await market.getOwnerTeam(targetTeamId).should.be.fulfilled;
+    result.should.be.equal(buyerAccount.address)
+
+    playerId = await market.setTargetTeamId(playerId, targetTeamId).should.be.fulfilled;
+    sigSeller = await freeverseAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await buyerAccount.sign(marketUtils.concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    var sigSellerRS = [sigSeller.r, sigSeller.s];
+    var sigBuyerRS  = [sigBuyer.r, sigBuyer.s];
+
+    exists = await assets.playerExists(playerId).should.be.fulfilled;
+    exists.should.be.equal(true);
+
+    // should be rejected because it is simply not an Academy player
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.rejected;
+  });
+  
   it("promo players: completes an offering and accepting", async () => {
     playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
 
