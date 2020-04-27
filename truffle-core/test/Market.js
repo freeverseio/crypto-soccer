@@ -298,6 +298,10 @@ contract("Market", accounts => {
 
     nTransit = await market.getNPlayersInTransitInTeam(buyerTeamId).should.be.fulfilled;
     nTransit.toNumber().should.be.equal(2);
+
+    // transfer fails because team is still full
+    await market.completePlayerTransit(playerIds[nPlayersToBuy-1]).should.be.rejected;
+    await market.completePlayerTransit(playerIds[nPlayersToBuy-2]).should.be.rejected;
     
   });
 
