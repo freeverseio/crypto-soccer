@@ -53,6 +53,8 @@ func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 	case storage.AuctionWithdrableByBuyer:
 		log.Warn("auctionmachine AuctionWithdrabeByBuyer not implemented")
 		return nil
+	case storage.AuctionValidation:
+		return b.ProcessValidation(market)
 	case storage.AuctionCancelled:
 		return nil
 	case storage.AuctionFailed:
@@ -86,4 +88,11 @@ func (b *AuctionMachine) SetState(state storage.AuctionState, extra string) {
 	}
 	b.auction.State = state
 	b.auction.StateExtra = extra
+}
+
+func (b AuctionMachine) checkState(state storage.AuctionState) error {
+	if b.auction.State != state {
+		return fmt.Errorf("auction[%v|%v] is not in state %v", b.auction.ID, b.auction.State, state)
+	}
+	return nil
 }

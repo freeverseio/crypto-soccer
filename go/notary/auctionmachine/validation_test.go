@@ -9,53 +9,77 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestWithDrawableBySellerPendingValidate(t *testing.T) {
+func TestValidationAuctionInvalidState(t *testing.T) {
 	market := marketpay.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
-	auction.State = storage.AuctionWithdrableBySeller
 	bid := storage.NewBid()
 	bid.State = storage.BidPaid
 	bid.PaymentID = order.TrusteeShortlink.Hash
 	bids := []storage.Bid{*bid}
-	order.Status = "PENDING_VALIDATE"
+
+	auction.State = storage.AuctionWithdrableBySeller
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
+	assert.Error(t, m.ProcessValidation(market), "auction[|withadrable_by_seller] is not in state validation")
+
+	auction.State = storage.AuctionAssetFrozen
+	m, err = auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.Error(t, m.ProcessValidation(market), "auction[|asset_frozen] is not in state validation")
+}
+
+func TestValidationAuctionValidOrderInvalidState(t *testing.T) {
+	market := marketpay.NewMockMarketPay()
+	order, err := market.CreateOrder("Bellaciao", "1000.0")
+	assert.NilError(t, err)
+	auction := storage.NewAuction()
+	bid := storage.NewBid()
+	bid.State = storage.BidPaid
+	bid.PaymentID = order.TrusteeShortlink.Hash
+	bids := []storage.Bid{*bid}
+
+	order.Status = "DRAFT"
+	auction.State = storage.AuctionValidation
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.NilError(t, m.ProcessValidation(market))
 	assert.Equal(t, m.State(), storage.AuctionValidation)
 }
 
-func TestWithDrawableBySellerPendingRelease(t *testing.T) {
+func TestValidationAuctionValidOrderPendingRelease(t *testing.T) {
 	market := marketpay.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
-	auction.State = storage.AuctionWithdrableBySeller
 	bid := storage.NewBid()
 	bid.State = storage.BidPaid
 	bid.PaymentID = order.TrusteeShortlink.Hash
 	bids := []storage.Bid{*bid}
+
 	order.Status = "PENDING_RELEASE"
+	auction.State = storage.AuctionValidation
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
-	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)
+	assert.NilError(t, m.ProcessValidation(market))
+	assert.Equal(t, m.State(), storage.AuctionValidation)
 }
 
-func TestWithDrawableBySellerReleased(t *testing.T) {
+func TestValidationAuctionValidOrderReleased(t *testing.T) {
 	market := marketpay.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
-	auction.State = storage.AuctionWithdrableBySeller
 	bid := storage.NewBid()
 	bid.State = storage.BidPaid
 	bid.PaymentID = order.TrusteeShortlink.Hash
 	bids := []storage.Bid{*bid}
+
 	order.Status = "RELEASED"
+	auction.State = storage.AuctionValidation
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
-	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)
+	assert.NilError(t, m.ProcessValidation(market))
+	assert.Equal(t, m.State(), storage.AuctionEnded)
 }
