@@ -172,7 +172,7 @@ contract('Stakers', (accounts) => {
       assert.equal(0, (await stakers.level()).toNumber());
       await expect.passes(
         stakers.update(level = 0, alice, {from:gameAddr}),
-        "alice failed to update"
+        "alice failed to update because he lied in previous game"
       )
 
       // L1
