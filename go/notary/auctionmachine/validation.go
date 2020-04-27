@@ -5,11 +5,10 @@ import (
 
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *AuctionMachine) ProcessWithdrawableBySeller(market marketpay.IMarketPay) error {
+func (b *AuctionMachine) ProcessValidation(market marketpay.IMarketPay) error {
 	if b.State() != storage.AuctionWithdrableBySeller {
 		return fmt.Errorf("Wrong state %v", b.State())
 	}
@@ -26,8 +25,10 @@ func (b *AuctionMachine) ProcessWithdrawableBySeller(market marketpay.IMarketPay
 	}
 
 	switch order.Status {
-	case "PENDING_VALIDATE":
-		b.SetState(storage.AuctionValidation, "")
+	case "PENDING_RELEASE":
+		log.Infof("auction %v pending release", b.auction.ID)
+	case "RELEASED":
+		b.SetState(storage.AuctionEnded, "")
 	default:
 		log.Errorf("Unknown state %v", order.Status)
 	}

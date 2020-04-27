@@ -53,6 +53,8 @@ func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 	case storage.AuctionWithdrableByBuyer:
 		log.Warn("auctionmachine AuctionWithdrabeByBuyer not implemented")
 		return nil
+	case storage.AuctionValidation:
+		return b.ProcessValidation(market)
 	case storage.AuctionCancelled:
 		return nil
 	case storage.AuctionFailed:

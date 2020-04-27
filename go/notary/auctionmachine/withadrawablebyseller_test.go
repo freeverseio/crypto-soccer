@@ -23,7 +23,7 @@ func TestWithDrawableBySellerPendingValidate(t *testing.T) {
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
-	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)
+	assert.Equal(t, m.State(), storage.AuctionValidation)
 }
 
 func TestWithDrawableBySellerPendingRelease(t *testing.T) {
@@ -40,7 +40,7 @@ func TestWithDrawableBySellerPendingRelease(t *testing.T) {
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
-	assert.Equal(t, m.State(), storage.AuctionEnded)
+	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)
 }
 
 func TestWithDrawableBySellerReleased(t *testing.T) {
@@ -57,5 +57,5 @@ func TestWithDrawableBySellerReleased(t *testing.T) {
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
-	assert.Equal(t, m.State(), storage.AuctionEnded)
+	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)
 }
