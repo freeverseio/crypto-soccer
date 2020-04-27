@@ -350,23 +350,33 @@ func (b *MatchEvents) populateWithPlayerID(
 	for i := range *b {
 		var primaryPlayerTeam [25]*big.Int
 		var secondaryPlayerTeam [25]*big.Int
+		var tacklerPlayerTeam [25]*big.Int
 		if (*b)[i].Team == 0 {
 			primaryPlayerTeam = homeTeamPlayerIDs
-			secondaryPlayerTeam = visitorTeamPlayerIDs
+			secondaryPlayerTeam = homeTeamPlayerIDs
+			tacklerPlayerTeam = visitorTeamPlayerIDs
 		} else {
 			primaryPlayerTeam = visitorTeamPlayerIDs
 			secondaryPlayerTeam = visitorTeamPlayerIDs
+			tacklerPlayerTeam = homeTeamPlayerIDs
 		}
 
 		if (*b)[i].PrimaryPlayer != -1 {
-			if primaryPlayerTeam[(*b)[i].PrimaryPlayer] == nil {
-				return errors.New("inconsistent event position/playerID")
+			if (*b)[i].Type == EVNT_ATTACK && !(*b)[i].ManagesToShoot {
+				if tacklerPlayerTeam[(*b)[i].PrimaryPlayer] == nil {
+					return fmt.Errorf("inconsistent event %+v", (*b)[i])
+				}
+				(*b)[i].PrimaryPlayerID = tacklerPlayerTeam[(*b)[i].PrimaryPlayer].String()
+			} else {
+				if primaryPlayerTeam[(*b)[i].PrimaryPlayer] == nil {
+					return fmt.Errorf("inconsistent event %+v", (*b)[i])
+				}
+				(*b)[i].PrimaryPlayerID = primaryPlayerTeam[(*b)[i].PrimaryPlayer].String()
 			}
-			(*b)[i].PrimaryPlayerID = primaryPlayerTeam[(*b)[i].PrimaryPlayer].String()
 		}
 		if (*b)[i].SecondaryPlayer != -1 {
 			if secondaryPlayerTeam[(*b)[i].SecondaryPlayer] == nil {
-				return errors.New("inconsistent event position/playerID")
+				return fmt.Errorf("inconsistent event %+v", (*b)[i])
 			}
 			(*b)[i].SecondaryPlayerID = secondaryPlayerTeam[(*b)[i].SecondaryPlayer].String()
 		}
