@@ -9,8 +9,8 @@ import (
 )
 
 func (b *AuctionMachine) ProcessValidation(market marketpay.IMarketPay) error {
-	if b.State() != storage.AuctionValidation {
-		return fmt.Errorf("Wrong state %v", b.State())
+	if err := b.checkState(storage.AuctionValidation); err != nil {
+		return err
 	}
 
 	paidBids := storage.FindBids(b.bids, storage.BidPaid)

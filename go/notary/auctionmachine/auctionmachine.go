@@ -89,3 +89,10 @@ func (b *AuctionMachine) SetState(state storage.AuctionState, extra string) {
 	b.auction.State = state
 	b.auction.StateExtra = extra
 }
+
+func (b AuctionMachine) checkState(state storage.AuctionState) error {
+	if b.auction.State != state {
+		return fmt.Errorf("auction[%v|%v] is not in state %v", b.auction.ID, b.auction.State, state)
+	}
+	return nil
+}

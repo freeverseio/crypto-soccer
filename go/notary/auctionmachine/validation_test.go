@@ -22,12 +22,12 @@ func TestValidationAuctionInvalidState(t *testing.T) {
 	auction.State = storage.AuctionWithdrableBySeller
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.Error(t, m.ProcessValidation(market), "Wrong state withadrable_by_seller")
+	assert.Error(t, m.ProcessValidation(market), "auction[|withadrable_by_seller] is not in state validation")
 
 	auction.State = storage.AuctionAssetFrozen
 	m, err = auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.Error(t, m.ProcessValidation(market), "Wrong state asset_frozen")
+	assert.Error(t, m.ProcessValidation(market), "auction[|asset_frozen] is not in state validation")
 }
 
 func TestValidationAuctionValidOrderInvalidState(t *testing.T) {
