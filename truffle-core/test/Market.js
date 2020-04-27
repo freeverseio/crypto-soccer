@@ -279,6 +279,29 @@ contract("Market", accounts => {
     buyerRnd = 1243523;
 
   });
+  
+  
+  it("normal players, go above 25, and get rid of player", async () => {
+    console.log(market.address)
+    playerIds = [];
+    nPlayersToBuy = 9;
+    for (i = 0; i < nPlayersToBuy; i++) {
+      playerIds.push(playerId.add(web3.utils.toBN(i))); 
+      tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerIds[i], sellerAccount).should.be.fulfilled;
+    }
+    for (i = 0; i < nPlayersToBuy; i++) {
+      tx = await completePlayerAuction(
+        currencyId, price,  sellerRnd, validUntil, playerIds[i], 
+        extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+      ).should.be.fulfilled;
+    }
+
+    nTransit = await market.getNPlayersInTransitInTeam(buyerTeamId).should.be.fulfilled;
+    nTransit.toNumber().should.be.equal(2);
+    
+  });
+
+  return
 
   it("crypto flow with player" , async () => {
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
