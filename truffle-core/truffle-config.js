@@ -1,5 +1,4 @@
 const HDWalletProvider = require("truffle-hdwallet-provider");
-// const LedgerWalletProvider = require('@umaprotocol/truffle-ledger-provider');
 
 module.exports = {
   compilers: {
@@ -25,16 +24,17 @@ module.exports = {
         "a98c8730d71a46bcc40fb06fc68142edbc2fdf17b89197db0fbe41d35718d5fc",
         "https://dai.poa.network"
       ),
-      network_id: 100
+      network_id: 100,
+      gasPrice: 1000000000
     },
-    // xdailedger: {
-    //   provider: () => new LedgerWalletProvider({
-    //     networkId: 100, // mainnet
-    //     path: "44'/60'/0'/0/0", // ledger default derivation path
-    //   }, 'https://dai.poa.network'),
-    //   port: 443,
-    //   network_id: "100",
-    // },
+    xdaidev: { // 0xA9c0F76cA045163E28afDdFe035ec76a44f5C1F3
+      provider: new HDWalletProvider(
+        "a98c8730d71a46bcc40fb06fc68142edbc2fdf17b89197db0fbe41d35718d5fc",
+        "https://dai.poa.network"
+      ),
+      network_id: 100,
+      gasPrice: 1000000000
+    },
     local: { // 0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7
       provider: new HDWalletProvider(
         "FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85",
@@ -42,7 +42,7 @@ module.exports = {
       ),
       network_id: 63819
     },
-    dev: { // 0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7
+    dev: { // 0xA9c0F76cA045163E28afDdFe035ec76a44f5C1F3
       provider: new HDWalletProvider(
         "FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85",
         "https://k8s.gorengine.com/xdai"

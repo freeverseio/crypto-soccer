@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -27,7 +28,6 @@ func main() {
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
-	// sender := flag.String("sender", "sender address", "")
 	flag.Parse()
 
 	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
@@ -47,6 +47,7 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 	auth := bind.NewKeyedTransactor(privateKey)
+	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
 	log.Infof("Address : %v", crypto.PubkeyToAddress(privateKey.PublicKey).Hex())
 
 	log.Info("Creating Updates bindings to: ", *updatesContractAddress)

@@ -1,0 +1,22 @@
+package consumer
+
+import (
+	"database/sql"
+	"fmt"
+
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+)
+
+func CancelAuction(tx *sql.Tx, in input.CancelAuctionInput) error {
+	auction, err := storage.AuctionByID(tx, string(in.AuctionId))
+	if err != nil {
+		return err
+	}
+	if auction.State != storage.AuctionStarted {
+		return fmt.Errorf("not possible to cancel an auction in state %v", auction.State)
+	}
+
+	auction.State = storage.AuctionCancelled
+	return auction.Update(tx)
+}

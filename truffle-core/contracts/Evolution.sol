@@ -68,13 +68,14 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         for (uint8 posInHalf = 0; posInHalf < 3; posInHalf++) {
             // First: those who joined at half time:
             // note that getHalfTimeSubs: returns lineUp[p]+1 for halftime subs, 0 = NO_SUBS
+            // let us keep with this meaning, and store: joinedAt2ndHalf = shirtNum+1
             uint8 enteringPlayer = getHalfTimeSubs(matchLog, posInHalf); 
             if (enteringPlayer > 0) {
-                joinedAt2ndHalf[nJoined] = enteringPlayer-1;
+                joinedAt2ndHalf[nJoined] = enteringPlayer;
                 nJoined += 1;
             }
             if (getInGameSubsHappened(matchLog, posInHalf, true) == CHG_HAPPENED) {
-                joinedAt2ndHalf[nJoined]  = lineUp[11 + posInHalf];
+                joinedAt2ndHalf[nJoined]  = lineUp[11 + posInHalf] + 1;
                 nJoined += 1;
             }
         }
@@ -91,12 +92,13 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     }
 
     function hasPlayedThisMatch(uint256 skills, uint8 p, uint8[3] memory joinedAt2ndHalf) public pure returns(bool) {
+        // recall the meaning: joinedAt2ndHalf = shirtNum+1, so that joinedAt2ndHalf == 0 => NO SUBS
         return (
                     getAlignedEndOfFirstHalf(skills) || 
                     getSubstitutedFirstHalf(skills) ||
-                    p == joinedAt2ndHalf[0] ||
-                    p == joinedAt2ndHalf[1] ||
-                    p == joinedAt2ndHalf[2]
+                    ((joinedAt2ndHalf[0] > 0) && ((p + 1) == joinedAt2ndHalf[0])) ||
+                    ((joinedAt2ndHalf[1] > 0) && ((p + 1) == joinedAt2ndHalf[1])) ||
+                    ((joinedAt2ndHalf[2] > 0) && ((p + 1) == joinedAt2ndHalf[2]))
                 );
     }
 

@@ -11,7 +11,7 @@
 			00000000  c3 d1 04 08 80 51 95 fc  74 8c 3f 30 e4 2c 21 c4  |.....Q..t.?0.,!.|
 			00000010  f5 7b 45 b5 f6 d0 63 70  dc e2 42 50 9e 10 34 8e  |.{E...cp..BP..4.|
 		},
-		HomeGoals: (uint8) 0,
+		HomeGoals: (uint8) 1,
 		VisitorGoals: (uint8) 2,
 		State: (storage.MatchState) (len=3) "end",
 		StateExtra: (string) "",
@@ -31,18 +31,18 @@
 			W: (uint32) 0,
 			D: (uint32) 0,
 			L: (uint32) 1,
-			GoalsForward: (uint32) 0,
+			GoalsForward: (uint32) 1,
 			GoalsAgainst: (uint32) 2,
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
-			TrainingPoints: (uint16) 4,
+			TrainingPoints: (uint16) 12,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1811019883486470387763871536537230868194806378934866485742174206461193748480"
+			MatchLog: (string) (len=76) "1814553577616027156423038131538716705226461349263918924114903243454949621921"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -63,7 +63,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -84,7 +84,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -105,7 +105,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -126,7 +126,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -147,7 +147,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -168,7 +168,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -189,7 +189,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -210,7 +210,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -231,7 +231,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -252,7 +252,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -273,7 +273,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -294,7 +294,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -315,7 +315,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -336,7 +336,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -357,7 +357,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -378,7 +378,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -399,7 +399,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -420,7 +420,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -441,7 +441,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -462,7 +462,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -483,7 +483,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -504,7 +504,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -525,7 +525,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -546,7 +546,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -622,17 +622,17 @@
 			D: (uint32) 0,
 			L: (uint32) 0,
 			GoalsForward: (uint32) 2,
-			GoalsAgainst: (uint32) 0,
+			GoalsAgainst: (uint32) 1,
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
-			TrainingPoints: (uint16) 76,
+			TrainingPoints: (uint16) 41,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1842823130652481305696370892938780188597835337407702021448384959495930906482"
+			MatchLog: (string) (len=76) "1827363218835670442812517039807279651584344853310040355564820905234620483442"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -653,7 +653,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -674,7 +674,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -695,7 +695,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -716,7 +716,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -737,7 +737,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -758,7 +758,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -779,7 +779,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -800,7 +800,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -821,7 +821,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -842,7 +842,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -863,7 +863,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -884,7 +884,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -905,7 +905,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -926,7 +926,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -947,7 +947,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -968,7 +968,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -989,7 +989,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -1010,7 +1010,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -1031,7 +1031,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -1052,7 +1052,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -1073,7 +1073,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -1094,7 +1094,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -1115,7 +1115,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -1136,7 +1136,7 @@
 			}),
 			(*engine.Player)({
 				Player: (storage.Player) {
-					PlayerId: (*big.Int)(<nil>),
+					PlayerId: (*big.Int)(21342314523),
 					PreferredPosition: (string) "",
 					Potential: (uint64) 3,
 					DayOfBirth: (uint64) 0,
@@ -1206,7 +1206,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 5,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 4,
@@ -1215,7 +1217,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 6,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 9,
@@ -1224,7 +1228,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 7,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 14,
@@ -1233,7 +1239,9 @@
 			ManagesToShoot: (bool) true,
 			IsGoal: (bool) true,
 			PrimaryPlayer: (int16) 12,
-			SecondaryPlayer: (int16) 9
+			SecondaryPlayer: (int16) 9,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) (len=11) "21342314523"
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 19,
@@ -1242,7 +1250,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 9,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 20,
@@ -1251,7 +1261,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 10,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 25,
@@ -1260,7 +1272,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 11,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 30,
@@ -1269,7 +1283,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 3,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 35,
@@ -1278,7 +1294,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 6,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 36,
@@ -1287,7 +1305,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 7,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 40,
@@ -1296,7 +1316,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 7,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 47,
@@ -1305,7 +1327,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 6,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 15,
@@ -1314,7 +1338,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 6,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 36,
@@ -1323,16 +1349,20 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 4,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 48,
 			Type: (int16) 0,
 			Team: (int16) 0,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 5,
-			SecondaryPlayer: (int16) -1
+			ManagesToShoot: (bool) true,
+			IsGoal: (bool) true,
+			PrimaryPlayer: (int16) 8,
+			SecondaryPlayer: (int16) 12,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) (len=11) "21342314523"
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 49,
@@ -1341,7 +1371,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 6,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 54,
@@ -1350,7 +1382,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 7,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 59,
@@ -1359,7 +1393,9 @@
 			ManagesToShoot: (bool) true,
 			IsGoal: (bool) true,
 			PrimaryPlayer: (int16) 12,
-			SecondaryPlayer: (int16) 9
+			SecondaryPlayer: (int16) 9,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) (len=11) "21342314523"
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 64,
@@ -1368,7 +1404,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 9,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 65,
@@ -1377,7 +1415,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 10,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 70,
@@ -1386,7 +1426,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 11,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 75,
@@ -1395,7 +1437,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 3,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 80,
@@ -1404,7 +1448,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 6,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 81,
@@ -1413,7 +1459,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 7,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 85,
@@ -1422,7 +1470,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 7,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 92,
@@ -1431,7 +1481,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 6,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 81,
@@ -1440,7 +1492,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 6,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 92,
@@ -1449,7 +1503,9 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 4,
-			SecondaryPlayer: (int16) -1
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
 		}
 	}
 })

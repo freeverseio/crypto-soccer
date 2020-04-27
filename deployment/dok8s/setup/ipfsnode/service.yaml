@@ -6,7 +6,20 @@ metadata:
     app.kubernetes.io/app: ipfsnode
 spec:
   ports:
-  - protocol: TCP
+  - name: swarm
+    targetPort: swarm
     port: 4001
+  - name: swarm-udp
+    targetPort: swarm-udp
+    port: 4002
+  # - name: ws
+  #   targetPort: ws
+  #   port: 8081
+  # - name: http
+  #   targetPort: http
+  #   port: 8080
+  - name: api
+    targetPort: api
+    port: 5001
   selector:
     app.kubernetes.io/app: ipfsnode

@@ -18,11 +18,17 @@ func TestMatchEventsNewMatchEventsNoMatchLogs(t *testing.T) {
 	decodedVisitorMatchLog := [15]uint32{}
 	logsAndEvents := []*big.Int{}
 	is2ndHalf := false
+	playerIds := [25]*big.Int{}
+	for i := 0; i < 25; i++ {
+		playerIds[i] = new(big.Int).SetUint64(21342314523)
+	}
 	_, err := matchevents.NewMatchEvents(
 		*bc.Contracts,
 		verseSeed,
 		homeTeamID,
 		visitorTeamID,
+		playerIds,
+		playerIds,
 		homeTactic,
 		visitorTactic,
 		logsAndEvents,

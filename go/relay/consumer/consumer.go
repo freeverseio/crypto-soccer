@@ -58,10 +58,12 @@ func (b *Consumer) Start() {
 			tx, err := b.db.Begin()
 			if err != nil {
 				log.Error(err)
+				break
 			}
 			if err = actionsSubmitter.Process(tx); err != nil {
 				tx.Rollback()
 				log.Error(err)
+				break
 			}
 			if err = tx.Commit(); err != nil {
 				log.Error(err)

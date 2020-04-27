@@ -76,7 +76,7 @@ func (p *ActionsSubmitter) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	_, err = helper.WaitReceipt(p.client, transaction, 10)
+	_, err = helper.WaitReceipt(p.client, transaction, 30) // TODO make timeout configurable
 	if err != nil {
 		return err
 	}

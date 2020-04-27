@@ -1,25 +1,27 @@
 apiVersion: v1
 data:
-  ASSETS_CONTRACT_ADDRESS: 0xB15950c2a181a6086ED495433d4fC57D93B05DED
-  BLOCKS_PER_STEP: "10"
-  CONSTANTSGETTERS_CONTRACT_ADDRESS: 0xcFbAa25605163F46e7c2c0573495A393c7645aBE
-  ENGINE_CONTRACT_ADDRESS: 0xa2d26697D706B8bB6120A9366e7f846df7Aa32EB
-  ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS: 0x746647886a00F048AF1dd86cc899B14375309972
-  ENGINEPRECOMP_CONTRACT_ADDRESS: 0xf53C5C35e4de9999a36425A1bbbce13cdA4e39E2
-  EVOLUTION_CONTRACT_ADDRESS: 0xBB34eF8a4997E1959a4aF5CfB8c6BDF0496c1eeA
-  FRIENDLIES_CONTRACT_ADDRESS: 0x797FA2a3234d81e9e858D556DD41B4D0e13b35Cb
-  LEAGUES_CONTRACT_ADDRESS: 0x7C3CE5897FA7ffC60bf307a6deF80966351853af
-  MARKET_CONTRACT_ADDRESS: 0xB15950c2a181a6086ED495433d4fC57D93B05DED
-  PLAYANDEVOLVE_CONTRACT_ADDRESS: 0x8520938077464c4DdDC34D743c39Fd27c9dc9615
-  PRIVILEGED_CONTRACT_ADDRESS: 0xB15950c2a181a6086ED495433d4fC57D93B05DED
+  ASSETS_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
+  BLOCKS_PER_STEP: "10000"
+  CONSTANTSGETTERS_CONTRACT_ADDRESS: 0x35853912cA614c985d351BE34aB567D5bA7f569e
+  ENGINE_CONTRACT_ADDRESS: 0x2fbDE7e96Eef793261ce3E13B26887a8e41Dc24c
+  ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS: 0x53B1FD95C8a7F036c4a57C8b49c4E54EeF175601
+  ENGINEPRECOMP_CONTRACT_ADDRESS: 0x4740a875759207ce9d4cF9900D2c247659eFdbD1
+  EVOLUTION_CONTRACT_ADDRESS: 0xC8226Da516b08bc0DAe9Faa7F8B3AF2fBA080Eb4
+  FRIENDLIES_CONTRACT_ADDRESS: 0xe32B07607E3aAAeAeFb00E65b056912A9499B5CA
+  LEAGUES_CONTRACT_ADDRESS: 0x78688f28fdB0342613Ed252241A930214A3e0bfF
+  MARKET_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
+  PLAYANDEVOLVE_CONTRACT_ADDRESS: 0xEe597EADF452411548842ca5236B1B7C908e2842
+  PRIVILEGED_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
+  PROXY_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
   SHOP_CONTRACT_ADDRESS: 0x05E43062013fC33FAF573DB743Bd58634827b4d7
-  SHOP_CONTRACT_CONTRACT_ADDRESS: 0x8676A9F554C06622c84aE6Ddb937E682B3149768
-  TRAININGPOINTS_CONTRACT_ADDRESS: 0xbbbff3774cdb0B5a923FC2eC76036a734D874e25
-  UPDATES_CONTRACT_ADDRESS: 0xB15950c2a181a6086ED495433d4fC57D93B05DED
-  UTILS_CONTRACT_ADDRESS: 0x7C08b7f49f9fFBeac7633eB3b200B41E83e80a73
+  SHOP_CONTRACT_CONTRACT_ADDRESS: 0x5E27f5cF2906B69b4025932Eb8e11046C7d3D505
+  TRAININGPOINTS_CONTRACT_ADDRESS: 0x2BBBC76DD68dECbCD0C2C40785bb9efD4d240474
+  UPDATES_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
+  UTILS_CONTRACT_ADDRESS: 0x41c93069922583B6bFA4BebDed2a2E6F074060FD
   freeverse_password: freeverse
   freeverse_username: freeverse
-  sender: 0xeb3ce112d8610382a994646872c4361a96c82cf8
+  notary_private_key: 363bd383b24285cba965d524f54413c3369d8fb244b57359767a0da31ce6e7d3
+  relay_private_key: 0eec2a97925bcb1c636e63bc1db8b80f02dc8840e6a77b760b1c640b5f607f00
 kind: ConfigMap
 metadata:
   labels:
@@ -96,6 +98,26 @@ spec:
   selector:
     app.kubernetes.io/app: marketdb
     app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: notary
+    app.kubernetes.io/component: notary
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: notary
+spec:
+  ports:
+  - name: api
+    port: 4000
+    targetPort: 4000
+  selector:
+    app.kubernetes.io/app: notary
+    app.kubernetes.io/component: notary
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
 ---
@@ -322,6 +344,8 @@ spec:
         - http://trader:4000/graphql
         - -r
         - http://relayactions:4000/graphql
+        - -n
+        - http://notary:4000/graphql
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -397,7 +421,7 @@ spec:
         - -ethereum
         - http://xdai:8545
         - -private_key
-        - 3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54
+        - $(notary_private_key)
         - -market_address
         - $(MARKET_CONTRACT_ADDRESS)
         - -constantsgetters_address
@@ -408,6 +432,8 @@ spec:
         image: freeverseio/market.notary:dev
         imagePullPolicy: Always
         name: notary
+        ports:
+        - containerPort: 4000
       imagePullSecrets:
       - name: docker-secret
 ---
@@ -496,6 +522,8 @@ spec:
         - $(ASSETS_CONTRACT_ADDRESS)
         - -ipfs
         - ipfsnode:5001
+        - -private_key
+        - $(relay_private_key)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -708,10 +736,6 @@ spec:
   - host: k8s.gorengine.com
     http:
       paths:
-      - backend:
-          serviceName: xdai
-          servicePort: 8545
-        path: /xdai
       - backend:
           serviceName: authproxy
           servicePort: 8080

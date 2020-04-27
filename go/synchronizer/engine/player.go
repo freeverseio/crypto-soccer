@@ -28,6 +28,10 @@ func NewPlayerFromStorage(stoPlayer storage.Player) *Player {
 	return &player
 }
 
+func (b *Player) SetPlayerId(playerId *big.Int) {
+	b.PlayerId = playerId
+}
+
 func (b *Player) SetSkills(contracts contracts.Contracts, skills *big.Int) {
 	b.EncodedSkills = new(big.Int).Set(skills)
 	opts := &bind.CallOpts{}

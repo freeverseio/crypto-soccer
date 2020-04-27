@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 )
 
@@ -29,10 +31,13 @@ func (m *MockMarketPay) CreateOrder(name string, value string) (*Order, error) {
 	order.Status = m.orderStatus.String()
 	order.Name = name
 	order.Amount = value
-	order.TrusteeShortlink.Hash = name
-	order.TrusteeShortlink.ShortURL = "https://trustee.io/" + name
-	order.SettlorShortlink.ShortURL = "https://settlor.io/" + name
-	m.orders[name] = order
+	hasher := sha256.New()
+	hasher.Write([]byte(name))
+	hash := hex.EncodeToString(hasher.Sum(nil))[:6]
+	order.TrusteeShortlink.Hash = hash
+	order.TrusteeShortlink.ShortURL = "https://trustee.io/" + hash
+	order.SettlorShortlink.ShortURL = "https://settlor.io/" + hash
+	m.orders[hash] = order
 	return order, nil
 }
 

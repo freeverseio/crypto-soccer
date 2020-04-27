@@ -55,33 +55,13 @@ contract('Proxy', (accounts) => {
         await proxy.proposeProxyOwner(ALICE, {from: BOB}).should.be.fulfilled;
     });
 
-    it('full deploy and tests selectors against expected hardcoded selectors', async () => {
-        const {0: ass, 1: mkt, 2: updt, 3: allSelectors} = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
-        var result = JSON.stringify(allSelectors);
-        var fs = require('fs');
-        var expected;
-        var expectedFile = 'migrations/selectors.json'
-        fs.readFile(expectedFile, 'utf8', function (err, data) {
-            if (err) throw err;
-            try {
-                expected = JSON.stringify(JSON.parse(data));
-                if (expected != result) {
-                    console.log("Selelector files have changed! Please enable the next lines to overwrite hardcoded file");
-                    // fs.writeFile(expectedFile, result, function(err) {
-                    //     if (err) {
-                    //         console.log(err);
-                    //     }
-                    // });
-                }
-            } catch (e) {
-                console.error( e );
-            }
-        });
+    it('full deploy should work', async () => {
+        const {0: prox, 1: ass, 2: mkt, 3: updt} = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
     });
     
     it('permissions check on full deploy: everyone can call delegates, currently, until we set restrictions inside Assets contract', async () => {
-        depl = await delegateUtils.deployDelegate(proxy, Assets, Market, Updates);
-        assets = depl[0]
+        depl = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
+        assets = depl[1]
         await assets.init({from: ALICE}).should.be.fulfilled;
         await assets.countCountries(tz = 1, {from: ALICE}).should.be.fulfilled;
         tz = 1;
@@ -160,12 +140,58 @@ contract('Proxy', (accounts) => {
         contractId = 3;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets")).should.be.fulfilled;
         tx1 = await proxy.deactivateAndActivateContracts(deactivate = [2], activate = [3]).should.be.fulfilled;
+
+        now = Math.floor(Date.now()/1000);
+        truffleAssert.eventEmitted(tx1, "ContractsActivated", (event) => { 
+            console.log();
+            return event.contractIds[0].toNumber().should.be.equal(3) && (Math.abs(event.time.toNumber()-now) < 30).should.be.equal(true)
+        });
+        truffleAssert.eventEmitted(tx1, "ContractsDeactivated", (event) => { 
+            return event.contractIds[0].toNumber().should.be.equal(2) && (Math.abs(event.time.toNumber()-now) < 30).should.be.equal(true)
+        });
+
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(2).should.be.fulfilled;
         isActive.should.be.equal(false);
         await assets.init().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
     });
+    
+    it('deploy and redeploy', async () => {
+        // contact[0] is the NULL contract
+        assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
+        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0} = await delegateUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates);
+        assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
+        assert.equal(await proxyV0.countContracts(), '4', "wrong V0 number of contracts in proxy");
+
+        expectedNamesV0 = ['Assets0', 'Market0', 'Updates0'];
+        for (c = 1; c < 4; c++) {
+            var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxyV0.getContractInfo(c).should.be.fulfilled;
+            isActive.should.be.equal(true);
+            assert(fromBytes32(nom) == expectedNamesV0[c-1] , "wrong contract name");
+        }    
+
+        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1} = await delegateUtils.deploy(versionNumber = 1, Proxy, proxyV0.address, Assets, Market, Updates);
+        assert.equal(await proxyV1.address, proxyV0.address);
+        assert.equal(await proxyV0.countContracts(), '7', "wrong V1 number of contracts in proxyV0");
+        assert.equal(await proxyV1.countContracts(), '7', "wrong V1 number of contracts in proxyV1");
+        assert.equal(await assV1.address, assV0.address);
+        assert.equal(await markV1.address, markV0.address);
+        assert.equal(await updV1.address, updV0.address);
+        expectedNamesV1 = ['Assets1', 'Market1', 'Updates1'];
+        for (c = 1; c < 4; c++) {
+            var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxyV1.getContractInfo(c).should.be.fulfilled;
+            isActive.should.be.equal(false);
+            assert(fromBytes32(nom) == expectedNamesV0[c-1] , "wrong contract name");
+            var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxyV1.getContractInfo(c+3).should.be.fulfilled;
+            isActive.should.be.equal(true);
+            assert(fromBytes32(nom) == expectedNamesV1[c-1] , "wrong contract name");
+        }    
+        
+
+        
+    });
+
     
     
 });

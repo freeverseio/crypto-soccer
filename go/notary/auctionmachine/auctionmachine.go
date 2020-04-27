@@ -3,27 +3,26 @@ package auctionmachine
 import (
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
-	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type AuctionMachine struct {
-	Auction   *storage.Auction
-	Bids      []*storage.Bid
-	contracts *contracts.Contracts
+	auction   storage.Auction
+	bids      []storage.Bid
+	contracts contracts.Contracts
 	freeverse *ecdsa.PrivateKey
-	signer    *signer.Signer
 }
 
 func New(
-	auction *storage.Auction,
-	bids []*storage.Bid,
-	contracts *contracts.Contracts,
+	auction storage.Auction,
+	bids []storage.Bid,
+	contracts contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
 ) (*AuctionMachine, error) {
 	if contracts.Market == nil {
@@ -37,26 +36,54 @@ func New(
 		bids,
 		contracts,
 		freeverse,
-		signer.NewSigner(contracts, freeverse),
 	}, nil
 }
 
 func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
-	switch b.Auction.State {
-	case storage.AUCTION_STARTED:
+	log.Infof("Process auction %v in state %v", b.auction.ID, b.State())
+	switch b.auction.State {
+	case storage.AuctionStarted:
 		return b.processStarted()
-	case storage.AUCTION_ASSET_FROZEN:
-		return b.processAssetFrozen()
-	case storage.AUCTION_PAYING:
-		return b.processPaying(market)
+	case storage.AuctionAssetFrozen:
+		return b.ProcessAssetFrozen()
+	case storage.AuctionPaying:
+		return b.ProcessPaying(market)
+	case storage.AuctionWithdrableBySeller:
+		return b.ProcessWithdrawableBySeller(market)
+	case storage.AuctionWithdrableByBuyer:
+		log.Warn("auctionmachine AuctionWithdrabeByBuyer not implemented")
+		return nil
+	case storage.AuctionCancelled:
+		return nil
+	case storage.AuctionFailed:
+		return nil
+	case storage.AuctionEnded:
+		return nil
 	default:
-		return b.processUnknownState()
+		return fmt.Errorf("Unknown auction state %v", b.State())
 	}
 }
 
-func (b *AuctionMachine) processUnknownState() error {
-	log.Infof("[auction] %v: unknown state %v", b.Auction.UUID, b.Auction.State)
-	b.Auction.StateExtra = "Unknown state " + string(b.Auction.State)
-	b.Auction.State = storage.AUCTION_FAILED
-	return nil
+func (b AuctionMachine) State() storage.AuctionState {
+	return b.auction.State
+}
+
+func (b AuctionMachine) StateExtra() string {
+	return b.auction.StateExtra
+}
+
+func (b AuctionMachine) Auction() storage.Auction {
+	return b.auction
+}
+
+func (b AuctionMachine) Bids() []storage.Bid {
+	return b.bids
+}
+
+func (b *AuctionMachine) SetState(state storage.AuctionState, extra string) {
+	if state == storage.AuctionFailed {
+		log.Warnf("auction %v in state %v with %v", b.auction.ID, state, extra)
+	}
+	b.auction.State = state
+	b.auction.StateExtra = extra
 }

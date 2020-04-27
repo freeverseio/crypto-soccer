@@ -1,60 +1,40 @@
 package bidmachine_test
 
 import (
-	"math/big"
 	"testing"
 	"time"
 
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
+
+	"gotest.tools/assert"
 )
 
-func newTestMarket() *marketpay.MarketPay {
-	market, err := marketpay.New()
-	if err != nil {
-		panic(err)
-	}
-	return market
-}
-
 func TestNotPayingAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-	auction := &storage.Auction{State: storage.AUCTION_ASSET_FROZEN}
-	bid := &storage.Bid{}
-	_, err = bidmachine.New(
-		newTestMarket(),
+	auction := storage.Auction{State: storage.AuctionAssetFrozen}
+	bid := storage.NewBid()
+	_, err := bidmachine.New(
+		marketpay.NewMockMarketPay(),
 		auction,
 		bid,
-		bc.Contracts,
+		*bc.Contracts,
 		bc.Owner,
 	)
-	if err == nil {
-		t.Fatalf("Accepting %v auction", auction.State)
-	}
+	assert.Error(t, err, "Auction is not in PAYING state")
 }
 
 func TestPayingAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-	auction := &storage.Auction{State: storage.AUCTION_PAYING}
-	bid := &storage.Bid{}
-	_, err = bidmachine.New(
-		newTestMarket(),
+	auction := storage.Auction{State: storage.AuctionPaying}
+	bid := storage.NewBid()
+	_, err := bidmachine.New(
+		marketpay.NewMockMarketPay(),
 		auction,
 		bid,
-		bc.Contracts,
+		*bc.Contracts,
 		bc.Owner,
 	)
-	if err != nil {
-		t.Fatalf("Not accepting %v auction", auction.State)
-	}
+	assert.NilError(t, err)
 }
 
 func TestFirstAlive(t *testing.T) {
@@ -62,77 +42,62 @@ func TestFirstAlive(t *testing.T) {
 	if bid != nil {
 		t.Fatalf("Wrong result: %v", bid)
 	}
-	bids := []*storage.Bid{}
+	bids := []storage.Bid{}
 	bid = bidmachine.FirstAlive(bids)
 	if bid != nil {
 		t.Fatalf("Wrong result: %v", bid)
 	}
-	bids = []*storage.Bid{&storage.Bid{State: storage.BIDFAILED}}
+	bids = []storage.Bid{storage.Bid{State: storage.BidFailed}}
 	bid = bidmachine.FirstAlive(bids)
 	if bid != nil {
 		t.Fatalf("Wrong result: %v", bid)
 	}
-	bids = append(bids, &storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 10})
+	bids = append(bids, storage.Bid{State: storage.BidAccepted, ExtraPrice: 10})
 	bid = bidmachine.FirstAlive(bids)
-	if bid != bids[1] {
+	if *bid != bids[1] {
 		t.Fatalf("Expected %v result: %v", bids[0], bid)
 	}
-	bids = append(bids, &storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 11})
+	bids = append(bids, storage.Bid{State: storage.BidAccepted, ExtraPrice: 11})
 	bid = bidmachine.FirstAlive(bids)
-	if bid != bids[2] {
+	if *bid != bids[2] {
 		t.Fatalf("Wrong result: %v", bid)
 	}
-	bids = append(bids, &storage.Bid{State: storage.BIDPAYING, ExtraPrice: 11})
+	bids = append(bids, storage.Bid{State: storage.BidPaying, ExtraPrice: 11})
 	bid = bidmachine.FirstAlive(bids)
-	if bid != bids[3] {
+	if *bid != bids[3] {
 		t.Fatalf("Wrong result: %v", bid)
 	}
 }
 
 func TestExpiredBidNoTransit(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-	auction := &storage.Auction{State: storage.AUCTION_PAYING}
-	bid := &storage.Bid{State: storage.BIDFAILED}
+	auction := storage.Auction{State: storage.AuctionPaying}
+	bid := &storage.Bid{State: storage.BidFailed}
 	machine, err := bidmachine.New(
-		newTestMarket(),
+		marketpay.NewMockMarketPay(),
 		auction,
 		bid,
-		bc.Contracts,
+		*bc.Contracts,
 		bc.Owner,
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = machine.Process()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if bid.State != storage.BIDFAILED {
-		t.Fatalf("Wrong state %v", bid.State)
-	}
+	assert.NilError(t, err)
+	assert.NilError(t, machine.Process())
+	assert.Equal(t, bid.State, storage.BidFailed)
 }
 
 func TestAcceptBidTransitToPaying(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-	auction := &storage.Auction{
-		State:      storage.AUCTION_PAYING,
-		ValidUntil: big.NewInt(10),
+	auction := storage.Auction{
+		State:      storage.AuctionPaying,
+		ValidUntil: 10,
 	}
 	bid := &storage.Bid{
-		State:           storage.BIDACCEPTED,
-		PaymentDeadline: big.NewInt(3),
+		State:           storage.BidAccepted,
+		PaymentDeadline: 3,
 	}
 	machine, err := bidmachine.New(
-		newTestMarket(),
+		marketpay.NewMockMarketPay(),
 		auction,
 		bid,
-		bc.Contracts,
+		*bc.Contracts,
 		bc.Owner,
 	)
 	if err != nil {
@@ -142,34 +107,30 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bid.State != storage.BIDPAYING {
+	if bid.State != storage.BidPaying {
 		t.Fatalf("Wrong state %v", bid.State)
 	}
-	if bid.PaymentDeadline.String() != "21610" {
+	if bid.PaymentDeadline != 21610 {
 		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
 	}
 }
 
 func TestBidPayingExpires(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	now := time.Now().Unix()
-	auction := &storage.Auction{
-		Price:      big.NewInt(3),
-		State:      storage.AUCTION_PAYING,
-		ValidUntil: big.NewInt(now - 3),
+	auction := storage.Auction{
+		Price:      3,
+		State:      storage.AuctionPaying,
+		ValidUntil: now - 3,
 	}
 	bid := &storage.Bid{
-		State:           storage.BIDPAYING,
-		PaymentDeadline: big.NewInt(now - 1),
+		State:           storage.BidPaying,
+		PaymentDeadline: now - 1,
 	}
 	machine, err := bidmachine.New(
-		newTestMarket(),
+		marketpay.NewMockMarketPay(),
 		auction,
 		bid,
-		bc.Contracts,
+		*bc.Contracts,
 		bc.Owner,
 	)
 	if err != nil {
@@ -179,10 +140,10 @@ func TestBidPayingExpires(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bid.PaymentDeadline.String() != big.NewInt(now-1).String() {
+	if bid.PaymentDeadline != now-1 {
 		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
 	}
-	if bid.State != storage.BIDFAILED {
+	if bid.State != storage.BidFailed {
 		t.Fatalf("Wrong state %v", bid.State)
 	}
 }
