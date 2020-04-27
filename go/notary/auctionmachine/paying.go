@@ -13,8 +13,8 @@ import (
 )
 
 func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
-	if b.auction.State != storage.AuctionPaying {
-		return errors.New("Paying: wrong state")
+	if err := b.checkState(storage.AuctionPaying); err != nil {
+		return err
 	}
 
 	bid := bidmachine.FirstAlive(b.bids)
