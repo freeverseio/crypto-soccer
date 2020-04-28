@@ -1019,6 +1019,8 @@ contract("Market", accounts => {
     console.log("wasPlayerCreatedVirtually...")
     owner = await market.wasPlayerCreatedVirtually(playerId).should.be.rejected;
 
+    owner = await market.wasPlayerCreatedVirtually(id = 0).should.be.rejected;
+
   });
 
   
