@@ -44,6 +44,7 @@ services:
       - "40010:4001"
     volumes:
       - ipfs.node-data:/data
+  # TODO: add ipfs-cluster-follow gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
   # universe.api:
   #   build: 
   #     context: ../../universe.api/
