@@ -329,7 +329,7 @@ contract('Assets', (accounts) => {
         newId =  await assets.getPlayerIdFromState(state).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
         expectedTeamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
-        teamId =  await assets.getCurrentTeamId(state).should.be.fulfilled; 
+        teamId =  await assets.getCurrentTeamIdFromPlayerState(state).should.be.fulfilled; 
         teamId.should.be.bignumber.equal(expectedTeamId);
         shirtNum =  await assets.getCurrentShirtNum(state).should.be.fulfilled; 
         shirtNum.toNumber().should.be.equal(1);
@@ -342,7 +342,7 @@ contract('Assets', (accounts) => {
         newId =  await assets.getPlayerIdFromState(state).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
         expectedTeamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
-        teamId =  await assets.getCurrentTeamId(state).should.be.fulfilled; 
+        teamId =  await assets.getCurrentTeamIdFromPlayerState(state).should.be.fulfilled; 
         teamId.should.be.bignumber.equal(expectedTeamId);
         shirtNum =  await assets.getCurrentShirtNum(state).should.be.fulfilled; 
         shirtNum.toNumber().should.be.equal(0);
@@ -379,7 +379,7 @@ contract('Assets', (accounts) => {
 
         // state before selling:
         state = await market.getPlayerState(playerId).should.be.fulfilled;
-        obtainedTeamId = await assets.getCurrentTeamId(state).should.be.fulfilled;
+        obtainedTeamId = await assets.getCurrentTeamIdFromPlayerState(state).should.be.fulfilled;
         obtainedTeamId.should.be.bignumber.equal(teamId1);
         shirt = await assets.getCurrentShirtNum(state).should.be.fulfilled;
         shirt.toNumber().should.be.equal(playerIdxInCountry1);        
@@ -390,7 +390,7 @@ contract('Assets', (accounts) => {
 
         // state of player after selling:
         state = await market.getPlayerState(playerId).should.be.fulfilled;
-        obtainedTeamId = await assets.getCurrentTeamId(state).should.be.fulfilled;
+        obtainedTeamId = await assets.getCurrentTeamIdFromPlayerState(state).should.be.fulfilled;
         obtainedTeamId.should.be.bignumber.equal(teamId2);
         shirt = await assets.getCurrentShirtNum(state).should.be.fulfilled;
         shirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);        

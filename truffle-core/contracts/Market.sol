@@ -179,7 +179,6 @@ contract Market is MarketView {
         // TODO: checking if they are bots should be moved outside this function
         require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
         
-        // if (playerId == 0) return false;
         // if (getIsSpecial(playerId)) return (_playerIdToState[playerId] != 0);
         // return wasPlayerCreatedVirtually(playerId);
         
@@ -187,7 +186,7 @@ contract Market is MarketView {
         require(teamExists(teamIdTarget), "unexistent target team");
         // part related to origin team:
         uint256 state = getPlayerState(playerId);
-        uint256 teamIdOrigin = getCurrentTeamId(state);
+        uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
@@ -254,7 +253,7 @@ contract Market is MarketView {
     //     require(!isPlayerFrozenInAnyMarket(playerId),"cannot dismiss a player that is frozen");
 
     //     uint256 state = getPlayerState(playerId);
-    //     uint256 teamIdOrigin = getCurrentTeamId(state);
+    //     uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
     //     require(teamIdOrigin != ACADEMY_TEAM, "cannot dimiss a player from the Academy team");
     //     uint256 shirtOrigin = getCurrentShirtNum(state);
     //     teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;

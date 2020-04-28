@@ -46,7 +46,7 @@ contract EncodingState {
         return playerState;
     }
 
-    function getCurrentTeamId(uint256 playerState) public pure returns (uint256) {
+    function getCurrentTeamIdFromPlayerState(uint256 playerState) public pure returns (uint256) {
         return uint256(playerState >> 43 & (2**43-1));
     }
 

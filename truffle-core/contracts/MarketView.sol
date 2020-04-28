@@ -290,7 +290,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
     
     function getCurrentTeamIdFromPlayerId(uint256 playerId) public view returns(uint256) {
-        return getCurrentTeamId(getPlayerState(playerId));
+        return getCurrentTeamIdFromPlayerState(getPlayerState(playerId));
     }
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
