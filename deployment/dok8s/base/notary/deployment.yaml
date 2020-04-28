@@ -26,7 +26,7 @@ spec:
                -private_key, "$(notary_private_key)",
                -market_address, "$(MARKET_CONTRACT_ADDRESS)",
                -constantsgetters_address, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)",
-               -realMarket]
+               -market_id, "$(market_id)"]
         ports:
         - containerPort: 4000
       imagePullSecrets:
