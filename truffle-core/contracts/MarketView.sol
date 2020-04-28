@@ -265,7 +265,8 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
-        return (isPlayerWritten(playerId) ? _playerIdToState[playerId] : getPlayerStateAtBirth(playerId));
+        uint256 state = _playerIdToState[playerId];
+        return (state != 0 ? state : getPlayerStateAtBirth(playerId));
     }
     
     // TODO: we really don't need this function. Only for external use. Consider removal
@@ -307,8 +308,6 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
             return (playerId == FREE_PLAYER_ID);
         }
     }
-
-    function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_playerIdToState[playerId] != 0); }       
 
     function getDefaultPlayerIdForTeamInCountry(
         uint8 timeZone,

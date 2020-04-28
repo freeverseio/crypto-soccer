@@ -90,7 +90,7 @@ contract Market is MarketView {
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
         require(isAcademyPlayer(playerId), "only Academy Players can be offered as promo players");
         uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
-        require(!isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
+        require(_playerIdToState[playerIdWithoutTargetTeam] == 0, "promo player already in the universe");
         uint256 targetTeamId = getTargetTeamId(playerId);
         // require that team does not have any constraint from friendlies
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
@@ -243,23 +243,23 @@ contract Market is MarketView {
         emit TeamTransfer(teamId, addr);
     }
     
-    function dismissPlayer(uint256 playerId) public {
-        require(playerExists(playerId), "player does not exist");
-        require(!isPlayerFrozenInAnyMarket(playerId),"cannot dismiss a player that is frozen");
+    // function dismissPlayer(uint256 playerId) public {
+    //     require(playerExists(playerId), "player does not exist");
+    //     require(!isPlayerFrozenInAnyMarket(playerId),"cannot dismiss a player that is frozen");
 
-        uint256 state = getPlayerState(playerId);
-        uint256 teamIdOrigin = getCurrentTeamId(state);
-        require(teamIdOrigin != ACADEMY_TEAM, "cannot dimiss a player from the Academy team");
-        uint256 shirtOrigin = getCurrentShirtNum(state);
-        teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
-        require(_nPlayersInTransitInTeam[teamIdTarget] != 0, "cannot dimiss a player unless team is full");
+    //     uint256 state = getPlayerState(playerId);
+    //     uint256 teamIdOrigin = getCurrentTeamId(state);
+    //     require(teamIdOrigin != ACADEMY_TEAM, "cannot dimiss a player from the Academy team");
+    //     uint256 shirtOrigin = getCurrentShirtNum(state);
+    //     teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+    //     require(_nPlayersInTransitInTeam[teamIdTarget] != 0, "cannot dimiss a player unless team is full");
 
-        require(!isBotTeam(teamIdOrigin), "cannot transfer player when at least one team is a bot");
+    //     require(!isBotTeam(teamIdOrigin), "cannot transfer player when at least one team is a bot");
 
-        _playerIdToState[playerId] = state;
+    //     _playerIdToState[playerId] = state;
 
-        emit PlayerStateChange(playerId, state);
-    }
+    //     emit PlayerStateChange(playerId, state);
+    // }
     
     
     
