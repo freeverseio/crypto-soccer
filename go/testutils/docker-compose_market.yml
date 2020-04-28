@@ -10,9 +10,7 @@ services:
     ports:
       - "5432:5432"
   ipfs:
-    image: ipfs/go-ipfs:v0.4.18
-    environment:
-      - IPFS_PROFILE=server
+    image: ipfs/go-ipfs:v0.5.0-rc4
     ports:
       - "4001:4001"
       - "127.0.0.1:8080:8080"
