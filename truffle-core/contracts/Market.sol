@@ -57,7 +57,7 @@ contract Market is MarketView {
         bytes32[2] memory sig,
         uint8 sigV
     ) public {
-        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
+        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreezePlayer requirements not met");
         // // Freeze player
         _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
@@ -68,7 +68,7 @@ contract Market is MarketView {
         uint256 targetTeamId
      ) public {
         // isAcademy checks that player isSpecial, and not written.
-        require(isAcademyPlayer(playerId), "only Academy players can be sold via buy-now");
+        require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
         require(getTargetTeamId(playerId) == 0, "cannot have buy-now players with non-null targetTeamId");
 
         // note that wasTeamCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
@@ -88,7 +88,7 @@ contract Market is MarketView {
      ) public {
         require(validUntil > now, "validUntil is in the past");
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-        require(isAcademyPlayer(playerId), "only Academy Players can be offered as promo players");
+        require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy Players can be offered as promo players");
         uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
         require(_playerIdToState[playerIdWithoutTargetTeam] == 0, "promo player already in the universe");
         uint256 targetTeamId = getTargetTeamId(playerId);
@@ -142,7 +142,7 @@ contract Market is MarketView {
         bytes32[2] memory sig,
         uint8 sigV
     ) public {
-        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
+        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezePlayer requirements not met");
         // // Freeze player
         _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);

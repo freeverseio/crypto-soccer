@@ -15,6 +15,7 @@ contract Assets is AssetsView {
 
     function setAcademyAddr(address addr) public {
         _academyAddr = addr;
+        teamIdToOwner[ACADEMY_TEAM] = addr;
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }
     

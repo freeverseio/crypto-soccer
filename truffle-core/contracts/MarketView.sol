@@ -8,13 +8,7 @@ import "./EncodingSkillsSetters.sol";
  */
 
 contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
-
     
-    
-    function isAcademyPlayer(uint256 playerId) public view returns(bool) {
-        return (getIsSpecial(playerId) && _playerIdToState[playerId] == 0);
-    }
-
     function getMaxAllowedAcquisitions(uint256 teamId) public view returns (bool isConstrained, uint8) {
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
         if (remainingAcqs == 0) return (false, 0);
@@ -169,7 +163,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         view 
         returns (bool)
     {
-        address prevOwner = isAcademyPlayer(playerId) ? _academyAddr : getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
+        address prevOwner = getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
         bytes32 msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         return (
             // check validUntil has not expired
@@ -329,7 +323,6 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
        
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
-        require(playerExists(playerId), "unexistent player");
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
     
