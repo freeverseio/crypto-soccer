@@ -235,7 +235,6 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
 
     function isPlayerFrozenFiat(uint256 playerId) public view returns (bool) {
-        require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
         return (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
