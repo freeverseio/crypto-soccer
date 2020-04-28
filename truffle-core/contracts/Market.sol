@@ -176,17 +176,18 @@ contract Market is MarketView {
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
-        // TODO: checking if they are bots should be moved outside this function
+        // warning: checking if they are bots should be moved outside this function
+        require(getIsSpecial(playerId) || wasPlayerCreatedVirtually(playerId), "player does not exist");
 
         // part related to origin team:
         uint256 state = getPlayerState(playerId);
         uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
-        require(teamIdOrigin == ACADEMY_TEAM || wasPlayerCreatedVirtually(playerId), "player does not exist");
+
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
-        
+                
         // part related to both teams:
         require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
         require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
