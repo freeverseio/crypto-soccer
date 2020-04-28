@@ -24,12 +24,11 @@ type MarketPay struct {
 	bearerToken string
 }
 
-func New() *MarketPay {
+func New(pk string) *MarketPay {
 	market := MarketPay{}
 	market.endpoint = "https://api.truust.io/1.0"
 	market.publicKey = "pk_production_Q2F2VlMxSEk="
-	market.bearerToken = "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2"
-
+	market.bearerToken = "Bearer " + pk
 	return &market
 }
 
