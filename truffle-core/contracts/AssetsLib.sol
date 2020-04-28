@@ -39,7 +39,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         return (teamIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ));
     }
 
-    function teamExists(uint256 teamId) public view returns (bool) {
+    function teamWasCreatedVirtually(uint256 teamId) public view returns (bool) {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }

@@ -247,7 +247,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
     function isTeamFrozen(uint256 teamId) public view returns (bool) {
         if (teamId == ACADEMY_TEAM) return false;
-        require(teamExists(teamId), "unexistent team");
+        require(teamWasCreatedVirtually(teamId), "unexistent team");
         return (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
     

@@ -996,6 +996,7 @@ contract("Market", accounts => {
     teamId.toNumber().should.be.equal(2400790);
   });
   
+  
   it("ownership functions of Academy Players", async () => {
     console.log("market: ", market.address) 
     console.log("assets: ", assets.address) 

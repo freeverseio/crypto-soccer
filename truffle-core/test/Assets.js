@@ -138,37 +138,37 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('check teamExists for existing teams', async () =>  {
+    it('check teamWasCreatedVirtually for existing teams', async () =>  {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START - 1;
         for (tz = 1; tz<25; tz++) {
-            teamExists = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            teamWasCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
-            teamExists2 = await market.teamExists(teamId).should.be.fulfilled;
-            teamExists.should.be.equal(true);            
+            teamExists2 = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
+            teamWasCreatedVirtually.should.be.equal(true);            
             teamExists2.should.be.equal(true); 
         }
     });
     
-    it('check teamExists for not-created teams', async () =>  {
+    it('check teamWasCreatedVirtually for not-created teams', async () =>  {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            teamExists = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            teamWasCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
-            teamExists2 = await market.teamExists(teamId).should.be.fulfilled;
-            teamExists.should.be.equal(false);            
+            teamExists2 = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
+            teamWasCreatedVirtually.should.be.equal(false);            
             teamExists2.should.be.equal(false); 
         }
     });
     
-    it('check teamExists for non-existing countries', async () =>  {
+    it('check teamWasCreatedVirtually for non-existing countries', async () =>  {
         countryIdxInTZ = 1;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            teamExists = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.rejected;
+            teamWasCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.rejected;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
-            teamExists2 = await market.teamExists(teamId).should.be.rejected;
+            teamExists2 = await market.teamWasCreatedVirtually(teamId).should.be.rejected;
         }
     });
 
@@ -487,16 +487,16 @@ contract('Assets', (accounts) => {
 
     it('team exists', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
-        result = await market.teamExists(teamId).should.be.fulfilled;
+        result = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
         result.should.be.equal(true);
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = N_DIVS_AT_START * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV - 1).should.be.fulfilled; 
-        result = await market.teamExists(teamId).should.be.fulfilled;
+        result = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
         result.should.be.equal(true);
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = N_DIVS_AT_START * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV).should.be.fulfilled; 
-        result = await market.teamExists(teamId).should.be.fulfilled;
+        result = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
         result.should.be.equal(false);
         teamId     = await assets.encodeTZCountryAndVal(tz = 0, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
-        result = await market.teamExists(teamId).should.be.rejected;
+        result = await market.teamWasCreatedVirtually(teamId).should.be.rejected;
     });
 
     it('initial number of countries', async () => {
