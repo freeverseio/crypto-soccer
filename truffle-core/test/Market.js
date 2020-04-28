@@ -989,6 +989,11 @@ contract("Market", accounts => {
     tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
 
+    console.log("asking getCurrentTeamIdFromPlayerId...")
+    teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
+    teamId.toNumber().should.be.equal(ACADEMY_TEAM_ID = 1);
+    
+    
     console.log("asking exists...")
     exists = await market.playerExists(playerId).should.be.fulfilled;
     exists.should.be.equal(false);
