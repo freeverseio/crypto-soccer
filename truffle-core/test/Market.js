@@ -982,6 +982,19 @@ contract("Market", accounts => {
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.rejected;
   });  
+
+  it("behaviour of getCurrentTeamIdFromPlayerId", async () => {
+    // currently does not check if player exists
+    playerId = await createSpecialPlayerId();
+    teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
+    teamId.toNumber().should.be.equal(ACADEMY_TEAM_ID = 1);
+
+    teamId = await market.getCurrentTeamIdFromPlayerId(id = 0).should.be.fulfilled;
+    teamId.toNumber().should.be.equal(0);
+    
+    teamId = await market.getCurrentTeamIdFromPlayerId(id = 43214234).should.be.fulfilled;
+    teamId.toNumber().should.be.equal(2400790);
+  });
   
   it("ownership functions of Academy Players", async () => {
     console.log("market: ", market.address) 
@@ -992,7 +1005,15 @@ contract("Market", accounts => {
     console.log("asking getCurrentTeamIdFromPlayerId...")
     teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
     teamId.toNumber().should.be.equal(ACADEMY_TEAM_ID = 1);
+
     
+    console.log("asking getCurrentTeamIdFromPlayerId... id = 0")
+    teamId = await market.getCurrentTeamIdFromPlayerId(id = 0).should.be.fulfilled;
+    console.log(teamId.toNumber())//.should.be.equal(ACADEMY_TEAM_ID = 1);
+
+    console.log("asking getCurrentTeamIdFromPlayerId... id = 32423")
+    teamId = await market.getCurrentTeamIdFromPlayerId(id = 43214234).should.be.fulfilled;
+    console.log(teamId.toNumber())//.should.be.equal(ACADEMY_TEAM_ID = 1);
     
     console.log("asking exists...")
     exists = await market.playerExists(playerId).should.be.fulfilled;
