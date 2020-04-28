@@ -240,6 +240,8 @@ async function completePlayerAuction(
 
 contract("Market", accounts => {
   let ok;
+  const NULL_TEAMID = 0;
+  const NULL_PLAYERID = 0;
   
   const it2 = async(text, f) => {};
   
@@ -983,75 +985,52 @@ contract("Market", accounts => {
     ).should.be.rejected;
   });  
 
-  it2("behaviour of getCurrentTeamIdFromPlayerId", async () => {
-    // currently does not check if player exists
+  it("behaviour of getCurrentTeamIdFromPlayerId", async () => {
     playerId = await createSpecialPlayerId();
     teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
     teamId.toNumber().should.be.equal(ACADEMY_TEAM_ID = 1);
 
     teamId = await market.getCurrentTeamIdFromPlayerId(id = 0).should.be.fulfilled;
-    teamId.toNumber().should.be.equal(0);
+    teamId.toNumber().should.be.equal(NULL_TEAMID);
     
     teamId = await market.getCurrentTeamIdFromPlayerId(id = 43214234).should.be.fulfilled;
-    teamId.toNumber().should.be.equal(2400790);
+    teamId.toNumber().should.be.equal(NULL_TEAMID);
   });
   
   
-  it2("ownership functions of Academy Players", async () => {
-    console.log("market: ", market.address) 
-    console.log("assets: ", assets.address) 
+  it("ownership functions of Academy Players", async () => {
     tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
 
-    console.log("asking getCurrentTeamIdFromPlayerId...")
     teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
     teamId.toNumber().should.be.equal(ACADEMY_TEAM_ID = 1);
 
-    
-    console.log("asking getCurrentTeamIdFromPlayerId... id = 0")
-    teamId = await market.getCurrentTeamIdFromPlayerId(id = 0).should.be.fulfilled;
-    console.log(teamId.toNumber())//.should.be.equal(ACADEMY_TEAM_ID = 1);
-
-    console.log("asking getCurrentTeamIdFromPlayerId... id = 32423")
-    teamId = await market.getCurrentTeamIdFromPlayerId(id = 43214234).should.be.fulfilled;
-    console.log(teamId.toNumber())//.should.be.equal(ACADEMY_TEAM_ID = 1);
-    
-    console.log("asking exists...")
     exists = await market.playerExists(playerId).should.be.fulfilled;
     exists.should.be.equal(false);
 
-    console.log("asking owner...")
     owner = await market.getOwnerPlayer(playerId).should.be.rejected;
-    console.log("wasPlayerCreatedVirtually...")
-    owner = await market.wasPlayerCreatedVirtually(playerId).should.be.rejected;
+    was = await market.wasPlayerCreatedVirtually(playerId).should.be.fulfilled;
+    was.should.be.equal(false);
   
-    console.log("asking if frozen...")
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false)
     
-    console.log("freezing...")
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
-    console.log("freezing...done")
 
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
 
-    console.log("asking exists...")
     exists = await market.playerExists(playerId).should.be.fulfilled;
     exists.should.be.equal(false)
     
-    console.log("asking owner...")
     owner = await market.getOwnerPlayer(playerId).should.be.rejected;
     // console.log(owner, freeverseAccount.address)
-    console.log("wasPlayerCreatedVirtually...")
-    owner = await market.wasPlayerCreatedVirtually(playerId).should.be.rejected;
-
-    owner = await market.wasPlayerCreatedVirtually(id = 0).should.be.rejected;
-
+    was = await market.wasPlayerCreatedVirtually(playerId).should.be.fulfilled;
+    was.should.be.equal(false);
   });
 
   
-  it("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+  it2("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     playerId = await createSpecialPlayerId();
 
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;

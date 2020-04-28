@@ -52,7 +52,7 @@ contract Updates is UpdatesView {
     }
     
     function setActionsRoot(uint8 timeZone, bytes32 root) public returns(uint256) {
-        _assertTZExists(timeZone);
+        _tzExists(timeZone);
         _timeZones[timeZone].actionsRoot = root;
         _timeZones[timeZone].lastActionsSubmissionTime = now;
     }

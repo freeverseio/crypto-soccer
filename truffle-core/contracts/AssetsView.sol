@@ -144,7 +144,7 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     }
 
     function countCountries(uint8 tz) public view returns (uint256){
-        _assertTZExists(tz);
+        _tzExists(tz);
         return tzToNCountries[tz];
     }
     

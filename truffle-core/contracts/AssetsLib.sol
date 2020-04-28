@@ -11,8 +11,8 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     
     event TeamTransfer(uint256 teamId, address to);
 
-    function _assertTZExists(uint8 timeZone) internal pure {
-        require(timeZone > NULL_TIMEZONE && timeZone < 25, "timeZone does not exist");
+    function _tzExists(uint8 timeZone) internal pure returns(bool) {
+        return(timeZone > NULL_TIMEZONE && timeZone < 25);
     }
     
     function isBotTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
@@ -26,13 +26,12 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
 
     // returns NULL_ADDR if team is bot
     function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
-        _assertTZExists(timeZone);
-        _assertCountryInTZExists(timeZone, countryIdxInTZ);
+        if (!_tzExists(timeZone) || !_countryInTZExists(timeZone, countryIdxInTZ)) return NULL_ADDR;
         return teamIdToOwner[encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry)];
     }
 
-    function _assertCountryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) internal view {
-        require(countryIdxInTZ < tzToNCountries[timeZone], "country does not exist in this timeZone");
+    function _countryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) internal view returns(bool) {
+        return(countryIdxInTZ < tzToNCountries[timeZone]);
     }
     
     function _teamExistsInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
@@ -45,8 +44,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     }
     
     function getNDivisionsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
-        _assertTZExists(timeZone);
-        _assertCountryInTZExists(timeZone, countryIdxInTZ);
+        if (!_tzExists(timeZone) || !_countryInTZExists(timeZone, countryIdxInTZ)) return 0;
         return countryIdToNDivisions[encodeTZCountryAndVal(timeZone, countryIdxInTZ, 0)];
     }
 

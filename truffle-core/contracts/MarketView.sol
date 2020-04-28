@@ -266,7 +266,9 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
         uint256 state = _playerIdToState[playerId];
-        return (state != 0 ? state : getPlayerStateAtBirth(playerId));
+        if (state != 0) return state;
+        if (!getIsSpecial(playerId) && !wasPlayerCreatedVirtually(playerId)) return 0;
+        return getPlayerStateAtBirth(playerId);
     }
     
     // TODO: we really don't need this function. Only for external use. Consider removal
