@@ -386,10 +386,11 @@ func TestFromTheField(t *testing.T) {
 		assert.NilError(t, err)
 		assert.NilError(t, match.Play1stHalf(*bc.Contracts))
 	})
+	// the following should fail because user saw 45 TPs when he actually had only 44 available:
 	t.Run("Failing0", func(t *testing.T) {
 		input := golden.Get(t, t.Name()+"/0498232f79495530fa199c6d51fa51b2bfb22989b01e5f390eced6e729b04102.1st.error.json")
 		match, err := engine.NewMatchFromJson(input)
 		assert.NilError(t, err)
-		assert.NilError(t, match.Play1stHalf(*bc.Contracts))
+		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: VM execution error.")
 	})
 }
