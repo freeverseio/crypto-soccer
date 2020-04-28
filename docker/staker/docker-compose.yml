@@ -46,13 +46,11 @@ services:
     volumes:
       - ipfs.node-data:/data
   ipfs.cluster:
-    # build: 
-    #    context: ../ipfs-cluster-follow
-    image: freeverseio/ipfs-cluster-follow:v0.12.1
+    image: ipfs/ipfs-cluster:v0.12.1
+    entrypoint: ["ipfs-cluster-follow"]
     environment: 
       - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns/ipfs.node/tcp/5001
     command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
-  # TODO: add ipfs-cluster-follow gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
   # universe.api:
   #   build: 
   #     context: ../../universe.api/
