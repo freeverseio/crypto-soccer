@@ -61,6 +61,10 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     function playerExists(uint256 playerId) public view returns (bool) {
         if (playerId == 0) return false;
         if (getIsSpecial(playerId)) return (_playerIdToState[playerId] != 0);
+        return wasPlayerCreatedVirtually(playerId);
+    }
+
+    function wasPlayerCreatedVirtually(uint256 playerId) public view returns(bool) {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }

@@ -995,6 +995,9 @@ contract("Market", accounts => {
 
     console.log("asking owner...")
     owner = await market.getOwnerPlayer(playerId).should.be.rejected;
+    console.log("wasPlayerCreatedVirtually...")
+    owner = await market.wasPlayerCreatedVirtually(playerId).should.be.rejected;
+  
     console.log("asking if frozen...")
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false)
@@ -1013,6 +1016,9 @@ contract("Market", accounts => {
     console.log("asking owner...")
     owner = await market.getOwnerPlayer(playerId).should.be.rejected;
     // console.log(owner, freeverseAccount.address)
+    console.log("wasPlayerCreatedVirtually...")
+    owner = await market.wasPlayerCreatedVirtually(playerId).should.be.rejected;
+
   });
 
   

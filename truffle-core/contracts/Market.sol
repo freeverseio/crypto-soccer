@@ -178,6 +178,12 @@ contract Market is MarketView {
         // warning: check of ownership of players and teams should be done before calling this function
         // TODO: checking if they are bots should be moved outside this function
         require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
+        
+        // if (playerId == 0) return false;
+        // if (getIsSpecial(playerId)) return (_playerIdToState[playerId] != 0);
+        // return wasPlayerCreatedVirtually(playerId);
+        
+        
         require(teamExists(teamIdTarget), "unexistent target team");
         // part related to origin team:
         uint256 state = getPlayerState(playerId);
