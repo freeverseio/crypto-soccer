@@ -38,10 +38,10 @@ services:
   ipfs.node:
     image: ipfs/go-ipfs:v0.4.23
     environment:
-      - IPFS_PROFILE=server
+      # - IPFS_PROFILE=server
       - IPFS_PATH=/data
-    ports:
-      - "40010:4001"
+    # ports:
+    #   - "40010:4001"
       # - "5001:5001"
     volumes:
       - ipfs.node-data:/data
