@@ -27,7 +27,11 @@ ipfs-cluster-follow gr-ipfs-cluster run --init <configuration.json>
 # configuration.json should be publish as ipns
 # example:
 ipfs-cluster-follow gr-ipfs-cluster run --init goalrevolution.collab.ipfs.cluster.io.gorengine.com
+# or via https:
+ipfs-cluster-follow gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
+# get name resolution
 ipfs name resolve goalrevolution.collab.ipfs.cluster.io.gorengine.com
+
 
 # configuration available thru gateway
 https://gateway.ipfs.io/ipfs/QmSQoHyHrzUMijrMgjY3TR9CSupaowy9Mv8pfpVyExGtN5
@@ -42,3 +46,6 @@ ipfs name publish <config_hash>
 ipfs name resolve <peerID>
 # watch
 https://ipfs.io/ipns/<peerID> or ipfs cat /ipns/<peerID>
+
+# publish the configuration via infura so it is available faster
+curl "https://ipfs.infura.io:5001/api/v0/pin/add?arg=/ipfs/<content_hash_id>
