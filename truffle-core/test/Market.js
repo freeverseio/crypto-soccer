@@ -1087,7 +1087,8 @@ contract("Market", accounts => {
     playerId = await createSpecialPlayerId(id = 4312432432);
 
     // it currently has no owner:
-    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
+    owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    owner.should.be.equal(NULL_ADDR);
     
     // set target to a bot team => should fail
     targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 2);
@@ -1170,15 +1171,22 @@ contract("Market", accounts => {
     // it currently does not exist:
     finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
 
-    // it currently has no owner:
-    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
+    // it currently has no owner since AcamedyAddr is not set:
+    owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    owner.should.be.equal(NULL_ADDR);
+    
     // this will fail because we still haven't said that Freeverse owns the academy:
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.rejected;
     // let's fix it:
     await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    owner.should.be.equal(freeverseAccount.address);
+
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerRS, sigBuyerRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
     // change of academy address immediately reflects in change of who owns the academy players
-    owner = await market.getOwnerPlayer(playerId).should.be.rejected;
+    owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    owner.should.be.equal(freeverseAccount.address);
+    
     // when transferred, the "targetTeamId" is erased (set to zero)
     finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
     owner = await market.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
