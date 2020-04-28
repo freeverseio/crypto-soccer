@@ -1,9 +1,26 @@
 version: '3'
 services:
-  # ethereum: 
-  #   image: freeverseio/parity:v2.7.2-posdao-stable
-  #   volumes:
-  #     - ethereum-data:/home/parity/.local/share/io.parity.ethereum
+  ethereum: 
+    image: freeverseio/parity:v2.7.2-posdao-stable
+    volumes:
+      - ethereum-data:/home/parity/.local/share/io.parity.ethereum
+  ipfs.node:
+    image: ipfs/go-ipfs:v0.4.23
+    restart: always
+    environment:
+      - IPFS_PATH=/data
+    volumes:
+      - ipfs.node-data:/data
+  ipfs.cluster:
+    image: ipfs/ipfs-cluster:v0.12.1
+    restart: always
+    entrypoint: ["ipfs-cluster-follow"]
+    environment: 
+      - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns/ipfs.node/tcp/5001
+    command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
+    depends_on: 
+      - ipfs.node
+
   # universe.db:
   #   build: 
   #     context: ../../universe.db/
@@ -35,22 +52,6 @@ services:
   #   depends_on:
   #     - universe.db
   #     - ethereum
-  ipfs.node:
-    image: ipfs/go-ipfs:v0.4.23
-    environment:
-      # - IPFS_PROFILE=server
-      - IPFS_PATH=/data
-    # ports:
-    #   - "40010:4001"
-      # - "5001:5001"
-    volumes:
-      - ipfs.node-data:/data
-  ipfs.cluster:
-    image: ipfs/ipfs-cluster:v0.12.1
-    entrypoint: ["ipfs-cluster-follow"]
-    environment: 
-      - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns/ipfs.node/tcp/5001
-    command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
   # universe.api:
   #   build: 
   #     context: ../../universe.api/
