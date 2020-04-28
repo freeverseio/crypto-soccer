@@ -379,10 +379,18 @@ func TestMatchEventsGeneration(t *testing.T) {
 }
 
 func TestFromTheField(t *testing.T) {
+	t.Parallel()
 	t.Run("InconsistentPositionPlayerId", func(t *testing.T) {
 		input := golden.Get(t, t.Name()+"/b65d48b5a6a4075098e6a996bece8f5aeec8b2ac73c6d62a8de8a18bc28a5230.1st.error.json")
 		match, err := engine.NewMatchFromJson(input)
 		assert.NilError(t, err)
 		assert.NilError(t, match.Play1stHalf(*bc.Contracts))
+	})
+	// the following should fail because user saw 45 TPs when he actually had only 44 available:
+	t.Run("Failing0", func(t *testing.T) {
+		input := golden.Get(t, t.Name()+"/0498232f79495530fa199c6d51fa51b2bfb22989b01e5f390eced6e729b04102.1st.error.json")
+		match, err := engine.NewMatchFromJson(input)
+		assert.NilError(t, err)
+		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: VM execution error.")
 	})
 }
