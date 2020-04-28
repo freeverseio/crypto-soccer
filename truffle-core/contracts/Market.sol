@@ -71,7 +71,7 @@ contract Market is MarketView {
         require(isAcademyPlayer(playerId), "only Academy players can be sold via buy-now");
         require(getTargetTeamId(playerId) == 0, "cannot have buy-now players with non-null targetTeamId");
 
-        // note that teamWasCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
+        // note that wasTeamCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
         require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
         transferPlayer(playerId, targetTeamId);
@@ -95,7 +95,7 @@ contract Market is MarketView {
         // require that team does not have any constraint from friendlies
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
         require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
-        // testing require(teamWasCreatedVirtually(targetTeamId) and  require(!isBotTeam(targetTeamId) is already done in _assets.transferPlayer:
+        // testing require(wasTeamCreatedVirtually(targetTeamId) and  require(!isBotTeam(targetTeamId) is already done in _assets.transferPlayer:
                 
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
         require(getOwnerTeam(targetTeamId) == 
@@ -177,12 +177,12 @@ contract Market is MarketView {
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
         // warning: checking if they are bots should be moved outside this function
-        require(getIsSpecial(playerId) || wasPlayerCreatedVirtually(playerId), "player does not exist");
 
         // part related to origin team:
         uint256 state = getPlayerState(playerId);
         uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
-
+        require(teamIdOrigin != NULL_TEAMID, "the player does not belong to any team");
+    
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
@@ -193,7 +193,7 @@ contract Market is MarketView {
         require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
 
         // part related to target team:
-        require(teamWasCreatedVirtually(teamIdTarget), "unexistent target team");
+        require(wasTeamCreatedVirtually(teamIdTarget), "unexistent target team");
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
             state = setLastSaleBlock(
