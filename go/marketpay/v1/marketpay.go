@@ -19,28 +19,27 @@ type IMarketPay interface {
 }
 
 type MarketPay struct {
-	endpoint  string
-	publicKey string
+	endpoint    string
+	publicKey   string
+	bearerToken string
 }
 
 func New() *MarketPay {
-	sandboxURL := "https://api.truust.io/"
-	sandboxPublicKey := "pk_production_Q2F2VlMxSEk="
+	market := MarketPay{}
+	market.endpoint = "https://api.truust.io/1.0"
+	market.publicKey = "pk_production_Q2F2VlMxSEk="
+	market.bearerToken = "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2"
 
-	return &MarketPay{
-		sandboxURL,
-		sandboxPublicKey,
-	}
+	return &market
 }
 
 func NewSandbox() *MarketPay {
-	sandboxURL := "https://api-sandbox.truust.io/1.0"
-	sandboxPublicKey := "pk_stage_ZkNpNElWeEg="
+	market := MarketPay{}
+	market.endpoint = "https://api-sandbox.truust.io/1.0"
+	market.publicKey = "pk_stage_ZkNpNElWeEg="
+	market.bearerToken = "Bearer sk_stage_NCzkqJwQTNVStxDxVxmSflVv"
 
-	return &MarketPay{
-		sandboxURL,
-		sandboxPublicKey,
-	}
+	return &market
 }
 
 func (b *MarketPay) CreateOrder(
@@ -76,9 +75,8 @@ func (b *MarketPay) CreateOrder(
 		return nil, err
 	}
 
-	// req.Header.Add("Accept", "application/json")
-	// req.Header.Add("Authorization", b.bearerToken)
-
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", b.bearerToken)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -90,17 +88,18 @@ func (b *MarketPay) CreateOrder(
 		return nil, err
 	}
 
-	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
-	// fmt.Println(string(body))
 	order := &Order{}
 	err = json.Unmarshal(body, order)
 	if err != nil {
 		return nil, err
 	}
+
+	// log.Infof("[marketpayV1] order %+v created", order)
 	return order, nil
 }
 
 func (b *MarketPay) GetOrder(hash string) (*Order, error) {
+	log.Infof("Getting order %v", hash)
 	url := b.endpoint + "/express/hash/" + hash
 	method := "GET"
 
@@ -116,8 +115,8 @@ func (b *MarketPay) GetOrder(hash string) (*Order, error) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	// req.Header.Add("Accept", "application/json")
-	// req.Header.Add("Authorization", b.bearerToken)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", b.bearerToken)
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -127,11 +126,11 @@ func (b *MarketPay) GetOrder(hash string) (*Order, error) {
 	if err != nil {
 		return nil, err
 	}
-	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
-	// fmt.Println(string(body))
+
 	order := &Order{}
 	err = json.Unmarshal(body, order)
 	if err != nil {
+		log.Error(order)
 		return nil, err
 	}
 	return order, nil
