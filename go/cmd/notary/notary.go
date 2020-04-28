@@ -27,7 +27,7 @@ func main() {
 	debug := flag.Bool("debug", false, "print debug logs")
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
 	processWait := flag.Int("process_wait", 5, "secs to wait for next process")
-	realMarket := flag.Bool("realMarket", false, "WARNING: connect to the real market for payment")
+	marketID := flag.String("market_id", "", "WARNING: market identifier. If set connecting the real market")
 	flag.Parse()
 
 	log.Infof("[PARAM] postgres                   : %v", *postgresURL)
@@ -42,7 +42,11 @@ func main() {
 	log.Infof("[PARAM] Buffer size                : %v", *bufferSize)
 	log.Infof("[PARAM] Process wait               : %v", *processWait)
 	log.Infof("[PARAM] debug                      : %v", *debug)
-	log.Infof("[PARAM] real market                : %v", *realMarket)
+	if *marketID == "" {
+		log.Infof("[PARAM] market                     : sandbox")
+	} else {
+		log.Infof("[PARAM] market                     : REAL")
+	}
 	log.Infof("-------------------------------------------------------------------")
 
 	if *debug {
@@ -79,10 +83,10 @@ func main() {
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 
 		var market marketpay.IMarketPay
-		if *realMarket {
-			market = marketpay.New()
-		} else {
+		if *marketID == "" {
 			market = marketpay.NewSandbox()
+		} else {
+			market = marketpay.New(*marketID)
 		}
 
 		cn, err := consumer.New(
