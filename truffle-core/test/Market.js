@@ -983,7 +983,7 @@ contract("Market", accounts => {
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
   });
   
-  it2("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
     // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
@@ -1003,6 +1003,12 @@ contract("Market", accounts => {
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
+    
+    tx = await completePlayerAuction(
+      currencyId, price,  sellerRnd, validUntil, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, sellerTeamId, sellerAccount
+    ).should.be.rejected;
+
     
     tx = await completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 

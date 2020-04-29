@@ -134,12 +134,15 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(buyerTeamId);
         if (isConstrained && nRemain == 0) return false;
         bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
-        ok =    // check asset is owned by buyer
-                (getOwnerTeam(buyerTeamId) != NULL_ADDR) && 
+        address buyerTeamOwner = getOwnerTeam(buyerTeamId);
+        ok =    // origin and target teams must be different
+                (buyerTeamId != getCurrentTeamIdFromPlayerId(playerId)) &&
+                // check asset is owned by buyer
+                (buyerTeamOwner != NULL_ADDR) && 
                 // check buyer and seller refer to the exact same auction
                 ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
                 // check signatures are valid by requiring that they own the asset:
-                (getOwnerTeam(buyerTeamId) == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&
+                (buyerTeamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
                 isPlayerFrozenFiat(playerId);
 
