@@ -89,6 +89,7 @@ func (b *BidMachine) Process() error {
 	case storage.BidAccepted:
 		return b.processAccepted()
 	case storage.BidFailed:
+		return nil
 	default:
 		return fmt.Errorf("Unknown bid state %v", b.bid.State)
 	}

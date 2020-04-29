@@ -17,6 +17,7 @@ const (
 	AuctionEnded              AuctionState = "ended"
 	AuctionCancelled          AuctionState = "cancelled"
 	AuctionFailed             AuctionState = "failed"
+	AuctionValidation         AuctionState = "validation"
 )
 
 type Auction struct {

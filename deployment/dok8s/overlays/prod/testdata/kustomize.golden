@@ -20,6 +20,7 @@ data:
   UTILS_CONTRACT_ADDRESS: 0x81286e08ef7A83E91d9E7fC0D6946821501cBa0E
   freeverse_password: freeverse
   freeverse_username: freeverse
+  market_id: sk_production_AjWbpOPwS3HNi821Ma9mIgA2
   notary_private_key: 3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54
   relay_private_key: 3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54
 kind: ConfigMap
@@ -273,7 +274,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/authproxy:0.17.2
+        image: freeverseio/authproxy:0.18.0
         imagePullPolicy: Always
         name: authproxy
       imagePullSecrets:
@@ -305,7 +306,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/dashboard:0.17.2
+      - image: freeverseio/dashboard:0.18.0
         imagePullPolicy: Always
         name: dashboard
       imagePullSecrets:
@@ -349,7 +350,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/horizon:0.17.2
+        image: freeverseio/horizon:0.18.0
         imagePullPolicy: Always
         name: horizon
       imagePullSecrets:
@@ -381,7 +382,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/market.db:0.17.2
+      - image: freeverseio/market.db:0.18.0
         imagePullPolicy: Always
         name: marketdb
         ports:
@@ -426,10 +427,12 @@ spec:
         - $(MARKET_CONTRACT_ADDRESS)
         - -constantsgetters_address
         - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        - -market_id
+        - $(market_id)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.notary:0.17.2
+        image: freeverseio/market.notary:0.18.0
         imagePullPolicy: Always
         name: notary
         ports:
@@ -527,7 +530,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/relay.actions:0.17.2
+        image: freeverseio/relay.actions:0.18.0
         imagePullPolicy: Always
         name: relayactions
         ports:
@@ -597,7 +600,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/synchronizer:0.17.2
+        image: freeverseio/synchronizer:0.18.0
         imagePullPolicy: Always
         name: synchronizer
       imagePullSecrets:
@@ -637,7 +640,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.trader:0.17.2
+        image: freeverseio/market.trader:0.18.0
         imagePullPolicy: Always
         name: trader
       imagePullSecrets:
@@ -675,7 +678,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/universe.api:0.17.2
+        image: freeverseio/universe.api:0.18.0
         imagePullPolicy: Always
         name: universeapi
         ports:
@@ -709,7 +712,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/universe.db:0.17.2
+      - image: freeverseio/universe.db:0.18.0
         imagePullPolicy: Always
         name: universedb
         ports:

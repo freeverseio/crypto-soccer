@@ -1,7 +1,6 @@
 package auctionmachine
 
 import (
-	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -13,8 +12,8 @@ import (
 )
 
 func (b *AuctionMachine) processStarted() error {
-	if b.auction.State != storage.AuctionStarted {
-		return errors.New("Started: wrong state")
+	if err := b.checkState(storage.AuctionStarted); err != nil {
+		return err
 	}
 
 	// check if expired
