@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Resolver) GeneratePlayerIDs(args struct{ Input input.GeneratePlayerIDsInput }) ([]graphql.ID, error) {
+func (b *Resolver) GeneratePlayerIds(args struct{ Input input.GeneratePlayerIdsInput }) ([]graphql.ID, error) {
 	log.Debugf("GeneratePlayerIDs %v", args)
 
 	if b.ch == nil {

@@ -1,5 +1,6 @@
 package input
 
-type GeneratePlayerIDsInput struct {
+type GeneratePlayerIdsInput struct {
 	Signature string
+	Seed      int32
 }
