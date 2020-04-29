@@ -28,9 +28,19 @@ const Schema = `
   		teamId: String!
 	}
 
+	input GeneratePlayerIDsInput {
+
+	}
+
+	input SubmitPlayerPurchaseInput {
+
+	}
+
 	type Mutation {
         createAuction(input: CreateAuctionInput!): ID!
         cancelAuction(input: CancelAuctionInput!): ID!
-        createBid(input: CreateBidInput!): ID!
+		createBid(input: CreateBidInput!): ID!
+		generatePlayerIDs(input: GeneratePlayerIDsInput!): [ID!]! 
+		submitPlayerPurchase(input: SubmitPlayerPurchaseInput!): ID!
 	}
 `
