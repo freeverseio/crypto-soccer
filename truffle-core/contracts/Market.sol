@@ -83,11 +83,10 @@ contract Market is MarketView {
     function transferPromoPlayer(
         uint256 playerId,
         uint256 validUntil,
-        bytes32[2] memory sigSel,
         bytes32[2] memory sigBuy,
-        uint8 sigVSel,
         uint8 sigVBuy
      ) public {
+        require(msg.sender == _academyAddr , "Seller does not own academy");
         require(validUntil > now, "validUntil is in the past");
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy Players can be offered as promo players");
@@ -98,12 +97,11 @@ contract Market is MarketView {
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
         require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
         // testing require(wasTeamCreatedVirtually(targetTeamId) and  require(!isBotTeam(targetTeamId) is already done in _assets.transferPlayer:
+        
                 
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
         require(getOwnerTeam(targetTeamId) == 
                     recoverAddr(signedMsg, sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
-        require(_academyAddr == 
-                    recoverAddr(signedMsg, sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
          
         transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
         decreaseMaxAllowedAcquisitions(targetTeamId);
