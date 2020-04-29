@@ -63,7 +63,7 @@ contract('Assets', (accounts) => {
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
         
-    it('create special players', async () => {
+   it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
         specialPlayerId = await assets.encodePlayerSkills(
@@ -89,7 +89,7 @@ contract('Assets', (accounts) => {
         result.toNumber().should.be.equal(sk[0]);        
     });
 
-    it('check DivisionCreation event on init', async () => {
+   it('check DivisionCreation event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
             timezone++;
@@ -97,7 +97,7 @@ contract('Assets', (accounts) => {
         });
     });
 
-    it('check DivisionCreation event on initSingleTz', async () => {
+   it('check DivisionCreation event on initSingleTz', async () => {
         const {0: proxy2, 1: assets2, 2: markV0, 3: updV0} =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates);
         tx = await assets2.initSingleTZ(tz = 4).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
@@ -106,26 +106,28 @@ contract('Assets', (accounts) => {
     });
     
     
-    it('check cannot initialize contract twice', async () => {
+   it('check cannot initialize contract twice', async () => {
         await assets.init().should.be.rejected;
     });
 
-    it('emit event upon creation', async () => {
+   it('emit event upon creation', async () => {
         truffleAssert.eventEmitted(initTx, "AssetsInit", (event) => {
             return event.creatorAddr.should.be.equal(accounts[0]);
         });
     });
 
-    it('check initial and max number of players per team', async () =>  {
+   it('check initial and max number of players per team', async () =>  {
         PLAYERS_PER_TEAM_INIT.should.be.equal(18);
         PLAYERS_PER_TEAM_MAX.should.be.equal(25);
         LEAGUES_PER_DIV.should.be.equal(16);
         TEAMS_PER_LEAGUE.should.be.equal(8);
     });
 
-    it('check initial setup of timeZones', async () =>  {
-        nCountries = await assets.countCountries(0).should.be.rejected;
-        nCountries = await assets.countCountries(25).should.be.rejected;
+   it('check initial setup of timeZones', async () =>  {
+        nCountries = await assets.countCountries(0).should.be.fulfilled;
+        nCountries.toNumber().should.be.equal(0);
+        nCountries = await assets.countCountries(25).should.be.fulfilled;
+        nCountries.toNumber().should.be.equal(0);
         for (tz = 1; tz<25; tz++) {
             nCountries = await assets.countCountries(tz).should.be.fulfilled;
             nCountries.toNumber().should.be.equal(1);
@@ -138,59 +140,57 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('check teamWasCreatedVirtually for existing teams', async () =>  {
+   it('check wasTeamCreatedVirtually for existing teams', async () =>  {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START - 1;
         for (tz = 1; tz<25; tz++) {
-            teamWasCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
-            teamExists2 = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
-            teamWasCreatedVirtually.should.be.equal(true);            
+            teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
+            wasTeamCreatedVirtually.should.be.equal(true);            
             teamExists2.should.be.equal(true); 
         }
     });
     
-    it('check teamWasCreatedVirtually for not-created teams', async () =>  {
+   it('check wasTeamCreatedVirtually for not-created teams', async () =>  {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            teamWasCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
-            teamExists2 = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
-            teamWasCreatedVirtually.should.be.equal(false);            
+            teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
+            wasTeamCreatedVirtually.should.be.equal(false);            
             teamExists2.should.be.equal(false); 
         }
     });
     
-    it('check teamWasCreatedVirtually for non-existing countries', async () =>  {
+   it('check wasTeamCreatedVirtually for non-existing countries', async () =>  {
         countryIdxInTZ = 1;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            teamWasCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.rejected;
+            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually.should.be.equal(false);
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
-            teamExists2 = await market.teamWasCreatedVirtually(teamId).should.be.rejected;
+            teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
+            teamExists2.should.be.equal(false);
         }
     });
 
-    it('check playerExists and isPlayerWritten', async () =>  {
+   it('check wasPlayerCreatedVirtually', async () =>  {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START;
         playerIdxInCountry = teamIdxInCountry * PLAYERS_PER_TEAM_INIT - 1;
         for (tz = 1; tz<25; tz++) {
             playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry);
-            playerExists = await assets.playerExists(playerId).should.be.fulfilled;
-            playerExists.should.be.equal(true);            
-            isPlayerWritten = await market.isPlayerWritten(playerId).should.be.fulfilled;
-            isPlayerWritten.should.be.equal(false);            
+            wasPlayerCreatedVirtually = await assets.wasPlayerCreatedVirtually(playerId).should.be.fulfilled;
+            wasPlayerCreatedVirtually.should.be.equal(true);            
             playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry+1);
-            playerExists = await assets.playerExists(playerId).should.be.fulfilled;
-            playerExists.should.be.equal(false);            
-            isPlayerWritten = await market.isPlayerWritten(playerId).should.be.fulfilled;
-            isPlayerWritten.should.be.equal(false);            
+            wasPlayerCreatedVirtually = await assets.wasPlayerCreatedVirtually(playerId).should.be.fulfilled;
+            wasPlayerCreatedVirtually.should.be.equal(false);            
         }
     });
 
-    it('isBot teams', async () =>  {
+   it('isBot teams', async () =>  {
         tz = 1;
         countryIdxInTZ = 0;
         teamIdxInCountry = 0;
@@ -198,7 +198,7 @@ contract('Assets', (accounts) => {
         isBot.should.be.equal(true);            
     });
 
-    it('transfer first bot to address', async () => {
+   it('transfer first bot to address', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
         const tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
@@ -207,7 +207,7 @@ contract('Assets', (accounts) => {
         });
     });
 
-    it('add users until you need a new division (it can take several seconds)', async () => {
+   it('add users until you need a new division (it can take several seconds)', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
         nTeamsPerDiv = 128
@@ -222,7 +222,7 @@ contract('Assets', (accounts) => {
     });
 
 
-    it('transfer 2 bots to address to estimate cost', async () => {
+   it('transfer 2 bots to address to estimate cost', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
@@ -231,7 +231,7 @@ contract('Assets', (accounts) => {
 
 
 
-    it('transfer of bot teams', async () =>  {
+   it('transfer of bot teams', async () =>  {
         tz = 1;
         countryIdxInTZ = 0;
         teamIdxInCountry1 = 0;
@@ -256,7 +256,7 @@ contract('Assets', (accounts) => {
         owner.should.be.equal(BOB);
     });
 
-    it('get team player ids', async () => {
+   it('get team player ids', async () => {
         // for the first team we should find playerIdx = [0, 1,...,17, FREE, FREE, ...]
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
         let ids = await market.getPlayerIdsInTeam(teamId).should.be.fulfilled;
@@ -285,7 +285,7 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('gameDeployDay', async () => {
+   it('gameDeployDay', async () => {
         const gameDeployDay =  await assets.gameDeployDay().should.be.fulfilled;
         currentBlockNum = await web3.eth.getBlockNumber()
         currentBlock = await web3.eth.getBlock(currentBlockNum)
@@ -293,7 +293,7 @@ contract('Assets', (accounts) => {
         gameDeployDay.toNumber().should.be.equal(currentDay);
     });
 
-    it('get skills of a GoalKeeper on creation', async () => {
+   it('get skills of a GoalKeeper on creation', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         playerIdxInCountry = 1;
@@ -317,7 +317,7 @@ contract('Assets', (accounts) => {
         (Math.abs(7*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < 8).should.be.equal(true);
     });
 
-    it('get state of player on creation', async () => {
+   it('get state of player on creation', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         // test for players on the first team
@@ -348,7 +348,7 @@ contract('Assets', (accounts) => {
         shirtNum.toNumber().should.be.equal(0);
     });
 
-    it('isFreeShirt', async () => {
+   it('isFreeShirt', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         teamIdxInCountry = 0; 
@@ -362,7 +362,7 @@ contract('Assets', (accounts) => {
         isFree.should.be.equal(true);
     });
 
-    it('getFreeShirt', async () => {
+   it('getFreeShirt', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         teamIdxInCountry = 0; 
@@ -372,7 +372,7 @@ contract('Assets', (accounts) => {
     });
 
     
-    it('transferPlayer', async () => {
+   it('transferPlayer', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
@@ -414,7 +414,7 @@ contract('Assets', (accounts) => {
         shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 2);
     });
 
-    it('get owner of player', async () => {
+   it('get owner of player', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
@@ -437,11 +437,12 @@ contract('Assets', (accounts) => {
         owner.should.be.equal(CAROL);
     });
 
-    it('get owner invalid player', async () => {
-        await market.getOwnerPlayer(playerId = 3).should.be.rejected;
+   it('get owner invalid player', async () => {
+        owner = await market.getOwnerPlayer(playerId = 3).should.be.fulfilled;
+        owner.should.be.equal(NULL_ADDR);
     });
 
-    it('transferPlayer different team works', async () => {
+   it('transferPlayer different team works', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
@@ -450,14 +451,14 @@ contract('Assets', (accounts) => {
         await market.transferPlayer(playerId, teamId2).should.be.fulfilled;
     });
 
-    it('transferPlayer same team fails', async () => {
+   it('transferPlayer same team fails', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
         await market.transferPlayer(playerId, teamId1).should.be.rejected;
     });
 
-    it('transferPlayer fails when at least one team involved is a bot', async () => {
+   it('transferPlayer fails when at least one team involved is a bot', async () => {
         playerId1   = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         playerId2   = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ1 = 0, playerIdxInCountry1 = 8).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
@@ -475,7 +476,7 @@ contract('Assets', (accounts) => {
         await market.transferPlayer(playerId2, teamId1).should.be.fulfilled;
     });
     
-    it('transferPlayer to already full team', async () => {
+   it('transferPlayer to already full team', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz2, countryIdxInTZ2, teamIdxInCountry = 0).should.be.fulfilled; 
         for (playerIdxInCountry = 0; playerId < PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT; playerId++) {
             playerId   = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry).should.be.fulfilled; 
@@ -485,50 +486,52 @@ contract('Assets', (accounts) => {
         await market.transferPlayer(playerId, teamId).should.be.rejected;
     });
 
-    it('team exists', async () => {
+   it('team exists', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
-        result = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
+        result = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
         result.should.be.equal(true);
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = N_DIVS_AT_START * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV - 1).should.be.fulfilled; 
-        result = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
+        result = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
         result.should.be.equal(true);
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = N_DIVS_AT_START * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV).should.be.fulfilled; 
-        result = await market.teamWasCreatedVirtually(teamId).should.be.fulfilled;
+        result = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
         result.should.be.equal(false);
         teamId     = await assets.encodeTZCountryAndVal(tz = 0, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
-        result = await market.teamWasCreatedVirtually(teamId).should.be.rejected;
+        result = await market.wasTeamCreatedVirtually(teamId).should.be.rejected;
     });
 
-    it('initial number of countries', async () => {
+   it('initial number of countries', async () => {
         const count = await assets.countCountries(tz = 1).should.be.fulfilled;
         count.toNumber().should.be.equal(1);
     });
 
-    it('initial number of teams', async () => {
+   it('initial number of teams', async () => {
         const count = await assets.getNTeamsInCountry(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
         count.toNumber().should.be.equal(N_DIVS_AT_START * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV);
     });
 
-    it('existence of null player', async () => {
-        const exists = await assets.playerExists(playerId = 0).should.be.fulfilled;
+   it('existence of null player', async () => {
+        const exists = await assets.wasPlayerCreatedVirtually(playerId = 0).should.be.fulfilled;
         exists.should.be.equal(false);
     });
 
-    it('isPlayerWritten after sale', async () => {
+   it('getOwner after sale', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
+        owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+        owner.should.be.equal(NULL_ADDR); // NULL, since AcademyAddr is not yet set
         await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, ALICE).should.be.fulfilled;
-        isPlayerWritten = await market.isPlayerWritten(playerId).should.be.fulfilled;
-        isPlayerWritten.should.be.equal(false)
+        owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+        owner.should.be.equal(ALICE); 
         await market.transferPlayer(playerId, teamId2).should.be.fulfilled;
-        isPlayerWritten = await market.isPlayerWritten(playerId).should.be.fulfilled;
-        isPlayerWritten.should.be.equal(true)
+        owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+        owner.should.be.equal(ALICE);
     });
 
     
-    it('computed skills with rnd = 0 for a goal keeper', async () => {
+   it('computed skills with rnd = 0 for a goal keeper', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 0).should.be.fulfilled;
         const {0: skills, 1: birthTraits} = computedSkills;
         expected = [1000, 1000, 1000, 1000, 1000];
@@ -539,7 +542,7 @@ contract('Assets', (accounts) => {
     });
 
     
-    it('test that goal keepers have great shoot=block skills', async () => {
+   it('test that goal keepers have great shoot=block skills', async () => {
         skillsAvg = [0,0,0,0,0];
         nTrials = 100;
         for (n = 0; n < nTrials; n++) {
@@ -552,7 +555,7 @@ contract('Assets', (accounts) => {
         debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
     });
 
-    it('test that forwards have great shoot skills', async () => {
+   it('test that forwards have great shoot skills', async () => {
         skillsAvg = [0,0,0,0,0];
         nTrials = 100;
         for (n = 0; n < nTrials; n++) {
@@ -565,7 +568,7 @@ contract('Assets', (accounts) => {
         debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
     });
     
-    it('computed skills with rnd = 0 for non goal keepers should be 1000 each', async () => {
+   it('computed skills with rnd = 0 for non goal keepers should be 1000 each', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
         const {0: skills, 1: birthTraits} = computedSkills;
         expected = [1000, 1000, 1000, 1000, 1000];
@@ -575,7 +578,7 @@ contract('Assets', (accounts) => {
         debug.compareArrays(birthTraits, expected, toNum = true, verbose = false);
     });
 
-    it('computed prefPos gives correct number of defenders, mids, etc', async () => {
+   it('computed prefPos gives correct number of defenders, mids, etc', async () => {
         expectedPos = [ 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 4, 4, 5, 5, 3, 3, 3, 3 ];
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
@@ -585,7 +588,7 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('testing aggressiveness', async () => { 
+   it('testing aggressiveness', async () => { 
         expectedAggr = [ 3, 1, 1, 2, 2, 2, 0, 1, 0, 1, 2, 2, 3, 3, 3, 0, 2, 3 ];
         resultAggr = []
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
@@ -597,7 +600,7 @@ contract('Assets', (accounts) => {
         debug.compareArrays(resultAggr, expectedAggr, toNum = true, verbose = false);
     });
 
-    it('sum of computed skills is close to 5000', async () => {
+   it('sum of computed skills is close to 5000', async () => {
         for (let i = 0; i < 10; i++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + i));
             shirtNum = 3 + (seed % 15); // avoid goalkeepers
@@ -608,7 +611,7 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('get shirtNum in team for many players in a country', async () => {
+   it('get shirtNum in team for many players in a country', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         playersInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT
@@ -620,7 +623,7 @@ contract('Assets', (accounts) => {
         }
     })
 
-    it('transfer team', async () => {
+   it('transfer team', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE); 
         currentOwner = await market.getOwnerTeam(teamId).should.be.fulfilled;
@@ -633,25 +636,25 @@ contract('Assets', (accounts) => {
         });
     });
 
-    it('transfer invalid team 0', async () => {
+   it('transfer invalid team 0', async () => {
         await market.transferTeam(teamId = 0, BOB).should.be.rejected;
     });
 
-    it('transfer bot from a not-initialized tz', async () => {
+   it('transfer bot from a not-initialized tz', async () => {
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled; 
         teamId = await assets.encodeTZCountryAndVal(tz = 26, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.rejected; 
     });
 
-    it('transfer fails when team is a bot', async () => {
+   it('transfer fails when team is a bot', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
         await market.transferTeam(teamId, BOB).should.be.rejected;
         await assets.transferFirstBotToAddr(tz,countryIdxInTZ, ALICE); 
         await market.transferTeam(teamId, BOB).should.be.fulfilled;
     });
 
-    it('transfer team accross same owner', async () => {
+   it('transfer team accross same owner', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE); 
         await market.transferTeam(teamId, ALICE).should.be.rejected;
