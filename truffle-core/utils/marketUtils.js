@@ -238,6 +238,102 @@ async function completePlayerAuction(
   return tx
 }
 
+async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sellerAccount) {
+  // Mobile app does this:
+  sigSeller = await signPutAssetForSaleMTx(
+    currencyId,
+    price,
+    sellerRnd,
+    validUntil, 
+    teamId.toNumber(),
+    sellerAccount
+  );
+
+  // First of all, Freeverse and Buyer check the signature
+  // In this case, using web3:
+  recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
+  recoveredSellerAddr.should.be.equal(sellerAccount.address);
+
+  // The correctness of the seller message can also be checked in the BC:
+  const sellerHiddenPrice = concatHash(
+    ["uint8", "uint256", "uint256"],
+    [currencyId, price, sellerRnd]
+  );
+  sellerTxMsgBC = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, sellerTeamId.toNumber()).should.be.fulfilled;
+  sellerTxMsgBC.should.be.equal(sigSeller.message);
+
+  // Then, the buyer builds a message to sign
+  let isTeamFrozen = await market.isTeamFrozen(teamId.toNumber()).should.be.fulfilled;
+  isTeamFrozen.should.be.equal(false);
+
+  // and send the Freeze TX. 
+  const sigSellerRS = [
+    sigSeller.r,
+    sigSeller.s
+  ];
+  
+  tx = await market.freezeTeam(
+    sellerHiddenPrice,
+    validUntil,
+    teamId.toNumber(),
+    sigSellerRS,
+    sigSeller.v
+  ).should.be.fulfilled;
+  
+  return tx;
+};
+
+async function completeTeamAuction(
+  currencyId, price, sellerRnd, validUntil, sellerTeamId, 
+  extraPrice, buyerRnd, isOffer2StartAuctionSig, isOffer2StartAuctionBC, buyerAccount) 
+{
+  // Add some amount to the price where seller started, and a rnd to obfuscate it
+  const buyerHiddenPrice = concatHash(
+    ["uint256", "uint256"],
+    [extraPrice, buyerRnd]
+  );
+  let sigBuyer = await signAgreeToBuyTeamMTx(
+    currencyId,
+    price,
+    extraPrice,
+    sellerRnd,
+    buyerRnd,
+    validUntil,
+    sellerTeamId.toNumber(),
+    isOffer2StartAuctionSig,
+    buyerAccount
+  ).should.be.fulfilled;
+
+  // Freeverse checks the signature
+  recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
+  recoveredBuyerAddr.should.be.equal(buyerAccount.address);
+
+  // Freeverse waits until actual money has been transferred between users, and completes sale
+  const sigBuyerRS = [
+    sigBuyer.r,
+    sigBuyer.s
+  ];
+
+  // The correctness of the seller message can also be checked in the BC:
+  const sellerHiddenPrice = concatHash(
+    ["uint8", "uint256", "uint256"],
+    [currencyId, price, sellerRnd]
+  );
+  
+  tx = await market.completeTeamAuction(
+    sellerHiddenPrice,
+    validUntil,
+    sellerTeamId.toNumber(),
+    buyerHiddenPrice,
+    sigBuyerRS,
+    sigBuyer.v,
+    recoveredBuyerAddr,
+    isOffer2StartAuctionBC
+  ).should.be.fulfilled;
+  return tx;
+}
+
+
 module.exports = {
   concatHash,
   getMessageHash,
@@ -246,7 +342,9 @@ module.exports = {
   signAgreeToBuyTeamMTx,
   transferPlayerViaAuction,
   freezePlayer,
-  completePlayerAuction
+  completePlayerAuction,
+  freezeTeam,
+  completeTeamAuction
   
   // signOfferToBuyPlayerMTx,
   // signOfferToBuyTeamMTx,  

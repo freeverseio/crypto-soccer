@@ -44,112 +44,6 @@ async function createSpecialPlayerId(internalId = 144321433) {
   return playerId;
 }
 
-async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sellerAccount) {
-  // Mobile app does this:
-  sigSeller = await marketUtils.signPutAssetForSaleMTx(
-    currencyId,
-    price,
-    sellerRnd,
-    validUntil, 
-    teamId.toNumber(),
-    sellerAccount
-  );
-
-  // First of all, Freeverse and Buyer check the signature
-  // In this case, using web3:
-  recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-  recoveredSellerAddr.should.be.equal(sellerAccount.address);
-
-  // The correctness of the seller message can also be checked in the BC:
-  const sellerHiddenPrice = marketUtils.concatHash(
-    ["uint8", "uint256", "uint256"],
-    [currencyId, price, sellerRnd]
-  );
-  sellerTxMsgBC = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, sellerTeamId.toNumber()).should.be.fulfilled;
-  sellerTxMsgBC.should.be.equal(sigSeller.message);
-
-  // Then, the buyer builds a message to sign
-  let isTeamFrozen = await market.isTeamFrozen(teamId.toNumber()).should.be.fulfilled;
-  isTeamFrozen.should.be.equal(false);
-
-  // and send the Freeze TX. 
-  const sigSellerRS = [
-    sigSeller.r,
-    sigSeller.s
-  ];
-  
-  tx = await market.freezeTeam(
-    sellerHiddenPrice,
-    validUntil,
-    teamId.toNumber(),
-    sigSellerRS,
-    sigSeller.v
-  ).should.be.fulfilled;
-  
-  return tx;
-};
-
-async function completeTeamAuction(
-  currencyId, price, sellerRnd, validUntil, sellerTeamId, 
-  extraPrice, buyerRnd, isOffer2StartAuctionSig, isOffer2StartAuctionBC, buyerAccount) 
-{
-  // Add some amount to the price where seller started, and a rnd to obfuscate it
-  const buyerHiddenPrice = marketUtils.concatHash(
-    ["uint256", "uint256"],
-    [extraPrice, buyerRnd]
-  );
-  let sigBuyer = await marketUtils.signAgreeToBuyTeamMTx(
-    currencyId,
-    price,
-    extraPrice,
-    sellerRnd,
-    buyerRnd,
-    validUntil,
-    sellerTeamId.toNumber(),
-    isOffer2StartAuctionSig,
-    buyerAccount
-  ).should.be.fulfilled;
-
-  // Freeverse checks the signature
-  recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-  recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-  // Freeverse waits until actual money has been transferred between users, and completes sale
-  const sigBuyerRS = [
-    sigBuyer.r,
-    sigBuyer.s
-  ];
-
-  // The correctness of the seller message can also be checked in the BC:
-  const sellerHiddenPrice = marketUtils.concatHash(
-    ["uint8", "uint256", "uint256"],
-    [currencyId, price, sellerRnd]
-  );
-  
-  tx = await market.completeTeamAuction(
-    sellerHiddenPrice,
-    validUntil,
-    sellerTeamId.toNumber(),
-    buyerHiddenPrice,
-    sigBuyerRS,
-    sigBuyer.v,
-    recoveredBuyerAddr,
-    isOffer2StartAuctionBC
-  ).should.be.fulfilled;
-  return tx;
-}
-
-
-
-async function provideFundsToAdresses(addresses, originAccounts, value = "1000000000000000000") {
-  for (i = 0; i < addresses.length; i++) {
-    to = addresses[i];
-    await web3.eth.sendTransaction({ from: originAccounts[i], to, value }).should.be.fulfilled;
-  }
-}
-
-
-
 contract("Market", accounts => {
   let ok;
   const NULL_TEAMID = 0;
@@ -654,14 +548,14 @@ contract("Market", accounts => {
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
     const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
     
-    tx = await freezeTeam(currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezeTeam(currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
       return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completeTeamAuction(
+    tx = await marketUtils.completeTeamAuction(
       currencyId, price, offererRnd, offerValidUntil, sellerTeamId, 
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerAccount
     ).should.be.fulfilled;
@@ -673,14 +567,14 @@ contract("Market", accounts => {
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
     const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
-    tx = await freezeTeam(currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezeTeam(currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
       return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completeTeamAuction(
+    tx = await marketUtils.completeTeamAuction(
       currencyId, price, offererRnd, offerValidUntil, sellerTeamId, 
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerAccount
     ).should.be.rejected;
@@ -733,7 +627,7 @@ contract("Market", accounts => {
     ok.should.be.equal(false);
     
     // and finally do the freeze 
-    tx = await market.freezeTeam(
+    tx = await market.marketUtils.freezeTeam(
       sellerHiddenPrice,
       validUntil,
       sellerTeamId.toNumber(),
@@ -743,7 +637,7 @@ contract("Market", accounts => {
   });
   
  
-  it2("teams: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+  it("teams: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
     // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
@@ -756,14 +650,14 @@ contract("Market", accounts => {
     //          tells the buyer to forget about this player
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
-    tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
       return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completeTeamAuction(
+    tx = await marketUtils.completeTeamAuction(
       currencyId, price, sellerRnd, validUntil, sellerTeamId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerAccount
     ).should.be.fulfilled;
@@ -777,14 +671,14 @@ contract("Market", accounts => {
   });
 
   it2("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
-    tx, sellerHiddenPrice = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx, sellerHiddenPrice = await marketUtils.freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
       return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completeTeamAuction(
+    tx = await marketUtils.completeTeamAuction(
       currencyId, price, sellerRnd, validUntil, sellerTeamId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = true, buyerAccount
     ).should.be.rejected;    
@@ -802,7 +696,7 @@ contract("Market", accounts => {
     isPlayerFrozen.should.be.equal(true);
     
     // fail to put team:
-    tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.rejected;
+    tx = await marketUtils.freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.rejected;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(false);
     
@@ -824,7 +718,7 @@ contract("Market", accounts => {
     teamId.should.be.bignumber.equal(sellerTeamId);
 
     // put team:
-    tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     
