@@ -16,7 +16,6 @@ function getMessageHash(msg) {
   return web3.utils.keccak256(ethMessage);
 }
 
-
 async function signPutAssetForSaleMTx(currencyId, price, rnd, validUntil, asssetId, sellerAccount) {
   const hiddenPrice = concatHash(
       ['uint8', 'uint256', 'uint256'],

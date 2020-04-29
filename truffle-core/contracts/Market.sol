@@ -142,7 +142,7 @@ contract Market is MarketView {
         bytes32[2] memory sig,
         uint8 sigV
     ) public {
-        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezePlayer requirements not met");
+        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezeTeam requirements not met");
         // // Freeze player
         _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
@@ -176,7 +176,7 @@ contract Market is MarketView {
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
-        // so in this function, both teams are asumed to exist and belong to the rightful (nonBot) owners
+        // so in this function, both teams are asumed to exist, be different, and belong to the rightful (nonBot) owners
 
         // part related to origin team:
         uint256 state = getPlayerState(playerId);
@@ -187,10 +187,6 @@ contract Market is MarketView {
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
                 
-        // part related to both teams:
-        require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
-        require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
-
         // part related to target team:
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
