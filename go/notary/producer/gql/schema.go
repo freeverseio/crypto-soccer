@@ -29,11 +29,11 @@ const Schema = `
 	}
 
 	input GeneratePlayerIDsInput {
-
+  		signature: String!
 	}
 
 	input SubmitPlayerPurchaseInput {
-
+  		signature: String!
 	}
 
 	type Mutation {
