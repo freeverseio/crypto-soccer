@@ -47,7 +47,7 @@ func (b CancelAuctionInput) VerifySignature() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return verifySignature(hash, sign)
+	return VerifySignature(hash, sign)
 }
 
 func (b CancelAuctionInput) SignerAddress() (common.Address, error) {
@@ -59,5 +59,5 @@ func (b CancelAuctionInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return addressFromSignature(hash, sign)
+	return AddressFromSignature(hash, sign)
 }

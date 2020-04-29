@@ -59,7 +59,7 @@ func (b CreateAuctionInput) VerifySignature() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return verifySignature(hash, sign)
+	return VerifySignature(hash, sign)
 }
 
 func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
@@ -71,7 +71,7 @@ func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return addressFromSignature(hash, sign)
+	return AddressFromSignature(hash, sign)
 }
 
 func (b CreateAuctionInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {

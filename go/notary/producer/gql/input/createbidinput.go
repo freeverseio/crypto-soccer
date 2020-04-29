@@ -57,5 +57,5 @@ func (b CreateBidInput) VerifySignature(contracts contracts.Contracts) (bool, er
 	if err != nil {
 		return false, err
 	}
-	return verifySignature(hash, sign)
+	return VerifySignature(hash, sign)
 }
