@@ -2,9 +2,7 @@
 package gql
 
 const Schema = ` 
-	type Query {
-		ping: Boolean!,
-	}
+
 
 	input CreateAuctionInput {
   		signature: String!
@@ -40,11 +38,14 @@ const Schema = `
 		teamId: ID!
 	}
 
+	type Query {
+		generatePlayerIds(input: GeneratePlayerIdsInput!): [ID!]! 
+	}
+
 	type Mutation {
         createAuction(input: CreateAuctionInput!): ID!
         cancelAuction(input: CancelAuctionInput!): ID!
 		createBid(input: CreateBidInput!): ID!
-		generatePlayerIds(input: GeneratePlayerIdsInput!): [ID!]! 
 		submitPlayerPurchase(input: SubmitPlayerPurchaseInput!): ID!
 	}
 `
