@@ -75,38 +75,11 @@ contract Market is MarketView {
 
         // note that wasTeamCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
-        require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
+        require(!(isConstrained && (nRemain == 0)), "trying to accept a buyNow player, but team is busy in constrained friendlies");
         transferPlayer(playerId, targetTeamId);
         decreaseMaxAllowedAcquisitions(targetTeamId);
     }
     
-    function transferPromoPlayer(
-        uint256 playerId,
-        uint256 validUntil,
-        bytes32[2] memory sigBuy,
-        uint8 sigVBuy
-     ) public {
-        require(msg.sender == _academyAddr , "Seller does not own academy");
-        require(validUntil > now, "validUntil is in the past");
-        require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-        require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy Players can be offered as promo players");
-        uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
-        require(_playerIdToState[playerIdWithoutTargetTeam] == 0, "promo player already in the universe");
-        uint256 targetTeamId = getTargetTeamId(playerId);
-        // require that team does not have any constraint from friendlies
-        (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
-        require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
-        // testing require(wasTeamCreatedVirtually(targetTeamId) and  require(!isBotTeam(targetTeamId) is already done in _assets.transferPlayer:
-        
-                
-        bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
-        require(getOwnerTeam(targetTeamId) == 
-                    recoverAddr(signedMsg, sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
-         
-        transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
-        decreaseMaxAllowedAcquisitions(targetTeamId);
-    }
-
     function completePlayerAuction(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -174,7 +147,7 @@ contract Market is MarketView {
         emit TeamFreeze(teamId, 1, false);
     }
 
-    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+    function transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
         // warning: check of ownership of players and teams should be done before calling this function
         // so in this function, both teams are asumed to exist, be different, and belong to the rightful (nonBot) owners
 
