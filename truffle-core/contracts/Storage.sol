@@ -11,6 +11,7 @@ contract Storage is ProxyStorage, Constants{
     uint256[2**12] _slotReserve;
    
     address internal _academyAddr;
+    address internal _cryptoMktAddr;
     
     mapping(uint256 => uint256) internal _playerIdToState;
     mapping (uint256 => uint256) internal _playerIdToAuctionData;

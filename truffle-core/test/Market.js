@@ -210,6 +210,10 @@ contract("Market", accounts => {
     await timeTravel.advanceTime(0.1*3600);
     await timeTravel.advanceBlock().should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.fulfilled;
+    // fails because marketCrypto is not yet authotized:
+    tx = await marketCrypto.executePlayerTransfer(playerId0).should.be.rejected;
+
+    await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
     tx = await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
     truffleAssert.eventEmitted(tx, "AssetWentToNewOwner", (event) => {
       return  event.playerId.should.be.bignumber.equal(playerId0) && 
@@ -236,6 +240,7 @@ contract("Market", accounts => {
   });
 
   it("crypto mkt shows that we can get past 25 players" , async () => {
+    await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
     // set up teams: team 2 - ALICE, team 3 - BOB
     ALICE = accounts[0];
     BOB = accounts[1];
@@ -313,6 +318,7 @@ contract("Market", accounts => {
 
   it("crypto mkt cannot bid if buyerTeamId = sellerTeamId" , async () => {
     // set up teams: ALICE, BOB, ALICE
+    await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
     ALICE = accounts[0];
     BOB = accounts[1];
 

@@ -150,7 +150,7 @@ contract MarketCrypto {
         require(!_assetWentToNewOwner[auctionId], "the player in this auction was already transferred");
         _assetWentToNewOwner[auctionId] = true;
         _market.setIsPlayerFrozenCrypto(playerId, false);
-        _market.transferPlayer(playerId, _teamIdHighestBidder[auctionId]);
+        _market.transferPlayerFromCryptoMkt(playerId, _teamIdHighestBidder[auctionId]);
         emit AssetWentToNewOwner(playerId, auctionId);
     }
     

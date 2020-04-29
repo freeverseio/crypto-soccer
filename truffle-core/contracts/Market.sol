@@ -19,6 +19,10 @@ contract Market is MarketView {
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
 
+    function setCryptoMarketAddress(address addr) external {
+        _cryptoMktAddr = addr;
+    }
+    
     function setIsPlayerFrozenCrypto(uint256 playerId, bool isFrozen) public {
         _playerIdToIsFrozenCrypto[playerId] = isFrozen;
         emit PlayerFreezeCrypto(playerId, isFrozen);
@@ -78,6 +82,14 @@ contract Market is MarketView {
         require(!(isConstrained && (nRemain == 0)), "trying to accept a buyNow player, but team is busy in constrained friendlies");
         transferPlayer(playerId, targetTeamId);
         decreaseMaxAllowedAcquisitions(targetTeamId);
+    }
+    
+    function transferPlayerFromCryptoMkt(
+        uint256 playerId,
+        uint256 targetTeamId
+     ) external {
+        require(msg.sender == _cryptoMktAddr, "only authorized cryptoMarket contract can transfer players");
+        transferPlayer(playerId, targetTeamId);
     }
     
     function completePlayerAuction(
