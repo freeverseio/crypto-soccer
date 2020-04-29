@@ -66,7 +66,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
                 // check player is not already frozen
                 (!isTeamFrozen(teamId)) &&  
                 // check asset is owned by legit address
-                (teamOwner != address(0)) && 
+                (teamOwner != NULL_ADDR) && 
                 // check signatures are valid by requiring that they own the asset:
                 (teamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&    
                 // check that auction time is less that the required 32 bit (2^32 - 1)
@@ -131,12 +131,11 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     {
         // the next line will verify that the playerId is the same that was used by the seller to sign
         bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
-        
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(buyerTeamId);
         if (isConstrained && nRemain == 0) return false;
         bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
         ok =    // check asset is owned by buyer
-                (getOwnerTeam(buyerTeamId) != address(0)) && 
+                (getOwnerTeam(buyerTeamId) != NULL_ADDR) && 
                 // check buyer and seller refer to the exact same auction
                 ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
                 // check signatures are valid by requiring that they own the asset:
