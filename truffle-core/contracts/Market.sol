@@ -73,7 +73,6 @@ contract Market is MarketView {
      ) public {
         // isAcademy checks that player isSpecial, and not written.
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
-        require(getTargetTeamId(playerId) == 0, "cannot have buy-now players with non-null targetTeamId");
         require(!isBotTeam(targetTeamId), "cannot transfer to bot teams");
         require(targetTeamId != ACADEMY_TEAM, "targetTeam of buyNow player cannot be Academy Team");
 
