@@ -18,7 +18,3 @@ func NewResolver(
 	resolver.contracts = contracts
 	return &resolver
 }
-
-func (b *Resolver) Ping() bool {
-	return true
-}
