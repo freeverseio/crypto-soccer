@@ -44,8 +44,6 @@ async function createSpecialPlayerId(internalId = 144321433) {
   return playerId;
 }
 
-
-
 async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sellerAccount) {
   // Mobile app does this:
   sigSeller = await marketUtils.signPutAssetForSaleMTx(
@@ -90,49 +88,6 @@ async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sell
   
   return tx;
 };
-
-
-async function freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount) {
-    // Mobile app does this:
-    sigSeller = await marketUtils.signPutAssetForSaleMTx(
-      currencyId,
-      price,
-      sellerRnd,
-      validUntil,
-      playerId.toString(),
-      sellerAccount
-    );
-    // First of all, Freeverse and Buyer check the signature
-    // In this case, using web3:
-    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-    recoveredSellerAddr.should.be.equal(sellerAccount.address);
-
-    // The correctness of the seller message can also be checked in the BC:
-    const sellerHiddenPrice = marketUtils.concatHash(
-      ["uint8", "uint256", "uint256"],
-      [currencyId, price, sellerRnd]
-    );
-    sellerTxMsgBC = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId).should.be.fulfilled;
-    sellerTxMsgBC.should.be.equal(sigSeller.message);
-
-    // Then, the buyer builds a message to sign
-    let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
-    isPlayerFrozen.should.be.equal(false);
-
-    // and send the Freeze TX. 
-    const sigSellerRS = [
-      sigSeller.r,
-      sigSeller.s
-    ];
-    tx = await market.freezePlayer(
-      sellerHiddenPrice,
-      validUntil,
-      playerId,
-      sigSellerRS,
-      sigSeller.v
-    ).should.be.fulfilled;
-    return tx;
-}
 
 async function completeTeamAuction(
   currencyId, price, sellerRnd, validUntil, sellerTeamId, 
@@ -184,57 +139,7 @@ async function completeTeamAuction(
   return tx;
 }
 
-async function completePlayerAuction(
-    currencyId, price, sellerRnd, validUntil, playerId, 
-    extraPrice, buyerRnd, isOffer2StartAuctionSig, isOffer2StartAuctionBC, buyerTeamId, buyerAccount
-  ) {
-  // Add some amount to the price where seller started, and a rnd to obfuscate it
-  const buyerHiddenPrice = marketUtils.concatHash(
-    ["uint256", "uint256"],
-    [extraPrice, buyerRnd]
-  );
 
-  let sigBuyer = await marketUtils.signAgreeToBuyPlayerMTx(
-    currencyId,
-    price,
-    extraPrice,
-    sellerRnd,
-    buyerRnd,
-    validUntil,
-    playerId.toString(),
-    isOffer2StartAuctionSig,
-    buyerTeamId.toString(),
-    buyerAccount
-  ).should.be.fulfilled;
-
-  // Freeverse checks the signature
-  recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-  recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-  // Freeverse waits until actual money has been transferred between users, and completes sale
-  const sigBuyerRS = [
-    sigBuyer.r,
-    sigBuyer.s
-  ];
-  
-  const sellerHiddenPrice = marketUtils.concatHash(
-    ["uint8", "uint256", "uint256"],
-    [currencyId, price, sellerRnd]
-  );
-
-  tx = await market.completePlayerAuction(
-    sellerHiddenPrice,
-    validUntil,
-    playerId.toString(),
-    buyerHiddenPrice,
-    buyerTeamId.toString(),
-    sigBuyerRS,
-    sigBuyer.v,
-    isOffer2StartAuctionBC
-  ).should.be.fulfilled;
-
-  return tx
-}
 
 async function provideFundsToAdresses(addresses, originAccounts, value = "1000000000000000000") {
   for (i = 0; i < addresses.length; i++) {
@@ -243,30 +148,7 @@ async function provideFundsToAdresses(addresses, originAccounts, value = "100000
   }
 }
 
-async function transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAccount, buyerAccount) {
-  currencyId = 1;
-  price = 41234;
-  rnd = 42321;  
-  sellerRnd = 42321;
-  extraPrice = 332;
-  buyerRnd = 1243523;
-  
-  now = await market.getBlockchainNowTime().should.be.fulfilled;
-  AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
-  validUntil = now.toNumber() + AUCTION_TIME.toNumber();
-  tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-  isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
-  isPlayerFrozen.should.be.equal(true);
-  truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-    return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
-  });
-  tx = await completePlayerAuction(
-    currencyId, price,  sellerRnd, validUntil, playerId, 
-    extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
-  ).should.be.fulfilled;
-  let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
-  finalOwner.should.be.equal(buyerAccount.address);
-}
+
 
 contract("Market", accounts => {
   let ok;
@@ -319,10 +201,10 @@ contract("Market", accounts => {
     nPlayersToBuy = 9;
     for (i = 0; i < nPlayersToBuy; i++) {
       playerIds.push(playerId.add(web3.utils.toBN(i))); 
-      tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerIds[i], sellerAccount).should.be.fulfilled;
+      tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerIds[i], sellerAccount).should.be.fulfilled;
     }
     for (i = 0; i < nPlayersToBuy; i++) {
-      tx = await completePlayerAuction(
+      tx = await marketUtils.completePlayerAuction(
         currencyId, price,  sellerRnd, validUntil, playerIds[i], 
         extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
       ).should.be.fulfilled;
@@ -915,7 +797,7 @@ contract("Market", accounts => {
     teamId.should.be.bignumber.equal(sellerTeamId);
     
     // put player:
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     
@@ -947,7 +829,7 @@ contract("Market", accounts => {
     isTeamFrozen.should.be.equal(true);
     
     // fail to put player:
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false);
   });
@@ -959,7 +841,7 @@ contract("Market", accounts => {
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
     const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
-    tx = await freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -967,7 +849,7 @@ contract("Market", accounts => {
     });
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
-    tx = await completePlayerAuction(
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  offererRnd, offerValidUntil, playerId, 
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
@@ -986,7 +868,7 @@ contract("Market", accounts => {
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
     const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
-    tx = await freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -994,7 +876,7 @@ contract("Market", accounts => {
     });
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
-    tx = await completePlayerAuction(
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  offererRnd, offerValidUntil, playerId, 
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
     ).should.be.rejected;
@@ -1002,20 +884,20 @@ contract("Market", accounts => {
   });
   
   it2("players: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx, sellerHiddenPrice = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     validUntil = now.toNumber() + 3600*24*2; // two days
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
   });
   
   it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because targetTeam = originTeam", async () => {
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completePlayerAuction(
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, sellerTeamId, sellerAccount
     ).should.be.rejected;
@@ -1036,14 +918,14 @@ contract("Market", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completePlayerAuction(
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
@@ -1070,14 +952,14 @@ contract("Market", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completePlayerAuction(
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
@@ -1091,7 +973,7 @@ contract("Market", accounts => {
   });
   
   it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
-    await transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
+    await marketUtils.transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
   });
   
   
@@ -1099,15 +981,15 @@ contract("Market", accounts => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
     // first acquisition works:
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    tx = await completePlayerAuction(
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
     // second acquisition should fail:
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    tx = await completePlayerAuction(
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.rejected;
@@ -1153,7 +1035,7 @@ contract("Market", accounts => {
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false)
     
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
 
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
@@ -1169,13 +1051,13 @@ contract("Market", accounts => {
   it2("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     playerId = await createSpecialPlayerId();
 
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
     tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
       return event.teamId.toNumber() == 1 && event.to == freeverseAccount.address;
     });
 
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
 
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
@@ -1184,7 +1066,7 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completePlayerAuction(
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
@@ -1196,11 +1078,11 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
 
     // test that Freeverse cannot put the same player again in the market
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
     
     // test that the new owner can sell freely as always
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, buyerAccount).should.be.fulfilled;
-    tx = await completePlayerAuction(
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, buyerAccount).should.be.fulfilled;
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, sellerTeamId, sellerAccount
     ).should.be.fulfilled;
@@ -1404,13 +1286,13 @@ contract("Market", accounts => {
   });
   
   it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
-    tx = await completePlayerAuction(
+    tx = await marketUtils.completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
     ).should.be.rejected;
