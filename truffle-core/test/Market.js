@@ -582,6 +582,7 @@ contract("Market", accounts => {
 
   it("teams: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
     validUntil = now.toNumber() + 3600*24*2; // two days
+    offererRnd = 23987435;
 
     sigSeller = await marketUtils.signPutAssetForSaleMTx(
       currencyId,
@@ -627,7 +628,7 @@ contract("Market", accounts => {
     ok.should.be.equal(false);
     
     // and finally do the freeze 
-    tx = await market.marketUtils.freezeTeam(
+    tx = await market.freezeTeam(
       sellerHiddenPrice,
       validUntil,
       sellerTeamId.toNumber(),
