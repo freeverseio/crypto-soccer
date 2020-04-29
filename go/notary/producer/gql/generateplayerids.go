@@ -1,6 +1,7 @@
 package gql
 
 import (
+	"encoding/hex"
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -11,9 +12,39 @@ import (
 func (b *Resolver) GeneratePlayerIds(args struct{ Input input.GeneratePlayerIdsInput }) ([]graphql.ID, error) {
 	log.Debugf("GeneratePlayerIDs %v", args)
 
+	result := []graphql.ID{}
+
 	if b.ch == nil {
-		return []graphql.ID{}, errors.New("internal error: no channel")
+		return result, errors.New("internal error: no channel")
 	}
 
-	return []graphql.ID{}, errors.New("not implemented")
+	hash, err := args.Input.Hash()
+	if err != nil {
+		return result, err
+	}
+	sign, err := hex.DecodeString(args.Input.Signature)
+	if err != nil {
+		return result, err
+	}
+
+	isValid, err := input.VerifySignature(hash, sign)
+	if err != nil {
+		return result, err
+	}
+	if !isValid {
+		return result, errors.New("Invalid signature")
+	}
+
+	sender, err := input.AddressFromSignature(hash, sign)
+	if err != nil {
+		return result, err
+	}
+	log.Infof("TODO sender is %v", sender)
+
+	// TODO put the 30 in a smarter place
+	for i := 0; i < 30; i++ {
+		result = append(result, graphql.ID(i))
+	}
+
+	return result, nil
 }
