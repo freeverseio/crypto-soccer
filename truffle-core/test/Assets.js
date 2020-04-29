@@ -82,7 +82,8 @@ contract('Assets', (accounts) => {
             substitutedLastHalf = true,
             sumSkills
         ).should.be.fulfilled;
-        result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.rejected;
+        result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
         specialPlayerId = await assets.addIsSpecial(specialPlayerId).should.be.fulfilled;
         skills = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
         result = await assets.getSkill(skills, SK_SHO).should.be.fulfilled;
