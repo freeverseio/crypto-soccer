@@ -497,7 +497,8 @@ contract('Assets', (accounts) => {
         result = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
         result.should.be.equal(false);
         teamId     = await assets.encodeTZCountryAndVal(tz = 0, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
-        result = await market.wasTeamCreatedVirtually(teamId).should.be.rejected;
+        result = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
+        result.should.be.equal(false);
     });
 
    it('initial number of countries', async () => {
