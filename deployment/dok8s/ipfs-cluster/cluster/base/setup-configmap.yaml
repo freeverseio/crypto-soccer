@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ipfs-cluster-set-bootstrap-conf
+data:
+  cluster-entrypoint.sh: |
+    #!/bin/sh
+    user=ipfs
+
+    # This is a custom entrypoint for k8s designed to connect to the bootstrap
+    # node running in the cluster. It has been set up using a configmap to
+    # allow changes on the fly.
+
+    PEER_ID=${PEER_ID_0}
+    PEER_PRIV_KEY=${PEER_PRIV_KEY_0}
+
+    grep -q ".*ipfs-cluster-1.*" /proc/sys/kernel/hostname
+    if [ $? -eq 0 ]; then
+      PEER_ID=${PEER_ID_1}
+      PEER_PRIV_KEY=${PEER_PRIV_KEY_1}
+    else
+      PEER_ID=${PEER_ID_2}
+      PEER_PRIV_KEY=${PEER_PRIV_KEY_2}
+    fi
+
+    IDENTITY_PATH=/data/ipfs-cluster/identity.json
+    cat << EOF > "${IDENTITY_PATH}"
+    {
+        "id": "${PEER_ID}",
+        "private_key": "${PEER_PRIV_KEY}"
+    }
+    EOF
+
+    if [ ! -f /data/ipfs-cluster/service.json ]; then
+      # add a list of trusted peers otherwise to trust everyone run ipfs-cluster-service init
+      ipfs-cluster-service init --peers "/dns4/${SVC_NAME}-1.${SVC_NAME}/tcp/9096/ipfs/${PEER_ID_1}, /dns4/${SVC_NAME}-2.${SVC_NAME}/tcp/9096/ipfs/${PEER_ID_2}, /dns4/${TRUSTED_PEER_DNS}/tcp/9096/p2p/${TRUSTED_PEER_ID}"
+    fi
+
+    PEER_HOSTNAME=`cat /proc/sys/kernel/hostname`
+
+    grep -q ".*ipfs-cluster-0.*" /proc/sys/kernel/hostname
+    if [ $? -eq 0 ]; then
+      CLUSTER_ID=${BOOTSTRAP_PEER_ID} \
+      CLUSTER_PRIVATEKEY=${BOOTSTRAP_PEER_PRIV_KEY} \
+      exec ipfs-cluster-service daemon --upgrade --leave
+    else
+      BOOTSTRAP_ADDR=/dns4/${SVC_NAME}-0.${SVC_NAME}/tcp/9096/ipfs/${BOOTSTRAP_PEER_ID}
+
+      if [ -z $BOOTSTRAP_ADDR ]; then
+        exit 1
+      fi
+      # Only ipfs user can get here
+      exec ipfs-cluster-service daemon --upgrade --bootstrap $BOOTSTRAP_ADDR --leave
+    fi
+  configure-ipfs.sh: |
+    #!/bin/sh
+    set -x
+    # This is a custom entrypoint for k8s designed to run ipfs nodes in an appropriate
+    # setup for production scenarios.
+
+    if [ -f /data/ipfs/repo.lock ]; then
+      rm /data/ipfs/repo.lock
+    fi
+
+    ipfs init --profile="server,badgerds"
+    ipfs config Datastore.StorageMax 180GB
+    ipfs config --json Swarm.ConnMgr.HighWater 2000
+    ipfs config --json Datastore.BloomFilterSize 1048576
+
+    chown -R ipfs /data/ipfs
+
+    exit 0
