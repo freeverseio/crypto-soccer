@@ -980,7 +980,6 @@ contract("Market", accounts => {
   it("buy now player", async () => {
     // TODO: add test that it fails if not sent from Academy address.
     // CURRENTLY: it works regardless of: await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
-    
     playerId = await createSpecialPlayerId(id = 4312432432);
 
     // it currently has no owner:
@@ -1012,6 +1011,21 @@ contract("Market", accounts => {
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
   });
 
+  it("user can forbid BuyNow operated by FV", async () => {
+    playerId = await createSpecialPlayerId(id = 4312432432);
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 2, countryIdxInTZ = 0, teamIdxInCountry2 = 0);
+    JOSE = accounts[0];
+    await assets.transferFirstBotToAddr(tz = 2, countryIdxInTZ = 0, JOSE).should.be.fulfilled;
+    teamOwner = await market.getOwnerTeam(targetTeamId).should.be.fulfilled;
+    teamOwner.should.be.equal(JOSE);
+    // if user explicitly forbidds buyNows, it will fail:
+    await market.setIsBuyNowAllowedByOwner(targetTeamId, isAllowed = false, {from: JOSE}).should.be.fulfilled;
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
+    // if user explicitly allows buyNows, it will succeed:
+    await market.setIsBuyNowAllowedByOwner(targetTeamId, isAllowed = true, {from: JOSE}).should.be.fulfilled;
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
+  });
+  
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
     tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;

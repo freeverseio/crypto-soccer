@@ -23,6 +23,11 @@ contract Market is MarketView {
         _cryptoMktAddr = addr;
     }
     
+    function setIsBuyNowAllowedByOwner(uint256 teamId, bool isAllowed) external {
+        require(msg.sender == getOwnerTeam(teamId), "only owner of team can change isBuyNowAlloed");
+        _teamIdToIsBuyNowForbidden[teamId] = !isAllowed;
+    }
+    
     function setIsPlayerFrozenCrypto(uint256 playerId, bool isFrozen) public {
         _playerIdToIsFrozenCrypto[playerId] = isFrozen;
         emit PlayerFreezeCrypto(playerId, isFrozen);
@@ -74,6 +79,7 @@ contract Market is MarketView {
         // isAcademy checks that player isSpecial, and not written.
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
         require(!isBotTeam(targetTeamId), "cannot transfer to bot teams");
+        require(!_teamIdToIsBuyNowForbidden[targetTeamId], "user has explicitly forbidden buyNow");
         require(targetTeamId != ACADEMY_TEAM, "targetTeam of buyNow player cannot be Academy Team");
 
         // note that wasTeamCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
