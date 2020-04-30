@@ -102,7 +102,10 @@ contract MarketCrypto {
         require(auctionId != 0, "player has not been put for sale yet");
         require(now < _validUntil[auctionId], "too late to bid, auction time has expired");
         require(msg.sender == _market.getOwnerTeam(bidderTeamId), "only the owner of the team can bid for a player");
-        require(bidderTeamId != _sellerTeamId[auctionId], "players have to be transfered between differen teams");
+        require(bidderTeamId != _sellerTeamId[auctionId], "players have to be transfered between different teams");
+
+        (bool isConstrained, uint8 nRemain) = _market.getMaxAllowedAcquisitions(bidderTeamId);
+        require(!(isConstrained && nRemain == 0), "team ran out of allowed acquisitions");
 
         uint256 bidAmount = _balance[auctionId][msg.sender] + msg.value;
 

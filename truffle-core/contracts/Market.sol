@@ -95,6 +95,7 @@ contract Market is MarketView {
      ) external {
         require(msg.sender == _cryptoMktAddr, "only authorized cryptoMarket contract can transfer players");
         transferPlayer(playerId, targetTeamId);
+        decreaseMaxAllowedAcquisitions(targetTeamId);
     }
     
     function completePlayerAuction(
