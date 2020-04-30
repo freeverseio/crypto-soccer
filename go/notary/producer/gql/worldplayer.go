@@ -13,6 +13,7 @@ type WorldPlayer struct {
 	shoot             int32
 	endurance         int32
 	potential         int32
+	validUntil        string
 }
 
 func NewWorldPlayer(
@@ -31,6 +32,10 @@ func (b WorldPlayer) PlayerId() graphql.ID {
 
 func (b WorldPlayer) Name() string {
 	return b.name
+}
+
+func (b WorldPlayer) ValidUntil() string {
+	return b.validUntil
 }
 
 func (b WorldPlayer) DayOfBirth() int32 {

@@ -47,6 +47,7 @@ const Schema = `
     	shoot: Int!
     	endurance: Int!
     	potential: Int! 
+  		validUntil: String!
 	}
 
 	type Query {
