@@ -10,12 +10,12 @@ import (
 	"github.com/graph-gophers/graphql-go"
 )
 
-type GeneratePlayerIdsInput struct {
+type GetWorldPlayersInput struct {
 	Signature string
 	TeamId    graphql.ID
 }
 
-func (b GeneratePlayerIdsInput) Hash() (common.Hash, error) {
+func (b GetWorldPlayersInput) Hash() (common.Hash, error) {
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	arguments := abi.Arguments{
 		{
