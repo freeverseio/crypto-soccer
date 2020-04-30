@@ -12,6 +12,7 @@ const EncodingTact = artifacts.require('EncodingTacticsPart1');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
+const Privileged = artifacts.require('Privileged');
 
 contract('Encoding', (accounts) => {
 
@@ -21,11 +22,24 @@ contract('Encoding', (accounts) => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
         encoding = await Encoding.new().should.be.fulfilled;
         utils = await Utils.new().should.be.fulfilled;
+        privileged = await Privileged.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
         encodingGet = await EncodingGet.new().should.be.fulfilled;
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
+    
+    it('creating buyNow players', async () =>  {
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        console.log(skills)
+        console.log(ageYears)
+        console.log(traits)
+        console.log(internalId)
+        
+    })
+    return
+    
     it('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
