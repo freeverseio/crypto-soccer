@@ -17,6 +17,14 @@ const Privileged = artifacts.require('Privileged');
 function secsToDays(secs) {
     return secs/ (24 * 3600);
 }
+
+
+function dayOfBirthToAgeYears(dayOfBirth){ 
+    const now = Math.floor(new Date()/1000);
+    ageYears = (secsToDays(now) - dayOfBirth)*7/365;
+    return ageYears;
+}
+
 contract('Encoding', (accounts) => {
 
     const it2 = async(text, f) => {};
@@ -93,7 +101,7 @@ contract('Encoding', (accounts) => {
         ageYears.should.be.bignumber.equal(ageYears2);
     });
 
-    it('creating a batch of buyNow players', async () =>  {
+    it2('creating a batch of buyNow players', async () =>  {
         expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
@@ -109,6 +117,29 @@ contract('Encoding', (accounts) => {
         internalIdArray[1].should.not.be.bignumber.equal("1247534008908");
     });
     
+    it('creating a batch of buyNow players and displaying', async () =>  {
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const nPlayersPerForwardPos = [10,10,10,10];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+            playerValue = 1000, seed, nPlayersPerForwardPos
+        ).should.be.fulfilled;
+        
+        labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
+        st = "";
+        counter = 0;
+        for (pos = 0; pos < nPlayersPerForwardPos.length; pos++) {
+            st += labels[pos];
+            for (p = 0; p < nPlayersPerForwardPos[pos]; p++) {
+                st += "\nPot: " + traitsArray[counter][0];
+                st += "Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter]));
+                counter++;
+            }
+            st += "\n"
+        }
+        console.log(st)
+    });
+    
+
     return
     
     it('encodeTactics incorrect lineup', async () =>  {
