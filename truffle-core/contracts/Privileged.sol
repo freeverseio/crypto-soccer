@@ -131,7 +131,7 @@ contract Privileged is AssetsView {
     function createBuyNowPlayerIdBatch(
         uint256 playerValue, 
         uint256 seed, 
-        uint8[] memory nPlayersPerForwardPos
+        uint8[4] memory nPlayersPerForwardPos
     ) 
         public 
         view 
