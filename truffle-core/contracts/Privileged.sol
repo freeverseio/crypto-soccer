@@ -54,16 +54,16 @@ contract Privileged is AssetsView {
     }
 
     // returns a value relative to 10000
-    // Relative to 1, it would be = (age < 31) ? 1 - 0.02 * (age - 16) : 1 - 0.3 - 0.065 * (age - 31)
+    // Relative to 1, it would be = age < 31) ? 1 - 0.013 * (age - 16) : 1 - 0.013*15 - 0.05 * (age - 31)
     function ageModifier(uint256 ageYears) public pure returns(uint256) {
-        return (ageYears < 31) ? 10000 - 200 * (ageYears - 16) : 10000 - 3000 - 65 * (ageYears - 31);
+        return (ageYears < 31) ? 10000 - 130 * (ageYears - 16) : 8050 - 500 * (ageYears - 31);
     }
 
     // returns a value relative to 10000
-    // relative to 1 it would be = 0.4 + potential/7.5 
-    // relative to 1e4: 4000+10000*p/7.5 = (4000*7.5+10000* p)/7.5 = (4000*15+20000 * p)/15 
+    // relative to 1 it would be = 0.85 + potential/30
+    // relative to 1e4: 8500+10000*p/30 = (8500*30+10000* p)/30
     function potentialModifier(uint256 potential) public pure returns(uint256) {
-        return (4000 * 15 + 20000 * potential) / 15;
+        return (8500 * 30 + 10000 * potential) / 30;
     }
     
     // birthTraits = [potential, forwardness, leftishness, aggressiveness]
