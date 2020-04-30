@@ -28,6 +28,15 @@ contract('Encoding', (accounts) => {
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
+    it('creating buyNow players: ageModifier', async () =>  {
+        mods = [];
+        for (age = 16; age < 38; age += 3) {
+            mod = await privileged.ageModifier(age).should.be.fulfilled;
+            mods.push(mod);
+        }
+        expectedMods = [ 10000, 9400, 8800, 8200, 7600, 7000, 6805, 6610 ];
+        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
+    });
     
     it('creating buyNow players: potentialModifier', async () =>  {
         mods = [];
@@ -39,7 +48,7 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it2('creating buyNow players', async () =>  {
+    it('creating buyNow players', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
         expectedSkills = [4154, 2911, 2337, 2928, 4543];
