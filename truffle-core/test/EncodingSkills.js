@@ -12,6 +12,18 @@ const EncodingTact = artifacts.require('EncodingTacticsPart1');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
+const Privileged = artifacts.require('Privileged');
+
+function secsToDays(secs) {
+    return secs/ (24 * 3600);
+}
+
+
+function dayOfBirthToAgeYears(dayOfBirth){ 
+    const now = Math.floor(new Date()/1000);
+    ageYears = (secsToDays(now) - dayOfBirth)*7/365;
+    return ageYears;
+}
 
 contract('Encoding', (accounts) => {
 
@@ -21,11 +33,118 @@ contract('Encoding', (accounts) => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
         encoding = await Encoding.new().should.be.fulfilled;
         utils = await Utils.new().should.be.fulfilled;
+        privileged = await Privileged.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
         encodingGet = await EncodingGet.new().should.be.fulfilled;
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
+    it('creating buyNow players: ageModifier', async () =>  {
+        mods = [];
+        for (age = 16; age < 38; age += 3) {
+            mod = await privileged.ageModifier(age).should.be.fulfilled;
+            mods.push(mod);
+        }
+        expectedMods = [ 10000, 9610, 9220, 8830, 8440, 8050, 6550, 5050 ];
+        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
+    });
+    
+    it('creating buyNow players: potentialModifier', async () =>  {
+        mods = [];
+        for (pot = 0; pot < 10; pot++) {
+            mod = await privileged.potentialModifier(pot).should.be.fulfilled;
+            mods.push(mod);
+        }
+        expectedMods = [ 8500, 8833, 9166, 9500, 9833, 10166, 10500, 10833, 11166, 11500 ];
+        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
+    });
+    
+    it('creating one buyNow player', async () =>  {
+        expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
+        expectedTraits = [0, 3, 6, 1];
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        // check that the average skill is as expected:
+        expectedAvgSkill = await privileged.computeAvgSkills(playerValue, ageYears, traits[0]).should.be.fulfilled;
+        sumSkills = expectedSkills.reduce((a, b) => a + b, 0);
+        (Math.abs(expectedAvgSkill.toNumber() - sumSkills/5) < 20).should.be.equal(true);
+        // compare actual values
+        debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
+        ageYears.toNumber().should.be.equal(29);
+        debug.compareArrays(traits, expectedTraits, toNum = true, verbose = false);
+        internalId.should.be.bignumber.equal("1247534008908");
+        
+        // test that you get the same via the non-pure function:
+        var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerId(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        debug.compareArrays(skills2, expectedSkills, toNum = true, verbose = false);
+        debug.compareArrays(traits2, expectedTraits, toNum = true, verbose = false);
+        internalId2.should.be.bignumber.equal(internalId);
+        finalId.should.be.bignumber.equal("57896044618658097711785513161209378353305580934387458361646044782427524761292");
+
+        const now = Math.floor(new Date()/1000);
+        expectedDayOfBirth = Math.floor(secsToDays(now) - ageYears*365/7);
+        (Math.abs(dayOfBirth.toNumber() - expectedDayOfBirth) < 10).should.be.equal(true);
+        
+    });
+    
+    it('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPure(playerValue = 2000, seed, forwardPos = 3).should.be.fulfilled;
+        for (s = 0; s < skills.length; s++) {
+            (Math.abs(skills2[s].toNumber() - 2*skills[s].toNumber()) < 20).should.be.equal(true);
+        }
+        for (t = 0; t < traits.length; t++) {
+            traits2[t].toNumber().should.be.equal(traits[t].toNumber());
+        }
+        internalId2.should.be.bignumber.equal(internalId);
+        ageYears.should.be.bignumber.equal(ageYears2);
+    });
+
+    it('creating a batch of buyNow players', async () =>  {
+        expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
+        expectedTraits = [0, 3, 6, 1];
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const nPlayersPerForwardPos = [0,0,0,2];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+            playerValue = 1000, seed, nPlayersPerForwardPos
+        ).should.be.fulfilled;
+
+        // compare actual values
+        debug.compareArrays(skillsArray[0], expectedSkills, toNum = true, verbose = false);
+        debug.compareArrays(traitsArray[0], expectedTraits, toNum = true, verbose = false);
+        internalIdArray[0].should.be.bignumber.equal("1247534008908");
+        internalIdArray[1].should.not.be.bignumber.equal("1247534008908");
+    });
+    
+    it('creating a batch of buyNow players and displaying', async () =>  {
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const nPlayersPerForwardPos = [10,10,10,10];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+            playerValue = 1000, seed, nPlayersPerForwardPos
+        ).should.be.fulfilled;
+        
+        // traits: shoot, speed, pass, defence, endurance
+        labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
+        st = "";
+        counter = 0;
+        for (pos = 0; pos < nPlayersPerForwardPos.length; pos++) {
+            st += labels[pos];
+            for (p = 0; p < nPlayersPerForwardPos[pos]; p++) {
+                st += "\nPot: " + traitsArray[counter][0];
+                st += " | Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter]));
+                st += " | Shoot: " + skillsArray[counter][0];
+                st += " | Speed: " + skillsArray[counter][1];
+                st += " | Pass: " + skillsArray[counter][2];
+                st += " | Defence: " + skillsArray[counter][3];
+                st += " | Endurance: " + skillsArray[counter][4];
+                counter++;
+            }
+            st += "\n"
+        }
+        console.log(st)
+    });
+    
     it('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
