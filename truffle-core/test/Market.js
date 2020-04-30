@@ -973,11 +973,27 @@ contract("Market", accounts => {
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, sellerTeamId, sellerAccount
     ).should.be.fulfilled;
-    
-
+  });
+  
+  it("special players: same special player cannot be sold twice", async () => {
+    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await createSpecialPlayerId();
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
+    tx = await marketUtils.completePlayerAuction(
+      currencyId, price,  sellerRnd, validUntil, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.fulfilled;
+    // slight variations of auction data fail because they refer to the same playerId toni
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd+1, validUntil, playerId, freeverseAccount).should.be.rejected;
+    tx = await marketUtils.freezePlayer(currencyId, price+1, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
+    tx = await marketUtils.freezePlayer(currencyId, price+1, sellerRnd, validUntil+1, playerId, freeverseAccount).should.be.rejected;
+    // a different playerId does work
+    tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId.add(web3.utils.toBN(1)), freeverseAccount).should.be.fulfilled;
   });
 
-  it2("buy now player", async () => {
+  it2("buyNow: buy now player", async () => {
     // TODO: add test that it fails if not sent from Academy address.
     // CURRENTLY: it works regardless of: await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId(id = 4312432432);
@@ -1007,7 +1023,7 @@ contract("Market", accounts => {
     owner.should.be.equal(buyerAccount.address);
   });
 
-  it2("buyNow of a non-academy player fails", async () => {
+  it2("buyNow: buyNow of a non-academy player fails", async () => {
     playerId = await createSpecialPlayerId(id = 4312432432);
     targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
@@ -1017,7 +1033,16 @@ contract("Market", accounts => {
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
   });
 
-  it("after acquiring via buyNow, user can sell normally", async () => {
+  it2("buyNow: after acquiring via buyNow, user can sell normally", async () => {
+    playerId = await createSpecialPlayerId(id = 4312432432);
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 0);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
+    owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    owner.should.be.equal(sellerAccount.address);
+    await marketUtils.transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
+  });
+
+  it2("buyNow: The same academy player cannot be sold twice via buyNow", async () => {
     playerId = await createSpecialPlayerId(id = 4312432432);
     targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 0);
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
