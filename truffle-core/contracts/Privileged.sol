@@ -74,6 +74,10 @@ contract Privileged is AssetsView {
         return createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId);
     }
     
+    function computeAvgSkills(uint256 playerValue, uint256 ageYears, uint8 potential) public pure returns (uint256) {
+        return (playerValue * 100000000)/(ageModifier(ageYears) * potentialModifier(potential));
+    }
+    
     function createBuyNowPlayerIdPure(
         uint256 playerValue, 
         uint256 seed, 
@@ -87,7 +91,6 @@ contract Privileged is AssetsView {
         seed /= 10;
         ageYears = 16 + (seed % 20);
         seed /= 20;
-        uint256 avgSkills = (playerValue * 100000000)/(ageModifier(ageYears) * potentialModifier(potential));
         uint8 shirtNum;
         if (forwardPos == IDX_GK) {
             shirtNum = uint8(seed % 3);
@@ -101,7 +104,11 @@ contract Privileged is AssetsView {
         seed /= 8;
         (skillsVec, birthTraits, ) = computeSkills(seed, shirtNum);
         birthTraits[IDX_POT] = potential;
-        for (uint8 sk = 0; sk < N_SKILLS; sk++) skillsVec[sk] = uint16((uint256(skillsVec[sk]) * avgSkills)/uint256(1000));
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+            skillsVec[sk] = uint16(
+                (uint256(skillsVec[sk]) * computeAvgSkills(playerValue, ageYears, potential))/uint256(1000)
+            );
+        }
         internalPlayerId = seed % 8796093022207; // maxPlayerId (43b) = 2**43 - 1 = 8796093022207
     }
 }

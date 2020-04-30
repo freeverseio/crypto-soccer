@@ -28,7 +28,7 @@ contract('Encoding', (accounts) => {
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
-    it('creating buyNow players: ageModifier', async () =>  {
+    it2('creating buyNow players: ageModifier', async () =>  {
         mods = [];
         for (age = 16; age < 38; age += 3) {
             mod = await privileged.ageModifier(age).should.be.fulfilled;
@@ -38,7 +38,7 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it('creating buyNow players: potentialModifier', async () =>  {
+    it2('creating buyNow players: potentialModifier', async () =>  {
         mods = [];
         for (pot = 0; pot < 10; pot++) {
             mod = await privileged.potentialModifier(pot).should.be.fulfilled;
@@ -51,9 +51,13 @@ contract('Encoding', (accounts) => {
     it('creating buyNow players', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        expectedAvgSkill = await privileged.computeAvgSkills(playerValue, ageYears, traits[0]).should.be.fulfilled;
         expectedSkills = [4154, 2911, 2337, 2928, 4543];
         sumSkills = expectedSkills.reduce((a, b) => a + b, 0);
-        console.log("sum: ", sumSkills)
+        (Math.abs(expectedAvgSkill.toNumber() - sumSkills/5) < 20).should.be.equal(true);
+        
+        console.log("avg: ", sumSkills/5, expectedAvgSkill.toNumber());
+
         debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
         ageYears.toNumber().should.be.equal(29);
         expectedTraits = [0, 3, 6, 1];
