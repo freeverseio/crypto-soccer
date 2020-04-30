@@ -39,6 +39,14 @@ const Schema = `
 	type WorldPlayer {
 		playerId: ID!
 		name: String!
+		dayOfBirth: Int! 
+    	preferredPosition: String!
+		defence: Int!
+    	speed: Int!
+    	pass: Int!
+    	shoot: Int!
+    	endurance: Int!
+    	potential: Int! 
 	}
 
 	type Query {
