@@ -28,7 +28,7 @@ contract('Encoding', (accounts) => {
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
-    it('creating buyNow players: ageModifier', async () =>  {
+    it2('creating buyNow players: ageModifier', async () =>  {
         mods = [];
         for (age = 16; age < 38; age += 3) {
             mod = await privileged.ageModifier(age).should.be.fulfilled;
@@ -38,7 +38,7 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it('creating buyNow players: potentialModifier', async () =>  {
+    it2('creating buyNow players: potentialModifier', async () =>  {
         mods = [];
         for (pot = 0; pot < 10; pot++) {
             mod = await privileged.potentialModifier(pot).should.be.fulfilled;
@@ -48,32 +48,50 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it('creating buyNow players', async () =>  {
+    it2('creating one buyNow player', async () =>  {
         expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        // check that the average skill is as expected:
         expectedAvgSkill = await privileged.computeAvgSkills(playerValue, ageYears, traits[0]).should.be.fulfilled;
         sumSkills = expectedSkills.reduce((a, b) => a + b, 0);
         (Math.abs(expectedAvgSkill.toNumber() - sumSkills/5) < 20).should.be.equal(true);
+        // compare actual values
         debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
         ageYears.toNumber().should.be.equal(29);
         debug.compareArrays(traits, expectedTraits, toNum = true, verbose = false);
         internalId.should.be.bignumber.equal("1247534008908");
     });
 
-    it('creating buyNow players', async () =>  {
+    it2('creating one buyNow player', async () =>  {
         expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        // check that the average skill is as expected:
         expectedAvgSkill = await privileged.computeAvgSkills(playerValue, ageYears, traits[0]).should.be.fulfilled;
         sumSkills = expectedSkills.reduce((a, b) => a + b, 0);
         (Math.abs(expectedAvgSkill.toNumber() - sumSkills/5) < 20).should.be.equal(true);
+        // compare actual values
         debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
         ageYears.toNumber().should.be.equal(29);
         debug.compareArrays(traits, expectedTraits, toNum = true, verbose = false);
         internalId.should.be.bignumber.equal("1247534008908");
+    });
+
+    it('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPure(playerValue = 2000, seed, forwardPos = 3).should.be.fulfilled;
+        for (s = 0; s < skills.length; s++) {
+            (Math.abs(skills2[s].toNumber() - 2*skills[s].toNumber()) < 20).should.be.equal(true);
+        }
+        for (t = 0; t < traits.length; t++) {
+            traits2[t].toNumber().should.be.equal(traits[t].toNumber());
+        }
+        internalId2.should.be.bignumber.equal(internalId);
+        ageYears.should.be.bignumber.equal(ageYears2);
     });
 
     return
