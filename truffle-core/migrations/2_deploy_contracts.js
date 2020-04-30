@@ -16,6 +16,7 @@ const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
 const Directory = artifacts.require('Directory');
+const MarketCrypto = artifacts.require('MarketCrypto');
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -43,6 +44,7 @@ module.exports = function (deployer, network, accounts) {
     const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
+    const marketCrypto = await deployer.deploy(MarketCrypto).should.be.fulfilled;
     
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
@@ -56,6 +58,8 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
+    await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
+    await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
 
     if (versionNumber == 0) {
       // Initializing Assets differently in XDAI or testing:
@@ -95,7 +99,8 @@ module.exports = function (deployer, network, accounts) {
       ["PRIVILEGED", assets.address],
       ["PLAYANDEVOLVE", playAndEvolve.address],
       ["CONSTANTSGETTERS", constantsGetters.address],
-      ["PROXY", proxy.address]
+      ["PROXY", proxy.address],
+      ["MARKETCRYPTO", marketCrypto.address]
     ]
 
     // Build arrays "names" and "addresses" and store in Directory contract

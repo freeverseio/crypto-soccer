@@ -15,11 +15,11 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
         if (getIsSpecial(playerId)) return getSpecialPlayerSkillsAtBirth(playerId);
+        if (!wasPlayerCreatedVirtually(playerId)) return 0;
         (uint8 tz, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
-        require(_teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         // compute a dna that is unique to this player, since it is made of a unique playerId:
         uint256 playerCreationDay = gameDeployDay + divisionIdToRound[encodeTZCountryAndVal(tz, countryIdxInTZ, division)] * DAYS_PER_ROUND;
         return computeSkillsAndEncode(shirtNum, playerCreationDay, playerId);
@@ -144,7 +144,6 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     }
 
     function countCountries(uint8 tz) public view returns (uint256){
-        _assertTZExists(tz);
         return tzToNCountries[tz];
     }
     

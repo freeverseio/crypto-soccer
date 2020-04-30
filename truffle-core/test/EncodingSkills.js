@@ -197,13 +197,6 @@ contract('Encoding', (accounts) => {
         result = await encodingGet.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         
-        result = await encodingGet.getTargetTeamId(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(0);
-        
-        skills = await encodingGet.setTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
-        result = await encodingGet.getTargetTeamId(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(targetTeamId);
-
         generation += 2;
         skills = await encodingSet.setGeneration(skills, generation).should.be.fulfilled;
         result = await encodingGet.getGeneration(skills).should.be.fulfilled;
