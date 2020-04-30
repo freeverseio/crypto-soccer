@@ -36,8 +36,13 @@ const Schema = `
 		teamId: ID!
 	}
 
+	type WorldPlayer {
+		playerId: ID!
+		name: String!
+	}
+
 	type Query {
-		getWorldPlayers(input: GetWorldPlayersInput!): [ID!]! 
+		getWorldPlayers(input: GetWorldPlayersInput!): WorldPlayer! 
 	}
 
 	type Mutation {
