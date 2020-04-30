@@ -42,7 +42,7 @@ const Schema = `
 	}
 
 	type Query {
-		getWorldPlayers(input: GetWorldPlayersInput!): WorldPlayer! 
+		getWorldPlayers(input: GetWorldPlayersInput!): [WorldPlayer]! 
 	}
 
 	type Mutation {

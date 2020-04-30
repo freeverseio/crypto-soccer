@@ -8,10 +8,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput }) (*WorldPlayer, error) {
+func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput }) ([]*WorldPlayer, error) {
 	log.Debugf("GetWorldPlayers %v", args)
 
-	result := &WorldPlayer{}
+	result := []*WorldPlayer{}
 
 	if b.ch == nil {
 		return result, errors.New("internal error: no channel")
