@@ -131,11 +131,17 @@ contract('Encoding', (accounts) => {
             st += labels[pos];
             for (p = 0; p < nPlayersPerForwardPos[pos]; p++) {
                 st += "\nPot: " + traitsArray[counter][0];
-                st += "Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter]));
+                st += " | Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter]));
+                st += " | Shoot: " + skillsArray[counter][0];
+                st += " | Speed: " + skillsArray[counter][1];
+                st += " | Pass: " + skillsArray[counter][2];
+                st += " | Defence: " + skillsArray[counter][3];
+                st += " | Endurance: " + skillsArray[counter][4];
                 counter++;
             }
             st += "\n"
         }
+        // shoot, speed, pass, defence, endurance
         console.log(st)
     });
     
