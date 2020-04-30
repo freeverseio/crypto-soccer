@@ -99,7 +99,7 @@ module.exports = function (deployer, network, accounts) {
       ["PRIVILEGED", assets.address],
       ["PLAYANDEVOLVE", playAndEvolve.address],
       ["CONSTANTSGETTERS", constantsGetters.address],
-      ["PROXY", proxy.address]
+      ["PROXY", proxy.address],
       ["MARKETCRYPTO", marketCrypto.address]
     ]
 
