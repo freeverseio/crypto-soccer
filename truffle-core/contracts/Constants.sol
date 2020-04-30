@@ -16,6 +16,8 @@ contract Constants {
     uint256 constant internal FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant internal ACADEMY_TEAM = 1;
     uint256 constant internal IN_TRANSIT_TEAM = 2;
+    uint256 constant internal NULL_TEAMID = 0;
+    uint256 constant internal NULL_PLAYERID = 0;
 
     // Skills: shoot, speed, pass, defence, endurance
     uint8 constant internal SK_SHO = 0;

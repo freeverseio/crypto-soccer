@@ -40,19 +40,6 @@ contract Privileged is AssetsView {
         return addIsSpecial(skills);
     }
     
-    function createPromoPlayer(
-        uint16[N_SKILLS] memory skillsVec,
-        uint256 ageInSecs,
-        uint8[4] memory birthTraits,
-        uint256 playerId,
-        uint256 targetTeamId
-    ) public view returns (uint256) {
-        return setTargetTeamId(
-            createSpecialPlayer(skillsVec, ageInSecs, birthTraits, playerId),
-            targetTeamId
-        );
-    }
-
     // returns a value relative to 10000
     // Relative to 1, it would be = age < 31) ? 1 - 0.013 * (age - 16) : 1 - 0.013*15 - 0.05 * (age - 31)
     function ageModifier(uint256 ageYears) public pure returns(uint256) {

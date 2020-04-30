@@ -19,6 +19,15 @@ contract Market is MarketView {
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
 
+    function setCryptoMarketAddress(address addr) external {
+        _cryptoMktAddr = addr;
+    }
+    
+    function setIsBuyNowAllowedByOwner(uint256 teamId, bool isAllowed) external {
+        require(msg.sender == getOwnerTeam(teamId), "only owner of team can change isBuyNowAlloed");
+        _teamIdToIsBuyNowForbidden[teamId] = !isAllowed;
+    }
+    
     function setIsPlayerFrozenCrypto(uint256 playerId, bool isFrozen) public {
         _playerIdToIsFrozenCrypto[playerId] = isFrozen;
         emit PlayerFreezeCrypto(playerId, isFrozen);
@@ -57,42 +66,38 @@ contract Market is MarketView {
         bytes32[2] memory sig,
         uint8 sigV
     ) public {
-        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
+        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreezePlayer requirements not met");
         // // Freeze player
         _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
-    function transferPromoPlayer(
+    function transferBuyNowPlayer(
         uint256 playerId,
-        uint256 validUntil,
-        bytes32[2] memory sigSel,
-        bytes32[2] memory sigBuy,
-        uint8 sigVSel,
-        uint8 sigVBuy
+        uint256 targetTeamId
      ) public {
-        require(validUntil > now, "validUntil is in the past");
-        require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-        uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
-        require(!isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
-        uint256 targetTeamId = getTargetTeamId(playerId);
-        // require that team does not have any constraint from friendlies
+        // isAcademy checks that player isSpecial, and not written.
+        require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
+        require(!isBotTeam(targetTeamId), "cannot transfer to bot teams");
+        require(!_teamIdToIsBuyNowForbidden[targetTeamId], "user has explicitly forbidden buyNow");
+        require(targetTeamId != ACADEMY_TEAM, "targetTeam of buyNow player cannot be Academy Team");
+
+        // note that wasTeamCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
-        require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
-        // testing about the target team is already done in _assets.transferPlayer
-        require(teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
-        require(!isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
-                
-        bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
-        require(getOwnerTeam(targetTeamId) == 
-                    recoverAddr(signedMsg, sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
-        require(_academyAddr == 
-                    recoverAddr(signedMsg, sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
-         
-        transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
+        require(!(isConstrained && (nRemain == 0)), "trying to accept a buyNow player, but team is busy in constrained friendlies");
+        transferPlayer(playerId, targetTeamId);
         decreaseMaxAllowedAcquisitions(targetTeamId);
     }
-
+    
+    function transferPlayerFromCryptoMkt(
+        uint256 playerId,
+        uint256 targetTeamId
+     ) external {
+        require(msg.sender == _cryptoMktAddr, "only authorized cryptoMarket contract can transfer players");
+        transferPlayer(playerId, targetTeamId);
+        decreaseMaxAllowedAcquisitions(targetTeamId);
+    }
+    
     function completePlayerAuction(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -128,7 +133,7 @@ contract Market is MarketView {
         bytes32[2] memory sig,
         uint8 sigV
     ) public {
-        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
+        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezeTeam requirements not met");
         // // Freeze player
         _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
@@ -160,23 +165,19 @@ contract Market is MarketView {
         emit TeamFreeze(teamId, 1, false);
     }
 
-    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+    function transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
         // warning: check of ownership of players and teams should be done before calling this function
-        // TODO: checking if they are bots should be moved outside this function
-        require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
-        require(teamExists(teamIdTarget), "unexistent target team");
+        // so in this function, both teams are asumed to exist, be different, and belong to the rightful (nonBot) owners
+
         // part related to origin team:
         uint256 state = getPlayerState(playerId);
-        uint256 teamIdOrigin = getCurrentTeamId(state);
+        uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
+    
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
-        
-        // part related to both teams:
-        require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
-        require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
-
+                
         // part related to target team:
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
@@ -228,4 +229,5 @@ contract Market is MarketView {
         teamIdToOwner[teamId] = addr;
         emit TeamTransfer(teamId, addr);
     }
+    
 }

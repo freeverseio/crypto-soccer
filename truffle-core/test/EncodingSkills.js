@@ -39,7 +39,7 @@ contract('Encoding', (accounts) => {
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
-    it2('creating buyNow players: ageModifier', async () =>  {
+    it('creating buyNow players: ageModifier', async () =>  {
         mods = [];
         for (age = 16; age < 38; age += 3) {
             mod = await privileged.ageModifier(age).should.be.fulfilled;
@@ -49,7 +49,7 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it2('creating buyNow players: potentialModifier', async () =>  {
+    it('creating buyNow players: potentialModifier', async () =>  {
         mods = [];
         for (pot = 0; pot < 10; pot++) {
             mod = await privileged.potentialModifier(pot).should.be.fulfilled;
@@ -59,7 +59,7 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it2('creating one buyNow player', async () =>  {
+    it('creating one buyNow player', async () =>  {
         expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
@@ -87,7 +87,7 @@ contract('Encoding', (accounts) => {
         
     });
     
-    it2('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
+    it('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
         var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPure(playerValue = 2000, seed, forwardPos = 3).should.be.fulfilled;
@@ -101,7 +101,7 @@ contract('Encoding', (accounts) => {
         ageYears.should.be.bignumber.equal(ageYears2);
     });
 
-    it2('creating a batch of buyNow players', async () =>  {
+    it('creating a batch of buyNow players', async () =>  {
         expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
@@ -124,6 +124,7 @@ contract('Encoding', (accounts) => {
             playerValue = 1000, seed, nPlayersPerForwardPos
         ).should.be.fulfilled;
         
+        // traits: shoot, speed, pass, defence, endurance
         labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
         st = "";
         counter = 0;
@@ -141,12 +142,8 @@ contract('Encoding', (accounts) => {
             }
             st += "\n"
         }
-        // shoot, speed, pass, defence, endurance
         console.log(st)
     });
-    
-
-    return
     
     it('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
@@ -319,13 +316,6 @@ contract('Encoding', (accounts) => {
         result = await encodingGet.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         
-        result = await encodingGet.getTargetTeamId(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(0);
-        
-        skills = await encodingGet.setTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
-        result = await encodingGet.getTargetTeamId(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(targetTeamId);
-
         generation += 2;
         skills = await encodingSet.setGeneration(skills, generation).should.be.fulfilled;
         result = await encodingGet.getGeneration(skills).should.be.fulfilled;

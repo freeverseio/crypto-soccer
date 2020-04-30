@@ -35,7 +35,7 @@ func PlayerStateChangeProcess(
 	if err != nil {
 		return err
 	}
-	teamID, err := contracts.Assets.GetCurrentTeamId(&bind.CallOpts{}, state)
+	teamID, err := contracts.Assets.GetCurrentTeamIdFromPlayerState(&bind.CallOpts{}, state)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func GeneratePlayerByPlayerIdAndState(
 		// 	return err
 	} else {
 		name := "Mr. Awesome"
-		teamId, err := contracts.Assets.GetCurrentTeamId(&bind.CallOpts{}, encodedState)
+		teamId, err := contracts.Assets.GetCurrentTeamIdFromPlayerState(&bind.CallOpts{}, encodedState)
 		if err != nil {
 			return nil, err
 		}

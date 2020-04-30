@@ -12,12 +12,12 @@ contract UpdatesView is Storage, AssetsLib {
     }
 
     function getLastUpdateTime(uint8 timeZone) internal view returns(uint256) {
-        _assertTZExists(timeZone);
+        _tzExists(timeZone);
         return _timeZones[timeZone].lastUpdateTime;
     }
     
     function getLastActionsSubmissionTime(uint8 timeZone) public view returns(uint256) {
-        _assertTZExists(timeZone);
+        _tzExists(timeZone);
         return _timeZones[timeZone].lastActionsSubmissionTime;
     }
 
