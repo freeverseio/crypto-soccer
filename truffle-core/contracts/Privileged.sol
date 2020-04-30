@@ -66,14 +66,6 @@ contract Privileged is AssetsView {
         return (8500 * 30 + 10000 * potential) / 30;
     }
     
-    // birthTraits = [potential, forwardness, leftishness, aggressiveness]
-    function createBuyNowPlayerId(uint256 playerValue, uint256 seed, uint8 forwardPos) public view returns(uint256) {
-        (uint16[N_SKILLS] memory skillsVec, uint256 ageYears, uint8[4] memory birthTraits, uint256 internalPlayerId) 
-            = createBuyNowPlayerIdPure(playerValue, seed, forwardPos);
-        // 1 year = 31536000 sec
-        return createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId);
-    }
-    
     function computeAvgSkills(uint256 playerValue, uint256 ageYears, uint8 potential) public pure returns (uint256) {
         return (playerValue * 100000000)/(ageModifier(ageYears) * potentialModifier(potential));
     }
@@ -110,5 +102,29 @@ contract Privileged is AssetsView {
             );
         }
         internalPlayerId = seed % 8796093022207; // maxPlayerId (43b) = 2**43 - 1 = 8796093022207
+    }
+
+    // birthTraits = [potential, forwardness, leftishness, aggressiveness]
+    function createBuyNowPlayerId(
+        uint256 playerValue, 
+        uint256 seed, 
+        uint8 forwardPos
+    ) 
+        public 
+        view 
+        returns
+    (
+        uint256 playerId,
+        uint16[N_SKILLS] memory skillsVec, 
+        uint16 dayOfBirth, 
+        uint8[4] memory birthTraits, 
+        uint256 internalPlayerId
+    )
+    {
+        uint256 ageYears;
+        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, seed, forwardPos);
+        // 1 year = 31536000 sec
+        playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId);
+        dayOfBirth = uint16(getBirthDay(playerId));
     }
 }
