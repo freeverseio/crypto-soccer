@@ -10,8 +10,8 @@ import (
 )
 
 func TestGeneratePlayerIdsHash(t *testing.T) {
-	in := input.GeneratePlayerIdsInput{}
-	in.Seed = 4
+	in := input.GetWorldPlayersInput{}
+	in.TeamId = "4"
 	hash, err := in.Hash()
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x8a35acfbc15ff81a39ae7d344fd709f28e8600b4aa8c65c6b64bfe7fe36bd19b")
@@ -21,7 +21,7 @@ func TestGeneratePlayerIdsHash(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x8a35acfbc15ff81a39ae7d344fd709f28e8600b4aa8c65c6b64bfe7fe36bd19b")
 
-	in.Seed = 5
+	in.TeamId = "5"
 	hash, err = in.Hash()
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x036b6384b5eca791c62761152d0c79bb0604c104a5fb6f4eb0703f3154bb3db0")
@@ -31,8 +31,8 @@ func TestGeneratePlayerIdsSignature(t *testing.T) {
 	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	assert.NilError(t, err)
 
-	in := input.GeneratePlayerIdsInput{}
-	in.Seed = 4
+	in := input.GetWorldPlayersInput{}
+	in.TeamId = "4"
 
 	hash, err := in.Hash()
 	assert.NilError(t, err)
