@@ -7,6 +7,16 @@ type WorldPlayer struct {
 	name     string
 }
 
+func NewWorldPlayer(
+	playerId graphql.ID,
+	name string,
+) *WorldPlayer {
+	player := WorldPlayer{}
+	player.playerId = playerId
+	player.name = name
+	return &player
+}
+
 func (b *WorldPlayer) PlayerId() graphql.ID {
 	return b.playerId
 }

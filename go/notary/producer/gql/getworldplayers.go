@@ -3,8 +3,10 @@ package gql
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -42,7 +44,11 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 
 	// TODO put the 30 in a smarter place
 	for i := 0; i < 30; i++ {
-		// result = append(result, graphql.ID(i))
+		worldPlayer := NewWorldPlayer(
+			graphql.ID(i),
+			"dummy"+fmt.Sprintf("%d", i),
+		)
+		result = append(result, worldPlayer)
 	}
 
 	return result, nil
