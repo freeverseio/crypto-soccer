@@ -5,8 +5,9 @@ pragma solidity >=0.5.12 <=0.6.3;
 import "./EncodingSkills.sol";
 import "./EncodingSkillsGetters.sol";
 import "./EncodingSkillsSetters.sol";
+import "./AssetsView.sol";
 
-contract Privileged is EncodingSkills, EncodingSkillsGetters, EncodingSkillsSetters {
+contract Privileged is AssetsView {
     
     // order of idxs:
     // skills: shoot, speed, pass, defence, endurance
@@ -65,12 +66,29 @@ contract Privileged is EncodingSkills, EncodingSkillsGetters, EncodingSkillsSett
         return (4000 * 15 + 20000 * potential) / 15;
     }
     
+    // birthTraits = [potential, forwardness, leftishness, aggressiveness]
     function createBuyNowPlayerId(uint256 playerValue, uint256 seed, uint8 forwardPos) public view returns(uint256) {
         uint8 potential = uint8(seed % 10);
         seed /= 10;
         uint256 ageYears = 16 + (seed % 20);
         seed /= 20;
         uint256 avgSkills = (playerValue * 100000000)/(ageModifier(ageYears) * potentialModifier(potential));
-        
+        uint8 shirtNum;
+        if (forwardPos == IDX_GK) {
+            shirtNum = uint8(seed % 3);
+        } else if (forwardPos == IDX_D) {
+            shirtNum = 3 + uint8(seed % 5);
+        } else if (forwardPos == IDX_M) {
+            shirtNum = 8 + uint8(seed % 6);
+        } else if (forwardPos == IDX_F) {
+            shirtNum = 14 + uint8(seed % 4);
+        }
+        seed /= 8;
+        (uint16[N_SKILLS] memory skillsVec, uint8[4] memory birthTraits, ) = computeSkills(seed, shirtNum);
+        birthTraits[IDX_POT] = potential;
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) skillsVec[sk] = uint16((uint256(skillsVec[sk]) * avgSkills)/uint256(1000));
+        // 1 year = 31536000 sec
+        // maxPlayerId (43b) = 2**43 - 1 = 8796093022207
+        return createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, seed % 8796093022207);
     }
 }
