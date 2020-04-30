@@ -32,12 +32,13 @@ contract('Encoding', (accounts) => {
     it('creating buyNow players', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
-        console.log(skills)
-        console.log(ageYears)
-        console.log(traits)
-        console.log(internalId)
-        
-    })
+        expectedSkills = [4154, 2911, 2337, 2928, 4543];
+        debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
+        ageYears.toNumber().should.be.equal(29);
+        expectedTraits = [0, 3, 6, 1];
+        debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
+        internalId.should.be.bignumber.equal("1247534008908");
+    });
     return
     
     it('encodeTactics incorrect lineup', async () =>  {
