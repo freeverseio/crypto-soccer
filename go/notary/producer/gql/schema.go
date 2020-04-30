@@ -28,7 +28,7 @@ const Schema = `
 
 	input GeneratePlayerIdsInput {
 		signature: String!
-		seed: Int!
+		teamId: ID!
 	}
 
 	input SubmitPlayerPurchaseInput {
