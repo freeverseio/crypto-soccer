@@ -97,8 +97,9 @@ contract('Encoding', (accounts) => {
         expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const nPlayersPerForwardPos = [0,0,0,2];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1000, seed, forwardPos = 3, nPlayers = 3
+            playerValue = 1000, seed, nPlayersPerForwardPos
         ).should.be.fulfilled;
 
         // compare actual values

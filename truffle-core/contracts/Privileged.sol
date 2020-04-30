@@ -131,8 +131,7 @@ contract Privileged is AssetsView {
     function createBuyNowPlayerIdBatch(
         uint256 playerValue, 
         uint256 seed, 
-        uint8 forwardPos,
-        uint16 nPlayers       
+        uint8[] memory nPlayersPerForwardPos
     ) 
         public 
         view 
@@ -145,15 +144,23 @@ contract Privileged is AssetsView {
         uint256[] memory internalPlayerIdArray
     )
     {
+        uint16 nPlayers;
+        for (uint8 pos = 0; pos < 4; pos++) { nPlayers += nPlayersPerForwardPos[pos]; }
+
         playerIdArray = new uint256[](nPlayers);
         skillsVecArray = new uint16[N_SKILLS][](nPlayers);
         dayOfBirthArray = new uint16[](nPlayers);
         birthTraitsArray = new uint8[4][](nPlayers);
         internalPlayerIdArray = new uint256[](nPlayers);
 
-        for (uint16 n = 0; n < nPlayers; n++) {
-            (playerIdArray[n], skillsVecArray[n], dayOfBirthArray[n], birthTraitsArray[n], internalPlayerIdArray[n]) = createBuyNowPlayerId(playerValue, seed, forwardPos);
-            seed = uint256(keccak256(abi.encode(seed)));
+        uint16 counter;
+        for (uint8 pos = 0; pos < 4; pos++) { 
+            for (uint16 n = 0; n < nPlayersPerForwardPos[pos]; n++) {
+                (playerIdArray[counter], skillsVecArray[counter], dayOfBirthArray[counter], birthTraitsArray[counter], internalPlayerIdArray[counter]) =
+                    createBuyNowPlayerId(playerValue, seed, pos);
+                seed = uint256(keccak256(abi.encode(seed)));
+                counter++;
+            }
         }
     }
 }
