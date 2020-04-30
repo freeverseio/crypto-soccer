@@ -3,16 +3,17 @@ package gql
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Resolver) GeneratePlayerIds(args struct{ Input input.GeneratePlayerIdsInput }) ([]graphql.ID, error) {
-	log.Debugf("GeneratePlayerIDs %v", args)
+func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput }) ([]*WorldPlayer, error) {
+	log.Debugf("GetWorldPlayers %v", args)
 
-	result := []graphql.ID{}
+	result := []*WorldPlayer{}
 
 	if b.ch == nil {
 		return result, errors.New("internal error: no channel")
@@ -43,7 +44,11 @@ func (b *Resolver) GeneratePlayerIds(args struct{ Input input.GeneratePlayerIdsI
 
 	// TODO put the 30 in a smarter place
 	for i := 0; i < 30; i++ {
-		result = append(result, graphql.ID(i))
+		worldPlayer := NewWorldPlayer(
+			graphql.ID(i),
+			"dummy"+fmt.Sprintf("%d", i),
+		)
+		result = append(result, worldPlayer)
 	}
 
 	return result, nil

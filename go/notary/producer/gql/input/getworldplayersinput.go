@@ -1,25 +1,34 @@
 package input
 
 import (
+	"errors"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/graph-gophers/graphql-go"
 )
 
-type GeneratePlayerIdsInput struct {
+type GetWorldPlayersInput struct {
 	Signature string
-	Seed      int32
+	TeamId    graphql.ID
 }
 
-func (b GeneratePlayerIdsInput) Hash() (common.Hash, error) {
-	int32Ty, _ := abi.NewType("int32", "int32", nil)
+func (b GetWorldPlayersInput) Hash() (common.Hash, error) {
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	arguments := abi.Arguments{
 		{
-			Type: int32Ty,
+			Type: uint256Ty,
 		},
 	}
 
-	bytes, err := arguments.Pack(b.Seed)
+	teamId, _ := new(big.Int).SetString(string(b.TeamId), 10)
+	if teamId == nil {
+		return common.Hash{}, errors.New("Invalid TeamId")
+	}
+
+	bytes, err := arguments.Pack(teamId)
 	if err != nil {
 		return common.Hash{}, err
 	}

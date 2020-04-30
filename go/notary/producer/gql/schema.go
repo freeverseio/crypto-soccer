@@ -2,8 +2,6 @@
 package gql
 
 const Schema = ` 
-
-
 	input CreateAuctionInput {
   		signature: String!
   		playerId: String!
@@ -26,9 +24,9 @@ const Schema = `
   		teamId: String!
 	}
 
-	input GeneratePlayerIdsInput {
+	input GetWorldPlayersInput {
 		signature: String!
-		seed: Int!
+		teamId: ID!
 	}
 
 	input SubmitPlayerPurchaseInput {
@@ -38,8 +36,22 @@ const Schema = `
 		teamId: ID!
 	}
 
+	type WorldPlayer {
+		playerId: ID!
+		name: String!
+		dayOfBirth: Int! 
+    	preferredPosition: String!
+		defence: Int!
+    	speed: Int!
+    	pass: Int!
+    	shoot: Int!
+    	endurance: Int!
+    	potential: Int! 
+  		validUntil: String!
+	}
+
 	type Query {
-		generatePlayerIds(input: GeneratePlayerIdsInput!): [ID!]! 
+		getWorldPlayers(input: GetWorldPlayersInput!): [WorldPlayer]! 
 	}
 
 	type Mutation {
