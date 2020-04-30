@@ -15,7 +15,6 @@ contract Privileged is EncodingSkills, EncodingSkillsGetters, EncodingSkillsSett
     // leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
 
     function createSpecialPlayer(
-
         uint16[N_SKILLS] memory skillsVec,
         uint256 ageInSecs,
         uint8[4] memory birthTraits,
@@ -51,5 +50,27 @@ contract Privileged is EncodingSkills, EncodingSkillsGetters, EncodingSkillsSett
             createSpecialPlayer(skillsVec, ageInSecs, birthTraits, playerId),
             targetTeamId
         );
+    }
+
+    // returns a value relative to 10000
+    // Relative to 1, it would be = (age < 31) ? 1 - 0.02 * (age - 16) : 1 - 0.3 - 0.065 * (age - 31)
+    function ageModifier(uint256 ageYears) public pure returns(uint256) {
+        return (ageYears < 31) ? 10000 - 200 * (ageYears - 16) : 10000 - 3000 - 65 * (ageYears - 31);
+    }
+
+    // returns a value relative to 10000
+    // relative to 1 it would be = 0.4 + potential/7.5 
+    // relative to 1e4: 4000+10000*p/7.5 = (4000*7.5+10000* p)/7.5 = (4000*15+20000 * p)/15 
+    function potentialModifier(uint256 potential) public pure returns(uint256) {
+        return (4000 * 15 + 20000 * potential) / 15;
+    }
+    
+    function createBuyNowPlayerId(uint256 playerValue, uint256 seed, uint8 forwardPos) public view returns(uint256) {
+        uint8 potential = uint8(seed % 10);
+        seed /= 10;
+        uint256 ageYears = 16 + (seed % 20);
+        seed /= 20;
+        uint256 avgSkills = (playerValue * 100000000)/(ageModifier(ageYears) * potentialModifier(potential));
+        
     }
 }
