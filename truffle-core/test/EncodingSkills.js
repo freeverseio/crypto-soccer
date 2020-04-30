@@ -51,7 +51,7 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it('creating one buyNow player', async () =>  {
+    it2('creating one buyNow player', async () =>  {
         expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
@@ -78,7 +78,7 @@ contract('Encoding', (accounts) => {
         (Math.abs(dayOfBirth.toNumber() - expectedDayOfBirth) < 10).should.be.equal(true);
         
     });
-
+    
     it2('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
@@ -93,6 +93,21 @@ contract('Encoding', (accounts) => {
         ageYears.should.be.bignumber.equal(ageYears2);
     });
 
+    it('creating a batch of buyNow players', async () =>  {
+        expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
+        expectedTraits = [0, 3, 6, 1];
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+            playerValue = 1000, seed, forwardPos = 3, nPlayers = 3
+        ).should.be.fulfilled;
+
+        // compare actual values
+        debug.compareArrays(skillsArray[0], expectedSkills, toNum = true, verbose = false);
+        debug.compareArrays(traitsArray[0], expectedTraits, toNum = true, verbose = false);
+        internalIdArray[0].should.be.bignumber.equal("1247534008908");
+        internalIdArray[1].should.not.be.bignumber.equal("1247534008908");
+    });
+    
     return
     
     it('encodeTactics incorrect lineup', async () =>  {
