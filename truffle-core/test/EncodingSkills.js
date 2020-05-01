@@ -122,27 +122,31 @@ contract('Encoding', (accounts) => {
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
             playerValue = 1000, seed, nPlayersPerForwardPos
         ).should.be.fulfilled;
-        
-        // traits: shoot, speed, pass, defence, endurance
-        labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
-        st = "";
-        st2 = "";
-        counter = 0;
-        for (pos = 0; pos < nPlayersPerForwardPos.length; pos++) {
-            st += labels[pos];
-            for (p = 0; p < nPlayersPerForwardPos[pos]; p++) {
-                st += "\nPot: " + traitsArray[counter][0];
-                st += " | Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter]));
-                st += " | Shoot: " + skillsArray[counter][0];
-                st += " | Speed: " + skillsArray[counter][1];
-                st += " | Pass: " + skillsArray[counter][2];
-                st += " | Defence: " + skillsArray[counter][3];
-                st += " | Endurance: " + skillsArray[counter][4];
-                counter++;
+        h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
+        assert.equal(h, '0x666032780708b1ba503e0ca711142868585f14314d3da9cde71e571771167ebe', "createBuyNowPlayerIdBatch not as expected");
+
+        if (false) {
+            // traits: shoot, speed, pass, defence, endurance
+            labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
+            st = "";
+            st2 = "";
+            counter = 0;
+            for (pos = 0; pos < nPlayersPerForwardPos.length; pos++) {
+                st += labels[pos];
+                for (p = 0; p < nPlayersPerForwardPos[pos]; p++) {
+                    st += "\nPot: " + traitsArray[counter][0];
+                    st += " | Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter]));
+                    st += " | Shoot: " + skillsArray[counter][0];
+                    st += " | Speed: " + skillsArray[counter][1];
+                    st += " | Pass: " + skillsArray[counter][2];
+                    st += " | Defence: " + skillsArray[counter][3];
+                    st += " | Endurance: " + skillsArray[counter][4];
+                    counter++;
+                }
+                st += "\n"
             }
-            st += "\n"
+            console.log(st);
         }
-        console.log(st)
     });
     
     it('encodeTactics incorrect lineup', async () =>  {
