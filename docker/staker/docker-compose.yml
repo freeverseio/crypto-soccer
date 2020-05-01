@@ -50,6 +50,8 @@ services:
     depends_on:
       - universe.db
       - ethereum
+      - ipfs.node
+      - ipfs.cluster
   universe.api:
     image: "freeverseio/universe.api:${TAG}"
     ports:

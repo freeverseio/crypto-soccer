@@ -27,8 +27,8 @@ else
 
   # ipfs bootstrap rm --all
   ipfs bootstrap add /p2p-circuit/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
-  ipfs bootstrap add /ip4/167.99.16.146/tcp/4001/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
-  ipfs bootstrap add /ip4/167.99.16.146/udp/4002/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
+  ipfs bootstrap add /ip4/167.99.18.220/tcp/4001/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
+  ipfs bootstrap add /ip4/167.99.18.220/udp/4002/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
   ipfs bootstrap add /dns4/ipfs.gorengine.com/tcp/4001/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
   ipfs bootstrap add /dns4/ipfs.gorengine.com/udp/4002/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
   
