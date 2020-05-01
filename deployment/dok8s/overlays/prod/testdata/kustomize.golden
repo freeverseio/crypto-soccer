@@ -1,5 +1,18 @@
 apiVersion: v1
 data:
+  bootstrap-peer-id: QmZyN2aLhjCKrvpJ1R1gqrEevDN9fz3eHnnK1dDAuGtrGy
+  peer-id: 12D3KooWR5rXWEyGHmWx1h7tHr9F6hJjikSt8XbSu5Vwc5KmxhzQ
+  trusted-peer-id-1: 12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ
+  trusted-peer-id-2: 12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: env-config
+---
+apiVersion: v1
+data:
   ASSETS_CONTRACT_ADDRESS: 0xBd14538cD7C7253f5A4439765D01d4C00EeCdf04
   BLOCKS_PER_STEP: "1000"
   CONSTANTSGETTERS_CONTRACT_ADDRESS: 0x2BDDab9468560D933651be0C79202A9D6d9dF2aa
@@ -29,6 +42,69 @@ metadata:
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   name: freeverse-configmap
+---
+apiVersion: v1
+data:
+  cluster-entrypoint.sh: |
+    #!/bin/sh
+    user=ipfs
+
+    IDENTITY_PATH=/data/ipfs-cluster/identity.json
+    cat << EOF > "${IDENTITY_PATH}"
+    {
+        "id": "${PEER_ID}",
+        "private_key": "${PEER_PRIV_KEY}"
+    }
+    EOF
+
+    if [ ! -f /data/ipfs-cluster/service.json ]; then
+      #ipfs-cluster-service init
+      ipfs-cluster-service init --peers "/dns4/${GOALREV_IPFS_CLUSTER_DNS}/tcp/9096/p2p/${PEER_ID_1}, /dns4/${GOALREV_IPFS_CLUSTER_DNS}/tcp/9096/p2p/${PEER_ID_2}"
+    fi
+
+    BOOTSTRAP_ADDR=/dns4/${GOALREV_IPFS_CLUSTER_DNS}/tcp/9096/ipfs/${BOOTSTRAP_PEER_ID}
+
+    if [ -z $BOOTSTRAP_ADDR ]; then
+      exit 1
+    fi
+    # Only ipfs user can get here
+    exec ipfs-cluster-service daemon --upgrade --bootstrap $BOOTSTRAP_ADDR --leave
+  configure-ipfs.sh: |
+    #!/bin/sh
+    set -x
+    # This is a custom entrypoint for k8s designed to run ipfs nodes in an appropriate
+    # setup for production scenarios.
+
+    if [ -f /data/ipfs/repo.lock ]; then
+      rm /data/ipfs/repo.lock
+    fi
+
+    ipfs init --profile="server,badgerds"
+    ipfs config Datastore.StorageMax 180GB
+    ipfs config --json Swarm.ConnMgr.HighWater 2000
+    ipfs config --json Datastore.BloomFilterSize 1048576
+
+    chown -R ipfs /data/ipfs
+
+    exit 0
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: ipfs-cluster-set-bootstrap-conf
+---
+apiVersion: v1
+data:
+  cluster-secret: MDk5Njg3OTczNzJiYmZlOWM0YjdiYjcwYjczOGU2MWRiODE0ZmE0NGNiMzNiNGZhZWE1MjA0OTY2MDdjNjNlZA==
+  peer-priv-key: Q0FFU1FGbW0xSk1BWEVFc085a3g3U0lMTTA1alV0Z3VmV1Z4Y2ZaV1hDdW93UnhDNHRjVW1NbzdHKy9STEdZb3NrWHArZVkzb2djUm5FUmxqK0R1d216dEU3az0K
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: secret-config
+type: Opaque
 ---
 apiVersion: v1
 kind: Service
@@ -81,6 +157,49 @@ spec:
   selector:
     app.kubernetes.io/app: horizon
     app.kubernetes.io/component: horizon
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ipfs-cluster
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: ipfs-cluster
+spec:
+  ports:
+  - name: swarm
+    port: 4001
+    targetPort: swarm
+  - name: swarm-udp
+    port: 4002
+    targetPort: swarm-udp
+  - name: cluster-swarm
+    port: 9096
+    targetPort: cluster-swarm
+  selector:
+    app: ipfs-cluster
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ipfsnode
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: ipfsnode
+spec:
+  ports:
+  - name: api
+    port: 5001
+    targetPort: api
+  selector:
+    app: ipfs-cluster
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
 ---
@@ -719,6 +838,164 @@ spec:
         - containerPort: 5432
       imagePullSecrets:
       - name: docker-secret
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: ipfs-cluster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ipfs-cluster
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  serviceName: ipfs-cluster
+  template:
+    metadata:
+      labels:
+        app: ipfs-cluster
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - env:
+        - name: IPFS_FD_MAX
+          value: "4096"
+        - name: IPFS_PROFILE
+          value: server
+        image: ipfs/go-ipfs:v0.4.23
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          tcpSocket:
+            port: swarm
+          timeoutSeconds: 5
+        name: ipfs
+        ports:
+        - containerPort: 4001
+          name: swarm
+          protocol: TCP
+        - containerPort: 4002
+          name: swarm-udp
+          protocol: UDP
+        - containerPort: 5001
+          name: api
+          protocol: TCP
+        - containerPort: 8081
+          name: ws
+          protocol: TCP
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+        - mountPath: /data/ipfs
+          name: ipfs-storage
+        - mountPath: /custom
+          name: configure-script
+      - command:
+        - sh
+        - /custom/cluster-entrypoint.sh
+        env:
+        - name: PEER_PRIV_KEY
+          valueFrom:
+            secretKeyRef:
+              key: peer-priv-key
+              name: secret-config
+        - name: BOOTSTRAP_PEER_ID
+          valueFrom:
+            configMapKeyRef:
+              key: bootstrap-peer-id
+              name: env-config
+        - name: PEER_ID
+          valueFrom:
+            configMapKeyRef:
+              key: peer-id
+              name: env-config
+        - name: PEER_ID_1
+          valueFrom:
+            configMapKeyRef:
+              key: trusted-peer-id-1
+              name: env-config
+        - name: PEER_ID_2
+          valueFrom:
+            configMapKeyRef:
+              key: trusted-peer-id-2
+              name: env-config
+        - name: CLUSTER_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: cluster-secret
+              name: secret-config
+        - name: CLUSTER_CRDT_CLUSTERNAME
+          value: gr-ipfs-cluster
+        - name: CLUSTER_IPFSHTTP_NODEMULTIADDRESS
+          value: /ip4/127.0.0.1/tcp/5001
+        - name: CLUSTER_MONITOR_PING_INTERVAL
+          value: 3m
+        - name: GOALREV_IPFS_CLUSTER_DNS
+          value: ipfs-cluster.gorengine.com
+        envFrom:
+        - configMapRef:
+            name: env-config
+        image: ipfs/ipfs-cluster:v0.12.1
+        livenessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          tcpSocket:
+            port: cluster-swarm
+          timeoutSeconds: 5
+        name: ipfs-cluster
+        ports:
+        - containerPort: 9094
+          name: api-http
+          protocol: TCP
+        - containerPort: 9095
+          name: proxy-http
+          protocol: TCP
+        - containerPort: 9096
+          name: cluster-swarm
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+        - mountPath: /data/ipfs-cluster
+          name: cluster-storage
+        - mountPath: /custom
+          name: configure-script
+      volumes:
+      - configMap:
+          name: ipfs-cluster-set-bootstrap-conf
+        name: configure-script
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+      name: cluster-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 50Gi
+      storageClassName: do-block-storage
+  - metadata:
+      labels:
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+      name: ipfs-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 200Gi
+      storageClassName: do-block-storage
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
