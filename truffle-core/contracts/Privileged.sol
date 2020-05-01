@@ -41,9 +41,9 @@ contract Privileged is AssetsView {
     }
     
     // returns a value relative to 10000
-    // Relative to 1, it would be = age < 31) ? 1 - 0.013 * (age - 16) : 1 - 0.013*15 - 0.05 * (age - 31)
+    // Relative to 1, it would be = age < 31) ? 1.15 - 0.013 * (age - 16) : 1.15 - 0.013*15 - 0.05 * (age - 31)
     function ageModifier(uint256 ageYears) public pure returns(uint256) {
-        return (ageYears < 31) ? 10000 - 130 * (ageYears - 16) : 8050 - 500 * (ageYears - 31);
+        return (ageYears < 31) ? 11500 - 130 * (ageYears - 16) : 9550 - 500 * (ageYears - 31);
     }
 
     // returns a value relative to 10000
