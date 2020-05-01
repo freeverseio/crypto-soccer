@@ -5,7 +5,8 @@ services:
     volumes:
       - ethereum-data:/home/parity/.local/share/io.parity.ethereum
   ipfs.node:
-    image: ipfs/go-ipfs:v0.4.23
+    build: ../ipfs
+    # image: ipfs/go-ipfs:v0.4.23
     restart: always
     environment:
       - IPFS_PATH=/data
@@ -24,8 +25,8 @@ services:
   universe.db:
     image: "freeverseio/universe.db:${TAG}"
     restart: always
-    volumes:
-      - universe.db-data:/var/lib/postgresql/data
+    # volumes:
+    #   - universe.db-data:/var/lib/postgresql/data
   synchronizer:
     image: "freeverseio/synchronizer:${TAG}"
     restart: always

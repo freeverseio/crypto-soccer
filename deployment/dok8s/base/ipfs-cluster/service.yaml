@@ -3,12 +3,12 @@ kind: Service
 metadata:
   name: ipfsnode
   labels:
-    app.kubernetes.io/app: ipfsnode
+    app: ipfsnode
 spec:
   ports:
   - name: api
     targetPort: api
     port: 5001
   selector:
-    app.kubernetes.io/app: ipfs-cluster
+    app: ipfs-cluster
 

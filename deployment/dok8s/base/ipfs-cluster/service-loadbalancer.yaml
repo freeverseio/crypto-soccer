@@ -11,6 +11,9 @@ spec:
     - name: swarm
       targetPort: swarm
       port: 4001
+    - name: swarm-udp
+      targetPort: swarm-udp
+      port: 4002
    
     # Cluster ports
     - name: cluster-swarm
