@@ -14,3 +14,4 @@ resources:
 - universedb
 - dashboard
 - oauth2-proxy
+- ipfs-cluster

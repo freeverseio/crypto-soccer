@@ -6,6 +6,10 @@ commonLabels:
 resources:
 - ../../base
 images:
+- name: ipfs/go-ipfs
+  newTag: v0.4.23
+- name: ipfs/ipfs-cluster
+  newTag: v0.12.1
 - name: freeverseio/authproxy
   newTag: dev
 - name: freeverseio/dashboard
@@ -26,8 +30,13 @@ images:
   newTag: dev
 - name: freeverseio/universe.db
   newTag: dev
+replicas:
+- count: 1
+  name: ipfs-cluster
 patchesStrategicMerge:
 - configmap.yaml
+- env-configmap.yaml
+- secret.yaml
 patchesJson6902:
 - target:
     group: networking.k8s.io

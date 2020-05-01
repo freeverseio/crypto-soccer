@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
         - name: configure-ipfs
-          image: "ipfs/go-ipfs:latest"
+          image: "ipfs/go-ipfs:v0.4.23"
           command: ["sh", "/custom/configure-ipfs.sh"]
           volumeMounts:
             - name: ipfs-storage
@@ -24,7 +24,7 @@ spec:
               mountPath: /custom
       containers:
         - name: ipfs
-          image: "ipfs/go-ipfs:latest"
+          image: "ipfs/go-ipfs:v0.4.23"
           imagePullPolicy: IfNotPresent
           env:
             - name: IPFS_FD_MAX
@@ -59,7 +59,7 @@ spec:
           resources:
             {}
         - name: ipfs-cluster
-          image: "ipfs/ipfs-cluster:latest"
+          image: "ipfs/ipfs-cluster:v0.12.1"
           command: ["sh", "/custom/cluster-entrypoint.sh"]
           envFrom:
             - configMapRef:
