@@ -46,7 +46,7 @@ contract('Encoding', (accounts) => {
             mods.push(mod);
         }
         expectedMods = [ 11500, 11110, 10720, 10330, 9940, 9550, 8050, 6550 ];
-        debug.compareArrays(mods, expectedMods, toNum = true, verbose = true);
+        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
     it('creating buyNow players: potentialModifier', async () =>  {
@@ -60,19 +60,19 @@ contract('Encoding', (accounts) => {
     });
     
     it('creating one buyNow player', async () =>  {
-        expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
+        expectedSkills = [ 1474, 1033, 829, 1039, 1612 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
-        // check that the average skill is as expected:
-        expectedAvgSkill = await privileged.computeAvgSkills(playerValue, ageYears, traits[0]).should.be.fulfilled;
-        sumSkills = expectedSkills.reduce((a, b) => a + b, 0);
-        (Math.abs(expectedAvgSkill.toNumber() - sumSkills/5) < 20).should.be.equal(true);
         // compare actual values
         debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
         ageYears.toNumber().should.be.equal(29);
         debug.compareArrays(traits, expectedTraits, toNum = true, verbose = false);
         internalId.should.be.bignumber.equal("1247534008908");
+        // check that the average skill is as expected:
+        expectedAvgSkill = await privileged.computeAvgSkills(playerValue, ageYears, traits[0]).should.be.fulfilled;
+        sumSkills = expectedSkills.reduce((a, b) => a + b, 0);
+        (Math.abs(expectedAvgSkill.toNumber() - sumSkills/5) < 20).should.be.equal(true);
         
         // test that you get the same via the non-pure function:
         var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerId(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
@@ -101,7 +101,7 @@ contract('Encoding', (accounts) => {
     });
 
     it('creating a batch of buyNow players', async () =>  {
-        expectedSkills = [ 1740, 1219, 979, 1226, 1903 ];
+        expectedSkills = [ 1474, 1033, 829, 1039, 1612 ];
         expectedTraits = [0, 3, 6, 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,2];
@@ -126,6 +126,7 @@ contract('Encoding', (accounts) => {
         // traits: shoot, speed, pass, defence, endurance
         labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
         st = "";
+        st2 = "";
         counter = 0;
         for (pos = 0; pos < nPlayersPerForwardPos.length; pos++) {
             st += labels[pos];
