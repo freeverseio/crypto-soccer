@@ -79,7 +79,6 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(skills2, expectedSkills, toNum = true, verbose = false);
         debug.compareArrays(traits2, expectedTraits, toNum = true, verbose = false);
         internalId2.should.be.bignumber.equal(internalId);
-        finalId.should.be.bignumber.equal("57896044618658097711785513161209378353305580934387458361646044782427524761292");
 
         const now = Math.floor(new Date()/1000);
         expectedDayOfBirth = Math.floor(secsToDays(now) - ageYears*365/7);
