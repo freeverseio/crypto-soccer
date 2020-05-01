@@ -45,8 +45,8 @@ contract('Encoding', (accounts) => {
             mod = await privileged.ageModifier(age).should.be.fulfilled;
             mods.push(mod);
         }
-        expectedMods = [ 10000, 9610, 9220, 8830, 8440, 8050, 6550, 5050 ];
-        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
+        expectedMods = [ 11500, 11110, 10720, 10330, 9940, 9550, 8050, 6550 ];
+        debug.compareArrays(mods, expectedMods, toNum = true, verbose = true);
     });
     
     it('creating buyNow players: potentialModifier', async () =>  {
