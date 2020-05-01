@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ipfs-cluster
+  name: ipfs-loadbalancer
   labels:
-    app: ipfs-cluster
+    app: ipfs-loadbalancer
 spec:
   type: LoadBalancer
   ports:

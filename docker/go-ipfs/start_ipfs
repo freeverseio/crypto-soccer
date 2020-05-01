@@ -25,10 +25,11 @@ else
   ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001
   ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/8080
   # ipfs bootstrap rm --all
-  # ipfs bootstrap add /p2p-circuit/p2p/QmQPUEBUFnFVfea5KcYta1DJAESppwMWPbYwVpZWx8kg21
-  ipfs bootstrap add /ip4/174.138.105.142/tcp/4001/ipfs/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
-  ipfs bootstrap add /ip4/165.22.194.146/tcp/4001/ipfs/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
   ipfs bootstrap add /p2p-circuit/ipfs/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
+  ipfs bootstrap add /ip4/167.99.16.146/tcp/4001/ipfs/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
+  ipfs bootstrap add /ip4/167.99.16.146/udp/4002/ipfs/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
+  ipfs bootstrap add /dnsaddr/ipfs.gorengine.com/udp/4001/ipfs/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
+  ipfs bootstrap add /dnsaddr/ipfs.gorengine.com/udp/4002/ipfs/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
 
   # Set up the swarm key, if provided
 
