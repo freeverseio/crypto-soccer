@@ -41,7 +41,7 @@ data:
     ipfs config Datastore.StorageMax 180GB
     ipfs config --json Swarm.ConnMgr.HighWater 2000
     ipfs config --json Datastore.BloomFilterSize 1048576
-    ipfs config --json Addresses.Announce '["/dns4/ipfs.gorengine.com/tcp/4001", "/dns4/ipfs.gorengine.com/udp/4002"]'
+    ipfs config --json Addresses.Announce $IPFS_ADDRESS_ANNOUNCE
 
     chown -R ipfs /data/ipfs
 
