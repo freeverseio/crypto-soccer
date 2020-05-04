@@ -46,7 +46,7 @@ contract("Market", accounts => {
     assets = depl[1];
     market = depl[2];
 
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 0).should.be.fulfilled;
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
 
     constants = await ConstantsGetters.new().should.be.fulfilled;
@@ -82,31 +82,37 @@ contract("Market", accounts => {
   it("changing newSumSkillsAllowed", async () => {
     var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(20000);
-    minLapseTime.toNumber().should.be.equal(0);
+    minLapseTime.toNumber().should.be.equal(3600*24*5);
+  
+    // cannot change because I didn't wait enough
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 25000, newLapseTime = 3600*24*4).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
 
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 25000, newLapseTime = 3600*24*5).should.be.fulfilled;
-    // allowed because minLapseTime is still 0
+    await timeTravel.advanceTime(minLapseTime.toNumber()+100);
+    await timeTravel.advanceBlock().should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+
     var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(sumSkillsAllowed);
     minLapseTime.toNumber().should.be.equal(newLapseTime);
     
-    // But now we will fail if we don't wait for 5 days...
+    // But now we will fail if we don't wait for 4 days...
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 30000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
 
-    await timeTravel.advanceTime(newLapseTime+100);
+    await timeTravel.advanceTime(minLapseTime.toNumber()+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
 
     // we will now have to wait for 1 day... or decrease the value:
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 31000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 29000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
-
+    await market.lowerNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 29000).should.be.fulfilled;
+    var {0: sumSkills, 1: minLapseTime2, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    sumSkills.toNumber().should.be.equal(sumSkillsAllowed);
+    minLapseTime2.toNumber().should.be.equal(newLapseTime2);
   });
-  
+
   it("normal players, go above 25, and get rid of player", async () => {
     playerIds = [];
     nPlayersToBuy = 9;
@@ -1050,7 +1056,12 @@ contract("Market", accounts => {
     sumSkillsAllowed = 10000;
     sum = await market.getSumOfSkills(playerId).should.be.fulfilled;
     (sum.toNumber() < sumSkillsAllowed).should.be.equal(false);
+    
+    var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0).should.be.fulfilled;
+    await timeTravel.advanceTime(minLapseTime.toNumber()+100);
+    await timeTravel.advanceBlock().should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
 

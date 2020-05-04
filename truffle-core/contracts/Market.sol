@@ -41,13 +41,18 @@ contract Market is MarketView {
         _maxSumSkillsBuyNowPlayerLastUpdate = now;
         emit ProposedNewMaxSumSkillsBuyNowPlayer(newSumSkills, newLapseTime);
     }
+
+    // maxSumSkills can always be lowered, regardless of lapse period 
+    function lowerNewMaxSumSkillsBuyNowPlayer(uint256 newMaxSum) public {
+        require (newMaxSum < _maxSumSkillsBuyNowPlayer, "newMaxSum is not lower than previous");
+        _maxSumSkillsBuyNowPlayer = newMaxSum;
+        emit UpdatedNewMaxSumSkillsBuyNowPlayer(newMaxSum, _maxSumSkillsBuyNowPlayerMinLapse);
+    }
     
-    // maxSumSkills can be updated if either the newVal is lower, or if enought time has passed 
+    // maxSumSkills can only grow if enough time has passed 
     function updateNewMaxSumSkillsBuyNowPlayer() public {
-        require (
-            (_maxSumSkillsBuyNowPlayerProposed < _maxSumSkillsBuyNowPlayer) ||
-            (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapse)),
-            "conditions to update new maxSumSkills are not met"
+        require (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapse),
+            "not enough time passed to update new maxSumSkills"
         );
         _maxSumSkillsBuyNowPlayer = _maxSumSkillsBuyNowPlayerProposed;
         _maxSumSkillsBuyNowPlayerMinLapse = _maxSumSkillsBuyNowPlayerMinLapseProposed;
