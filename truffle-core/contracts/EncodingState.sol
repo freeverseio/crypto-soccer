@@ -5,7 +5,10 @@ pragma solidity >=0.5.12 <=0.6.3;
 
 contract EncodingState {
 
-    ////////////////////////////////
+    uint256 constant internal TWO_TO_43_MINUS_ONE = 8796093022207;
+    uint256 constant internal TWO_TO_35_MINUS_ONE = 34359738367;
+    uint256 constant internal TWO_TO_5_MINUS_ONE = 31;
+
     /**
      * @dev PlayerState serializes a total of 169 bits:
      *  currentTeamId           = 43 bits, offset = 0
@@ -31,47 +34,47 @@ contract EncodingState {
     }
 
     function setCurrentTeamId(uint256 playerState, uint256 teamId) public pure returns (uint256) {
-        require(teamId < 2**43, "currentTeamIdx out of bound");
-        playerState &= ~uint256((2**43-1));
+        require(teamId <= TWO_TO_43_MINUS_ONE, "currentTeamIdx out of bound");
+        playerState &= ~ TWO_TO_43_MINUS_ONE;
         playerState |= teamId;
         return playerState;
     }
 
     function getCurrentTeamIdFromPlayerState(uint256 playerState) public pure returns (uint256) {
-        return uint256(playerState & (2**43-1));
+        return playerState & TWO_TO_43_MINUS_ONE;
     }
 
     function setCurrentShirtNum(uint256 state, uint8 currentShirtNum) public pure returns (uint256) {
-        require(currentShirtNum < 2**5, "currentShirtNum out of bound");
-        state &= ~uint256(2**5-1 << 43); 
+        require(currentShirtNum <= TWO_TO_5_MINUS_ONE, "currentShirtNum out of bound");
+        state &= ~(TWO_TO_5_MINUS_ONE << 43); 
         state |= uint256(currentShirtNum) << 43;
         return state;
     }
 
     function getCurrentShirtNum(uint256 playerState) public pure returns (uint256) {
-        return uint256(playerState >> 43 & (2**5-1));
+        return (playerState >> 43) & TWO_TO_5_MINUS_ONE;
     }
     
     function setPrevPlayerTeamId(uint256 state, uint256 value) public pure returns (uint256) {
-        require(value < 2**43, "prevLeagueIdx out of bound");
-        state &= ~uint256(2**43-1 << 48); 
-        state |= uint256(value) << 48;
+        require(value <= TWO_TO_43_MINUS_ONE, "prevLeagueIdx out of bound");
+        state &= ~(TWO_TO_43_MINUS_ONE << 48); 
+        state |= (value << 48);
         return state;
     }
 
     function getPrevPlayerTeamId(uint256 playerState) public pure returns (uint256) {
-        return uint256(playerState >> 48 & (2**43-1));
+        return (playerState >> 48) & TWO_TO_43_MINUS_ONE;
     }
 
     function setLastSaleBlock(uint256 state, uint256 lastSaleBlock) public pure returns (uint256) {
-        require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
-        state &= ~uint256(2**35-1 << 91); // 256 - 43 - 43 - 5 - 43 - 35
-        state |= uint256(lastSaleBlock) << 91;
+        require(lastSaleBlock <= TWO_TO_35_MINUS_ONE, "lastSaleBlock out of bound");
+        state &= ~(TWO_TO_35_MINUS_ONE << 91); // 256 - 43 - 43 - 5 - 43 - 35
+        state |= (lastSaleBlock << 91);
         return state;
     }
 
     function getLastSaleBlock(uint256 playerState) public pure returns (uint256) {
-        return uint256(playerState >> 91 & (2**35-1));
+        return (playerState >> 91) & TWO_TO_35_MINUS_ONE;
     }
 
 }
