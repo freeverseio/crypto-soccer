@@ -425,7 +425,7 @@ contract('Evolution', (accounts) => {
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = true).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 55000, 14, 0, 0, 14, 14 ];
+        expct = [ 54967, 14, 0, 0, 14, 14 ];
         debug.compareArrays(result, expct, toNum = true, verbose = false, isBigNumber = false);
 
 
