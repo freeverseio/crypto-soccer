@@ -91,7 +91,6 @@ module.exports = function (deployer, network, accounts) {
       ["UPDATES", updates.address],
       ["TRAININGPOINTS", trainingPoints.address],
       ["EVOLUTION", evolution.address],
-      ["TRAININGPOINTS", trainingPoints.address],
       ["FRIENDLIES", friendlies.address],
       ["SHOP_CONTRACT", shop.address],
       ["PRIVILEGED", privileged.address],
