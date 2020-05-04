@@ -29,6 +29,10 @@ else
   ipfs bootstrap add /p2p-circuit/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
   ipfs bootstrap add /dns4/ipfs.gorengine.com/tcp/4001/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
   ipfs bootstrap add /dns4/ipfs.gorengine.com/udp/4002/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
+
+  ipfs bootstrap add /p2p-circuit/p2p/QmQPUEBUFnFVfea5KcYta1DJAESppwMWPbYwVpZWx8kg21
+  ipfs bootstrap add /dns4/ipfs-cluster.gorengine.com/tcp/4001/p2p/QmQPUEBUFnFVfea5KcYta1DJAESppwMWPbYwVpZWx8kg21
+  ipfs bootstrap add /dns4/ipfs-cluster.gorengine.com/tcp/4002/p2p/QmQPUEBUFnFVfea5KcYta1DJAESppwMWPbYwVpZWx8kg21
   
   # Set up the swarm key, if provided
 
