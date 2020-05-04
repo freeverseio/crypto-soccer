@@ -39,6 +39,7 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
 		for i := 0; i < 25; i++ {
+			// note that players are 79 years old with such hardcoded value!
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
 			match.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
 			match.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))

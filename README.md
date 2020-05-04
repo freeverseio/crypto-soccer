@@ -5,3 +5,4 @@ When deploying new contracts:
 * in go/testutils/blockchain_node.go:
   * add to ContractAddresses all contracts that you want to call from Go code
   * 
+To update golden tests in go: go test matches_test.go setup_test.go -test.update-golden

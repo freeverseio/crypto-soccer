@@ -997,7 +997,6 @@ contract("Market", accounts => {
   it("special players: check children of special players", async () => {
     training = await TrainingPoints.new().should.be.fulfilled;
     await training.setAssetsAddress(assets.address).should.be.fulfilled;
-    // toni
     tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     sumSkills = await market.getSumOfSkills(playerId).should.be.fulfilled;
