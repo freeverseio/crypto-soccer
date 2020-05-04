@@ -331,7 +331,6 @@ contract('Assets', (accounts) => {
         teamIdxInCountry.should.be.equal(0);
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         state = await market.getPlayerState(playerId).should.be.fulfilled;
-        newId =  await assets.getPlayerIdFromState(state).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
         expectedTeamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
         teamId =  await assets.getCurrentTeamIdFromPlayerState(state).should.be.fulfilled; 
@@ -344,8 +343,6 @@ contract('Assets', (accounts) => {
         teamIdxInCountry.should.be.equal(1);
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         state = await market.getPlayerState(playerId).should.be.fulfilled;
-        newId =  await assets.getPlayerIdFromState(state).should.be.fulfilled; 
-        newId.should.be.bignumber.equal(playerId);
         expectedTeamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
         teamId =  await assets.getCurrentTeamIdFromPlayerState(state).should.be.fulfilled; 
         teamId.should.be.bignumber.equal(expectedTeamId);
