@@ -96,7 +96,6 @@ module.exports = function (deployer, network, accounts) {
       ["SHOP_CONTRACT", shop.address],
       ["PRIVILEGED", privileged.address],
       ["UTILS", utils.address],
-      ["PRIVILEGED", assets.address],
       ["PLAYANDEVOLVE", playAndEvolve.address],
       ["CONSTANTSGETTERS", constantsGetters.address],
       ["PROXY", proxy.address],
