@@ -428,6 +428,8 @@ spec:
         - $(MARKET_CONTRACT_ADDRESS)
         - -constantsgetters_address
         - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        - -privileged_address
+        - $(PRIVILEGED_CONTRACT_ADDRESS)
         - -market_id
         - $(market_id)
         envFrom:
