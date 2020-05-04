@@ -220,12 +220,25 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         ageInSecs = 504576000 + (dna % 126144000);  // 504576000 = 16 * years2secs, 126144000 = 4 * years2secs
         uint256 dayOfBirth = (matchStartTime - ageInSecs / 7)/86400; // 86400 = 24 * 3600
         dna >>= 13; // log2(7300) = 12.8
-        uint256 playerId = getPlayerIdFromSkills(skills);
-        uint8 shirtNum = uint8(_assets.getCurrentShirtNum(_market.getPlayerStateAtBirth(playerId)));
-        (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(dna, shirtNum);
+        (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(
+            dna, 
+            forwardnessToShirtNum(dna, getForwardness(skills))
+        );
         // if dna is even => leads to child, if odd => leads to academy player
         uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (dna % 2 == 0 ? 0 : 32));
-        return encodePlayerSkills(newSkills, dayOfBirth, generation, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
+        uint256 finalSkills = encodePlayerSkills(newSkills, dayOfBirth, generation, getInternalPlayerId(skills), birthTraits, false, false, 0, 0, false, sumSkills);
+        return (getIsSpecial(skills)) ? addIsSpecial(finalSkills) : finalSkills;
+    }
+    
+    function forwardnessToShirtNum(uint256 seed, uint256 forwardPos) public pure returns(uint8 shirtNum) {
+        if (forwardPos == IDX_GK) {
+            shirtNum = uint8(seed % 3);
+        } else if (forwardPos == IDX_D) {
+            shirtNum = 3 + uint8(seed % 5);
+        } else if (forwardPos == IDX_M) {
+            shirtNum = 8 + uint8(seed % 6);
+        } else {
+            shirtNum = 14 + uint8(seed % 4);
+        }
     }
 }
-

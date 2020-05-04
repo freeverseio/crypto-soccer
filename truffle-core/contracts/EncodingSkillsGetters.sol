@@ -38,7 +38,10 @@ contract EncodingSkillsGetters {
     }
 
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
-        if (getIsSpecial(encodedSkills)) return encodedSkills;
+        return (getIsSpecial(encodedSkills)) ? encodedSkills : getInternalPlayerId(encodedSkills);
+    }
+
+    function getInternalPlayerId(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 96 & 8796093022207); // 2**43 - 1 = 8796093022207
     }
 

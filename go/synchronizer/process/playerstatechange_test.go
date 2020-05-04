@@ -35,7 +35,7 @@ func TestNewSpecialPlayer(t *testing.T) {
 	team.Insert(tx)
 
 	playerId, _ := new(big.Int).SetString("57896044618658097711785541940796869142293638854084229290456062565102128021503", 10)
-	state, _ := new(big.Int).SetString("57896044618658097711785541891407282612506404271738149168364592226042330824703", 10)
+	state, _ := new(big.Int).SetString("1", 10)
 	player, err := process.GeneratePlayerByPlayerIdAndState(bc.Contracts, 0, playerId, state)
 	if err != nil {
 		t.Fatal(err)
