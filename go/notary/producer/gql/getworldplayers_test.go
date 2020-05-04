@@ -20,5 +20,5 @@ func TestGetWorldPlayers(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
 
-	assert.Equal(t, string(players[0].PlayerId()), "0")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785540140530465520588209856388886192059147693882236014541")
 }
