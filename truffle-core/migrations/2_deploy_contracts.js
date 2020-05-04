@@ -30,7 +30,7 @@ module.exports = function (deployer, network, accounts) {
     const versionNumber = 0;
     const proxyAddress  = "0x0";
     const {0: proxy, 1: assets, 2: market, 3: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
-  
+
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -47,6 +47,8 @@ module.exports = function (deployer, network, accounts) {
     const marketCrypto = await deployer.deploy(MarketCrypto).should.be.fulfilled;
     
     console.log("Setting up ...");
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     if (versionNumber == 0) { await updates.initUpdates().should.be.fulfilled; }
