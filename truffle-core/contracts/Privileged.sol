@@ -143,9 +143,9 @@ contract Privileged is AssetsView {
         uint16 counter;
         for (uint8 pos = 0; pos < 4; pos++) { 
             for (uint16 n = 0; n < nPlayersPerForwardPos[pos]; n++) {
+                seed = uint256(keccak256(abi.encode(seed, n)));
                 (playerIdArray[counter], skillsVecArray[counter], dayOfBirthArray[counter], birthTraitsArray[counter], internalPlayerIdArray[counter]) =
                     createBuyNowPlayerId(playerValue, seed, pos);
-                seed = uint256(keccak256(abi.encode(seed)));
                 counter++;
             }
         }

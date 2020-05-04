@@ -101,8 +101,8 @@ contract('Encoding', (accounts) => {
     });
 
     it('creating a batch of buyNow players', async () =>  {
-        expectedSkills = [ 1474, 1033, 829, 1039, 1612 ];
-        expectedTraits = [0, 3, 6, 1];
+        expectedSkills = [ 982, 852, 1187, 591, 1289 ];
+        expectedTraits = [ 3, 3, 3, 0 ];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,2];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
@@ -112,8 +112,8 @@ contract('Encoding', (accounts) => {
         // compare actual values
         debug.compareArrays(skillsArray[0], expectedSkills, toNum = true, verbose = false);
         debug.compareArrays(traitsArray[0], expectedTraits, toNum = true, verbose = false);
-        internalIdArray[0].should.be.bignumber.equal("1247534008908");
-        internalIdArray[1].should.not.be.bignumber.equal("1247534008908");
+        internalIdArray[0].should.be.bignumber.equal("1186493375538");
+        internalIdArray[1].should.not.be.bignumber.equal("1186493375538");
     });
     
     it('creating a batch of buyNow players and displaying', async () =>  {
@@ -123,7 +123,7 @@ contract('Encoding', (accounts) => {
             playerValue = 1000, seed, nPlayersPerForwardPos
         ).should.be.fulfilled;
         h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
-        assert.equal(h, '0x666032780708b1ba503e0ca711142868585f14314d3da9cde71e571771167ebe', "createBuyNowPlayerIdBatch not as expected");
+        assert.equal(h, '0x8dd8593751125e20d0b52891c6210f8d5502bd53dc557c1a32b2831f12a73f7b', "createBuyNowPlayerIdBatch not as expected");
 
         if (false) {
             // traits: shoot, speed, pass, defence, endurance
