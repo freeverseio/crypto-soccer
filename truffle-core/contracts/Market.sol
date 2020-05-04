@@ -18,6 +18,8 @@ contract Market is MarketView {
     event PlayerFreezeCrypto(uint256 playerId, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
+    event ProposedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
+    event UpdatedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
 
     function setCryptoMarketAddress(address addr) external {
         _cryptoMktAddr = addr;
@@ -37,19 +39,21 @@ contract Market is MarketView {
         _maxSumSkillsBuyNowPlayerProposed = newSumSkills;
         _maxSumSkillsBuyNowPlayerMinLapseProposed = newLapseTime;
         _maxSumSkillsBuyNowPlayerLastUpdate = now;
+        emit ProposedNewMaxSumSkillsBuyNowPlayer(newSumSkills, newLapseTime);
     }
     
     // maxSumSkills can be updated if either the newVal is lower, or if enought time has passed 
     function updateNewMaxSumSkillsBuyNowPlayer() public {
         require (
             (_maxSumSkillsBuyNowPlayerProposed < _maxSumSkillsBuyNowPlayer) ||
-            (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapseProposed)),
+            (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapse)),
             "conditions to update new maxSumSkills are not met"
         );
         _maxSumSkillsBuyNowPlayer = _maxSumSkillsBuyNowPlayerProposed;
         _maxSumSkillsBuyNowPlayerMinLapse = _maxSumSkillsBuyNowPlayerMinLapseProposed;
+        emit UpdatedNewMaxSumSkillsBuyNowPlayer(_maxSumSkillsBuyNowPlayer, _maxSumSkillsBuyNowPlayerMinLapse);
     }
-
+    
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];

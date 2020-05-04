@@ -45,8 +45,10 @@ contract("Market", accounts => {
     proxy  = depl[0];
     assets = depl[1];
     market = depl[2];
-    // done with delegate calls
-    
+
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 0).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+
     constants = await ConstantsGetters.new().should.be.fulfilled;
     marketCrypto = await MarketCrypto.new().should.be.fulfilled;
 
@@ -74,6 +76,34 @@ contract("Market", accounts => {
     sellerRnd = 42321;
     extraPrice = 332;
     buyerRnd = 1243523;
+
+  });
+  
+  it("changing newSumSkillsAllowed", async () => {
+    var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    sumSkills.toNumber().should.be.equal(20000);
+    minLapseTime.toNumber().should.be.equal(0);
+
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 25000, newLapseTime = 3600*24*5).should.be.fulfilled;
+    // allowed because minLapseTime is still 0
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    sumSkills.toNumber().should.be.equal(sumSkillsAllowed);
+    minLapseTime.toNumber().should.be.equal(newLapseTime);
+    
+    // But now we will fail if we don't wait for 5 days...
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 30000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
+
+    await timeTravel.advanceTime(newLapseTime+100);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+
+    // we will now have to wait for 1 day... or decrease the value:
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 31000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 29000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
 
   });
   
@@ -1015,8 +1045,6 @@ contract("Market", accounts => {
   it("buyNow: buy now player fails for players with too large sumSkills", async () => {
     playerId = await createSpecialPlayerId(id = 4312432432);
     targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
-    // if no value is set for maxAllowedSumSkills, if fails
-    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
 
     // if value is too low, it fails
     sumSkillsAllowed = 10000;
