@@ -40,12 +40,12 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 	if err != nil {
 		return result, err
 	}
-	log.Infof("TODO sender is %v", sender)
+	log.Infof("TODO sender is %v", sender.Hex())
 
 	// TODO put the 30 in a smarter place
 	for i := 0; i < 30; i++ {
 		worldPlayer := NewWorldPlayer(
-			graphql.ID(i),
+			graphql.ID(fmt.Sprintf("%d", i)),
 			"dummy"+fmt.Sprintf("%d", i),
 		)
 		result = append(result, worldPlayer)
