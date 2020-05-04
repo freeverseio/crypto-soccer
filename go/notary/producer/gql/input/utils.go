@@ -37,12 +37,20 @@ func AddressFromSignature(hash common.Hash, sign []byte) (common.Address, error)
 
 func Sign(hash []byte, pvr *ecdsa.PrivateKey) ([]byte, error) {
 	sig, err := crypto.Sign(hash, pvr)
+	if err != nil {
+		return nil, err
+	}
 	if len(sig) != 65 {
-		return []byte{}, fmt.Errorf("signature must be 65 bytes long")
+		return nil, fmt.Errorf("signature must be 65 bytes long")
 	}
 	if sig[64] != 0 && sig[64] != 1 {
-		return []byte{}, fmt.Errorf("invalid Ethereum signature (V is not 0 or 1)")
+		return nil, fmt.Errorf("invalid Ethereum signature (V is not 0 or 1)")
 	}
 	sig[64] += 27
 	return sig, err
+}
+
+func PrefixedHash(hash common.Hash) common.Hash {
+	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
+	return crypto.Keccak256Hash([]byte(ss))
 }
