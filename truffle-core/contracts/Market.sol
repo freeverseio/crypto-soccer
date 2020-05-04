@@ -33,6 +33,23 @@ contract Market is MarketView {
         emit PlayerFreezeCrypto(playerId, isFrozen);
     }
 
+    function proposeNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime) public {
+        _maxSumSkillsBuyNowPlayerProposed = newSumSkills;
+        _maxSumSkillsBuyNowPlayerMinLapseProposed = newLapseTime;
+        _maxSumSkillsBuyNowPlayerLastUpdate = now;
+    }
+    
+    // maxSumSkills can be updated if either the newVal is lower, or if enought time has passed 
+    function updateNewMaxSumSkillsBuyNowPlayer() public {
+        require (
+            (_maxSumSkillsBuyNowPlayerProposed < _maxSumSkillsBuyNowPlayer) ||
+            (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapseProposed)),
+            "conditions to update new maxSumSkills are not met"
+        );
+        _maxSumSkillsBuyNowPlayer = _maxSumSkillsBuyNowPlayerProposed;
+        _maxSumSkillsBuyNowPlayerMinLapse = _maxSumSkillsBuyNowPlayerMinLapseProposed;
+    }
+
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
@@ -78,6 +95,7 @@ contract Market is MarketView {
      ) public {
         // isAcademy checks that player isSpecial, and not written.
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
+        require(getSumOfSkills(playerId) < _maxSumSkillsBuyNowPlayer, "buy now player has sum of skills larger than allowed");
         require(!isBotTeam(targetTeamId), "cannot transfer to bot teams");
         require(!_teamIdToIsBuyNowForbidden[targetTeamId], "user has explicitly forbidden buyNow");
         require(targetTeamId != ACADEMY_TEAM, "targetTeam of buyNow player cannot be Academy Team");
