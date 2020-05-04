@@ -19,9 +19,7 @@ contract('EncodingState', (accounts) => {
         const prevPlayerTeamId = 32123;
         const lastSaleBlock = 3221;
         // check the initial setting of a player state (from empty)
-        const state = await encoding.encodePlayerState(playerId, currentTeamId, currentShirtNum, prevPlayerTeamId, lastSaleBlock).should.be.fulfilled;
-        result = await encoding.getPlayerIdFromState(state).should.be.fulfilled;
-        result.toNumber().should.be.equal(playerId);
+        const state = await encoding.encodePlayerState(currentTeamId, currentShirtNum, prevPlayerTeamId, lastSaleBlock).should.be.fulfilled;
         result = await encoding.getCurrentTeamIdFromPlayerState(state).should.be.fulfilled;
         result.toNumber().should.be.equal(currentTeamId);
         result = await encoding.getCurrentShirtNum(state).should.be.fulfilled;

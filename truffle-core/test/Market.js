@@ -16,6 +16,7 @@ const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
+const TrainingPoints = artifacts.require('TrainingPoints');
 
 async function createSpecialPlayerId(internalId = 144321433) {
   sk = [16383, 13, 4, 56, 456];
@@ -993,6 +994,27 @@ contract("Market", accounts => {
     tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId.add(web3.utils.toBN(1)), freeverseAccount).should.be.fulfilled;
   });
 
+  it("special players: check children of special players", async () => {
+    training = await TrainingPoints.new().should.be.fulfilled;
+    await training.setAssetsAddress(assets.address).should.be.fulfilled;
+    // toni
+    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await createSpecialPlayerId();
+    sumSkills = await market.getSumOfSkills(playerId).should.be.fulfilled;
+    sumSkills.toNumber().should.be.equal(16912);
+    fwd = await market.getForwardness(playerId).should.be.fulfilled;
+    fwd.toNumber().should.be.equal(3);
+
+    matchStartTime = 50*365*24*3600;
+    ageSecs = matchStartTime + 38*365*24*3600;
+    for (i = 0; i < 10; i++) {
+      console.log(i)
+      thisId = playerId.add(web3.utils.toBN(i));
+      newId = await training.generateChildIfNeeded(thisId, ageSecs, matchStartTime).should.be.fulfilled;
+    }
+  });
+
+  
   it("buyNow: buy now player", async () => {
     // TODO: add test that it fails if not sent from Academy address.
     // CURRENTLY: it works regardless of: await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
