@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
 	log "github.com/sirupsen/logrus"
@@ -12,10 +13,11 @@ import (
 func NewServer(
 	ch chan interface{},
 	contracts contracts.Contracts,
+	namesdb *names.Generator,
 ) error {
 	log.Info("New GraphQL server staring ...")
 
-	resolver := NewResolver(ch, contracts)
+	resolver := NewResolver(ch, contracts, namesdb)
 	schema := graphql.MustParseSchema(Schema, resolver)
 
 	handler := relay.Handler{Schema: schema}
