@@ -92,9 +92,9 @@ func CreateWorldPlayerBatch(
 
 	for i := range worldPlayers.PlayerIdArray {
 		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
-		name := "TODO"
+		name := "" // TODO
 		dayOfBirth := int32(worldPlayers.DayOfBirthArray[i])
-		preferredPosition := "TODO"
+		preferredPosition := "" // TODO
 		defence := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsDefenceIdx])
 		pass := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsPassIdx])
 		speed := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsSpeedIdx])
