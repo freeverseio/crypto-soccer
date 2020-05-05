@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/big"
+	"strconv"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -20,41 +22,60 @@ const nAttackers = 9
 func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput }) ([]*WorldPlayer, error) {
 	log.Debugf("GetWorldPlayers %v", args)
 
-	result := []*WorldPlayer{}
-
 	if b.ch == nil {
-		return result, errors.New("internal error: no channel")
+		return nil, errors.New("internal error: no channel")
 	}
 
 	hash, err := args.Input.Hash()
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	sign, err := hex.DecodeString(args.Input.Signature)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	isValid, err := input.VerifySignature(hash, sign)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	if !isValid {
-		return result, errors.New("Invalid signature")
+		return nil, errors.New("Invalid signature")
 	}
 
 	sender, err := input.AddressFromSignature(hash, sign)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
-	log.Infof("TODO sender is %v", sender.Hex())
+	log.Infof("TODO check sender is %v", sender.Hex())
 
-	playerValue := big.NewInt(3000)
-	seed, _ := new(big.Int).SetString(string(args.Input.TeamId), 10)
-	if seed == nil {
+	value := int64(3000) // TODO
+
+	return CreateWorldPlayerBatch(
+		b.contracts,
+		value,
+		string(args.Input.TeamId),
+		time.Now().Unix(),
+	)
+}
+
+func CreateWorldPlayerBatch(
+	contr contracts.Contracts,
+	value int64,
+	teamId string,
+	nowEpoch int64,
+) ([]*WorldPlayer, error) {
+	result := []*WorldPlayer{}
+
+	currentWeek := nowEpoch / (3600 * 7)
+	id, err := strconv.ParseInt(teamId, 10, 64)
+	if err != nil {
 		return result, errors.New("Invalid TeamId")
 	}
-	worldPlayers, err := b.contracts.Privileged.CreateBuyNowPlayerIdBatch(
+	seed := big.NewInt(currentWeek + id)
+
+	playerValue := big.NewInt(value)
+	worldPlayers, err := contr.Privileged.CreateBuyNowPlayerIdBatch(
 		&bind.CallOpts{},
 		playerValue,
 		seed,
@@ -80,7 +101,7 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := "TODO"
+		validUntil := strconv.FormatInt(currentWeek*3600*8, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
