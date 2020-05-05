@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/utils"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -91,10 +92,15 @@ func CreateWorldPlayerBatch(
 	}
 
 	for i := range worldPlayers.PlayerIdArray {
+		leftishness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsLeftishnessIdx]
+		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
 		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
 		name := "" // TODO
 		dayOfBirth := int32(worldPlayers.DayOfBirthArray[i])
-		preferredPosition := "" // TODO
+		preferredPosition, err := utils.PreferredPosition(forwardness, leftishness)
+		if err != nil {
+			return nil, err
+		}
 		defence := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsDefenceIdx])
 		pass := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsPassIdx])
 		speed := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsSpeedIdx])
