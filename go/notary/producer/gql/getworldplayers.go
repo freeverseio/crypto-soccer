@@ -68,11 +68,10 @@ func CreateWorldPlayerBatch(
 	result := []*WorldPlayer{}
 	epochDays := epoch / (3600 * 24)
 	epochWeeks := epochDays / 7
-	id, err := strconv.ParseInt(teamId, 10, 64)
-	if err != nil {
-		return result, errors.New("Invalid TeamId")
+	seed, _ := new(big.Int).SetString(teamId, 10)
+	if seed == nil {
+		return nil, errors.New("invalid teamId")
 	}
-	seed := big.NewInt(epochWeeks + id)
 
 	playerValue := big.NewInt(value)
 	worldPlayers, err := contr.Privileged.CreateBuyNowPlayerIdBatch(
@@ -102,7 +101,7 @@ func CreateWorldPlayerBatch(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := strconv.FormatInt((epochWeeks+1)*24*3600*7, 10)
+		validUntil := strconv.FormatInt((epochWeeks+1)*24*3600*7, 10) // valid 1 week
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
