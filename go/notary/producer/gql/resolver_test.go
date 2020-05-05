@@ -9,7 +9,7 @@ import (
 )
 
 func TestResolverParsing(t *testing.T) {
-	_, err := graphql.ParseSchema(gql.Schema, gql.NewResolver(nil, *bc.Contracts))
+	_, err := graphql.ParseSchema(gql.Schema, gql.NewResolver(nil, *bc.Contracts, namesdb))
 	assert.NilError(t, err)
 }
 
