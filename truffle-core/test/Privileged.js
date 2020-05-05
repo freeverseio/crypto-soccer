@@ -16,11 +16,12 @@ contract('Privileged', (accounts) => {
         const playerValue = 3000;
         const seed = 4;
         const nPlayersPerForwardPos = [1, 2, 3, 4];
+        const epochDays = Math.floor(1588668910 / (3600 * 24));
         await privileged.createBuyNowPlayerIdBatch(
             playerValue,
             seed,
             nPlayersPerForwardPos,
+            epochDays,
         ).should.be.fulfilled;
-
     });
 })
