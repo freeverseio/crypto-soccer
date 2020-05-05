@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
@@ -21,6 +22,7 @@ import (
 func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres url")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
+	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	marketContractAddress := flag.String("market_address", "", "market contract address")
 	constantsgettersContractAddress := flag.String("constantsgetters_address", "", "constantsgetters contract address")
 	privilegedContractAddress := flag.String("privileged_address", "", "privileged contract address")
@@ -55,6 +57,12 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
+	if _, err := os.Stat(*namesDatabase); err != nil {
+		if os.IsNotExist(err) {
+			log.Fatalf("no names database file at %v", *namesDatabase)
+		}
+	}
+
 	if err := func() error {
 		log.Info("Create the connection to DBMS")
 		db, err := storage.New(*postgresURL)
@@ -62,6 +70,13 @@ func main() {
 			return err
 		}
 		defer db.Close()
+
+		namesdb, err := names.New(*namesDatabase)
+		if err != nil {
+			return err
+		}
+		defer namesdb.Close()
+
 		log.Info("Dial the Ethereum client: ", *ethereumClient)
 		client, err := ethclient.Dial(*ethereumClient)
 		if err != nil {
@@ -82,7 +97,7 @@ func main() {
 
 		ch := make(chan interface{}, *bufferSize)
 
-		go gql.NewServer(ch, *contracts)
+		go gql.NewServer(ch, *contracts, namesdb)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 
 		var market marketpay.IMarketPay

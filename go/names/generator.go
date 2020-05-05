@@ -217,6 +217,13 @@ func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
 	return (count == 1), nil
 }
 
+func (b Generator) GenerateSpecialPlayerName(playerId *big.Int) (string, error) {
+	generation := uint8(0)
+	timezone := uint8(0)
+	countryIdxInTZ := uint64(0)
+	return b.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+}
+
 func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
 	if timezone == 0 || timezone > 24 {

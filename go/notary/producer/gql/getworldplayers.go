@@ -9,6 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/utils"
 	"github.com/graph-gophers/graphql-go"
@@ -54,6 +55,7 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 
 	return CreateWorldPlayerBatch(
 		b.contracts,
+		b.namesdb,
 		value,
 		string(args.Input.TeamId),
 		time.Now().Unix(),
@@ -62,6 +64,7 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 
 func CreateWorldPlayerBatch(
 	contr contracts.Contracts,
+	namesdb *names.Generator,
 	value int64,
 	teamId string,
 	epoch int64,
