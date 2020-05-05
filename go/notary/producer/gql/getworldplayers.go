@@ -66,13 +66,13 @@ func CreateWorldPlayerBatch(
 	nowEpoch int64,
 ) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
-
-	currentWeek := nowEpoch / (3600 * 7)
+	currentDays := nowEpoch / (3600 * 24)
+	currentWeeks := currentDays / 7
 	id, err := strconv.ParseInt(teamId, 10, 64)
 	if err != nil {
 		return result, errors.New("Invalid TeamId")
 	}
-	seed := big.NewInt(currentWeek + id)
+	seed := big.NewInt(currentWeeks + id)
 
 	playerValue := big.NewInt(value)
 	worldPlayers, err := contr.Privileged.CreateBuyNowPlayerIdBatch(
@@ -85,6 +85,7 @@ func CreateWorldPlayerBatch(
 			nMidfielders,
 			nAttackers,
 		},
+		big.NewInt(currentDays),
 	)
 	if err != nil {
 		return result, err
@@ -101,7 +102,7 @@ func CreateWorldPlayerBatch(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := strconv.FormatInt(currentWeek*3600*8, 10)
+		validUntil := strconv.FormatInt(currentWeeks*24*3600*8, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
