@@ -27,6 +27,8 @@ function dayOfBirthToAgeYears(dayOfBirth){
 
 contract('Encoding', (accounts) => {
 
+    const epochInDays = 18387; // May 5th 2020
+
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
@@ -75,7 +77,7 @@ contract('Encoding', (accounts) => {
         (Math.abs(expectedAvgSkill.toNumber() - sumSkills/5) < 20).should.be.equal(true);
         
         // test that you get the same via the non-pure function:
-        var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerId(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
+        var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerId(playerValue = 1000, seed, forwardPos = 3, epochInDays).should.be.fulfilled;
         debug.compareArrays(skills2, expectedSkills, toNum = true, verbose = false);
         debug.compareArrays(traits2, expectedTraits, toNum = true, verbose = false);
         internalId2.should.be.bignumber.equal(internalId);
@@ -85,7 +87,7 @@ contract('Encoding', (accounts) => {
         (Math.abs(dayOfBirth.toNumber() - expectedDayOfBirth) < 10).should.be.equal(true);
         
     });
-    
+
     it('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3).should.be.fulfilled;
@@ -106,7 +108,7 @@ contract('Encoding', (accounts) => {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,2];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1000, seed, nPlayersPerForwardPos
+            playerValue = 1000, seed, nPlayersPerForwardPos, epochInDays
         ).should.be.fulfilled;
 
         // compare actual values
@@ -120,7 +122,7 @@ contract('Encoding', (accounts) => {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [10,10,10,10];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1000, seed, nPlayersPerForwardPos
+            playerValue = 1000, seed, nPlayersPerForwardPos, epochInDays
         ).should.be.fulfilled;
         h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
         assert.equal(h, '0x8dd8593751125e20d0b52891c6210f8d5502bd53dc557c1a32b2831f12a73f7b', "createBuyNowPlayerIdBatch not as expected");
