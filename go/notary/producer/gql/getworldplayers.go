@@ -98,7 +98,13 @@ func CreateWorldPlayerBatch(
 		leftishness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsLeftishnessIdx]
 		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
 		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
-		name := "" // TODO
+		generation := uint8(0)
+		timezone := uint8(1)
+		countryIdxInTZ := uint64(0)
+		name, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ)
+		if err != nil {
+			return nil, err
+		}
 		dayOfBirth := int32(worldPlayers.DayOfBirthArray[i])
 		preferredPosition, err := utils.PreferredPosition(forwardness, leftishness)
 		if err != nil {

@@ -8,13 +8,19 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 var bc *testutils.BlockchainNode
+var namesdb *names.Generator
 
 func TestMain(m *testing.M) {
 	var err error
+	namesdb, err = names.New("../../../names/sql/names.db")
+	if err != nil {
+		log.Fatal(err)
+	}
 	bc, err = testutils.NewBlockchainNode()
 	if err != nil {
 		log.Fatal(err)
