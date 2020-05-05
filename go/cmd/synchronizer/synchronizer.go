@@ -95,6 +95,7 @@ func main() {
 		}
 		defer client.Close()
 
+		privilegedContractAddress := ""
 		contracts, err := contracts.New(
 			client,
 			*leaguesContractAddress,
@@ -109,6 +110,7 @@ func main() {
 			*shopContractAddress,
 			*trainingpointsContractAddress,
 			*constantsgettersContractAddress,
+			privilegedContractAddress,
 		)
 		if err != nil {
 			return err

@@ -19,10 +19,28 @@ type WorldPlayer struct {
 func NewWorldPlayer(
 	playerId graphql.ID,
 	name string,
+	dayOfBirth int32,
+	preferredPosition string,
+	defence int32,
+	speed int32,
+	pass int32,
+	shoot int32,
+	endurance int32,
+	potential int32,
+	validUntil string,
 ) *WorldPlayer {
 	player := WorldPlayer{}
 	player.playerId = playerId
 	player.name = name
+	player.dayOfBirth = dayOfBirth
+	player.preferredPosition = preferredPosition
+	player.defence = defence
+	player.speed = speed
+	player.pass = pass
+	player.shoot = shoot
+	player.endurance = endurance
+	player.potential = potential
+	player.validUntil = validUntil
 	return &player
 }
 
