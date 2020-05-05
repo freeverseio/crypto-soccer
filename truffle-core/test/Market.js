@@ -26,7 +26,9 @@ async function createSpecialPlayerId(internalId = 144321433) {
     age = 24 * secsInYear,
     traits,
     internalId,
-    now
+    now,
+    tz = 1, 
+    countryIdxInTz = 1
   ).should.be.fulfilled;
   return playerId;
 }
