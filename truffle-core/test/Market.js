@@ -1079,6 +1079,39 @@ contract("Market", accounts => {
     onwer.should.be.equal(freeverseAccount.address);
   });
   
+  it("didmissPlayers: Academy can sell in auction again after a dismiss", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.fulfilled;
+
+    await marketUtils.transferPlayerViaAuction(market, playerId, buyerTeamId, freeverseAccount, buyerAccount).should.be.fulfilled;
+  });
+
+  it("didmissPlayers: Academy can sell as buynow", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.fulfilled;
+
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
+  });
+  
   it("didmissPlayers fails when already sold, not owner any more", async () => {
     await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
