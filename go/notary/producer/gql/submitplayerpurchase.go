@@ -13,9 +13,23 @@ func (b *Resolver) SubmitPlayerPurchase(args struct {
 }) (graphql.ID, error) {
 	log.Debugf("GeneratePlayerIDs %v", args)
 
-	if b.ch == nil {
-		return graphql.ID(""), errors.New("internal error: no channel")
+	result := graphql.ID(args.Input.PlayerId)
+
+	isValid, err := args.Input.IsValidSignature()
+	if err != nil {
+		return result, err
+	}
+	if !isValid {
+		return result, errors.New("Invalid signature")
 	}
 
-	return graphql.ID(""), errors.New("not implemented")
+	isOwner, err := args.Input.IsSignerOwner(b.contracts)
+	if err != nil {
+		return result, err
+	}
+	if !isOwner {
+		return result, errors.New("Not team owner")
+	}
+
+	return result, errors.New("not implemented")
 }

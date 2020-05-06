@@ -3,6 +3,7 @@ module github.com/freeverseio/crypto-soccer/go
 go 1.12
 
 require (
+	github.com/awa/go-iap v1.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/ethereum/go-ethereum v1.9.11
