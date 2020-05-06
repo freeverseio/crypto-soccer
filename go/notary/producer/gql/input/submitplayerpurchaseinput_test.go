@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+
 	"github.com/awa/go-iap/playstore"
 	"gotest.tools/assert"
 )
@@ -18,6 +20,6 @@ func TestInAppPurchase(t *testing.T) {
 	client, err := playstore.New(jsonKey)
 	assert.NilError(t, err)
 	ctx := context.Background()
-	_, err = client.VerifyProduct(ctx, "package", "productID", "tocken")
+	_, err = client.VerifyProduct(ctx, input.GooglePackage, input.GoogleProductID, "tocken")
 	assert.NilError(t, err)
 }
