@@ -14,7 +14,7 @@ import "./AssetsLib.sol";
 contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
-        if (getIsSpecial(playerId)) return getSpecialPlayerSkillsAtBirth(playerId);
+        if (getIsSpecial(playerId)) return playerId;
         if (!wasPlayerCreatedVirtually(playerId)) return 0;
         (uint8 tz, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
@@ -23,10 +23,6 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         // compute a dna that is unique to this player, since it is made of a unique playerId:
         uint256 playerCreationDay = gameDeployDay + divisionIdToRound[encodeTZCountryAndVal(tz, countryIdxInTZ, division)] * DAYS_PER_ROUND;
         return computeSkillsAndEncode(shirtNum, playerCreationDay, playerId);
-    }
-
-    function getSpecialPlayerSkillsAtBirth(uint256 playerId) internal pure returns (uint256) {
-        return playerId;
     }
 
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
