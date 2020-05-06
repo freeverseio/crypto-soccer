@@ -24,10 +24,6 @@ const nAttackers = 9
 func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput }) ([]*WorldPlayer, error) {
 	log.Debugf("GetWorldPlayers %v", args)
 
-	if b.ch == nil {
-		return nil, errors.New("internal error: no channel")
-	}
-
 	hash, err := args.Input.Hash()
 	if err != nil {
 		return nil, err

@@ -13,9 +13,5 @@ func (b *Resolver) SubmitPlayerPurchase(args struct {
 }) (graphql.ID, error) {
 	log.Debugf("GeneratePlayerIDs %v", args)
 
-	if b.ch == nil {
-		return graphql.ID(""), errors.New("internal error: no channel")
-	}
-
 	return graphql.ID(""), errors.New("not implemented")
 }
