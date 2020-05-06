@@ -815,7 +815,7 @@ contract('Evolution', (accounts) => {
             resultNew = await training.getSkill(newSkills[p], SK_SHO).should.be.fulfilled;
             if (resultNew.toNumber() != resultInit.toNumber()) {
                 resultId = await assets.getPlayerIdFromSkills(newSkills[p]).should.be.fulfilled;
-                resultAge = await utils.getPlayerAgeInDays(resultId).should.be.fulfilled;
+                resultAge = await assets.getPlayerAgeInDays(resultId).should.be.fulfilled;
                 (resultAge.toNumber() >= 31 * 365).should.be.equal(true);
                 (resultNew.toNumber() < resultInit.toNumber()).should.be.equal(true);
             }
