@@ -131,14 +131,6 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         return secs / 86400;  // 86400 = 3600 * 24
     }
 
-    function daysToSecs(uint256 dayz) internal pure returns (uint256) {
-        return dayz * 86400; // 86400 = 3600 * 24 * 365
-    }
-
-    function getPlayerAgeInDays(uint256 playerId) public view returns (uint256) {
-        return secsToDays(7 * (now - daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId)))));
-    }
-
     function countCountries(uint8 tz) public view returns (uint256){
         return tzToNCountries[tz];
     }

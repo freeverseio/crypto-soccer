@@ -1,9 +1,8 @@
 pragma solidity >=0.5.12 <=0.6.3;
 import "./EncodingMatchLog.sol";
-import "./EncodingSkillsGetters.sol";
+import "./AssetsView.sol";
 
-contract Utils is EncodingMatchLog, EncodingSkillsGetters{
-    uint8 constant public N_SKILLS = 5;
+contract Utils is EncodingMatchLog, AssetsView{
 
     function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {
         decodedLog[0] = uint32(getTeamSumSkills(log));
@@ -57,5 +56,13 @@ contract Utils is EncodingMatchLog, EncodingSkillsGetters{
         generationGamesNonStopInjuryWeeks[0] = uint8(getGeneration(encodedSkills));
         generationGamesNonStopInjuryWeeks[1] = getGamesNonStopping(encodedSkills);
         generationGamesNonStopInjuryWeeks[2] = getInjuryWeeksLeft(encodedSkills);
+    }
+    
+    function daysToSecs(uint256 dayz) internal pure returns (uint256) {
+        return dayz * 86400; // 86400 = 3600 * 24 * 365
+    }
+
+    function getPlayerAgeInDays(uint256 playerId) public view returns (uint256) {
+        return secsToDays(7 * (now - daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId)))));
     }
 }

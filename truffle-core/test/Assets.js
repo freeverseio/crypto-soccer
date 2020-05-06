@@ -13,6 +13,7 @@ const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
+const Utils = artifacts.require('Utils');
 
 
 
@@ -50,6 +51,7 @@ contract('Assets', (accounts) => {
         market = depl[2]
         
         constants = await ConstantsGetters.new().should.be.fulfilled;
+        utils = await Utils.new().should.be.fulfilled;
         initTx = await assets.init().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await constants.get_PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
