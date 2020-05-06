@@ -30,6 +30,8 @@ func TestSubmitPlayerPurchaseInputHash(t *testing.T) {
 	hash, err = in.Hash()
 	assert.Error(t, err, "Invalid PlayerId")
 
+	in.PlayerId = "5"
+	hash, err = in.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x8a35acfbc15ff81a39ae7d344fd709f28e8600b4aa8c65c6b64bfe7fe36bd19b")
+	assert.Equal(t, hash.Hex(), "0x65732122af23f04532e927990a9fe25d7ba5663403d037be02968b9e391f1446")
 }

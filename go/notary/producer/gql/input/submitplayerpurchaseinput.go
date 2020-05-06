@@ -1,7 +1,6 @@
 package input
 
 import (
-	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -44,10 +43,8 @@ func (b SubmitPlayerPurchaseInput) Hash() (common.Hash, error) {
 	if playerId == nil {
 		return common.Hash{}, errors.New("Invalid PlayerId")
 	}
-	purchaseId, err := hex.DecodeString(string(b.PurchaseId))
-	if err != nil {
-		return common.Hash{}, err
-	}
+	var purchaseId [32]byte
+	copy(purchaseId[:], []byte(b.PurchaseId))
 
 	bytes, err := arguments.Pack(teamId, playerId, purchaseId)
 	if err != nil {
