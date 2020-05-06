@@ -1,13 +1,57 @@
 package input
 
-import "github.com/graph-gophers/graphql-go"
+import (
+	"encoding/hex"
+	"errors"
+	"math/big"
 
-const GooglePackage := "package"
-const GoogleProductID := "productId"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/graph-gophers/graphql-go"
+)
+
+const GooglePackage = "package"
+const GoogleProductID = "productId"
 
 type SubmitPlayerPurchaseInput struct {
 	Signature  string
 	PurchaseId graphql.ID
 	PlayerId   graphql.ID
 	TeamId     graphql.ID
+}
+
+func (b SubmitPlayerPurchaseInput) Hash() (common.Hash, error) {
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
+	arguments := abi.Arguments{
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: bytes32Ty,
+		},
+	}
+
+	teamId, _ := new(big.Int).SetString(string(b.TeamId), 10)
+	if teamId == nil {
+		return common.Hash{}, errors.New("Invalid TeamId")
+	}
+	playerId, _ := new(big.Int).SetString(string(b.PlayerId), 10)
+	if playerId == nil {
+		return common.Hash{}, errors.New("Invalid PlayerId")
+	}
+	purchaseId, err := hex.DecodeString(string(b.PurchaseId))
+	if err != nil {
+		return common.Hash{}, err
+	}
+
+	bytes, err := arguments.Pack(teamId, playerId, purchaseId)
+	if err != nil {
+		return common.Hash{}, err
+	}
+	return crypto.Keccak256Hash(bytes), nil
 }
