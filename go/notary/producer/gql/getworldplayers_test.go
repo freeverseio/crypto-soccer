@@ -13,8 +13,8 @@ func TestGetWorldPlayers(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb)
 
 	in := input.GetWorldPlayersInput{}
-	in.Signature = "82b6568d3e792df067a07ca67316b916de3064ef0cdabcbf25a59e5e9745caa328ae510bd2a62a92e2f9710aa38798a0a7e7f47b0632bf08fa4c7abd52e5c0a11b"
-	in.TeamId = "4"
+	in.Signature = "a67621b4763db406f404c4a600ce0e79ee50147c209e85d2f146f0d760c0a1ac2a213a06f702995cee279af1f588b55c9fa462b2e6a9502d25cede77ec690ced1c"
+	in.TeamId = "274877906944"
 
 	players, err := r.GetWorldPlayers(struct{ Input input.GetWorldPlayersInput }{in})
 	assert.NilError(t, err)

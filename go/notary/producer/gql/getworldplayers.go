@@ -45,12 +45,13 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 		return nil, errors.New("Invalid signature")
 	}
 
-	// TODO check if sender owns the team ?
-	// sender, err := input.AddressFromSignature(hash, sign)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// log.Infof("TODO check sender is %v", sender.Hex())
+	isOwner, err := args.Input.IsSignerOwner(b.contracts)
+	if err != nil {
+		return nil, err
+	}
+	if !isOwner {
+		return nil, errors.New("not owner of the team")
+	}
 
 	value := int64(1000) // TODO
 
