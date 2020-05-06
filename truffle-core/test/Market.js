@@ -1077,6 +1077,23 @@ contract("Market", accounts => {
     onwer.should.be.equal(freeverseAccount.address);
   });
   
+  it("didmissPlayers fails when already sold, not owner any more", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    
+    await marketUtils.transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(buyerAccount.address);
+    
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.rejected;
+  });
   
   it2("buyNow: buy now player fails for players with too large sumSkills", async () => {
     playerId = await createSpecialPlayerId(id = 4312432432);
