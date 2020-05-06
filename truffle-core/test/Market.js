@@ -16,16 +16,20 @@ const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
+const TrainingPoints = artifacts.require('TrainingPoints');
 
-async function createSpecialPlayerId(internalId = 144321433) {
+async function createSpecialPlayerId(rnd = 144321433) {
   sk = [16383, 13, 4, 56, 456];
   traits = [potential = 5, forwardness = 3, leftishness = 4, aggressiveness = 1]
   secsInYear = 365*24*3600
+  internalId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 1, playerIdxInCountry = rnd % 268435455);
+  
   playerId = await privileged.createSpecialPlayer(
     sk,
     age = 24 * secsInYear,
     traits,
-    internalId
+    internalId,
+    now,
   ).should.be.fulfilled;
   return playerId;
 }
@@ -44,8 +48,10 @@ contract("Market", accounts => {
     proxy  = depl[0];
     assets = depl[1];
     market = depl[2];
-    // done with delegate calls
-    
+
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+
     constants = await ConstantsGetters.new().should.be.fulfilled;
     marketCrypto = await MarketCrypto.new().should.be.fulfilled;
 
@@ -76,6 +82,40 @@ contract("Market", accounts => {
 
   });
   
+  it("changing newSumSkillsAllowed", async () => {
+    var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    sumSkills.toNumber().should.be.equal(20000);
+    minLapseTime.toNumber().should.be.equal(3600*24*5);
+  
+    // cannot change because I didn't wait enough
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 25000, newLapseTime = 3600*24*4).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
+
+    await timeTravel.advanceTime(minLapseTime.toNumber()+100);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+
+    var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    sumSkills.toNumber().should.be.equal(sumSkillsAllowed);
+    minLapseTime.toNumber().should.be.equal(newLapseTime);
+    
+    // But now we will fail if we don't wait for 4 days...
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 30000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
+
+    await timeTravel.advanceTime(minLapseTime.toNumber()+100);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+
+    // we will now have to wait for 1 day... or decrease the value:
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 31000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
+    await market.lowerNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 29000).should.be.fulfilled;
+    var {0: sumSkills, 1: minLapseTime2, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    sumSkills.toNumber().should.be.equal(sumSkillsAllowed);
+    minLapseTime2.toNumber().should.be.equal(newLapseTime2);
+  });
+
   it("normal players, go above 25, and get rid of player", async () => {
     playerIds = [];
     nPlayersToBuy = 9;
@@ -993,6 +1033,161 @@ contract("Market", accounts => {
     tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId.add(web3.utils.toBN(1)), freeverseAccount).should.be.fulfilled;
   });
 
+  it("special players: check children of special players", async () => {
+    training = await TrainingPoints.new().should.be.fulfilled;
+    await training.setAssetsAddress(assets.address).should.be.fulfilled;
+    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await createSpecialPlayerId();
+    sumSkills = await market.getSumOfSkills(playerId).should.be.fulfilled;
+    sumSkills.toNumber().should.be.equal(16912);
+    fwd = await market.getForwardness(playerId).should.be.fulfilled;
+    fwd.toNumber().should.be.equal(3);
+
+    matchStartTime = 50*365*24*3600;
+    ageSecs = matchStartTime + 38*365*24*3600;
+    for (i = 0; i < 10; i++) {
+      thisId = playerId.add(web3.utils.toBN(i));
+      newId = await training.generateChildIfNeeded(thisId, ageSecs, matchStartTime).should.be.fulfilled;
+    }
+  });
+
+  it("didmissPlayers works", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(sellerAccount.address);
+    
+    // First of all, Freeverse and Buyer check the signature
+    // In this case, using web3:
+    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
+    recoveredSellerAddr.should.be.equal(sellerAccount.address);
+  
+    // We check that player is not frozen
+    let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
+  
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.fulfilled;
+
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(freeverseAccount.address);
+  });
+  
+  it("didmissPlayers: Academy can sell in auction again after a dismiss", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.fulfilled;
+
+    await marketUtils.transferPlayerViaAuction(market, playerId, buyerTeamId, freeverseAccount, buyerAccount).should.be.fulfilled;
+  });
+
+  it("didmissPlayers: Academy can sell as buynow", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.fulfilled;
+
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
+  });
+  
+  it("didmissPlayers fails when already sold, not owner any more", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    
+    await marketUtils.transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(buyerAccount.address);
+    
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.rejected;
+  });
+  
+  it("didmissPlayers fails if frozen first", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.rejected;
+  });
+  
+  it("didmissPlayers fails if too long passed", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+
+    await timeTravel.advanceTime(validUntil - now + 200);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v
+    ).should.be.rejected;
+  });
+  
+  it("buyNow: buy now player fails for players with too large sumSkills", async () => {
+    playerId = await createSpecialPlayerId(id = 4312432432);
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+
+    // if value is too low, it fails
+    sumSkillsAllowed = 10000;
+    sum = await market.getSumOfSkills(playerId).should.be.fulfilled;
+    (sum.toNumber() < sumSkillsAllowed).should.be.equal(false);
+    
+    var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0).should.be.fulfilled;
+    await timeTravel.advanceTime(minLapseTime.toNumber()+100);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
+
+    // if value is too low, it fails
+    sumSkillsAllowed = 20000;
+    sum = await market.getSumOfSkills(playerId).should.be.fulfilled;
+    (sum.toNumber() < sumSkillsAllowed).should.be.equal(true);
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
+  });
+  
   it("buyNow: buy now player", async () => {
     // TODO: add test that it fails if not sent from Academy address.
     // CURRENTLY: it works regardless of: await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;

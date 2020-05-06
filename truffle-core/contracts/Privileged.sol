@@ -19,9 +19,10 @@ contract Privileged is AssetsView {
         uint16[N_SKILLS] memory skillsVec,
         uint256 ageInSecs,
         uint8[4] memory birthTraits,
-        uint256 playerId
-    ) public view returns (uint256) {
-        uint256 dayOfBirth = (now - ageInSecs/7)/86400; // 86400 = secsInDay
+        uint256 playerId,
+        uint256 nowInSecs
+    ) public pure returns (uint256) {
+        uint256 dayOfBirth = (nowInSecs - ageInSecs/7)/86400; // 86400 = secsInDay
         uint32 sumSkills;
         for (uint8 s = 0; s < N_SKILLS; s++) sumSkills += skillsVec[s];
         uint256 skills = encodePlayerSkills(
@@ -41,9 +42,9 @@ contract Privileged is AssetsView {
     }
     
     // returns a value relative to 10000
-    // Relative to 1, it would be = age < 31) ? 1 - 0.013 * (age - 16) : 1 - 0.013*15 - 0.05 * (age - 31)
+    // Relative to 1, it would be = age < 31) ? 1.15 - 0.013 * (age - 16) : 1.15 - 0.013*15 - 0.05 * (age - 31)
     function ageModifier(uint256 ageYears) public pure returns(uint256) {
-        return (ageYears < 31) ? 10000 - 130 * (ageYears - 16) : 8050 - 500 * (ageYears - 31);
+        return (ageYears < 31) ? 11500 - 130 * (ageYears - 16) : 9550 - 500 * (ageYears - 31);
     }
 
     // returns a value relative to 10000
@@ -60,7 +61,9 @@ contract Privileged is AssetsView {
     function createBuyNowPlayerIdPure(
         uint256 playerValue, 
         uint256 seed, 
-        uint8 forwardPos
+        uint8 forwardPos,
+        uint8 tz,
+        uint256 countryIdxInTZ
     ) 
         public 
         pure 
@@ -88,17 +91,20 @@ contract Privileged is AssetsView {
                 (uint256(skillsVec[sk]) * computeAvgSkills(playerValue, ageYears, potential))/uint256(1000)
             );
         }
-        internalPlayerId = seed % 8796093022207; // maxPlayerId (43b) = 2**43 - 1 = 8796093022207
+        internalPlayerId = encodeTZCountryAndVal(tz, countryIdxInTZ, seed % 268435455); // maxPlayerIdxInCountry (28b) = 2**28 - 1 = 268435455
     }
 
     // birthTraits = [potential, forwardness, leftishness, aggressiveness]
     function createBuyNowPlayerId(
         uint256 playerValue, 
         uint256 seed, 
-        uint8 forwardPos
+        uint8 forwardPos,
+        uint256 epochInDays,
+        uint8 tz,
+        uint256 countryIdxInTZ
     ) 
         public 
-        view 
+        pure 
         returns
     (
         uint256 playerId,
@@ -109,19 +115,22 @@ contract Privileged is AssetsView {
     )
     {
         uint256 ageYears;
-        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, seed, forwardPos);
+        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, seed, forwardPos, tz, countryIdxInTZ);
         // 1 year = 31536000 sec
-        playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId);
+        playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId, epochInDays*24*3600);
         dayOfBirth = uint16(getBirthDay(playerId));
     }
     
     function createBuyNowPlayerIdBatch(
         uint256 playerValue, 
         uint256 seed, 
-        uint8[4] memory nPlayersPerForwardPos
+        uint8[4] memory nPlayersPerForwardPos,
+        uint256 epochInDays,
+        uint8 tz,
+        uint256 countryIdxInTZ
     ) 
         public 
-        view 
+        pure 
         returns
     (
         uint256[] memory playerIdArray,
@@ -143,11 +152,15 @@ contract Privileged is AssetsView {
         uint16 counter;
         for (uint8 pos = 0; pos < 4; pos++) { 
             for (uint16 n = 0; n < nPlayersPerForwardPos[pos]; n++) {
+                seed = uint256(keccak256(abi.encode(seed, n)));
                 (playerIdArray[counter], skillsVecArray[counter], dayOfBirthArray[counter], birthTraitsArray[counter], internalPlayerIdArray[counter]) =
-                    createBuyNowPlayerId(playerValue, seed, pos);
-                seed = uint256(keccak256(abi.encode(seed)));
+                    createBuyNowPlayerId(playerValue, seed, pos, epochInDays, tz, countryIdxInTZ);
                 counter++;
             }
         }
     }
+    
+    function getTZandCountryIdxFromPlayerId(uint256 playerId) public pure returns (uint8 tz, uint256 countryIdxInTZ) {
+        (tz, countryIdxInTZ, ) = decodeTZCountryAndVal(getInternalPlayerId(playerId));
+    } 
 }

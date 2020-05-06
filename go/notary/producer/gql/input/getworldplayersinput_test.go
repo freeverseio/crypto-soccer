@@ -36,11 +36,12 @@ func TestGeneratePlayerIdsSignature(t *testing.T) {
 
 	hash, err := in.Hash()
 	assert.NilError(t, err)
+	hash = input.PrefixedHash(hash)
 	sign, err := input.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
 
 	in.Signature = hex.EncodeToString(sign)
-	assert.Equal(t, in.Signature, "724d892b43b6640b3baa00236f6920caa217596b313f999d32e8737019e65e04684e74d532b71f34c73c62c5783387565c5ac3e03cfb4b9b950c0859899339481c")
+	assert.Equal(t, in.Signature, "82b6568d3e792df067a07ca67316b916de3064ef0cdabcbf25a59e5e9745caa328ae510bd2a62a92e2f9710aa38798a0a7e7f47b0632bf08fa4c7abd52e5c0a11b")
 
 	isValid, err := input.VerifySignature(hash, sign)
 	assert.NilError(t, err)

@@ -16,6 +16,12 @@ spec:
       initContainers:
         - name: configure-ipfs
           image: "ipfs/go-ipfs:v0.4.23"
+          env:
+            - name: IPFS_ADDRESS_ANNOUNCE
+              valueFrom:
+                configMapKeyRef:
+                  key: IPFS_ADDRESS_ANNOUNCE
+                  name: env-config
           command: ["sh", "/custom/configure-ipfs.sh"]
           volumeMounts:
             - name: ipfs-storage

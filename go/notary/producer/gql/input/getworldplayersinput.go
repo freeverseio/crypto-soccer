@@ -33,7 +33,4 @@ func (b GetWorldPlayersInput) Hash() (common.Hash, error) {
 		return common.Hash{}, err
 	}
 	return crypto.Keccak256Hash(bytes), nil
-	// copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
-	// ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
-	// return crypto.Keccak256Hash([]byte(ss)), nil
 }

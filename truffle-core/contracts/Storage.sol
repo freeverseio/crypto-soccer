@@ -22,6 +22,11 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => uint8) internal _nPlayersInTransitInTeam;
     mapping (uint256 => bool) internal _teamIdToIsBuyNowForbidden;
 
+    uint256 _maxSumSkillsBuyNowPlayer;
+    uint256 _maxSumSkillsBuyNowPlayerMinLapse;
+    uint256 _maxSumSkillsBuyNowPlayerProposed;
+    uint256 _maxSumSkillsBuyNowPlayerMinLapseProposed;
+    uint256 _maxSumSkillsBuyNowPlayerLastUpdate;
 
     uint256 internal nextVerseTimestamp;
     uint8 internal timeZoneForRound1;

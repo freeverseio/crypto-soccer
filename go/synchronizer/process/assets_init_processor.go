@@ -33,7 +33,7 @@ func NewAssetsInitProcessor(
 }
 
 func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit) error {
-	log.Infof("AssetsInit: creatorAddr: %v", event.CreatorAddr)
+	log.Infof("AssetsInit: creatorAddr: %v", event.CreatorAddr.Hex())
 	timezone := storage.Timezone{uint8(0)}
 	country := storage.Country{timezone.TimezoneIdx, uint32(0)}
 	league := storage.League{timezone.TimezoneIdx, country.CountryIdx, uint32(0)}

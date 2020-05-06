@@ -76,6 +76,29 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
 }
 
+func TestMatchesPlaySequentialAndPlayParallalSpecialPlayers(t *testing.T) {
+	t.Parallel()
+	var matches process.Matches
+	for i := 0; i < 2; i++ {
+		match := engine.NewMatch()
+		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
+		for i := 0; i < 25; i++ {
+			// ... same as previous test, but now, we chose hardcoded values that lead to standard home players, while visitors are "special players"
+			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
+			match.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "57896044618658097711785510004365841718555277614428224524809945622215549060546"))
+			match.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+			match.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		}
+		matches = append(matches, *match)
+	}
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".begin.golden")
+	assert.NilError(t, matches.Play1stHalfParallel(context.Background(), *bc.Contracts))
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".half.golden")
+	assert.NilError(t, matches.Play2ndHalfParallel(context.Background(), *bc.Contracts))
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".end.golden")
+}
+
 func TestMatchesSetTactics(t *testing.T) {
 	t.Parallel()
 	var matches process.Matches

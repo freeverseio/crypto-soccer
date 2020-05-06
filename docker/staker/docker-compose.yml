@@ -5,11 +5,12 @@ services:
     volumes:
       - ethereum-data:/home/parity/.local/share/io.parity.ethereum
   ipfs.node:
-    image: freeverseio/go-ipfs:v0.4.23
+    image: freeverseio/go-ipfs:v0.5.0
     restart: always
     environment:
       - IPFS_PATH=/data
-      - IPFS_FD_MAX=4096
+      # - IPFS_FD_MAX=4096
+      - IPFS_PROFILE=server
     # volumes:
     #   - ipfs.node-data:/data
   ipfs.cluster:
@@ -49,6 +50,8 @@ services:
     depends_on:
       - universe.db
       - ethereum
+      - ipfs.node
+      - ipfs.cluster
   universe.api:
     image: "freeverseio/universe.api:${TAG}"
     ports:

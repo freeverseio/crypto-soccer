@@ -118,7 +118,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case assets.AssetsAssetsInit:
-		log.Infof("[processor] Dispatching AssetsInit event from account %v", v.CreatorAddr)
+		log.Infof("[processor] Dispatching AssetsInit event from account %v", v.CreatorAddr.Hex())
 		return p.assetsInitProcessor.Process(tx, v)
 	case assets.AssetsDivisionCreation:
 		log.Infof("[processor] Dispatching LeaguesDivisionCreation event Timezone %v, CountryIdxInTZ: %v, DivisionIdxInCountry %v", v.Timezone, v.CountryIdxInTZ, v.DivisionIdxInCountry)

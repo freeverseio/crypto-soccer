@@ -165,7 +165,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         view 
         returns (bool)
     {
-        address prevOwner = getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
+        address prevOwner = getOwnerPlayer(playerId);
         bytes32 msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         return (
             // check validUntil has not expired
@@ -247,12 +247,12 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
-        if (getIsSpecial(playerId)) return encodePlayerState(playerId, ACADEMY_TEAM, 0, 0, 0);
+        if (getIsSpecial(playerId)) return encodePlayerState(ACADEMY_TEAM, 0, 0, 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint256 currentTeamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
-        return encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
+        return encodePlayerState(currentTeamId, shirtNum, 0, 0);
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
@@ -324,5 +324,11 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
     
     function getNPlayersInTransitInTeam(uint256 teamId) public view returns (uint8) { return _nPlayersInTransitInTeam[teamId]; }        
+
+    function getNewMaxSumSkillsBuyNowPlayer() public view returns(uint256 sumSkills, uint256 minLapseTime, uint256 lastUpdate) {
+        sumSkills = _maxSumSkillsBuyNowPlayer;
+        minLapseTime = _maxSumSkillsBuyNowPlayerMinLapse;
+        lastUpdate = _maxSumSkillsBuyNowPlayerLastUpdate;
+    } 
 
 }
