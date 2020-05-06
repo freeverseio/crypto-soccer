@@ -191,6 +191,33 @@ contract Market is MarketView {
         _teamIdToAuctionData[teamId] = 1;
         emit TeamFreeze(teamId, 1, false);
     }
+    
+    function dismissPlayer(
+        uint256 validUntil,
+        uint256 playerId,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint8 sigV
+    ) public {
+        address owner = getOwnerPlayer(playerId);
+        bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId)));
+        require (
+            // check validUntil has not expired
+            (now < validUntil) &&
+            // check player is not already frozen
+            (!isPlayerFrozenInAnyMarket(playerId)) &&  
+            // check that the team it belongs to not already frozen
+            !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
+            // check asset is owned by legit address
+            (owner != address(0)) && 
+            // check signatures are valid by requiring that they own the asset:
+            (owner == recoverAddr(msgHash, sigV, sigR, sigS)) &&    
+            // check that auction time is less that the required 32 bit
+            (validUntil < now + MAX_VALID_UNTIL),
+            "conditions to dismiss player are not met"
+        );        
+        transferPlayer(playerId, ACADEMY_TEAM);
+    }
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
         // warning: check of ownership of players and teams should be done before calling this function
@@ -204,29 +231,34 @@ contract Market is MarketView {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
-                
+
         // part related to target team:
-        uint8 shirtTarget = getFreeShirt(teamIdTarget);
-        if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
-            state = setLastSaleBlock(
-                        setCurrentShirtNum(
-                            setCurrentTeamId(
-                                state, teamIdTarget
-                            ), shirtTarget
-                        ), block.number
-                    );
-            teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+        // - determine new state of player
+        // - if not Academy, write playerId in target team's shirt
+        if (teamIdTarget == ACADEMY_TEAM) {
+            state = setCurrentTeamId(state, ACADEMY_TEAM);
         } else {
-            _playerInTransitToTeam[playerId] = teamIdTarget;
-            _nPlayersInTransitInTeam[teamIdTarget] += 1;
-            state = setLastSaleBlock(
-                        setCurrentTeamId(
-                            state, IN_TRANSIT_TEAM
-                        ), block.number
-                    );
+            uint8 shirtTarget = getFreeShirt(teamIdTarget);
+            if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
+                state = setLastSaleBlock(
+                            setCurrentShirtNum(
+                                setCurrentTeamId(
+                                    state, teamIdTarget
+                                ), shirtTarget
+                            ), block.number
+                        );
+                teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+            } else {
+                _playerInTransitToTeam[playerId] = teamIdTarget;
+                _nPlayersInTransitInTeam[teamIdTarget] += 1;
+                state = setLastSaleBlock(
+                            setCurrentTeamId(
+                                state, IN_TRANSIT_TEAM
+                            ), block.number
+                        );
+            }
         }
         _playerIdToState[playerId] = state;
-
         emit PlayerStateChange(playerId, state);
     }
     

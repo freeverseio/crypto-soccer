@@ -116,6 +116,11 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(traitsArray[0], expectedTraits, toNum = true, verbose = false);
         internalIdArray[0].should.be.bignumber.equal("275195391431");
         internalIdArray[1].should.not.be.bignumber.equal("275195391431");
+      
+        // testing that they are created with the expected country and tz:
+        var {0: tz2, 1: countryIdxInTz2} = await privileged.getTZandCountryIdxFromPlayerId(playerIdArray[0]).should.be.fulfilled;
+        tz2.toNumber().should.be.equal(tz);
+        countryIdxInTz2.toNumber().should.be.equal(countryIdxInTz);
     });
     
     it('creating a batch of buyNow players and displaying', async () =>  {

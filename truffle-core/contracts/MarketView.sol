@@ -165,7 +165,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         view 
         returns (bool)
     {
-        address prevOwner = getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
+        address prevOwner = getOwnerPlayer(playerId);
         bytes32 msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         return (
             // check validUntil has not expired

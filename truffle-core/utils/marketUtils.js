@@ -33,6 +33,17 @@ async function signPutAssetForSaleMTx(currencyId, price, rnd, validUntil, assset
   return sigSeller;
 }
 
+async function signDismissPlayerMTx(validUntil, asssetId, sellerAccount) {
+  const sellerTxMsg = concatHash(
+      ['uint256', 'uint256'],
+      [validUntil, asssetId]
+  )
+  const sigSeller = await sellerAccount.sign(sellerTxMsg);
+  sigSeller.message.should.be.equal(sellerTxMsg);
+  return sigSeller;
+}
+
+
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
 async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerTeamId, buyerAccount) {
   const sellerHiddenPrice = concatHash(
@@ -344,7 +355,8 @@ module.exports = {
   freezePlayer,
   completePlayerAuction,
   freezeTeam,
-  completeTeamAuction
+  completeTeamAuction,
+  signDismissPlayerMTx
   
   // signOfferToBuyPlayerMTx,
   // signOfferToBuyTeamMTx,  
