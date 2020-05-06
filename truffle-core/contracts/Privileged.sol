@@ -61,7 +61,9 @@ contract Privileged is AssetsView {
     function createBuyNowPlayerIdPure(
         uint256 playerValue, 
         uint256 seed, 
-        uint8 forwardPos
+        uint8 forwardPos,
+        uint8 tz,
+        uint256 countryIdxInTZ
     ) 
         public 
         pure 
@@ -89,7 +91,7 @@ contract Privileged is AssetsView {
                 (uint256(skillsVec[sk]) * computeAvgSkills(playerValue, ageYears, potential))/uint256(1000)
             );
         }
-        internalPlayerId = seed % 8796093022207; // maxPlayerId (43b) = 2**43 - 1 = 8796093022207
+        internalPlayerId = encodeTZCountryAndVal(tz, countryIdxInTZ, seed % 268435455); // maxPlayerIdxInCountry (28b) = 2**28 - 1 = 268435455
     }
 
     // birthTraits = [potential, forwardness, leftishness, aggressiveness]
@@ -97,7 +99,9 @@ contract Privileged is AssetsView {
         uint256 playerValue, 
         uint256 seed, 
         uint8 forwardPos,
-        uint256 epochInDays
+        uint256 epochInDays,
+        uint8 tz,
+        uint256 countryIdxInTZ
     ) 
         public 
         pure 
@@ -111,7 +115,7 @@ contract Privileged is AssetsView {
     )
     {
         uint256 ageYears;
-        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, seed, forwardPos);
+        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, seed, forwardPos, tz, countryIdxInTZ);
         // 1 year = 31536000 sec
         playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId, epochInDays*24*3600);
         dayOfBirth = uint16(getBirthDay(playerId));
@@ -121,7 +125,9 @@ contract Privileged is AssetsView {
         uint256 playerValue, 
         uint256 seed, 
         uint8[4] memory nPlayersPerForwardPos,
-        uint256 epochInDays
+        uint256 epochInDays,
+        uint8 tz,
+        uint256 countryIdxInTZ
     ) 
         public 
         pure 
@@ -148,7 +154,7 @@ contract Privileged is AssetsView {
             for (uint16 n = 0; n < nPlayersPerForwardPos[pos]; n++) {
                 seed = uint256(keccak256(abi.encode(seed, n)));
                 (playerIdArray[counter], skillsVecArray[counter], dayOfBirthArray[counter], birthTraitsArray[counter], internalPlayerIdArray[counter]) =
-                    createBuyNowPlayerId(playerValue, seed, pos, epochInDays);
+                    createBuyNowPlayerId(playerValue, seed, pos, epochInDays, tz, countryIdxInTZ);
                 counter++;
             }
         }
