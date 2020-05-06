@@ -45,11 +45,12 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 		return nil, errors.New("Invalid signature")
 	}
 
-	sender, err := input.AddressFromSignature(hash, sign)
-	if err != nil {
-		return nil, err
-	}
-	log.Infof("TODO check sender is %v", sender.Hex())
+	// TODO check if sender owns the team ?
+	// sender, err := input.AddressFromSignature(hash, sign)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// log.Infof("TODO check sender is %v", sender.Hex())
 
 	value := int64(1000) // TODO
 

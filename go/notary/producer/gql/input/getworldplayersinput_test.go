@@ -47,7 +47,7 @@ func TestGeneratePlayerIdsSignature(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Assert(t, isValid)
 
-	sender, err := input.AddressFromSignature(hash, sign)
+	sender, err := in.SignerAddress()
 	assert.NilError(t, err)
 	assert.Equal(t, sender.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
 }
