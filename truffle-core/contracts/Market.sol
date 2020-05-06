@@ -18,6 +18,8 @@ contract Market is MarketView {
     event PlayerFreezeCrypto(uint256 playerId, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
+    event ProposedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
+    event UpdatedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
 
     function setCryptoMarketAddress(address addr) external {
         _cryptoMktAddr = addr;
@@ -33,6 +35,30 @@ contract Market is MarketView {
         emit PlayerFreezeCrypto(playerId, isFrozen);
     }
 
+    function proposeNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime) public {
+        _maxSumSkillsBuyNowPlayerProposed = newSumSkills;
+        _maxSumSkillsBuyNowPlayerMinLapseProposed = newLapseTime;
+        _maxSumSkillsBuyNowPlayerLastUpdate = now;
+        emit ProposedNewMaxSumSkillsBuyNowPlayer(newSumSkills, newLapseTime);
+    }
+
+    // maxSumSkills can always be lowered, regardless of lapse period 
+    function lowerNewMaxSumSkillsBuyNowPlayer(uint256 newMaxSum) public {
+        require (newMaxSum < _maxSumSkillsBuyNowPlayer, "newMaxSum is not lower than previous");
+        _maxSumSkillsBuyNowPlayer = newMaxSum;
+        emit UpdatedNewMaxSumSkillsBuyNowPlayer(newMaxSum, _maxSumSkillsBuyNowPlayerMinLapse);
+    }
+    
+    // maxSumSkills can only grow if enough time has passed 
+    function updateNewMaxSumSkillsBuyNowPlayer() public {
+        require (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapse),
+            "not enough time passed to update new maxSumSkills"
+        );
+        _maxSumSkillsBuyNowPlayer = _maxSumSkillsBuyNowPlayerProposed;
+        _maxSumSkillsBuyNowPlayerMinLapse = _maxSumSkillsBuyNowPlayerMinLapseProposed;
+        emit UpdatedNewMaxSumSkillsBuyNowPlayer(_maxSumSkillsBuyNowPlayer, _maxSumSkillsBuyNowPlayerMinLapse);
+    }
+    
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
@@ -78,6 +104,7 @@ contract Market is MarketView {
      ) public {
         // isAcademy checks that player isSpecial, and not written.
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
+        require(getSumOfSkills(playerId) < _maxSumSkillsBuyNowPlayer, "buy now player has sum of skills larger than allowed");
         require(!isBotTeam(targetTeamId), "cannot transfer to bot teams");
         require(!_teamIdToIsBuyNowForbidden[targetTeamId], "user has explicitly forbidden buyNow");
         require(targetTeamId != ACADEMY_TEAM, "targetTeam of buyNow player cannot be Academy Team");
