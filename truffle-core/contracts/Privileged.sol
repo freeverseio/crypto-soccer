@@ -159,4 +159,8 @@ contract Privileged is AssetsView {
             }
         }
     }
+    
+    function getTZandCountryIdxFromPlayerId(uint256 playerId) public pure returns (uint8 tz, uint256 countryIdxInTZ) {
+        (tz, countryIdxInTZ, ) = decodeTZCountryAndVal(getInternalPlayerId(playerId));
+    } 
 }
