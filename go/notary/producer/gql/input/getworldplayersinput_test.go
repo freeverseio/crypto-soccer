@@ -51,3 +51,21 @@ func TestGeneratePlayerIdsSignature(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, sender.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
 }
+
+func TestGeneratePlayerIdsSignerIsOwnerOfTeam(t *testing.T) {
+	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	assert.NilError(t, err)
+	in := input.GetWorldPlayersInput{}
+	in.TeamId = "4"
+	hash, err := in.Hash()
+	assert.NilError(t, err)
+	hash = input.PrefixedHash(hash)
+	sign, err := input.Sign(hash.Bytes(), privateKey)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(sign)
+	assert.Equal(t, in.Signature, "82b6568d3e792df067a07ca67316b916de3064ef0cdabcbf25a59e5e9745caa328ae510bd2a62a92e2f9710aa38798a0a7e7f47b0632bf08fa4c7abd52e5c0a11b")
+
+	isOwner, err := in.IsSignerOwner(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Assert(t, !isOwner)
+}
