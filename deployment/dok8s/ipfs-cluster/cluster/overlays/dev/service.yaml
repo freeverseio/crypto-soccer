@@ -11,18 +11,15 @@ spec:
     - name: swarm
       targetPort: swarm
       port: 4001
-    #- name: api
-    #  port: 5001
-    #  targetPort: api
+    - name: swarm-udp
+      targetPort: swarm-udp
+      port: 4002
     # Cluster ports
     - name: cluster-swarm
       targetPort: cluster-swarm
       port: 9096
 
     # Other IPFS ports; expose via overlay config
-    # - name: swarm-udp
-    #   targetPort: swarm-udp
-    #   port: 4002
     # - name: http
     #   targetPort: http
     #   port: 8080

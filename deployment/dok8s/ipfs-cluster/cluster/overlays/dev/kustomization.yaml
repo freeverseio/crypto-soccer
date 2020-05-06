@@ -13,3 +13,4 @@ replicas:
 patchesStrategicMerge:
 - env-configmap.yaml
 - secret.yaml
+- service.yaml
