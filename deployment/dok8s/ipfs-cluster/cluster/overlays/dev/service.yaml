@@ -20,19 +20,19 @@ spec:
       port: 9096
 
     # Other IPFS ports; expose via overlay config
-    - name: http
-      targetPort: http
-      port: 8080
-    - name: ws
-      targetPort: ws
-      port: 8081
+    # - name: http
+    #   targetPort: http
+    #   port: 8080
+    # - name: ws
+    #   targetPort: ws
+    #   port: 8081
 
     # Other Cluster ports; expose via overlay config
-    - name: api-http
-      targetPort: api-http
-      port: 9094
-    - name: proxy-http
-      targetPort: proxy-http
-      port: 9095
+    # - name: api-http
+    #   targetPort: api-http
+    #   port: 9094
+    # - name: proxy-http
+    #   targetPort: proxy-http
+    #   port: 9095
   selector:
     app: ipfs-cluster
