@@ -72,20 +72,24 @@ func CreateWorldPlayerBatch(
 	epoch int64,
 ) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
+
 	epochDays := epoch / (3600 * 24)
 	epochWeeks := epochDays / 7
-	seed, _ := new(big.Int).SetString(teamId, 10)
-	if seed == nil {
+	id, _ := new(big.Int).SetString(teamId, 10)
+	if id == nil {
 		return nil, errors.New("invalid teamId")
 	}
 
+	timezone, countryIdxInTZ, _, err := contr.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, id)
+	if err != nil {
+		return nil, err
+	}
+
 	playerValue := big.NewInt(value)
-	timezone := uint8(1)
-	countryIdxInTZ := int64(0)
 	worldPlayers, err := contr.Privileged.CreateBuyNowPlayerIdBatch(
 		&bind.CallOpts{},
 		playerValue,
-		seed,
+		id,
 		[4]uint8{
 			nGoalKeepers,
 			nDefenders,
@@ -94,7 +98,7 @@ func CreateWorldPlayerBatch(
 		},
 		big.NewInt(epochDays),
 		timezone,
-		big.NewInt(countryIdxInTZ),
+		countryIdxInTZ,
 	)
 	if err != nil {
 		return result, err
@@ -105,7 +109,7 @@ func CreateWorldPlayerBatch(
 		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
 		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
 		generation := uint8(0)
-		name, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, uint64(countryIdxInTZ))
+		name, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
 		if err != nil {
 			return nil, err
 		}
