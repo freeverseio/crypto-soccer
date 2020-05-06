@@ -195,7 +195,8 @@ contract Market is MarketView {
     function dismissPlayer(
         uint256 validUntil,
         uint256 playerId,
-        bytes32[2] memory sig,
+        bytes32 sigR,
+        bytes32 sigS,
         uint8 sigV
     ) public {
         address owner = getOwnerPlayer(playerId);
@@ -210,7 +211,7 @@ contract Market is MarketView {
             // check asset is owned by legit address
             (owner != address(0)) && 
             // check signatures are valid by requiring that they own the asset:
-            (owner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&    
+            (owner == recoverAddr(msgHash, sigV, sigR, sigS)) &&    
             // check that auction time is less that the required 32 bit
             (validUntil < now + MAX_VALID_UNTIL),
             "conditions to dismiss player are not met"

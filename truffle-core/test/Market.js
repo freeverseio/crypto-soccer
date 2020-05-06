@@ -1050,53 +1050,31 @@ contract("Market", accounts => {
   });
 
   it("didmissPlayers works", async () => {
-    // toni
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-        
-    sigSeller = await signPutAssetForSaleMTx(
-      currencyId,
-      price,
-      sellerRnd,
-      validUntil,
-      playerId.toString(),
-      sellerAccount
-    );
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(sellerAccount.address);
+    
     // First of all, Freeverse and Buyer check the signature
     // In this case, using web3:
     recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
     recoveredSellerAddr.should.be.equal(sellerAccount.address);
   
-    // The correctness of the seller message can also be checked in the BC:
-    const sellerHiddenPrice = concatHash(
-      ["uint8", "uint256", "uint256"],
-      [currencyId, price, sellerRnd]
-    );
-    sellerTxMsgBC = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId).should.be.fulfilled;
-    sellerTxMsgBC.should.be.equal(sigSeller.message);
-  
-    // Then, the buyer builds a message to sign
+    // We check that player is not frozen
     let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false);
   
-    // and send the Freeze TX. 
-    const sigSellerRS = [
-      sigSeller.r,
-      sigSeller.s
-    ];
-    tx = await market.freezePlayer(
-      sellerHiddenPrice,
+    tx = await market.dismissPlayer(
       validUntil,
       playerId,
-      sigSellerRS,
+      sigSeller.r,
+      sigSeller.s,
       sigSeller.v
     ).should.be.fulfilled;
-    return tx;
 
-    dismissPlayer(
-      uint256 validUntil,
-      uint256 playerId,
-      bytes32[2] memory sig,
-      uint8 sigV
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(freeverseAccount.address);
   });
   
   
