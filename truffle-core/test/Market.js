@@ -18,16 +18,18 @@ const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
 const TrainingPoints = artifacts.require('TrainingPoints');
 
-async function createSpecialPlayerId(internalId = 144321433) {
+async function createSpecialPlayerId(rnd = 144321433) {
   sk = [16383, 13, 4, 56, 456];
   traits = [potential = 5, forwardness = 3, leftishness = 4, aggressiveness = 1]
   secsInYear = 365*24*3600
+  internalId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 1, playerIdxInCountry = rnd % 268435455);
+  
   playerId = await privileged.createSpecialPlayer(
     sk,
     age = 24 * secsInYear,
     traits,
     internalId,
-    now
+    now,
   ).should.be.fulfilled;
   return playerId;
 }

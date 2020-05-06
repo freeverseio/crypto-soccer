@@ -9,6 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/utils"
 	"github.com/graph-gophers/graphql-go"
@@ -50,10 +51,11 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 	}
 	log.Infof("TODO check sender is %v", sender.Hex())
 
-	value := int64(3000) // TODO
+	value := int64(1000) // TODO
 
 	return CreateWorldPlayerBatch(
 		b.contracts,
+		b.namesdb,
 		value,
 		string(args.Input.TeamId),
 		time.Now().Unix(),
@@ -62,6 +64,7 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 
 func CreateWorldPlayerBatch(
 	contr contracts.Contracts,
+	namesdb *names.Generator,
 	value int64,
 	teamId string,
 	epoch int64,
@@ -75,6 +78,8 @@ func CreateWorldPlayerBatch(
 	}
 
 	playerValue := big.NewInt(value)
+	timezone := uint8(1)
+	countryIdxInTZ := int64(0)
 	worldPlayers, err := contr.Privileged.CreateBuyNowPlayerIdBatch(
 		&bind.CallOpts{},
 		playerValue,
@@ -86,6 +91,8 @@ func CreateWorldPlayerBatch(
 			nAttackers,
 		},
 		big.NewInt(epochDays),
+		timezone,
+		big.NewInt(countryIdxInTZ),
 	)
 	if err != nil {
 		return result, err
@@ -95,7 +102,11 @@ func CreateWorldPlayerBatch(
 		leftishness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsLeftishnessIdx]
 		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
 		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
-		name := "" // TODO
+		generation := uint8(0)
+		name, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, uint64(countryIdxInTZ))
+		if err != nil {
+			return nil, err
+		}
 		dayOfBirth := int32(worldPlayers.DayOfBirthArray[i])
 		preferredPosition, err := utils.PreferredPosition(forwardness, leftishness)
 		if err != nil {
