@@ -233,11 +233,11 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     
     function forwardnessToShirtNum(uint256 seed, uint256 forwardPos) public pure returns(uint8 shirtNum) {
         if (forwardPos == IDX_GK) {
-            shirtNum = uint8(seed % 3);
+            shirtNum = uint8(seed % 2);
         } else if (forwardPos == IDX_D) {
-            shirtNum = 3 + uint8(seed % 5);
+            shirtNum = 2 + uint8(seed % 5);
         } else if (forwardPos == IDX_M) {
-            shirtNum = 8 + uint8(seed % 6);
+            shirtNum = 7 + uint8(seed % 7);
         } else {
             shirtNum = 14 + uint8(seed % 4);
         }

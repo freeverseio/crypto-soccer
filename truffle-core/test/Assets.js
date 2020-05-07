@@ -541,6 +541,8 @@ contract('Assets', (accounts) => {
         // both arrays are = real values x 100
         avgAgesExpected = [ 2520, 2401, 2814, 2492, 2182 ]; // age should have avg of 2600 (26 years x 100), with quite some variability
         avgPotsExpected = [ 416, 427, 427, 427, 427 ]; // potential should always be close to 4.25 => x100 = 425, with very low variability
+        avgAges = [];
+        avgPots = [];
         for (t = 0; t < 5; t++) {
             sumPot = 0;
             sumAge = 0;

@@ -69,20 +69,20 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         uint8 aggressiveness = uint8(dna % 4);
         dna >>= 2; // log2(4) = 2
         // correctFactor/10 increases a particular skill depending on player's forwardness
-        if (shirtNum < 3) {
-            // 3 GoalKeepers:
-            correctFactor[SK_SHO] = 20;
+        if (shirtNum < 2) {
+            // 2 GoalKeepers:
+            correctFactor[SK_SHO] = 14;
             correctFactor[SK_PAS] = 6;
             forwardness = IDX_GK;
             leftishness = 0;
-        } else if (shirtNum < 8) {
+        } else if (shirtNum < 7) {
             // 5 Defenders
             correctFactor[SK_SHO] = 4;
             correctFactor[SK_DEF] = 16;
             forwardness = IDX_D;
             leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 10) {
-            // 2 Pure Midfielders
+            // 3 Pure Midfielders
             correctFactor[SK_PAS] = 16;
             forwardness = IDX_M;
             leftishness = uint8(1+ (dna % 7));
