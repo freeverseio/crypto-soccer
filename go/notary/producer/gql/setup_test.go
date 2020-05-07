@@ -14,6 +14,7 @@ import (
 
 var bc *testutils.BlockchainNode
 var namesdb *names.Generator
+var googleCredentials []byte
 
 func TestMain(m *testing.M) {
 	var err error

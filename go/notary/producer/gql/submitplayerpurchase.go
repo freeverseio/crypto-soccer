@@ -3,7 +3,6 @@ package gql
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 
 	"github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -37,13 +36,7 @@ func (b *Resolver) SubmitPlayerPurchase(args struct {
 		return result, errors.New("Not team owner")
 	}
 
-	// You need to prepare a public key for your Android app's in app billing
-	// at https://console.developers.google.com.
-	jsonKey, err := ioutil.ReadFile("jsonKey.json")
-	if err != nil {
-		return result, err
-	}
-	client, err := playstore.New(jsonKey)
+	client, err := playstore.New(b.googleCredentials)
 	if err != nil {
 		return result, err
 	}
