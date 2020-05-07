@@ -48,10 +48,12 @@ func (b *Resolver) SubmitPlayerPurchase(args struct {
 		return result, err
 	}
 	ctx := context.Background()
-	_, err = client.VerifyProduct(ctx, GooglePackage, GoogleProductID, string(args.Input.PurchaseId))
+	purchase, err := client.VerifyProduct(ctx, GooglePackage, GoogleProductID, string(args.Input.PurchaseId))
 	if err != nil {
 		return result, err
 	}
+
+	log.Infof("%+v", purchase)
 
 	return result, errors.New("not implemented")
 }
