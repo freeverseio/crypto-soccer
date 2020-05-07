@@ -431,6 +431,8 @@ spec:
         - $(PRIVILEGED_CONTRACT_ADDRESS)
         - -market_id
         - $(market_id)
+        - -google_key
+        - /var/secrets/google/key.json
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -439,8 +441,15 @@ spec:
         name: notary
         ports:
         - containerPort: 4000
+        volumeMounts:
+        - mountPath: /var/secrets/google
+          name: google-cloud-key
       imagePullSecrets:
       - name: docker-secret
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: google-iap-key
 ---
 apiVersion: apps/v1
 kind: Deployment
