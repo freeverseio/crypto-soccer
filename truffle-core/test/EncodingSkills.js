@@ -41,7 +41,7 @@ contract('EncodingSkills', (accounts) => {
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
-    it2('creating buyNow players: ageModifier', async () =>  {
+    it('creating buyNow players: ageModifier', async () =>  {
         mods = [];
         for (age = 16; age < 38; age += 3) {
             mod = await privileged.ageModifier(age).should.be.fulfilled;
@@ -51,7 +51,7 @@ contract('EncodingSkills', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it2('creating buyNow players: potentialModifier', async () =>  {
+    it('creating buyNow players: potentialModifier', async () =>  {
         mods = [];
         for (pot = 0; pot < 10; pot++) {
             mod = await privileged.potentialModifier(pot).should.be.fulfilled;
@@ -87,7 +87,7 @@ contract('EncodingSkills', (accounts) => {
         
     });
 
-    it2('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
+    it('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, maxPot = 9, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
         var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPure(playerValue = 2000, maxPot = 9, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
@@ -122,6 +122,18 @@ contract('EncodingSkills', (accounts) => {
         countryIdxInTz2.toNumber().should.be.equal(countryIdxInTz);
     });
     
+    it('creating a batch of buyNow players with less maxPotential', async () =>  {
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const nPlayersPerForwardPos = [0,0,0,2];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+            playerValue = 1000, maxPot = 4, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+        ).should.be.fulfilled;
+        
+        for (const trait of traitsArray) {
+            (trait[0].toNumber() <= maxPot).should.be.equal(true);
+        }
+    });
+    
     it('creating a batch of buyNow players and displaying', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [10,10,10,10];
@@ -131,7 +143,7 @@ contract('EncodingSkills', (accounts) => {
         h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
         assert.equal(h, '0x3e31ab49397c9131c1c8f4fff3ab9ecb25176a71f9252d42c6d72cfcb8732fcd', "createBuyNowPlayerIdBatch not as expected");
 
-        if (true) {
+        if (false) {
             // traits: shoot, speed, pass, defence, endurance
             labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
             st = "";
@@ -155,7 +167,7 @@ contract('EncodingSkills', (accounts) => {
         }
     });
     
-    it2('encodeTactics incorrect lineup', async () =>  {
+    it('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -167,7 +179,7 @@ contract('EncodingSkills', (accounts) => {
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
     })
     
-    it2('encodeTactics', async () =>  {
+    it('encodeTactics', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -197,7 +209,7 @@ contract('EncodingSkills', (accounts) => {
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
     });
 
-    it2('encoding and decoding skills', async () => {
+    it('encoding and decoding skills', async () => {
         sk = [2**16 - 16383, 2**16 - 13, 2**16 - 4, 2**16 - 56, 2**16 - 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
 
@@ -344,7 +356,7 @@ contract('EncodingSkills', (accounts) => {
         debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true, verbose = false);
     });
 
-    it2('encoding skills with wrong forwardness and leftishness', async () =>  {
+    it('encoding skills with wrong forwardness and leftishness', async () =>  {
         sk = [16383, 13, 4, 56, 456];
         dayOfBirth = 4;
         generation = 2;
