@@ -18,14 +18,13 @@ function secsToDays(secs) {
     return secs/ (24 * 3600);
 }
 
-
 function dayOfBirthToAgeYears(dayOfBirth){ 
     const now = Math.floor(new Date()/1000);
     ageYears = (secsToDays(now) - dayOfBirth)*7/365;
     return ageYears;
 }
 
-contract('Encoding', (accounts) => {
+contract('EncodingSkills', (accounts) => {
 
     const epochInDays = 18387; // May 5th 2020
     const tz = 1;
@@ -42,7 +41,7 @@ contract('Encoding', (accounts) => {
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
-    it('creating buyNow players: ageModifier', async () =>  {
+    it2('creating buyNow players: ageModifier', async () =>  {
         mods = [];
         for (age = 16; age < 38; age += 3) {
             mod = await privileged.ageModifier(age).should.be.fulfilled;
@@ -52,7 +51,7 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
     });
     
-    it('creating buyNow players: potentialModifier', async () =>  {
+    it2('creating buyNow players: potentialModifier', async () =>  {
         mods = [];
         for (pot = 0; pot < 10; pot++) {
             mod = await privileged.potentialModifier(pot).should.be.fulfilled;
@@ -63,8 +62,8 @@ contract('Encoding', (accounts) => {
     });
     
     it('creating one buyNow player', async () =>  {
-        expectedSkills = [ 1474, 1033, 829, 1039, 1612 ];
-        expectedTraits = [0, 3, 6, 1];
+        expectedSkills = [ 1526, 963, 1080, 875, 1547 ];
+        expectedTraits = [0, 3, 6, 2];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
         // compare actual values
@@ -83,12 +82,12 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(traits2, expectedTraits, toNum = true, verbose = false);
         internalId2.should.be.bignumber.equal(internalId);
         const now = Math.floor(new Date()/1000);
-        expectedDayOfBirth = Math.floor(secsToDays(now) - ageYears*365/7);
-        (Math.abs(dayOfBirth.toNumber() - expectedDayOfBirth) < 10).should.be.equal(true);
+        expectedDayOfBirth = Math.floor(secsToDays(now) - ageYears*365/14);
+        (Math.abs(dayOfBirth.toNumber() - expectedDayOfBirth) < 14).should.be.equal(true);
         
     });
 
-    it('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
+    it2('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
         var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPure(playerValue = 2000, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
@@ -103,8 +102,8 @@ contract('Encoding', (accounts) => {
     });
 
     it('creating a batch of buyNow players', async () =>  {
-        expectedSkills = [ 982, 852, 1187, 591, 1289 ];
-        expectedTraits = [ 3, 3, 3, 0 ];
+        expectedSkills = [ 797, 1093, 1257, 737, 1017 ];
+        expectedTraits = [ 3, 3, 3, 1 ];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,2];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
@@ -130,9 +129,9 @@ contract('Encoding', (accounts) => {
             playerValue = 1000, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
         h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
-        assert.equal(h, '0x8dd8593751125e20d0b52891c6210f8d5502bd53dc557c1a32b2831f12a73f7b', "createBuyNowPlayerIdBatch not as expected");
+        assert.equal(h, '0x3e31ab49397c9131c1c8f4fff3ab9ecb25176a71f9252d42c6d72cfcb8732fcd', "createBuyNowPlayerIdBatch not as expected");
 
-        if (false) {
+        if (true) {
             // traits: shoot, speed, pass, defence, endurance
             labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
             st = "";
@@ -156,7 +155,7 @@ contract('Encoding', (accounts) => {
         }
     });
     
-    it('encodeTactics incorrect lineup', async () =>  {
+    it2('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -168,7 +167,7 @@ contract('Encoding', (accounts) => {
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
     })
     
-    it('encodeTactics', async () =>  {
+    it2('encodeTactics', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -198,7 +197,7 @@ contract('Encoding', (accounts) => {
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
     });
 
-    it('encoding and decoding skills', async () => {
+    it2('encoding and decoding skills', async () => {
         sk = [2**16 - 16383, 2**16 - 13, 2**16 - 4, 2**16 - 56, 2**16 - 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
 
@@ -345,7 +344,7 @@ contract('Encoding', (accounts) => {
         debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true, verbose = false);
     });
 
-    it('encoding skills with wrong forwardness and leftishness', async () =>  {
+    it2('encoding skills with wrong forwardness and leftishness', async () =>  {
         sk = [16383, 13, 4, 56, 456];
         dayOfBirth = 4;
         generation = 2;
