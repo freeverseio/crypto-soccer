@@ -79,6 +79,8 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             points[0] = (points[0] * teamSumSkills1) / (teamSumSkills0);
             points[1] = (points[1] * teamSumSkills0) / (teamSumSkills1);
         }
+        if (points[0] < POINTS_FOR_HAVING_PLAYED) points[0] = POINTS_FOR_HAVING_PLAYED;
+        if (points[1] < POINTS_FOR_HAVING_PLAYED) points[1] = POINTS_FOR_HAVING_PLAYED;
         matchLog0 = addTrainingPoints(matchLog0, points[0]);
         matchLog1 = addTrainingPoints(matchLog1, points[1]);
         return (matchLog0, matchLog1);
