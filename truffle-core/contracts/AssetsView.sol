@@ -17,8 +17,8 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         if (getIsSpecial(playerId)) return playerId;
         if (!wasPlayerCreatedVirtually(playerId)) return 0;
         (uint256 teamId, uint256 playerCreationDay, uint8 shirtNum) = getTeamIdCreationDayAndShirtNum(playerId);
-        uint256 dayOfBirth = computeBirthDay(playerId, playerCreationDay);
-        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(teamId, shirtNum);
+        (uint256 dayOfBirth, uint8 potential) = computeBirthDayAndPotential(teamId, playerCreationDay, shirtNum);
+        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(teamId, shirtNum, potential);
         return encodePlayerSkills(skills, dayOfBirth, 0, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
         
     }
@@ -33,12 +33,26 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
     }
 
-    /// Compute a random age between 16 and 35.999
+    /// Compute a random age between 16 and 35.999, with random potential in [0,...7]
     /// @param playerCreationDay - days since unix epoch where the player was created as part of teams of a division
     /// @return dayOfBirth - days since unix epoch
-    function computeBirthDay(uint256 playerId, uint256 playerCreationDay) public pure returns (uint16 dayOfBirth) {
-        uint256 ageInDays = 5840 + (uint256(keccak256(abi.encode(playerId))) % 7300);  // 5840 = 16*365, 7300 = 20 * 365
-        dayOfBirth = uint16(playerCreationDay - ageInDays / 7); // 1095 = 3 * 365
+    function computeBirthDayAndPotential(uint256 teamId, uint256 playerCreationDay, uint8 shirtNum) public pure returns (uint16 dayOfBirth, uint8 potential) {
+        // generate a DNA that is unique to pairs of players in the universe.
+        // each team has different DNAs, but within a same team, shirts = 0,1 have the same, shirts = 2,3 have the same...etc
+        uint256 dna = uint256(keccak256(abi.encode(teamId, shirtNum/2)));
+        // Generate pairs of potentials such that each is in [0,...,7] and the sum is 7, so average is 3.5
+        potential = (shirtNum % 2 == 0) ? uint8(dna % 8) : 7 - uint8(dna % 8);
+        // generate a different dna for each member of the pair by bit-shifting dna differently
+        dna >>= (1 +(shirtNum % 2));
+        // Increase potential average to 4.25 = 3.5 + 0.75 
+        if ((potential < 7) && (dna % 4) != 0) potential += 1;
+        // Compute days in range [16,36]
+        uint256 ageInDays = 5840 + (dna % 7300);  // 5840 = 16y, 7300 = 20y
+        // ensure that good potential players are not above 31,
+        // by subtracting what is left to reach 31, plus a random between 0 and 2 years
+        dna >>= 12;
+        if (potential > 5 && ageInDays > 11315) ageInDays -= (ageInDays - 11315) + (dna % 730); // 11315 = 31y, 730 = 2y.
+        dayOfBirth = uint16(playerCreationDay - ageInDays / INGAMETIME_VS_REALTIME); 
     }
     
     /// Compute the pseudorandom skills, sum of the skills is 5K (1K each skill on average)
@@ -46,14 +60,10 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     /// potential is a number between 0 and 9 => takes 4 bit
     /// 0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
     /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
-    function computeSkills(uint256 teamId, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory, uint32) {
+    function computeSkills(uint256 teamId, uint8 shirtNum, uint8 potential) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory, uint32) {
         uint16[5] memory skills;
         uint256[N_SKILLS] memory correctFactor;
-        // we make sure that the sum of all potentials of all players is fixed, and equal to N_PLAYERS * 4.5
-        // by imposing it to each pair of players: pot[0] + pot[1] = 9, pot[2] + pot[3] = 9, ...
-        uint256 dna = uint256(keccak256(abi.encode(teamId, shirtNum/2)));
-        uint8 potential = (shirtNum % 2 == 0)? uint8(dna % 10) : 9 - uint8(dna % 10);
-        dna >>= 4; // log2(10) = 3.3 => ceil = 4
+        uint256 dna = uint256(keccak256(abi.encode(teamId, shirtNum)));
         uint8 forwardness;
         uint8 leftishness;
         uint8 aggressiveness = uint8(dna % 4);
@@ -140,7 +150,7 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
 
     // TODO: remove from this contract, expose as interface for users
     function getPlayerAgeInDays(uint256 playerId) public view returns (uint256) {
-        return secsToDays(7 * (now - daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId)))));
+        return secsToDays(INGAMETIME_VS_REALTIME * (now - daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId)))));
     }
     
 }

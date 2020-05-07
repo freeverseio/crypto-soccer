@@ -22,7 +22,7 @@ contract Privileged is AssetsView {
         uint256 playerId,
         uint256 nowInSecs
     ) public pure returns (uint256) {
-        uint256 dayOfBirth = (nowInSecs - ageInSecs/7)/86400; // 86400 = secsInDay
+        uint256 dayOfBirth = (nowInSecs - ageInSecs/INGAMETIME_VS_REALTIME)/86400; // 86400 = secsInDay
         uint32 sumSkills;
         for (uint8 s = 0; s < N_SKILLS; s++) sumSkills += skillsVec[s];
         uint256 skills = encodePlayerSkills(
@@ -84,7 +84,7 @@ contract Privileged is AssetsView {
             shirtNum = 14 + uint8(seed % 4);
         }
         seed /= 8;
-        (skillsVec, birthTraits, ) = computeSkills(seed, shirtNum);
+        (skillsVec, birthTraits, ) = computeSkills(seed, shirtNum, potential);
         birthTraits[IDX_POT] = potential;
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             skillsVec[sk] = uint16(

@@ -175,7 +175,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     // skill(i)     = max(0, skill(i) + deltaS(i))
     // shoot, speed, pass, defence, endurance
     function evolvePlayer(uint256 skills, uint16[5] memory TPperSkill, uint256 matchStartTime) public view returns(uint256) {
-        uint256 ageInSecs = 7 * (matchStartTime - getBirthDay(skills) * 86400);  // 86400 = day2secs
+        uint256 ageInSecs = INGAMETIME_VS_REALTIME * (matchStartTime - getBirthDay(skills) * 86400);  // 86400 = day2secs
         uint256 deltaNeg = (ageInSecs > 977616000) ? ((ageInSecs-977616000)*8)/31536000 : 0;  // 977616000 = 31 * Ys, 31536000 = Ys
         uint256 numerator;
         if (getPotential(skills) * 252288000 + 1513728000 > 3 * ageInSecs) {  // 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
@@ -207,7 +207,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
 
     function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) private pure returns (uint256) {
         uint256 term1 = (TPthisSkill*numerator) / denominator;
-        term1 = (term1 > TPthisSkill) ? term1 : TPthisSkill;
+        if (term1 <= TPthisSkill) { term1 = TPthisSkill; }
         if ((oldSkill + term1) > deltaNeg) return oldSkill + term1 - deltaNeg;
         return 1;
     }
@@ -218,11 +218,12 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         }
         uint256 dna = uint256(keccak256(abi.encode(skills, ageInSecs)));
         ageInSecs = 504576000 + (dna % 126144000);  // 504576000 = 16 * years2secs, 126144000 = 4 * years2secs
-        uint256 dayOfBirth = (matchStartTime - ageInSecs / 7)/86400; // 86400 = 24 * 3600
+        uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME)/86400; // 86400 = 24 * 3600
         dna >>= 13; // log2(7300) = 12.8
         (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(
             dna, 
-            forwardnessToShirtNum(dna, getForwardness(skills))
+            forwardnessToShirtNum(dna, getForwardness(skills)),
+            0
         );
         // if dna is even => leads to child, if odd => leads to academy player
         uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (dna % 2 == 0 ? 0 : 32));
