@@ -306,7 +306,7 @@ contract('Assets', (accounts) => {
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        expectedSkills = [ 1938, 644, 929, 908, 580 ];
+        expectedSkills = [ 1589, 731, 1016, 995, 667 ];
         resultSkills = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
             resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
@@ -520,7 +520,7 @@ contract('Assets', (accounts) => {
             for (sk=0; sk < 5; sk++) skillsAvg[sk] += skills[sk].toNumber();
         }
         for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
-        expected = [ 1380, 978, 771, 933, 934 ];
+        expected = [ 1176, 1029, 822, 984, 985 ];
         debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
     });
 
@@ -563,7 +563,7 @@ contract('Assets', (accounts) => {
 
 
    it('computed prefPos gives correct number of defenders, mids, etc', async () => {
-        expectedPos = [ 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 4, 4, 5, 5, 3, 3, 3, 3 ];
+        expectedPos = [ 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 5, 5, 3, 3, 3, 3 ];
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
             computedSkills = await assets.computeSkills(seed, shirtNum, pot = 0).should.be.fulfilled;
