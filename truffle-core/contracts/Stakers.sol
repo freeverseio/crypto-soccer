@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <=0.6.3;
+pragma solidity >= 0.6.3;
 
 // TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
 
@@ -70,6 +70,29 @@ contract AddressStack {
   }
 }
 
+contract AddressMapping {
+
+  address public owner = address(0x0);
+  mapping(address => bool) public data;
+
+  modifier onlyOwner {
+    require(msg.sender == owner,
+            "Only owner can call this function.");
+    _;
+  }
+  constructor() public {
+    owner = msg.sender;
+  }
+  function add(address _address) external onlyOwner {
+    require (!has(_address), "failed to add to AddressMapping, address already exists");
+    data[_address] = true;
+  }
+  function has(address _address) public view returns (bool) {
+    return data[_address] == true;
+  }
+}
+
+
 contract Stakers {
 
   uint16 public constant kNumStakers = 32;
@@ -80,8 +103,8 @@ contract Stakers {
   AddressStack private updaters = new AddressStack();
   Rewards public rewards = new Rewards();
   address[kNumStakers] public stakers;
-  address[] public slashed;
-  address[] public trustedParties;
+  AddressMapping public slashed = new AddressMapping();
+  AddressMapping public trustedParties = new AddressMapping();
 
 
   // ----------------- modifiers -----------------------
@@ -127,8 +150,7 @@ contract Stakers {
 
   /// @notice adds address as trusted party
   function addTrustedParty(address _staker) external onlyOwner {
-    require (!isTrustedParty(_staker), "failed to add trusted party");
-    trustedParties.push(_staker);
+    trustedParties.add(_staker);
   }
 
   /// @notice registers a new staker
@@ -219,11 +241,11 @@ contract Stakers {
   }
 
   function isTrustedParty(address _addr) private view returns (bool) {
-    return contains(trustedParties, _addr);
+    return trustedParties.has(_addr);
   }
 
   function isSlashed(address _addr) private view returns (bool) {
-    return contains(slashed, _addr);
+    return slashed.has(_addr);
   }
 
   function isStaker(address _addr) private view returns (bool) {
@@ -277,7 +299,7 @@ contract Stakers {
 
   function slash(address _staker) private {
     require (removeStaker(_staker), "failed to slash: staker not found");
-    slashed.push(_staker);
+    slashed.add(_staker);
   }
 
   function earnStake(address _addr) private {
