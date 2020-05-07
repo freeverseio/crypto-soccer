@@ -54,7 +54,7 @@ contract('Privileged', (accounts) => {
             mods.push(mod);
         }
         expectedMods = [ 11500, 11110, 10720, 10330, 9940, 9550, 8050, 6550 ];
-        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
+        debug.compareArrays(mods, expectedMods, toNum = true);
     });
     
     it('creating buyNow players: potentialModifier', async () =>  {
@@ -64,7 +64,7 @@ contract('Privileged', (accounts) => {
             mods.push(mod);
         }
         expectedMods = [ 8500, 8833, 9166, 9500, 9833, 10166, 10500, 10833, 11166, 11500 ];
-        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
+        debug.compareArrays(mods, expectedMods, toNum = true);
     });
     
     it('creating one buyNow player', async () =>  {
@@ -73,9 +73,9 @@ contract('Privileged', (accounts) => {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, maxPot = 9, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
         // compare actual values
-        debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
+        debug.compareArrays(skills, expectedSkills, toNum = true);
         ageYears.toNumber().should.be.equal(29);
-        debug.compareArrays(traits, expectedTraits, toNum = true, verbose = false);
+        debug.compareArrays(traits, expectedTraits, toNum = true);
         internalId.should.be.bignumber.equal("275260863937");
         // check that the average skill is as expected:
         expectedAvgSkill = await privileged.computeAvgSkills(playerValue, ageYears, traits[0]).should.be.fulfilled;
@@ -84,8 +84,8 @@ contract('Privileged', (accounts) => {
         
         // test that you get the same via the non-pure function:
         var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerId(playerValue = 1000, maxPot = 9, seed, forwardPos = 3, epochInDays, tz, countryIdxInTz).should.be.fulfilled;
-        debug.compareArrays(skills2, expectedSkills, toNum = true, verbose = false);
-        debug.compareArrays(traits2, expectedTraits, toNum = true, verbose = false);
+        debug.compareArrays(skills2, expectedSkills, toNum = true);
+        debug.compareArrays(traits2, expectedTraits, toNum = true);
         internalId2.should.be.bignumber.equal(internalId);
         const now = Math.floor(new Date()/1000);
         expectedDayOfBirth = Math.floor(secsToDays(now) - ageYears*365/14);
@@ -117,8 +117,8 @@ contract('Privileged', (accounts) => {
         ).should.be.fulfilled;
 
         // compare actual values
-        debug.compareArrays(skillsArray[0], expectedSkills, toNum = true, verbose = false);
-        debug.compareArrays(traitsArray[0], expectedTraits, toNum = true, verbose = false);
+        debug.compareArrays(skillsArray[0], expectedSkills, toNum = true);
+        debug.compareArrays(traitsArray[0], expectedTraits, toNum = true);
         internalIdArray[0].should.be.bignumber.equal("275195391431");
         internalIdArray[1].should.not.be.bignumber.equal("275195391431");
       

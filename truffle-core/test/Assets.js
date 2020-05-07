@@ -311,7 +311,7 @@ contract('Assets', (accounts) => {
         for (sk = 0; sk < N_SKILLS; sk++) {
             resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
         }
-        debug.compareArrays(resultSkills, expectedSkills, toNum = true, verbose = false);
+        debug.compareArrays(resultSkills, expectedSkills, toNum = true);
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
         gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
@@ -521,7 +521,7 @@ contract('Assets', (accounts) => {
         }
         for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
         expected = [ 1176, 1029, 822, 984, 985 ];
-        debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
+        debug.compareArrays(skillsAvg, expected, toNum = false);
     });
 
    it('test that forwards have great shoot skills', async () => {
@@ -534,7 +534,7 @@ contract('Assets', (accounts) => {
         }
         for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
         expected = [ 1213, 974, 992, 816, 1001 ];
-        debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
+        debug.compareArrays(skillsAvg, expected, toNum = false);
     });
     
     it('check averages of ages and potentials', async () => {
@@ -557,8 +557,8 @@ contract('Assets', (accounts) => {
             avgAges.push(Math.floor(sumAge/PLAYERS_PER_TEAM_INIT*100))
             avgPots.push(Math.floor(sumPot/PLAYERS_PER_TEAM_INIT*100))
         }
-        debug.compareArrays(avgAges, avgAgesExpected, toNum = false, verbose = false);
-        debug.compareArrays(avgPots, avgPotsExpected, toNum = false, verbose = false);
+        debug.compareArrays(avgAges, avgAgesExpected, toNum = false);
+        debug.compareArrays(avgPots, avgPotsExpected, toNum = false);
     });
 
 
@@ -581,7 +581,7 @@ contract('Assets', (accounts) => {
             birthTraits = computedSkills[1];
             resultAggr.push(birthTraits[3])
         }
-        debug.compareArrays(resultAggr, expectedAggr, toNum = true, verbose = false);
+        debug.compareArrays(resultAggr, expectedAggr, toNum = true);
     });
 
    it('sum of computed skills is close to 5000', async () => {

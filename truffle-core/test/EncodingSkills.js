@@ -99,7 +99,7 @@ contract('EncodingSkills', (accounts) => {
             result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
             resultSkills.push(result);
         }
-        debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
+        debug.compareArrays(resultSkills, sk, toNum = true);
 
         result = await encodingGet.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
@@ -163,7 +163,7 @@ contract('EncodingSkills', (accounts) => {
             result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
             resultSkills.push(result);
         }
-        debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
+        debug.compareArrays(resultSkills, sk, toNum = true);
 
         alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
         skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
@@ -208,13 +208,13 @@ contract('EncodingSkills', (accounts) => {
         const {0: _skills, 1: _day, 2: _traits, 3: _playerId, 4: _alignedSubstRed, 5: _genNonstopInj} = await utils.fullDecodeSkills(skills).should.be.fulfilled     
         _day.toNumber().should.be.equal(dayOfBirth);
         _playerId.toNumber().should.be.equal(playerId);
-        debug.compareArrays(_skills, sk, toNum = true, verbose = false);
+        debug.compareArrays(_skills, sk, toNum = true);
         expectedTraits = [potential, forwardness, leftishness, aggressiveness];
-        debug.compareArrays(_traits, expectedTraits, toNum = true, verbose = false);
+        debug.compareArrays(_traits, expectedTraits, toNum = true);
         expectedBools = [alignedEndOfFirstHalf, substitutedFirstHalf, redCardLastGame];
-        debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false, verbose = false);
+        debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false);
         expectedGenGameInj = [generation, gamesNonStopping, injuryWeeksLeft];
-        debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true, verbose = false);
+        debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true);
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {
