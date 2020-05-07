@@ -632,7 +632,7 @@ contract('Evolution', (accounts) => {
         // debug.compareArrays(newSkills2, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
     });
 
-    it2('training leading to an actual son', async () => {
+    it('training leading to an actual son', async () => {
         playerSkills = await assets.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -681,11 +681,11 @@ contract('Evolution', (accounts) => {
 
         // checks that the generation increases by 1. 
         // It sets a "32" at the beginning if it is a Academy player, otherwise it is a child
-        // In this case, the randomness leads to a son
+        // In this case, the randomness leads to an academy player
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen - 32 + 1)
         
-        expected = [ 1699, 1037, 1043, 586, 631 ];
+        expected = [ 1374, 984, 1022, 767, 850 ];
         N_SKILLS = 5;
         results = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
@@ -700,7 +700,7 @@ contract('Evolution', (accounts) => {
         
     });
     
-    it2('training leading to an academy', async () => {
+    it('training leading to an academy', async () => {
         // all inputs are identical to the previous test, except for a +2 in matchStatTime,
         // which changes the entire randomness
         playerSkills = await assets.encodePlayerSkills(
@@ -728,13 +728,13 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(32 + gen + 1)
 
-        expected = [ 962, 766, 1301, 1015, 953 ];
+        expected = [ 1425, 1240, 988, 684, 660 ];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = true);
+        debug.compareArrays(results, expected, toNum = true, verbose = false);
         
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;

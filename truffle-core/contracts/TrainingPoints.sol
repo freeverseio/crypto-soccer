@@ -213,9 +213,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     }
 
     function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public view returns (uint256) {
-        if ((getSumOfSkills(skills) > 200) && (ageInSecs < 1166832000)) {   // 1166832000 = 37 * Ys
-            return skills;
-        }
+        if (ageInSecs < 1166832000) { return skills; }   // 1166832000 = 37 * Ys
         uint256 dna = uint256(keccak256(abi.encode(skills, ageInSecs)));
         ageInSecs = 504576000 + (dna % 126144000);  // 504576000 = 16 * years2secs, 126144000 = 4 * years2secs
         uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME)/86400; // 86400 = 24 * 3600
