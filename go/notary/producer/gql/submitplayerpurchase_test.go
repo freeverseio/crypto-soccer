@@ -11,7 +11,7 @@ import (
 func TestSubmitPlayerPurchase(t *testing.T) {
 	t.Skip("Rective this test to test google api")
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)
 
 	in := input.SubmitPlayerPurchaseInput{}
 	in.TeamId = "274877906944"
