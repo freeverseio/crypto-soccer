@@ -16,11 +16,11 @@ function compareArraysInternal(result, expected, toNum, verbose, isBigNumber) {
 
 function compareArrays(result, expected, toNum = true, isBigNumber = false) {
   try {
-    compareArraysInternal(result, expected, toNum = true, isBigNumber = false)
+    compareArraysInternal(result, expected, toNum, isBigNumber)
   } 
   catch(e) {
     console.log(e)
-    compareArraysInternal(result, expected, toNum = true, verbose = true, isBigNumber = false)
+    compareArraysInternal(result, expected, toNum, verbose = true, isBigNumber)
     throw e
   }  
 }
