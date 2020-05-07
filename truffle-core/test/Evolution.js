@@ -77,7 +77,8 @@ contract('Evolution', (accounts) => {
     const isHomeSt = false;
     const teamSumSkillsDefault = 0;
     const trainingPointsInit = 0;
-    
+    const N_SKILLS = 5;
+
     // Skills: shoot, speed, pass, defence, endurance
     const SK_SHO = 0;
     const SK_SPE = 1;
@@ -260,6 +261,23 @@ contract('Evolution', (accounts) => {
         }        
         if (verbose) console.log("OK = ", OK);
         return OK;
+    }
+    
+    const createPlayerFromBirthAndPotential = async (assets, dayOfBirth, potential) => {
+        playerSkills = await assets.encodePlayerSkills(
+            skills = [1000, 1000, 1000, 1000, 1000], 
+            dayOfBirth,
+            gen = 0,
+            playerId = 2132321,
+            [potential, forwardness = 1, leftishness = 1, aggr = 0],
+            alignedEndOfLastHalf = true,
+            redCardLastGame = false,
+            gamesNonStopping = 0,
+            injuryWeeksLeft = 0,
+            subLastHalf,
+            sumSkills = 5
+        ).should.be.fulfilled;
+        return playerSkills;
     }
     
     beforeEach(async () => {
@@ -655,7 +673,6 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(gen - 32 + 1)
         
         expected = [ 1374, 984, 1022, 767, 850 ];
-        N_SKILLS = 5;
         results = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
@@ -970,10 +987,38 @@ contract('Evolution', (accounts) => {
             results.push(result);
         }
         debug.compareArrays(results, expected, toNum = true);
-
-        
     });
 
+    it('test evolvePlayer formula at various points', async () => {
+        TPperSkill = Array.from(new Array(5), (x,i) => 100);
+        matchStartTime = 982121142;
+        potential = 0;
+        dayOfBirth = 30*365;
+        // syntax: test = [potential, starttime, deltaExpected]
+        tests = [
+            [0, 982121142, 100],
+            [0, 1011404571, 100],
+            [0, 1020414857, 97],
+            [0, 1027172571, 4],
+            [5, 982121142, 666],
+            [5, 1011404571, 100],
+            [5, 1020414857, 97],
+            [5, 1027172571, 4],
+            [9, 982121142, 1200],
+            [9, 1011404571, 550],
+            [9, 1020414857, 347],
+            [9, 1027172571, 104]
+        ];
+        for (t = 0; t < tests.length; t++) {
+            playerSkills = await createPlayerFromBirthAndPotential(assets, dayOfBirth, pot = tests[t][0]);
+            newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime = tests[t][1]).should.be.fulfilled;
+            newSkill = await engine.getSkill(newSkills, 0).should.be.fulfilled;
+            delta = newSkill.toNumber() - 1000;
+            assert.equal(Math.abs(delta - tests[t][2]) < 2, true, "training points not as expected")
+        }
+    });
+    
+    
     it('test that we can play a 1st half with log = assignedTPs = 0', async () => {
         TP = 0;
         assignment = 0
