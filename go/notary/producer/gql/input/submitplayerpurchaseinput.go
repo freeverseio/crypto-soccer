@@ -13,9 +13,6 @@ import (
 	"github.com/graph-gophers/graphql-go"
 )
 
-const GooglePackage = "package"
-const GoogleProductID = "productId"
-
 type SubmitPlayerPurchaseInput struct {
 	Signature  string
 	PurchaseId graphql.ID
@@ -25,7 +22,7 @@ type SubmitPlayerPurchaseInput struct {
 
 func (b SubmitPlayerPurchaseInput) Hash() (common.Hash, error) {
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
-	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
+	stringTy, _ := abi.NewType("string", "string", nil)
 	arguments := abi.Arguments{
 		{
 			Type: uint256Ty,
@@ -34,7 +31,7 @@ func (b SubmitPlayerPurchaseInput) Hash() (common.Hash, error) {
 			Type: uint256Ty,
 		},
 		{
-			Type: bytes32Ty,
+			Type: stringTy,
 		},
 	}
 
@@ -46,10 +43,8 @@ func (b SubmitPlayerPurchaseInput) Hash() (common.Hash, error) {
 	if playerId == nil {
 		return common.Hash{}, errors.New("Invalid PlayerId")
 	}
-	var purchaseId [32]byte
-	copy(purchaseId[:], []byte(b.PurchaseId))
 
-	bytes, err := arguments.Pack(teamId, playerId, purchaseId)
+	bytes, err := arguments.Pack(teamId, playerId, b.PurchaseId)
 	if err != nil {
 		return common.Hash{}, err
 	}
