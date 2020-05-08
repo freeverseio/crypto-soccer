@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/freeverseio/crypto-soccer/go/go-iap/playstore"
+	"github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
