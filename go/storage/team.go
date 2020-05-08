@@ -37,6 +37,7 @@ func NewTeam() *Team {
 	team.TeamID = "0"
 	team.Tactic = "340596594427581673436941882753025"
 	team.MatchLog = "0"
+	team.Owner = BotOwner
 	return &team
 }
 
