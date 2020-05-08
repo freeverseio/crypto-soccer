@@ -19,7 +19,7 @@ contract Owned {
 
 contract Rewards is Owned{
 
-  address payable[] public toBeRewarded;
+  address[] public toBeRewarded;
   mapping (address => uint) pendingWithdrawals;
 
   receive() external payable {}
@@ -40,7 +40,7 @@ contract Rewards is Owned{
   }
 
   function push(address _addr) external onlyOwner {
-    toBeRewarded.push(address(uint160(_addr)));
+    toBeRewarded.push(_addr);
   }
 }
 
