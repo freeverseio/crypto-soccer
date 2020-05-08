@@ -40,8 +40,8 @@ func NewTeam() *Team {
 	return &team
 }
 
-func IsBotTeam(team Team) bool {
-	return team.Owner == BotOwner
+func (b Team) IsBot() bool {
+	return b.Owner == BotOwner
 }
 
 func (b *Team) Insert(tx *sql.Tx) error {

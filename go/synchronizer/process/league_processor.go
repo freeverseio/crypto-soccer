@@ -163,7 +163,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			if err != nil {
 				return err
 			}
-			if !storage.IsBotTeam(team) {
+			if !team.IsBot() {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
 				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
 				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
