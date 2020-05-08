@@ -13,10 +13,10 @@ import (
 const GooglePackage = "com.freeverse.phoenix"
 const GoogleProductID = "coinpack_45"
 
-func (b *Resolver) SubmitPlayerPurchase(args struct {
-	Input input.SubmitPlayerPurchaseInput
+func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
+	Input input.SubmitPlayStorePlayerPurchaseInput
 }) (graphql.ID, error) {
-	log.Debugf("SubmitPlayerPurchase %v", args)
+	log.Debugf("SubmitPlayStorePlayerPurchase %v", args)
 
 	result := graphql.ID(args.Input.PlayerId)
 

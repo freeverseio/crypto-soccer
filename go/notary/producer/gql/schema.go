@@ -29,7 +29,7 @@ const Schema = `
 		teamId: ID!
 	}
 
-	input SubmitPlayerPurchaseInput {
+	input SubmitPlayStorePlayerPurchaseInput {
 		signature: String!
 		purchaseId: ID!
 		playerId: ID!
@@ -58,6 +58,6 @@ const Schema = `
         createAuction(input: CreateAuctionInput!): ID!
         cancelAuction(input: CancelAuctionInput!): ID!
 		createBid(input: CreateBidInput!): ID!
-		submitPlayerPurchase(input: SubmitPlayerPurchaseInput!): ID!
+		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 	}
 `

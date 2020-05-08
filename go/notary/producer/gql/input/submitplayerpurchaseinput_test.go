@@ -8,8 +8,8 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestSubmitPlayerPurchaseInputHash(t *testing.T) {
-	in := input.SubmitPlayerPurchaseInput{}
+func TestSubmitPlayStorePlayerPurchaseInputHash(t *testing.T) {
+	in := input.SubmitPlayStorePlayerPurchaseInput{}
 
 	hash, err := in.Hash()
 	assert.Error(t, err, "Invalid TeamId")
@@ -25,8 +25,8 @@ func TestSubmitPlayerPurchaseInputHash(t *testing.T) {
 	assert.Equal(t, hash.Hex(), "0x03d0fa8eac063046346e9694c5d38bdb1b180017c79aa1e70384becbd4158f4d")
 }
 
-func TestSubmitPlayerPurchaseInputSignature(t *testing.T) {
-	in := input.SubmitPlayerPurchaseInput{}
+func TestSubmitPlayStorePlayerPurchaseInputSignature(t *testing.T) {
+	in := input.SubmitPlayStorePlayerPurchaseInput{}
 	in.TeamId = "274877906944"
 	in.PlayerId = "274877906944"
 	in.PurchaseId = "korpimulxmslxissnschtkdb"
