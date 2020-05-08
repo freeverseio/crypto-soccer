@@ -758,7 +758,7 @@ contract('Engine', (accounts) => {
         debug.compareArrays(pen, expected, toNum = true);
     });
 
-    it('computeModifierBadPositionAndCondition for DL ', async () => {
+    it2('computeModifierBadPositionAndCondition for DL ', async () => {
             // for a DL:
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 312321, [potential = 1,
             forwardness = 1, leftishness = 4, aggr = 0], alignedEndOfLastHalf = false, 
@@ -783,7 +783,7 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it('computeModifierBadPositionAndCondition for DL with gamesNonStopping', async () => {
+    it2('computeModifierBadPositionAndCondition for DL with gamesNonStopping', async () => {
         // for a DL:
         expected442 = [MAX_PENALTY-500, 
             0, 1000, 1000, 2000, 
@@ -818,7 +818,7 @@ contract('Engine', (accounts) => {
             forwardness = 5, leftishness = 7, aggr = 0], alignedEndOfLastHalf = false, 
             redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0, subLastHalf, sumSkills = 5
         ).should.be.fulfilled;            
-        expected442 = [MAX_PENALTY-10, 
+        expected442 = [MAX_PENALTY-500, 
             1000, 1000, 1000, 1000, 
             0, 0, 0, 0, 
             0, 0 
@@ -1170,37 +1170,58 @@ contract('Engine', (accounts) => {
         result[expectLen-1].should.be.bignumber.equal("62760289461");
     });
 
-    it2('computes team global skills by aggregating across all players in team', async () => {
+    it('computes team global skills by aggregating across all players in team', async () => {
         // If all skills where 1 for all players, and tactics = 442 =>
-        // move2attack =    defence(defenders + 2*midfields + attackers) +
-        //                  speed(defenders + 2*midfields) +
-        //                  pass(defenders + 3*midfields) 
-        //             =    14 + 12 + 16 = 42
-        // createShoot =    speed(attackers) + pass(attackers) = 2 + 2 = 4
-        // defendShoot =    speed(defenders) + defence(defenders) = 4 + 4 = 8 
-        // blockShoot  =    shoot(keeper); 1
-        // endurance   =    70;
+        // 0. move2attack =    defence(defenders + 2*midfields + attackers) +
+        //                      speed(defenders + 2*midfields) +
+        //                      pass(2*defenders + 3*midfields + 1/3*GK)
+        //                =     14 + 12 + 20 = 46 =   4 * nDefs + 7 * nMid + nAtt + 1/3
+        // 1. createShoot =    speed(attackers + 1/5 mids) + pass(attackers + 1/5 mids)  = 2 * nAtt + 2/5 nMids
+        // 2. defendShoot =    speed(defenders + 1/5 mids + 1/3) + defence(defenders +1/5 mids) = 4 + 4 = 2 * nDef + 2/5 nMids + 1/3
+        // 3. blockShoot  =    shoot(keeper); 1
+        // 4. endurance   =    70;
         // attackersSpeed = [1,1]
         // attackersShoot = [1,1]
         
+        nDef = 4;
+        nMid = 4;
+        nAtt = 2;
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 1];
+        expectedGlob =[ 
+            4 * nDef + 7 * nMid + nAtt, 
+            2 * nAtt, 
+            2 * nDef, 
+            1, 
+            1
+        ];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true);
+
+        // // show that GKs contribute 1/3 extra to move2attack and defendShoot, only when int division by 3 is not zero :-)
+        teamState442 = await createTeamState442(engine, forceSkills= [3,3,3,3,3]).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        expectedGlob =[ 
+            3 * (4 * nDef + 7 * nMid + nAtt) + 1, // adding 3/3 from GK 
+            3 * (2 * nAtt) + 4,   // adding (3*2*nMids)/5
+            3 * (2 * nDef) + 1 + 4,   // adding 3/3 from GK + (3*2*nMids)/5
+            3 * 1, 
+            1
+        ];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000-1]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 65];
+        expectedGlob = [46, 4, 8, 1, 65];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 65];
+        expectedGlob = [46, 4, 8, 1, 65];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,20000-1]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 100];
+        expectedGlob = [46, 4, 8, 1, 100];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
     });

@@ -432,9 +432,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         //  - less defend_shoot
         //  - less endurance
         globSkills[IDX_BLOCK_SHOOT]  += (getSkill(playerSkills, GK_SHO) * posCondModifier) / TEN_TO_4;
-        globSkills[IDX_MOVE2ATTACK]  += (getSkill(playerSkills, SK_PAS) * posCondModifier) / (3 * TEN_TO_4); // 3 times less than a defender
+        globSkills[IDX_MOVE2ATTACK]  += (getSkill(playerSkills, GK_PAS) * posCondModifier) / (3 * TEN_TO_4); // 3 times less than a defender
         globSkills[IDX_DEFEND_SHOOT] += (getSkill(playerSkills, GK_1O1) * posCondModifier) / (3 * TEN_TO_4); // 3 times less than a defender
-        globSkills[IDX_ENDURANCE]    += (getSkill(playerSkills, SK_END) * posCondModifier) / TEN_TO_4;
+        globSkills[IDX_ENDURANCE]    += (getSkill(playerSkills, GK_END) * posCondModifier) / TEN_TO_4;
     }
   
     function computeDefenderGlobSkills(
