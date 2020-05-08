@@ -127,9 +127,10 @@ contract('Stakers', (accounts) => {
       stakers.addReward({value: stake}),
       "failed to add reward")
     assert.equal(Number(stake), Number(await web3.eth.getBalance(await stakers.rewards())));
+    assert.equal(Number(0), Number(await web3.eth.getBalance(stakers.address)));
     await expect.reverts(
       stakers.executeReward({from:owner}),
-      "failed to execute reward: empty array",
+      "failed to execute rewards: empty array",
       "no one deserves reward cause nothing has been played, so it should revert"
     )
   })
@@ -185,6 +186,7 @@ contract('Stakers', (accounts) => {
       stakers.executeReward({from:owner}),
       "failed to execute reward"
     )
+
     await expect.passes(
       stakers.withdraw({from:alice}),
       "failed to withdraw alice's reward"

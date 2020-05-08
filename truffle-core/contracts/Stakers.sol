@@ -19,28 +19,46 @@ contract Owned {
 
 contract Rewards is Owned{
 
-  address[] public toBeRewarded;
+  uint balanceToShare = 0;
+  uint totalNumUpdates = 0;
   mapping (address => uint) pendingWithdrawals;
+  mapping (address => uint) howManyUpdates;
+  address [] whoToBeRewarded;
 
-  receive() external payable {}
-
-  function execute() external onlyOwner {
-    require (toBeRewarded.length != 0, "failed to execute reward: empty array");
-    uint amount = address(this).balance / toBeRewarded.length;
-    for (uint i=0; i<toBeRewarded.length; i++) {
-      pendingWithdrawals[toBeRewarded[i]] += amount;
-    }
-    delete toBeRewarded;
+  function addReward() external payable {
+    require (msg.value > 0, "failed to add reward of zero");
+    balanceToShare += msg.value;
   }
 
-  function withdraw(address _address) public onlyOwner returns (uint amount) {
-    amount = pendingWithdrawals[_address];
-    pendingWithdrawals[_address] = 0;
-    msg.sender.transfer(amount);
+  function execute() external onlyOwner {
+    require (whoToBeRewarded.length > 0, "failed to execute rewards: empty array");
+    require (balanceToShare >= whoToBeRewarded.length, "failed to execute rewards: Not enough balance to share");
+    uint amount = balanceToShare / totalNumUpdates;
+    for (uint i=0; i<whoToBeRewarded.length; i++) {
+    }
+    for (uint i=0; i<whoToBeRewarded.length; i++) {
+      address who = whoToBeRewarded[i];
+      pendingWithdrawals[who] = amount*howManyUpdates[who];
+      howManyUpdates[who] = 0;
+    }
+    delete whoToBeRewarded;
+    balanceToShare = 0;
+    totalNumUpdates = 0;
+  }
+
+  function withdraw(address payable _addr) public onlyOwner {
+    _addr.transfer(pendingWithdrawals[_addr]);
+    pendingWithdrawals[_addr] = 0;
   }
 
   function push(address _addr) external onlyOwner {
-    toBeRewarded.push(_addr);
+    require (_addr != address(0x0));
+    if (howManyUpdates[_addr] == 0)
+    {
+      whoToBeRewarded.push(_addr);
+    }
+    howManyUpdates[_addr] += 1;
+    totalNumUpdates++;
   }
 }
 
@@ -114,8 +132,6 @@ contract Stakers is Owned {
 
   // ----------------- public functions -----------------------
 
-  receive() external payable {}
-
   function setOwner(address _address) external override (Owned) onlyOwner {
     owner = _address;
     updaters.setOwner(_address);
@@ -126,7 +142,7 @@ contract Stakers is Owned {
 
   /// @notice adds amount to rewards contract
   function addReward() external payable {
-    address(rewards).transfer(msg.value);
+    rewards.addReward.value(msg.value)();
   }
 
   /// @notice executes rewards
@@ -134,7 +150,7 @@ contract Stakers is Owned {
     rewards.execute();
   }
   function withdraw() external {
-    msg.sender.transfer(rewards.withdraw(msg.sender));
+    rewards.withdraw(msg.sender);
   }
 
   /// @notice sets the address of the gameOwner that interacts with this contract
