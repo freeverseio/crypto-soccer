@@ -25,6 +25,9 @@ require (
 	github.com/stretchr/testify v1.5.0
 	github.com/urfave/cli v1.22.2
 	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6
+	golang.org/x/oauth2 v0.0.0-20190523182746-aaccbc9213b0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	google.golang.org/api v0.5.1-0.20190526001144-9f3a303b451f
+	google.golang.org/appengine v1.6.5
 	gotest.tools v2.2.0+incompatible
 )
