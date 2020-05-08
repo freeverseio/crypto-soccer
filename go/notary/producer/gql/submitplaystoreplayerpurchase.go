@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
+	"time"
 
 	"github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -83,7 +85,33 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 
 	log.Infof("%+v", purchase)
 
-	// check if the player is valid
+	value := int64(1000) // TODO: value is forced to be 1000
 
-	return result, errors.New("not implemented")
+	// check if the player is valid
+	players, err := CreateWorldPlayerBatch(
+		b.contracts,
+		b.namesdb,
+		value,
+		string(args.Input.TeamId),
+		time.Now().Unix(),
+	)
+	if err != nil {
+		return result, err
+	}
+
+	i := sort.Search(len(players), func(i int) bool {
+		return players[i].PlayerId() == args.Input.PlayerId
+	})
+	if i >= len(players) {
+		return result, fmt.Errorf("orderId %v has an invalid playerId %v", purchase.OrderId, args.Input.PlayerId)
+	}
+
+	select {
+	case b.ch <- args.Input:
+	default:
+		log.Warning("channel is full")
+		return result, errors.New("channel is full")
+	}
+
+	return args.Input.PlayerId, errors.New("not implemented")
 }
