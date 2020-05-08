@@ -20,6 +20,10 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 
 	result := graphql.ID(args.Input.PlayerId)
 
+	if b.ch == nil {
+		return result, errors.New("internal error: no channel")
+	}
+
 	isValid, err := args.Input.IsValidSignature()
 	if err != nil {
 		return result, err
