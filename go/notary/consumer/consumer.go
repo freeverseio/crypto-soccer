@@ -90,8 +90,11 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err = tx.Commit(); err != nil {
 			return err
 		}
-	// case input.SubmitPlayStorePlayerPurchaseInput:
-	// 	log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
+	case input.SubmitPlayStorePlayerPurchaseInput:
+		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
+		if err := SubmitPlayStorePlayerPurchase(in); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}

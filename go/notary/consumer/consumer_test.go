@@ -34,7 +34,7 @@ func TestConsumerConsumeSubmitPlayStorePlayerPurchaseInput(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	in := input.SubmitPlayStorePlayerPurchaseInput{}
-	assert.Error(t, c.Consume(in), "unknown event: {Signature: PackageName: ProductId: PurchaseToken: PlayerId: TeamId:}")
+	assert.Error(t, c.Consume(in), "invalid playerId ")
 }
 
 func TestConsumerConsumeCreateAuction(t *testing.T) {
