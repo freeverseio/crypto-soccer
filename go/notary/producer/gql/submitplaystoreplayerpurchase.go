@@ -3,14 +3,13 @@ package gql
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
-
-const GooglePackage = "com.freeverse.phoenix"
 
 func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	Input input.SubmitPlayStorePlayerPurchaseInput
@@ -50,7 +49,41 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, err
 	}
 
+	if purchase.PurchaseType != nil {
+		if *purchase.PurchaseType == 0 { // Test
+			return result, nil
+		} else {
+			return result, fmt.Errorf("orderId %v with unknown purchase type %v", purchase.OrderId, *purchase.PurchaseType)
+		}
+	}
+
+	if purchase.AcknowledgementState == 1 { // Acknowledged
+		return result, fmt.Errorf("OrderId %v is already acknowledged", purchase.OrderId)
+	}
+	if purchase.AcknowledgementState != 0 { // unknown state
+		return result, fmt.Errorf("OrderId %v state %v unknown", purchase.OrderId, purchase.AcknowledgementState)
+	}
+
+	if purchase.ConsumptionState == 1 { // consumed
+		return result, fmt.Errorf("OrderId %v is already consumed", purchase.OrderId)
+	}
+	if purchase.ConsumptionState != 0 { // unknown state
+		return result, fmt.Errorf("orderId %v consuption state %v unknown", purchase.OrderId, purchase.ConsumptionState)
+	}
+
+	if purchase.PurchaseState == 1 {
+		return result, fmt.Errorf("orderId %v is cancelled", purchase.OrderId)
+	}
+	if purchase.PurchaseState == 2 {
+		return result, fmt.Errorf("orderId %v is pending", purchase.OrderId)
+	}
+	if purchase.PurchaseState != 0 {
+		return result, fmt.Errorf("orderId %v purchase state %v unknown", purchase.OrderId, purchase.PurchaseState)
+	}
+
 	log.Infof("%+v", purchase)
+
+	// check if the player is valid
 
 	return result, errors.New("not implemented")
 }
