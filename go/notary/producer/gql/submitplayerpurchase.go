@@ -41,7 +41,7 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, err
 	}
 	ctx := context.Background()
-	purchase, err := client.VerifyProduct(ctx, GooglePackage, GoogleProductID, string(args.Input.PurchaseId))
+	purchase, err := client.VerifyProduct(ctx, GooglePackage, GoogleProductID, string(args.Input.PurchaseToken))
 	if err != nil {
 		return result, err
 	}

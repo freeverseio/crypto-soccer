@@ -31,7 +31,8 @@ const Schema = `
 
 	input SubmitPlayStorePlayerPurchaseInput {
 		signature: String!
-		purchaseId: ID!
+		productId: ID!
+		purchaseToken: String!
 		playerId: ID!
 		teamId: ID!
 	}

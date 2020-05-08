@@ -14,10 +14,11 @@ import (
 )
 
 type SubmitPlayStorePlayerPurchaseInput struct {
-	Signature  string
-	PurchaseId graphql.ID
-	PlayerId   graphql.ID
-	TeamId     graphql.ID
+	Signature     string
+	ProductId     graphql.ID
+	PurchaseToken string
+	PlayerId      graphql.ID
+	TeamId        graphql.ID
 }
 
 func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
@@ -33,6 +34,9 @@ func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
 		{
 			Type: stringTy,
 		},
+		{
+			Type: stringTy,
+		},
 	}
 
 	teamId, _ := new(big.Int).SetString(string(b.TeamId), 10)
@@ -44,7 +48,7 @@ func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
 		return common.Hash{}, errors.New("Invalid PlayerId")
 	}
 
-	bytes, err := arguments.Pack(teamId, playerId, b.PurchaseId)
+	bytes, err := arguments.Pack(teamId, playerId, b.ProductId, b.PurchaseToken)
 	if err != nil {
 		return common.Hash{}, err
 	}
