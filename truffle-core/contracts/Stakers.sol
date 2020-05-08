@@ -107,10 +107,6 @@ contract Stakers is Owned {
 
   // ----------------- public functions -----------------------
 
-  constructor() public {
-    owner = msg.sender;
-  }
-
   function setOwner(address _address) external override (Owned) onlyOwner {
     owner = _address;
     updaters.setOwner(_address);
