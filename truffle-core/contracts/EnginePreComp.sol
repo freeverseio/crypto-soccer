@@ -13,7 +13,16 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
     uint8 constant public SK_SPE = 1;
     uint8 constant public SK_PAS = 2;
     uint8 constant public SK_DEF = 3;
-    uint8 constant public SK_END = 4;    
+    uint8 constant public SK_END = 4;   
+     
+    // Skills for GKs: shot-stopping, 1-on-1, pass, penaltySaving, endurance 
+    uint8 constant internal GK_SHO = 0;
+    uint8 constant internal GK_1O1 = 1;
+    uint8 constant internal GK_PAS = 2;
+    uint8 constant internal GK_PEN = 3;
+    uint8 constant internal GK_END = 4;    
+    
+    
     // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
     uint8 constant public IDX_GK = 0;
     uint8 constant public IDX_D  = 1;
@@ -305,15 +314,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         uint256 posCondModifier;
         uint256 playerSkills = skills[0];
         if (playerSkills != 0) {
-            globSkills[IDX_ENDURANCE] = getSkill(playerSkills, SK_END);
-            if (computeModifierBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
-                globSkills[IDX_BLOCK_SHOOT] = 10;
-            }
-            else globSkills[IDX_BLOCK_SHOOT] = getSkill(playerSkills, SK_SHO);
+            posCondModifier = computeModifierBadPositionAndCondition(0, playersPerZone, playerSkills);
+            computeGKGlobSkills(globSkills, playerSkills, posCondModifier);
         }
-                
         uint256[2] memory fwdModFactors;
-
         for (uint8 p = 1; p < 11; p++){
             playerSkills = skills[p];
             if (playerSkills != 0) {
@@ -358,7 +362,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         uint256 penalty;
         uint256 forwardness = getForwardness(playerSkills);
         uint256 leftishness = getLeftishness(playerSkills);
-        if (forwardness == IDX_GK && lineupPos > 0 || forwardness != IDX_GK && lineupPos == 0) return 10;
+        if (forwardness == IDX_GK && lineupPos > 0 || forwardness != IDX_GK && lineupPos == 0) return 500; // 5%
         uint8[9] memory playersBelow = playersBelowZones(playersPerZone);
         lineupPos--; // remove the offset due to the GK
         if (lineupPos < playersBelow[0]) { 
@@ -398,6 +402,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
             penalty = penaltyForAttackers(forwardness);
             penalty += penaltyForRights(leftishness);
         }
+        // In no case can penalty be larger than 4000 since it is 
+        // the sum of 2 penalties, and each is at most 2000.
         uint8 gamesNonStop = getGamesNonStopping(playerSkills);
         if (gamesNonStop > 5) {
             return 5000 - penalty;
@@ -411,6 +417,24 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
     function getExtraAttackFactors(bool extraAttack) public pure returns (uint256[2] memory fwdModFactors) {
         if (extraAttack)    {fwdModFactors = [uint256(13500), uint256(7407)];}
         else                {fwdModFactors = [TEN_TO_4,TEN_TO_4];}
+    }
+
+    function computeGKGlobSkills(
+        uint256[5] memory globSkills,
+        uint256 playerSkills, 
+        uint256 posCondModifier
+    ) 
+        private 
+        pure
+    {
+        // extraAttack for defenders: 
+        //  - higher move2attack
+        //  - less defend_shoot
+        //  - less endurance
+        globSkills[IDX_BLOCK_SHOOT]  += (getSkill(playerSkills, GK_SHO) * posCondModifier) / TEN_TO_4;
+        globSkills[IDX_MOVE2ATTACK]  += (getSkill(playerSkills, SK_PAS) * posCondModifier) / (3 * TEN_TO_4); // 3 times less than a defender
+        globSkills[IDX_DEFEND_SHOOT] += (getSkill(playerSkills, GK_1O1) * posCondModifier) / (3 * TEN_TO_4); // 3 times less than a defender
+        globSkills[IDX_ENDURANCE]    += (getSkill(playerSkills, SK_END) * posCondModifier) / TEN_TO_4;
     }
   
     function computeDefenderGlobSkills(
@@ -426,15 +450,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         //  - higher move2attack
         //  - less defend_shoot
         //  - less endurance
-        if (posCondModifier != 0) { 
-            globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * posCondModifier * fwdModFactors[IDX_BOOST])/TEN_TO_8;
-            globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * posCondModifier * fwdModFactors[IDX_TRIM])/TEN_TO_8;
-            globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * posCondModifier)/TEN_TO_4;
-        } else {
-            globSkills[IDX_MOVE2ATTACK] += 30;
-            globSkills[IDX_DEFEND_SHOOT] += 20;
-            globSkills[IDX_ENDURANCE]   += 10;
-        }
+        globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE) + 2 * getSkill(playerSkills, SK_PAS)) * posCondModifier * fwdModFactors[IDX_BOOST])/TEN_TO_8;
+        globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * posCondModifier * fwdModFactors[IDX_TRIM])/TEN_TO_8;
+        globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * posCondModifier)/TEN_TO_4;
     }
 
 
@@ -450,15 +468,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         // extraAttack for midfielders: 
         //  - move2attack remains the same, but create shoot increases
         //  - less defend_shoot, less endurance
-        if (posCondModifier != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((2*getSkill(playerSkills, SK_DEF) + 2*getSkill(playerSkills, SK_SPE) + 3*getSkill(playerSkills, SK_PAS)) * posCondModifier)/TEN_TO_4;
-            globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * posCondModifier * fwdModFactors[IDX_BOOST])/(5 * TEN_TO_8);
-            globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * posCondModifier * fwdModFactors[IDX_TRIM])/(5 * TEN_TO_8);
-            globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * posCondModifier)/TEN_TO_4;
-        } else {
-            globSkills[IDX_MOVE2ATTACK] += 50;
-            globSkills[IDX_ENDURANCE]   += 10;
-        }
+        globSkills[IDX_MOVE2ATTACK] += ((2*getSkill(playerSkills, SK_DEF) + 2*getSkill(playerSkills, SK_SPE) + 3*getSkill(playerSkills, SK_PAS)) * posCondModifier)/TEN_TO_4;
+        globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * posCondModifier * fwdModFactors[IDX_BOOST])/(5 * TEN_TO_8);
+        globSkills[IDX_DEFEND_SHOOT] += ((getSkill(playerSkills, SK_DEF) + getSkill(playerSkills, SK_SPE)) * posCondModifier * fwdModFactors[IDX_TRIM])/(5 * TEN_TO_8);
+        globSkills[IDX_ENDURANCE]   += ((getSkill(playerSkills, SK_END)) * posCondModifier)/TEN_TO_4;
     }
     
     
@@ -474,15 +487,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         // extraAttack for forwards: 
         //  - by disconnecting them from midifield => less move2attack
         //  - but once ball is in attack => more likely to create shoot
-        if (posCondModifier != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF)) * posCondModifier * fwdModFactors[IDX_TRIM])/TEN_TO_8;
-            globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * posCondModifier * fwdModFactors[IDX_BOOST])/TEN_TO_8;
-            globSkills[IDX_ENDURANCE] += ((getSkill(playerSkills, SK_END)) * posCondModifier)/TEN_TO_4;
-        } else {
-            globSkills[IDX_MOVE2ATTACK] += 10;
-            globSkills[IDX_CREATE_SHOOT] += 20;
-            globSkills[IDX_ENDURANCE] += 10;
-        }
+        globSkills[IDX_MOVE2ATTACK] += ((getSkill(playerSkills, SK_DEF)) * posCondModifier * fwdModFactors[IDX_TRIM])/TEN_TO_8;
+        globSkills[IDX_CREATE_SHOOT] += ((getSkill(playerSkills, SK_SPE) + getSkill(playerSkills, SK_PAS)) * posCondModifier * fwdModFactors[IDX_BOOST])/TEN_TO_8;
+        globSkills[IDX_ENDURANCE] += ((getSkill(playerSkills, SK_END)) * posCondModifier)/TEN_TO_4;
     }
 
     function playersBelowZones(uint8[9] memory playersPerZone) private pure returns(uint8[9] memory  playersBelow) {

@@ -28,6 +28,14 @@ contract Constants {
     uint8 constant internal SK_DEF = 3;
     uint8 constant internal SK_END = 4;
 
+    // Skills for GKs: shot-stopping, 1-on-1, pass, penaltySaving, endurance 
+    uint8 constant internal GK_SHO = 0;
+    uint8 constant internal GK_1O1 = 1;
+    uint8 constant internal GK_PAS = 2;
+    uint8 constant internal GK_PEN = 3;
+    uint8 constant internal GK_END = 4;
+
+
     // Birth Traits: potential, forwardness, leftishness, aggressiveness
     uint8 constant internal IDX_POT = 0;
     uint8 constant internal IDX_FWD = 1;
