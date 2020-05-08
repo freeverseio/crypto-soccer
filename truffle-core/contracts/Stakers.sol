@@ -2,26 +2,26 @@ pragma solidity >= 0.6.3;
 
 // TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
 
-contract Rewards {
-
+contract Owned {
   address public owner = address(0x0);
-  address payable[] public toBeRewarded;
-
-  modifier onlyOwner {
-    require(msg.sender == owner,
-            "Only owner can call this function.");
-    _;
-  }
 
   constructor() public {
     owner = msg.sender;
   }
+  function setOwner(address _address) external virtual onlyOwner {
+    owner = _address;
+  }
+  modifier onlyOwner {
+    require( msg.sender == owner, "Only owner can call this function.");
+        _;
+  }
+}
+
+contract Rewards is Owned{
+
+  address payable[] public toBeRewarded;
 
   receive() external payable {}
-  
-  function setOwnerAddress(address newAddress) external onlyOwner {
-    owner = newAddress;
-  }
 
   function execute() external onlyOwner {
     require (toBeRewarded.length != 0, "failed to execute reward: empty array");
@@ -37,13 +37,13 @@ contract Rewards {
   }
 }
 
-contract AddressStack {
+contract AddressStack is Owned{
   uint16 public constant capacity = 4;
   uint16 public length = 0;
   address[capacity] private array;
 
   /// @notice adds a new element. Reverts in case the element is found in array or array is full
-  function push(address _address) external {
+  function push(address _address) external onlyOwner {
     require (length < capacity, "cannot push to a full AddressStack");
     require (!contains(_address), "cannot push, address is already in AddressStack");
     array[length++] = _address;
@@ -51,7 +51,7 @@ contract AddressStack {
 
   /// notice: removes the last element that was pushed. Reverts in case it is empty.
   /// returns the element that has been removed from the array
-  function pop() external returns (address _address) {
+  function pop() external  onlyOwner returns (address _address) {
     require (length > 0, "cannot pop from an empty AddressStack");
     _address = array[--length];
   }
@@ -70,19 +70,10 @@ contract AddressStack {
   }
 }
 
-contract AddressMapping {
+contract AddressMapping is Owned{
 
-  address public owner = address(0x0);
   mapping(address => bool) public data;
 
-  modifier onlyOwner {
-    require(msg.sender == owner,
-            "Only owner can call this function.");
-    _;
-  }
-  constructor() public {
-    owner = msg.sender;
-  }
   function add(address _address) external onlyOwner {
     require (!has(_address), "failed to add to AddressMapping, address already exists");
     data[_address] = true;
@@ -93,12 +84,11 @@ contract AddressMapping {
 }
 
 
-contract Stakers {
+contract Stakers is Owned {
 
   uint16 public constant kNumStakers = 32;
   uint public constant kRequiredStake = 4 ether;
 
-  address public owner = address(0x0);
   address public gameOwner = address(0x0);
   AddressStack private updaters = new AddressStack();
   Rewards public rewards = new Rewards();
@@ -109,11 +99,6 @@ contract Stakers {
 
   // ----------------- modifiers -----------------------
 
-  modifier onlyOwner {
-    require(msg.sender == owner,
-            "Only owner can call this function.");
-    _;
-  }
   modifier onlyGame {
     require(msg.sender == gameOwner && gameOwner != address(0x0),
             "Only gameOwner can call this function.");
@@ -126,9 +111,12 @@ contract Stakers {
     owner = msg.sender;
   }
 
-  function setOwnerAddress(address newAddress) external onlyOwner {
-    owner = newAddress;
-    rewards.setOwnerAddress(newAddress);    
+  function setOwner(address _address) external override (Owned) onlyOwner {
+    owner = _address;
+    updaters.setOwner(_address);
+    rewards.setOwner(_address);
+    slashed.setOwner(_address);
+    trustedParties.setOwner(_address);
   }
 
   /// @notice adds amount to rewards contract

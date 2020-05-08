@@ -35,12 +35,12 @@ contract('Stakers', (accounts) => {
 
   it("Tests owner address change", async () => {
     await expect.reverts(
-      stakers.setOwnerAddress(alice, {from:alice}),
+      stakers.setOwner(alice, {from:alice}),
       "Only owner can call this function",
       "wrong sender, so it should revert"
     )
     await expect.passes(
-      stakers.setOwnerAddress(alice, {from:owner}),
+      stakers.setOwner(alice, {from:owner}),
       "failed to set new owner address"
     )
     await expect.reverts(
