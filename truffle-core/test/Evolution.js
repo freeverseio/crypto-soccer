@@ -684,6 +684,14 @@ contract('Evolution', (accounts) => {
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expectedSumSkills);
         
+        // check that potential increases by 1:
+        result = await engine.getPotential(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(potential+1);
+
+        // check that forwardness remains the same:
+        result = await engine.getForwardness(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(forwardness);
+        
     });
     
     it('training leading to an academy', async () => {
@@ -725,7 +733,10 @@ contract('Evolution', (accounts) => {
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expectedSumSkills);
-        
+
+        // check that forwardness remains the same: (potential is unrelated, since it is not a child)
+        result = await engine.getForwardness(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(forwardness);
     });
     
     

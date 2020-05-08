@@ -249,8 +249,9 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         );
         // Potential determination:
         //  - if child, ensure potential is potential(father) + 1, otherwise, random
+        //  - this rewards users that keep the same player over many years
         if (isChild && (getPotential(skills) < 9)) {
-            birthTraits[IDX_POT] += 1;
+            birthTraits[IDX_POT] = uint8(getPotential(skills)) + 1;
         } else {
             birthTraits[IDX_POT] = uint8(dna % (MAX_POTENTIAL_AT_BIRTH+1));
         }
@@ -258,7 +259,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         uint256 finalSkills = encodePlayerSkills(
             newSkills, 
             (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1, // day of Birth, formula above
-            uint8((getGeneration(skills) % 32) + 1 + (isChild ? 0 : 32)), // generation, formula above
+            uint8(1 + (getGeneration(skills) % 32) + (isChild ? 0 : 32)), // generation, formula above
             getInternalPlayerId(skills), 
             birthTraits, 
             false, false, 0, 0, false, sumSkills
