@@ -13,11 +13,12 @@ import (
 )
 
 type Consumer struct {
-	ch        chan interface{}
-	db        *sql.DB
-	contracts contracts.Contracts
-	pvc       *ecdsa.PrivateKey
-	market    marketpay.IMarketPay
+	ch                chan interface{}
+	db                *sql.DB
+	contracts         contracts.Contracts
+	pvc               *ecdsa.PrivateKey
+	market            marketpay.IMarketPay
+	googleCredentials []byte
 }
 
 func New(
@@ -26,6 +27,7 @@ func New(
 	db *sql.DB,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
+	googleCredentials []byte,
 ) (*Consumer, error) {
 	consumer := Consumer{}
 	consumer.ch = ch
@@ -33,6 +35,7 @@ func New(
 	consumer.contracts = contracts
 	consumer.pvc = pvc
 	consumer.market = market
+	consumer.googleCredentials = googleCredentials
 	return &consumer, nil
 }
 
@@ -83,7 +86,12 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err != nil {
 			return err
 		}
-		if err := ProcessAuctions(b.market, tx, b.contracts, b.pvc); err != nil {
+		if err := ProcessAuctions(
+			b.market,
+			tx,
+			b.contracts,
+			b.pvc,
+		); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -92,7 +100,12 @@ func (b *Consumer) Consume(event interface{}) error {
 		}
 	case input.SubmitPlayStorePlayerPurchaseInput:
 		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
-		if err := SubmitPlayStorePlayerPurchase(in); err != nil {
+		if err := SubmitPlayStorePlayerPurchase(
+			b.contracts,
+			b.pvc,
+			b.googleCredentials,
+			in,
+		); err != nil {
 			return err
 		}
 	default:

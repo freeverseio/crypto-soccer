@@ -123,6 +123,7 @@ func main() {
 			db,
 			*contracts,
 			privateKey,
+			googleCredentials,
 		)
 		if err != nil {
 			return err
