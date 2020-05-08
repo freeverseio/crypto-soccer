@@ -20,6 +20,7 @@ contract Owned {
 contract Rewards is Owned{
 
   address payable[] public toBeRewarded;
+  mapping (address => uint) pendingWithdrawals;
 
   receive() external payable {}
 
@@ -27,9 +28,15 @@ contract Rewards is Owned{
     require (toBeRewarded.length != 0, "failed to execute reward: empty array");
     uint amount = address(this).balance / toBeRewarded.length;
     for (uint i=0; i<toBeRewarded.length; i++) {
-      toBeRewarded[i].transfer(amount);
+      pendingWithdrawals[toBeRewarded[i]] += amount;
     }
     delete toBeRewarded;
+  }
+
+  function withdraw(address _address) public onlyOwner returns (uint amount) {
+    amount = pendingWithdrawals[_address];
+    pendingWithdrawals[_address] = 0;
+    msg.sender.transfer(amount);
   }
 
   function push(address _addr) external onlyOwner {
@@ -107,6 +114,8 @@ contract Stakers is Owned {
 
   // ----------------- public functions -----------------------
 
+  receive() external payable {}
+
   function setOwner(address _address) external override (Owned) onlyOwner {
     owner = _address;
     updaters.setOwner(_address);
@@ -123,6 +132,9 @@ contract Stakers is Owned {
   /// @notice executes rewards
   function executeReward() external {
     rewards.execute();
+  }
+  function withdraw() external {
+    msg.sender.transfer(rewards.withdraw(msg.sender));
   }
 
   /// @notice sets the address of the gameOwner that interacts with this contract

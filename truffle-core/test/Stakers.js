@@ -185,6 +185,10 @@ contract('Stakers', (accounts) => {
       stakers.executeReward({from:owner}),
       "failed to execute reward"
     )
+    await expect.passes(
+      stakers.withdraw({from:alice}),
+      "failed to withdraw alice's reward"
+    )
 
     assert.isBelow(aliceBalanceBeforeRewarded, Number(await web3.eth.getBalance(alice)),
                  "Alice's current balance should be higher since she was rewarded");

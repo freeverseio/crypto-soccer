@@ -10,7 +10,7 @@ contract Updates is UpdatesBase {
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
 
-    function setStakersAddress(address addr) public {
+    function setStakersAddress(address payable addr) public {
         _stakers = Stakers(addr);
     }
 
