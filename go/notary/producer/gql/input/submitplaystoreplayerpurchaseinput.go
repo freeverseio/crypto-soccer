@@ -15,6 +15,7 @@ import (
 
 type SubmitPlayStorePlayerPurchaseInput struct {
 	Signature     string
+	PackageName   string
 	ProductId     graphql.ID
 	PurchaseToken string
 	PlayerId      graphql.ID
@@ -24,19 +25,13 @@ type SubmitPlayStorePlayerPurchaseInput struct {
 func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	stringTy, _ := abi.NewType("string", "string", nil)
+
 	arguments := abi.Arguments{
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: stringTy,
-		},
-		{
-			Type: stringTy,
-		},
+		{Type: stringTy},
+		{Type: stringTy},
+		{Type: stringTy},
+		{Type: uint256Ty},
+		{Type: uint256Ty},
 	}
 
 	teamId, _ := new(big.Int).SetString(string(b.TeamId), 10)
@@ -48,7 +43,13 @@ func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
 		return common.Hash{}, errors.New("Invalid PlayerId")
 	}
 
-	bytes, err := arguments.Pack(teamId, playerId, b.ProductId, b.PurchaseToken)
+	bytes, err := arguments.Pack(
+		b.PackageName,
+		b.ProductId,
+		b.PurchaseToken,
+		playerId,
+		teamId,
+	)
 	if err != nil {
 		return common.Hash{}, err
 	}

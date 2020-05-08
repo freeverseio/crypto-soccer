@@ -11,7 +11,6 @@ import (
 )
 
 const GooglePackage = "com.freeverse.phoenix"
-const GoogleProductID = "coinpack_45"
 
 func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	Input input.SubmitPlayStorePlayerPurchaseInput
@@ -41,7 +40,12 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, err
 	}
 	ctx := context.Background()
-	purchase, err := client.VerifyProduct(ctx, GooglePackage, GoogleProductID, string(args.Input.PurchaseToken))
+	purchase, err := client.VerifyProduct(
+		ctx,
+		string(args.Input.PackageName),
+		string(args.Input.ProductId),
+		args.Input.PurchaseToken,
+	)
 	if err != nil {
 		return result, err
 	}
