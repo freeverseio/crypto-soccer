@@ -13,26 +13,25 @@ import (
 	"github.com/graph-gophers/graphql-go"
 )
 
-type SubmitPlayerPurchaseInput struct {
-	Signature  string
-	PurchaseId graphql.ID
-	PlayerId   graphql.ID
-	TeamId     graphql.ID
+type SubmitPlayStorePlayerPurchaseInput struct {
+	Signature     string
+	PackageName   string
+	ProductId     graphql.ID
+	PurchaseToken string
+	PlayerId      graphql.ID
+	TeamId        graphql.ID
 }
 
-func (b SubmitPlayerPurchaseInput) Hash() (common.Hash, error) {
+func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	stringTy, _ := abi.NewType("string", "string", nil)
+
 	arguments := abi.Arguments{
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: stringTy,
-		},
+		{Type: stringTy},
+		{Type: stringTy},
+		{Type: stringTy},
+		{Type: uint256Ty},
+		{Type: uint256Ty},
 	}
 
 	teamId, _ := new(big.Int).SetString(string(b.TeamId), 10)
@@ -44,14 +43,20 @@ func (b SubmitPlayerPurchaseInput) Hash() (common.Hash, error) {
 		return common.Hash{}, errors.New("Invalid PlayerId")
 	}
 
-	bytes, err := arguments.Pack(teamId, playerId, b.PurchaseId)
+	bytes, err := arguments.Pack(
+		b.PackageName,
+		b.ProductId,
+		b.PurchaseToken,
+		playerId,
+		teamId,
+	)
 	if err != nil {
 		return common.Hash{}, err
 	}
 	return crypto.Keccak256Hash(bytes), nil
 }
 
-func (b SubmitPlayerPurchaseInput) SignerAddress() (common.Address, error) {
+func (b SubmitPlayStorePlayerPurchaseInput) SignerAddress() (common.Address, error) {
 	hash, err := b.Hash()
 	if err != nil {
 		return common.Address{}, err
@@ -64,7 +69,7 @@ func (b SubmitPlayerPurchaseInput) SignerAddress() (common.Address, error) {
 	return AddressFromSignature(hash, sign)
 }
 
-func (b SubmitPlayerPurchaseInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
+func (b SubmitPlayStorePlayerPurchaseInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress()
 	if err != nil {
 		return false, err
@@ -80,7 +85,7 @@ func (b SubmitPlayerPurchaseInput) IsSignerOwner(contracts contracts.Contracts) 
 	return signerAddress == owner, nil
 }
 
-func (b SubmitPlayerPurchaseInput) IsValidSignature() (bool, error) {
+func (b SubmitPlayStorePlayerPurchaseInput) IsValidSignature() (bool, error) {
 	hash, err := b.Hash()
 	if err != nil {
 		return false, err
