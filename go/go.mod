@@ -9,6 +9,7 @@ require (
 	github.com/ethereum/go-ethereum v1.9.11
 	github.com/fatih/color v1.9.0
 	github.com/gin-gonic/gin v1.5.0
+	github.com/golang/mock v1.4.0
 	github.com/google/uuid v1.1.1
 	github.com/graph-gophers/graphql-go v0.0.0-20191115155744-f33e81362277
 	github.com/ipfs/go-ipfs-api v0.0.3
