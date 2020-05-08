@@ -15,6 +15,8 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     uint256 constant internal YEARS_30  = 946080000; // 30 years in sec
     uint256 constant internal YEARS_35h = 1119528000; // 35.5 years in sec
     uint256 constant internal YEARS_1   = 31536000; // 1 year in sec
+    uint256 constant internal YEARS_2   = 63072000; // 2 year in sec
+    uint256 constant internal YEARS_16  = 504576000; // 16 year in sec
     uint256 constant internal DAYS_1    = 86400; // 1 day in sec
     
 
@@ -226,18 +228,41 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
 
     function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public view returns (uint256) {
         if (ageInSecs < 1166832000) { return skills; }   // 1166832000 = 37 * Ys
+
+        // 75% chances to lead to a child, 25% to lead to academy player:
         uint256 dna = uint256(keccak256(abi.encode(skills, ageInSecs)));
-        ageInSecs = 504576000 + (dna % 126144000);  // 504576000 = 16 * years2secs, 126144000 = 4 * years2secs
-        uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME)/DAYS_1; 
-        dna >>= 13; // log2(7300) = 12.8
+        bool isChild = (dna % 4) > 0;
+        
+        // Generation syntax: 0, 1, 2, 3... but with +32 if is child, so it can go: 0, 1, 32+2, 32+3, 4, 32+5,...
+        //  - which would mean that 1 was child, 2 was Academy, etc...
+        //  - we will start having uint8 overflow at generation 32 (after 64 years of real gameplay), and even then it'll look like a new player
+        //  - Formula copied directly to avoid stack overflow: uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (isChild ? 0 : 32));
+
+        // AGe determination: age is a random between 16 and 18.
+        //  - Formula copied directly to avoid stack overflow: uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1; 
+        ageInSecs = YEARS_16 + (dna % YEARS_2);
+
         (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(
             dna, 
-            forwardnessToShirtNum(dna, getForwardness(skills)),
+            forwardnessToShirtNum(dna, getForwardness(skills)), // ensure they play in the same pos in field:
             0
         );
-        // if dna is even => leads to child, if odd => leads to academy player
-        uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (dna % 2 == 0 ? 0 : 32));
-        uint256 finalSkills = encodePlayerSkills(newSkills, dayOfBirth, generation, getInternalPlayerId(skills), birthTraits, false, false, 0, 0, false, sumSkills);
+        // Potential determination:
+        //  - if child, ensure potential is potential(father) + 1, otherwise, random
+        if (isChild && (getPotential(skills) < 9)) {
+            birthTraits[IDX_POT] += 1;
+        } else {
+            birthTraits[IDX_POT] = uint8(dna % (MAX_POTENTIAL_AT_BIRTH+1));
+        }
+
+        uint256 finalSkills = encodePlayerSkills(
+            newSkills, 
+            (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1, // day of Birth, formula above
+            uint8((getGeneration(skills) % 32) + 1 + (isChild ? 0 : 32)), // generation, formula above
+            getInternalPlayerId(skills), 
+            birthTraits, 
+            false, false, 0, 0, false, sumSkills
+        );
         return (getIsSpecial(skills)) ? addIsSpecial(finalSkills) : finalSkills;
     }
     

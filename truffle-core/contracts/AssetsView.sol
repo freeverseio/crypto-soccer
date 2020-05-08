@@ -41,7 +41,7 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         // each team has different DNAs, but within a same team, shirts = 0,1 have the same, shirts = 2,3 have the same...etc
         uint256 dna = uint256(keccak256(abi.encode(teamId, shirtNum/2)));
         // Generate pairs of potentials such that each is in [0,...,7] and the sum is 7, so average is 3.5
-        potential = (shirtNum % 2 == 0) ? uint8(dna % 8) : 7 - uint8(dna % 8);
+        potential = (shirtNum % 2 == 0) ? uint8(dna % (MAX_POTENTIAL_AT_BIRTH+1)) : MAX_POTENTIAL_AT_BIRTH - uint8(dna % (MAX_POTENTIAL_AT_BIRTH+1));
         // generate a different dna for each member of the pair by bit-shifting dna differently
         dna >>= (1 +(shirtNum % 2));
         // Increase potential average to 4.25 = 3.5 + 0.75 

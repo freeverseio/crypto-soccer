@@ -19,6 +19,7 @@ contract Constants {
     uint256 constant internal NULL_TEAMID = 0;
     uint256 constant internal NULL_PLAYERID = 0;
     uint256 constant internal INGAMETIME_VS_REALTIME = 14;
+    uint8 constant internal MAX_POTENTIAL_AT_BIRTH = 7;
 
     // Skills: shoot, speed, pass, defence, endurance
     uint8 constant internal SK_SHO = 0;
