@@ -1051,10 +1051,10 @@ contract("Market", accounts => {
     }
   });
 
-  it("didmissPlayers works", async () => {
+  it("retire player works", async () => {
     await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = false, sellerAccount);
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     onwer.should.be.equal(sellerAccount.address);
     
@@ -1072,50 +1072,99 @@ contract("Market", accounts => {
       playerId,
       sigSeller.r,
       sigSeller.s,
-      sigSeller.v
+      sigSeller.v,
+      returnToAcademy = false
+    ).should.be.fulfilled;
+
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(sellerAccount.address);
+
+    teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
+    
+    truffleAssert.eventEmitted(tx, "PlayerRetired", (event) => {
+      return event.playerId.should.be.bignumber.equal(playerId) && event.teamId.should.be.bignumber.equal(teamId);
+    });
+
+    ids = await market.getPlayerIdsInTeam(teamId).should.be.fulfilled;
+    console.log(ids)
+    isFree = await market.isFreeShirt(ids[shirtNum = playerIdxInCountry], shirtNum ).should.be.fulfilled
+    isFree.should.be.equal(true);
+    isFree = await market.isFreeShirt(ids[shirtNum= playerIdxInCountry + 1], shirtNum).should.be.fulfilled
+    isFree.should.be.equal(false);
+    isFree = await market.isFreeShirt(ids[shirtNum= playerIdxInCountry - 1], shirtNum).should.be.fulfilled
+    isFree.should.be.equal(false);
+  });
+  
+  
+  it("dismissPlayers works", async () => {
+    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(sellerAccount.address);
+    
+    // First of all, Freeverse and Buyer check the signature
+    // In this case, using web3:
+    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
+    recoveredSellerAddr.should.be.equal(sellerAccount.address);
+  
+    // We check that player is not frozen
+    let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
+  
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v,
+      returnToAcademy = true
     ).should.be.fulfilled;
 
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     onwer.should.be.equal(freeverseAccount.address);
+    
   });
   
-  it("didmissPlayers: Academy can sell in auction again after a dismiss", async () => {
+  it("dismissPlayers: Academy can sell in auction again after a dismiss", async () => {
     await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
 
     tx = await market.dismissPlayer(
       validUntil,
       playerId,
       sigSeller.r,
       sigSeller.s,
-      sigSeller.v
+      sigSeller.v,
+      returnToAcademy = true
     ).should.be.fulfilled;
 
     await marketUtils.transferPlayerViaAuction(market, playerId, buyerTeamId, freeverseAccount, buyerAccount).should.be.fulfilled;
   });
 
-  it("didmissPlayers: Academy can sell as buynow", async () => {
+  it("dismissPlayers: Academy can sell as buynow", async () => {
     await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
 
     tx = await market.dismissPlayer(
       validUntil,
       playerId,
       sigSeller.r,
       sigSeller.s,
-      sigSeller.v
+      sigSeller.v,
+      returnToAcademy = true
     ).should.be.fulfilled;
 
     targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
   });
   
-  it("didmissPlayers fails when already sold, not owner any more", async () => {
+  it("dismissPlayers fails when already sold, not owner any more", async () => {
     await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
     
     await marketUtils.transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
@@ -1126,14 +1175,15 @@ contract("Market", accounts => {
       playerId,
       sigSeller.r,
       sigSeller.s,
-      sigSeller.v
+      sigSeller.v,
+      returnToAcademy = true
     ).should.be.rejected;
   });
   
-  it("didmissPlayers fails if frozen first", async () => {
+  it("dismissPlayers fails if frozen first", async () => {
     await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
     await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     
     tx = await market.dismissPlayer(
@@ -1141,14 +1191,15 @@ contract("Market", accounts => {
       playerId,
       sigSeller.r,
       sigSeller.s,
-      sigSeller.v
+      sigSeller.v,
+      returnToAcademy = true
     ).should.be.rejected;
   });
   
-  it("didmissPlayers fails if too long passed", async () => {
+  it("dismissPlayers fails if too long passed", async () => {
     await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
 
     await timeTravel.advanceTime(validUntil - now + 200);
     await timeTravel.advanceBlock().should.be.fulfilled;
@@ -1158,7 +1209,8 @@ contract("Market", accounts => {
       playerId,
       sigSeller.r,
       sigSeller.s,
-      sigSeller.v
+      sigSeller.v,
+      returnToAcademy = true
     ).should.be.rejected;
   });
   

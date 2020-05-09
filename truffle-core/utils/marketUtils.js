@@ -33,10 +33,10 @@ async function signPutAssetForSaleMTx(currencyId, price, rnd, validUntil, assset
   return sigSeller;
 }
 
-async function signDismissPlayerMTx(validUntil, asssetId, sellerAccount) {
+async function signDismissPlayerMTx(validUntil, asssetId, returnToAcademy, sellerAccount) {
   const sellerTxMsg = concatHash(
-      ['uint256', 'uint256'],
-      [validUntil, asssetId]
+      ['uint256', 'uint256', 'bool'],
+      [validUntil, asssetId, returnToAcademy]
   )
   const sigSeller = await sellerAccount.sign(sellerTxMsg);
   sigSeller.message.should.be.equal(sellerTxMsg);
