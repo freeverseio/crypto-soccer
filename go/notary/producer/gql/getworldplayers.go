@@ -49,12 +49,14 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 		return nil, errors.New("not owner of the team")
 	}
 
-	value := int64(1000) // TODO
+	value := int64(1000)     // TODO
+	maxPotential := uint8(9) // TODO
 
 	return CreateWorldPlayerBatch(
 		b.contracts,
 		b.namesdb,
 		value,
+		maxPotential,
 		string(args.Input.TeamId),
 		time.Now().Unix(),
 	)
@@ -64,6 +66,7 @@ func CreateWorldPlayerBatch(
 	contr contracts.Contracts,
 	namesdb *names.Generator,
 	value int64,
+	maxPotential uint8,
 	teamId string,
 	epoch int64,
 ) ([]*WorldPlayer, error) {
@@ -71,7 +74,6 @@ func CreateWorldPlayerBatch(
 
 	epochDays := epoch / (3600 * 24)
 	epochWeeks := epochDays / 7
-	maxPotential := uint8(9)
 	id, _ := new(big.Int).SetString(teamId, 10)
 	if id == nil {
 		return nil, errors.New("invalid teamId")
