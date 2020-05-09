@@ -9,7 +9,7 @@ const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
 const chllUtils = require('../utils/challengeUtils.js');
 const merkleUtils = require('../utils/merkleUtils.js');
-const delegateUtils = require('../utils/delegateCallUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');
@@ -474,7 +474,7 @@ contract('FullLeague', (accounts) => {
     });
     
     it('challenge unexpected zero values', async () => {
-        depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
+        depl =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
         proxy  = depl[0];
         updates = depl[3];
         challenges = depl[4];

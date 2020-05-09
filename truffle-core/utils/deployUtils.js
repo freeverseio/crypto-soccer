@@ -174,10 +174,45 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
     return [proxy, assets, market, updates, challenges];
 }
 
+async function deployAndConfigureStakers(Stakers, owner, parties, updates) {
+    stakers  = await Stakers.new({from:owner});
+    stakers.setGameOwner(updates.address, {from:owner}).should.be.fulfilled;
+    stake = await stakers.kRequiredStake();
+    await addTrustedParties(stakers, owner, parties);
+    await enroll(stakers, stake, parties);
+    await updates.setStakersAddress(stakers.address).should.be.fulfilled;
+    return stakers;
+}
+
+async function addTrustedParties(contract, owner, addresses) {
+    await asyncForEach(addresses, async (address) => {
+        contract.addTrustedParty(address, {from:owner})
+    });
+}
+async function enroll(contract, stake, addresses) {
+    await asyncForEach(addresses, async (address) => {
+        await contract.enroll({from:address, value: stake})
+    });
+}
+
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+    }
+}
+
+async function unenroll(contract, addresses) {
+    await asyncForEach(addresses, async (address) => {
+        await contract.unEnroll({from:address})
+    });
+}
+
+
 module.exports = {
     extractSelectorsFromAbi,
     informNoCollisions,
     assertNoCollisionsWithProxy,
     deploy,
+    deployAndConfigureStakers,
 }
 

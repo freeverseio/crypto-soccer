@@ -19,12 +19,13 @@ const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
 const Directory = artifacts.require('Directory');
 const MarketCrypto = artifacts.require('MarketCrypto');
+const Stakers = artifacts.require('Stakers');
 
 require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const delegateUtils = require('../utils/delegateCallUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
@@ -32,8 +33,10 @@ module.exports = function (deployer, network, accounts) {
     const versionNumber = 0;
     const proxyAddress  = "0x0";
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
-      await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
+      await deployUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
+    const stakers = await deployUtils.deployAndConfigureStakers(Stakers, owner = accounts[0], parties = [accounts[0]], updates);
+        
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -106,7 +109,8 @@ module.exports = function (deployer, network, accounts) {
       ["CONSTANTSGETTERS", constantsGetters.address],
       ["PROXY", proxy.address],
       ["CHALLENGES", challenges.address],
-      ["MARKETCRYPTO", marketCrypto.address]
+      ["MARKETCRYPTO", marketCrypto.address],
+      ["STAKERS", stakers.address]
     ]
 
     // Build arrays "names" and "addresses" and store in Directory contract

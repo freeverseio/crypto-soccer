@@ -5,7 +5,7 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const timeTravel = require('../utils/TimeTravel.js');
-const delegateUtils = require('../utils/delegateCallUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 const merkleUtils = require('../utils/merkleUtils.js');
 const chllUtils = require('../utils/challengeUtils.js');
 
@@ -54,41 +54,9 @@ contract('Updates', (accounts) => {
         }
         return y;
     }
-    
-    async function asyncForEach(array, callback) {
-        for (let index = 0; index < array.length; index++) {
-            await callback(array[index], index, array);
-        }
-    }
-    
-    async function addTrustedParties(contract, owner, addresses) {
-        await asyncForEach(addresses, async (address) => {
-            contract.addTrustedParty(address, {from:owner})
-        });
-    }
-    async function enroll(contract, stake, addresses) {
-        await asyncForEach(addresses, async (address) => {
-            await contract.enroll({from:address, value: stake})
-        });
-    }
-    async function unenroll(contract, addresses) {
-        await asyncForEach(addresses, async (address) => {
-            await contract.unEnroll({from:address})
-        });
-    }
 
-    async function deployAndConfigureStakers(owner, parties, updates) {
-        stakers  = await Stakers.new({from:owner});
-        stakers.setGameOwner(updates.address, {from:owner}).should.be.fulfilled;
-        stake = await stakers.kRequiredStake();
-        await addTrustedParties(stakers, owner, parties);
-        await enroll(stakers, stake, parties);
-        await updates.setStakersAddress(stakers.address).should.be.fulfilled;
-        return stakers;
-    }
-    
     beforeEach(async () => {
-        depl =  await delegateUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
+        depl =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
         proxy  = depl[0];
         assets = depl[1];
         market = depl[2];
@@ -298,7 +266,7 @@ contract('Updates', (accounts) => {
     it('update Timezone once', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(owner, parties, updates);
+        stakes = await deployUtils.deployAndConfigureStakers(Stakers, owner, parties, updates);
 
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
