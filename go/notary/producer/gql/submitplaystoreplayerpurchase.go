@@ -89,13 +89,15 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 
 	log.Infof("%+v", purchase)
 
-	value := int64(1000) // TODO: value is forced to be 1000
+	value := int64(1000)     // TODO: value is forced to be 1000
+	maxPotential := uint8(9) // TODO: value is forced to be 9
 
 	// check if the player is valid
 	players, err := CreateWorldPlayerBatch(
 		b.contracts,
 		b.namesdb,
 		value,
+		maxPotential,
 		string(args.Input.TeamId),
 		time.Now().Unix(),
 	)

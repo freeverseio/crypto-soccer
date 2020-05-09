@@ -22,7 +22,7 @@ contract Privileged is AssetsView {
         uint256 playerId,
         uint256 nowInSecs
     ) public pure returns (uint256) {
-        uint256 dayOfBirth = (nowInSecs - ageInSecs/7)/86400; // 86400 = secsInDay
+        uint256 dayOfBirth = (nowInSecs - ageInSecs/INGAMETIME_VS_REALTIME)/86400; // 86400 = secsInDay
         uint32 sumSkills;
         for (uint8 s = 0; s < N_SKILLS; s++) sumSkills += skillsVec[s];
         uint256 skills = encodePlayerSkills(
@@ -60,6 +60,7 @@ contract Privileged is AssetsView {
     
     function createBuyNowPlayerIdPure(
         uint256 playerValue, 
+        uint8 maxPotential,
         uint256 seed, 
         uint8 forwardPos,
         uint8 tz,
@@ -69,23 +70,23 @@ contract Privileged is AssetsView {
         pure 
         returns(uint16[N_SKILLS] memory skillsVec, uint256 ageYears, uint8[4] memory birthTraits, uint256 internalPlayerId) 
     {
-        uint8 potential = uint8(seed % 10);
+        require(maxPotential < 10);
+        uint8 potential = uint8(seed % (maxPotential+1));
         seed /= 10;
         ageYears = 16 + (seed % 20);
         seed /= 20;
         uint8 shirtNum;
         if (forwardPos == IDX_GK) {
-            shirtNum = uint8(seed % 3);
+            shirtNum = uint8(seed % 2);
         } else if (forwardPos == IDX_D) {
-            shirtNum = 3 + uint8(seed % 5);
+            shirtNum = 2 + uint8(seed % 5);
         } else if (forwardPos == IDX_M) {
-            shirtNum = 8 + uint8(seed % 6);
+            shirtNum = 7 + uint8(seed % 7);
         } else if (forwardPos == IDX_F) {
             shirtNum = 14 + uint8(seed % 4);
         }
         seed /= 8;
-        (skillsVec, birthTraits, ) = computeSkills(seed, shirtNum);
-        birthTraits[IDX_POT] = potential;
+        (skillsVec, birthTraits, ) = computeSkills(seed, shirtNum, potential);
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             skillsVec[sk] = uint16(
                 (uint256(skillsVec[sk]) * computeAvgSkills(playerValue, ageYears, potential))/uint256(1000)
@@ -97,6 +98,7 @@ contract Privileged is AssetsView {
     // birthTraits = [potential, forwardness, leftishness, aggressiveness]
     function createBuyNowPlayerId(
         uint256 playerValue, 
+        uint8 maxPotential,
         uint256 seed, 
         uint8 forwardPos,
         uint256 epochInDays,
@@ -115,7 +117,7 @@ contract Privileged is AssetsView {
     )
     {
         uint256 ageYears;
-        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, seed, forwardPos, tz, countryIdxInTZ);
+        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, maxPotential, seed, forwardPos, tz, countryIdxInTZ);
         // 1 year = 31536000 sec
         playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId, epochInDays*24*3600);
         dayOfBirth = uint16(getBirthDay(playerId));
@@ -123,6 +125,7 @@ contract Privileged is AssetsView {
     
     function createBuyNowPlayerIdBatch(
         uint256 playerValue, 
+        uint8 maxPotential,
         uint256 seed, 
         uint8[4] memory nPlayersPerForwardPos,
         uint256 epochInDays,
@@ -140,21 +143,21 @@ contract Privileged is AssetsView {
         uint256[] memory internalPlayerIdArray
     )
     {
-        uint16 nPlayers;
-        for (uint8 pos = 0; pos < 4; pos++) { nPlayers += nPlayersPerForwardPos[pos]; }
-
-        playerIdArray = new uint256[](nPlayers);
-        skillsVecArray = new uint16[N_SKILLS][](nPlayers);
-        dayOfBirthArray = new uint16[](nPlayers);
-        birthTraitsArray = new uint8[4][](nPlayers);
-        internalPlayerIdArray = new uint256[](nPlayers);
-
         uint16 counter;
+        for (uint8 pos = 0; pos < 4; pos++) { counter += nPlayersPerForwardPos[pos]; }
+
+        playerIdArray = new uint256[](counter);
+        skillsVecArray = new uint16[N_SKILLS][](counter);
+        dayOfBirthArray = new uint16[](counter);
+        birthTraitsArray = new uint8[4][](counter);
+        internalPlayerIdArray = new uint256[](counter);
+
+        counter = 0;
         for (uint8 pos = 0; pos < 4; pos++) { 
             for (uint16 n = 0; n < nPlayersPerForwardPos[pos]; n++) {
                 seed = uint256(keccak256(abi.encode(seed, n)));
                 (playerIdArray[counter], skillsVecArray[counter], dayOfBirthArray[counter], birthTraitsArray[counter], internalPlayerIdArray[counter]) =
-                    createBuyNowPlayerId(playerValue, seed, pos, epochInDays, tz, countryIdxInTZ);
+                    createBuyNowPlayerId(playerValue, maxPotential, seed, pos, epochInDays, tz, countryIdxInTZ);
                 counter++;
             }
         }
