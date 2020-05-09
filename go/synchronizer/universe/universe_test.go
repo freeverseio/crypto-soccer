@@ -40,10 +40,10 @@ func TestUniverseAppendOrderDoNotChangeHash(t *testing.T) {
 	a.EncodedState = big.NewInt(2)
 	b := storage.Player{}
 	b.PlayerId = big.NewInt(5)
-	b.EncodedSkills = big.NewInt(1)
-	b.EncodedState = big.NewInt(2)
+	b.EncodedSkills = big.NewInt(3)
+	b.EncodedState = big.NewInt(4)
 
-	expected := "30ace33963fd17c4816fce834fd7f47ea5ffb8235734f58e2ed78422bb24436f"
+	expected := "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a"
 
 	t.Run("AB", func(t *testing.T) {
 		u := universe.Universe{}

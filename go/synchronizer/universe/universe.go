@@ -31,7 +31,7 @@ func (b *Universe) Append(player storage.Player) error {
 
 func (b *Universe) sort() {
 	sort.Slice(b.players[:], func(i, j int) bool {
-		return b.players[i].PlayerId.Cmp(b.players[j].PlayerId) == 1
+		return b.players[i].PlayerId.Cmp(b.players[j].PlayerId) == -1
 	})
 }
 
