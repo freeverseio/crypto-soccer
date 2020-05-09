@@ -14,6 +14,8 @@ contract Updates is UpdatesBase {
         _stakers = Stakers(addr);
     }
 
+    function setChallengeTime(uint256 newTime) public { _challengeTime = newTime; }
+
     function initUpdates() public {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.

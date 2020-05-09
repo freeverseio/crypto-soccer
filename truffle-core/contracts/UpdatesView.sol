@@ -80,6 +80,8 @@ contract UpdatesView is AssetsLib {
         return (current) ? _roots[tz][_newestRootsIdx[tz]][level] : _roots[tz][1-_newestRootsIdx[tz]][level];
     }
 
+    function getChallengeTime() public view returns (uint256) { return _challengeTime; }
+
     function getChallengeData(uint8 tz, bool current) public view returns(uint8, uint8, uint8) { 
         uint8 idx = current ? _newestRootsIdx[tz] : 1 - _newestRootsIdx[tz];
         return (idx, _challengeLevel[tz][idx], _levelVerifiableByBC[tz][idx]);
@@ -88,14 +90,15 @@ contract UpdatesView is AssetsLib {
     function getStatus(uint8 tz, bool current) public view returns(uint8, uint8, bool) { 
         uint8 idx = current ? _newestRootsIdx[tz] : 1 - _newestRootsIdx[tz];
         uint8 writtenLevel = _challengeLevel[tz][idx];
-        return getStatusPure(now, _lastUpdateTime[tz], writtenLevel);
+        return getStatusPure(now, _lastUpdateTime[tz], _challengeTime, writtenLevel);
     }
     
-    function getStatusPure(uint256 nowTime, uint256 lastUpdate, uint8 writtenLevel) public pure returns(uint8 finalLevel, uint8 nJumps, bool isSettled) {
-        uint256 numChallPeriods = (nowTime > lastUpdate) ? (nowTime - lastUpdate)/CHALLENGE_TIME : 0;
+    function getStatusPure(uint256 nowTime, uint256 lastUpdate, uint256 challengeTime, uint8 writtenLevel) public pure returns(uint8 finalLevel, uint8 nJumps, bool isSettled) {
+        if (challengeTime == 0) return (writtenLevel, 0, nowTime > lastUpdate);
+        uint256 numChallPeriods = (nowTime > lastUpdate) ? (nowTime - lastUpdate)/challengeTime : 0;
         finalLevel = (writtenLevel >= 2 * numChallPeriods) ? uint8(writtenLevel - 2 * numChallPeriods) : (writtenLevel % 2);
         nJumps = (writtenLevel - finalLevel) / 2;
-        isSettled = nowTime > lastUpdate + (nJumps + 1) * CHALLENGE_TIME;
+        isSettled = nowTime > lastUpdate + (nJumps + 1) * challengeTime;
     }
     
     // tz(n0)   : 11.30 = 0

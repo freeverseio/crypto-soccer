@@ -47,6 +47,7 @@ contract Storage is ProxyStorage, Constants{
     uint16 _levelsInOneChallenge;
     uint16 _leafsInLeague;
     uint16 _levelsInLastChallenge;
+    uint256 _challengeTime;
     mapping (uint256 => bytes32[2]) _actionsRoot;
     mapping (uint256 => bytes32[2]) _activeTeamsPerCountryRoot;
     mapping (uint256 => bytes32[2]) _orgMapRoot;

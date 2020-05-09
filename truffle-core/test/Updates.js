@@ -95,7 +95,8 @@ contract('Updates', (accounts) => {
         updates = depl[3];
         challenges = depl[4];
         // // done with delegate calls
-
+        await updates.setChallengeTime(60).should.be.fulfilled;
+        
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
         await updates.initUpdates().should.be.fulfilled;
@@ -468,7 +469,7 @@ contract('Updates', (accounts) => {
         isSet.should.be.equal(false);
         level = lev.toNumber();
         
-        challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
+        challengeTime = await updates.getChallengeTime().should.be.fulfilled;
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
 
@@ -519,7 +520,7 @@ contract('Updates', (accounts) => {
     //     await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
 
     //     secsBetweenVerses = await constants.get_SECS_BETWEEN_VERSES().should.be.fulfilled;
-    //     challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
+    //     challengeTime = await updates.getChallengeTime().should.be.fulfilled;
     //     nInterations = Math.floor(secsBetweenVerses.toNumber()/challengeTime.toNumber())
 
     //     // prepare for challenges to level 1 -> level 2
@@ -586,7 +587,7 @@ contract('Updates', (accounts) => {
     //     await updates.updateTZ(root = merkleUtils.merkleRoot(leafsA, nTotalLevels)).should.be.fulfilled;
 
     //     secsBetweenVerses = await constants.get_SECS_BETWEEN_VERSES().should.be.fulfilled;
-    //     challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
+    //     challengeTime = await updates.getChallengeTime().should.be.fulfilled;
     //     nInterations = Math.floor(secsBetweenVerses.toNumber()/challengeTime.toNumber())
 
     //     // prepare for challenges to level 1 -> level 2
@@ -632,56 +633,56 @@ contract('Updates', (accounts) => {
 
     
     it('true status of timezone challenge', async () =>  {
-        challengeTime = await constants.get_CHALLENGE_TIME().should.be.fulfilled;
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
+        challengeTime = await updates.getChallengeTime().should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
         isSet.should.be.equal(false);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, writtenLevel = 0).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
         isSet.should.be.equal(true);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, writtenLevel = 1).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 1).should.be.fulfilled;
         level.toNumber().should.be.equal(1);
         isSet.should.be.equal(true);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, writtenLevel = 1).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 1).should.be.fulfilled;
         level.toNumber().should.be.equal(1);
         isSet.should.be.equal(true);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 2).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 2).should.be.fulfilled;
         level.toNumber().should.be.equal(2);
         isSet.should.be.equal(false);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, writtenLevel = 2).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 2).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
         isSet.should.be.equal(false);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(2.5*challengeTime), lastUpdate = 0, writtenLevel = 2).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(2.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 2).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
         isSet.should.be.equal(true);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, writtenLevel = 2).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 2).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
         isSet.should.be.equal(true);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 3).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 3).should.be.fulfilled;
         level.toNumber().should.be.equal(3);
         isSet.should.be.equal(false);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, writtenLevel = 3).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 3).should.be.fulfilled;
         level.toNumber().should.be.equal(1);
         isSet.should.be.equal(false);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(2.5*challengeTime), lastUpdate = 0, writtenLevel = 3).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(2.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 3).should.be.fulfilled;
         level.toNumber().should.be.equal(1);
         isSet.should.be.equal(true);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, writtenLevel = 3).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 3).should.be.fulfilled;
         level.toNumber().should.be.equal(1);
         isSet.should.be.equal(true);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, writtenLevel = 4).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 4).should.be.fulfilled;
         level.toNumber().should.be.equal(4);
         isSet.should.be.equal(false);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, writtenLevel = 4).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(1.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 4).should.be.fulfilled;
         level.toNumber().should.be.equal(2);
         isSet.should.be.equal(false);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(2.5*challengeTime), lastUpdate = 0, writtenLevel = 4).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(2.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 4).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
         isSet.should.be.equal(false);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, writtenLevel = 4).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(3.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 4).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
         isSet.should.be.equal(true);
-        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(4.5*challengeTime), lastUpdate = 0, writtenLevel = 4).should.be.fulfilled;
+        var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(4.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 4).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
         isSet.should.be.equal(true);
     });
