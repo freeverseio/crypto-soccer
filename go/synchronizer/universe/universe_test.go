@@ -11,72 +11,55 @@ import (
 )
 
 func TestUniverseSize(t *testing.T) {
-	t.Parallel()
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
-
-	createMinimumUniverse(t, tx)
-	blockNumber := uint64(0)
 	player := storage.Player{}
-	player.TeamId = teamID
-	assert.NilError(t, player.Insert(tx, blockNumber))
 
-	u, err := universe.NewFromStorage(tx, int(timezoneIdx)+1)
-	assert.NilError(t, err)
+	u := universe.Universe{}
+
 	assert.Equal(t, u.Size(), 0)
+
+	assert.Error(t, u.Append(player), "encodedSkills is nil")
+	player.EncodedSkills = big.NewInt(656)
+	assert.Error(t, u.Append(player), "encodedState is nil")
+	player.EncodedState = big.NewInt(56)
+	assert.NilError(t, u.Append(player))
+
+	assert.Equal(t, u.Size(), 1)
+}
+
+func TestUniverseEmptyHash(t *testing.T) {
+	u := universe.Universe{}
 	hash, err := u.Hash()
 	assert.NilError(t, err)
 	assert.Equal(t, hex.EncodeToString(hash[:]), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-
-	u, err = universe.NewFromStorage(tx, int(timezoneIdx))
-	assert.NilError(t, err)
-	assert.Equal(t, u.Size(), 1)
-	hash, err = u.Hash()
-	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(hash[:]), "652c24123076f570589e89c4325f113f2c95730c14106b49865a4c4fd286d1cf")
 }
 
-func TestUniverseTimezoneEncodedSkills(t *testing.T) {
-	t.Parallel()
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+func TestUniverseAppendOrderDoNotChangeHash(t *testing.T) {
+	a := storage.Player{}
+	a.PlayerId = big.NewInt(4)
+	a.EncodedSkills = big.NewInt(1)
+	a.EncodedState = big.NewInt(2)
+	b := storage.Player{}
+	b.PlayerId = big.NewInt(5)
+	b.EncodedSkills = big.NewInt(1)
+	b.EncodedState = big.NewInt(2)
 
-	createMinimumUniverse(t, tx)
-	blockNumber := uint64(0)
-	player := storage.Player{}
-	player.PlayerId = big.NewInt(1)
-	player.EncodedSkills = big.NewInt(5)
-	player.TeamId = teamID
-	assert.NilError(t, player.Insert(tx, blockNumber))
+	expected := "30ace33963fd17c4816fce834fd7f47ea5ffb8235734f58e2ed78422bb24436f"
 
-	universe, err := universe.NewFromStorage(tx, int(timezoneIdx))
-	assert.NilError(t, err)
-	assert.Equal(t, universe.Size(), 1)
-	hash, err := universe.Hash()
-	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(hash[:]), "1bad926e42913bc44be162d2d426ad416a77342347fc036c758f297abbf58740")
-}
+	t.Run("AB", func(t *testing.T) {
+		u := universe.Universe{}
+		assert.NilError(t, u.Append(a))
+		assert.NilError(t, u.Append(b))
+		hash, err := u.Hash()
+		assert.NilError(t, err)
+		assert.Equal(t, hex.EncodeToString(hash[:]), expected)
+	})
 
-func TestUniverseTimezoneEncodedState(t *testing.T) {
-	t.Parallel()
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
-
-	createMinimumUniverse(t, tx)
-	blockNumber := uint64(0)
-	player := storage.Player{}
-	player.PlayerId = big.NewInt(1)
-	player.EncodedState = big.NewInt(5)
-	player.TeamId = teamID
-	assert.NilError(t, player.Insert(tx, blockNumber))
-
-	universe, err := universe.NewFromStorage(tx, int(timezoneIdx))
-	assert.NilError(t, err)
-	assert.Equal(t, universe.Size(), 1)
-	hash, err := universe.Hash()
-	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(hash[:]), "d87c2b8160619ad83073b161249233c293d5afb601476b97255eb7b9f28e465b")
+	t.Run("BA", func(t *testing.T) {
+		u := universe.Universe{}
+		assert.NilError(t, u.Append(b))
+		assert.NilError(t, u.Append(a))
+		hash, err := u.Hash()
+		assert.NilError(t, err)
+		assert.Equal(t, hex.EncodeToString(hash[:]), expected)
+	})
 }

@@ -32,7 +32,7 @@ func (b *OrgMap) Sort() {
 		if b.teams[i].RankingPoints == b.teams[j].RankingPoints {
 			teamID0, _ := new(big.Int).SetString(b.teams[i].TeamID, 10)
 			teamID1, _ := new(big.Int).SetString(b.teams[j].TeamID, 10)
-			return teamID0.Cmp(teamID1) > 1
+			return teamID0.Cmp(teamID1) == 1
 		}
 		return b.teams[i].RankingPoints > b.teams[j].RankingPoints
 	})

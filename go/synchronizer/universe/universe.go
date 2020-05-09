@@ -2,54 +2,47 @@ package universe
 
 import (
 	"crypto/sha256"
-	"database/sql"
 	"errors"
+	"sort"
+
+	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
-type Atom struct {
-	encodedSkills string
-	encodedState  string
-}
-
 type Universe struct {
-	atoms []Atom
+	players []storage.Player
 }
 
-func NewFromStorage(tx *sql.Tx, timezone int) (*Universe, error) {
-	var err error
-	rows, err := tx.Query(`SELECT 
-		encoded_skills, encoded_state
-		FROM players 
-		LEFT JOIN teams 
-		ON players.team_id = teams.team_id 
-		WHERE teams.timezone_idx = $1  
-		ORDER BY player_id DESC;`, timezone)
-	if err != nil {
-		return nil, err
+func (b *Universe) Append(player storage.Player) error {
+	if player.EncodedSkills == nil {
+		return errors.New("encodedSkills is nil")
 	}
-	defer rows.Close()
-
-	universe := Universe{}
-	for rows.Next() {
-		var atom Atom
-		if err = rows.Scan(
-			&atom.encodedSkills,
-			&atom.encodedState,
-		); err != nil {
-			return nil, err
-		}
-		universe.atoms = append(universe.atoms, atom)
+	if player.EncodedState == nil {
+		return errors.New("encodedState is nil")
+	}
+	if i := sort.Search(len(b.players), func(i int) bool {
+		return b.players[i].PlayerId.Cmp(player.PlayerId) == 0
+	}); i != len(b.players) {
+		return errors.New("player already in universe")
 	}
 
-	return &universe, nil
+	b.players = append(b.players, player)
+	return nil
 }
 
-func (b Universe) Hash() ([32]byte, error) {
+func (b *Universe) sort() {
+	sort.Slice(b.players[:], func(i, j int) bool {
+		return b.players[i].PlayerId.Cmp(b.players[j].PlayerId) == 1
+	})
+}
+
+func (b *Universe) Hash() ([32]byte, error) {
+	b.sort()
+
 	var result [32]byte
 	h := sha256.New()
-	for _, atom := range b.atoms {
-		h.Write([]byte(atom.encodedSkills))
-		h.Write([]byte(atom.encodedState))
+	for _, player := range b.players {
+		h.Write(player.EncodedSkills.Bytes())
+		h.Write(player.EncodedState.Bytes())
 	}
 	hash := h.Sum(nil)
 	if len(hash) != 32 {
@@ -60,5 +53,5 @@ func (b Universe) Hash() ([32]byte, error) {
 }
 
 func (b Universe) Size() int {
-	return len(b.atoms)
+	return len(b.players)
 }
