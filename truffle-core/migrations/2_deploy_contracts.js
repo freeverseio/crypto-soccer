@@ -105,7 +105,7 @@ module.exports = function (deployer, network, accounts) {
       ["MERKLE", merkle.address],
       ["CONSTANTSGETTERS", constantsGetters.address],
       ["PROXY", proxy.address],
-      ["CHALLENGES", challenges.address]
+      ["CHALLENGES", challenges.address],
       ["MARKETCRYPTO", marketCrypto.address]
     ]
 
