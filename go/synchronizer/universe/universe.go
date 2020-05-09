@@ -12,20 +12,22 @@ type Universe struct {
 	players []storage.Player
 }
 
-func (b *Universe) Append(player storage.Player) error {
-	if player.EncodedSkills == nil {
-		return errors.New("encodedSkills is nil")
-	}
-	if player.EncodedState == nil {
-		return errors.New("encodedState is nil")
-	}
-	if i := sort.Search(len(b.players), func(i int) bool {
-		return b.players[i].PlayerId.Cmp(player.PlayerId) == 0
-	}); i != len(b.players) {
-		return errors.New("player already in universe")
-	}
+func (b *Universe) Append(players ...storage.Player) error {
+	for _, player := range players {
+		if player.EncodedSkills == nil {
+			return errors.New("encodedSkills is nil")
+		}
+		if player.EncodedState == nil {
+			return errors.New("encodedState is nil")
+		}
+		if i := sort.Search(len(b.players), func(i int) bool {
+			return b.players[i].PlayerId.Cmp(player.PlayerId) == 0
+		}); i != len(b.players) {
+			return errors.New("player already in universe")
+		}
 
-	b.players = append(b.players, player)
+		b.players = append(b.players, player)
+	}
 	return nil
 }
 
