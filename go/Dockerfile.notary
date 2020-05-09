@@ -16,6 +16,7 @@ FROM alpine AS final
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /user/group /user/passwd /etc/
 COPY --from=builder /app /app
+COPY ./names/sql/names.db .
 # Perform any further action as an unprivileged user.
 USER nobody:nobody
 # Run the compiled binary.

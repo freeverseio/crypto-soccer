@@ -17,6 +17,7 @@ const (
 	AuctionEnded              AuctionState = "ended"
 	AuctionCancelled          AuctionState = "cancelled"
 	AuctionFailed             AuctionState = "failed"
+	AuctionValidation         AuctionState = "validation"
 )
 
 type Auction struct {
@@ -112,6 +113,15 @@ func (b Auction) Insert(tx *sql.Tx) error {
 
 func (b Auction) Update(tx *sql.Tx) error {
 	log.Debugf("[DBMS] + update Auction %v", b)
-	_, err := tx.Exec("UPDATE auctions SET state=$1, state_extra=$2 WHERE id=$3;", b.State, b.StateExtra, b.ID)
+	_, err := tx.Exec(`UPDATE auctions SET 
+		state=$1, 
+		state_extra=$2,
+		payment_url=$3
+		WHERE id=$4;`,
+		b.State,
+		b.StateExtra,
+		b.PaymentURL,
+		b.ID,
+	)
 	return err
 }

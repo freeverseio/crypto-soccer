@@ -2,10 +2,6 @@
 package gql
 
 const Schema = ` 
-	type Query {
-		ping: Boolean!,
-	}
-
 	input CreateAuctionInput {
   		signature: String!
   		playerId: String!
@@ -28,9 +24,42 @@ const Schema = `
   		teamId: String!
 	}
 
+	input GetWorldPlayersInput {
+		signature: String!
+		teamId: ID!
+	}
+
+	input SubmitPlayStorePlayerPurchaseInput {
+		signature: String!
+		packageName: String!
+		productId: ID!
+		purchaseToken: String!
+		playerId: ID!
+		teamId: ID!
+	}
+
+	type WorldPlayer {
+		playerId: ID!
+		name: String!
+		dayOfBirth: Int! 
+    	preferredPosition: String!
+		defence: Int!
+    	speed: Int!
+    	pass: Int!
+    	shoot: Int!
+    	endurance: Int!
+    	potential: Int! 
+  		validUntil: String!
+	}
+
+	type Query {
+		getWorldPlayers(input: GetWorldPlayersInput!): [WorldPlayer]! 
+	}
+
 	type Mutation {
         createAuction(input: CreateAuctionInput!): ID!
         cancelAuction(input: CancelAuctionInput!): ID!
-        createBid(input: CreateBidInput!): ID!
+		createBid(input: CreateBidInput!): ID!
+		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 	}
 `

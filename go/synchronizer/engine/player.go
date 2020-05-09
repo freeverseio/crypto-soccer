@@ -28,26 +28,24 @@ func NewPlayerFromStorage(stoPlayer storage.Player) *Player {
 	return &player
 }
 
-func (b *Player) SetSkills(contracts contracts.Contracts, skills *big.Int) {
+func (b *Player) SetPlayerId(playerId *big.Int) {
+	b.PlayerId = playerId
+}
+
+func (b *Player) SetSkills(c contracts.Contracts, skills *big.Int) {
 	b.EncodedSkills = new(big.Int).Set(skills)
 	opts := &bind.CallOpts{}
 
-	// var err error
-	SK_SHO := uint8(0)
-	SK_SPE := uint8(1)
-	SK_PAS := uint8(2)
-	SK_DEF := uint8(3)
-	SK_END := uint8(4)
-	decodedSkills, err := contracts.Utils.FullDecodeSkills(opts, b.EncodedSkills)
+	decodedSkills, err := c.Utils.FullDecodeSkills(opts, b.EncodedSkills)
 	if err != nil {
 		panic("TODO: return err" + err.Error())
 	}
-	b.Potential = uint64(decodedSkills.BirthTraits[0])
-	b.Defence = uint64(decodedSkills.Skills[SK_DEF])
-	b.Speed = uint64(decodedSkills.Skills[SK_SPE])
-	b.Pass = uint64(decodedSkills.Skills[SK_PAS])
-	b.Shoot = uint64(decodedSkills.Skills[SK_SHO])
-	b.Endurance = uint64(decodedSkills.Skills[SK_END])
+	b.Potential = uint64(decodedSkills.BirthTraits[contracts.BirthTraitsPotentialIdx])
+	b.Defence = uint64(decodedSkills.Skills[contracts.SkillsDefenceIdx])
+	b.Speed = uint64(decodedSkills.Skills[contracts.SkillsSpeedIdx])
+	b.Pass = uint64(decodedSkills.Skills[contracts.SkillsPassIdx])
+	b.Shoot = uint64(decodedSkills.Skills[contracts.SkillsShootIdx])
+	b.Endurance = uint64(decodedSkills.Skills[contracts.SkillsEnduranceIdx])
 	b.RedCard = decodedSkills.Aligned1stSubst1stRedCardLastGame[2]
 	b.InjuryMatchesLeft = decodedSkills.GenerationGamesNonStopInjuryWeeks[2]
 	b.Tiredness = int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1])

@@ -1,14 +1,14 @@
-Events[0]: {Minute:2 Type:0 Team:1 ManagesToShoot:true IsGoal:true PrimaryPlayer:12 SecondaryPlayer:11}
-Events[1]: {Minute:5 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:12 SecondaryPlayer:0}
-Events[2]: {Minute:8 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:12 SecondaryPlayer:0}
-Events[3]: {Minute:15 Type:0 Team:1 ManagesToShoot:true IsGoal:true PrimaryPlayer:10 SecondaryPlayer:9}
-Events[4]: {Minute:18 Type:0 Team:1 ManagesToShoot:true IsGoal:true PrimaryPlayer:3 SecondaryPlayer:10}
-Events[5]: {Minute:21 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:10 SecondaryPlayer:0}
-Events[6]: {Minute:24 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:11 SecondaryPlayer:0}
-Events[7]: {Minute:31 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:12 SecondaryPlayer:0}
-Events[8]: {Minute:34 Type:0 Team:1 ManagesToShoot:true IsGoal:true PrimaryPlayer:8 SecondaryPlayer:8}
-Events[9]: {Minute:37 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:10 SecondaryPlayer:0}
-Events[10]: {Minute:43 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:8 SecondaryPlayer:0}
-Events[11]: {Minute:44 Type:0 Team:1 ManagesToShoot:true IsGoal:true PrimaryPlayer:6 SecondaryPlayer:11}
-Events[12]: {Minute:34 Type:2 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:10 SecondaryPlayer:-1}
-Events[13]: {Minute:4 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:10 SecondaryPlayer:-1}
+Events[0]: {Minute:2 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:12 SecondaryPlayer:0 PrimaryPlayerID:21342314523 SecondaryPlayerID:21342314523}
+Events[1]: {Minute:5 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:7 SecondaryPlayer:-1 PrimaryPlayerID:21342314523 SecondaryPlayerID:}
+Events[2]: {Minute:8 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:6 SecondaryPlayer:-1 PrimaryPlayerID:21342314523 SecondaryPlayerID:}
+Events[3]: {Minute:15 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:5 SecondaryPlayer:-1 PrimaryPlayerID:21342314523 SecondaryPlayerID:}
+Events[4]: {Minute:18 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:3 SecondaryPlayer:-1 PrimaryPlayerID:21342314523 SecondaryPlayerID:}
+Events[5]: {Minute:21 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:10 SecondaryPlayer:0 PrimaryPlayerID:21342314523 SecondaryPlayerID:21342314523}
+Events[6]: {Minute:24 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:10 SecondaryPlayer:-1 PrimaryPlayerID:21342314523 SecondaryPlayerID:}
+Events[7]: {Minute:31 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:12 SecondaryPlayer:0 PrimaryPlayerID:21342314523 SecondaryPlayerID:21342314523}
+Events[8]: {Minute:34 Type:0 Team:1 ManagesToShoot:true IsGoal:true PrimaryPlayer:8 SecondaryPlayer:8 PrimaryPlayerID:21342314523 SecondaryPlayerID:21342314523}
+Events[9]: {Minute:37 Type:0 Team:1 ManagesToShoot:true IsGoal:false PrimaryPlayer:10 SecondaryPlayer:0 PrimaryPlayerID:21342314523 SecondaryPlayerID:21342314523}
+Events[10]: {Minute:43 Type:0 Team:0 ManagesToShoot:true IsGoal:true PrimaryPlayer:8 SecondaryPlayer:12 PrimaryPlayerID:21342314523 SecondaryPlayerID:21342314523}
+Events[11]: {Minute:44 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1 PrimaryPlayerID:21342314523 SecondaryPlayerID:}
+Events[12]: {Minute:34 Type:2 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:10 SecondaryPlayer:-1 PrimaryPlayerID:21342314523 SecondaryPlayerID:}
+Events[13]: {Minute:4 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:10 SecondaryPlayer:-1 PrimaryPlayerID:21342314523 SecondaryPlayerID:}

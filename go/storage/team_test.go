@@ -8,6 +8,11 @@ import (
 	"gotest.tools/assert"
 )
 
+func TestTeamNewIsBot(t *testing.T) {
+	team := storage.NewTeam()
+	assert.Assert(t, team.IsBot())
+}
+
 func TestTeamCount(t *testing.T) {
 	tx, err := s.Begin()
 	if err != nil {

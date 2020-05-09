@@ -8,10 +8,9 @@ import (
 	"net/http"
 
 	"fmt"
-)
 
-const sandboxURL = "https://api-sandbox.truust.io/1.0"
-const sandboxPublicKey = "pk_stage_ZkNpNElWeEg="
+	log "github.com/sirupsen/logrus"
+)
 
 type IMarketPay interface {
 	CreateOrder(name string, value string) (*Order, error)
@@ -20,21 +19,34 @@ type IMarketPay interface {
 }
 
 type MarketPay struct {
-	endpoint  string
-	publicKey string
+	endpoint    string
+	publicKey   string
+	bearerToken string
 }
 
-func New() *MarketPay {
-	return &MarketPay{
-		sandboxURL,
-		sandboxPublicKey,
-	}
+func New(pk string) *MarketPay {
+	market := MarketPay{}
+	market.endpoint = "https://api.truust.io/1.0"
+	market.publicKey = "pk_production_Q2F2VlMxSEk="
+	market.bearerToken = "Bearer " + pk
+	return &market
+}
+
+func NewSandbox() *MarketPay {
+	market := MarketPay{}
+	market.endpoint = "https://api-sandbox.truust.io/1.0"
+	market.publicKey = "pk_stage_ZkNpNElWeEg="
+	market.bearerToken = "Bearer sk_stage_NCzkqJwQTNVStxDxVxmSflVv"
+
+	return &market
 }
 
 func (b *MarketPay) CreateOrder(
 	name string,
 	value string,
 ) (*Order, error) {
+	log.Infof("[Marketpay] Create order name %v value %v", name, value)
+
 	url := b.endpoint + "/express"
 	method := "POST"
 
@@ -43,10 +55,10 @@ func (b *MarketPay) CreateOrder(
 	_ = writer.WriteField("name", name)
 	_ = writer.WriteField("amount", value)
 	_ = writer.WriteField("source", b.publicKey)
-	_ = writer.WriteField("trustee_confirmed_url", "https://freeverseio.github.io/buyer/success")
-	_ = writer.WriteField("trustee_denied_url", "https://freeverseio.github.io/buyer/failure")
-	_ = writer.WriteField("settlor_confirmed_url", "https://freeverseio.github.io/seller/success")
-	_ = writer.WriteField("settlor_denied_url", "https://freeverseio.github.io/seller/failure")
+	_ = writer.WriteField("trustee_confirmed_url", "https://www.goalrev.com/purchasesuccess")
+	_ = writer.WriteField("trustee_denied_url", "https://www.goalrev.com/purchasefailure")
+	_ = writer.WriteField("settlor_confirmed_url", "https://www.goalrev.com/sellsuccess")
+	_ = writer.WriteField("settlor_denied_url", "https://www.goalrev.com/sellfailure")
 	err := writer.Close()
 	if err != nil {
 		fmt.Println(err)
@@ -59,12 +71,11 @@ func (b *MarketPay) CreateOrder(
 	}
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
-	// req.Header.Add("Accept", "application/json")
-	// req.Header.Add("Authorization", b.bearerToken)
-
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", b.bearerToken)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
@@ -76,17 +87,18 @@ func (b *MarketPay) CreateOrder(
 		return nil, err
 	}
 
-	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
-	// fmt.Println(string(body))
 	order := &Order{}
 	err = json.Unmarshal(body, order)
 	if err != nil {
 		return nil, err
 	}
+
+	// log.Infof("[marketpayV1] order %+v created", order)
 	return order, nil
 }
 
 func (b *MarketPay) GetOrder(hash string) (*Order, error) {
+	log.Infof("Getting order %v", hash)
 	url := b.endpoint + "/express/hash/" + hash
 	method := "GET"
 
@@ -102,8 +114,8 @@ func (b *MarketPay) GetOrder(hash string) (*Order, error) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	// req.Header.Add("Accept", "application/json")
-	// req.Header.Add("Authorization", b.bearerToken)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", b.bearerToken)
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -113,11 +125,11 @@ func (b *MarketPay) GetOrder(hash string) (*Order, error) {
 	if err != nil {
 		return nil, err
 	}
-	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
-	// fmt.Println(string(body))
+
 	order := &Order{}
 	err = json.Unmarshal(body, order)
 	if err != nil {
+		log.Error(order)
 		return nil, err
 	}
 	return order, nil

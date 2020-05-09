@@ -4,16 +4,31 @@ services:
     image: freeverseio/parity:v2.7.2-posdao-stable
     volumes:
       - ethereum-data:/home/parity/.local/share/io.parity.ethereum
-  universe.db:
-    build: 
-      context: ../../universe.db/
+  ipfs.node:
+    image: freeverseio/go-ipfs:v0.5.0
     restart: always
-    volumes:
-      - universe.db-data:/var/lib/postgresql/data
+    environment:
+      - IPFS_PATH=/data
+      # - IPFS_FD_MAX=4096
+      - IPFS_PROFILE=server
+    # volumes:
+    #   - ipfs.node-data:/data
+  ipfs.cluster:
+    image: ipfs/ipfs-cluster:v0.12.1
+    restart: always
+    entrypoint: ["ipfs-cluster-follow"]
+    environment: 
+      - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns/ipfs.node/tcp/5001
+    command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
+    depends_on: 
+      - ipfs.node
+  universe.db:
+    image: "freeverseio/universe.db:${TAG}"
+    restart: always
+    # volumes:
+    #   - universe.db-data:/var/lib/postgresql/data
   synchronizer:
-    build: 
-      context: ../../go/
-      dockerfile: Dockerfile.synchronizer
+    image: "freeverseio/synchronizer:${TAG}"
     restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
@@ -35,25 +50,16 @@ services:
     depends_on:
       - universe.db
       - ethereum
-  ipfs.node:
-    image: ipfs/go-ipfs:v0.4.23
-    environment:
-      - IPFS_PROFILE=server
-      - IPFS_PATH=/data
+      - ipfs.node
+      - ipfs.cluster
+  universe.api:
+    image: "freeverseio/universe.api:${TAG}"
     ports:
-      - "40010:4001"
-    volumes:
-      - ipfs.node-data:/data
-  # universe.api:
-  #   build: 
-  #     context: ../../universe.api/
-  #   ports:
-  #     - "4000:4000"
-  #   depends_on:
-  #     - ethereum
-  #   command: >
-  #     -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
-  #     --ethereum "http://ethereum:8545"
+      - "4000:4000"
+    depends_on:
+      - ethereum
+    command: >
+      -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
 
 volumes:
   ethereum-data:

@@ -7,13 +7,15 @@ import (
 )
 
 type MatchEvent struct {
-	Minute          int16 `json:"minute"`
-	Type            int16 `json:"type"`
-	Team            int16 `json:"team"`
-	ManagesToShoot  bool  `json:"managestoshoot"`
-	IsGoal          bool  `json:"isgoal"`
-	PrimaryPlayer   int16 `json:"primaryplayer"`
-	SecondaryPlayer int16 `json:"secondaryplayer"`
+	Minute            int16 `json:"minute"`
+	Type              int16 `json:"type"`
+	Team              int16 `json:"team"`
+	ManagesToShoot    bool  `json:"managestoshoot"`
+	IsGoal            bool  `json:"isgoal"`
+	PrimaryPlayer     int16 `json:"primaryplayer"`
+	SecondaryPlayer   int16 `json:"secondaryplayer"`
+	PrimaryPlayerID   string
+	SecondaryPlayerID string
 }
 
 // eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)

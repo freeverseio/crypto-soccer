@@ -1,13 +1,15 @@
 package v1_test
 
 import (
+	"fmt"
 	"testing"
 
 	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"gotest.tools/assert"
 )
 
 func TestCreateOrder(t *testing.T) {
-	mp := v1.New()
+	mp := v1.NewSandbox()
 	name := "pippo"
 	value := "134.10"
 	order, err := mp.CreateOrder(name, value)
@@ -22,8 +24,20 @@ func TestCreateOrder(t *testing.T) {
 	}
 }
 
+func TestCreateOrder2(t *testing.T) {
+	mp := v1.NewSandbox()
+	auctionPrice := 4101
+	extraPrice := 0
+	price := fmt.Sprintf("%.2f", float64(auctionPrice+extraPrice)/100.0)
+	name := "Freeverse Player transaction"
+	order, err := mp.CreateOrder(name, price)
+	assert.NilError(t, err)
+	assert.Equal(t, order.Amount, "41.01")
+	assert.Equal(t, order.Status, "DRAFT")
+}
+
 func TestGetOrder(t *testing.T) {
-	mp := v1.New()
+	mp := v1.NewSandbox()
 	name := "pippo"
 	value := "134.10"
 	order, err := mp.CreateOrder(name, value)
@@ -40,7 +54,7 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestIsPaid(t *testing.T) {
-	mp := v1.New()
+	mp := v1.NewSandbox()
 	name := "pippo"
 	value := "134.10"
 	order, err := mp.CreateOrder(name, value)

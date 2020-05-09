@@ -118,7 +118,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case assets.AssetsAssetsInit:
-		log.Infof("[processor] Dispatching AssetsInit event from account %v", v.CreatorAddr)
+		log.Infof("[processor] Dispatching AssetsInit event from account %v", v.CreatorAddr.Hex())
 		return p.assetsInitProcessor.Process(tx, v)
 	case assets.AssetsDivisionCreation:
 		log.Infof("[processor] Dispatching LeaguesDivisionCreation event Timezone %v, CountryIdxInTZ: %v, DivisionIdxInCountry %v", v.Timezone, v.CountryIdxInTZ, v.DivisionIdxInCountry)
@@ -127,7 +127,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To.Hex())
 		return p.teamTransferProcessor.Process(tx, v)
 	case market.MarketPlayerStateChange:
-		log.Infof("[processor] dispatching MarketPlayerStateChange event PlayerID %v", v.PlayerId)
+		log.Infof("[processor] dispatching MarketPlayerStateChange event PlayerID %v state %v", v.PlayerId, v.State)
 		return PlayerStateChangeProcess(tx, p.contracts, v)
 	case updates.UpdatesActionsSubmission:
 		log.Infof("[processor] Dispatching UpdatesActionsSubmission event verse: %v, TZ: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.Cid)

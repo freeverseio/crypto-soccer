@@ -61,7 +61,6 @@ contract Updates is UpdatesBase {
         _setCurrentVerseSeed(blockhash(block.number-1));
         emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
     }
-    
 
     // accepts an update about the root of the current state of a timezone. 
     // in order to accept it, either:

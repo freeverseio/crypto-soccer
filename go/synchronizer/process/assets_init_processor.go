@@ -2,7 +2,6 @@ package process
 
 import (
 	"database/sql"
-	"encoding/hex"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -13,8 +12,9 @@ import (
 )
 
 type AssetsInitProcessor struct {
-	contracts   *contracts.Contracts
-	ACADEMYTEAM *big.Int
+	contracts     *contracts.Contracts
+	ACADEMYTEAM   *big.Int
+	InTransitTeam string
 }
 
 func NewAssetsInitProcessor(
@@ -24,14 +24,16 @@ func NewAssetsInitProcessor(
 	if err != nil {
 		return nil, err
 	}
+	inTransitTeam := "2" // TODO: get from blockchain
 	return &AssetsInitProcessor{
 		contracts,
 		ACADEMYTEAM,
+		inTransitTeam,
 	}, nil
 }
 
 func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit) error {
-	log.Infof("AssetsInit: creatorAddr: %v", event.CreatorAddr)
+	log.Infof("AssetsInit: creatorAddr: %v", event.CreatorAddr.Hex())
 	timezone := storage.Timezone{uint8(0)}
 	country := storage.Country{timezone.TimezoneIdx, uint32(0)}
 	league := storage.League{timezone.TimezoneIdx, country.CountryIdx, uint32(0)}
@@ -45,6 +47,8 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	if err := league.Insert(tx); err != nil {
 		return err
 	}
+
+	// create accademy team
 	team := storage.NewTeam()
 	team.TeamID = b.ACADEMYTEAM.String()
 	team.TimezoneIdx = timezone.TimezoneIdx
@@ -53,7 +57,21 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	team.Owner = event.CreatorAddr.String()
 	team.LeagueIdx = league.LeagueIdx
 	team.TeamIdxInLeague = uint32(0)
-	log.Infof("Creating Academy with owner 0x%v", hex.EncodeToString(event.CreatorAddr[:]))
+	log.Infof("Creating Academy Team with owner %v", team.Owner)
+	if err := team.Insert(tx); err != nil {
+		return err
+	}
+
+	// create in_transit team
+	team = storage.NewTeam()
+	team.TeamID = b.InTransitTeam
+	team.TimezoneIdx = timezone.TimezoneIdx
+	team.CountryIdx = country.CountryIdx
+	team.Name = "InTransit"
+	team.Owner = "0x0000000000000000000000000000000000000000"
+	team.LeagueIdx = league.LeagueIdx
+	team.TeamIdxInLeague = uint32(0)
+	log.Infof("Creating InTransit Team with owner %v", team.Owner)
 	if err := team.Insert(tx); err != nil {
 		return err
 	}

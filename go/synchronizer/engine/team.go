@@ -45,6 +45,14 @@ func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber u
 	return nil
 }
 
+func (b Team) PlayerIDs() [25]*big.Int {
+	var ids [25]*big.Int
+	for i := range ids {
+		ids[i] = b.Players[i].PlayerId
+	}
+	return ids
+}
+
 func (b Team) Skills() [25]*big.Int {
 	var skills [25]*big.Int
 	for i := range skills {

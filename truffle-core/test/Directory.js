@@ -33,9 +33,9 @@ contract('Directory', (accounts) => {
         result = await directory.getAddress(toBytes32("Baby2_Weird")).should.be.fulfilled;
         result.should.be.equal(BOB);
         var {0: noms, 1: addr} = await directory.getDirectory().should.be.fulfilled;
-        debug.compareArrays(addr, addresses, toNum = false, verbose = false);
+        debug.compareArrays(addr, addresses, toNum = false);
         for (n = 0; n < noms.length; n++) noms[n] = fromBytes32(noms[n]);        
-        debug.compareArrays(noms, names, toNum = false, verbose = false);
+        debug.compareArrays(noms, names, toNum = false);
         
         // permissions:
         await directory.deploy(names32, addresses).should.be.fulfilled;

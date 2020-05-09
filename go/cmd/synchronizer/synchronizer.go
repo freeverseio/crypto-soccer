@@ -95,6 +95,7 @@ func main() {
 		}
 		defer client.Close()
 
+		privilegedContractAddress := ""
 		contracts, err := contracts.New(
 			client,
 			*leaguesContractAddress,
@@ -109,6 +110,7 @@ func main() {
 			*shopContractAddress,
 			*trainingpointsContractAddress,
 			*constantsgettersContractAddress,
+			privilegedContractAddress,
 		)
 		if err != nil {
 			return err
@@ -140,8 +142,9 @@ func main() {
 			}
 			processedBlocks, err := processor.Process(tx, uint64(*delta))
 			if err != nil {
+				log.Error(err)
 				tx.Rollback()
-				return err
+				continue
 			}
 			if err := tx.Commit(); err != nil {
 				return err

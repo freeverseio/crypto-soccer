@@ -38,7 +38,10 @@ contract EncodingSkillsGetters {
     }
 
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
-        if (getIsSpecial(encodedSkills)) return encodedSkills;
+        return (getIsSpecial(encodedSkills)) ? encodedSkills : getInternalPlayerId(encodedSkills);
+    }
+
+    function getInternalPlayerId(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 96 & 8796093022207); // 2**43 - 1 = 8796093022207
     }
 
@@ -88,14 +91,6 @@ contract EncodingSkillsGetters {
      
     function addIsSpecial(uint256 encodedSkills) public pure returns (uint256) {
         return (encodedSkills | (uint256(1) << 255));
-    }
-
-    function setTargetTeamId(uint256 encodedSkills, uint256 targetTeamId) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(2**43-1) << 180)) | (targetTeamId << 180);
-    }
-
-    function getTargetTeamId(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills >> 180) & (2**43-1);
     }
 
     function getGeneration(uint256 encodedSkills) public pure returns (uint256) {

@@ -18,12 +18,48 @@ contract Market is MarketView {
     event PlayerFreezeCrypto(uint256 playerId, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
+    event PlayerRetired(uint256 playerId, uint256 teamId);
+    event ProposedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
+    event UpdatedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
 
+    function setCryptoMarketAddress(address addr) external {
+        _cryptoMktAddr = addr;
+    }
+    
+    function setIsBuyNowAllowedByOwner(uint256 teamId, bool isAllowed) external {
+        require(msg.sender == getOwnerTeam(teamId), "only owner of team can change isBuyNowAlloed");
+        _teamIdToIsBuyNowForbidden[teamId] = !isAllowed;
+    }
+    
     function setIsPlayerFrozenCrypto(uint256 playerId, bool isFrozen) public {
         _playerIdToIsFrozenCrypto[playerId] = isFrozen;
         emit PlayerFreezeCrypto(playerId, isFrozen);
     }
 
+    function proposeNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime) public {
+        _maxSumSkillsBuyNowPlayerProposed = newSumSkills;
+        _maxSumSkillsBuyNowPlayerMinLapseProposed = newLapseTime;
+        _maxSumSkillsBuyNowPlayerLastUpdate = now;
+        emit ProposedNewMaxSumSkillsBuyNowPlayer(newSumSkills, newLapseTime);
+    }
+
+    // maxSumSkills can always be lowered, regardless of lapse period 
+    function lowerNewMaxSumSkillsBuyNowPlayer(uint256 newMaxSum) public {
+        require (newMaxSum < _maxSumSkillsBuyNowPlayer, "newMaxSum is not lower than previous");
+        _maxSumSkillsBuyNowPlayer = newMaxSum;
+        emit UpdatedNewMaxSumSkillsBuyNowPlayer(newMaxSum, _maxSumSkillsBuyNowPlayerMinLapse);
+    }
+    
+    // maxSumSkills can only grow if enough time has passed 
+    function updateNewMaxSumSkillsBuyNowPlayer() public {
+        require (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapse),
+            "not enough time passed to update new maxSumSkills"
+        );
+        _maxSumSkillsBuyNowPlayer = _maxSumSkillsBuyNowPlayerProposed;
+        _maxSumSkillsBuyNowPlayerMinLapse = _maxSumSkillsBuyNowPlayerMinLapseProposed;
+        emit UpdatedNewMaxSumSkillsBuyNowPlayer(_maxSumSkillsBuyNowPlayer, _maxSumSkillsBuyNowPlayerMinLapse);
+    }
+    
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
@@ -57,42 +93,39 @@ contract Market is MarketView {
         bytes32[2] memory sig,
         uint8 sigV
     ) public {
-        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
+        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreezePlayer requirements not met");
         // // Freeze player
         _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
-    function transferPromoPlayer(
+    function transferBuyNowPlayer(
         uint256 playerId,
-        uint256 validUntil,
-        bytes32[2] memory sigSel,
-        bytes32[2] memory sigBuy,
-        uint8 sigVSel,
-        uint8 sigVBuy
+        uint256 targetTeamId
      ) public {
-        require(validUntil > now, "validUntil is in the past");
-        require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-        uint256 playerIdWithoutTargetTeam = setTargetTeamId(playerId, 0);
-        require(!isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
-        uint256 targetTeamId = getTargetTeamId(playerId);
-        // require that team does not have any constraint from friendlies
+        // isAcademy checks that player isSpecial, and not written.
+        require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
+        require(getSumOfSkills(playerId) < _maxSumSkillsBuyNowPlayer, "buy now player has sum of skills larger than allowed");
+        require(!isBotTeam(targetTeamId), "cannot transfer to bot teams");
+        require(!_teamIdToIsBuyNowForbidden[targetTeamId], "user has explicitly forbidden buyNow");
+        require(targetTeamId != ACADEMY_TEAM, "targetTeam of buyNow player cannot be Academy Team");
+
+        // note that wasTeamCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
-        require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
-        // testing about the target team is already done in _assets.transferPlayer
-        require(teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
-        require(!isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
-                
-        bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
-        require(getOwnerTeam(targetTeamId) == 
-                    recoverAddr(signedMsg, sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
-        require(_academyAddr == 
-                    recoverAddr(signedMsg, sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
-         
-        transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
+        require(!(isConstrained && (nRemain == 0)), "trying to accept a buyNow player, but team is busy in constrained friendlies");
+        transferPlayer(playerId, targetTeamId);
         decreaseMaxAllowedAcquisitions(targetTeamId);
     }
-
+    
+    function transferPlayerFromCryptoMkt(
+        uint256 playerId,
+        uint256 targetTeamId
+     ) external {
+        require(msg.sender == _cryptoMktAddr, "only authorized cryptoMarket contract can transfer players");
+        transferPlayer(playerId, targetTeamId);
+        decreaseMaxAllowedAcquisitions(targetTeamId);
+    }
+    
     function completePlayerAuction(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -128,7 +161,7 @@ contract Market is MarketView {
         bytes32[2] memory sig,
         uint8 sigV
     ) public {
-        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
+        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezeTeam requirements not met");
         // // Freeze player
         _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
@@ -159,46 +192,83 @@ contract Market is MarketView {
         _teamIdToAuctionData[teamId] = 1;
         emit TeamFreeze(teamId, 1, false);
     }
+    
+    function dismissPlayer(
+        uint256 validUntil,
+        uint256 playerId,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint8 sigV,
+        bool returnToAcademy
+    ) public {
+        uint256 state = getPlayerState(playerId);
+        uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
+        address owner = getOwnerTeam(teamIdOrigin);
+        bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId, returnToAcademy)));
+        require (
+            // check validUntil has not expired
+            (now < validUntil) &&
+            // check player is not already frozen
+            (!isPlayerFrozenInAnyMarket(playerId)) &&  
+            // check that the team it belongs to not already frozen
+            !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
+            // check asset is owned by legit address
+            (owner != address(0)) && 
+            // check signatures are valid by requiring that they own the asset:
+            (owner == recoverAddr(msgHash, sigV, sigR, sigS)) &&    
+            // check that auction time is less that the required 32 bit
+            (validUntil < now + MAX_VALID_UNTIL),
+            "conditions to dismiss player are not met"
+        );  
+        if (returnToAcademy) { 
+            transferPlayer(playerId, ACADEMY_TEAM); 
+        } else {
+            uint256 shirtOrigin = getCurrentShirtNum(state);
+            teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+            emit PlayerRetired(playerId, teamIdOrigin);
+        }
+    }
 
-    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+    function transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
         // warning: check of ownership of players and teams should be done before calling this function
-        // TODO: checking if they are bots should be moved outside this function
-        require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
-        require(teamExists(teamIdTarget), "unexistent target team");
+        // so in this function, both teams are asumed to exist, be different, and belong to the rightful (nonBot) owners
+
         // part related to origin team:
         uint256 state = getPlayerState(playerId);
-        uint256 teamIdOrigin = getCurrentTeamId(state);
+        uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
+    
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
-        
-        // part related to both teams:
-        require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
-        require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
 
         // part related to target team:
-        uint8 shirtTarget = getFreeShirt(teamIdTarget);
-        if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
-            state = setLastSaleBlock(
-                        setCurrentShirtNum(
-                            setCurrentTeamId(
-                                state, teamIdTarget
-                            ), shirtTarget
-                        ), block.number
-                    );
-            teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+        // - determine new state of player
+        // - if not Academy, write playerId in target team's shirt
+        if (teamIdTarget == ACADEMY_TEAM) {
+            state = setCurrentTeamId(state, ACADEMY_TEAM);
         } else {
-            _playerInTransitToTeam[playerId] = teamIdTarget;
-            _nPlayersInTransitInTeam[teamIdTarget] += 1;
-            state = setLastSaleBlock(
-                        setCurrentTeamId(
-                            state, IN_TRANSIT_TEAM
-                        ), block.number
-                    );
+            uint8 shirtTarget = getFreeShirt(teamIdTarget);
+            if (shirtTarget < PLAYERS_PER_TEAM_MAX) {
+                state = setLastSaleBlock(
+                            setCurrentShirtNum(
+                                setCurrentTeamId(
+                                    state, teamIdTarget
+                                ), shirtTarget
+                            ), block.number
+                        );
+                teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+            } else {
+                _playerInTransitToTeam[playerId] = teamIdTarget;
+                _nPlayersInTransitInTeam[teamIdTarget] += 1;
+                state = setLastSaleBlock(
+                            setCurrentTeamId(
+                                state, IN_TRANSIT_TEAM
+                            ), block.number
+                        );
+            }
         }
         _playerIdToState[playerId] = state;
-
         emit PlayerStateChange(playerId, state);
     }
     
@@ -228,4 +298,5 @@ contract Market is MarketView {
         teamIdToOwner[teamId] = addr;
         emit TeamTransfer(teamId, addr);
     }
+    
 }

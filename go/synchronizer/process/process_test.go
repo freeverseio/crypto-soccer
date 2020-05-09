@@ -43,11 +43,9 @@ func TestSyncTeams(t *testing.T) {
 	}
 
 	// one team (the Academy) belongs to timezone = 0
-	if count, err := storage.TeamCount(tx); err != nil {
-		t.Fatal(err)
-	} else if count != (128 + 1) {
-		t.Fatalf("Expected 128 actual %v", count)
-	}
+	count, err := storage.TeamCount(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, count, uint64(128+2))
 	if count, err := storage.PlayerCount(tx); err != nil {
 		t.Fatal(err)
 		t.Fatalf("Expected 128*18=2304 actual %v", count)

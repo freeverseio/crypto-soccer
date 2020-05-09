@@ -27,6 +27,7 @@ contract MarketCrypto {
     mapping (uint256 => uint256) private  _highestBid;
     mapping (uint256 => uint256) private  _validUntil;
     mapping (uint256 => address) private  _seller;
+    mapping (uint256 => uint256) private  _sellerTeamId;
     mapping (uint256 => address) private  _highestBidder;
     mapping (uint256 => uint256) private  _teamIdHighestBidder;
     mapping (uint256 => bool) private  _assetWentToNewOwner;
@@ -85,6 +86,7 @@ contract MarketCrypto {
         _startingPrice[auctionId] = startingPrice;
         _validUntil[auctionId] = now + _auctionDuration;
         _seller[auctionId] = currentOwner;
+        _sellerTeamId[auctionId] = currentTeamId;
         emit PlayerPutForSaleCrypto(playerId, startingPrice);
     }
 
@@ -94,11 +96,16 @@ contract MarketCrypto {
         // TODO: save gas by calling 1 once and returning all data in 1 call
         require(msg.sender != NULL_ADDR, "sender cannot be the null address");
         require(msg.sender != _seller[playerId], "seller is not allowed to bid for its own assets");
+        
         require(_market.getNPlayersInTransitInTeam(bidderTeamId) == 0, "cannot bid for more players when your team is already beyond MAX");
         uint256 auctionId = _playerIdToAuctionId[playerId];
         require(auctionId != 0, "player has not been put for sale yet");
         require(now < _validUntil[auctionId], "too late to bid, auction time has expired");
         require(msg.sender == _market.getOwnerTeam(bidderTeamId), "only the owner of the team can bid for a player");
+        require(bidderTeamId != _sellerTeamId[auctionId], "players have to be transfered between different teams");
+
+        (bool isConstrained, uint8 nRemain) = _market.getMaxAllowedAcquisitions(bidderTeamId);
+        require(!(isConstrained && nRemain == 0), "team ran out of allowed acquisitions");
 
         uint256 bidAmount = _balance[auctionId][msg.sender] + msg.value;
 
@@ -146,7 +153,7 @@ contract MarketCrypto {
         require(!_assetWentToNewOwner[auctionId], "the player in this auction was already transferred");
         _assetWentToNewOwner[auctionId] = true;
         _market.setIsPlayerFrozenCrypto(playerId, false);
-        _market.transferPlayer(playerId, _teamIdHighestBidder[auctionId]);
+        _market.transferPlayerFromCryptoMkt(playerId, _teamIdHighestBidder[auctionId]);
         emit AssetWentToNewOwner(playerId, auctionId);
     }
     

@@ -18,6 +18,8 @@ func NewMatchEvents(
 	verseSeed [32]byte,
 	homeTeamID string,
 	visitorTeamID string,
+	homeTeamPlayerIDs [25]*big.Int,
+	visitorTeamPlayerIDs [25]*big.Int,
 	homeTactic *big.Int,
 	visitorTactic *big.Int,
 	logsAndEvents []*big.Int,
@@ -36,6 +38,7 @@ func NewMatchEvents(
 	if err != nil {
 		return nil, err
 	}
+
 	events, err := Generate(
 		verseSeed,
 		homeTeamID,
@@ -43,8 +46,8 @@ func NewMatchEvents(
 		homeDecodedMatchLog,
 		visitorDecodedMatchLog,
 		logsAndEvents,
-		decodedTactic0.Lineup,
-		decodedTactic1.Lineup,
+		RemoveFreeShirtsFromLineUp(decodedTactic0.Lineup, homeTeamPlayerIDs),
+		RemoveFreeShirtsFromLineUp(decodedTactic1.Lineup, visitorTeamPlayerIDs),
 		decodedTactic0.Substitutions,
 		decodedTactic1.Substitutions,
 		decodedTactic0.SubsRounds,
@@ -54,7 +57,30 @@ func NewMatchEvents(
 	if err != nil {
 		return nil, err
 	}
+
+	if err := events.populateWithPlayerID(homeTeamPlayerIDs, visitorTeamPlayerIDs); err != nil {
+		return nil, err
+	}
+
 	return events, nil
+}
+
+// This function makes sure that all players in lineUp exist in the Universe.
+// To avoid, for example, selling a player after setting the lineUp.
+// It sets to NOONE all lineUp entries pointing to playerIds that are larger than 2.
+// (recall that playerID = 0 if not set, or = 1 if sold)
+func RemoveFreeShirtsFromLineUp(lineUp [14]uint8, playerIDs [25]*big.Int) [14]uint8 {
+	NO_LINEUP := uint8(25)
+	MIN_PLAYERID := new(big.Int).SetUint64(2)
+	for l := 0; l < len(lineUp); l++ {
+		if lineUp[l] < NO_LINEUP {
+			playerId := playerIDs[lineUp[l]]
+			if playerId == nil || playerId.Cmp(MIN_PLAYERID) != 1 {
+				lineUp[l] = NO_LINEUP
+			}
+		}
+	}
+	return lineUp
 }
 
 func Generate(
@@ -133,7 +159,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 			typeOfEvent = EVNT_RED
 		}
 		outOfGameMinute = int16(rounds2mins[matchLog[6]])
-		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, NULL}
+		thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 		events = append(events, thisEvent)
 	}
 
@@ -156,7 +182,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := EVNT_YELLOW
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 		events = append(events, thisEvent)
 	}
 
@@ -171,7 +197,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		if yellowCardPlayer == outOfGamePlayer {
 			if firstYellowCoincidesWithRed {
 				minute := outOfGameMinute
-				thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
+				thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 				events = append(events, thisEvent)
 				return events
 			} else {
@@ -181,7 +207,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		// convert player in the lineUp to shirtNum before storing it as match event:
-		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 		events = append(events, thisEvent)
 	}
 	return events
@@ -262,7 +288,7 @@ func addSubstitutions(team int16, events []MatchEvent, matchLog [15]uint32, roun
 			leavingPlayer := toShirtNum(substitutions[i], lineup, NULL, NOONE)
 			enteringPlayer := toShirtNum(uint8(11+i), lineup, NULL, NOONE)
 			typeOfEvent := EVNT_SUBST
-			thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer}
+			thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer, "", ""}
 			events = append(events, thisEvent)
 		}
 	}
@@ -315,4 +341,45 @@ func (b MatchEvents) DumpState() string {
 		state += fmt.Sprintf("Events[%d]: %+v\n", i, event)
 	}
 	return state
+}
+
+func (b *MatchEvents) populateWithPlayerID(
+	homeTeamPlayerIDs [25]*big.Int,
+	visitorTeamPlayerIDs [25]*big.Int,
+) error {
+	for i := range *b {
+		var primaryPlayerTeam [25]*big.Int
+		var secondaryPlayerTeam [25]*big.Int
+		var tacklerPlayerTeam [25]*big.Int
+		if (*b)[i].Team == 0 {
+			primaryPlayerTeam = homeTeamPlayerIDs
+			secondaryPlayerTeam = homeTeamPlayerIDs
+			tacklerPlayerTeam = visitorTeamPlayerIDs
+		} else {
+			primaryPlayerTeam = visitorTeamPlayerIDs
+			secondaryPlayerTeam = visitorTeamPlayerIDs
+			tacklerPlayerTeam = homeTeamPlayerIDs
+		}
+
+		if (*b)[i].PrimaryPlayer != -1 {
+			if (*b)[i].Type == EVNT_ATTACK && !(*b)[i].ManagesToShoot {
+				if tacklerPlayerTeam[(*b)[i].PrimaryPlayer] == nil {
+					return fmt.Errorf("inconsistent event %+v", (*b)[i])
+				}
+				(*b)[i].PrimaryPlayerID = tacklerPlayerTeam[(*b)[i].PrimaryPlayer].String()
+			} else {
+				if primaryPlayerTeam[(*b)[i].PrimaryPlayer] == nil {
+					return fmt.Errorf("inconsistent event %+v", (*b)[i])
+				}
+				(*b)[i].PrimaryPlayerID = primaryPlayerTeam[(*b)[i].PrimaryPlayer].String()
+			}
+		}
+		if (*b)[i].SecondaryPlayer != -1 {
+			if secondaryPlayerTeam[(*b)[i].SecondaryPlayer] == nil {
+				return fmt.Errorf("inconsistent event %+v", (*b)[i])
+			}
+			(*b)[i].SecondaryPlayerID = secondaryPlayerTeam[(*b)[i].SecondaryPlayer].String()
+		}
+	}
+	return nil
 }

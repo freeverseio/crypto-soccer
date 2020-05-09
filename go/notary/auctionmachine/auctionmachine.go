@@ -44,13 +44,26 @@ func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 	switch b.auction.State {
 	case storage.AuctionStarted:
 		return b.processStarted()
+	case storage.AuctionAssetFrozen:
+		return b.ProcessAssetFrozen()
+	case storage.AuctionPaying:
+		return b.ProcessPaying(market)
+	case storage.AuctionWithdrableBySeller:
+		return b.ProcessWithdrawableBySeller(market)
+	case storage.AuctionWithdrableByBuyer:
+		log.Warn("auctionmachine AuctionWithdrabeByBuyer not implemented")
+		return nil
+	case storage.AuctionValidation:
+		return b.ProcessValidation(market)
 	case storage.AuctionCancelled:
+		return nil
 	case storage.AuctionFailed:
+		return nil
 	case storage.AuctionEnded:
+		return nil
 	default:
 		return fmt.Errorf("Unknown auction state %v", b.State())
 	}
-	return nil
 }
 
 func (b AuctionMachine) State() storage.AuctionState {
@@ -67,4 +80,19 @@ func (b AuctionMachine) Auction() storage.Auction {
 
 func (b AuctionMachine) Bids() []storage.Bid {
 	return b.bids
+}
+
+func (b *AuctionMachine) SetState(state storage.AuctionState, extra string) {
+	if state == storage.AuctionFailed {
+		log.Warnf("auction %v in state %v with %v", b.auction.ID, state, extra)
+	}
+	b.auction.State = state
+	b.auction.StateExtra = extra
+}
+
+func (b AuctionMachine) checkState(state storage.AuctionState) error {
+	if b.auction.State != state {
+		return fmt.Errorf("auction[%v|%v] is not in state %v", b.auction.ID, b.auction.State, state)
+	}
+	return nil
 }

@@ -1,0 +1,6 @@
+resources:
+  - service.yaml
+  - setup-configmap.yaml
+  - statefulset.yaml
+  - env-configmap.yaml
+  - secret.yaml # move to overlay

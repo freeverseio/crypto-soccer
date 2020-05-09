@@ -18,6 +18,7 @@ const Challenges = artifacts.require('Challenges');
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
 const Directory = artifacts.require('Directory');
+const MarketCrypto = artifacts.require('MarketCrypto');
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -30,9 +31,14 @@ module.exports = function (deployer, network, accounts) {
     
     const versionNumber = 0;
     const proxyAddress  = "0x0";
+<<<<<<< HEAD
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
+=======
+    const {0: proxy, 1: assets, 2: market, 3: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
+
+>>>>>>> dev
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -47,8 +53,11 @@ module.exports = function (deployer, network, accounts) {
     const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
+    const marketCrypto = await deployer.deploy(MarketCrypto).should.be.fulfilled;
     
     console.log("Setting up ...");
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     if (versionNumber == 0) { await updates.initUpdates().should.be.fulfilled; }
@@ -60,6 +69,8 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
+    await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
+    await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
 
     if (versionNumber == 0) {
       // Initializing Assets differently in XDAI or testing:
@@ -91,17 +102,16 @@ module.exports = function (deployer, network, accounts) {
       ["UPDATES", updates.address],
       ["TRAININGPOINTS", trainingPoints.address],
       ["EVOLUTION", evolution.address],
-      ["TRAININGPOINTS", trainingPoints.address],
       ["FRIENDLIES", friendlies.address],
       ["SHOP_CONTRACT", shop.address],
       ["PRIVILEGED", privileged.address],
       ["UTILS", utils.address],
-      ["PRIVILEGED", assets.address],
       ["PLAYANDEVOLVE", playAndEvolve.address],
       ["MERKLE", merkle.address],
       ["CONSTANTSGETTERS", constantsGetters.address],
       ["PROXY", proxy.address],
       ["CHALLENGES", challenges.address]
+      ["MARKETCRYPTO", marketCrypto.address]
     ]
 
     // Build arrays "names" and "addresses" and store in Directory contract

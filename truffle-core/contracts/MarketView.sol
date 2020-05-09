@@ -8,13 +8,7 @@ import "./EncodingSkillsSetters.sol";
  */
 
 contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
-
     
-    
-    function isAcademyPlayer(uint256 playerId) public view returns(bool) {
-        return (getIsSpecial(playerId) && _playerIdToState[playerId] == 0);
-    }
-
     function getMaxAllowedAcquisitions(uint256 teamId) public view returns (bool isConstrained, uint8) {
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
         if (remainingAcqs == 0) return (false, 0);
@@ -72,7 +66,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
                 // check player is not already frozen
                 (!isTeamFrozen(teamId)) &&  
                 // check asset is owned by legit address
-                (teamOwner != address(0)) && 
+                (teamOwner != NULL_ADDR) && 
                 // check signatures are valid by requiring that they own the asset:
                 (teamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&    
                 // check that auction time is less that the required 32 bit (2^32 - 1)
@@ -137,16 +131,18 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     {
         // the next line will verify that the playerId is the same that was used by the seller to sign
         bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
-        
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(buyerTeamId);
         if (isConstrained && nRemain == 0) return false;
         bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
-        ok =    // check asset is owned by buyer
-                (getOwnerTeam(buyerTeamId) != address(0)) && 
+        address buyerTeamOwner = getOwnerTeam(buyerTeamId);
+        ok =    // origin and target teams must be different
+                (buyerTeamId != getCurrentTeamIdFromPlayerId(playerId)) &&
+                // check asset is owned by buyer
+                (buyerTeamOwner != NULL_ADDR) && 
                 // check buyer and seller refer to the exact same auction
                 ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
                 // check signatures are valid by requiring that they own the asset:
-                (getOwnerTeam(buyerTeamId) == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&
+                (buyerTeamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
                 isPlayerFrozenFiat(playerId);
 
@@ -169,7 +165,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         view 
         returns (bool)
     {
-        address prevOwner = isAcademyPlayer(playerId) ? _academyAddr : getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
+        address prevOwner = getOwnerPlayer(playerId);
         bytes32 msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         return (
             // check validUntil has not expired
@@ -208,10 +204,6 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
     }
 
-    function buildPromoPlayerTxMsg(uint256 playerId, uint256 validUntil) public pure returns (bytes32) {
-        return keccak256(abi.encode(playerId, validUntil));
-    }
-
     function buildAgreeToBuyTeamTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, bool isOffer2StartAuction) public pure returns (bytes32) {
         return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, isOffer2StartAuction));
     }
@@ -241,13 +233,12 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
 
     function isPlayerFrozenFiat(uint256 playerId) public view returns (bool) {
-        require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
         return (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
     function isTeamFrozen(uint256 teamId) public view returns (bool) {
         if (teamId == ACADEMY_TEAM) return false;
-        require(teamExists(teamId), "unexistent team");
+        require(wasTeamCreatedVirtually(teamId), "unexistent team");
         return (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
     
@@ -256,16 +247,19 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
-        if (getIsSpecial(playerId)) return encodePlayerState(playerId, ACADEMY_TEAM, 0, 0, 0);
+        if (getIsSpecial(playerId)) return encodePlayerState(ACADEMY_TEAM, 0, 0, 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint256 currentTeamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
-        return encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
+        return encodePlayerState(currentTeamId, shirtNum, 0, 0);
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
-        return (isPlayerWritten(playerId) ? _playerIdToState[playerId] : getPlayerStateAtBirth(playerId));
+        uint256 state = _playerIdToState[playerId];
+        if (state != 0) return state;
+        if (!getIsSpecial(playerId) && !wasPlayerCreatedVirtually(playerId)) return 0;
+        return getPlayerStateAtBirth(playerId);
     }
     
     // TODO: we really don't need this function. Only for external use. Consider removal
@@ -289,7 +283,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
     
     function getCurrentTeamIdFromPlayerId(uint256 playerId) public view returns(uint256) {
-        return getCurrentTeamId(getPlayerState(playerId));
+        return getCurrentTeamIdFromPlayerState(getPlayerState(playerId));
     }
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
@@ -307,8 +301,6 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
             return (playerId == FREE_PLAYER_ID);
         }
     }
-
-    function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_playerIdToState[playerId] != 0); }       
 
     function getDefaultPlayerIdForTeamInCountry(
         uint8 timeZone,
@@ -328,10 +320,15 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
        
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
-        require(playerExists(playerId), "unexistent player");
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
     
     function getNPlayersInTransitInTeam(uint256 teamId) public view returns (uint8) { return _nPlayersInTransitInTeam[teamId]; }        
+
+    function getNewMaxSumSkillsBuyNowPlayer() public view returns(uint256 sumSkills, uint256 minLapseTime, uint256 lastUpdate) {
+        sumSkills = _maxSumSkillsBuyNowPlayer;
+        minLapseTime = _maxSumSkillsBuyNowPlayerMinLapse;
+        lastUpdate = _maxSumSkillsBuyNowPlayerLastUpdate;
+    } 
 
 }

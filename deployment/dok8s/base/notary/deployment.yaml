@@ -14,10 +14,17 @@ spec:
       labels:
         app.kubernetes.io/app: notary
     spec:
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: google-iap-key
       containers:
       - name: notary
         image: freeverseio/market.notary:dev
         imagePullPolicy: Always
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /var/secrets/google
         envFrom:
           - configMapRef:
               name: freeverse-configmap
@@ -25,7 +32,10 @@ spec:
                -ethereum, http://xdai:8545,
                -private_key, "$(notary_private_key)",
                -market_address, "$(MARKET_CONTRACT_ADDRESS)",
-               -constantsgetters_address, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)"]
+               -constantsgetters_address, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)",
+               -privileged_address, "$(PRIVILEGED_CONTRACT_ADDRESS)",
+               -market_id, "$(market_id)",
+               -google_key, "/var/secrets/google/key.json"]
         ports:
         - containerPort: 4000
       imagePullSecrets:

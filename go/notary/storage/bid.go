@@ -9,13 +9,11 @@ import (
 type BidState string
 
 const (
-	BIDACCEPTED BidState = "ACCEPTED"
 	BIDREFUSED  BidState = "REFUSED"
-	BIDPAYING   BidState = "PAYING"
-	BIDPAID     BidState = "PAID"
-	BIDFAILED   BidState = "FAILED"
 	BidAccepted BidState = "accepted"
 	BidPaid     BidState = "paid"
+	BidPaying   BidState = "paying"
+	BidFailed   BidState = "failed"
 )
 
 type Bid struct {
@@ -35,6 +33,16 @@ func NewBid() *Bid {
 	bid := Bid{}
 	bid.State = BidAccepted
 	return &bid
+}
+
+func FindBids(bids []Bid, state BidState) []*Bid {
+	result := []*Bid{}
+	for i := range bids {
+		if bids[i].State == state {
+			result = append(result, &bids[i])
+		}
+	}
+	return result
 }
 
 func BidsByAuctionID(tx *sql.Tx, ID string) ([]Bid, error) {

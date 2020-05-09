@@ -1,21 +1,20 @@
 package auctionmachine
 
-// import (
-// 	"errors"
-// 	"time"
+import (
+	"time"
 
-// 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-// )
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+)
 
-// func (m *AuctionMachine) processAssetFrozen() error {
-// 	if m.Auction.State != storage.AUCTION_ASSET_FROZEN {
-// 		return errors.New("AssetFrozen: wrong state")
-// 	}
+func (b *AuctionMachine) ProcessAssetFrozen() error {
+	if err := b.checkState(storage.AuctionAssetFrozen); err != nil {
+		return err
+	}
 
-// 	now := time.Now().Unix()
-// 	if now > m.Auction.ValidUntil {
-// 		m.Auction.State = storage.AUCTION_PAYING
-// 	}
+	now := time.Now().Unix()
+	if now > b.auction.ValidUntil {
+		b.auction.State = storage.AuctionPaying
+	}
 
-// 	return nil
-// }
+	return nil
+}
