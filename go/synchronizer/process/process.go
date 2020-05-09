@@ -131,18 +131,22 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		return PlayerStateChangeProcess(tx, p.contracts, v)
 	case updates.UpdatesActionsSubmission:
 		log.Infof("[processor] Dispatching UpdatesActionsSubmission event verse: %v, TZ: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.Cid)
-		return p.leagueProcessor.Process(tx, v)
-		// case market.MarketPlayerFreeze:
-		// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
-		// 	playerID := v.PlayerId
-		// 	player, err := storage.PlayerByPlayerId(tx, playerID)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	player.Frozen = v.Frozen // TODO ractive
-		// 	return player.Update(tx)
+		if err := p.leagueProcessor.Process(tx, v); err != nil {
+			return err
+		}
+	// case market.MarketPlayerFreeze:
+	// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
+	// 	playerID := v.PlayerId
+	// 	player, err := storage.PlayerByPlayerId(tx, playerID)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	player.Frozen = v.Frozen // TODO ractive
+	// 	return player.Update(tx)
+	default:
+		return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 	}
-	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
+	return nil
 }
 func (p *EventProcessor) nextRange(tx *sql.Tx, delta uint64) (*bind.FilterOpts, error) {
 	start, err := p.dbLastBlockNumber(tx)
