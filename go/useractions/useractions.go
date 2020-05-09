@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -84,14 +85,17 @@ func NewFromStorage(tx *sql.Tx, timezone int) (*UserActions, error) {
 }
 
 func (b *UserActions) Hash() ([32]byte, error) {
+	var result [32]byte
 	h := sha256.New()
 	buf, err := b.Marshal()
 	if err != nil {
-		return [32]byte{}, err
+		return result, err
 	}
 	h.Write(buf)
 	hash := h.Sum(nil)
-	var result [32]byte
+	if len(hash) != 32 {
+		return result, errors.New("Hash is not 32 byte")
+	}
 	copy(result[:], hash)
 	return result, nil
 }
