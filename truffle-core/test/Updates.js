@@ -326,7 +326,7 @@ contract('Updates', (accounts) => {
     it('challenging a tz', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(owner, parties, updates);
+        stakes = await deployUtils.deployAndConfigureStakers(owner, parties, updates);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
@@ -663,7 +663,7 @@ contract('Updates', (accounts) => {
     it('vefiable challenge', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(owner, parties, updates);
+        stakes = await deployUtils.deployAndConfigureStakers(owner, parties, updates);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];

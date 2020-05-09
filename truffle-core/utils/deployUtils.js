@@ -214,5 +214,7 @@ module.exports = {
     assertNoCollisionsWithProxy,
     deploy,
     deployAndConfigureStakers,
+    addTrustedParties,
+    enroll,
 }
 
