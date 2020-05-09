@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
-	"github.com/freeverseio/crypto-soccer/go/universe"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/universe"
 	"gotest.tools/assert"
 )
 
