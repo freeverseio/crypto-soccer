@@ -130,7 +130,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		log.Infof("[processor] dispatching MarketPlayerStateChange event PlayerID %v state %v", v.PlayerId, v.State)
 		return PlayerStateChangeProcess(tx, p.contracts, v)
 	case updates.UpdatesActionsSubmission:
-		log.Infof("[processor] Dispatching UpdatesActionsSubmission event verse: %v, TZ: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.Cid)
+		log.Infof("[processor] Dispatching UpdatesActionsSubmission event verse: %v, TZ: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.IpfsCid)
 		return p.leagueProcessor.Process(tx, v)
 		// case market.MarketPlayerFreeze:
 		// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)

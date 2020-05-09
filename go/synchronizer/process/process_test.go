@@ -79,6 +79,9 @@ func TestSyncTeams(t *testing.T) {
 		tx, err := bc.Contracts.Updates.SubmitActionsRoot(
 			bind.NewKeyedTransactor(bc.Owner),
 			seed,
+			seed,
+			seed,
+			3,
 			cid,
 		)
 		if err != nil {

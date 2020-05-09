@@ -87,8 +87,8 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			}
 		}
 	}
-	log.Infof("Retriving user actions %v from ipfs node %v", event.Cid, b.ipfsURL)
-	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.Cid)
+	log.Infof("Retriving user actions %v from ipfs node %v", event.IpfsCid, b.ipfsURL)
+	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.IpfsCid)
 	if err != nil {
 		return err
 	}
