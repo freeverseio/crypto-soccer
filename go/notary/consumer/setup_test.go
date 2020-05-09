@@ -13,6 +13,7 @@ import (
 // var db *sql.DB
 var bc *testutils.BlockchainNode
 var db *sql.DB
+var googleCredentials []byte
 
 func TestMain(m *testing.M) {
 	var err error

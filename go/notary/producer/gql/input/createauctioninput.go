@@ -79,13 +79,14 @@ func (b CreateAuctionInput) IsSignerOwner(contracts contracts.Contracts) (bool, 
 	if err != nil {
 		return false, err
 	}
-
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return false, errors.New("invalid playerId")
+	}
 	owner, err := contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
 	if err != nil {
 		return false, err
 	}
-
 	return signerAddress == owner, nil
 }
 

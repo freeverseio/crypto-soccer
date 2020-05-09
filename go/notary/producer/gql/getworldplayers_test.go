@@ -10,11 +10,11 @@ import (
 
 func TestGetWorldPlayers(t *testing.T) {
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)
 
 	in := input.GetWorldPlayersInput{}
-	in.Signature = "82b6568d3e792df067a07ca67316b916de3064ef0cdabcbf25a59e5e9745caa328ae510bd2a62a92e2f9710aa38798a0a7e7f47b0632bf08fa4c7abd52e5c0a11b"
-	in.TeamId = "4"
+	in.Signature = "a67621b4763db406f404c4a600ce0e79ee50147c209e85d2f146f0d760c0a1ac2a213a06f702995cee279af1f588b55c9fa462b2e6a9502d25cede77ec690ced1c"
+	in.TeamId = "274877906944"
 
 	players, err := r.GetWorldPlayers(struct{ Input input.GetWorldPlayersInput }{in})
 	assert.NilError(t, err)
@@ -24,7 +24,7 @@ func TestGetWorldPlayers(t *testing.T) {
 func TestCreateWorldPlayerBatch(t *testing.T) {
 	value := int64(3000)
 	now := int64(1554940800) // first second of a week
-	teamId := "6"
+	teamId := "274877906944"
 
 	players, err := gql.CreateWorldPlayerBatch(
 		*bc.Contracts,
@@ -35,8 +35,10 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785529983094086018138617355092369692188212834871536716822")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532613796318893000562283106665962678893516101856333720")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
+	assert.Equal(t, players[0].Name(), "Ekaitz Arana")
+	assert.Equal(t, players[0].Speed(), int32(3413))
 
 	players, err = gql.CreateWorldPlayerBatch(
 		*bc.Contracts,
@@ -47,7 +49,7 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785529983094086018138617355092369692188212834871536716822")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532613796318893000562283106665962678893516101856333720")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
 
 	players, err = gql.CreateWorldPlayerBatch(
@@ -59,7 +61,7 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785529983094086018138617355092370901114032449500711422998")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532613796318893000562283106667171604713130731031039896")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 
 	players, err = gql.CreateWorldPlayerBatch(
@@ -71,6 +73,6 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785529983094086018138617355092370901114032449500711422998")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532613796318893000562283106667171604713130731031039896")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 }

@@ -3,6 +3,7 @@ package consumer
 import (
 	"crypto/ecdsa"
 	"database/sql"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
@@ -12,11 +13,12 @@ import (
 )
 
 type Consumer struct {
-	ch        chan interface{}
-	db        *sql.DB
-	contracts contracts.Contracts
-	pvc       *ecdsa.PrivateKey
-	market    marketpay.IMarketPay
+	ch                chan interface{}
+	db                *sql.DB
+	contracts         contracts.Contracts
+	pvc               *ecdsa.PrivateKey
+	market            marketpay.IMarketPay
+	googleCredentials []byte
 }
 
 func New(
@@ -25,6 +27,7 @@ func New(
 	db *sql.DB,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
+	googleCredentials []byte,
 ) (*Consumer, error) {
 	consumer := Consumer{}
 	consumer.ch = ch
@@ -32,75 +35,88 @@ func New(
 	consumer.contracts = contracts
 	consumer.pvc = pvc
 	consumer.market = market
+	consumer.googleCredentials = googleCredentials
 	return &consumer, nil
+}
+
+func (b *Consumer) Consume(event interface{}) error {
+	switch in := event.(type) {
+	case input.CreateAuctionInput:
+		log.Debug("Received CreateAuctionInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := CreateAuction(tx, in); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case input.CancelAuctionInput:
+		log.Debug("Received CancelAuctionInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := CancelAuction(tx, in); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case input.CreateBidInput:
+		log.Debug("Received CreateBidInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := CreateBid(tx, in); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case producer.ProcessEvent:
+		log.Debug("Received ProcessEvent")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := ProcessAuctions(
+			b.market,
+			tx,
+			b.contracts,
+			b.pvc,
+		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case input.SubmitPlayStorePlayerPurchaseInput:
+		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
+		if err := SubmitPlayStorePlayerPurchase(
+			b.contracts,
+			b.pvc,
+			b.googleCredentials,
+			in,
+		); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown event: %+v", event)
+	}
+	return nil
 }
 
 func (b *Consumer) Start() {
 	for {
 		event := <-b.ch
-		switch in := event.(type) {
-		case input.CreateAuctionInput:
-			log.Debug("Received CreateAuctionInput")
-			tx, err := b.db.Begin()
-			if err != nil {
-				log.Error(err)
-				break
-			}
-			if err := CreateAuction(tx, in); err != nil {
-				log.Error(err)
-				tx.Rollback()
-				break
-			}
-			if err = tx.Commit(); err != nil {
-				log.Error(err)
-			}
-		case input.CancelAuctionInput:
-			log.Debug("Received CancelAuctionInput")
-			tx, err := b.db.Begin()
-			if err != nil {
-				log.Error(err)
-				break
-			}
-			if err := CancelAuction(tx, in); err != nil {
-				log.Error(err)
-				tx.Rollback()
-				break
-			}
-			if err = tx.Commit(); err != nil {
-				log.Error(err)
-			}
-		case input.CreateBidInput:
-			log.Debug("Received CreateBidInput")
-			tx, err := b.db.Begin()
-			if err != nil {
-				log.Error(err)
-				break
-			}
-			if err := CreateBid(tx, in); err != nil {
-				log.Error(err)
-				tx.Rollback()
-				break
-			}
-			if err = tx.Commit(); err != nil {
-				log.Error(err)
-			}
-		case producer.ProcessEvent:
-			log.Debug("Received ProcessEvent")
-			tx, err := b.db.Begin()
-			if err != nil {
-				log.Error(err)
-				break
-			}
-			if err := ProcessAuctions(b.market, tx, b.contracts, b.pvc); err != nil {
-				log.Fatal(err)
-				tx.Rollback()
-				break
-			}
-			if err = tx.Commit(); err != nil {
-				log.Error(err)
-			}
-		default:
-			log.Errorf("unknown event: %v", event)
-		}
+		b.Consume(event)
 	}
 }

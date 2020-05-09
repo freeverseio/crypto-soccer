@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -31,6 +32,7 @@ func main() {
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
 	processWait := flag.Int("process_wait", 5, "secs to wait for next process")
 	marketID := flag.String("market_id", "", "WARNING: market identifier. If set connecting the real market")
+	googleKey := flag.String("google_key", "", "google credentials")
 	flag.Parse()
 
 	log.Infof("[PARAM] postgres                   : %v", *postgresURL)
@@ -95,9 +97,17 @@ func main() {
 			return err
 		}
 
+		var googleCredentials []byte
+		if googleKey != nil {
+			googleCredentials, err = ioutil.ReadFile(*googleKey)
+			if err != nil {
+				return err
+			}
+		}
+
 		ch := make(chan interface{}, *bufferSize)
 
-		go gql.NewServer(ch, *contracts, namesdb)
+		go gql.NewServer(ch, *contracts, namesdb, googleCredentials)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 
 		var market marketpay.IMarketPay
@@ -113,6 +123,7 @@ func main() {
 			db,
 			*contracts,
 			privateKey,
+			googleCredentials,
 		)
 		if err != nil {
 			return err
