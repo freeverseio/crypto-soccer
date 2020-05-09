@@ -19,6 +19,7 @@ contract UpdatesView is AssetsLib {
     function getLastActionsSubmissionTime(uint8 tz) public view returns(uint256) {
         _tzExists(tz);
         return _lastActionsSubmissionTime[tz];
+    }
         
     // each day has 24 hours, each with 4 verses => 96 verses per day.
     // day = 0,..13
