@@ -112,7 +112,7 @@ contract AddressMapping is Owned{
 contract Stakers is Owned {
 
   uint16 public constant kNumStakers = 32;
-  uint public constant kRequiredStake = 1 wei;
+  uint public constant kRequiredStake = 0.001 ether;
 
   address public gameOwner = address(0x0);
   AddressStack private updaters = new AddressStack();
