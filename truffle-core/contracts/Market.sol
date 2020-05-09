@@ -18,6 +18,7 @@ contract Market is MarketView {
     event PlayerFreezeCrypto(uint256 playerId, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
+    event PlayerRetired(uint256 playerId, uint256 teamId);
     event ProposedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
     event UpdatedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
 
@@ -197,10 +198,13 @@ contract Market is MarketView {
         uint256 playerId,
         bytes32 sigR,
         bytes32 sigS,
-        uint8 sigV
+        uint8 sigV,
+        bool returnToAcademy
     ) public {
-        address owner = getOwnerPlayer(playerId);
-        bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId)));
+        uint256 state = getPlayerState(playerId);
+        uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
+        address owner = getOwnerTeam(teamIdOrigin);
+        bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId, returnToAcademy)));
         require (
             // check validUntil has not expired
             (now < validUntil) &&
@@ -215,8 +219,14 @@ contract Market is MarketView {
             // check that auction time is less that the required 32 bit
             (validUntil < now + MAX_VALID_UNTIL),
             "conditions to dismiss player are not met"
-        );        
-        transferPlayer(playerId, ACADEMY_TEAM);
+        );  
+        if (returnToAcademy) { 
+            transferPlayer(playerId, ACADEMY_TEAM); 
+        } else {
+            uint256 shirtOrigin = getCurrentShirtNum(state);
+            teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+            emit PlayerRetired(playerId, teamIdOrigin);
+        }
     }
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {

@@ -30,7 +30,7 @@ contract('Shop', (accounts) => {
         boosts = [62,60,19,1,23,2];
         encoded = await shop.encodeBoosts(boosts).should.be.fulfilled;
         decoded = await shop.decodeBoosts(encoded).should.be.fulfilled;
-        debug.compareArrays(decoded, boosts, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(decoded, boosts, toNum = true, isBigNumber = false);
     });
     
     it('offer item', async () => {
@@ -100,7 +100,7 @@ contract('Shop', (accounts) => {
         // shop items:
         tactics2 = await shop.addItemsToTactics(tactics, itemId = expectedNewItemId, staminas).should.be.fulfilled;
         const {0: stamina, 1: id, 2: boost} = await shop.getItemsData(tactics2).should.be.fulfilled;
-        debug.compareArrays(stamina, staminas, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(stamina, staminas, toNum = true, isBigNumber = false);
         id.toNumber().should.be.equal(itemId);
         boost.should.be.bignumber.equal(encodedBoost);
         

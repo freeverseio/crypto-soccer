@@ -12,6 +12,13 @@ import "./EncodingTacticsPart2.sol";
 
 contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsPart2 {
     
+    uint256 constant internal YEARS_30  = 946080000; // 30 years in sec
+    uint256 constant internal YEARS_35h = 1119528000; // 35.5 years in sec
+    uint256 constant internal YEARS_1   = 31536000; // 1 year in sec
+    uint256 constant internal YEARS_2   = 63072000; // 2 year in sec
+    uint256 constant internal YEARS_16  = 504576000; // 16 year in sec
+    uint256 constant internal DAYS_1    = 86400; // 1 day in sec
+    
 
     Assets private _assets;
     Market private _market;
@@ -79,6 +86,8 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             points[0] = (points[0] * teamSumSkills1) / (teamSumSkills0);
             points[1] = (points[1] * teamSumSkills0) / (teamSumSkills1);
         }
+        if (points[0] < POINTS_FOR_HAVING_PLAYED) points[0] = POINTS_FOR_HAVING_PLAYED;
+        if (points[1] < POINTS_FOR_HAVING_PLAYED) points[1] = POINTS_FOR_HAVING_PLAYED;
         matchLog0 = addTrainingPoints(matchLog0, points[0]);
         matchLog1 = addTrainingPoints(matchLog1, points[1]);
         return (matchLog0, matchLog1);
@@ -165,18 +174,23 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         return teamSkills;
     }
     
-    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*8)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*f), where f = 1 for slow, 16 for fast
     // If age is in days, define Yd = year2days
-    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Yd - 3 * ageDays + 48 Yd)/ (6 Yd)] - max(0,(ageDays-31)*8/Yd)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Yd - 3 * ageDays + 48 Yd)/ (6 Yd)] - max(0,(ageDays-31)*f/Yd)
     // If age is in secs, define Ys = year2secs
-    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Ys - 3 * ageInSecs + 48 Ys)/ (6 Ys)] - max(0,(ageInSecs-31)*8/Ys)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Ys - 3 * ageInSecs + 48 Ys)/ (6 Ys)] - max(0,(ageInSecs-31)*f/Ys)
     // skill(i)     = max(0, skill(i) + deltaS(i))
-    // deltaS(i)    = max[ TP(i), TP(i) * numerator / denominator] - max(0,(ageInSecs-31)*8/Ys)
+    // deltaS(i)    = max[ TP(i), TP(i) * numerator / denominator] - max(0,(ageInSecs-31)*f/Ys)
     // skill(i)     = max(0, skill(i) + deltaS(i))
     // shoot, speed, pass, defence, endurance
     function evolvePlayer(uint256 skills, uint16[5] memory TPperSkill, uint256 matchStartTime) public view returns(uint256) {
-        uint256 ageInSecs = 7 * (matchStartTime - getBirthDay(skills) * 86400);  // 86400 = day2secs
-        uint256 deltaNeg = (ageInSecs > 977616000) ? ((ageInSecs-977616000)*8)/31536000 : 0;  // 977616000 = 31 * Ys, 31536000 = Ys
+        uint256 ageInSecs = INGAMETIME_VS_REALTIME * (matchStartTime - getBirthDay(skills) * DAYS_1); 
+        uint256 deltaNeg;
+        if (ageInSecs > YEARS_35h) {
+            deltaNeg = ((ageInSecs-YEARS_30) * 16)/YEARS_1;
+        } else if (ageInSecs > YEARS_30) {
+            deltaNeg = (ageInSecs-YEARS_30)/YEARS_1;
+        }
         uint256 numerator;
         if (getPotential(skills) * 252288000 + 1513728000 > 3 * ageInSecs) {  // 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
             numerator = (getPotential(skills) * 252288000 + 1513728000 - 3 * ageInSecs);
@@ -206,37 +220,60 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     }
 
     function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) private pure returns (uint256) {
-        uint256 term1 = (TPthisSkill*numerator) / denominator;
-        term1 = (term1 > TPthisSkill) ? term1 : TPthisSkill;
+        uint256 term1 = (uint256(TPthisSkill)*numerator) / denominator;
+        if (term1 <= TPthisSkill) { term1 = uint256(TPthisSkill); }
         if ((oldSkill + term1) > deltaNeg) return oldSkill + term1 - deltaNeg;
         return 1;
     }
 
     function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public view returns (uint256) {
-        if ((getSumOfSkills(skills) > 200) && (ageInSecs < 1166832000)) {   // 1166832000 = 37 * Ys
-            return skills;
-        }
+        if (ageInSecs < 1166832000) { return skills; }   // 1166832000 = 37 * Ys
+
+        // 75% chances to lead to a child, 25% to lead to academy player:
         uint256 dna = uint256(keccak256(abi.encode(skills, ageInSecs)));
-        ageInSecs = 504576000 + (dna % 126144000);  // 504576000 = 16 * years2secs, 126144000 = 4 * years2secs
-        uint256 dayOfBirth = (matchStartTime - ageInSecs / 7)/86400; // 86400 = 24 * 3600
-        dna >>= 13; // log2(7300) = 12.8
+        bool isChild = (dna % 4) > 0;
+        
+        // Generation syntax: 0, 1, 2, 3... but with +32 if is child, so it can go: 0, 1, 32+2, 32+3, 4, 32+5,...
+        //  - which would mean that 1 was child, 2 was Academy, etc...
+        //  - we will start having uint8 overflow at generation 32 (after 64 years of real gameplay), and even then it'll look like a new player
+        //  - Formula copied directly to avoid stack overflow: uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (isChild ? 0 : 32));
+
+        // AGe determination: age is a random between 16 and 18.
+        //  - Formula copied directly to avoid stack overflow: uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1; 
+        ageInSecs = YEARS_16 + (dna % YEARS_2);
+
         (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(
             dna, 
-            forwardnessToShirtNum(dna, getForwardness(skills))
+            forwardnessToShirtNum(dna, getForwardness(skills)), // ensure they play in the same pos in field:
+            0
         );
-        // if dna is even => leads to child, if odd => leads to academy player
-        uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (dna % 2 == 0 ? 0 : 32));
-        uint256 finalSkills = encodePlayerSkills(newSkills, dayOfBirth, generation, getInternalPlayerId(skills), birthTraits, false, false, 0, 0, false, sumSkills);
+        // Potential determination:
+        //  - if child, ensure potential is potential(father) + 1, otherwise, random
+        //  - this rewards users that keep the same player over many years
+        if (isChild && (getPotential(skills) < 9)) {
+            birthTraits[IDX_POT] = uint8(getPotential(skills)) + 1;
+        } else {
+            birthTraits[IDX_POT] = uint8(dna % (MAX_POTENTIAL_AT_BIRTH+1));
+        }
+
+        uint256 finalSkills = encodePlayerSkills(
+            newSkills, 
+            (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1, // day of Birth, formula above
+            uint8(1 + (getGeneration(skills) % 32) + (isChild ? 0 : 32)), // generation, formula above
+            getInternalPlayerId(skills), 
+            birthTraits, 
+            false, false, 0, 0, false, sumSkills
+        );
         return (getIsSpecial(skills)) ? addIsSpecial(finalSkills) : finalSkills;
     }
     
     function forwardnessToShirtNum(uint256 seed, uint256 forwardPos) public pure returns(uint8 shirtNum) {
         if (forwardPos == IDX_GK) {
-            shirtNum = uint8(seed % 3);
+            shirtNum = uint8(seed % 2);
         } else if (forwardPos == IDX_D) {
-            shirtNum = 3 + uint8(seed % 5);
+            shirtNum = 2 + uint8(seed % 5);
         } else if (forwardPos == IDX_M) {
-            shirtNum = 8 + uint8(seed % 6);
+            shirtNum = 7 + uint8(seed % 7);
         } else {
             shirtNum = 14 + uint8(seed % 4);
         }

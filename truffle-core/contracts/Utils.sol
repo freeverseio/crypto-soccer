@@ -1,9 +1,8 @@
 pragma solidity >=0.5.12 <=0.6.3;
 import "./EncodingMatchLog.sol";
-import "./EncodingSkillsGetters.sol";
+import "./AssetsView.sol";
 
-contract Utils is EncodingMatchLog, EncodingSkillsGetters{
-    uint8 constant public N_SKILLS = 5;
+contract Utils is EncodingMatchLog, AssetsView{
 
     function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {
         decodedLog[0] = uint32(getTeamSumSkills(log));
@@ -58,4 +57,6 @@ contract Utils is EncodingMatchLog, EncodingSkillsGetters{
         generationGamesNonStopInjuryWeeks[1] = getGamesNonStopping(encodedSkills);
         generationGamesNonStopInjuryWeeks[2] = getInjuryWeeksLeft(encodedSkills);
     }
+    
+
 }

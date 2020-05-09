@@ -231,8 +231,8 @@ contract('Engine', (accounts) => {
         yellow20.should.not.be.bignumber.equal(yellow21);
 
         // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
-        expected = [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 9, 1, 8, 1, 0, 0, 0, 0, 1, 1, 9, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-        debug.compareArrays(newLog.slice(2), expected, toNum = true, verbose = false);
+        expected = [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 0, 0, 0, 0, 1, 1, 9, 1, 8, 1, 0, 0, 0, 0, 1, 1, 9, 1, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+        debug.compareArrays(newLog.slice(2), expected, toNum = true);
     });
 
     it('computeExceptionalEvents no clashes with redcards', async () => {
@@ -522,8 +522,8 @@ contract('Engine', (accounts) => {
             pen = await encodingLog.getPenalty(log2[1], i).should.be.fulfilled;
             pen2.push(pen);
         }
-        debug.compareArrays(pen1, expected1, toNum = false, verbose = false);
-        debug.compareArrays(pen2, expected2, toNum = false, verbose = false);
+        debug.compareArrays(pen1, expected1, toNum = false);
+        debug.compareArrays(pen2, expected2, toNum = false);
 
         for (team = 0; team < 2; team++){
             win = await encodingLog.getWinner(log2[team]).should.be.fulfilled;
@@ -612,15 +612,13 @@ contract('Engine', (accounts) => {
             teamSkills.toNumber().should.be.equal(expected[team]);
         }
     });
-    
-    
 
-    it('TONI: find 1-1 goals from 1st half are added in the 2nd half', async () => {
+    it('find goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 13;
         log0 =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
         log1 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         log12 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expected1 = [1, 2];
+        expected1 = [1, 3];
         expected2 = [0, 1];
         goals1 = [];
         goals2 = [];
@@ -630,10 +628,10 @@ contract('Engine', (accounts) => {
             nGoals = await encodingLog.getNGoals(log1[team]);
             goals2.push(nGoals)
         }
-        debug.compareArrays(goals1, expected1, toNum = true, verbose = false);
-        debug.compareArrays(goals2, expected2, toNum = true, verbose = false);
+        debug.compareArrays(goals1, expected1, toNum = true);
+        debug.compareArrays(goals2, expected2, toNum = true);
 
-        expected = [1, 3];
+        expected = [1, 4];
         goals = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log12[team]);
@@ -646,7 +644,7 @@ contract('Engine', (accounts) => {
             nDefs = await encodingLog.getNDefs(log12[team], is2nd = true);
             nDefs.toNumber().should.be.equal(4);
         }
-        debug.compareArrays(goals, expected, toNum = true, verbose = false);
+        debug.compareArrays(goals, expected, toNum = true);
     });
 
     it('red cards in first half force lineups of 10 players in 2nd half', async () => {
@@ -750,14 +748,14 @@ contract('Engine', (accounts) => {
             injuryWeeksLeft = 0, subLastHalf, sumSkills = 5
         ).should.be.fulfilled; 
         // recall "penalty" large => good
-        expected = [ 10000, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 ];
+        expected = [ 10000, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500 ];
         pen = [];
         for (p=0; p < 11; p++) {
             penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             pen.push(penalty);
             // penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
-        debug.compareArrays(pen, expected, toNum = true, verbose = false);
+        debug.compareArrays(pen, expected, toNum = true);
     });
 
     it('computeModifierBadPositionAndCondition for DL ', async () => {
@@ -767,12 +765,12 @@ contract('Engine', (accounts) => {
             redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills = 5
         ).should.be.fulfilled;            
-        expected442 = [MAX_PENALTY-10, 
+        expected442 = [MAX_PENALTY-500, 
             0, 1000, 1000, 2000, 
             1000, 2000, 2000, 3000, 
             3000, 3000 
         ];
-        expected433 = [MAX_PENALTY-10, 
+        expected433 = [MAX_PENALTY-500, 
             0, 1000, 1000, 2000, 
             1000, 2000, 3000,  
             2000, 3000, 4000
@@ -787,12 +785,12 @@ contract('Engine', (accounts) => {
 
     it('computeModifierBadPositionAndCondition for DL with gamesNonStopping', async () => {
         // for a DL:
-        expected442 = [MAX_PENALTY-10, 
+        expected442 = [MAX_PENALTY-500, 
             0, 1000, 1000, 2000, 
             1000, 2000, 2000, 3000, 
             3000, 3000 
         ];
-        expected433 = [MAX_PENALTY-10, 
+        expected433 = [MAX_PENALTY-500, 
             0, 1000, 1000, 2000, 
             1000, 2000, 3000,  
             2000, 3000, 4000
@@ -804,8 +802,8 @@ contract('Engine', (accounts) => {
             ).should.be.fulfilled;            
             for (p=0; p < 11; p+=3) {
                 penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
-                if (expected442[p] == MAX_PENALTY-10) {
-                    penalty.toNumber().should.be.equal(10);
+                if (expected442[p] == MAX_PENALTY-500) {
+                    penalty.toNumber().should.be.equal(500);
                 } else {
                     penalty.toNumber().should.be.equal(10000 - Math.min(5000, games*1000) - expected442[p]);
                 }
@@ -820,7 +818,7 @@ contract('Engine', (accounts) => {
             forwardness = 5, leftishness = 7, aggr = 0], alignedEndOfLastHalf = false, 
             redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0, subLastHalf, sumSkills = 5
         ).should.be.fulfilled;            
-        expected442 = [MAX_PENALTY-10, 
+        expected442 = [MAX_PENALTY-500, 
             1000, 1000, 1000, 1000, 
             0, 0, 0, 0, 
             0, 0 
@@ -1108,7 +1106,7 @@ contract('Engine', (accounts) => {
             result = await engine.throwDiceArray(weightsNull, r0).should.be.fulfilled;
             results.push(result)//.toNumber().should.be.equal(p);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = false);
+        debug.compareArrays(results, expected, toNum = true);
     });
 
     it('throws dice array11', async () => {
@@ -1174,36 +1172,57 @@ contract('Engine', (accounts) => {
 
     it('computes team global skills by aggregating across all players in team', async () => {
         // If all skills where 1 for all players, and tactics = 442 =>
-        // move2attack =    defence(defenders + 2*midfields + attackers) +
-        //                  speed(defenders + 2*midfields) +
-        //                  pass(defenders + 3*midfields) 
-        //             =    14 + 12 + 16 = 42
-        // createShoot =    speed(attackers) + pass(attackers) = 2 + 2 = 4
-        // defendShoot =    speed(defenders) + defence(defenders) = 4 + 4 = 8 
-        // blockShoot  =    shoot(keeper); 1
-        // endurance   =    70;
+        // 0. move2attack =    defence(defenders + 2*midfields + attackers) +
+        //                      speed(defenders + 2*midfields) +
+        //                      pass(2*defenders + 3*midfields + 1/3*GK)
+        //                =     14 + 12 + 20 = 46 =   4 * nDefs + 7 * nMid + nAtt + 1/3
+        // 1. createShoot =    speed(attackers + 1/5 mids) + pass(attackers + 1/5 mids)  = 2 * nAtt + 2/5 nMids
+        // 2. defendShoot =    speed(defenders + 1/5 mids + 1/3) + defence(defenders +1/5 mids) = 4 + 4 = 2 * nDef + 2/5 nMids + 1/3
+        // 3. blockShoot  =    shoot(keeper); 1
+        // 4. endurance   =    70;
         // attackersSpeed = [1,1]
         // attackersShoot = [1,1]
         
+        nDef = 4;
+        nMid = 4;
+        nAtt = 2;
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 1];
-        debug.compareArrays(globSkills, expectedGlob, toNum = true, verbose = false);
+        expectedGlob =[ 
+            4 * nDef + 7 * nMid + nAtt, 
+            2 * nAtt, 
+            2 * nDef, 
+            1, 
+            1
+        ];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true);
+
+        // // show that GKs contribute 1/3 extra to move2attack and defendShoot, only when int division by 3 is not zero :-)
+        teamState442 = await createTeamState442(engine, forceSkills= [3,3,3,3,3]).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        expectedGlob =[ 
+            3 * (4 * nDef + 7 * nMid + nAtt) + 1, // adding 3/3 from GK 
+            3 * (2 * nAtt) + 4,   // adding (3*2*nMids)/5
+            3 * (2 * nDef) + 1 + 4,   // adding 3/3 from GK + (3*2*nMids)/5
+            3 * 1, 
+            1
+        ];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000-1]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 65];
-        debug.compareArrays(globSkills, expectedGlob, toNum = true, verbose = false);
+        expectedGlob = [46, 4, 8, 1, 65];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 65];
-        debug.compareArrays(globSkills, expectedGlob, toNum = true, verbose = false);
+        expectedGlob = [46, 4, 8, 1, 65];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,20000-1]).should.be.fulfilled;
         globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
-        expectedGlob = [42, 4, 8, 1, 100];
-        debug.compareArrays(globSkills, expectedGlob, toNum = true, verbose = false);
+        expectedGlob = [46, 4, 8, 1, 100];
+        debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
     });
 
@@ -1231,7 +1250,7 @@ contract('Engine', (accounts) => {
             result.push(nGoals);
         }
         // and viceversa:
-        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+        debug.compareArrays(result, expectedResult, toNum = true);
         matchLog = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, states], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expectedResult = [12, 0];
         result = []
@@ -1239,19 +1258,19 @@ contract('Engine', (accounts) => {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             result.push(nGoals);
         }
-        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+        debug.compareArrays(result, expectedResult, toNum = true);
     });
 
 
     it('different team state => different result', async () => {
         matchLog = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [0, 2];
+        expectedResult = [2, 2];
         result = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             result.push(nGoals);
         }
-        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+        debug.compareArrays(result, expectedResult, toNum = true);
 
         matchLog = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expectedResult = [12, 0];
@@ -1263,40 +1282,40 @@ contract('Engine', (accounts) => {
 
     it('different seeds => different result', async () => {
         matchLog = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [0, 2];
+        expectedResult = [2, 2];
         result = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             result.push(nGoals);
         }
-        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+        debug.compareArrays(result, expectedResult, toNum = true);
 
         matchLog = await engine.playHalfMatch(654322, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        expectedResult = [1, 0];
+        expectedResult = [2, 3];
         result = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             result.push(nGoals);
         }
-        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+        debug.compareArrays(result, expectedResult, toNum = true);
         // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
         expected = [ 
-            1, 0, 0, 0, 0,
-            0, 0, 0, 0, 0,
-            1, 1, 7, 0, 0,
-            0, 0, 0, 0, 0,
-            0, 1, 8, 0, 0,
-            1, 0, 0, 0, 0,
-            0, 1, 10, 1, 10,
-            1, 0, 0, 0, 0,
-            1, 0, 0, 0, 0,
-            1, 1, 8, 0, 0,
-            1, 1, 10, 0, 0,
+            1, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            1, 1, 7, 1, 9, 
+            0, 0, 0, 0, 0, 
+            0, 1, 8, 1, 5, 
+            1, 0, 0, 0, 0, 
+            0, 1, 10, 1, 10, 
+            1, 0, 0, 0, 0, 
+            1, 0, 0, 0, 0, 
+            1, 1, 8, 1, 8, 
+            1, 1, 10, 1, 6, 
             1, 0, 0, 0, 0 
         ];
         goals = [0,0];
         for (i=0;i< expected.length/5;i++) goals[expected[5*i]] += expected[5*i+3] + 0*result[0] ;
-        debug.compareArrays(goals, expectedResult, toNum = false, verbose = false);
-        debug.compareArrays(matchLog.slice(2), expected, toNum = true, verbose = false);
+        debug.compareArrays(matchLog.slice(2), expected, toNum = true);
+        debug.compareArrays(goals, expectedResult, toNum = false);
     });
 });

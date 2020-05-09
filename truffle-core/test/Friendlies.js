@@ -35,8 +35,8 @@ contract('Friendlies', (accounts) => {
             nGamesPlayedByTeam[result[0].toNumber()] += 1;
             nGamesPlayedByTeam[result[1].toNumber()] += 1;
         }
-        debug.compareArrays(teamsInMatches, expected, toNum = true, verbose = false);
-        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
+        debug.compareArrays(teamsInMatches, expected, toNum = true);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false);
     });  
     
     it('getTeamsInCupMatch for 64 teams without shuffling', async () => {
@@ -55,8 +55,8 @@ contract('Friendlies', (accounts) => {
             nGamesPlayedByTeam[result[0].toNumber()] += 1;
             nGamesPlayedByTeam[result[1].toNumber()] += 1;
         }
-        debug.compareArrays(teamsInMatches, expected, toNum = true, verbose = false);
-        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
+        debug.compareArrays(teamsInMatches, expected, toNum = true);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false);
     });     
     
     it('getTeamsInCupMatch for 64 teams with shuffling', async () => {
@@ -77,8 +77,8 @@ contract('Friendlies', (accounts) => {
             nGamesPlayedByTeam[result[0].toNumber()] += 1;
             nGamesPlayedByTeam[result[1].toNumber()] += 1;
         }
-        debug.compareArrays(teamsInMatches, expected, toNum = true, verbose = false);
-        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
+        debug.compareArrays(teamsInMatches, expected, toNum = true);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false);
     });     
         
     it('getTeamsInLeagueMatch for 4 teams', async () => {
@@ -100,8 +100,8 @@ contract('Friendlies', (accounts) => {
                 nGamesPlayedByTeam[nTeams + result[1].toNumber()] += 1;
             }
         }
-        debug.compareArrays(teamsInLeagueMatches, expected, toNum = true, verbose = false);
-        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
+        debug.compareArrays(teamsInLeagueMatches, expected, toNum = true);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false);
     });
     
     it('getTeamsInLeagueMatch for 6 teams', async () => {
@@ -121,8 +121,8 @@ contract('Friendlies', (accounts) => {
                 nGamesPlayedByTeam[result[0].toNumber()] += 1;
                 nGamesPlayedByTeam[nTeams + result[1].toNumber()] += 1;            }
         }
-        debug.compareArrays(teamsInLeagueMatches, expected, toNum = true, verbose = false);
-        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
+        debug.compareArrays(teamsInLeagueMatches, expected, toNum = true);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false);
     });
 
 });

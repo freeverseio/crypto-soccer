@@ -57,6 +57,8 @@ contract('Assets', (accounts) => {
         TEAMS_PER_LEAGUE = await constants.get_TEAMS_PER_LEAGUE().should.be.fulfilled;
         FREE_PLAYER_ID = await constants.get_FREE_PLAYER_ID().should.be.fulfilled;
         NULL_ADDR = await constants.get_NULL_ADDR().should.be.fulfilled;
+        INGAMETIME_VS_REALTIME = await constants.get_INGAMETIME_VS_REALTIME().should.be.fulfilled;
+        INGAMETIME_VS_REALTIME = INGAMETIME_VS_REALTIME.toNumber();
         PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
@@ -304,22 +306,21 @@ contract('Assets', (accounts) => {
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        expectedSkills = [ 1427, 1016, 853, 974, 726 ];
+        expectedSkills = [ 1589, 731, 1016, 995, 667 ];
         resultSkills = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
             resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
         }
-        debug.compareArrays(resultSkills, expectedSkills, toNum = true, verbose = false);
-
+        debug.compareArrays(resultSkills, expectedSkills, toNum = true);
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
         gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
         dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-        (Math.abs(ageInDays.toNumber() - 11521) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1
-        // check that the ageInDay can be obtained by 7 * (now - dayOfBirth), where
-        // now is approximately gameDeployDay. There is an uncertainty of about 7 days due to rounding.
-        (Math.abs(7*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < 8).should.be.equal(true);
+        (Math.abs(ageInDays.toNumber() - 10660) <= INGAMETIME_VS_REALTIME).should.be.equal(true); // we cannot guarantee exactness +/- 1
+        // check that the ageInDay can be obtained by INGAMETIME_VS_REALTIME * (now - dayOfBirth), where
+        // now is approximately gameDeployDay. There is an uncertainty of about INGAMETIME_VS_REALTIME days due to rounding.
+        (Math.abs(INGAMETIME_VS_REALTIME*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < INGAMETIME_VS_REALTIME).should.be.equal(true);
     });
 
    it('get state of player on creation', async () => {
@@ -331,7 +332,6 @@ contract('Assets', (accounts) => {
         teamIdxInCountry.should.be.equal(0);
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         state = await market.getPlayerState(playerId).should.be.fulfilled;
-        newId.should.be.bignumber.equal(playerId);
         expectedTeamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
         teamId =  await assets.getCurrentTeamIdFromPlayerState(state).should.be.fulfilled; 
         teamId.should.be.bignumber.equal(expectedTeamId);
@@ -511,29 +511,17 @@ contract('Assets', (accounts) => {
         owner.should.be.equal(ALICE);
     });
 
-    
-   it('computed skills with rnd = 0 for a goal keeper', async () => {
-        let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 0).should.be.fulfilled;
-        const {0: skills, 1: birthTraits} = computedSkills;
-        expected = [1000, 1000, 1000, 1000, 1000];
-        debug.compareArrays(skills, expected, toNum = true, verbose = false);
-        // birthTraits = [potential, forwardness, leftishness, aggressiveness]
-        expected = [0, 0, 0, 0] // shirNum = 0 for a GK
-        debug.compareArrays(birthTraits, expected, toNum = true, verbose = false);
-    });
-
-    
    it('test that goal keepers have great shoot=block skills', async () => {
         skillsAvg = [0,0,0,0,0];
         nTrials = 100;
         for (n = 0; n < nTrials; n++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
-            var {0: skills, 1: birthTraits} = await assets.computeSkills(seed , shirtNum = 0).should.be.fulfilled;
+            var {0: skills, 1: birthTraits} = await assets.computeSkills(seed , shirtNum = 0, pot = 0).should.be.fulfilled;
             for (sk=0; sk < 5; sk++) skillsAvg[sk] += skills[sk].toNumber();
         }
         for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
-        expected = [ 1371, 909, 795, 957, 963 ];
-        debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
+        expected = [ 1176, 1029, 822, 984, 985 ];
+        debug.compareArrays(skillsAvg, expected, toNum = false);
     });
 
    it('test that forwards have great shoot skills', async () => {
@@ -541,51 +529,69 @@ contract('Assets', (accounts) => {
         nTrials = 100;
         for (n = 0; n < nTrials; n++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
-            var {0: skills, 1: birthTraits} = await assets.computeSkills(seed , shirtNum = 16).should.be.fulfilled;
+            var {0: skills, 1: birthTraits} = await assets.computeSkills(seed , shirtNum = 16, pot = 0).should.be.fulfilled;
             for (sk=0; sk < 5; sk++) skillsAvg[sk] += skills[sk].toNumber();
         }
         for (sk=0; sk < 5; sk++) skillsAvg[sk] = Math.floor(skillsAvg[sk]/nTrials);
-        expected = [ 1251, 950, 989, 802, 1004 ];
-        debug.compareArrays(skillsAvg, expected, toNum = false, verbose = false);
+        expected = [ 1213, 974, 992, 816, 1001 ];
+        debug.compareArrays(skillsAvg, expected, toNum = false);
     });
     
-   it('computed skills with rnd = 0 for non goal keepers should be 1000 each', async () => {
-        let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
-        const {0: skills, 1: birthTraits} = computedSkills;
-        expected = [1000, 1000, 1000, 1000, 1000];
-        debug.compareArrays(skills, expected, toNum = true, verbose = false);
-        // birthTraits = [potential, forwardness, leftishness, aggressiveness]
-        expected = [0, 1, 1, 0]
-        debug.compareArrays(birthTraits, expected, toNum = true, verbose = false);
+    it('check averages of ages and potentials', async () => {
+        // both arrays are = real values x 100
+                          [ 2521, 2401, 2814, 2492, 2183 ]
+        avgAgesExpected = [ 2520, 2401, 2814, 2492, 2182 ]; // age should have avg of 2600 (26 years x 100), with quite some variability
+        avgPotsExpected = [ 416, 427, 427, 427, 427 ]; // potential should always be close to 4.25 => x100 = 425, with very low variability
+        avgAges = [];
+        avgPots = [];
+        for (t = 0; t < 5; t++) {
+            sumPot = 0;
+            sumAge = 0;
+            for (shirtNum = t * PLAYERS_PER_TEAM_INIT; shirtNum < (t+1)*PLAYERS_PER_TEAM_INIT; shirtNum++) {
+                playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdx = 0, shirtNum).should.be.fulfilled;
+                skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
+                pot = await assets.getPotential(skills).should.be.fulfilled;
+                age = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
+                sumPot += pot.toNumber();
+                sumAge += age.toNumber()/365;
+            }
+            avgAges.push(Math.floor(sumAge/PLAYERS_PER_TEAM_INIT*100))
+            avgPots.push(Math.floor(sumPot/PLAYERS_PER_TEAM_INIT*100))
+        }
+        for (i = 0; i < avgAges; i++) {
+            assert.equal( Math.abs(avgAges[i]-avgAgesExpected[i]) < 50, true, "age deviates too much, even accounting for deploy time rounding");
+        }
+        debug.compareArrays(avgPots, avgPotsExpected, toNum = false);
     });
 
+
    it('computed prefPos gives correct number of defenders, mids, etc', async () => {
-        expectedPos = [ 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 4, 4, 5, 5, 3, 3, 3, 3 ];
+        expectedPos = [ 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 5, 5, 3, 3, 3, 3 ];
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
-            computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
+            computedSkills = await assets.computeSkills(seed, shirtNum, pot = 0).should.be.fulfilled;
             birthTraits = computedSkills[1];
             birthTraits[1].toNumber().should.be.equal(expectedPos[shirtNum]);
         }
     });
 
    it('testing aggressiveness', async () => { 
-        expectedAggr = [ 3, 1, 1, 2, 2, 2, 0, 1, 0, 1, 2, 2, 3, 3, 3, 0, 2, 3 ];
+        expectedAggr = [ 3, 0, 2, 1, 2, 1, 2, 0, 2, 1, 0, 3, 2, 3, 3, 2, 2, 2 ];
         resultAggr = []
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
-            computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
+            computedSkills = await assets.computeSkills(seed, shirtNum, pot = 0).should.be.fulfilled;
             birthTraits = computedSkills[1];
             resultAggr.push(birthTraits[3])
         }
-        debug.compareArrays(resultAggr, expectedAggr, toNum = true, verbose = false);
+        debug.compareArrays(resultAggr, expectedAggr, toNum = true);
     });
 
    it('sum of computed skills is close to 5000', async () => {
         for (let i = 0; i < 10; i++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + i));
             shirtNum = 3 + (seed % 15); // avoid goalkeepers
-            computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
+            computedSkills = await assets.computeSkills(seed, shirtNum, pot = 0).should.be.fulfilled;
             skills = computedSkills[0];
             const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
             (Math.abs(sum - 5000) < 5).should.be.equal(true);

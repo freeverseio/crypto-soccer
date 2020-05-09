@@ -18,6 +18,8 @@ contract Constants {
     uint256 constant internal IN_TRANSIT_TEAM = 2;
     uint256 constant internal NULL_TEAMID = 0;
     uint256 constant internal NULL_PLAYERID = 0;
+    uint256 constant internal INGAMETIME_VS_REALTIME = 14;
+    uint8 constant internal MAX_POTENTIAL_AT_BIRTH = 7;
 
     // Skills: shoot, speed, pass, defence, endurance
     uint8 constant internal SK_SHO = 0;
@@ -25,6 +27,14 @@ contract Constants {
     uint8 constant internal SK_PAS = 2;
     uint8 constant internal SK_DEF = 3;
     uint8 constant internal SK_END = 4;
+
+    // Skills for GKs: shot-stopping, 1-on-1, pass, penaltySaving, endurance 
+    uint8 constant internal GK_SHO = 0;
+    uint8 constant internal GK_1O1 = 1;
+    uint8 constant internal GK_PAS = 2;
+    uint8 constant internal GK_PEN = 3;
+    uint8 constant internal GK_END = 4;
+
 
     // Birth Traits: potential, forwardness, leftishness, aggressiveness
     uint8 constant internal IDX_POT = 0;

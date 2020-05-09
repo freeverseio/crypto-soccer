@@ -23,6 +23,7 @@ func TestGetWorldPlayers(t *testing.T) {
 
 func TestCreateWorldPlayerBatch(t *testing.T) {
 	value := int64(3000)
+	maxPotential := uint8(9)
 	now := int64(1554940800) // first second of a week
 	teamId := "274877906944"
 
@@ -30,49 +31,53 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 		*bc.Contracts,
 		namesdb,
 		value,
+		maxPotential,
 		teamId,
 		now-2,
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532613796318893000562283106665962678893516101856333720")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532605025881821322438814004097112527701782559078354692")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
-	assert.Equal(t, players[0].Name(), "Ekaitz Arana")
-	assert.Equal(t, players[0].Speed(), int32(3413))
+	assert.Equal(t, players[0].Name(), "Alejandro Helmer")
+	assert.Equal(t, players[0].Speed(), int32(3402))
 
 	players, err = gql.CreateWorldPlayerBatch(
 		*bc.Contracts,
 		namesdb,
 		value,
+		maxPotential,
 		teamId,
 		now-1,
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532613796318893000562283106665962678893516101856333720")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532605025881821322438814004097112527701782559078354692")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
 
 	players, err = gql.CreateWorldPlayerBatch(
 		*bc.Contracts,
 		namesdb,
 		value,
+		maxPotential,
 		teamId,
 		now,
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532613796318893000562283106667171604713130731031039896")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532605025881821322438814004098321453521397188253060868")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 
 	players, err = gql.CreateWorldPlayerBatch(
 		*bc.Contracts,
 		namesdb,
 		value,
+		maxPotential,
 		teamId,
 		now+1,
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532613796318893000562283106667171604713130731031039896")
+	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097711785532605025881821322438814004098321453521397188253060868")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 }

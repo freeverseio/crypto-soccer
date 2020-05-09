@@ -50,8 +50,9 @@ contract('Evolution', (accounts) => {
     const left442 = [0, IDX_L, IDX_C, IDX_C, IDX_R, IDX_L, IDX_C, IDX_C, IDX_R, IDX_C, IDX_C];
     // const now = Math.floor(new Date()/1000);
     // const dayOfBirth21 = Math.round(secsToDays(now) - 21/7);
+    const INGAMETIME_VS_REALTIME = 14;
     const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
-    const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
+    const dayOfBirth21 = secsToDays(now) - 7658/INGAMETIME_VS_REALTIME; // = 7658 is almost 21 years, and exactly divisible by 14
     const MAX_PENALTY = 10000;
     const MAX_GOALS = 12;
     const RED_CARD = 3;
@@ -76,7 +77,8 @@ contract('Evolution', (accounts) => {
     const isHomeSt = false;
     const teamSumSkillsDefault = 0;
     const trainingPointsInit = 0;
-    
+    const N_SKILLS = 5;
+
     // Skills: shoot, speed, pass, defence, endurance
     const SK_SHO = 0;
     const SK_SPE = 1;
@@ -168,37 +170,6 @@ contract('Evolution', (accounts) => {
         return teamState;
     };
 
-    const createHardcodedTeam = function () {
-        // returns 18 players generated with the following code. We hardcode it to avoid the "deployDate" time-dependency
-        // teamState = [];
-        // playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdx = 0, playerIdx = 0).should.be.fulfilled;
-        // for (p = 0; p < 18; p++) {
-        //     skills = await assets.getPlayerSkillsAtBirth(playerId0.toNumber() + p);
-        //     teamState.push(skills);
-        //     console.log(skills.toString(10))
-        // }
-        return [
-            '14606248079918261338806855150670198598294524424421999',
-            '14603325075249802958062362651785117246719383552393656',
-            '14615017086954653606499907426763036762091679724733245',
-            '14609171184243174825485386589332947715467405749846827',
-            '14615017461189033969342085869889674545308663693968083',
-            '14603325891317697566792669908219362044711638355411673',
-            '14606249873734453245614329076439313941148075272765994',
-            '14603324461979309998470701478621001103697221903123183',
-            '14606248281321866413037179508268863783570851530343215',
-            '14606249082057998697777445123967984023640370982880706',
-            '14603327085801362263089568768708477093108613577769640',
-            '14612095382001501327618929648053879079031002742916002',
-            '14603326117112742701915784319947485139466656825672861',
-            '14612093787498219632679532865607761507997232766977103',
-            '14609173081200313275497388848716119026424650418029241',
-            '14603326360330245023390630956127251848106222989410926',
-            '14606249807529115937477333996086265720951632055960118',
-            '14603326808435843856365497638008216685947959514366883'
-        ];
-    };
-    
     function parseLog(tr) {
         arr = [
             tr.goalkeepersShoot,
@@ -290,6 +261,23 @@ contract('Evolution', (accounts) => {
         }        
         if (verbose) console.log("OK = ", OK);
         return OK;
+    }
+    
+    const createPlayerFromBirthAndPotential = async (assets, dayOfBirth, potential) => {
+        playerSkills = await assets.encodePlayerSkills(
+            skills = [1000, 1000, 1000, 1000, 1000], 
+            dayOfBirth,
+            gen = 0,
+            playerId = 2132321,
+            [potential, forwardness = 1, leftishness = 1, aggr = 0],
+            alignedEndOfLastHalf = true,
+            redCardLastGame = false,
+            gamesNonStopping = 0,
+            injuryWeeksLeft = 0,
+            subLastHalf,
+            sumSkills = 5
+        ).should.be.fulfilled;
+        return playerSkills;
     }
     
     beforeEach(async () => {
@@ -394,7 +382,7 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
     });
 
-    it('test that used to fail because yellow cards reamined 0 when truned into a red -serious', async () => {
+    it('test that used to fail because yellow cards remained 0 when turned into a red -serious', async () => {
         utils = await Utils.new().should.be.fulfilled;
         seed = '0xe52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71';startTime = '1790899200';matchLog0 = '0';teamId0 = '274877906944';tactic0 = '340596594427581673436941882753025';assignedTP0 = '0';players0 = ['14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247','14606248079918261338806855269144928920528183545627247',];matchLog1 = '0';teamId1 = '274877906945';tactic1 = '340596594427581673436941882753025';assignedTP1 = '0';players1 = ['16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614','16573429227295117480385309340654302060354425351701614',];
         var {0: skills, 1: matchLogsAndEvents} =  await play.play1stHalfAndEvolve(
@@ -404,13 +392,13 @@ contract('Evolution', (accounts) => {
         // Team0: show that the two yellows became 1 yellow and 1 red. And that 2nd team had no cards at all.
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [54956, 8, 3, 8, 8, 14];
-        debug.compareArrays(result, expct, toNum = true, verbose = false, isBigNumber = false);
+        expct = [54967, 8, 3, 8, 8, 14];
+        debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [54967, 14, 0, 0, 14, 14];
-        debug.compareArrays(result, expct, toNum = true, verbose = false, isBigNumber = false);
+        expct = [54956, 14, 0, 0, 14, 14];
+        debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
 
         seed = '0xe52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71';startTime = '1790899200';matchLog0 = '1809252841225230840719990802586915413221463612302449923019351491021792870400';teamId0 = '274877906944';tactic0 = '340596594427581673436941882753025';assignedTP0 = '0';players0 = ['444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215348664084887401221731547818249502887980205736758','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270',];matchLog1 = '1809252842383666049074119856298496506341924193632611326497576041530278307731';teamId1 = '274877906945';tactic1 = '340596594427581673436941882753025';assignedTP1 = '0';players1 = ['13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901',];        
         var {0: skills, 1: matchLogsAndEvents} =  await play.play2ndHalfAndEvolve(
@@ -420,19 +408,19 @@ contract('Evolution', (accounts) => {
         // same for 2nd half
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = true).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54956, 7, 3, 8, 7, 14 ];
-        debug.compareArrays(result, expct, toNum = true, verbose = false, isBigNumber = false);
+        expct = [ 54967, 7, 3, 8, 7, 14 ];
+        debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = true).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54967, 14, 0, 0, 14, 14 ];
-        debug.compareArrays(result, expct, toNum = true, verbose = false, isBigNumber = false);
+        expct = [ 54956, 14, 0, 0, 14, 14 ];
+        debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
 
 
     });
 
 
-    it('test that used to fail because yellow cards reamined 0 when truned into a red]', async () => {
+    it('test that used to fail because yellow cards remained 0 when turned into a red', async () => {
         utils = await Utils.new().should.be.fulfilled;
 
         seed = '0xe52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71';startTime = '1790899200';matchLog0 = '1809252841225359395763531563040360552848149419233210499192956735625688514560';teamId0 = '274877906944';tactic0 = '340596594427581673436941882753025';assignedTP0 = '0';players0 = ['444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215365791057199872740304247249882896829616798696246','444839120007985571215365791057199872740304247249882896829616798696246','444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215354373075658225061255780962127300868525736723254','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270',];matchLog1 = '1853865730769448808439638838008836422826785356564716589545617037606298150806';teamId1 = '274877906945';tactic1 = '340596594427581673436941882753025';assignedTP1 = '0';players1 = ['13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512374694612962256356302448524453314934638900740885','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901',]; 
@@ -443,13 +431,13 @@ contract('Evolution', (accounts) => {
         // same for 2nd half
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 44964, 9, 3, 8, 9, 14 ];
-        debug.compareArrays(result, expct, toNum = true, verbose = false, isBigNumber = false);
+        expct = [ 44874, 9, 3, 8, 9, 14 ];
+        debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 55000, 14, 0, 0, 14, 14 ];
-        debug.compareArrays(result, expct, toNum = true, verbose = false, isBigNumber = false);
+        expct = [ 54890, 14, 0, 0, 14, 14 ];
+        debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
     });
     
     
@@ -470,7 +458,7 @@ contract('Evolution', (accounts) => {
         decoded = await evo.decodeTactics(tactic0).should.be.fulfilled;
         // show that there are no substitutions:
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tac} = decoded;
-        debug.compareArrays(subs, [NO_SUBST, NO_SUBST, NO_SUBST], toNum = true, verbose = false, isBigNumber = true);
+        debug.compareArrays(subs, [NO_SUBST, NO_SUBST, NO_SUBST], toNum = true, isBigNumber = true);
         
         // show that the
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
@@ -487,7 +475,7 @@ contract('Evolution', (accounts) => {
             red = await assets.getRedCardLastGame(skills[0][p]).should.be.fulfilled;
             reds.push(red);
         }
-        debug.compareArrays(reds, expectedReds, toNum = false, verbose = false, isBigNumber = false);
+        debug.compareArrays(reds, expectedReds, toNum = false, isBigNumber = false);
 
         // shows that second team has veeery different cards and injuries
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
@@ -539,7 +527,7 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false).should.be.fulfilled;
         // players not aligned did not change state: 
-        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         // those that were aligned either finished the 1st half, or were substituted:
         aligned = await evo.setAlignedEndOfFirstHalf(teamStateAll50Half1[0], true).should.be.fulfilled
         substituted = await evo.setSubstitutedFirstHalf(teamStateAll50Half1[0], true).should.be.fulfilled
@@ -551,7 +539,7 @@ contract('Evolution', (accounts) => {
         // now try the same with a red card:
         newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
-        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedRedCarded = await evo.setRedCardLastGame(aligned, true).should.be.fulfilled
         newSkills[1].should.be.bignumber.equal(alignedRedCarded);
         for (p = 0; p < 14; p++) {
@@ -568,7 +556,7 @@ contract('Evolution', (accounts) => {
         WEEKS_HARD_INJ = 5;
         newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = HARD_INJURY, is2nd = false).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
-        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_HARD_INJ).should.be.fulfilled
         newSkills[1].should.be.bignumber.equal(alignedInjured);
         for (p = 0; p < 14; p++) {
@@ -580,7 +568,7 @@ contract('Evolution', (accounts) => {
         // now try the same with a soft injury:
         newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = SOFT_INJURY, is2nd = false).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
-        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_SOFT_INJ).should.be.fulfilled
         newSkills[1].should.be.bignumber.equal(alignedInjured);
         for (p = 0; p < 14; p++) {
@@ -601,7 +589,7 @@ contract('Evolution', (accounts) => {
         teamStateAll50Half2[1] = await evo.setInjuryWeeksLeft(teamStateAll50Half2[1], 2);
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half2, matchLog[0], tactics0, is2nd = true).should.be.fulfilled;
         // players not aligned did not change state: 
-        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, isBigNumber = true);
         for (p = 0; p < 25; p++) {
             aligned = await evo.getAlignedEndOfFirstHalf(newSkills[p]).should.be.fulfilled
             aligned.should.be.equal(false)
@@ -615,7 +603,7 @@ contract('Evolution', (accounts) => {
         newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
         newLog = await evo.addOutOfGame(newLog, player = 2, round = 2, typeOfOutOfGame = RED_CARD, is2nd = true).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half2, newLog, tactics0, is2nd = true).should.be.fulfilled;
-        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, isBigNumber = true);
         for (p = 0; p < 25; p++) {
             redCarded = await evo.getRedCardLastGame(newSkills[p]).should.be.fulfilled
             if (p == 1 || p == 2) {redCarded.should.be.equal(true);}
@@ -626,9 +614,9 @@ contract('Evolution', (accounts) => {
     it('applyTrainingPoints: if assignment = 0, it works by doing absolutely nothing', async () => {
         matchStartTime = now;
         newSkills = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, tactics = 0, matchStartTime, TPs = 0).should.be.fulfilled;
-        newSkills2 = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, tactics = 0, matchStartTime, TPs = 1).should.be.fulfilled;
-        debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
-        debug.compareArrays(newSkills2, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
+        // newSkills2 = await training.applyTrainingPoints(teamStateAll50Half2, assignment = 0, tactics = 0, matchStartTime, TPs = 1).should.be.fulfilled;
+        debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, isBigNumber = true);
+        // debug.compareArrays(newSkills2, teamStateAll50Half2, toNum = false, isBigNumber = true);
     });
 
     it('training leading to an actual son', async () => {
@@ -646,7 +634,7 @@ contract('Evolution', (accounts) => {
             sumSkills = 5
         ).should.be.fulfilled;
         age = 40;
-        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/INGAMETIME_VS_REALTIME);
         
         TPs = 20;
         TPperSkill = Array.from(new Array(5), (x,i) => TPs/5 - 3*i % 5);
@@ -654,9 +642,9 @@ contract('Evolution', (accounts) => {
 
         // checks that the generation increases by 1. 
         // It sets a "32" at the beginning if it is a Academy player, otherwise it is a child
-        // In this case, the randomness leads to an Academy player
+        // In this case, the randomness leads to an actual son
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(gen + 1)
+        result.toNumber().should.be.equal(gen - 32 + 1)
 
         playerSkills = await assets.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
@@ -672,7 +660,7 @@ contract('Evolution', (accounts) => {
             sumSkills = 5
         ).should.be.fulfilled;
         age = 40;
-        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/INGAMETIME_VS_REALTIME);
         
         TPs = 20;
         TPperSkill = Array.from(new Array(5), (x,i) => TPs/5 - 3*i % 5);
@@ -680,22 +668,29 @@ contract('Evolution', (accounts) => {
 
         // checks that the generation increases by 1. 
         // It sets a "32" at the beginning if it is a Academy player, otherwise it is a child
-        // In this case, the randomness leads to a son
+        // In this case, the randomness leads to an academy player
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen - 32 + 1)
         
-        expected = [ 1699, 1037, 1043, 586, 631 ];
-        N_SKILLS = 5;
+        expected = [ 1440, 744, 1244, 803, 766 ];
         results = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = false);
+        debug.compareArrays(results, expected, toNum = true);
         
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expectedSumSkills);
+        
+        // check that potential increases by 1:
+        result = await engine.getPotential(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(potential+1);
+
+        // check that forwardness remains the same:
+        result = await engine.getForwardness(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(forwardness);
         
     });
     
@@ -716,7 +711,7 @@ contract('Evolution', (accounts) => {
             sumSkills = 5
         ).should.be.fulfilled;
         age = 40;
-        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/INGAMETIME_VS_REALTIME);
         
         TPs = 20;
         TPperSkill = Array.from(new Array(5), (x,i) => TPs/5 - 3*i % 5);
@@ -727,18 +722,21 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(32 + gen + 1)
 
-        expected = [ 962, 766, 1301, 1015, 953 ];
+        expected = [ 1248, 828, 668, 1019, 1237 ];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = true);
+        debug.compareArrays(results, expected, toNum = true);
         
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expectedSumSkills);
-        
+
+        // check that forwardness remains the same: (potential is unrelated, since it is not a child)
+        result = await engine.getForwardness(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(forwardness);
     });
     
     
@@ -792,12 +790,11 @@ contract('Evolution', (accounts) => {
             else { expected = gamesNonStopping[p] - 2 * staminas[p]}
             expectedGamesNonStopping.push(expected)
         }
-        debug.compareArrays(newGamesNonStopping, expectedGamesNonStopping, toNum = true, verbose = false);
+        debug.compareArrays(newGamesNonStopping, expectedGamesNonStopping, toNum = true);
     });
     
     it('applyTrainingPoints with realistic team and zero TPs', async () => {
-        teamState = createHardcodedTeam();
-        for (p = 18; p < 25; p++) teamState.push(0);
+        teamState = teamStateAll50Half1;
         TPperSkill = Array.from(new Array(25), (x,i) => 0);
         TP = TPperSkill.reduce((a, b) => a + b, 0);
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 0).should.be.fulfilled;
@@ -805,8 +802,8 @@ contract('Evolution', (accounts) => {
         newSkills = await training.applyTrainingPoints(teamState, assignment, tactics = 0, matchStartTime, TP);
         initShoot = [];
         newShoot = [];
-        expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
-        expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
+        expectedInitShoot = [ 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50 ];
+        expectedNewShoot  = expectedInitShoot;
         // check that if skills are different, then:
         // - the new ones are worse than the init ones,
         // - it happened because of age (older than 31 y.o.)
@@ -817,18 +814,18 @@ contract('Evolution', (accounts) => {
                 resultId = await assets.getPlayerIdFromSkills(newSkills[p]).should.be.fulfilled;
                 resultAge = await assets.getPlayerAgeInDays(resultId).should.be.fulfilled;
                 (resultAge.toNumber() >= 31 * 365).should.be.equal(true);
+                console.log(resultNew.toNumber(), resultInit.toNumber());
                 (resultNew.toNumber() < resultInit.toNumber()).should.be.equal(true);
             }
             initShoot.push(resultInit)
             newShoot.push(resultNew)
         }
-        debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
-        debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
+        debug.compareArrays(newShoot, expectedNewShoot, toNum = true);
+        debug.compareArrays(initShoot, expectedInitShoot, toNum = true);
     });
     
     it('applyTrainingPoints with realistic team and non-zero TPs', async () => {
-        teamState = createHardcodedTeam();
-        for (p = 18; p < 25; p++) teamState.push(0);
+        teamState = teamStateAll50Half1;
         TPperSkill = [ 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46 ];
         TP = 200;
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
@@ -836,16 +833,16 @@ contract('Evolution', (accounts) => {
         newSkills = await training.applyTrainingPoints(teamState, assignment, tactics = 0, matchStartTime, TP);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 673, 480, 869, 987, 1015, 739, 591, 772, 1009, 1506, 906, 1178, 1452, 1147, 905, 816, 603, 1120 ];
-        expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554,  751,  815, 1474, 680,  930, 1181, 1103, 697, 622, 566,  931 ];
+        expectedInitShoot = [ 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50 ];
+        expectedNewShoot  = [ 105, 105, 105, 105, 105, 105, 105, 105, 105, 105, 105, 105, 110, 105, 105, 105, 105, 105 ];
         for (p = 0; p < 18; p++) {
             result0 = await training.getSkill(teamState[p], SK_SHO);
             result1 = await training.getSkill(newSkills[p], SK_SHO);
             initShoot.push(result0)
             newShoot.push(result1)
         }
-        debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
-        debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
+        debug.compareArrays(newShoot, expectedNewShoot, toNum = true);
+        debug.compareArrays(initShoot, expectedInitShoot, toNum = true);
     });
 
     it('test evolvePlayer at zero potential', async () => {
@@ -863,7 +860,7 @@ contract('Evolution', (accounts) => {
             sumSkills = 5
         ).should.be.fulfilled;
         age = 16;
-        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/INGAMETIME_VS_REALTIME);
         
         TPs = 20;
         TPperSkill = [10, 20, 30, 40, 50];
@@ -874,7 +871,7 @@ contract('Evolution', (accounts) => {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = false);
+        debug.compareArrays(results, expected, toNum = true);
     });
     
     it('test evolvePlayer with TPs= 0', async () => {
@@ -892,7 +889,7 @@ contract('Evolution', (accounts) => {
             sumSkills = 5
         ).should.be.fulfilled;
         age = 16;
-        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/INGAMETIME_VS_REALTIME);
         
         TPperSkill = [0, 0, 0, 0, 00];
         newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
@@ -903,7 +900,7 @@ contract('Evolution', (accounts) => {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = false);
+        debug.compareArrays(results, expected, toNum = true);
     });
     
     
@@ -922,7 +919,7 @@ contract('Evolution', (accounts) => {
             sumSkills = 5
         ).should.be.fulfilled;
         age = 16;
-        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/INGAMETIME_VS_REALTIME);
         
         TPperSkill = [10, 20, 30, 40, 50];
         newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
@@ -933,7 +930,7 @@ contract('Evolution', (accounts) => {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = false);
+        debug.compareArrays(results, expected, toNum = true);
 
 
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
@@ -956,7 +953,7 @@ contract('Evolution', (accounts) => {
             sumSkills = 5
         ).should.be.fulfilled;
         age = 17;
-        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/INGAMETIME_VS_REALTIME);
         
         TPperSkill = [10, 20, 30, 40, 50];
         newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
@@ -967,7 +964,7 @@ contract('Evolution', (accounts) => {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = false);
+        debug.compareArrays(results, expected, toNum = true);
 
         
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
@@ -990,21 +987,49 @@ contract('Evolution', (accounts) => {
             sumSkills = 5
         ).should.be.fulfilled;
         age = 35;
-        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/INGAMETIME_VS_REALTIME);
         
         TPperSkill = [0, 0, 0, 0, 0];
         newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
-        expected = [968, 1968, 2968, 3968, 4968]; // -32 per game
+        expected = [995, 1995, 2995, 3995, 4995]; // -32 per game
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
             results.push(result);
         }
-        debug.compareArrays(results, expected, toNum = true, verbose = false);
-
-        
+        debug.compareArrays(results, expected, toNum = true);
     });
 
+    it('test evolvePlayer formula at various points', async () => {
+        TPperSkill = Array.from(new Array(5), (x,i) => 100);
+        matchStartTime = 982121142;
+        potential = 0;
+        dayOfBirth = 30*365;
+        // syntax: test = [potential, starttime, deltaExpected]
+        tests = [
+            [0, 982121142, 100],
+            [0, 1011404571, 100],
+            [0, 1020414857, 97],
+            [0, 1027172571, 4],
+            [5, 982121142, 666],
+            [5, 1011404571, 100],
+            [5, 1020414857, 97],
+            [5, 1027172571, 4],
+            [9, 982121142, 1200],
+            [9, 1011404571, 550],
+            [9, 1020414857, 347],
+            [9, 1027172571, 104]
+        ];
+        for (t = 0; t < tests.length; t++) {
+            playerSkills = await createPlayerFromBirthAndPotential(assets, dayOfBirth, pot = tests[t][0]);
+            newSkills = await training.evolvePlayer(playerSkills, TPperSkill, matchStartTime = tests[t][1]).should.be.fulfilled;
+            newSkill = await engine.getSkill(newSkills, 0).should.be.fulfilled;
+            delta = newSkill.toNumber() - 1000;
+            assert.equal(Math.abs(delta - tests[t][2]) < 2, true, "training points not as expected")
+        }
+    });
+    
+    
     it('test that we can play a 1st half with log = assignedTPs = 0', async () => {
         TP = 0;
         assignment = 0
@@ -1063,11 +1088,11 @@ contract('Evolution', (accounts) => {
             sum = await evo.getSumOfSkills(skills[1][p]).should.be.fulfilled;
             sumSkills1.push(sum)
         }
-        debug.compareArrays(sumSkills0, expectedSums, toNum = true, verbose = false, isBigNumber = false);
-        debug.compareArrays(sumSkills1, expectedSums, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(sumSkills0, expectedSums, toNum = true, isBigNumber = false);
+        debug.compareArrays(sumSkills1, expectedSums, toNum = true, isBigNumber = false);
 
         // check that the game is played, ends up in 2-2, and that there are no TPs assigned (this is 1st half)
-        expectedGoals = [1, 0];
+        expectedGoals = [2, 3];
         expectedPoints = [0, 0];
         goals = []
         points = []
@@ -1077,12 +1102,11 @@ contract('Evolution', (accounts) => {
             nPoints = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
             points.push(nPoints);
         }
-        debug.compareArrays(goals, expectedGoals, toNum = true, verbose = false, isBigNumber = false);
-        debug.compareArrays(points, expectedPoints, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(goals, expectedGoals, toNum = true, isBigNumber = false);
+        debug.compareArrays(points, expectedPoints, toNum = true, isBigNumber = false);
         // check that the events are generated, and match whatever we got once.
-        expected = [ 1, 1, 8, 0, 0, 1, 1, 7, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 1, 9, 0, 0 ]
-        
-        debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, verbose = false, isBigNumber = false);
+        expected = [ 1, 1, 8, 1, 8, 1, 1, 7, 1, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 10, 1, 10, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 1, 9, 1, 9 ];
+        debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, isBigNumber = false);
 
         // check that all 3 substitutions took place
         for (pos = 0; pos < 3; pos++) {
@@ -1138,10 +1162,10 @@ contract('Evolution', (accounts) => {
             nPoints = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
             points.push(nPoints);
         }
-        debug.compareArrays(goals, expectedGoals, toNum = true, verbose = false, isBigNumber = false);
-        debug.compareArrays(points, expectedPoints, toNum = true, verbose = false, isBigNumber = false);
-        debug.compareArrays(skills[0], emptyTeam, toNum = true, verbose = false, isBigNumber = false);
-        debug.compareArrays(skills[1], emptyTeam, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(goals, expectedGoals, toNum = true, isBigNumber = false);
+        debug.compareArrays(points, expectedPoints, toNum = true, isBigNumber = false);
+        debug.compareArrays(skills[0], emptyTeam, toNum = true, isBigNumber = false);
+        debug.compareArrays(skills[1], emptyTeam, toNum = true, isBigNumber = false);
     });
         
     
@@ -1177,7 +1201,7 @@ contract('Evolution', (accounts) => {
             nGoals = await encodeLog.getNGoals(matchLogsAndEvents0[team]);
             goals.push(nGoals);
         }
-        debug.compareArrays(goals, [1,0], toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(goals, [2,3], toNum = true, isBigNumber = false);
 
         // first: check correct properties for team1:
             // recall:   lineUp = consecutive,  subst = [6, NO_SUBST, NO_SUBST]
@@ -1209,11 +1233,11 @@ contract('Evolution', (accounts) => {
             result = await evo.getHalfTimeSubs(matchLogsAndEvents[1], pos).should.be.fulfilled;
             halfTimeSubs.push(result);
         }
-        debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, isBigNumber = false);
 
         // check Training Points (and Goals)
-        expectedGoals = [1, 4];
-        expectedPoints = [10, 50];
+        expectedGoals = [2, 5];
+        expectedPoints = [ 12, 49 ];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
@@ -1222,8 +1246,8 @@ contract('Evolution', (accounts) => {
             nPoints = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
             points.push(nPoints);
         }
-        debug.compareArrays(goals, expectedGoals, toNum = true, verbose = false, isBigNumber = false);
-        debug.compareArrays(points, expectedPoints, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(goals, expectedGoals, toNum = true, isBigNumber = false);
+        debug.compareArrays(points, expectedPoints, toNum = true, isBigNumber = false);
 
         // test that the states did not change the intrinsics of the players:
         sumBeforeEvolving = await evo.getSumOfSkills(skills0[0][2]).should.be.fulfilled;
@@ -1237,8 +1261,8 @@ contract('Evolution', (accounts) => {
             sum = await evo.getSumOfSkills(skills[1][p]).should.be.fulfilled;
             sumSkills1.push(sum)
         }
-        debug.compareArrays(sumSkills0, expectedSums, toNum = true, verbose = false, isBigNumber = false);
-        debug.compareArrays(sumSkills1, expectedSums, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(sumSkills0, expectedSums, toNum = true, isBigNumber = false);
+        debug.compareArrays(sumSkills1, expectedSums, toNum = true, isBigNumber = false);
 
         // check that we correctly reset the "played game" and gamesNonStopping properties
         // team0 went through subst: [6, 10, 0], so 6 -> 11, 10 -> 12, 0 -> 13
@@ -1270,7 +1294,7 @@ contract('Evolution', (accounts) => {
                 wasSubst.should.be.equal(false);
                 nonStoppingGames.push(nGamesNonStopping);
             }
-            debug.compareArrays(nonStoppingGames, expected[team], toNum = true, verbose = false, isBigNumber = false);
+            debug.compareArrays(nonStoppingGames, expected[team], toNum = true, isBigNumber = false);
         }
     });
     
@@ -1333,7 +1357,7 @@ contract('Evolution', (accounts) => {
             nGamesNonStopping = await evo.getGamesNonStopping(skills[0][p]).should.be.fulfilled;
             nonStoppingGames.push(nGamesNonStopping);
         }
-        debug.compareArrays(nonStoppingGames, expectedGamesNonStopping, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(nonStoppingGames, expectedGamesNonStopping, toNum = true, isBigNumber = false);
     });
 
     it('training points with random inputs', async () => {
@@ -1361,6 +1385,41 @@ contract('Evolution', (accounts) => {
         }
     });
 
+    it('training points cannot go below min points per playing', async () => {
+        // the visitor team scores lots of goals, and home team sees red cards
+        typeOut = [3, 0];
+        outRounds = [7, 0];
+        outGames = [9, 14]
+        yellows1 = [2, 4]
+        yellows2 = [3, 5]
+        defs1 = 4; 
+        defs2 = 4; 
+        numTot = 10; 
+        win = 0; 
+        isHome = true;
+        
+        log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+            outGames, outRounds, typeOut, yellowCardedDidNotFinish1stHalf,
+            isHome, ingameSubs1, ingameSubs2, yellows1, yellows2, 
+            halfTimeSubstitutions, defs1, defs2, numTot, win, teamSumSkillsDefault, trainingPointsInit);
+
+        log1 = await logUtils.encodeLog(encodeLog, nGoals = 12, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+            outGames, outRounds, typeOut, yellowCardedDidNotFinish1stHalf,
+            isHome, ingameSubs1, ingameSubs2, yellows1, yellows2, 
+            halfTimeSubstitutions, defs1, defs2, numTot, win, teamSumSkillsDefault, trainingPointsInit);
+    
+        logFinal = await training.computeTrainingPoints(log0, log1)
+        POINTS_FOR_HAVING_PLAYED = 10 
+        expected = [POINTS_FOR_HAVING_PLAYED, 139];
+        points = [];
+        for (team = 0; team < 2; team++) {
+            point = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points.push(point);
+        }
+        debug.compareArrays(points, expected, toNum = true, isBigNumber = false);
+    });
+
+    
     it('training points with no goals nor anything else', async () => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
