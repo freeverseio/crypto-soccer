@@ -31,14 +31,9 @@ module.exports = function (deployer, network, accounts) {
     
     const versionNumber = 0;
     const proxyAddress  = "0x0";
-<<<<<<< HEAD
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
-=======
-    const {0: proxy, 1: assets, 2: market, 3: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
-
->>>>>>> dev
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
