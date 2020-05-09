@@ -71,6 +71,7 @@ func CreateWorldPlayerBatch(
 
 	epochDays := epoch / (3600 * 24)
 	epochWeeks := epochDays / 7
+	maxPotential := uint8(9)
 	id, _ := new(big.Int).SetString(teamId, 10)
 	if id == nil {
 		return nil, errors.New("invalid teamId")
@@ -85,6 +86,7 @@ func CreateWorldPlayerBatch(
 	worldPlayers, err := contr.Privileged.CreateBuyNowPlayerIdBatch(
 		&bind.CallOpts{},
 		playerValue,
+		maxPotential,
 		id,
 		[4]uint8{
 			nGoalKeepers,
