@@ -268,15 +268,15 @@ contract Stakers is Owned {
     return false;
   }
 
-  function isTrustedParty(address _addr) private view returns (bool) {
+  function isTrustedParty(address _addr) public view returns (bool) {
     return trustedParties.has(_addr);
   }
 
-  function isSlashed(address _addr) private view returns (bool) {
+  function isSlashed(address _addr) public view returns (bool) {
     return slashed.has(_addr);
   }
 
-  function isStaker(address _addr) private view returns (bool) {
+  function isStaker(address _addr) public view returns (bool) {
     for (uint16 i=0; i<NUM_STAKERS; i++) {
       if (stakers[i] == _addr) {
         return true;

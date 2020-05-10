@@ -174,16 +174,6 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
     return [proxy, assets, market, updates, challenges];
 }
 
-async function deployAndConfigureStakers(Stakers, owner, parties, updates) {
-    stakers  = await Stakers.new(1000000000000000, {from:owner});
-    stakers.setGameOwner(updates.address, {from:owner}).should.be.fulfilled;
-    stake = await stakers.requiredStake();
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
-    await updates.setStakersAddress(stakers.address).should.be.fulfilled;
-    return stakers;
-}
-
 async function addTrustedParties(contract, owner, addresses) {
     await asyncForEach(addresses, async (address) => {
         contract.addTrustedParty(address, {from:owner})
@@ -213,7 +203,6 @@ module.exports = {
     informNoCollisions,
     assertNoCollisionsWithProxy,
     deploy,
-    deployAndConfigureStakers,
     addTrustedParties,
     enroll,
 }

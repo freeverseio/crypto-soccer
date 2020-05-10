@@ -55,6 +55,17 @@ contract('Updates', (accounts) => {
         return y;
     }
 
+    async function deployAndConfigureStakers(Stakers, owner, parties, updates) {
+        stakers  = await Stakers.new(1000000000000000, {from:owner});
+        await stakers.setGameOwner(updates.address, {from:owner}).should.be.fulfilled;
+        stake = await stakers.requiredStake();
+        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.enroll(stakers, stake, parties);
+        await updates.setStakersAddress(stakers.address).should.be.fulfilled;
+        return stakers;
+    }
+    
+
     beforeEach(async () => {
         depl =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
         proxy  = depl[0];
@@ -266,7 +277,7 @@ contract('Updates', (accounts) => {
     it('update Timezone once', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployUtils.deployAndConfigureStakers(Stakers, owner, parties, updates);
+        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
 
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -326,7 +337,7 @@ contract('Updates', (accounts) => {
     it('challenging a tz', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployUtils.deployAndConfigureStakers(Stakers, owner, parties, updates);
+        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
@@ -663,7 +674,7 @@ contract('Updates', (accounts) => {
     it('vefiable challenge', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployUtils.deployAndConfigureStakers(Stakers, owner, parties, updates);
+        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
