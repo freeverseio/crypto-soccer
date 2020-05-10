@@ -3,11 +3,11 @@ package storage
 import "database/sql"
 
 type Verse struct {
-	VerseNumber int
+	VerseNumber int64
 	Root        string
 }
 
-func VerseByNumber(tx *sql.Tx, verseNumber int) (*Verse, error) {
+func VerseByNumber(tx *sql.Tx, verseNumber int64) (*Verse, error) {
 	rows, err := tx.Query(`SELECT root FROM verses WHERE verse_number = $1`, verseNumber)
 	if err != nil {
 		return nil, err

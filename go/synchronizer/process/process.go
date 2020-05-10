@@ -139,20 +139,9 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		if err := p.leagueProcessor.Process(tx, v); err != nil {
 			return err
 		}
-
-		u, err := universe.NewFromStorage(tx, int(v.TimeZone))
-		if err != nil {
+		if err := saveUniverseHash(tx, v.TimeZone, v.Verse.Int64()); err != nil {
 			return err
 		}
-		universeHash, err := u.Hash()
-		if err != nil {
-			return err
-		}
-
-		
-
-		log.Infof("Timezone %v local hash %v", v.TimeZone, hex.EncodeToString(universeHash[:]))
-
 	// case market.MarketPlayerFreeze:
 	// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
 	// 	playerID := v.PlayerId
@@ -222,4 +211,20 @@ func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, err
 		return 0, 0, err
 	}
 	return block.Time(), eventRaw.BlockNumber, nil
+}
+
+func saveUniverseHash(tx *sql.Tx, timezone uint8, verseNumber int64) error {
+	u, err := universe.NewFromStorage(tx, int(timezone))
+	if err != nil {
+		return err
+	}
+	universeHash, err := u.Hash()
+	if err != nil {
+		return err
+	}
+
+	verse := storage.Verse{}
+	verse.VerseNumber = verseNumber
+	verse.Root = hex.EncodeToString(universeHash[:])
+	return verse.Insert(tx)
 }
