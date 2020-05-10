@@ -25,3 +25,11 @@ func TestStakerIsEnrolled(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Assert(t, !isEnrolled)
 }
+
+func TestStakerEnrolled(t *testing.T) {
+	pvc, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	assert.NilError(t, err)
+	s, err := staker.New(pvc)
+	assert.NilError(t, err)
+	assert.NilError(t, s.Enroll(*bc.Contracts))
+}

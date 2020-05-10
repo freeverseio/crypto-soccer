@@ -4,6 +4,8 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
+	"github.com/freeverseio/crypto-soccer/go/helper"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -34,6 +36,12 @@ func (b Staker) IsEnrolled(contracts contracts.Contracts) (bool, error) {
 }
 
 func (b Staker) Enroll(contracts contracts.Contracts) error {
-	//contracts.Stakers.Enroll()
+	tx, err := contracts.Stakers.Enroll(b.auth)
+	if err != nil {
+		return err
+	}
+	if _, err := helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
+		return err
+	}
 	return nil
 }
