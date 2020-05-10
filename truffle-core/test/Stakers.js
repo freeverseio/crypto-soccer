@@ -10,8 +10,8 @@ contract('Stakers', (accounts) => {
   let stake
 
   beforeEach(async () => {
-      stakers  = await Stakers.new({from:owner});
-      stake = await stakers.REQUIRED_STAKE();
+    stakers  = await Stakers.new(1000000000000000, {from:owner});
+    stake = await stakers.requiredStake();
   });
 
 ////////////////////////////////////////////////////////////////////////////////////////////

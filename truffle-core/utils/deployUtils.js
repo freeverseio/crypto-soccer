@@ -175,9 +175,9 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
 }
 
 async function deployAndConfigureStakers(Stakers, owner, parties, updates) {
-    stakers  = await Stakers.new({from:owner});
+    stakers  = await Stakers.new(1000000000000000, {from:owner});
     stakers.setGameOwner(updates.address, {from:owner}).should.be.fulfilled;
-    stake = await stakers.REQUIRED_STAKE();
+    stake = await stakers.requiredStake();
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
     await updates.setStakersAddress(stakers.address).should.be.fulfilled;
