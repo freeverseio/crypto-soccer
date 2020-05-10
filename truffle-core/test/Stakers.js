@@ -1,7 +1,7 @@
 const Stakers = artifacts.require("Stakers")
 const expect = require('truffle-assertions');
 
-// TODO: add more tests that execute reward
+// TODO: add more tests that execute withdraw
 
 contract('Stakers', (accounts) => {
   const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts
@@ -318,6 +318,10 @@ contract('Stakers', (accounts) => {
       stakers.finalize({from:gameAddr}),
       "failed to start from L3"
     )
+    await expect.passes(
+      stakers.withdraw({from:dave}),
+      "dave failed to withdraw"
+    )
     assert.isBelow(daveBalance, Number(await web3.eth.getBalance(dave)),
                  "Dave's current balance should be higher now, since he earned bob's stake");
 
@@ -369,6 +373,10 @@ contract('Stakers', (accounts) => {
       stakers.enroll({from:bob, value: stake}),
       "failed to enroll: staker was slashed",
       "bob was slashed, so it should revert"
+    )
+    await expect.passes(
+      stakers.withdraw({from:dave}),
+      "dave failed to withdraw"
     )
 
     assert.isBelow(daveBalance, Number(await web3.eth.getBalance(dave)),
@@ -434,6 +442,10 @@ contract('Stakers', (accounts) => {
     )
     // L3
     assert.equal(3, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.withdraw({from:erin}),
+      "erin failed to withdraw"
+    )
     assert.isBelow(erinBalance, Number(await web3.eth.getBalance(erin)),
                  "Erin current balance should be higher now, since she earned Dave's stake");
     await expect.reverts(
@@ -452,8 +464,11 @@ contract('Stakers', (accounts) => {
       stakers.finalize({from:gameAddr}),
       "failed calling start from L3"
     )
+    await expect.passes(
+      stakers.withdraw({from:frank}),
+      "frank failed to withdraw"
+    )
 
-    // TODO: this fails?
     assert.isBelow(frankBalance, Number(await web3.eth.getBalance(frank)),
                  "Frank's current balance should be higher now, since he earned bob's stake");
 
@@ -519,6 +534,14 @@ contract('Stakers', (accounts) => {
     await expect.passes(
       stakers.finalize({from:gameAddr}),
       "failed to start new verse from L4"
+    )
+    await expect.passes(
+      stakers.withdraw({from:bob}),
+      "bob failed to withdraw"
+    )
+    await expect.passes(
+      stakers.withdraw({from:erin}),
+      "erin failed to withdraw"
     )
     assert.isBelow(bobBalance, Number(await web3.eth.getBalance(bob)),
                  "bob's current balance should be higher now, since she earned alice's stake");

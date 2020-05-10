@@ -121,6 +121,8 @@ contract Stakers is Owned {
   AddressMapping public slashed = new AddressMapping();
   AddressMapping public trustedParties = new AddressMapping();
 
+  mapping (address => uint) stakes;
+
 
   // ----------------- modifiers -----------------------
 
@@ -151,6 +153,12 @@ contract Stakers is Owned {
   }
   function withdraw() external {
     rewards.withdraw(msg.sender);
+    if (stakes[msg.sender] > kRequiredStake)
+    {
+      uint amount = stakes[msg.sender] - kRequiredStake;
+      stakes[msg.sender] = kRequiredStake;
+      msg.sender.transfer(amount);
+    }
   }
 
   /// @notice sets the address of the gameOwner that interacts with this contract
@@ -171,6 +179,7 @@ contract Stakers is Owned {
     require (!isSlashed(msg.sender),      "failed to enroll: staker was slashed");
     require (isTrustedParty(msg.sender),  "failed to enroll: staker is not trusted party");
     require (addStaker(msg.sender),       "failed to enroll");
+    stakes[msg.sender] = msg.value;
 
   }
 
@@ -178,7 +187,7 @@ contract Stakers is Owned {
   function unEnroll() external {
     require (!updaters.contains(msg.sender), "failed to unenroll: staker currently updating");
     require (removeStaker(msg.sender),       "failed to unenroll");
-    msg.sender.transfer(kRequiredStake);
+    msg.sender.transfer(stakes[msg.sender]);
   }
 
   /// @notice update to a new level
@@ -207,17 +216,18 @@ contract Stakers is Owned {
       // The very last possible update: the challenge.
       // It resolves immediately by slashing the last
       // updater
-      slash(updaters.pop());
-      earnStake(_staker);
+      address badStaker = updaters.pop();
+      slash(badStaker);
+      earnStake(_staker, badStaker);
     }
   }
 
   /// @notice finalize current game, get ready for next one.
   /// @dev current state will be resolved at this point.
-  /// If called from level 1, then staker is rewardeds.
-  /// When called from any other level, means that everys
+  /// If called from level 1, then staker is rewarded.
+  /// When called from any other level, means that every
   /// other staker told the truth but the one in between
-  /// told a lie.
+  /// lied.
   function finalize() external onlyGame {
     require (level() > 0, "failed to finalize: wrong level");
     while (level() > 1) {
@@ -305,8 +315,10 @@ contract Stakers is Owned {
   }
 
   function resolve() private {
-    earnStake(updaters.pop());
-    slash(updaters.pop());
+    address goodStaker = updaters.pop();
+    address badStaker = updaters.pop();
+    earnStake(goodStaker,badStaker);
+    slash(badStaker);
   }
 
   function slash(address _staker) private {
@@ -314,8 +326,12 @@ contract Stakers is Owned {
     slashed.add(_staker);
   }
 
-  function earnStake(address _addr) private {
-    address(uint160(_addr)).transfer(kRequiredStake);
+  function earnStake(address _goodStaker, address _badStaker) private {
+
+    require (stakes[_badStaker] > 0);
+    uint amount = stakes[_badStaker];
+    stakes[_badStaker] = 0;
+    stakes[_goodStaker] += amount;
     // TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
     // The idea behind it, is not to promote interest in stealing someone else's stake
     // address(0x0).transfer(kRequiredStake); // burn stake
