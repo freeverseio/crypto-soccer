@@ -183,11 +183,14 @@ contract Stakers is Owned {
 
   }
 
-  /// @notice unregisters a new staker
+  /// @notice unregisters a new staker and transfers all earnings
   function unEnroll() external {
     require (!updaters.contains(msg.sender), "failed to unenroll: staker currently updating");
     require (removeStaker(msg.sender),       "failed to unenroll");
-    msg.sender.transfer(stakes[msg.sender]);
+    rewards.withdraw(msg.sender);
+    uint amount = stakes[msg.sender];
+    stakes[msg.sender]  = 0;
+    msg.sender.transfer(amount);
   }
 
   /// @notice update to a new level
