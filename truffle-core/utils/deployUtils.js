@@ -203,7 +203,6 @@ module.exports = {
     informNoCollisions,
     assertNoCollisionsWithProxy,
     deploy,
-    deployAndConfigureStakers,
     addTrustedParties,
     enroll,
 }
