@@ -142,6 +142,12 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		if err := saveUniverseHash(tx, v.TimeZone, v.Verse.Int64()); err != nil {
 			return err
 		}
+		isTimeToUpdate, err := p.contracts.Updates.IsTimeToUpdate(&bind.CallOpts{})
+		if err != nil {
+			return err
+		}
+		log.Infof("IsTimeToUpdate ======= %v", isTimeToUpdate)
+
 	// case market.MarketPlayerFreeze:
 	// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
 	// 	playerID := v.PlayerId
