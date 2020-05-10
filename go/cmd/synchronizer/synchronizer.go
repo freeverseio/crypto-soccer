@@ -35,6 +35,7 @@ func main() {
 	shopContractAddress := flag.String("shopContractAddress", "", "")
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
 	constantsgettersContractAddress := flag.String("constantsgettersContractAddress", "", "")
+	stakersContractAddress := flag.String("stakersContractAddress", "", "")
 	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	delta := flag.Int("delta", 10, "number of block to process at maximum")
@@ -82,6 +83,9 @@ func main() {
 	if *constantsgettersContractAddress == "" {
 		log.Fatal("no constantsgetters contract address")
 	}
+	if *stakersContractAddress == "" {
+		log.Fatal("no stakers contract address")
+	}
 
 	var stakerAuth *bind.TransactOpts
 	if *stakerPrivateKey != "" {
@@ -127,6 +131,7 @@ func main() {
 			*trainingpointsContractAddress,
 			*constantsgettersContractAddress,
 			privilegedContractAddress,
+			*stakersContractAddress,
 		)
 		if err != nil {
 			return err

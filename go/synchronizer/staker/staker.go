@@ -29,6 +29,11 @@ func (b Staker) Address() common.Address {
 	return b.auth.From
 }
 
+func (b Staker) IsEnrolled(contracts contracts.Contracts) (bool, error) {
+	return contracts.Stakers.IsStaker(&bind.CallOpts{}, b.Address())
+}
+
 func (b Staker) Enroll(contracts contracts.Contracts) error {
+	//contracts.Stakers.Enroll()
 	return nil
 }
