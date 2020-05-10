@@ -93,6 +93,16 @@ contract UpdatesView is AssetsLib {
         return getStatusPure(now, _lastUpdateTime[tz], _challengeTime, writtenLevel);
     }
     
+    function isTimeToUpdate() public view returns(bool) {
+        (uint8 tz,,) = prevTimeZoneToUpdate();
+        if (tz == NULL_TIMEZONE) return true;
+        if (!(getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz))) return false;
+        (,, bool isSettled) = getStatus(tz, true);
+        return isSettled;
+    }
+    
+
+    
     function getStatusPure(uint256 nowTime, uint256 lastUpdate, uint256 challengeTime, uint8 writtenLevel) public pure returns(uint8 finalLevel, uint8 nJumps, bool isSettled) {
         if (challengeTime == 0) return (writtenLevel, 0, nowTime > lastUpdate);
         uint256 numChallPeriods = (nowTime > lastUpdate) ? (nowTime - lastUpdate)/challengeTime : 0;
