@@ -11,7 +11,7 @@ contract('Stakers', (accounts) => {
 
   beforeEach(async () => {
       stakers  = await Stakers.new({from:owner});
-      stake = await stakers.kRequiredStake();
+      stake = await stakers.REQUIRED_STAKE();
   });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
