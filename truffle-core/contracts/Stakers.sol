@@ -81,10 +81,6 @@ contract AddressStack is Owned{
     _address = array[--length];
   }
 
-  //function clear() public {
-  //  length = 0;
-  //}
-
   function contains(address _address) public view returns (bool) {
     for (uint16 i=0; i<length; i++) {
       if (array[i] == _address) {
@@ -111,13 +107,13 @@ contract AddressMapping is Owned{
 
 contract Stakers is Owned {
 
-  uint16 public constant kNumStakers = 32;
-  uint public constant kRequiredStake = 0.001 ether;
+  uint16 public constant NUM_STAKERS = 32;
+  uint public constant REQUIRED_STAKE = 0.001 ether;
 
   address public gameOwner = address(0x0);
   AddressStack private updaters = new AddressStack();
   Rewards public rewards = new Rewards();
-  address[kNumStakers] public stakers;
+  address[NUM_STAKERS] public stakers;
   AddressMapping public slashed = new AddressMapping();
   AddressMapping public trustedParties = new AddressMapping();
 
@@ -151,13 +147,15 @@ contract Stakers is Owned {
   function executeReward() external {
     rewards.execute();
   }
+
+  /// @notice transfers earnings to the calling staker
   function withdraw() external {
     require (isStaker(msg.sender), "failed to withdraw: staker not registered");
     rewards.withdraw(msg.sender);
-    if (stakes[msg.sender] > kRequiredStake)
+    if (stakes[msg.sender] > REQUIRED_STAKE)
     {
-      uint amount = stakes[msg.sender] - kRequiredStake;
-      stakes[msg.sender] = kRequiredStake;
+      uint amount = stakes[msg.sender] - REQUIRED_STAKE;
+      stakes[msg.sender] = REQUIRED_STAKE;
       msg.sender.transfer(amount);
     }
   }
@@ -176,7 +174,7 @@ contract Stakers is Owned {
 
   /// @notice registers a new staker
   function enroll() external payable {
-    require (msg.value == kRequiredStake, "failed to enroll: wrong stake amount");
+    require (msg.value == REQUIRED_STAKE, "failed to enroll: wrong stake amount");
     require (!isSlashed(msg.sender),      "failed to enroll: staker was slashed");
     require (isTrustedParty(msg.sender),  "failed to enroll: staker is not trusted party");
     require (addStaker(msg.sender),       "failed to enroll");
@@ -275,7 +273,7 @@ contract Stakers is Owned {
   }
 
   function isStaker(address _addr) private view returns (bool) {
-    for (uint16 i=0; i<kNumStakers; i++) {
+    for (uint16 i=0; i<NUM_STAKERS; i++) {
       if (stakers[i] == _addr) {
         return true;
       }
@@ -284,7 +282,7 @@ contract Stakers is Owned {
   }
 
   function addStaker(address _staker) private returns (bool) {
-    for (uint16 i = 0; i<kNumStakers; i++){
+    for (uint16 i = 0; i<NUM_STAKERS; i++){
       if (stakers[i] == _staker) {
         // staker already registered
         return false;
@@ -300,19 +298,19 @@ contract Stakers is Owned {
   function removeStaker(address _staker) private returns (bool){
     // find index of staker
     uint16 stakerIndex = 0;
-    while (stakerIndex < kNumStakers) {
+    while (stakerIndex < NUM_STAKERS) {
       if (stakers[stakerIndex] == _staker) {
         break;
       }
       ++stakerIndex;
     }
 
-    if (stakerIndex < kNumStakers) {
+    if (stakerIndex < NUM_STAKERS) {
       // remove gaps
-      for (uint16 i = stakerIndex; i<kNumStakers-1; i++){
+      for (uint16 i = stakerIndex; i<NUM_STAKERS-1; i++){
        stakers[i] = stakers[i+1];
       }
-      stakers[kNumStakers-1] = address(0x0);
+      stakers[NUM_STAKERS-1] = address(0x0);
       return true;
     }
     return false;
@@ -331,13 +329,12 @@ contract Stakers is Owned {
   }
 
   function earnStake(address _goodStaker, address _badStaker) private {
-
     require (stakes[_badStaker] > 0);
     uint amount = stakes[_badStaker];
     stakes[_badStaker] = 0;
     stakes[_goodStaker] += amount;
     // TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
     // The idea behind it, is not to promote interest in stealing someone else's stake
-    // address(0x0).transfer(kRequiredStake); // burn stake
+    // address(0x0).transfer(REQUIRED_STAKE); // burn stake
   }
 }
