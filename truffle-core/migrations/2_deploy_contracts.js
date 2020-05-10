@@ -35,8 +35,7 @@ module.exports = function (deployer, network, accounts) {
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await deployUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
-    const stakers = await deployUtils.deployAndConfigureStakers(Stakers, owner = accounts[0], parties = [accounts[0]], updates);
-        
+    const stakers  = await Stakers.new(stake = 1000000000000000);
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -52,8 +51,9 @@ module.exports = function (deployer, network, accounts) {
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
     const marketCrypto = await deployer.deploy(MarketCrypto).should.be.fulfilled;
-    
+
     console.log("Setting up ...");
+    await stakers.setGameOwner(updates.address).should.be.fulfilled;
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
