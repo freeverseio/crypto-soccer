@@ -3,9 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/big"
 	"os"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
@@ -32,6 +35,7 @@ func main() {
 	shopContractAddress := flag.String("shopContractAddress", "", "")
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
 	constantsgettersContractAddress := flag.String("constantsgettersContractAddress", "", "")
+	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	delta := flag.Int("delta", 10, "number of block to process at maximum")
 	flag.Parse()
@@ -77,6 +81,18 @@ func main() {
 	}
 	if *constantsgettersContractAddress == "" {
 		log.Fatal("no constantsgetters contract address")
+	}
+
+	var stakerAuth *bind.TransactOpts
+	if *stakerPrivateKey != "" {
+		log.Info("WARNING: STAKER address set")
+		privateKey, err := crypto.HexToECDSA(*stakerPrivateKey)
+		if err != nil {
+			log.Fatal("Unable to obtain privateKey")
+		}
+		stakerAuth := bind.NewKeyedTransactor(privateKey)
+		stakerAuth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
+		log.Infof("Staker Address : %v", crypto.PubkeyToAddress(privateKey.PublicKey).Hex())
 	}
 
 	log.Infof("ipfs URL: %v", *ipfsURL)
@@ -129,7 +145,12 @@ func main() {
 		}
 		defer namesdb.Close()
 
-		processor, err := process.NewEventProcessor(contracts, namesdb, *ipfsURL)
+		processor, err := process.NewEventProcessor(
+			contracts,
+			namesdb,
+			*ipfsURL,
+			stakerAuth,
+		)
 		if err != nil {
 			return err
 		}

@@ -25,6 +25,7 @@ type EventProcessor struct {
 	divisionCreationProcessor *DivisionCreationProcessor
 	leagueProcessor           *LeagueProcessor
 	teamTransferProcessor     *TeamTransferProcessor
+	stakerAuth                *bind.TransactOpts
 }
 
 // *****************************************************************************
@@ -36,6 +37,7 @@ func NewEventProcessor(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
 	ipfsURL string,
+	stakerAuth *bind.TransactOpts,
 ) (*EventProcessor, error) {
 	assetsInitProcessor, err := NewAssetsInitProcessor(
 		contracts,
@@ -68,6 +70,7 @@ func NewEventProcessor(
 		divisionCreationProcessor,
 		leagueProcessor,
 		teamTransferProcessor,
+		stakerAuth,
 	}, nil
 }
 
