@@ -149,6 +149,8 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 			return err
 		}
 
+		
+
 		log.Infof("Timezone %v local hash %v", v.TimeZone, hex.EncodeToString(universeHash[:]))
 
 	// case market.MarketPlayerFreeze:
