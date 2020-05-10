@@ -63,7 +63,7 @@ module.exports = function (deployer, network, accounts) {
     await trainingPoints.setMarketAddress(market.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await engine.setApplyBoostersAddr(engineApplyBoosters.address).should.be.fulfilled;
-    await playAndEvolve.setTrainingAddress(trainingPoints.address);
+    await playAndEvolve.setTrainingAddress(trainingPoints.address).should.be.fulfilled;
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
