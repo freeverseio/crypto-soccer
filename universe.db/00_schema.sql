@@ -186,7 +186,7 @@ CREATE TABLE verses (
     verse_id BIGINT NOT NULL,
     root TEXT NOT NULL,
     PRIMARY KEY (verse_id)
-)
+);
 comment on table verses is E'@omit create,update,delete';
 
 
