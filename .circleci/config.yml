@@ -77,6 +77,7 @@ jobs:
       - run: cd go/synchronizer/process && go test ./... -v
       - run: cd go/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
+      - run: cd go/synchronizer/staker && go test ./... 
       - run: cd go/synchronizer/matchevents && go test ./... -v
   go1:
     executor: freeverse_ethereum
