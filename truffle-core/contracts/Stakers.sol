@@ -152,6 +152,7 @@ contract Stakers is Owned {
     rewards.execute();
   }
   function withdraw() external {
+    require (isStaker(msg.sender), "failed to withdraw: staker not registered");
     rewards.withdraw(msg.sender);
     if (stakes[msg.sender] > kRequiredStake)
     {
