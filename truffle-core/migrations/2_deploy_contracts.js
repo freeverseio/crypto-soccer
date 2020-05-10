@@ -54,6 +54,7 @@ module.exports = function (deployer, network, accounts) {
 
     console.log("Setting up ...");
     await stakers.setGameOwner(updates.address).should.be.fulfilled;
+    await updates.setStakersAddress(stakers.address).should.be.fulfilled;
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
