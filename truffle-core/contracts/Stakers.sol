@@ -108,8 +108,8 @@ contract AddressMapping is Owned{
 contract Stakers is Owned {
 
   uint16 public constant NUM_STAKERS = 32;
-  uint public constant REQUIRED_STAKE = 0.001 ether;
 
+  uint public requiredStake;
   address public gameOwner = address(0x0);
   AddressStack private updaters = new AddressStack();
   Rewards public rewards = new Rewards();
@@ -129,6 +129,10 @@ contract Stakers is Owned {
   }
 
   // ----------------- public functions -----------------------
+
+  constructor(uint stake) public {
+    requiredStake =  stake;
+  }
 
   function setOwner(address _address) external override (Owned) onlyOwner {
     owner = _address;
@@ -152,10 +156,10 @@ contract Stakers is Owned {
   function withdraw() external {
     require (isStaker(msg.sender), "failed to withdraw: staker not registered");
     rewards.withdraw(msg.sender);
-    if (stakes[msg.sender] > REQUIRED_STAKE)
+    if (stakes[msg.sender] > requiredStake)
     {
-      uint amount = stakes[msg.sender] - REQUIRED_STAKE;
-      stakes[msg.sender] = REQUIRED_STAKE;
+      uint amount = stakes[msg.sender] - requiredStake;
+      stakes[msg.sender] = requiredStake;
       msg.sender.transfer(amount);
     }
   }
@@ -174,7 +178,7 @@ contract Stakers is Owned {
 
   /// @notice registers a new staker
   function enroll() external payable {
-    require (msg.value == REQUIRED_STAKE, "failed to enroll: wrong stake amount");
+    require (msg.value == requiredStake, "failed to enroll: wrong stake amount");
     require (!isSlashed(msg.sender),      "failed to enroll: staker was slashed");
     require (isTrustedParty(msg.sender),  "failed to enroll: staker is not trusted party");
     require (addStaker(msg.sender),       "failed to enroll");
@@ -335,6 +339,6 @@ contract Stakers is Owned {
     stakes[_goodStaker] += amount;
     // TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
     // The idea behind it, is not to promote interest in stealing someone else's stake
-    // address(0x0).transfer(REQUIRED_STAKE); // burn stake
+    // address(0x0).transfer(requiredStake); // burn stake
   }
 }
