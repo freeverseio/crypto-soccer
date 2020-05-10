@@ -182,5 +182,12 @@ CREATE TABLE match_events (
 );
 comment on table match_events is E'@omit create,update,delete';
 
+CREATE TABLE verses (
+    verse_id BIGINT NOT NULL,
+    root TEXT NOT NULL,
+    PRIMARY KEY (verse_id)
+)
+comment on table verses is E'@omit create,update,delete';
+
 
 
