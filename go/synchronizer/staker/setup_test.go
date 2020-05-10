@@ -2,6 +2,7 @@ package staker_test
 
 import (
 	"log"
+	"os"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/testutils"
@@ -16,5 +17,6 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
-	bc.InitOneTimezone(1)
+
+	os.Exit(m.Run())
 }
