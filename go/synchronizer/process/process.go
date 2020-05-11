@@ -105,7 +105,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 	}
 
 	for _, v := range scanner.Events {
-		if err := p.dispatch(tx, v); err != nil {
+		if err := p.Dispatch(tx, v); err != nil {
 			return 0, err
 		}
 	}
@@ -119,7 +119,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
+func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 	log.Debugf("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
 
 	switch v := e.Value.(type) {
@@ -140,14 +140,27 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		if err := p.leagueProcessor.Process(tx, v); err != nil {
 			return err
 		}
-		if err := saveUniverseHash(tx, v.TimeZone, v.Verse.Int64()); err != nil {
-			return err
-		}
-		isTimeToUpdate, err := p.contracts.Updates.IsTimeToUpdate(&bind.CallOpts{})
+		u, err := universe.NewFromStorage(tx, int(v.TimeZone))
 		if err != nil {
 			return err
 		}
-		log.Infof("IsTimeToUpdate ======= %v", isTimeToUpdate)
+		universeHash, err := u.Hash()
+		if err != nil {
+			return err
+		}
+
+		verse := storage.Verse{}
+		verse.VerseNumber = v.Verse.Int64()
+		verse.Root = hex.EncodeToString(universeHash[:])
+
+		if p.staker != nil {
+			if err := p.staker.Play(*p.contracts, universeHash); err != nil {
+				return err
+			}
+		}
+
+	case updates.UpdatesTimeZoneUpdate:
+		log.Infof("[processor] dispatching UpdatesTimeZoneUpdate TZ: %v, root: %v", v.TimeZone, hex.EncodeToString(v.Root[:]))
 
 	// case market.MarketPlayerFreeze:
 	// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
