@@ -49,6 +49,7 @@ contract Updates is UpdatesBase {
         if (prevTz != NULL_TIMEZONE) {
             ( , , bool isSettled) = getStatus(prevTz, true);
             require(isSettled, "last verse is still under challenge period");
+            _stakers.finalize();
         }
         if(newTZ != NULL_TIMEZONE) {
             uint8 idx = 1 - _newestRootsIdx[newTZ];
@@ -57,8 +58,8 @@ contract Updates is UpdatesBase {
             _activeTeamsPerCountryRoot[newTZ][idx] = activeTeamsPerCountryRoot;
             _orgMapRoot[newTZ][idx] = orgMapRoot;
             _levelVerifiableByBC[newTZ][idx] = levelVerifiableByBC;
-            _lastActionsSubmissionTime[newTZ] = now;
         }
+        _lastActionsSubmissionTime[newTZ] = now;
         _incrementVerse();
         _setCurrentVerseSeed(blockhash(block.number-1));
         emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
@@ -71,9 +72,8 @@ contract Updates is UpdatesBase {
     function updateTZ(bytes32 root) public {
         // when actionRoots were submitted, nextTimeZone points to the future.
         // so the timezone waiting for updates & challenges is provided by prevTimeZoneToUpdate()
+        require(isTimeToUpdate(), "it is not time to update yet");
         (uint8 tz,,) = prevTimeZoneToUpdate();
-        bool accept = (tz != NULL_TIMEZONE) && (getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz));
-        require(accept, "TZ has already been updated once");
         _setTZRoot(tz, root); // first time that we update this TZ
         emit TimeZoneUpdate(tz, root, now);
         _stakers.update(0, msg.sender);
