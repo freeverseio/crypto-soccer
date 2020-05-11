@@ -92,6 +92,7 @@ func main() {
 			"", "", "", "",
 			*constantsgettersContractAddress,
 			*privilegedContractAddress,
+			"",
 		)
 		if err != nil {
 			return err
