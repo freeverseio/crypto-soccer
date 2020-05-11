@@ -105,7 +105,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 	}
 
 	for _, v := range scanner.Events {
-		if err := p.dispatch(tx, v); err != nil {
+		if err := p.Dispatch(tx, v); err != nil {
 			return 0, err
 		}
 	}
@@ -119,7 +119,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
+func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 	log.Debugf("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
 
 	switch v := e.Value.(type) {
@@ -140,14 +140,40 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		if err := p.leagueProcessor.Process(tx, v); err != nil {
 			return err
 		}
-		if err := saveUniverseHash(tx, v.TimeZone, v.Verse.Int64()); err != nil {
-			return err
-		}
-		isTimeToUpdate, err := p.contracts.Updates.IsTimeToUpdate(&bind.CallOpts{})
+		u, err := universe.NewFromStorage(tx, int(v.TimeZone))
 		if err != nil {
 			return err
 		}
-		log.Infof("IsTimeToUpdate ======= %v", isTimeToUpdate)
+		universeHash, err := u.Hash()
+		if err != nil {
+			return err
+		}
+
+		verse := storage.Verse{}
+		verse.VerseNumber = v.Verse.Int64()
+		verse.Root = hex.EncodeToString(universeHash[:])
+		if err := verse.Insert(tx); err != nil {
+			return err
+		}
+
+		if p.staker != nil {
+			if err := p.staker.Play(*p.contracts, universeHash); err != nil {
+				return err
+			}
+		}
+
+	case updates.UpdatesTimeZoneUpdate:
+		log.Infof("[processor] dispatching UpdatesTimeZoneUpdate verse: %v, root: %v", v.Verse, hex.EncodeToString(v.Root[:]))
+		verse, err := storage.VerseByNumber(tx, v.Verse.Int64())
+		if err != nil {
+			return err
+		}
+		if verse == nil {
+			return fmt.Errorf("unexistent hash for verse %v", v.Verse.Int64())
+		}
+		if verse.Root != hex.EncodeToString(v.Root[:]) {
+			log.Errorf("!!!!!!!!!!! verse %v hash mistmatch: bc %v, local %v", v.Verse, hex.EncodeToString(v.Root[:]), verse.Root)
+		}
 
 	// case market.MarketPlayerFreeze:
 	// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
@@ -218,20 +244,4 @@ func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, err
 		return 0, 0, err
 	}
 	return block.Time(), eventRaw.BlockNumber, nil
-}
-
-func saveUniverseHash(tx *sql.Tx, timezone uint8, verseNumber int64) error {
-	u, err := universe.NewFromStorage(tx, int(timezone))
-	if err != nil {
-		return err
-	}
-	universeHash, err := u.Hash()
-	if err != nil {
-		return err
-	}
-
-	verse := storage.Verse{}
-	verse.VerseNumber = verseNumber
-	verse.Root = hex.EncodeToString(universeHash[:])
-	return verse.Insert(tx)
 }

@@ -7,7 +7,7 @@ import "./UpdatesBase.sol";
 
 contract Updates is UpdatesBase {
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
-    event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
+    event TimeZoneUpdate(uint256 verse, uint8 timeZone, bytes32 root, uint256 submissionTime);
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
 
     function setStakersAddress(address payable addr) public {
@@ -75,7 +75,7 @@ contract Updates is UpdatesBase {
         bool accept = (tz != NULL_TIMEZONE) && (getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz));
         require(accept, "TZ has already been updated once");
         _setTZRoot(tz, root); // first time that we update this TZ
-        emit TimeZoneUpdate(tz, root, now);
+        emit TimeZoneUpdate(currentVerse, tz, root, now);
         _stakers.update(0, msg.sender);
     }
 
