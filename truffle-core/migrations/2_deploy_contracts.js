@@ -36,7 +36,7 @@ module.exports = function (deployer, network, accounts) {
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await deployUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
-    const stakers  = await deployer.deploy(Stakers, requiredStake).should.be.fulfilled;
+    const stakers  = await deployer.deploy(Stakers, requiredStake ? requiredStake : 1000000000000).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
