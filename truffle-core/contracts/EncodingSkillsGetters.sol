@@ -10,7 +10,7 @@ contract EncodingSkillsGetters {
     }
 
     function getBirthDay(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 100 & 65535);
+        return (encodedSkills >> 100) & 65535;
     }
 
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
