@@ -606,6 +606,10 @@ spec:
         - $(UTILS_CONTRACT_ADDRESS)
         - -constantsgettersContractAddress
         - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        - -stakersContractAddress
+        - $(STAKERS_CONTRACT_ADDRESS)
+        - -staker
+        - $(staker_private_key)
         - -delta
         - $(BLOCKS_PER_STEP)
         envFrom:

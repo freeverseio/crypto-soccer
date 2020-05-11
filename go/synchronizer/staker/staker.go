@@ -2,6 +2,7 @@ package staker
 
 import (
 	"crypto/ecdsa"
+	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -41,11 +42,16 @@ func (b Staker) Init(contracts contracts.Contracts) error {
 	}
 	if !isEnrolled {
 		log.Info("[staker] trying to enroll")
-		if err := b.enroll(contracts); err != nil {
+		stake, err := requiredStake(contracts)
+		if err != nil {
 			return err
 		}
+		log.Infof("[staker] stake required %v", stake.String())
+		if err := b.enroll(contracts, stake); err != nil {
+			return err
+		}
+		log.Info("[staker] enrollment successful")
 	}
-	log.Info("[staker] enrollment successful")
 	return nil
 }
 
@@ -61,12 +67,41 @@ func (b Staker) IsTrustedParty(contracts contracts.Contracts) (bool, error) {
 	return contracts.Stakers.IsTrustedParty(&bind.CallOpts{}, b.Address())
 }
 
-func (b Staker) enroll(contracts contracts.Contracts) error {
-	stake, err := contracts.Stakers.RequiredStake(&bind.CallOpts{})
+func (b Staker) SubmitRoot(contracts contracts.Contracts, root [32]byte) error {
+	auth := bind.NewKeyedTransactor(b.privateKey)
+	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
+	tx, err := contracts.Updates.UpdateTZ(auth, root)
 	if err != nil {
 		return err
 	}
+	_, err = helper.WaitReceipt(contracts.Client, tx, 60)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+func (b Staker) Play(contracts contracts.Contracts, root [32]byte) error {
+	isTimeToUpdate, err := contracts.Updates.IsTimeToUpdate(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	if !isTimeToUpdate {
+		return nil
+	}
+	log.Infof("[staker] it's time ... let's try to submit universe root %v", hex.EncodeToString(root[:]))
+	return b.SubmitRoot(contracts, root)
+}
+
+func requiredStake(contracts contracts.Contracts) (*big.Int, error) {
+	stake, err := contracts.Stakers.RequiredStake(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	return stake, nil
+}
+
+func (b Staker) enroll(contracts contracts.Contracts, stake *big.Int) error {
 	auth := bind.NewKeyedTransactor(b.privateKey)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
 	auth.Value = stake
