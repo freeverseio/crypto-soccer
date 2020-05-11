@@ -29,12 +29,14 @@ const deployUtils = require('../utils/deployUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
+    const { singleTimezone, trustedParties, requiredStake } = deployer.networks[network];
+
     const versionNumber = 0;
     const proxyAddress  = "0x0";
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await deployUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
-    const stakers  = await Stakers.new(stake = 1000000000000000);
+    const stakers  = await deployer.deploy(Stakers, requiredStake).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -71,7 +73,6 @@ module.exports = function (deployer, network, accounts) {
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
 
     if (versionNumber == 0) {
-      const { singleTimezone, trustedParties } = deployer.networks[network];
 
       if (singleTimezone) {
         console.log("Init single timezone", singleTimezone);
