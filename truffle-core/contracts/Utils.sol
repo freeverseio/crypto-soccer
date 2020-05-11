@@ -31,7 +31,7 @@ contract Utils is EncodingMatchLog, AssetsView{
     }
     
     function fullDecodeSkills(uint256 encodedSkills) public pure returns(
-        uint16[N_SKILLS] memory skills,
+        uint32[N_SKILLS] memory skills,
         uint16 dayOfBirth,
         uint8[4] memory birthTraits,
         uint256 playerId, 
