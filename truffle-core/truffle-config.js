@@ -35,6 +35,7 @@ module.exports = {
       network_id: 100,
       gasPrice: 1000000000,
       sigleTimezone: 10,
+      trustedParties: ["0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7"],
     },
     local: { // 0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7
       provider: new HDWalletProvider(

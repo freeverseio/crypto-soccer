@@ -29,8 +29,6 @@ const deployUtils = require('../utils/deployUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    const  params  = deployer.networks[network];
-    
     const versionNumber = 0;
     const proxyAddress  = "0x0";
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
@@ -73,24 +71,25 @@ module.exports = function (deployer, network, accounts) {
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
 
     if (versionNumber == 0) {
-      if (params.singleTimezone) {
-        console.log("Init single timezone", params.singleTimezone);
-        await assets.initSingleTZ(params.singleTimezone).should.be.fulfilled;
+      const { singleTimezone, trustedParties } = deployer.networks[network];
+
+      if (singleTimezone) {
+        console.log("Init single timezone", singleTimezone);
+        await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
       } else {
         await assets.init().should.be.fulfilled;
       }
-      // Initializing Assets differently in XDAI or testing:
-      // if (deployer.network === "local") { // this is for testing
-      //   const value = "1000000000000000000";
-      //   const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
-      //   console.log("Transfer " + value + " to " + to);
-      //   await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
-      //   await stakers.addTrustedParty(to).should.be.fulfilled;
-      // console.log("Initing ... done");
 
+      if (trustedParties) {
+        for (trustedPart of trustedParties) {
+          console.log("Add TrustedPart", trustedPart);
+          await stakers.addTrustedParty(trustedPart).should.be.fulfilled;
+        }
+      }
+
+      await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
     }
 
-    if (versionNumber == 0) { await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0"); }
     namesAndAddresses = [
       ["ASSETS", assets.address],
       ["MARKET", market.address],
