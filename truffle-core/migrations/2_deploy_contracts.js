@@ -24,12 +24,33 @@ const Stakers = artifacts.require('Stakers');
 require('chai')
     .use(require('chai-as-promised'))
     .should();
-
+const assert = require('assert');
 const deployUtils = require('../utils/deployUtils.js');
+
+function getDefaultSetup(accounts) {
+  console.log("Setting default values for deploy")
+  return {
+    singleTimezone: -1,
+    trustedParties: [accounts[0]],
+    requiredStake: 1000000000000,
+  }
+}
+
+function getExplicitOrDefaultSetup(params, accounts) {
+  const { singleTimezone, trustedParties, requiredStake } = params;
+  // First check that either ALL or NONE of the params are defined (otherwise, expect having forgotten to assign one)
+  numDefined = (singleTimezone ? 1 : 0) +  (trustedParties ? 1 : 0) + (requiredStake ? 1 : 0);
+  isValidSetup = (numDefined == 3) || (numDefined == 0);
+  assert.equal(isValidSetup, true, "only some of the setup parameters are assigned in deployer.networks");
+  // Set up default values only if needed:
+  needsDefaultValues = (numDefined == 0);
+  return needsDefaultValues ? getDefaultSetup(accounts) : params;
+}
+
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    const { singleTimezone, trustedParties, requiredStake } = deployer.networks[network];
+    const { singleTimezone, trustedParties, requiredStake } = getExplicitOrDefaultSetup(deployer.networks[network], accounts);
 
     const versionNumber = 0;
     const proxyAddress  = "0x0";
@@ -74,18 +95,16 @@ module.exports = function (deployer, network, accounts) {
 
     if (versionNumber == 0) {
 
-      if (singleTimezone) {
+      if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
         await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
       } else {
         await assets.init().should.be.fulfilled;
       }
 
-      if (trustedParties) {
-        for (trustedPart of trustedParties) {
-          console.log("Add TrustedPart", trustedPart);
-          await stakers.addTrustedParty(trustedPart).should.be.fulfilled;
-        }
+      for (trustedParty of trustedParties) {
+        console.log("Add TrustedPart", trustedParty);
+        await stakers.addTrustedParty(trustedParty).should.be.fulfilled;
       }
 
       await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
