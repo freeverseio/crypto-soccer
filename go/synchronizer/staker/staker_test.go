@@ -12,17 +12,17 @@ import (
 )
 
 func TestStakerNew(t *testing.T) {
-	pvc, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	account := helper.NewAccount()
+
+	s, err := staker.New(account.Key)
 	assert.NilError(t, err)
-	s, err := staker.New(pvc)
-	assert.NilError(t, err)
-	assert.Equal(t, s.Address().Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
+	assert.Equal(t, s.Address().Hex(), account.Address().Hex())
 }
 
 func TestStakerIsTrustedParty(t *testing.T) {
-	pvc, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	assert.NilError(t, err)
-	s, err := staker.New(pvc)
+	account := helper.NewAccount()
+
+	s, err := staker.New(account.Key)
 	assert.NilError(t, err)
 	isTrusted, err := s.IsTrustedParty(*bc.Contracts)
 	assert.NilError(t, err)
@@ -30,14 +30,24 @@ func TestStakerIsTrustedParty(t *testing.T) {
 }
 
 func TestStakerIsEnrolled(t *testing.T) {
-	pvc, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	assert.NilError(t, err)
+	account := helper.NewAccount()
 
-	s, err := staker.New(pvc)
+	s, err := staker.New(account.Key)
 
 	isEnrolled, err := s.IsEnrolled(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Assert(t, !isEnrolled)
+}
+
+func TestStakerSubmitRoot(t *testing.T) {
+	account := helper.NewAccount()
+
+	s, err := staker.New(account.Key)
+	assert.NilError(t, err)
+
+	assert.Error(t, s.Init(*bc.Contracts), "[staker] not a trusted party")
+	root := [32]byte{0x0}
+	assert.Error(t, s.SubmitRoot(*bc.Contracts, root), "failed to estimate gas needed: The execution failed due to an exception.")
 }
 
 func TestStakerEnroll(t *testing.T) {
@@ -60,4 +70,6 @@ func TestStakerEnroll(t *testing.T) {
 	})
 
 	assert.NilError(t, s.Init(*bc.Contracts))
+	root := [32]byte{0x0}
+	assert.NilError(t, s.SubmitRoot(*bc.Contracts, root)) // TODO should fail
 }

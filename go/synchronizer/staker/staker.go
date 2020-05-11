@@ -41,11 +41,16 @@ func (b Staker) Init(contracts contracts.Contracts) error {
 	}
 	if !isEnrolled {
 		log.Info("[staker] trying to enroll")
-		if err := b.enroll(contracts); err != nil {
+		stake, err := requiredStake(contracts)
+		if err != nil {
 			return err
 		}
+		log.Infof("[staker] stake required %v", stake.String())
+		if err := b.enroll(contracts, stake); err != nil {
+			return err
+		}
+		log.Info("[staker] enrollment successful")
 	}
-	log.Info("[staker] enrollment successful")
 	return nil
 }
 
@@ -61,12 +66,15 @@ func (b Staker) IsTrustedParty(contracts contracts.Contracts) (bool, error) {
 	return contracts.Stakers.IsTrustedParty(&bind.CallOpts{}, b.Address())
 }
 
-func (b Staker) enroll(contracts contracts.Contracts) error {
+func requiredStake(contracts contracts.Contracts) (*big.Int, error) {
 	stake, err := contracts.Stakers.RequiredStake(&bind.CallOpts{})
 	if err != nil {
-		return err
+		return nil, err
 	}
+	return stake, nil
+}
 
+func (b Staker) enroll(contracts contracts.Contracts, stake *big.Int) error {
 	auth := bind.NewKeyedTransactor(b.privateKey)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
 	auth.Value = stake
@@ -76,6 +84,20 @@ func (b Staker) enroll(contracts contracts.Contracts) error {
 		return err
 	}
 	if _, err := helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b Staker) SubmitRoot(contracts contracts.Contracts, root [32]byte) error {
+	auth := bind.NewKeyedTransactor(b.privateKey)
+	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
+	tx, err := contracts.Updates.UpdateTZ(auth, root)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(contracts.Client, tx, 60)
+	if err != nil {
 		return err
 	}
 	return nil
