@@ -152,6 +152,9 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		verse := storage.Verse{}
 		verse.VerseNumber = v.Verse.Int64()
 		verse.Root = hex.EncodeToString(universeHash[:])
+		if err := verse.Insert(tx); err != nil {
+			return err
+		}
 
 		if p.staker != nil {
 			if err := p.staker.Play(*p.contracts, universeHash); err != nil {
@@ -160,7 +163,17 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		}
 
 	case updates.UpdatesTimeZoneUpdate:
-		log.Infof("[processor] dispatching UpdatesTimeZoneUpdate TZ: %v, root: %v", v.TimeZone, hex.EncodeToString(v.Root[:]))
+		log.Infof("[processor] dispatching UpdatesTimeZoneUpdate verse: %v, root: %v", v.Verse, hex.EncodeToString(v.Root[:]))
+		verse, err := storage.VerseByNumber(tx, v.Verse.Int64())
+		if err != nil {
+			return err
+		}
+		if verse == nil {
+			return fmt.Errorf("unexistent hash for verse %v", v.Verse.Int64())
+		}
+		if verse.Root != hex.EncodeToString(v.Root[:]) {
+			log.Errorf("!!!!!!!!!!! verse %v hash mistmatch: bc %v, local %v", v.Verse, hex.EncodeToString(v.Root[:]), verse.Root)
+		}
 
 	// case market.MarketPlayerFreeze:
 	// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
