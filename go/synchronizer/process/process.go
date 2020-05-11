@@ -245,19 +245,3 @@ func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, err
 	}
 	return block.Time(), eventRaw.BlockNumber, nil
 }
-
-func saveUniverseHash(tx *sql.Tx, timezone uint8, verseNumber int64) error {
-	u, err := universe.NewFromStorage(tx, int(timezone))
-	if err != nil {
-		return err
-	}
-	universeHash, err := u.Hash()
-	if err != nil {
-		return err
-	}
-
-	verse := storage.Verse{}
-	verse.VerseNumber = verseNumber
-	verse.Root = hex.EncodeToString(universeHash[:])
-	return verse.Insert(tx)
-}
