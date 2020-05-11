@@ -90,5 +90,15 @@ func (b Staker) enroll(contracts contracts.Contracts, stake *big.Int) error {
 }
 
 func (b Staker) SubmitRoot(contracts contracts.Contracts, root [32]byte) error {
-
+	auth := bind.NewKeyedTransactor(b.privateKey)
+	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
+	tx, err := contracts.Updates.UpdateTZ(auth, root)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(contracts.Client, tx, 60)
+	if err != nil {
+		return err
+	}
+	return nil
 }
