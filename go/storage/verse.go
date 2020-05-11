@@ -1,6 +1,10 @@
 package storage
 
-import "database/sql"
+import (
+	"database/sql"
+
+	log "github.com/sirupsen/logrus"
+)
 
 type Verse struct {
 	VerseNumber int64
@@ -8,10 +12,12 @@ type Verse struct {
 }
 
 func VerseByNumber(tx *sql.Tx, verseNumber int64) (*Verse, error) {
+	log.Debugf("[DBMS] VerseByNumber %v", verseNumber)
 	rows, err := tx.Query(`SELECT root FROM verses WHERE verse_number = $1`, verseNumber)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	if !rows.Next() {
 		return nil, nil
@@ -27,6 +33,8 @@ func VerseByNumber(tx *sql.Tx, verseNumber int64) (*Verse, error) {
 }
 
 func (b Verse) Insert(tx *sql.Tx) error {
+	log.Debugf("[DBMS] Verse Insert %v", b)
+
 	if _, err := tx.Exec(`
 		INSERT INTO verses (
 			verse_number,
