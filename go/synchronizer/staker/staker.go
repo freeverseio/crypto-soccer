@@ -2,6 +2,7 @@ package staker
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/helper"
@@ -26,6 +27,28 @@ func New(privateKey *ecdsa.PrivateKey) (*Staker, error) {
 	return &staker, nil
 }
 
+func (b Staker) Init(contracts contracts.Contracts) error {
+	isTrustedParty, err := b.IsTrustedParty(contracts)
+	if err != nil {
+		return err
+	}
+	if !isTrustedParty {
+		return errors.New("[staker] not a trusted party")
+	}
+	isEnrolled, err := b.IsEnrolled(contracts)
+	if err != nil {
+		return err
+	}
+	if !isEnrolled {
+		log.Info("[staker] trying to enroll")
+		if err := b.enroll(contracts); err != nil {
+			return err
+		}
+	}
+	log.Info("[staker] enrollment successful")
+	return nil
+}
+
 func (b Staker) Address() common.Address {
 	return crypto.PubkeyToAddress(b.privateKey.PublicKey)
 }
@@ -38,7 +61,7 @@ func (b Staker) IsTrustedParty(contracts contracts.Contracts) (bool, error) {
 	return contracts.Stakers.IsTrustedParty(&bind.CallOpts{}, b.Address())
 }
 
-func (b Staker) Enroll(contracts contracts.Contracts) error {
+func (b Staker) enroll(contracts contracts.Contracts) error {
 	stake, err := contracts.Stakers.RequiredStake(&bind.CallOpts{})
 	if err != nil {
 		return err
