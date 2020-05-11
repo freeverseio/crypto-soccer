@@ -91,7 +91,7 @@ contract('EncodingSkills', (accounts) => {
             sumSkills
         ).should.be.fulfilled;
 
-        skills.should.be.bignumber.equal('40439920000726868070503716865792521545121682176182486071370780491777');
+        skills.should.be.bignumber.equal('155218556145067301836481091220056594090096264824095737423904769');
 
         N_SKILLS = 5;
         resultSkills = [];

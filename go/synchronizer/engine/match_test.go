@@ -107,11 +107,11 @@ func TestPlay2ndHalf(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
-	assert.Equal(t, m.HomeTeam.MatchLog, "1823386170864456664588543800539808540283317251593298733231417759322490273792")
-	assert.Equal(t, m.VisitorTeam.MatchLog, "1823386170864456664588543800539808540283317251593298733231417759322490273792")
-	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146173659658851975133989506638843274536350558846986")
+	assert.Equal(t, m.HomeTeam.MatchLog, "1823386170864456664637583657847516983750784356462108627107217411232365543424")
+	assert.Equal(t, m.VisitorTeam.MatchLog, "1823386170864456664637583657847516983750784356462108627107217411232365543424")
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "24091399358716052915464589106430790874637512750006282")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
-	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730774314591213142415462872739884964159759890645042")
+	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "24676000013648414082746062472531832564260922081804338")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
 	assert.Equal(t, m.HomeTeam.TrainingPoints, uint16(32))
 	assert.Equal(t, m.VisitorTeam.TrainingPoints, uint16(32))
@@ -161,11 +161,14 @@ func TestMatchPlayerEvolution(t *testing.T) {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
 	}
-	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(955))
+	// the player has great skills, but is initially very old
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(23264))
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
-	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(956))
+	// so after the evolution stage before 1st half begings, it generates a child/academy player:
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(1226))
 	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
-	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(956))
+	// which is maintaind after playing 2nd half:
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(1226))
 }
 
 func TestMatchTeamSkillsEvolution(t *testing.T) {
@@ -208,7 +211,7 @@ func TestMatchRedCards(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(10))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[10]
-	assert.Equal(t, player.Skills().String(), "13479973333575334503599428754828266096272992652231011430529741817480")
+	assert.Equal(t, player.Skills().String(), "1696941887453530621720210496306760960036050709342320410694255608")
 	assert.Assert(t, player.RedCard)
 }
 
@@ -232,7 +235,7 @@ func TestMatchHardInjury(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(10))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[10]
-	assert.Equal(t, player.Skills().String(), "13479973333575334504501449296618432741101829384923092356723637683848")
+	assert.Equal(t, player.Skills().String(), "1696941888399367713348376276074803265855382158607010962666947576")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(5))
 }
 
@@ -256,7 +259,7 @@ func TestMatchSoftInjury(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(12))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[12]
-	assert.Equal(t, player.Skills().String(), "13479973333575334503953386182619344146775447572654486224352662980232")
+	assert.Equal(t, player.Skills().String(), "1696941887824681885523667954190423130674016214749983791848096760")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(2))
 }
 

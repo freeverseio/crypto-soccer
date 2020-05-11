@@ -589,6 +589,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
         for (uint8 p = 1; p < 11; p++) require((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1], "player appears twice in lineup!");  
+        // Note that teamSumSkills is the sum of, at most, 14 skills of, at most, 20b each. 
+        // So the total cannot be larger that 24b, which is the limit reserved for teamSumSkills.
         matchLog = addTeamSumSkills(matchLog, teamSkills); 
         return (matchLog, linedUpSkills, tacticsId);      
     }

@@ -16,7 +16,7 @@ contract Privileged is AssetsView {
     // leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
 
     function createSpecialPlayer(
-        uint16[N_SKILLS] memory skillsVec,
+        uint32[N_SKILLS] memory skillsVec,
         uint256 ageInSecs,
         uint8[4] memory birthTraits,
         uint256 playerId,
@@ -68,7 +68,7 @@ contract Privileged is AssetsView {
     ) 
         public 
         pure 
-        returns(uint16[N_SKILLS] memory skillsVec, uint256 ageYears, uint8[4] memory birthTraits, uint256 internalPlayerId) 
+        returns(uint32[N_SKILLS] memory skillsVec, uint256 ageYears, uint8[4] memory birthTraits, uint256 internalPlayerId) 
     {
         require(maxPotential < 10);
         uint8 potential = uint8(seed % (maxPotential+1));
@@ -110,7 +110,7 @@ contract Privileged is AssetsView {
         returns
     (
         uint256 playerId,
-        uint16[N_SKILLS] memory skillsVec, 
+        uint32[N_SKILLS] memory skillsVec, 
         uint16 dayOfBirth, 
         uint8[4] memory birthTraits, 
         uint256 internalPlayerId
@@ -137,7 +137,7 @@ contract Privileged is AssetsView {
         returns
     (
         uint256[] memory playerIdArray,
-        uint16[N_SKILLS][] memory skillsVecArray, 
+        uint32[N_SKILLS][] memory skillsVecArray, 
         uint16[] memory dayOfBirthArray, 
         uint8[4][] memory birthTraitsArray, 
         uint256[] memory internalPlayerIdArray
@@ -147,7 +147,7 @@ contract Privileged is AssetsView {
         for (uint8 pos = 0; pos < 4; pos++) { counter += nPlayersPerForwardPos[pos]; }
 
         playerIdArray = new uint256[](counter);
-        skillsVecArray = new uint16[N_SKILLS][](counter);
+        skillsVecArray = new uint32[N_SKILLS][](counter);
         dayOfBirthArray = new uint16[](counter);
         birthTraitsArray = new uint8[4][](counter);
         internalPlayerIdArray = new uint256[](counter);

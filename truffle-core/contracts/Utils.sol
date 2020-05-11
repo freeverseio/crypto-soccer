@@ -31,14 +31,14 @@ contract Utils is EncodingMatchLog, AssetsView{
     }
     
     function fullDecodeSkills(uint256 encodedSkills) public pure returns(
-        uint16[N_SKILLS] memory skills,
+        uint32[N_SKILLS] memory skills,
         uint16 dayOfBirth,
         uint8[4] memory birthTraits,
         uint256 playerId, 
         bool[3] memory aligned1stSubst1stRedCardLastGame,
         uint8[3] memory generationGamesNonStopInjuryWeeks
     ) {
-        for (uint8 sk = 0; sk < N_SKILLS; sk++) skills[sk] = uint16(getSkill(encodedSkills, sk));
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) skills[sk] = uint32(getSkill(encodedSkills, sk));
 
         dayOfBirth = uint16(getBirthDay(encodedSkills));
 
