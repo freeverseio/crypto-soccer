@@ -333,16 +333,38 @@ contract('Updates', (accounts) => {
         result.toNumber().should.be.equal(0);
         result = await assets.getCurrentRound(tz = 24).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
-        console.log("warning: the next test lasts about 20 secs...")
         await moveToNextVerse(updates, extraSecs = 10);
-        timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        for (verse = 0; verse < 110; verse++) {
-            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
-            await moveToNextVerse(updates, extraSecs = 10);
-        }
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await moveToNextVerse(updates, extraSecs = 10);
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
     });
+    
+    it('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
+        console.log("warning: the next test lasts about 20 secs...")
+        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank]
+        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        const cif = "ciao2";
+        for (i = 0; i < 110; i++) {
+            await moveToNextVerse(updates, extraSecs = 10);
+            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
 
+            isTime = await updates.isTimeToUpdate().should.be.fulfilled;
+            if (isTime == true) {
+                await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
+            }
+        }
+        // after these few cycles, we now do a cycle which tells us to update, but we don't... and so, we fail to do another submitActions
+        await moveToNextVerse(updates, extraSecs = 10);
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+
+        isTime = await updates.isTimeToUpdate().should.be.fulfilled;
+        await moveToNextVerse(updates, extraSecs = 10);
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+    
+    });
+    
     it('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
