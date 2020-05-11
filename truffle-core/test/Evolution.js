@@ -481,10 +481,10 @@ contract('Evolution', (accounts) => {
         // shows that second team has veeery different cards and injuries
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
         outPlayer.toNumber().should.be.equal(14);
-        typeOut.toNumber().should.be.equal(0); // HARD_INJURY TODO - find one and uncomment: 
-        // outRounds.toNumber().should.be.equal(0);
-        // yellow1.toNumber().should.be.equal(10);
-        // yellow2.toNumber().should.be.equal(6);
+        typeOut.toNumber().should.be.equal(0);
+        outRounds.toNumber().should.be.equal(0);
+        yellow1.toNumber().should.be.equal(14);
+        yellow2.toNumber().should.be.equal(9);
     });
 
     it('show that a red card is stored in skills after playing 1st half', async () => {
@@ -815,7 +815,6 @@ contract('Evolution', (accounts) => {
                 resultId = await assets.getPlayerIdFromSkills(newSkills[p]).should.be.fulfilled;
                 resultAge = await assets.getPlayerAgeInDays(resultId).should.be.fulfilled;
                 (resultAge.toNumber() >= 31 * 365).should.be.equal(true);
-                console.log(resultNew.toNumber(), resultInit.toNumber());
                 (resultNew.toNumber() < resultInit.toNumber()).should.be.equal(true);
             }
             initShoot.push(resultInit)
