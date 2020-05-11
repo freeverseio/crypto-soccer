@@ -49,8 +49,8 @@ func (b Staker) Init(contracts contracts.Contracts) error {
 		if err := b.enroll(contracts, stake); err != nil {
 			return err
 		}
+		log.Info("[staker] enrollment successful")
 	}
-	log.Info("[staker] enrollment successful")
 	return nil
 }
 
@@ -87,4 +87,8 @@ func (b Staker) enroll(contracts contracts.Contracts, stake *big.Int) error {
 		return err
 	}
 	return nil
+}
+
+func (b Staker) SubmitRoot(contracts contracts.Contracts, root [32]byte) error {
+
 }
