@@ -22,6 +22,7 @@ func TestProcessorDispatchUpdatesTimezoneUpdate(t *testing.T) {
 	defer tx.Rollback()
 
 	event := updates.UpdatesTimeZoneUpdate{}
+	event.Verse = big.NewInt(2)
 	abstractEvent := process.NewAbstractEvent(0, 0, "", event)
 
 	p, err := process.NewEventProcessor(
@@ -31,7 +32,7 @@ func TestProcessorDispatchUpdatesTimezoneUpdate(t *testing.T) {
 		nil,
 	)
 	assert.NilError(t, err)
-	assert.NilError(t, p.Dispatch(tx, abstractEvent))
+	assert.Error(t, p.Dispatch(tx, abstractEvent), "unexistent hash for verse 2")
 }
 
 func TestSyncTeams(t *testing.T) {
