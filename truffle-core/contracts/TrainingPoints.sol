@@ -242,7 +242,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         //  - Formula copied directly to avoid stack overflow: uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1; 
         ageInSecs = YEARS_16 + (dna % YEARS_2);
 
-        (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(
+        (uint32[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(
             dna, 
             forwardnessToShirtNum(dna, getForwardness(skills)), // ensure they play in the same pos in field:
             0

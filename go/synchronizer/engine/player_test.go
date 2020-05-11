@@ -17,11 +17,11 @@ func TestNullPlayer(t *testing.T) {
 func TestPlayerToStorage(t *testing.T) {
 	player := engine.NewPlayer()
 	player.SetSkills(*bc.Contracts, SkillsFromString(t, "14606253788909032162646379450304996475079674564248175"))
-	assert.Equal(t, player.Defence, uint64(955))
-	assert.Equal(t, player.Speed, uint64(889))
-	assert.Equal(t, player.Pass, uint64(1076))
-	assert.Equal(t, player.Endurance, uint64(1454))
-	assert.Equal(t, player.Shoot, uint64(623))
+	assert.Equal(t, player.Defence, uint64(23264))
+	assert.Equal(t, player.Speed, uint64(213047))
+	assert.Equal(t, player.Pass, uint64(244484))
+	assert.Equal(t, player.Endurance, uint64(16970))
+	assert.Equal(t, player.Shoot, uint64(590447))
 }
 
 func TestPlayerRedCard(t *testing.T) {

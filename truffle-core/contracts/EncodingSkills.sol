@@ -9,31 +9,30 @@ import "./Constants.sol";
 contract EncodingSkills is Constants {
 
     /**
-     * @dev PlayerSkills serializes a total of 148 bits:  6*14 + 4 + 3+ 3 + 43 + 1 + 1 + 3 + 3 + 3
-     *      5 skills                  = 5 x 16 bits
+     * @dev PlayerSkills serializes a total of 213 bits:
+     *      5 skills                  = 5 x 20 bits (offset: 0)
      *                                = shoot, speed, pass, defence, endurance
-     *      dayOfBirth                = 16 bits  (since Unix time, max 180 years)
-     *      birthTraits               = variable num of bits: [potential, forwardness, leftishness, aggressiveness]
-     *      potential                 = 4 bits (number is limited to [0,...,9])
-     *      forwardness               = 3 bits
+     *      dayOfBirth                = 16 bits  (since Unix time, max 180 years) (offset: 100)
+     *      birthTraits               = variable num of bits: [potential, forwardness, leftishness, aggressiveness] (offset: 116)
+     *      potential                 = 4 bits (number is limited to [0,...,9]) (offset: 116)
+     *      forwardness               = 3 bits (offset: 120)
      *                                  GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
-     *      leftishness               = 3 bits, in boolean triads: (L, C, R):
+     *      leftishness               = 3 bits, in boolean triads: (L, C, R): (offset: 123)
      *                                  0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
-     *      aggressiveness            = 3 bits
-     *      playerId                  = 43 bits
+     *      aggressiveness            = 3  (offset: 126)
+     *      playerId                  = 43 bits (offset: 129)
      *      
-     *      alignedEndOfLastHalf      = 1b (bool)
-     *      redCardLastGame           = 1b (bool)
-     *      gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6.
-     *      injuryWeeksLeft           = 3b 
-     *      substitutedFirstHalf      = 1b (bool) 
-     *      sumSkills                 = 19b (must equal sum(skills), of if each is 16b, this can be at most 5x16b => use 19b)
-     *      isSpecialPlayer           = 1b (set at the left-most bit, 255)
-     *      targetTeamId              = 43b
-     *      generation                = 8b. From [0,...,31] => not-a-child, from [32,..63] => a child
+     *      alignedEndOfLastHalf      = 1b (bool) (offset: 172)
+     *      redCardLastGame           = 1b (bool) (offset: 173)
+     *      gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6. (offset: 174)
+     *      injuryWeeksLeft           = 3b  (offset: 177)
+     *      substitutedFirstHalf      = 1b (bool) (offset: 180)
+     *      sumSkills                 = 23b (must equal sum(skills), of if each is 20b, this can be at most 5x20b => use 23b) (offset 181)
+     *      isSpecialPlayer           = 1b (set at the left-most bit, 255) (offset: 204)
+     *      generation                = 8b. From [0,...,31] => not-a-child, from [32,..63] => a child (offset: 205)
     **/
     function encodePlayerSkills(
-        uint16[N_SKILLS] memory skills, 
+        uint32[N_SKILLS] memory skills, 
         uint256 dayOfBirth, 
         uint8 generation,
         uint256 playerId, 
@@ -60,22 +59,22 @@ contract EncodingSkills is Constants {
         require(playerId > 0 && playerId < 2**43, "playerId out of bound");
 
         // start encoding:
-        for (uint32 sk = 0; sk < N_SKILLS; sk++) {
-            encoded |= uint256(skills[sk]) << 16 * sk;
+        for (uint16 sk = 0; sk < N_SKILLS; sk++) {
+            encoded |= uint256(skills[sk]) << 20 * sk;
         }
-        encoded |= dayOfBirth << 80;
-        encoded |= playerId << 96;
-        encoded |= uint256(birthTraits[IDX_POT]) << 139;
-        encoded |= uint256(birthTraits[IDX_FWD]) << 143;
-        encoded |= uint256(birthTraits[IDX_LEF]) << 146;
-        encoded |= uint256(birthTraits[IDX_AGG]) << 149;
-        encoded |= uint256(alignedEndOfLastHalf ? 1 : 0) << 152;
-        encoded |= uint256(redCardLastGame ? 1 : 0) << 153;
-        encoded |= uint256(gamesNonStopping) << 154;
-        encoded |= uint256(injuryWeeksLeft) << 157;
-        encoded |= uint256(substitutedFirstHalf ? 1 : 0) << 160;
-        encoded |= uint256(sumSkills) << 161;
-        return (encoded | uint256(generation) << 223);
+        encoded |= dayOfBirth << 100;
+        encoded |= uint256(birthTraits[IDX_POT]) << 116;
+        encoded |= uint256(birthTraits[IDX_FWD]) << 120;
+        encoded |= uint256(birthTraits[IDX_LEF]) << 123;
+        encoded |= uint256(birthTraits[IDX_AGG]) << 126;
+        encoded |= playerId << 129;
+        encoded |= uint256(alignedEndOfLastHalf ? 1 : 0) << 172;
+        encoded |= uint256(redCardLastGame ? 1 : 0) << 173;
+        encoded |= uint256(gamesNonStopping) << 174;
+        encoded |= uint256(injuryWeeksLeft) << 177;
+        encoded |= uint256(substitutedFirstHalf ? 1 : 0) << 180;
+        encoded |= uint256(sumSkills) << 181;
+        return (encoded | uint256(generation) << 205);
     }
 
 }

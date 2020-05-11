@@ -71,5 +71,5 @@ func TestStakerEnroll(t *testing.T) {
 
 	assert.NilError(t, s.Init(*bc.Contracts))
 	root := [32]byte{0x0}
-	assert.NilError(t, s.SubmitRoot(*bc.Contracts, root)) // TODO should fail
+	assert.Error(t, s.SubmitRoot(*bc.Contracts, root), "failed to estimate gas needed: The execution failed due to an exception.")
 }
