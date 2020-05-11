@@ -3,11 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"math/big"
 	"os"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
@@ -16,6 +14,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/staker"
 )
 
 func main() {
@@ -87,18 +86,6 @@ func main() {
 		log.Fatal("no stakers contract address")
 	}
 
-	var stakerAuth *bind.TransactOpts
-	if *stakerPrivateKey != "" {
-		log.Info("WARNING: STAKER address set")
-		privateKey, err := crypto.HexToECDSA(*stakerPrivateKey)
-		if err != nil {
-			log.Fatal("Unable to obtain privateKey")
-		}
-		stakerAuth := bind.NewKeyedTransactor(privateKey)
-		stakerAuth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
-		log.Infof("Staker Address : %v", crypto.PubkeyToAddress(privateKey.PublicKey).Hex())
-	}
-
 	log.Infof("ipfs URL: %v", *ipfsURL)
 
 	if *debug {
@@ -137,6 +124,22 @@ func main() {
 			return err
 		}
 
+		var stkr *staker.Staker
+		if *stakerPrivateKey != "" {
+			log.Info("WARNING: STAKER address set")
+			privateKey, err := crypto.HexToECDSA(*stakerPrivateKey)
+			if err != nil {
+				return err
+			}
+			stkr, err = staker.New(privateKey)
+			if err != nil {
+				return err
+			}
+			if err := stkr.Init(*contracts); err != nil {
+				return err
+			}
+		}
+
 		log.Info("Connecting to universe DBMS: ", *postgresURL)
 		universedb, err := storage.New(*postgresURL)
 		if err != nil {
@@ -154,7 +157,7 @@ func main() {
 			contracts,
 			namesdb,
 			*ipfsURL,
-			stakerAuth,
+			stkr,
 		)
 		if err != nil {
 			return err

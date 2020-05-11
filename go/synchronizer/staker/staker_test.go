@@ -47,6 +47,8 @@ func TestStakerEnroll(t *testing.T) {
 	s, err := staker.New(pvc)
 	assert.NilError(t, err)
 
+	assert.Error(t, s.Init(*bc.Contracts), "[staker] not a trusted party")
+
 	t.Run("be trusted party", func(t *testing.T) {
 		tx, err := bc.Contracts.Stakers.AddTrustedParty(bind.NewKeyedTransactor(bc.Owner), s.Address())
 		assert.NilError(t, err)
@@ -57,10 +59,5 @@ func TestStakerEnroll(t *testing.T) {
 		assert.Assert(t, isTrusted)
 	})
 
-	t.Run("enroll", func(t *testing.T) {
-		assert.NilError(t, s.Enroll(*bc.Contracts))
-		isEnrolled, err := s.IsEnrolled(*bc.Contracts)
-		assert.NilError(t, err)
-		assert.Assert(t, isEnrolled)
-	})
+	assert.NilError(t, s.Init(*bc.Contracts))
 }
