@@ -72,7 +72,7 @@ contract Updates is UpdatesBase {
         // when actionRoots were submitted, nextTimeZone points to the future.
         // so the timezone waiting for updates & challenges is provided by prevTimeZoneToUpdate()
         (uint8 tz,,) = prevTimeZoneToUpdate();
-        bool accept = (tz == NULL_TIMEZONE) || (getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz));
+        bool accept = (tz != NULL_TIMEZONE) && (getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz));
         require(accept, "TZ has already been updated once");
         _setTZRoot(tz, root); // first time that we update this TZ
         emit TimeZoneUpdate(tz, root, now);

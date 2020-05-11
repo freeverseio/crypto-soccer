@@ -293,6 +293,30 @@ contract('Updates', (accounts) => {
         isCloseEnough(timeZoneToUpdate[0].toNumber(), timeZoneToUpdateBefore[0].toNumber()).should.be.equal(true)
         isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
     });
+    
+    it('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
+        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank]
+        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+
+        timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
+        await moveToNextVerse(updates, extraSecs = -10);
+        await timeTravel.advanceTime(20);
+
+        isTime = await updates.isTimeToUpdate().should.be.fulfilled;
+        isTime.should.be.equal(false);
+        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.rejected;
+
+        const cif = "ciao2";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        now = await updates.getNow().should.be.fulfilled;
+        isTime = await updates.isTimeToUpdate().should.be.fulfilled;
+        isTime.should.be.equal(true);
+        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
+    });
+
 
     it('moveToNextVerse', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
