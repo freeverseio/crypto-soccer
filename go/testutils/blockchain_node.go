@@ -29,6 +29,7 @@ type ContractAddresses struct {
 	Shop           string
 	Trainingpoints string
 	Privileged     string
+	Stakers        string
 }
 
 type BlockchainNode struct {
@@ -145,6 +146,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		contractMap["TRAININGPOINTS_CONTRACT_ADDRESS"],
 		contractMap["CONSTANTSGETTERS_CONTRACT_ADDRESS"],
 		contractMap["PRIVILEGED_CONTRACT_ADDRESS"],
+		contractMap["STAKERS_CONTRACT_ADDRESS"],
 	)
 
 	b.Addresses = ContractAddresses{
@@ -160,6 +162,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		contractMap["SHOP_CONTRACT_ADDRESS"],
 		contractMap["TRAININGPOINTS_CONTRACT_ADDRESS"],
 		contractMap["PRIVILEGED_CONTRACT_ADDRESS"],
+		contractMap["STAKERS_CONTRACT_ADDRESS"],
 	}
 	return nil
 }

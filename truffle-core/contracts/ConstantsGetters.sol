@@ -18,6 +18,7 @@ contract ConstantsGetters is Constants {
     function get_POST_AUCTION_TIME() external pure returns(uint256) { return POST_AUCTION_TIME;}
     function get_NULL_TIMEZONE() external pure returns(uint8) { return NULL_TIMEZONE;}
     function get_VERSES_PER_DAY() external pure returns(uint8) { return VERSES_PER_DAY;}
+    function get_SECS_BETWEEN_VERSES() external pure returns(uint256) { return SECS_BETWEEN_VERSES;}
     function get_VERSES_PER_ROUND() external pure returns(uint16) { return VERSES_PER_ROUND;}
     function get_ACADEMY_TEAM() external pure returns(uint256) { return ACADEMY_TEAM; }
     function get_INGAMETIME_VS_REALTIME() external pure returns(uint256) { return INGAMETIME_VS_REALTIME; }

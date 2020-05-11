@@ -164,7 +164,29 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
     
-    
+    it('create 442 team', async () => {
+        teamState = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
+        var result = JSON.stringify(teamState);
+        var fs = require('fs');
+        var expected;
+        var expectedFile = 'test/testdata/team442.json'
+        fs.readFile(expectedFile, 'utf8', function (err, data) {
+            if (err) throw err;
+            try {
+                expected = JSON.stringify(JSON.parse(data));
+                if (expected != result) {
+                    console.log("team442 state! Please enable the next lines to overwrite hardcoded file");
+                    // fs.writeFile(expectedFile, result, function(err) {
+                    //     if (err) {
+                    //         console.log(err);
+                    //     }
+                    // });
+                }
+            } catch (e) {
+                console.error( e );
+            }
+        });
+    });
     
     it('test apply boosters', async () => {
         tact = await applyBoosters.setItemId(tacticId442, itemId = 1).should.be.fulfilled;

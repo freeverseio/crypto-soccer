@@ -1,14 +1,20 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
-import "./UpdatesView.sol";
+import "./UpdatesBase.sol";
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
  */
 
-contract Updates is UpdatesView {
-    event TeamTransfer(uint256 teamId, address to);
-    event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string cid);
-    event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
+contract Updates is UpdatesBase {
+    event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
+    event TimeZoneUpdate(uint256 verse, uint8 timeZone, bytes32 root, uint256 submissionTime);
+    event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
+
+    function setStakersAddress(address payable addr) public {
+        _stakers = Stakers(addr);
+    }
+
+    function setChallengeTime(uint256 newTime) public { _challengeTime = newTime; }
 
     function initUpdates() public {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
@@ -30,57 +36,93 @@ contract Updates is UpdatesView {
         firstVerseTimeStamp = nextVerseTimestamp;
     }
  
-    function incrementVerse() private {
+    function _incrementVerse() private {
         currentVerse += 1;
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
     }
     
-    function submitActionsRoot(bytes32 actionsRoot, string memory cid) public {
-        // require(now > nextVerseTimestamp, "too early to accept actions root");
+    function submitActionsRoot(bytes32 actionsRoot, bytes32 activeTeamsPerCountryRoot, bytes32 orgMapRoot, uint8 levelVerifiableByBC, string memory ipfsCid) public {
+        require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
-        // (uint8 prevTz,,) = prevTimeZoneToUpdate();
+        (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
-        // if (prevTz != NULL_TIMEZONE) {
-        //     require(now > _storageProxy.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
-        // }
+        if (prevTz != NULL_TIMEZONE) {
+            ( , , bool isSettled) = getStatus(prevTz, true);
+            require(isSettled, "last verse is still under challenge period");
+        }
         if(newTZ != NULL_TIMEZONE) {
-            setActionsRoot(newTZ, actionsRoot);
+            uint8 idx = 1 - _newestRootsIdx[newTZ];
+            _newestRootsIdx[newTZ] = idx;
+            _actionsRoot[newTZ][idx] = actionsRoot;
+            _activeTeamsPerCountryRoot[newTZ][idx] = activeTeamsPerCountryRoot;
+            _orgMapRoot[newTZ][idx] = orgMapRoot;
+            _levelVerifiableByBC[newTZ][idx] = levelVerifiableByBC;
+            _lastActionsSubmissionTime[newTZ] = now;
         }
-        incrementVerse();
-        setCurrentVerseSeed(blockhash(block.number-1));
-        emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, cid);
-    }
-    
-    function setActionsRoot(uint8 timeZone, bytes32 root) public returns(uint256) {
-        _tzExists(timeZone);
-        _timeZones[timeZone].actionsRoot = root;
-        _timeZones[timeZone].lastActionsSubmissionTime = now;
+        _incrementVerse();
+        _setCurrentVerseSeed(blockhash(block.number-1));
+        emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
     }
 
+    // accepts an update about the root of the current state of a timezone. 
+    // in order to accept it, either:
+    //  - timezone is null,
+    //  - timezone has not been updated yet (lastUpdate < _lastActionsSubmissionTime)
     function updateTZ(bytes32 root) public {
+        // when actionRoots were submitted, nextTimeZone points to the future.
+        // so the timezone waiting for updates & challenges is provided by prevTimeZoneToUpdate()
         (uint8 tz,,) = prevTimeZoneToUpdate();
-        if(tz != NULL_TIMEZONE) {
-            uint256 lastUpdate = getLastUpdateTime(tz);
-            uint256 lastActionsSubmissionTime = getLastActionsSubmissionTime(tz);
-            if (lastUpdate > lastActionsSubmissionTime) {
-                require(now < lastUpdate + CHALLENGE_TIME, "challenging period is already over for this timezone");
-                setSkillsRoot(tz, root, false); // this is a challenge to a previous update
-            } else {
-                require(now < lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
-                setSkillsRoot(tz, root, true); // first time that we update this TZ
-            }
-        }
-        emit TimeZoneUpdate(tz, root, now);
-    }
-    
-    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) internal returns(uint256) {
-        if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
-        _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
-        _timeZones[tz].lastUpdateTime = now;
+        bool accept = (tz == NULL_TIMEZONE) || (getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz));
+        require(accept, "TZ has already been updated once");
+        _setTZRoot(tz, root); // first time that we update this TZ
+        emit TimeZoneUpdate(currentVerse, tz, root, now);
+        _stakers.update(0, msg.sender);
     }
 
-    function setCurrentVerseSeed(bytes32 seed) public {
+    // TODO: specify which leaf you challenge!!! And bring Merkle proof!
+    function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots) public {
+        // intData = [tz, level, levelVerifiable, idx]
+        uint8[4] memory intData = _cleanTimeAcceptedChallenges();
+        bytes32 root = _assertFormallyCorrectChallenge(
+            intData,
+            challLeaveVal, 
+            challLeavePos, 
+            proofChallLeave, 
+            providedRoots
+        );
+        require(intData[1] < intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges");        
+        // accept the challenge and store new root, or let the BC verify challenge and revert to level - 1
+        uint8 level = intData[1] + 1;
+        _roots[intData[0]][intData[3]][level] = root;
+        _challengeLevel[intData[0]][intData[3]] = level;
+        emit ChallengeAccepted(intData[0], level, root, providedRoots);
+        _lastUpdateTime[intData[0]] = now;
+        _stakers.update(level, msg.sender);
+    }
+
+    function _setTZRoot(uint8 tz, bytes32 root) internal {
+        uint8 idx = _newestRootsIdx[tz];
+        _roots[tz][idx][0] = root;
+        for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][idx][level] = 0;
+        _lastUpdateTime[tz] = now;
+    }
+
+    function _setCurrentVerseSeed(bytes32 seed) private {
         currentVerseSeed = seed;
     }
- 
+
+    // TODO: remove this test function
+    function setLevelVerifiableByBC(uint8 newVal) public {
+        for (uint8 tz = 1; tz < 25; tz++) {
+            _levelVerifiableByBC[tz][0] = newVal;
+            _levelVerifiableByBC[tz][1] = newVal;
+        }
+    }
+    
+    function setChallengeLevels(uint16 levelsInOneChallenge, uint16 leafsInLeague, uint16 levelsInLastChallenge) public {
+        _levelsInOneChallenge   = levelsInOneChallenge;
+        _leafsInLeague          = leafsInLeague;
+        _levelsInLastChallenge  = levelsInLastChallenge;
+    }
+    
 }

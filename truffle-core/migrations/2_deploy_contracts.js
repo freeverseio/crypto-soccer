@@ -12,25 +12,31 @@ const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
 const Utils = artifacts.require('Utils');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
+const Merkle = artifacts.require('Merkle');
+const Challenges = artifacts.require('Challenges');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
 const Directory = artifacts.require('Directory');
 const MarketCrypto = artifacts.require('MarketCrypto');
+const Stakers = artifacts.require('Stakers');
 
 require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const delegateUtils = require('../utils/delegateCallUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    
+    const { singleTimezone, trustedParties, requiredStake } = deployer.networks[network];
+
     const versionNumber = 0;
     const proxyAddress  = "0x0";
-    const {0: proxy, 1: assets, 2: market, 3: updates} = await delegateUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates);
-
+    const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
+      await deployUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
+  
+    const stakers  = await deployer.deploy(Stakers, requiredStake ? requiredStake : 1000000000000).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -42,11 +48,14 @@ module.exports = function (deployer, network, accounts) {
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
     const utils = await deployer.deploy(Utils).should.be.fulfilled;
     const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
+    const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
     const marketCrypto = await deployer.deploy(MarketCrypto).should.be.fulfilled;
-    
+
     console.log("Setting up ...");
+    await stakers.setGameOwner(updates.address).should.be.fulfilled;
+    await updates.setStakersAddress(stakers.address).should.be.fulfilled;
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
@@ -56,7 +65,7 @@ module.exports = function (deployer, network, accounts) {
     await trainingPoints.setMarketAddress(market.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await engine.setApplyBoostersAddr(engineApplyBoosters.address).should.be.fulfilled;
-    await playAndEvolve.setTrainingAddress(trainingPoints.address);
+    await playAndEvolve.setTrainingAddress(trainingPoints.address).should.be.fulfilled;
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
@@ -64,25 +73,24 @@ module.exports = function (deployer, network, accounts) {
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
 
     if (versionNumber == 0) {
-      // Initializing Assets differently in XDAI or testing:
-      console.log("Setting up ... done");
-      if (deployer.network === "xdai") {
-        await assets.init().should.be.fulfilled;
-      } else if (deployer.network === "local") {
-        console.log("WARNING ... only timezone 1")
-        await assets.initSingleTZ(1).should.be.fulfilled;
-        const value = "1000000000000000000";
-        const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
-        console.log("Transfer " + value + " to " + to);
-        await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
+
+      if (singleTimezone) {
+        console.log("Init single timezone", singleTimezone);
+        await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
       } else {
-        console.log("WARNING ... only timezone 10")
-        await assets.initSingleTZ(10).should.be.fulfilled;
+        await assets.init().should.be.fulfilled;
       }
-      console.log("Initing ... done");
+
+      if (trustedParties) {
+        for (trustedPart of trustedParties) {
+          console.log("Add TrustedPart", trustedPart);
+          await stakers.addTrustedParty(trustedPart).should.be.fulfilled;
+        }
+      }
+
+      await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0");
     }
- 
-    if (versionNumber == 0) { await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0"); }
+
     namesAndAddresses = [
       ["ASSETS", assets.address],
       ["MARKET", market.address],
@@ -98,9 +106,12 @@ module.exports = function (deployer, network, accounts) {
       ["PRIVILEGED", privileged.address],
       ["UTILS", utils.address],
       ["PLAYANDEVOLVE", playAndEvolve.address],
+      ["MERKLE", merkle.address],
       ["CONSTANTSGETTERS", constantsGetters.address],
       ["PROXY", proxy.address],
-      ["MARKETCRYPTO", marketCrypto.address]
+      ["CHALLENGES", challenges.address],
+      ["MARKETCRYPTO", marketCrypto.address],
+      ["STAKERS", stakers.address]
     ]
 
     // Build arrays "names" and "addresses" and store in Directory contract

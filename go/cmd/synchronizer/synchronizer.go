@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/staker"
 )
 
 func main() {
@@ -32,6 +34,8 @@ func main() {
 	shopContractAddress := flag.String("shopContractAddress", "", "")
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
 	constantsgettersContractAddress := flag.String("constantsgettersContractAddress", "", "")
+	stakersContractAddress := flag.String("stakersContractAddress", "", "")
+	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	delta := flag.Int("delta", 10, "number of block to process at maximum")
 	flag.Parse()
@@ -78,6 +82,9 @@ func main() {
 	if *constantsgettersContractAddress == "" {
 		log.Fatal("no constantsgetters contract address")
 	}
+	if *stakersContractAddress == "" {
+		log.Fatal("no stakers contract address")
+	}
 
 	log.Infof("ipfs URL: %v", *ipfsURL)
 
@@ -111,9 +118,26 @@ func main() {
 			*trainingpointsContractAddress,
 			*constantsgettersContractAddress,
 			privilegedContractAddress,
+			*stakersContractAddress,
 		)
 		if err != nil {
 			return err
+		}
+
+		var stkr *staker.Staker
+		if *stakerPrivateKey != "" {
+			log.Info("WARNING: STAKER address set")
+			privateKey, err := crypto.HexToECDSA(*stakerPrivateKey)
+			if err != nil {
+				return err
+			}
+			stkr, err = staker.New(privateKey)
+			if err != nil {
+				return err
+			}
+			if err := stkr.Init(*contracts); err != nil {
+				return err
+			}
 		}
 
 		log.Info("Connecting to universe DBMS: ", *postgresURL)
@@ -129,7 +153,12 @@ func main() {
 		}
 		defer namesdb.Close()
 
-		processor, err := process.NewEventProcessor(contracts, namesdb, *ipfsURL)
+		processor, err := process.NewEventProcessor(
+			contracts,
+			namesdb,
+			*ipfsURL,
+			stkr,
+		)
 		if err != nil {
 			return err
 		}

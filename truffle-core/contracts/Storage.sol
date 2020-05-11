@@ -2,6 +2,7 @@ pragma solidity >=0.5.12 <=0.6.3;
 
 import "./ProxyStorage.sol";
 import "./Constants.sol";
+import "./Stakers.sol";
 
 /**
 * @title Storage common to all project, with setters managed by StorageProxy.
@@ -33,7 +34,6 @@ contract Storage is ProxyStorage, Constants{
     uint256 internal currentVerse;
     bytes32 internal currentVerseSeed;
 
-    TimeZone[25] public _timeZones;
     uint256 public gameDeployDay;
 
     mapping (uint256 => uint256) countryIdToNDivisions;
@@ -44,18 +44,20 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint8 => uint256) tzToNCountries;
 
     uint256 firstVerseTimeStamp;
-    struct TimeZone {
-        bytes32[2] orgMapHash;
-        bytes32[2] skillsHash;
-        uint8 newestOrgMapIdx;
-        uint8 newestSkillsIdx;
-        bytes32 scoresRoot;
-        uint8 updateCycleIdx;
-        uint256 lastActionsSubmissionTime;
-        uint256 lastUpdateTime;
-        bytes32 actionsRoot;
-        uint256 lastMarketClosureBlockNum;
-    }    
-
-
+    uint16 _levelsInOneChallenge;
+    uint16 _leafsInLeague;
+    uint16 _levelsInLastChallenge;
+    uint256 _challengeTime;
+    mapping (uint256 => bytes32[2]) _actionsRoot;
+    mapping (uint256 => bytes32[2]) _activeTeamsPerCountryRoot;
+    mapping (uint256 => bytes32[2]) _orgMapRoot;
+    mapping (uint256 => uint8[2]) _levelVerifiableByBC;
+    mapping (uint256 => bytes32[MAX_CHALLENGE_LEVELS][2]) _roots;
+    mapping (uint256 => uint8[2]) _challengeLevel;
+    mapping (uint256 => uint8) _newestOrgMapIdx;
+    mapping (uint256 => uint8) _newestRootsIdx;
+    mapping (uint256 => uint256) _lastActionsSubmissionTime;
+    mapping (uint256 => uint256) _lastUpdateTime;
+ 
+    Stakers internal _stakers;
 }

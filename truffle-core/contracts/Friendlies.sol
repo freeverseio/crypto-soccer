@@ -11,8 +11,8 @@ import "./SortIdxsAnySize.sol";
 contract Friendlies is SortIdxsAnySize {
 
     struct Friendly {
-        bytes32[2] orgMapHash;
-        bytes32[2] skillsHash;
+        bytes32[2] orgMapRoot;
+        bytes32[2] roots;
         uint8 newestOrgMapIdx;
         uint8 newestSkillsIdx;
         bytes32 scoresRoot;

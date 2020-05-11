@@ -2,36 +2,35 @@ pragma solidity >=0.5.12 <=0.6.3;
 
 import "./AssetsLib.sol";
  /**
- * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
+ * @title Entry point to submit user actions, and tz root updates, which makes time evolve.
  */
 
-contract UpdatesView is Storage, AssetsLib {
+contract UpdatesView is AssetsLib {
 
     function getNow() public view returns(uint256) {
         return now;
     }
 
-    function getLastUpdateTime(uint8 timeZone) internal view returns(uint256) {
-        _tzExists(timeZone);
-        return _timeZones[timeZone].lastUpdateTime;
+    function getLastUpdateTime(uint8 tz) public view returns(uint256) {
+        _tzExists(tz);
+        return _lastUpdateTime[tz];
     }
     
-    function getLastActionsSubmissionTime(uint8 timeZone) public view returns(uint256) {
-        _tzExists(timeZone);
-        return _timeZones[timeZone].lastActionsSubmissionTime;
+    function getLastActionsSubmissionTime(uint8 tz) public view returns(uint256) {
+        _tzExists(tz);
+        return _lastActionsSubmissionTime[tz];
     }
-
-    
+        
     // each day has 24 hours, each with 4 verses => 96 verses per day.
     // day = 0,..13
     // turnInDay = 0, 1, 2, 3
-    // so for each TZ, we go from (day, turn) = (0, 0) ... (13,3) => a total of 14*4 = 56 turns per timeZone
+    // so for each TZ, we go from (day, turn) = (0, 0) ... (13,3) => a total of 14*4 = 56 turns per tz
     // from these, all map easily to timeZones
-    function nextTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
+    function nextTimeZoneToUpdate() public view returns (uint8 tz, uint8 day, uint8 turnInDay) {
         return _timeZoneToUpdatePure(currentVerse, timeZoneForRound1);
     }
 
-    function prevTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
+    function prevTimeZoneToUpdate() public view returns (uint8 tz, uint8 day, uint8 turnInDay) {
         if (currentVerse == 0) {
             return (NULL_TIMEZONE, 0, 0);
         }
@@ -48,7 +47,7 @@ contract UpdatesView is Storage, AssetsLib {
     // Imagine 2 tzs:
     // 0:00 - tz0; 0:30 - NUL; 1:00 - tz1; 1:30 - tz0; 0:00 - tz0; 0:30 - tz1;
     // So the last
-    function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
+    function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timezone, uint8 day, uint8 turnInDay) {
         // if currentVerse = 0, we should be updating timeZoneForRound1
         // recall that timeZones range from 1...24 (not from 0...24)
         turnInDay = uint8(verse % 4);
@@ -64,7 +63,7 @@ contract UpdatesView is Storage, AssetsLib {
             dia = 1 + 2 * uint8((verse - 4 * (tz - TZForRound1) - delta)/VERSES_PER_DAY);
             turnInDay -= 2;
         }
-        timeZone = normalizeTZ(tz);
+        timezone = normalizeTZ(tz);
         day = uint8(dia % MATCHDAYS_PER_ROUND);
     }
     
@@ -77,6 +76,41 @@ contract UpdatesView is Storage, AssetsLib {
     function getCurrentVerse() public view returns (uint256) { return currentVerse; }
     function getCurrentVerseSeed() public view returns (bytes32) { return currentVerseSeed; }
 
+    function getRoot(uint8 tz, uint8 level, bool current) public view returns(bytes32) { 
+        return (current) ? _roots[tz][_newestRootsIdx[tz]][level] : _roots[tz][1-_newestRootsIdx[tz]][level];
+    }
+
+    function getChallengeTime() public view returns (uint256) { return _challengeTime; }
+
+    function getChallengeData(uint8 tz, bool current) public view returns(uint8, uint8, uint8) { 
+        uint8 idx = current ? _newestRootsIdx[tz] : 1 - _newestRootsIdx[tz];
+        return (idx, _challengeLevel[tz][idx], _levelVerifiableByBC[tz][idx]);
+    }
+
+    function getStatus(uint8 tz, bool current) public view returns(uint8, uint8, bool) { 
+        uint8 idx = current ? _newestRootsIdx[tz] : 1 - _newestRootsIdx[tz];
+        uint8 writtenLevel = _challengeLevel[tz][idx];
+        return getStatusPure(now, _lastUpdateTime[tz], _challengeTime, writtenLevel);
+    }
+    
+    function isTimeToUpdate() public view returns(bool) {
+        (uint8 tz,,) = prevTimeZoneToUpdate();
+        if (tz == NULL_TIMEZONE) return true;
+        if (!(getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz))) return false;
+        (,, bool isSettled) = getStatus(tz, true);
+        return isSettled;
+    }
+    
+
+    
+    function getStatusPure(uint256 nowTime, uint256 lastUpdate, uint256 challengeTime, uint8 writtenLevel) public pure returns(uint8 finalLevel, uint8 nJumps, bool isSettled) {
+        if (challengeTime == 0) return (writtenLevel, 0, nowTime > lastUpdate);
+        uint256 numChallPeriods = (nowTime > lastUpdate) ? (nowTime - lastUpdate)/challengeTime : 0;
+        finalLevel = (writtenLevel >= 2 * numChallPeriods) ? uint8(writtenLevel - 2 * numChallPeriods) : (writtenLevel % 2);
+        nJumps = (writtenLevel - finalLevel) / 2;
+        isSettled = nowTime > lastUpdate + (nJumps + 1) * challengeTime;
+    }
+    
     // tz(n0)   : 11.30 = 0
     //          : 21.00 = 11.30 + 9.30h
     // tz(n)    : 11.30 + (n-n0)*1h

@@ -54,12 +54,12 @@ func (p *ActionsSubmitter) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("Staring process of verse %v, timezone %v, day %v, turn %v", currentVerse, nextToUpdate.TimeZone, nextToUpdate.Day, nextToUpdate.TurnInDay)
+	log.Infof("Staring process of verse %v, timezone %v, day %v, turn %v", currentVerse, nextToUpdate.Tz, nextToUpdate.Day, nextToUpdate.TurnInDay)
 	upcomingUserActions := useractions.New()
-	if nextToUpdate.TimeZone == 0 {
+	if nextToUpdate.Tz == 0 {
 		log.Info("Timezone 0 ... skipping user actions")
 	} else if nextToUpdate.TurnInDay <= 1 {
-		if upcomingUserActions, err = useractions.NewFromStorage(tx, int(nextToUpdate.TimeZone)); err != nil {
+		if upcomingUserActions, err = useractions.NewFromStorage(tx, int(nextToUpdate.Tz)); err != nil {
 			return err
 		}
 	}
@@ -72,7 +72,7 @@ func (p *ActionsSubmitter) Process(tx *sql.Tx) error {
 		return err
 	}
 	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
-	transaction, err := p.updatesContract.SubmitActionsRoot(p.auth, root, cid)
+	transaction, err := p.updatesContract.SubmitActionsRoot(p.auth, root, root, root, 3, cid)
 	if err != nil {
 		return err
 	}
