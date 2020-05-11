@@ -16,7 +16,7 @@ func TestStakerNew(t *testing.T) {
 
 	s, err := staker.New(account.Key)
 	assert.NilError(t, err)
-	assert.Equal(t, s.Address().Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
+	assert.Equal(t, s.Address().Hex(), account.Address().Hex())
 }
 
 func TestStakerIsTrustedParty(t *testing.T) {
