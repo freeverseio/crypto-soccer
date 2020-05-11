@@ -23,6 +23,7 @@ func TestSyncTeams(t *testing.T) {
 		bc.Contracts,
 		namesdb,
 		ipfsURL,
+		nil,
 	)
 	assert.NilError(t, err)
 	_, err = p.Process(tx, 0)

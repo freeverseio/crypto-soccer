@@ -29,6 +29,7 @@ const deployUtils = require('../utils/deployUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
+    const  params  = deployer.networks[network];
     
     const versionNumber = 0;
     const proxyAddress  = "0x0";
@@ -72,24 +73,23 @@ module.exports = function (deployer, network, accounts) {
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
 
     if (versionNumber == 0) {
-      // Initializing Assets differently in XDAI or testing:
-      console.log("Setting up ... done");
-      if (deployer.network === "xdai") {
-        await assets.init().should.be.fulfilled;
-      } else if (deployer.network === "local") {
-        console.log("WARNING ... only timezone 1")
-        await assets.initSingleTZ(1).should.be.fulfilled;
-        const value = "1000000000000000000";
-        const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
-        console.log("Transfer " + value + " to " + to);
-        await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
+      if (params.singleTimezone) {
+        console.log("Init single timezone", params.singleTimezone);
+        await assets.initSingleTZ(params.singleTimezone).should.be.fulfilled;
       } else {
-        console.log("WARNING ... only timezone 10")
-        await assets.initSingleTZ(10).should.be.fulfilled;
+        await assets.init().should.be.fulfilled;
       }
-      console.log("Initing ... done");
+      // Initializing Assets differently in XDAI or testing:
+      // if (deployer.network === "local") { // this is for testing
+      //   const value = "1000000000000000000";
+      //   const to = "0xeb3ce112d8610382a994646872c4361a96c82cf8";
+      //   console.log("Transfer " + value + " to " + to);
+      //   await web3.eth.sendTransaction({ from: accounts[0], to, value }).should.be.fulfilled;
+      //   await stakers.addTrustedParty(to).should.be.fulfilled;
+      // console.log("Initing ... done");
+
     }
- 
+
     if (versionNumber == 0) { await assets.setAcademyAddr("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0"); }
     namesAndAddresses = [
       ["ASSETS", assets.address],
