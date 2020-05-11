@@ -45,6 +45,7 @@ module.exports = {
       ),
       network_id: 63819,
       singleTimezone: 1,
+      requiredStake: 0,
     },
   },
 
