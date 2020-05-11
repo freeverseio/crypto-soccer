@@ -95,7 +95,7 @@ contract UpdatesView is AssetsLib {
     
     function isTimeToUpdate() public view returns(bool) {
         (uint8 tz,,) = prevTimeZoneToUpdate();
-        if (tz == NULL_TIMEZONE) return true;
+        if (tz == NULL_TIMEZONE) return false;
         if (!(getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz))) return false;
         (,, bool isSettled) = getStatus(tz, true);
         return isSettled;

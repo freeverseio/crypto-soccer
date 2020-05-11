@@ -18,7 +18,7 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         if (!wasPlayerCreatedVirtually(playerId)) return 0;
         (uint256 teamId, uint256 playerCreationDay, uint8 shirtNum) = getTeamIdCreationDayAndShirtNum(playerId);
         (uint256 dayOfBirth, uint8 potential) = computeBirthDayAndPotential(teamId, playerCreationDay, shirtNum);
-        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(teamId, shirtNum, potential);
+        (uint32[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(teamId, shirtNum, potential);
         return encodePlayerSkills(skills, dayOfBirth, 0, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
         
     }
@@ -59,9 +59,9 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     /// skills have currently, 16bits each, and there are 5 of them
     /// potential is a number between 0 and 9 => takes 4 bit
     /// 0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
-    /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
-    function computeSkills(uint256 teamId, uint8 shirtNum, uint8 potential) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory, uint32) {
-        uint16[5] memory skills;
+    /// @return uint32[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
+    function computeSkills(uint256 teamId, uint8 shirtNum, uint8 potential) public pure returns (uint32[N_SKILLS] memory, uint8[4] memory, uint32) {
+        uint32[5] memory skills;
         uint256[N_SKILLS] memory correctFactor;
         uint256 dna = uint256(keccak256(abi.encode(teamId, shirtNum)));
         uint8 forwardness;
@@ -115,7 +115,7 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
 
         /// Compute initial skills, as a random with [0, 49] 
         /// ...apply correction factor depending on preferred pos,
-        uint16 excess;
+        uint32 excess;
         for (uint8 i = 0; i < N_SKILLS; i++) {
             if (correctFactor[i] == 0) {
                 skills[i] = uint16(dna % 800);
@@ -127,7 +127,7 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         }
         // at this point, excess is at most, last two cases: (1.6+0.7+3)*800 = 4240, so 5000-excess is safe
         // and for GKS: (2+ 0.6 + 3)*800 = 4480, so 5000-excess is safe.
-        uint16 delta;
+        uint32 delta;
         delta = (5000 - excess) / N_SKILLS;
         for (uint8 i = 0; i < N_SKILLS; i++) skills[i] = skills[i] + delta;
         // note: final sum of skills = excess + N_SKILLS * delta;

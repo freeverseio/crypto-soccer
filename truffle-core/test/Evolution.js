@@ -393,12 +393,12 @@ contract('Evolution', (accounts) => {
         // Team0: show that the two yellows became 1 yellow and 1 red. And that 2nd team had no cards at all.
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [54967, 8, 3, 8, 8, 14];
+        expct = [ 54956, 8, 3, 8, 8, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [54956, 14, 0, 0, 14, 14];
+        expct = [ 54978, 14, 0, 0, 14, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
 
         seed = '0xe52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71';startTime = '1790899200';matchLog0 = '1809252841225230840719990802586915413221463612302449923019351491021792870400';teamId0 = '274877906944';tactic0 = '340596594427581673436941882753025';assignedTP0 = '0';players0 = ['444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215348664084887401221731547818249502887980205736758','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270',];matchLog1 = '1809252842383666049074119856298496506341924193632611326497576041530278307731';teamId1 = '274877906945';tactic1 = '340596594427581673436941882753025';assignedTP1 = '0';players1 = ['13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901',];        
@@ -409,12 +409,12 @@ contract('Evolution', (accounts) => {
         // same for 2nd half
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = true).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54967, 7, 3, 8, 7, 14 ];
+        expct = [ 54956, 7, 3, 8, 7, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = true).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54956, 14, 0, 0, 14, 14 ];
+        expct = [ 54978, 14, 0, 0, 14, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
 
 
@@ -432,12 +432,12 @@ contract('Evolution', (accounts) => {
         // same for 2nd half
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 44874, 9, 3, 8, 9, 14 ];
+        expct = [ 54962, 7, 3, 8, 7, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54890, 14, 0, 0, 14, 14 ];
+        expct = [ 54989, 14, 0, 0, 14, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
     });
     
@@ -480,11 +480,11 @@ contract('Evolution', (accounts) => {
 
         // shows that second team has veeery different cards and injuries
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
-        outPlayer.toNumber().should.be.equal(7);
-        typeOut.toNumber().should.be.equal(2); // HARD_INJURY
-        outRounds.toNumber().should.be.equal(5);
-        yellow1.toNumber().should.be.equal(10);
-        yellow2.toNumber().should.be.equal(6);
+        outPlayer.toNumber().should.be.equal(14);
+        typeOut.toNumber().should.be.equal(0);
+        outRounds.toNumber().should.be.equal(0);
+        yellow1.toNumber().should.be.equal(14);
+        yellow2.toNumber().should.be.equal(9);
     });
 
     it('show that a red card is stored in skills after playing 1st half', async () => {
@@ -673,7 +673,7 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen - 32 + 1)
         
-        expected = [ 1440, 744, 1244, 803, 766 ];
+        expected = [ 1029, 928, 1311, 673, 1057 ];
         results = [];
         for (sk = 0; sk < N_SKILLS; sk++) {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
@@ -699,10 +699,10 @@ contract('Evolution', (accounts) => {
         // all inputs are identical to the previous test, except for a +2 in matchStatTime,
         // which changes the entire randomness
         playerSkills = await assets.encodePlayerSkills(
-            skills = [100, 100, 100, 100, 100], 
+            skills = [101, 310, 1000, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 3,
-            playerId = 2132321,
+            playerId = 2139321,
             [potential = 2, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalf = true,
             redCardLastGame = false,
@@ -723,7 +723,7 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(32 + gen + 1)
 
-        expected = [ 1248, 828, 668, 1019, 1237 ];
+        expected = [ 1640, 580, 800, 738, 1238 ];
         results = []
         for (sk = 0; sk < N_SKILLS; sk++) {
             result = await engine.getSkill(newSkills, sk).should.be.fulfilled;
@@ -815,7 +815,6 @@ contract('Evolution', (accounts) => {
                 resultId = await assets.getPlayerIdFromSkills(newSkills[p]).should.be.fulfilled;
                 resultAge = await assets.getPlayerAgeInDays(resultId).should.be.fulfilled;
                 (resultAge.toNumber() >= 31 * 365).should.be.equal(true);
-                console.log(resultNew.toNumber(), resultInit.toNumber());
                 (resultNew.toNumber() < resultInit.toNumber()).should.be.equal(true);
             }
             initShoot.push(resultInit)
