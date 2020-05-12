@@ -17,7 +17,7 @@ services:
       # - IPFS_FD_MAX=4096
       - IPFS_PROFILE=test
     ports:
-      - "4001:4001"
+      - "127.0.0.1:4001:4001"
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"
       - "127.0.0.1:5001:5001"
@@ -29,8 +29,8 @@ services:
       - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns/ipfs.node/tcp/5001
     # command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
     ports:
-      - "9094:9094"
-      - "9095:9095"
-      - "9096:9096"
+      - "127.0.0.1:9094:9094"
+      - "127.0.0.1:9095:9095"
+      - "127.0.0.1:9096:9096"
     depends_on: 
       - ipfs.node
