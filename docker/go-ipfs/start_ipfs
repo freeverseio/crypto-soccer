@@ -24,6 +24,12 @@ else
   ipfs init $INIT_ARGS
   ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001
   ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/8080
+  ipfs config --json Swarm.EnableAutoRelay true
+  ipfs config --json Swarm.EnableRelayHop false
+  ipfs config Swarm.ConnMgr.Type basic
+  ipfs config --json Swarm.ConnMgr.LowWater 30
+  ipfs config --json Swarm.ConnMgr.HighWater 60
+  ipfs config Swarm.ConnMgr.GracePeriod 30s
 
   # ipfs bootstrap rm --all
   ipfs bootstrap add /p2p-circuit/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t

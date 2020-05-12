@@ -80,6 +80,9 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 	if err := s.scanActionsSubmission(opts); err != nil {
 		return err
 	}
+	if err := s.scanTimeZoneUpdate(opts); err != nil {
+		return err
+	}
 
 	log.Debug("scanner got: ", len(s.Events), " Abstract Events")
 
@@ -187,6 +190,19 @@ func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
 		e := *(iter.Event)
 		log.Debugf("[scanner] ScanActionSubmission")
 		s.addEvent(e.Raw, "UpdatesActionsSubmission", e)
+	}
+	return nil
+}
+
+func (s *EventScanner) scanTimeZoneUpdate(opts *bind.FilterOpts) error {
+	iter, err := s.contracts.Updates.FilterTimeZoneUpdate(opts)
+	if err != nil {
+		return err
+	}
+	for iter.Next() {
+		e := *(iter.Event)
+		log.Debugf("[scanner] scanTimeZoneUpdate")
+		s.addEvent(e.Raw, "UpdatesTimeZoneUpdate", e)
 	}
 	return nil
 }
