@@ -31,15 +31,20 @@ function getDefaultSetup(accounts) {
   console.log("Setting default values for deploy")
   return {
     singleTimezone: -1,
-    trustedParties: [accounts[0]],
+    auth: {
+      superOwner: accounts[0],
+      marketOwner: accounts[0],
+      relayOwner: accounts[0],
+      trustedParties: [accounts[0]]
+    },
     requiredStake: 1000000000000,
   }
 }
 
 function getExplicitOrDefaultSetup(params, accounts) {
-  const { singleTimezone, trustedParties, requiredStake } = params;
-  // First check that either ALL or NONE of the params are defined (otherwise, expect having forgotten to assign one)
-  numDefined = (singleTimezone ? 1 : 0) +  (trustedParties ? 1 : 0) + (requiredStake ? 1 : 0);
+  const { singleTimezone, auth, requiredStake } = params;
+  // Safety check: either ALL or NONE of the params must be defined (otherwise, expect having forgotten to assign some)
+  numDefined = (singleTimezone ? 1 : 0) +  (auth ? 1 : 0) + (requiredStake ? 1 : 0);
   isValidSetup = (numDefined == 3) || (numDefined == 0);
   assert.equal(isValidSetup, true, "only some of the setup parameters are assigned in deployer.networks");
   // Set up default values only if needed:
@@ -50,7 +55,7 @@ function getExplicitOrDefaultSetup(params, accounts) {
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    const { singleTimezone, trustedParties, requiredStake } = getExplicitOrDefaultSetup(deployer.networks[network], accounts);
+    const { singleTimezone, auth, requiredStake } = getExplicitOrDefaultSetup(deployer.networks[network], accounts);
 
     const versionNumber = 0;
     const proxyAddress  = "0x0";
@@ -102,7 +107,7 @@ module.exports = function (deployer, network, accounts) {
         await assets.init().should.be.fulfilled;
       }
 
-      for (trustedParty of trustedParties) {
+      for (trustedParty of auth.trustedParties) {
         console.log("Add TrustedPart", trustedParty);
         await stakers.addTrustedParty(trustedParty).should.be.fulfilled;
       }
