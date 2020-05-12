@@ -1,15 +1,5 @@
 package gql_test
 
-import (
-	"context"
-	"io/ioutil"
-	"testing"
-
-	"github.com/awa/go-iap/playstore"
-	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
-	"gotest.tools/assert"
-)
-
 const packageName = "com.freeverse.phoenix"
 const productID = "coinpack_45"
 const token = "hjjfppagdilpbmnmjaajpcgc.AO-J1Owne5VpLZzOtfFZkDY1k5T4kEXCgack0gmEYssqCgEYzlNgPtHdp72TPELzOl3T8XCYhc0k818EbCi7hiYcEgbCGNVyNCGd1I2wdz9pxGRHXs1-msWvAD9ztmd11v_hr9NqCSn1"
@@ -37,4 +27,4 @@ const token = "hjjfppagdilpbmnmjaajpcgc.AO-J1Owne5VpLZzOtfFZkDY1k5T4kEXCgack0gmE
 
 // 	_, err = client.VerifyProduct(context.Background(), packageName, productID, token)
 // 	assert.NilError(t, err)
-}
+// }
