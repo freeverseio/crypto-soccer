@@ -46,17 +46,17 @@ func New() *UserActions {
 	return &UserActions{}
 }
 
-func newShell(url string) *shell.Shell {
-	useIpfsCluster := false
+func newShell(url string) (*shell.Shell, error) {
+	useIpfsCluster := true
 	if !useIpfsCluster {
-		return shell.NewShell(url)
+		return shell.NewShell(url), nil
 	}
 	if len(url) == 0 {
 		url = "/ip4/127.0.0.1/tcp/5001" // localhost
 	}
 	maddr, err := ma.NewMultiaddr(url)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	cfg := &cluster.Config{
 		APIAddr: maddr,
@@ -67,14 +67,17 @@ func newShell(url string) *shell.Shell {
 	cfg.NoVerifyCert = true
 	client, err := cluster.NewDefaultClient(cfg)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return client.IPFS(context.Background())
+	return client.IPFS(context.Background()), nil
 }
 
 func NewFromIpfs(url string, cid string) (*UserActions, error) {
 	var ua UserActions
-	sh := newShell(url)
+	sh, err := newShell(url)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
 	if err != nil {
 		return nil, err
@@ -147,7 +150,10 @@ func (b *UserActions) Unmarshal(data []byte) error {
 }
 
 func (b *UserActions) ToIpfs(url string) (string, error) {
-	sh := newShell(url)
+	sh, err := newShell(url)
+	if err != nil {
+		return "", err
+	}
 	buf, err := b.Marshal()
 	if err != nil {
 		return "", err
