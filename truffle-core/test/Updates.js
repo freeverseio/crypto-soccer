@@ -318,25 +318,6 @@ contract('Updates', (accounts) => {
     });
 
 
-    it('update Timezone many times', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
-
-        const cif = "ciao2";
-
-        for (i = 0; i < 10; i++) {
-            console.log(i)
-            await moveToNextVerse(updates, extraSecs = 10);
-            console.log(i, "acc")
-            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
-            console.log(i, "update")
-            await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
-        }
-        // toni
-    });
-
-    
     it('moveToNextVerse', async () =>  {
         now = await updates.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
@@ -347,6 +328,18 @@ contract('Updates', (accounts) => {
         
     });
 
+    it('update Timezone many times', async () =>  {
+        result = await assets.getCurrentRound(tz = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await assets.getCurrentRound(tz = 24).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        await moveToNextVerse(updates, extraSecs = 10);
+        const cif = "ciao3";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await moveToNextVerse(updates, extraSecs = 10);
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+    });
+    
     it('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
