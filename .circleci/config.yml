@@ -61,6 +61,7 @@ commands:
 jobs:
   truffle_core:
     executor: freeverse
+    resource_class: xlarge
     steps:
       - checkout
       - run: cd truffle-core && npm install
