@@ -10,7 +10,7 @@ services:
     environment:
       - IPFS_PATH=/data
       # - IPFS_FD_MAX=4096
-      - IPFS_PROFILE=server
+      - IPFS_PROFILE=randomports
     # volumes:
     #   - ipfs.node-data:/data
   ipfs.cluster:
