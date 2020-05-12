@@ -46,17 +46,19 @@ func TestIpfsPushAndPull(t *testing.T) {
 	var ua useractions.UserActions
 	tactic := storage.Tactic{}
 	tactic.TeamID = "ciao"
+	localhost := "localhost:5001"
+	//localhost := "/ip4/127.0.0.1/tcp/5001" // if using ipfs-cluster
 	ua.Tactics = append(ua.Tactics, tactic)
-	cif, err := ua.ToIpfs("localhost:5001")
+	cif, err := ua.ToIpfs(localhost)
 	assert.NilError(t, err)
 	assert.Equal(t, cif, "QmXCYKHSNDCHqzv6W7WDHyW1Zp2YLgt87gmt8tzZYTQtx7")
 	training := storage.Training{}
 	training.TeamID = "pippo"
 	ua.Trainings = append(ua.Trainings, training)
-	cif, err = ua.ToIpfs("localhost:5001")
+	cif, err = ua.ToIpfs(localhost)
 	assert.NilError(t, err)
 	assert.Equal(t, cif, "QmbUVhwjGJQzPQQjs5QvJjRZLYuW2jKMKf1RcRiNP71qf2")
-	ua2, err := useractions.NewFromIpfs("localhost:5001", cif)
+	ua2, err := useractions.NewFromIpfs(localhost, cif)
 	assert.NilError(t, err)
 	assert.Assert(t, ua2.Equal(&ua))
 }
