@@ -11,6 +11,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func SubmitPlayStorePlayerPurchase(
@@ -19,6 +21,8 @@ func SubmitPlayStorePlayerPurchase(
 	googleCredentials []byte,
 	in input.SubmitPlayStorePlayerPurchaseInput,
 ) error {
+	log.Infof("SubmitPlayStorePlayerPurchase %+v", in)
+
 	playerId, _ := new(big.Int).SetString(string(in.PlayerId), 10)
 	if playerId == nil {
 		return fmt.Errorf("invalid playerId %v", in.PlayerId)
