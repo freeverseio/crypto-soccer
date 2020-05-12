@@ -12,12 +12,12 @@ contract UpdatesView is AssetsLib {
     }
 
     function getLastUpdateTime(uint8 tz) public view returns(uint256) {
-        _tzExists(tz);
+        require(_tzExists(tz), "tz does not exist");
         return _lastUpdateTime[tz];
     }
     
     function getLastActionsSubmissionTime(uint8 tz) public view returns(uint256) {
-        _tzExists(tz);
+        require(_tzExists(tz), "tz does not exist");
         return _lastActionsSubmissionTime[tz];
     }
         
@@ -95,8 +95,8 @@ contract UpdatesView is AssetsLib {
     
     function isTimeToUpdate() public view returns(bool) {
         (uint8 tz,,) = prevTimeZoneToUpdate();
-        if (tz == NULL_TIMEZONE) return true;
-        if (!(getLastUpdateTime(tz) < getLastActionsSubmissionTime(tz))) return false;
+        if (tz == NULL_TIMEZONE) return false;
+        if (getLastUpdateTime(tz) >= getLastActionsSubmissionTime(tz)) return false;
         (,, bool isSettled) = getStatus(tz, true);
         return isSettled;
     }

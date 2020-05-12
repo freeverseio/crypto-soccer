@@ -2,6 +2,7 @@ package staker
 
 import (
 	"crypto/ecdsa"
+	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -66,6 +67,32 @@ func (b Staker) IsTrustedParty(contracts contracts.Contracts) (bool, error) {
 	return contracts.Stakers.IsTrustedParty(&bind.CallOpts{}, b.Address())
 }
 
+func (b Staker) SubmitRoot(contracts contracts.Contracts, root [32]byte) error {
+	auth := bind.NewKeyedTransactor(b.privateKey)
+	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
+	tx, err := contracts.Updates.UpdateTZ(auth, root)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(contracts.Client, tx, 60)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b Staker) Play(contracts contracts.Contracts, root [32]byte) error {
+	isTimeToUpdate, err := contracts.Updates.IsTimeToUpdate(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	if !isTimeToUpdate {
+		return nil
+	}
+	log.Infof("[staker] it's time ... let's try to submit universe root %v", hex.EncodeToString(root[:]))
+	return b.SubmitRoot(contracts, root)
+}
+
 func requiredStake(contracts contracts.Contracts) (*big.Int, error) {
 	stake, err := contracts.Stakers.RequiredStake(&bind.CallOpts{})
 	if err != nil {
@@ -84,20 +111,6 @@ func (b Staker) enroll(contracts contracts.Contracts, stake *big.Int) error {
 		return err
 	}
 	if _, err := helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (b Staker) SubmitRoot(contracts contracts.Contracts, root [32]byte) error {
-	auth := bind.NewKeyedTransactor(b.privateKey)
-	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
-	tx, err := contracts.Updates.UpdateTZ(auth, root)
-	if err != nil {
-		return err
-	}
-	_, err = helper.WaitReceipt(contracts.Client, tx, 60)
-	if err != nil {
 		return err
 	}
 	return nil
