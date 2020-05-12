@@ -53,6 +53,7 @@ func main() {
 	} else {
 		log.Infof("[PARAM] market                     : REAL")
 	}
+	log.Infof("[PARAM] google credentials         : %v", *googleKey)
 	log.Infof("-------------------------------------------------------------------")
 
 	if *debug {
@@ -98,12 +99,9 @@ func main() {
 			return err
 		}
 
-		var googleCredentials []byte
-		if googleKey != nil {
-			googleCredentials, err = ioutil.ReadFile(*googleKey)
-			if err != nil {
-				return err
-			}
+		googleCredentials, err := ioutil.ReadFile(*googleKey)
+		if err != nil {
+			return err
 		}
 
 		ch := make(chan interface{}, *bufferSize)
