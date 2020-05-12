@@ -20,9 +20,9 @@ executors:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
           - POSTGRES_DB=cryptosoccer
-      - image: ipfs/go-ipfs:v0.4.23
+      - image: ipfs/go-ipfs:v0.5.0
         environment:
-          - IPFS_PROFILE=server
+          - IPFS_PROFILE=test
   freeverse_market:
     docker:
       - image: freeverseio/circleci

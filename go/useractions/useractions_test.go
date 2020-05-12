@@ -46,8 +46,8 @@ func TestIpfsPushAndPull(t *testing.T) {
 	var ua useractions.UserActions
 	tactic := storage.Tactic{}
 	tactic.TeamID = "ciao"
-	// localhost := "localhost:5001"
-	localhost := "/ip4/127.0.0.1/tcp/5001" // if using ipfs-cluster
+	localhost := "localhost:5001"
+	// localhost := "/ip4/127.0.0.1/tcp/5001" // if using ipfs-cluster
 	ua.Tactics = append(ua.Tactics, tactic)
 	cif, err := ua.ToIpfs(localhost)
 	assert.NilError(t, err)

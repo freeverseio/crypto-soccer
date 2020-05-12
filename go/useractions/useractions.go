@@ -47,7 +47,7 @@ func New() *UserActions {
 }
 
 func newShell(url string) (*shell.Shell, error) {
-	useIpfsCluster := true
+	useIpfsCluster := false
 	if !useIpfsCluster {
 		return shell.NewShell(url), nil
 	}
