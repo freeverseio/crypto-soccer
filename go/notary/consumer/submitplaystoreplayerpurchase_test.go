@@ -30,5 +30,5 @@ func TestSubmitPlayStorePlayerPurchase(t *testing.T) {
 		bc.Owner,
 		googleCredentials,
 		in,
-	), "unexpected end of JSON input")
+	), "CRITIC: order with purchaseToken 44434r with player 3: unexpected end of JSON input")
 }

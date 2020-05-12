@@ -11,6 +11,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func SubmitPlayStorePlayerPurchase(
@@ -19,6 +21,8 @@ func SubmitPlayStorePlayerPurchase(
 	googleCredentials []byte,
 	in input.SubmitPlayStorePlayerPurchaseInput,
 ) error {
+	log.Infof("SubmitPlayStorePlayerPurchase %+v", in)
+
 	playerId, _ := new(big.Int).SetString(string(in.PlayerId), 10)
 	if playerId == nil {
 		return fmt.Errorf("invalid playerId %v", in.PlayerId)
@@ -28,9 +32,14 @@ func SubmitPlayStorePlayerPurchase(
 		return fmt.Errorf("invalid teamId %v", in.TeamId)
 	}
 
-	client, err := playstore.New(googleCredentials)
-	if err != nil {
-		return err
+	if err := AcknowledgeProduct(
+		googleCredentials,
+		string(in.PackageName),
+		string(in.ProductId),
+		in.PurchaseToken,
+		"hello world!",
+	); err != nil {
+		return fmt.Errorf("CRITIC: order with purchaseToken %v with player %v: %v", in.PurchaseToken, playerId, err.Error())
 	}
 
 	auth := bind.NewKeyedTransactor(pvc)
@@ -43,24 +52,31 @@ func SubmitPlayStorePlayerPurchase(
 	if err != nil {
 		return err
 	}
-	receipt, err := helper.WaitReceipt(contracts.Client, tx, 60)
-	if err != nil {
+	if _, err = helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
 		return err
 	}
-	if receipt.Status == 0 {
+
+	return nil
+}
+
+func AcknowledgeProduct(
+	credentials []byte,
+	packageName string,
+	productID string,
+	token string,
+	payload string,
+) error {
+	client, err := playstore.New(credentials)
+	if err != nil {
 		return err
 	}
 
 	ctx := context.Background()
-	err = client.AcknowledgeProduct(
+	return client.AcknowledgeProduct(
 		ctx,
-		string(in.PackageName),
-		string(in.ProductId),
-		in.PurchaseToken,
-		receipt.TxHash.String(),
+		packageName,
+		productID,
+		token,
+		payload,
 	)
-	if err != nil {
-		return fmt.Errorf("CRITIC: order with purchaseToken %v with player %v: %v", in.PurchaseToken, playerId, err.Error())
-	}
-	return nil
 }
