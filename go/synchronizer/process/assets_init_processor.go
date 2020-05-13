@@ -38,7 +38,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	timezone := storage.Timezone{uint8(0)}
 	country := storage.Country{timezone.TimezoneIdx, uint32(0)}
 	league := storage.League{timezone.TimezoneIdx, country.CountryIdx, uint32(0)}
-	log.Infof("Creating timezone %v country %v league %v", timezone.TimezoneIdx, country.CountryIdx, league.LeagueIdx)
+	log.Infof("creating timezone %v country %v league %v", timezone.TimezoneIdx, country.CountryIdx, league.LeagueIdx)
 	if err := timezone.Insert(tx); err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	team.Owner = event.CreatorAddr.String()
 	team.LeagueIdx = league.LeagueIdx
 	team.TeamIdxInLeague = uint32(0)
-	log.Infof("Creating Academy Team with owner %v", team.Owner)
+	log.Infof("creating Academy Team with owner %v", team.Owner)
 	if err := team.Insert(tx); err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	team.Owner = "0x0000000000000000000000000000000000000000"
 	team.LeagueIdx = league.LeagueIdx
 	team.TeamIdxInLeague = uint32(0)
-	log.Infof("Creating InTransit Team with owner %v", team.Owner)
+	log.Infof("creating InTransit Team with owner %v", team.Owner)
 	if err := team.Insert(tx); err != nil {
 		return err
 	}

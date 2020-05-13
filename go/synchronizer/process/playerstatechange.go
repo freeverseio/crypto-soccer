@@ -27,7 +27,7 @@ func ConsumePlayerStateChange(
 		return err
 	}
 	if player == nil {
-		log.Infof("BIRTH ... player ID %v state %v", playerID, state)
+		log.Infof("BIRTH! playerID %v state %v", playerID, state)
 		if player, err = GeneratePlayerByPlayerIdAndState(contracts, event.Raw.BlockNumber, playerID, state); err != nil {
 			return err
 		}
