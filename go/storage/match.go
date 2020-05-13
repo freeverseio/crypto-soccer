@@ -107,11 +107,11 @@ func (b Match) Update(tx *sql.Tx, blockNumber uint64) error {
 	if _, err := tx.Exec(`
 		UPDATE matches SET 
 		home_team_id = $1, 
-		visitor_team_id = $2 ,
+		visitor_team_id = $2,
 		home_goals = $3,
 		visitor_goals = $4,
 		home_teamsumskills = $5,
-		visitor_teamsumskills = $6
+		visitor_teamsumskills = $6,
 		state = $7,
 		seed = $8,
 		state_extra = $9
