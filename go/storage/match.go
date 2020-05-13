@@ -110,10 +110,12 @@ func (b Match) Update(tx *sql.Tx, blockNumber uint64) error {
 		visitor_team_id = $2 ,
 		home_goals = $3,
 		visitor_goals = $4,
-		state = $5,
-		seed = $6,
-		state_extra = $7
-		WHERE (timezone_idx = $8 AND country_idx = $9 AND league_idx = $10 AND match_day_idx = $11 AND match_idx = $12);`,
+		home_teamsumskills = $5,
+		visitor_teamsumskills = $6
+		state = $7,
+		seed = $8,
+		state_extra = $9
+		WHERE (timezone_idx = $10 AND country_idx = $11 AND league_idx = $12 AND match_day_idx = $13 AND match_idx = $14);`,
 		b.HomeTeamID.String(),
 		b.VisitorTeamID.String(),
 		b.HomeGoals,
@@ -189,6 +191,8 @@ func MatchesByTimezoneIdxAndMatchDay(tx *sql.Tx, timezoneIdx uint8, matchDayIdx 
 		visitor_team_id, 
 		home_goals, 
 		visitor_goals, 
+		home_teamsumskills,
+		visitor_teamsumskills,
 		state
 		FROM matches WHERE (timezone_idx = $1 AND match_day_idx = $2);`,
 		timezoneIdx,
@@ -227,7 +231,7 @@ func MatchesByTimezoneIdxAndMatchDay(tx *sql.Tx, timezoneIdx uint8, matchDayIdx 
 
 func MatchesByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
-	rows, err := tx.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
+	rows, err := tx.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals, home_teamsumskills, visitor_teamsumskills FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return nil, err
 	}

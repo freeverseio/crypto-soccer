@@ -24,8 +24,8 @@ func (b MatchHistory) Insert(tx *sql.Tx) error {
 	if _, err := tx.Exec(`INSERT INTO matches_histories 
 		(block_number, timezone_idx, country_idx, league_idx, match_day_idx, 
 		match_idx, home_team_id, visitor_team_id,
-		seed, home_goals, visitor_goals, state, state_extra, start_epoch)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`,
+		seed, home_goals, visitor_goals, home_teamsumskills, visitor_teamsumskills, state, state_extra, start_epoch)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);`,
 		b.BlockNumber,
 		b.TimezoneIdx,
 		b.CountryIdx,

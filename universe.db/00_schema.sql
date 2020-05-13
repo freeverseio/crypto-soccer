@@ -156,6 +156,8 @@ CREATE TABLE matches_histories (
     seed TEXT NOT NULL,
     home_goals INT NOT NULL,
     visitor_goals INT NOT NULL,
+    home_teamsumskills INT NOT NULL,
+    visitor_teamsumskills INT NOT NULL,
     state match_state NOT NULL,
     state_extra TEXT NOT NULL,
     start_epoch BIGINT NOT NULL,
