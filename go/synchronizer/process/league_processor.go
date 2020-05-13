@@ -54,19 +54,18 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return nil
 	}
 
-	if turnInDay < 2 {
-		log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
+	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
+
+	if (day == 0) && (turnInDay == 0) {
 		countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 		if err != nil {
 			return err
 		}
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 			// if a new league is starting shuffle the teams
-			if (day == 0) && (turnInDay == 0) {
-				err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
-				if err != nil {
-					return err
-				}
+			err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
+			if err != nil {
+				return err
 			}
 			leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 			if err != nil {
@@ -85,6 +84,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			}
 		}
 	}
+
 	log.Debugf("Retriving user actions %v from ipfs node %v", event.IpfsCid, b.ipfsURL)
 	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.IpfsCid)
 	if err != nil {
