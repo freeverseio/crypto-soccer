@@ -13,11 +13,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func PlayerStateChangeProcess(
+func ConsumePlayerStateChange(
 	tx *sql.Tx,
 	contracts *contracts.Contracts,
 	event market.MarketPlayerStateChange,
 ) error {
+	log.Infof("[processor|consume] PlayerStateChange event PlayerID %v state %v", event.PlayerId, event.State)
+
 	playerID := event.PlayerId
 	state := event.State
 	player, err := storage.PlayerByPlayerId(tx, playerID)
