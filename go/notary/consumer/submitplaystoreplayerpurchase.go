@@ -70,8 +70,26 @@ func AcknowledgeProduct(
 	if err != nil {
 		return err
 	}
-
 	ctx := context.Background()
+
+	purchase, err := client.VerifyProduct(
+		ctx,
+		packageName,
+		productID,
+		token,
+	)
+	if err != nil {
+		return err
+	}
+
+	// if testing product it's ok
+	if purchase.PurchaseType != nil {
+		if *purchase.PurchaseType == 0 { // Test
+			log.Infof("[TEST] OrderId %v", purchase.OrderId)
+			return nil
+		}
+	}
+
 	return client.AcknowledgeProduct(
 		ctx,
 		packageName,
