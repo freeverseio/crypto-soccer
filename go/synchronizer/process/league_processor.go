@@ -38,6 +38,33 @@ func NewLeagueProcessor(
 	}, nil
 }
 
+func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
+	countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
+	if err != nil {
+		return err
+	}
+	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
+		// if a new league is starting shuffle the teams
+		err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
+		if err != nil {
+			return err
+		}
+		leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
+		if err != nil {
+			return err
+		}
+		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+			if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx); err != nil {
+				return err
+			}
+			if err = storage.DeleteAllMatchEvents(tx, int(timezoneIdx), int(countryIdx), int(leagueIdx)); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmission) error {
 	day := event.Day
 	turnInDay := event.TurnInDay
@@ -55,33 +82,9 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
-
 	if (day == 0) && (turnInDay == 0) {
-		countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
-		if err != nil {
+		if err := b.resetTimezone(tx, timezoneIdx); err != nil {
 			return err
-		}
-		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
-			// if a new league is starting shuffle the teams
-			err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
-			if err != nil {
-				return err
-			}
-			leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
-			if err != nil {
-				return err
-			}
-			for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-				if day == 0 {
-					if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx); err != nil {
-						return err
-					}
-					if err = storage.DeleteAllMatchEvents(tx, int(timezoneIdx), int(countryIdx), int(leagueIdx)); err != nil {
-						return err
-					}
-				}
-
-			}
 		}
 	}
 
