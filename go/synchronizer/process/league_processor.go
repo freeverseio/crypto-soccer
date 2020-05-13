@@ -57,7 +57,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	if turnInDay < 2 {
-		log.Infof("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
+		log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
 		countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 		if err != nil {
 			return err
@@ -87,7 +87,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			}
 		}
 	}
-	log.Infof("Retriving user actions %v from ipfs node %v", event.IpfsCid, b.ipfsURL)
+	log.Debugf("Retriving user actions %v from ipfs node %v", event.IpfsCid, b.ipfsURL)
 	userActions, err := useractions.NewFromIpfs(b.ipfsURL, event.IpfsCid)
 	if err != nil {
 		return err
@@ -100,7 +100,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return fmt.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
 	}
 
-	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
+	log.Debugf("Timezone %v loading matches from storage", timezoneIdx)
 	matches, err := NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 	if err != nil {
 		return err
@@ -115,7 +115,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 	switch turnInDay {
 	case 0:
-		log.Infof("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
+		log.Debugf("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
 		if err = storage.ResetTrainingsByTimezone(tx, timezoneIdx); err != nil {
 			return err
 		}
@@ -123,19 +123,19 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			return err
 		}
 	case 1:
-		log.Infof("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
+		log.Debugf("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
 		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
 			return err
 		}
 	default:
 		return fmt.Errorf("Unknown turn in day %v", turnInDay)
 	}
-	log.Infof("Timezone %v save user action in history", timezoneIdx)
+	log.Debugf("Timezone %v save user action in history", timezoneIdx)
 	userActionsHistory := useractions.NewUserActionsHistory(event.Raw.BlockNumber, *userActions)
 	if err := userActionsHistory.ToStorage(tx); err != nil {
 		return err
 	}
-	log.Infof("Timezone %v save matches to storage", timezoneIdx)
+	log.Debugf("Timezone %v save matches to storage", timezoneIdx)
 	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 }
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
-	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
+	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap OrgMap
 	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {

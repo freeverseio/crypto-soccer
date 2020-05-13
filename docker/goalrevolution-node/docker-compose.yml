@@ -11,8 +11,8 @@ services:
       - IPFS_PATH=/data
       # - IPFS_FD_MAX=4096
       - IPFS_PROFILE=randomports
-    # volumes:
-    #   - ipfs.node-data:/data
+    volumes:
+      - ipfs.node-data:/data
   ipfs.cluster:
     image: ipfs/ipfs-cluster:v0.12.1
     restart: always
