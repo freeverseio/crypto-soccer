@@ -19,19 +19,21 @@ const (
 )
 
 type Match struct {
-	TimezoneIdx   uint8
-	CountryIdx    uint32
-	LeagueIdx     uint32
-	MatchDayIdx   uint8
-	MatchIdx      uint8
-	HomeTeamID    *big.Int
-	VisitorTeamID *big.Int
-	Seed          [32]byte
-	HomeGoals     uint8
-	VisitorGoals  uint8
-	State         MatchState
-	StateExtra    string
-	StartEpoch    int64
+	TimezoneIdx          uint8
+	CountryIdx           uint32
+	LeagueIdx            uint32
+	MatchDayIdx          uint8
+	MatchIdx             uint8
+	HomeTeamID           *big.Int
+	VisitorTeamID        *big.Int
+	Seed                 [32]byte
+	HomeGoals            uint8
+	VisitorGoals         uint8
+	HomeTeamSumSkills    uint32
+	VisitorTeamSumSkills uint32
+	State                MatchState
+	StateExtra           string
+	StartEpoch           int64
 }
 
 func NewMatch() *Match {
@@ -116,6 +118,8 @@ func (b Match) Update(tx *sql.Tx, blockNumber uint64) error {
 		b.VisitorTeamID.String(),
 		b.HomeGoals,
 		b.VisitorGoals,
+		b.HomeTeamSumSkills,
+		b.VisitorTeamSumSkills,
 		b.State,
 		hex.EncodeToString(b.Seed[:]),
 		b.StateExtra,

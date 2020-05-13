@@ -37,6 +37,8 @@ func (b MatchHistory) Insert(tx *sql.Tx) error {
 		hex.EncodeToString(b.Seed[:]),
 		b.HomeGoals,
 		b.VisitorGoals,
+		b.HomeTeamSumSkills,
+		b.VisitorTeamSumSkills,
 		b.State,
 		b.StateExtra,
 		b.StartEpoch,
