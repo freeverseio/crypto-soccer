@@ -23,7 +23,7 @@ func NewFromStorage(tx *sql.Tx, timezone int) (*Universe, error) {
 		LEFT JOIN teams 
 		ON players.team_id = teams.team_id 
 		WHERE teams.timezone_idx = $1  
-		ORDER BY player_id DESC;`, timezone)
+		ORDER BY player_id ASC;`, timezone)
 	if err != nil {
 		return nil, err
 	}
