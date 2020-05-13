@@ -3,7 +3,6 @@ package process
 import (
 	"context"
 	"database/sql"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math"
@@ -18,7 +17,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/staker"
-	"github.com/freeverseio/crypto-soccer/go/universe"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +25,6 @@ type EventProcessor struct {
 	assetsInitProcessor       *AssetsInitProcessor
 	divisionCreationProcessor *DivisionCreationProcessor
 	leagueProcessor           *LeagueProcessor
-	teamTransferProcessor     *TeamTransferProcessor
 	staker                    *staker.Staker
 }
 
@@ -63,16 +60,11 @@ func NewEventProcessor(
 	if err != nil {
 		return nil, err
 	}
-	teamTransferProcessor, err := NewTeamTransferProcessor()
-	if err != nil {
-		return nil, err
-	}
 	return &EventProcessor{
 		contracts,
 		assetsInitProcessor,
 		divisionCreationProcessor,
 		leagueProcessor,
-		teamTransferProcessor,
 		staker,
 	}, nil
 }
@@ -124,70 +116,20 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case assets.AssetsAssetsInit:
-		log.Infof("[processor] Dispatching AssetsInit event from account %v", v.CreatorAddr.Hex())
 		return p.assetsInitProcessor.Process(tx, v)
 	case assets.AssetsDivisionCreation:
-		log.Infof("[processor] Dispatching LeaguesDivisionCreation event Timezone %v, CountryIdxInTZ: %v, DivisionIdxInCountry %v", v.Timezone, v.CountryIdxInTZ, v.DivisionIdxInCountry)
 		return p.divisionCreationProcessor.Process(tx, v)
 	case assets.AssetsTeamTransfer:
-		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To.Hex())
-		return p.teamTransferProcessor.Process(tx, v)
+		return ConsumeTeamTransfer(tx, v)
 	case market.MarketPlayerStateChange:
-		log.Infof("[processor] dispatching MarketPlayerStateChange event PlayerID %v state %v", v.PlayerId, v.State)
-		return PlayerStateChangeProcess(tx, p.contracts, v)
+		return ConsumePlayerStateChange(tx, p.contracts, v)
 	case updates.UpdatesActionsSubmission:
-		log.Infof("[processor] Dispatching UpdatesActionsSubmission event verse: %v, TZ: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.IpfsCid)
-		if err := p.leagueProcessor.Process(tx, v); err != nil {
-			return err
-		}
-		u, err := universe.NewFromStorage(tx, int(v.TimeZone))
-		if err != nil {
-			return err
-		}
-		universeHash, err := u.Hash()
-		if err != nil {
-			return err
-		}
-
-		verse := storage.Verse{}
-		verse.VerseNumber = v.Verse.Int64()
-		verse.Root = hex.EncodeToString(universeHash[:])
-		if err := verse.Insert(tx); err != nil {
-			return err
-		}
-
-		if p.staker != nil {
-			if err := p.staker.Play(*p.contracts, universeHash); err != nil {
-				return err
-			}
-		}
-
+		return p.ConsumeActionsSubmission(tx, v)
 	case updates.UpdatesTimeZoneUpdate:
-		log.Infof("[processor] dispatching UpdatesTimeZoneUpdate verse: %v, root: %v", v.Verse, hex.EncodeToString(v.Root[:]))
-		verse, err := storage.VerseByNumber(tx, v.Verse.Int64())
-		if err != nil {
-			return err
-		}
-		if verse == nil {
-			return fmt.Errorf("unexistent hash for verse %v", v.Verse.Int64())
-		}
-		if verse.Root != hex.EncodeToString(v.Root[:]) {
-			log.Errorf("!!!!!!!!!!! verse %v hash mistmatch: bc %v, local %v", v.Verse, hex.EncodeToString(v.Root[:]), verse.Root)
-		}
-
-	// case market.MarketPlayerFreeze:
-	// 	log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
-	// 	playerID := v.PlayerId
-	// 	player, err := storage.PlayerByPlayerId(tx, playerID)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	player.Frozen = v.Frozen // TODO ractive
-	// 	return player.Update(tx)
+		return ConsumeTimezoneUpdate(tx, v)
 	default:
-		return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
+		return fmt.Errorf("[processor|consume] unknown event %+v", e)
 	}
-	return nil
 }
 func (p *EventProcessor) nextRange(tx *sql.Tx, delta uint64) (*bind.FilterOpts, error) {
 	start, err := p.dbLastBlockNumber(tx)

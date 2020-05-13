@@ -13,11 +13,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func PlayerStateChangeProcess(
+func ConsumePlayerStateChange(
 	tx *sql.Tx,
 	contracts *contracts.Contracts,
 	event market.MarketPlayerStateChange,
 ) error {
+	log.Infof("[processor|consume] PlayerStateChange PlayerID %v state %v", event.PlayerId, event.State)
+
 	playerID := event.PlayerId
 	state := event.State
 	player, err := storage.PlayerByPlayerId(tx, playerID)
@@ -25,7 +27,7 @@ func PlayerStateChangeProcess(
 		return err
 	}
 	if player == nil {
-		log.Infof("BIRTH ... player ID %v state %v", playerID, state)
+		log.Infof("BIRTH! playerID %v state %v", playerID, state)
 		if player, err = GeneratePlayerByPlayerIdAndState(contracts, event.Raw.BlockNumber, playerID, state); err != nil {
 			return err
 		}

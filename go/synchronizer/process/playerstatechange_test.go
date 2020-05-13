@@ -44,7 +44,7 @@ func TestNewSpecialPlayer(t *testing.T) {
 	event := market.MarketPlayerStateChange{}
 	event.PlayerId = playerId
 	event.State = state
-	if err = process.PlayerStateChangeProcess(tx, bc.Contracts, event); err != nil {
+	if err = process.ConsumePlayerStateChange(tx, bc.Contracts, event); err != nil {
 		t.Fatal(err)
 	}
 	result, err := storage.PlayerByPlayerId(tx, playerId)
