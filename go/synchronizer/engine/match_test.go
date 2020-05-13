@@ -395,11 +395,11 @@ func TestFromTheField(t *testing.T) {
 		assert.NilError(t, err)
 		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: VM execution error.")
 	})
-	t.Run("Failing1", func(t *testing.T) {
+	t.Run("FailingTooManySubsInHalfTime", func(t *testing.T) {
 		input := golden.Get(t, t.Name()+"/fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json")
 		match, err := engine.NewMatchFromJson(input)
 		assert.NilError(t, err)
-		// assert.Error(t, match.Play2ndHalf(*bc.Contracts), "failed play2ndHalfAndEvolve: VM execution error.")
-		assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
+		assert.Error(t, match.Play2ndHalf(*bc.Contracts), "failed play2ndHalfAndEvolve: VM execution error.")
+		// assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
 	})
 }
