@@ -136,6 +136,8 @@ CREATE TABLE matches (
     seed TEXT NOT NULL DEFAULT '',
     home_goals INT NOT NULL DEFAULT 0,
     visitor_goals INT NOT NULL DEFAULT 0,
+    home_teamsumskills INT NOT NULL,
+    visitor_teamsumskills INT NOT NULL,
     state match_state NOT NULL,
     state_extra TEXT NOT NULL DEFAULT '',
     start_epoch BIGINT NOT NULL,
