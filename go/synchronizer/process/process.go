@@ -24,8 +24,8 @@ type EventProcessor struct {
 	contracts                 *contracts.Contracts
 	assetsInitProcessor       *AssetsInitProcessor
 	divisionCreationProcessor *DivisionCreationProcessor
-	leagueProcessor           *LeagueProcessor
 	staker                    *staker.Staker
+	ipfsURL                   string
 }
 
 // *****************************************************************************
@@ -52,20 +52,12 @@ func NewEventProcessor(
 	if err != nil {
 		return nil, err
 	}
-	leagueProcessor, err := NewLeagueProcessor(
-		contracts,
-		namesdb,
-		ipfsURL,
-	)
-	if err != nil {
-		return nil, err
-	}
 	return &EventProcessor{
 		contracts,
 		assetsInitProcessor,
 		divisionCreationProcessor,
-		leagueProcessor,
 		staker,
+		ipfsURL,
 	}, nil
 }
 
@@ -124,7 +116,7 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 	case market.MarketPlayerStateChange:
 		return ConsumePlayerStateChange(tx, p.contracts, v)
 	case updates.UpdatesActionsSubmission:
-		return p.ConsumeActionsSubmission(tx, v)
+		return ConsumeActionsSubmission(tx, p.contracts, p.ipfsURL, p.staker, v)
 	case updates.UpdatesTimeZoneUpdate:
 		return ConsumeTimezoneUpdate(tx, v)
 	default:
