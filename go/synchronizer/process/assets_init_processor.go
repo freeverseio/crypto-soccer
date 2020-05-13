@@ -55,7 +55,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = country.CountryIdx
 	team.Name = "Academy"
-	team.Owner = event.CreatorAddr.String()
+	team.Owner = "0x0000000000000000000000000000000000000000"
 	team.LeagueIdx = league.LeagueIdx
 	team.TeamIdxInLeague = uint32(0)
 	log.Infof("creating Academy Team with owner %v", team.Owner)

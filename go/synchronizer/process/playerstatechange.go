@@ -18,7 +18,7 @@ func ConsumePlayerStateChange(
 	contracts *contracts.Contracts,
 	event market.MarketPlayerStateChange,
 ) error {
-	log.Infof("[processor|consume] PlayerStateChange event PlayerID %v state %v", event.PlayerId, event.State)
+	log.Infof("[processor|consume] PlayerStateChange PlayerID %v state %v", event.PlayerId, event.State)
 
 	playerID := event.PlayerId
 	state := event.State
