@@ -202,9 +202,9 @@ jobs:
       - kube-orb/install-kubeconfig:
           kubeconfig: KUBECONFIG_DATA
       - install_kustomize
-      - run: | 
-          kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
-          kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
+      # - run: | 
+      #     kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
+      #     kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
 workflows:
   version: 2
   build_and_test:
