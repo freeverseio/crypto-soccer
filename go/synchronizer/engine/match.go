@@ -181,10 +181,10 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
 	b.HomeGoals = uint8(decodedHomeMatchLog[2])
 	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
-	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
-	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
 	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
 	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
+	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
+	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
 	return nil
 }
 

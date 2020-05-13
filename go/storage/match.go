@@ -251,6 +251,8 @@ func MatchesByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, coun
 			&visitorTeamID,
 			&match.HomeGoals,
 			&match.VisitorGoals,
+			&match.HomeTeamSumSkills,
+			&match.VisitorTeamSumSkills,
 		)
 		if err != nil {
 			return nil, err
