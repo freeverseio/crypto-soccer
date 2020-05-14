@@ -93,7 +93,8 @@ contract UpdatesView is AssetsLib {
         return getStatusPure(now, _lastUpdateTime[tz], _challengeTime, writtenLevel);
     }
     
-    function isTimeToUpdate() public view returns(bool) {
+    function isTimeToUpdate(uint256 verse) public view returns(bool) {
+        if (verse != currentVerse) return false;
         (uint8 tz,,) = prevTimeZoneToUpdate();
         if (tz == NULL_TIMEZONE) return false;
         if (getLastUpdateTime(tz) >= getLastActionsSubmissionTime(tz)) return false;

@@ -287,7 +287,7 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
-        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
+        await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
         submissionTime = await updates.getLastActionsSubmissionTime(timeZoneToUpdateBefore[0].toNumber()).should.be.fulfilled;
         timeZoneToUpdateAfter = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         isCloseEnough(timeZoneToUpdate[0].toNumber(), timeZoneToUpdateBefore[0].toNumber()).should.be.equal(true)
@@ -306,7 +306,7 @@ contract('Updates', (accounts) => {
 
         isTime = await updates.isTimeToUpdate().should.be.fulfilled;
         isTime.should.be.equal(false);
-        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.rejected;
+        await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.rejected;
 
         const cif = "ciao2";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
@@ -314,7 +314,7 @@ contract('Updates', (accounts) => {
         now = await updates.getNow().should.be.fulfilled;
         isTime = await updates.isTimeToUpdate().should.be.fulfilled;
         isTime.should.be.equal(true);
-        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
+        await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
     });
 
 
