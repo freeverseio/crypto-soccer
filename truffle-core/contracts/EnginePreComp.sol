@@ -206,6 +206,13 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
         // first compute the type of event        
         uint8 typeOfEvent = forceRedCard ? RED_CARD : computeTypeOfEvent(rnds[1]);
 
+        // for goal keepers, make sure they do not see a red card, and if they are injured, at the end of the half.
+        // note that in-game events end up in round = ROUNDS_PER_MATCH - 1, so we leave endOfGame for round = ROUNDS_PER_MATCH
+        if (selectedPlayer == 0) {
+            if (typeOfEvent == RED_CARD) return addOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
+            else { return addOutOfGame(matchLog, selectedPlayer, ROUNDS_PER_MATCH, typeOfEvent, is2ndHalf); }
+        }
+
         // if the selected player was one of the guys joining during this half (outGame = 11, 12, or 13),
         // make sure that the round selected for this event is after joining. 
         if (selectedPlayer < 14 && selectedPlayer > 10) {
