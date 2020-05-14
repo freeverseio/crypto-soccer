@@ -26,6 +26,7 @@ type EventProcessor struct {
 	divisionCreationProcessor *DivisionCreationProcessor
 	staker                    *staker.Staker
 	ipfsURL                   string
+	namesdb                   *names.Generator
 }
 
 // *****************************************************************************
@@ -58,6 +59,7 @@ func NewEventProcessor(
 		divisionCreationProcessor,
 		staker,
 		ipfsURL,
+		namesdb,
 	}, nil
 }
 
@@ -114,7 +116,7 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 	case assets.AssetsTeamTransfer:
 		return ConsumeTeamTransfer(tx, v)
 	case market.MarketPlayerStateChange:
-		return ConsumePlayerStateChange(tx, p.contracts, v)
+		return ConsumePlayerStateChange(tx, p.contracts, p.namesdb, v)
 	case updates.UpdatesActionsSubmission:
 		return ConsumeActionsSubmission(tx, p.contracts, p.ipfsURL, p.staker, v)
 	case updates.UpdatesTimeZoneUpdate:
