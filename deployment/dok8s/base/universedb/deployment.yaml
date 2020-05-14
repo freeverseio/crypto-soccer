@@ -17,6 +17,9 @@ spec:
       containers:
       - name: universedb
         image: freeverseio/universe.db:dev
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         imagePullPolicy: Always
         ports:
         - containerPort: 5432
