@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"time"
 
 	"github.com/awa/go-iap/playstore"
@@ -151,9 +150,11 @@ func (b Resolver) IsValidPlayer(
 		return false, err
 	}
 
-	i := sort.Search(len(players), func(i int) bool {
-		return string(players[i].PlayerId()) == playerId
-	})
+	for _, player := range players {
+		if string(player.PlayerId()) == playerId {
+			return true, nil
+		}
+	}
 
-	return i < len(players), nil
+	return false, nil
 }
