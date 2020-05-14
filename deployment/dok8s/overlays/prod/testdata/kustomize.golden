@@ -732,8 +732,15 @@ spec:
         name: universedb
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
+      volumes:
+      - name: universedb-storage
+        persistentVolumeClaim:
+          claimName: universedb-pvc
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -822,3 +829,20 @@ spec:
   - hosts:
     - dashboard.goalrevolution.live
     secretName: cryptosoccer-dashboard-tls
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/app: universedb
+    app.kubernetes.io/component: universedb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: universedb-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: do-block-storage
