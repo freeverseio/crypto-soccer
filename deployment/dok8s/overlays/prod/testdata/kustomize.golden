@@ -727,7 +727,10 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/universe.db:0.18.1
+      - env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: freeverseio/universe.db:0.18.1
         imagePullPolicy: Always
         name: universedb
         ports:
