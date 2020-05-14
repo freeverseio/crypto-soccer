@@ -128,7 +128,7 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, errors.New("channel is full")
 	}
 
-	return args.Input.PlayerId, errors.New("not implemented")
+	return args.Input.PlayerId, nil
 }
 
 func (b Resolver) IsValidPlayer(
