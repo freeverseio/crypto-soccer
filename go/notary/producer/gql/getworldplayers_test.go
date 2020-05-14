@@ -8,6 +8,38 @@ import (
 	"gotest.tools/assert"
 )
 
+func TestGetWorldPlayersDeterministicResult(t *testing.T) {
+	value := int64(1000)
+	maxPotential := uint8(9)
+	now := int64(1554940800) // first second of a week
+	teamId := "274877906944"
+
+	players0, err := gql.CreateWorldPlayerBatch(
+		*bc.Contracts,
+		namesdb,
+		value,
+		maxPotential,
+		teamId,
+		now,
+	)
+	assert.NilError(t, err)
+
+	players1, err := gql.CreateWorldPlayerBatch(
+		*bc.Contracts,
+		namesdb,
+		value,
+		maxPotential,
+		teamId,
+		now,
+	)
+	assert.NilError(t, err)
+
+	assert.Equal(t, len(players0), len(players1))
+	for i := range players0 {
+		assert.Equal(t, *players0[i], *players1[i])
+	}
+}
+
 func TestGetWorldPlayers(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)

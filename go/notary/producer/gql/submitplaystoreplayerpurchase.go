@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"time"
 
 	"github.com/awa/go-iap/playstore"
@@ -108,10 +107,8 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	value := int64(1000)     // TODO: value is forced to be 1000
 	maxPotential := uint8(9) // TODO: value is forced to be 9
 
-	// check if the player is valid
-	players, err := CreateWorldPlayerBatch(
-		b.contracts,
-		b.namesdb,
+	isValidPlayer, err := b.IsValidPlayer(
+		string(args.Input.PlayerId),
 		value,
 		maxPotential,
 		string(args.Input.TeamId),
@@ -120,11 +117,7 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	if err != nil {
 		return result, err
 	}
-
-	i := sort.Search(len(players), func(i int) bool {
-		return players[i].PlayerId() == args.Input.PlayerId
-	})
-	if i >= len(players) {
+	if !isValidPlayer {
 		return result, fmt.Errorf("orderId %v has an invalid playerId %v", orderId, args.Input.PlayerId)
 	}
 
@@ -136,4 +129,32 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	}
 
 	return args.Input.PlayerId, errors.New("not implemented")
+}
+
+func (b Resolver) IsValidPlayer(
+	playerId string,
+	value int64,
+	maxPotential uint8,
+	teamId string,
+	epoch int64,
+) (bool, error) {
+	players, err := CreateWorldPlayerBatch(
+		b.contracts,
+		b.namesdb,
+		value,
+		maxPotential,
+		teamId,
+		epoch,
+	)
+	if err != nil {
+		return false, err
+	}
+
+	for _, player := range players {
+		if string(player.PlayerId()) == playerId {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

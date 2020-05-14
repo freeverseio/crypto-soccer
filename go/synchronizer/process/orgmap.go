@@ -17,10 +17,10 @@ func (b *OrgMap) Append(team storage.Team) error {
 		return errors.New("invalid TeamID")
 	}
 
-	if i := sort.Search(len(b.teams), func(i int) bool {
-		return b.teams[i].TeamID == team.TeamID
-	}); i != len(b.teams) {
-		return errors.New("team already in OrgMap")
+	for _, t := range b.teams {
+		if t.TeamID == team.TeamID {
+			return errors.New("team already in OrgMap")
+		}
 	}
 
 	b.teams = append(b.teams, team)

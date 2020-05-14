@@ -1,30 +1,57 @@
 package gql_test
 
-const packageName = "com.freeverse.phoenix"
-const productID = "coinpack_45"
-const token = "hjjfppagdilpbmnmjaajpcgc.AO-J1Owne5VpLZzOtfFZkDY1k5T4kEXCgack0gmEYssqCgEYzlNgPtHdp72TPELzOl3T8XCYhc0k818EbCi7hiYcEgbCGNVyNCGd1I2wdz9pxGRHXs1-msWvAD9ztmd11v_hr9NqCSn1"
+import (
+	"testing"
 
-// func TestAlex(t *testing.T) {
-// 	data, err := ioutil.ReadFile("../../../../../key.json")
-// 	assert.NilError(t, err)
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
+	"gotest.tools/assert"
+)
 
-// 	id, err := gql.GetOrderId(
-// 		data,
-// 		packageName,
-// 		productID,
-// 		token,
-// 	)
-// 	assert.NilError(t, err)
-// 	assert.Equal(t, id, "GPA.3363-1682-8839-47393")
-// }
+func TestSubmitPlaystorePlayerPurchaseInValidPlayer(t *testing.T) {
+	value := int64(1000)     // TODO: value is forced to be 1000
+	maxPotential := uint8(9) // TODO: value is forced to be 9
+	teamId := "1099511627778"
+	epoch := int64(1589456942)
+	playerId := "423"
 
-// func TestProva(t *testing.T) {
-// 	credentials, err := ioutil.ReadFile("../../../../../key.json")
-// 	assert.NilError(t, err)
+	ch := make(chan interface{}, 10)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)
+	isValid, err := r.IsValidPlayer(
+		playerId,
+		value,
+		maxPotential,
+		teamId,
+		epoch,
+	)
+	assert.NilError(t, err)
+	assert.Assert(t, !isValid)
+}
 
-// 	client, err := playstore.New(credentials)
-// 	assert.NilError(t, err)
+func TestSubmitPlaystorePlayerPurchaseValidPlayer(t *testing.T) {
+	value := int64(1000)     // TODO: value is forced to be 1000
+	maxPotential := uint8(9) // TODO: value is forced to be 9
+	teamId := "1099511627778"
+	epoch := int64(1589456942)
 
-// 	_, err = client.VerifyProduct(context.Background(), packageName, productID, token)
-// 	assert.NilError(t, err)
-// }
+	players, err := gql.CreateWorldPlayerBatch(
+		*bc.Contracts,
+		namesdb,
+		value,
+		maxPotential,
+		teamId,
+		epoch,
+	)
+	assert.NilError(t, err)
+
+	ch := make(chan interface{}, 10)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)
+	isValid, err := r.IsValidPlayer(
+		string(players[2].PlayerId()),
+		value,
+		maxPotential,
+		teamId,
+		epoch,
+	)
+	assert.NilError(t, err)
+	assert.Assert(t, isValid)
+}
