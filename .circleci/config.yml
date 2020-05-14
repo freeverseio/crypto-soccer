@@ -216,7 +216,6 @@ jobs:
           kustomize edit set image freeverseio/synchronizer:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/universe.api:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/universe.db:${CIRCLE_SHA1}
-      #     kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
           kustomize build . | kubectl -n freeverse apply -f -
 workflows:
   version: 2
