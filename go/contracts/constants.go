@@ -10,3 +10,5 @@ const BirthTraitsPotentialIdx = 0
 const BirthTraitsForwardnessIdx = 1
 const BirthTraitsLeftishnessIdx = 2
 const BirthTraitsAggressivenessIdx = 3
+
+const AccademyTeamId = 1
