@@ -47,7 +47,8 @@ func TestStakerSubmitRoot(t *testing.T) {
 
 	assert.Error(t, s.Init(*bc.Contracts), "[staker] not a trusted party")
 	root := [32]byte{0x0}
-	assert.Error(t, s.SubmitRoot(*bc.Contracts, root), "failed to estimate gas needed: The execution failed due to an exception.")
+	verse := int64(1)
+	assert.Error(t, s.SubmitRoot(*bc.Contracts, verse, root), "failed to estimate gas needed: The execution failed due to an exception.")
 }
 
 func TestStakerEnroll(t *testing.T) {
@@ -71,5 +72,6 @@ func TestStakerEnroll(t *testing.T) {
 
 	assert.NilError(t, s.Init(*bc.Contracts))
 	root := [32]byte{0x0}
-	assert.Error(t, s.SubmitRoot(*bc.Contracts, root), "failed to estimate gas needed: The execution failed due to an exception.")
+	verse := int64(1)
+	assert.Error(t, s.SubmitRoot(*bc.Contracts, verse, root), "failed to estimate gas needed: The execution failed due to an exception.")
 }
