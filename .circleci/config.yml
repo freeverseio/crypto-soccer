@@ -4,6 +4,10 @@ version: 2.1
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
 
+environment:
+  PATH: >-
+    /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/local/go/bin:/go/bin
+
 executors:
   freeverse:
     docker:
@@ -65,8 +69,11 @@ commands:
       - run: chmod +x ipfs-cluster-service/ipfs-cluster-service
         #- run: sudo mv ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
       - run: ls -alsh ipfs-cluster-service
-      - run: ./ipfs-cluster-service/ipfs-cluster-service init
-      - run: ./ipfs-cluster-service/ipfs-cluster-service daemon
+      - run: mv ./ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
+      - run: ls -alsh /usr/local/bin
+      - run: echo $PATH
+      - run: ipfs-cluster-service init
+      - run: ipfs-cluster-service daemon
 
         #- run: git clone https://github.com/ipfs/ipfs-cluster.git
         #- run: cd ipfs-cluster
