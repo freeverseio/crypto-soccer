@@ -60,7 +60,7 @@ commands:
   install_ipfs_cluster:
     description: "Install ipfs_cluster"
     steps:
-      - run: https://dist.ipfs.io/ipfs-cluster-service/v0.12.1/ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
+      - run: wget https://dist.ipfs.io/ipfs-cluster-service/v0.12.1/ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
       - run: tar xvzf ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
       - run: chmod +x ipfs-cluster-service/ipfs-cluster-service
       - run: sudo mv ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
