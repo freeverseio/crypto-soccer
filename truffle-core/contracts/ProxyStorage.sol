@@ -5,8 +5,11 @@ pragma solidity >=0.5.12 <=0.6.3;
 */
 contract ProxyStorage {
 
-    address internal _proxyOwner; 
-    address internal _proposedProxyOwner;
+    address internal _companyOwner; 
+    address internal _proposedCompanyOwner;
+    address internal _superUser; 
+    address internal _proposedSuperUser;
+    
     ContractInfo[] internal _contractsInfo;
     mapping (bytes4 => address) internal _selectorToContractAddr;
 

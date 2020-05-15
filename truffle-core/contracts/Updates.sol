@@ -10,6 +10,11 @@ contract Updates is UpdatesBase {
     event TimeZoneUpdate(uint256 verse, uint8 timeZone, bytes32 root, uint256 submissionTime);
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
 
+    constructor(address relayOwner) public { setRelayOwner(relayOwner); }
+
+    function setRelayOwner(address addr) public{ _relayOwner = addr; }
+    
+
     function setStakersAddress(address payable addr) public {
         _stakers = Stakers(addr);
     }

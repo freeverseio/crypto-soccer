@@ -27,42 +27,16 @@ require('chai')
 const assert = require('assert');
 const deployUtils = require('../utils/deployUtils.js');
 
-function getDefaultSetup(accounts) {
-  console.log("Setting default values for deploy")
-  return {
-    singleTimezone: -1,
-    auth: {
-      company:  accounts[0],
-      superuser:  accounts[0],
-      coo:  accounts[0],
-      market:  accounts[0],
-      relay:  accounts[0],
-      trustedParties: [accounts[0]]
-    },
-    requiredStake: 1000000000000,
-  }
-}
-
-function getExplicitOrDefaultSetup(params, accounts) {
-  const { singleTimezone, auth, requiredStake } = params;
-  // Safety check: either ALL or NONE of the params must be defined (otherwise, expect having forgotten to assign some)
-  numDefined = (singleTimezone ? 1 : 0) +  (auth ? 1 : 0) + (requiredStake ? 1 : 0);
-  isValidSetup = (numDefined == 3) || (numDefined == 0);
-  assert.equal(isValidSetup, true, "only some of the setup parameters are assigned in deployer.networks");
-  // Set up default values only if needed:
-  needsDefaultValues = (numDefined == 0);
-  return needsDefaultValues ? getDefaultSetup(accounts) : params;
-}
 
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    const { singleTimezone, auth, requiredStake } = getExplicitOrDefaultSetup(deployer.networks[network], accounts);
+    const { singleTimezone, owners, requiredStake } = deployUtils.getExplicitOrDefaultSetup(deployer.networks[network], accounts);
 
     const versionNumber = 0;
     const proxyAddress  = "0x0";
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
-      await deployUtils.deploy(versionNumber, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
+      await deployUtils.deploy(versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
     const stakers  = await deployer.deploy(Stakers, requiredStake ? requiredStake : 1000000000000).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
@@ -109,7 +83,7 @@ module.exports = function (deployer, network, accounts) {
         await assets.init().should.be.fulfilled;
       }
 
-      for (trustedParty of auth.trustedParties) {
+      for (trustedParty of owners.trustedParties) {
         console.log("Add TrustedPart", trustedParty);
         await stakers.addTrustedParty(trustedParty).should.be.fulfilled;
       }

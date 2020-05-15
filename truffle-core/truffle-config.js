@@ -35,7 +35,7 @@ module.exports = {
       network_id: 100,
       gasPrice: 1000000000,
       singleTimezone: 10,
-      auth: {
+      owners: {
         company: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
         superuser: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
         coo: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",

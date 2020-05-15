@@ -1,20 +1,26 @@
 var Web3 = require('web3');
+var assert = require('assert')
 var web3 = new Web3(Web3.givenProvider);
 
-const deployPair = async (proxyAddress, Contr) => {
+const deployPair = async (proxyAddress, Contr, owner) => {
     if (Contr == "") return ["", "", []];
     selectors = extractSelectorsFromAbi(Contr.abi);
     contr = await Contr.at(proxyAddress).should.be.fulfilled;
-    contrAsLib = await Contr.new().should.be.fulfilled;
+    let contrAsLib
+    if (owner == null) {
+        contrAsLib = await Contr.new().should.be.fulfilled;
+    } else {
+        contrAsLib = await Contr.new(owner).should.be.fulfilled;
+    }
     return [contr, contrAsLib, selectors];
 };
 
-const deployContractsToDelegateTo = async (proxyAddress, Assets, Market, Updates, Challenges) => {
+const deployContractsToDelegateTo = async (owners, proxyAddress, Assets, Market, Updates, Challenges) => {
     // setting up StorageProxy delegate calls to Assets
-    const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(proxyAddress, Assets);
-    const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(proxyAddress, Market);
-    const {0: updates, 1: updatesAsLib, 2: selectorsUpdates} = await deployPair(proxyAddress, Updates);
-    const {0: challenges, 1: challengesAsLib, 2: selectorsChallenges} = await deployPair(proxyAddress, Challenges);
+    const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(proxyAddress, Assets, owners.market);
+    const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(proxyAddress, Market, null);
+    const {0: updates, 1: updatesAsLib, 2: selectorsUpdates} = await deployPair(proxyAddress, Updates, owners.relay);
+    const {0: challenges, 1: challengesAsLib, 2: selectorsChallenges} = await deployPair(proxyAddress, Challenges, null);
     
     namesStr            = ['Assets', 'Market', 'Updates', 'Challenges'];
     contractsAsLib      = [assetsAsLib, marketAsLib, updatesAsLib, challengesAsLib];
@@ -123,7 +129,7 @@ function appendVersionNumberToNames(names, versionNumber) {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified if versionNumber > 0.
-const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market, Updates, Challenges) => {
+const deploy = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets, Market, Updates, Challenges) => {
     // Inform about possible collisions between contracts to delegate (among them, and with proxy)
     // informNoCollisions(Proxy, Assets, Market, Updates);
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
@@ -132,7 +138,7 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
     var proxy;
     if (versionNumber == 0) {
         const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
-        proxy = await Proxy.new(proxySelectors).should.be.fulfilled;
+        proxy = await Proxy.new(owners.company, owners.superuser, proxySelectors).should.be.fulfilled;
     } else {
         proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
     }
@@ -148,7 +154,7 @@ const deploy = async (versionNumber, Proxy, proxyAddress = "0x0", Assets, Market
     //  - deploy new contracts (not proxy) to delegate to, and return their addresses
     //  - build interfaces to those contracts which point to the proxy address
     const {0: assets, 1: market, 2: updates, 3: challenges, 4: addresses, 5: allSelectors, 6: names} = 
-        await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates, Challenges);
+        await deployContractsToDelegateTo(owners, proxy.address, Assets, Market, Updates, Challenges);
         
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
@@ -197,6 +203,33 @@ async function unenroll(contract, addresses) {
     });
 }
 
+function getDefaultSetup(accounts) {
+    return {
+      singleTimezone: -1,
+      owners: {
+        company:  accounts[0],
+        superuser:  accounts[0],
+        coo:  accounts[0],
+        market:  accounts[0],
+        relay:  accounts[0],
+        trustedParties: [accounts[0]]
+      },
+      requiredStake: 1000000000000,
+    }
+  }
+  
+  function getExplicitOrDefaultSetup(networkParams, accounts) {
+    const { singleTimezone, owners, requiredStake } = networkParams;
+    // Safety check: either ALL or NONE of the networkParams must be defined (otherwise, expect having forgotten to assign some)
+    numDefined = (singleTimezone ? 1 : 0) +  (owners ? 1 : 0) + (requiredStake ? 1 : 0);
+    isValidSetup = (numDefined == 3) || (numDefined == 0);
+    assert.equal(isValidSetup, true, "only some of the setup parameters are assigned in deployer.networks");
+    // Set up default values only if needed:
+    needsDefaultValues = (numDefined == 0);
+    return needsDefaultValues ? getDefaultSetup(accounts) : networkParams;
+  }
+  
+
 
 module.exports = {
     extractSelectorsFromAbi,
@@ -205,5 +238,7 @@ module.exports = {
     deploy,
     addTrustedParties,
     enroll,
+    getExplicitOrDefaultSetup,
+    getDefaultSetup
 }
 

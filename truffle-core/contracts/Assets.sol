@@ -12,9 +12,10 @@ contract Assets is AssetsView {
     event AssetsInit(address creatorAddr);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     
+    constructor(address marketOwner) public { setAcademyAddr(marketOwner); }
 
-    function setAcademyAddr(address addr) external{
-        _academyAddr = addr;
+    function setAcademyAddr(address addr) public{
+        _marketOwner = addr;
         teamIdToOwner[ACADEMY_TEAM] = addr;
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }

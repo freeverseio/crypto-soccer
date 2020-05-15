@@ -1,6 +1,5 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
-import "./Proxy.sol";
 import "./Market.sol";
 
 /**

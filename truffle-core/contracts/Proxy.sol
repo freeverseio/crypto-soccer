@@ -18,18 +18,25 @@ contract Proxy is ProxyStorage {
     uint256 constant private FWD_GAS_LIMIT = 10000; 
 
     /**
-    * @dev Sets owner of proxy to whoever deployed it
+    * @dev Sets CompanyOwner and SuperUser
     * @dev Stores proxy selectors in _contractsInfo[0], pointing to PROXY_DUMMY_ADDR
     */
-    constructor(bytes4[] memory proxySelectors) public {
-        _proxyOwner = msg.sender;
+    constructor(address companyOwner, address superUser, bytes4[] memory proxySelectors) public {
+        _companyOwner = companyOwner;
+        _superUser = superUser;
         _contractsInfo.push(ContractInfo(PROXY_DUMMY_ADDR, proxySelectors, "Proxy", false));
         activateContracts(new uint256[](1)); 
     }
     
-    modifier onlyOwner() 
+    modifier onlyCompany() 
     {
-        require(msg.sender == _proxyOwner, "Only owner is authorized.");
+        require(msg.sender == _companyOwner, "Only company is authorized.");
+        _;
+    }
+
+    modifier onlySuperUser() 
+    {
+        require(msg.sender == _superUser, "Only owner is authorized.");
         _;
     }
 
@@ -65,19 +72,29 @@ contract Proxy is ProxyStorage {
     }
     
     /**
-    * @dev Proposes a new proxy owner, who needs to later accept it
+    * @dev Proposes a new owners, who need to later accept it
     */
-    function proposeProxyOwner(address proposedOwner) public onlyOwner {
-        _proposedProxyOwner = proposedOwner;
+    function proposeSuperUser(address addr) public onlySuperUser {
+        _proposedSuperUser = addr;
+    }
+
+    function proposeCompanyOwner(address addr) public onlyCompany {
+        _companyOwner = addr;
     }
 
     /**
-    * @dev The proposed owner can call this function to become the owner
+    * @dev The proposed owners can call these functions to become the owners
     */
-    function acceptProxyOwner() public  {
-        require(msg.sender == _proposedProxyOwner, "only proposed owner can become owner");
-        _proxyOwner = _proposedProxyOwner;
-        _proposedProxyOwner = address(0);
+    function acceptSuperUser() public  {
+        require(msg.sender == _proposedSuperUser, "only proposed owner can become owner");
+        _superUser = _proposedSuperUser;
+        _proposedSuperUser = address(0);
+    }
+
+    function acceptCompanyOnwer() public  {
+        require(msg.sender == _proposedCompanyOwner, "only proposed owner can become owner");
+        _companyOwner = _proposedCompanyOwner;
+        _proposedCompanyOwner = address(0);
     }
 
     /**
@@ -91,7 +108,7 @@ contract Proxy is ProxyStorage {
     * @param selectors An array of all selectors needed inside the contract
     * @param name The name of the added contract, only for reference
     */
-    function addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) public onlyOwner {
+    function addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) public onlySuperUser {
         // we require that the contract gets assigned an Id that is as specified from outside, 
         // to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
         require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
@@ -112,7 +129,7 @@ contract Proxy is ProxyStorage {
     * @param deactContractIds The ids of the contracts to be de-activated
     * @param actContractIds The ids of the contracts to be activated
     */
-    function deactivateAndActivateContracts(uint256[] memory deactContractIds, uint256[] memory actContractIds) public onlyOwner {
+    function deactivateAndActivateContracts(uint256[] memory deactContractIds, uint256[] memory actContractIds) public onlySuperUser {
         deactivateContracts(deactContractIds);
         activateContracts(actContractIds);
     }
@@ -122,7 +139,7 @@ contract Proxy is ProxyStorage {
     *       _selectorToContractAddr mapping for each selector of the contract. 
     * @param contractIds The ids of the contracts to be activated
     */
-    function activateContracts(uint256[] memory contractIds) public onlyOwner {
+    function activateContracts(uint256[] memory contractIds) public onlySuperUser {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
             require(!_contractsInfo[contractId].isActive, "cannot activate a contract that is already Active");
@@ -142,7 +159,7 @@ contract Proxy is ProxyStorage {
     *       _selectorToContractAddr mapping for each selector of the contract. 
     * @param contractIds The ids of the contracts to be activated
     */
-    function deactivateContracts(uint256[] memory contractIds) public onlyOwner {
+    function deactivateContracts(uint256[] memory contractIds) public onlySuperUser {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
             require(contractId != 0, "cannot deactivate the proxy contract, with id = 0");
