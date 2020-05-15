@@ -14,6 +14,7 @@ data:
   staker_private_key: 250898e6a7d0b04a1a39821a78fac0d1a2c9d63ed1399e05179a8a98b9997cef
 
   market_id : ""
+  notary_extra_args: "-iap_test"
 
   ASSETS_CONTRACT_ADDRESS: 0xb7bd15cF8978bd0d62906992dE1d372ac4125d45
   MARKET_CONTRACT_ADDRESS: 0xb7bd15cF8978bd0d62906992dE1d372ac4125d45

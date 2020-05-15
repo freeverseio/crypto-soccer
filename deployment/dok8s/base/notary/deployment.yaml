@@ -35,7 +35,8 @@ spec:
                -constantsgetters_address, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)",
                -privileged_address, "$(PRIVILEGED_CONTRACT_ADDRESS)",
                -market_id, "$(market_id)",
-               -google_key, "/var/secrets/google/key.json"]
+               -google_key, "/var/secrets/google/key.json",
+               "$(notary_extra_args)"]
         ports:
         - containerPort: 4000
       imagePullSecrets:

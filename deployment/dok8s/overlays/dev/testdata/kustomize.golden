@@ -25,6 +25,7 @@ data:
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: ""
+  notary_extra_args: -iap_test
   notary_private_key: 363bd383b24285cba965d524f54413c3369d8fb244b57359767a0da31ce6e7d3
   relay_private_key: 0eec2a97925bcb1c636e63bc1db8b80f02dc8840e6a77b760b1c640b5f607f00
   staker_private_key: 250898e6a7d0b04a1a39821a78fac0d1a2c9d63ed1399e05179a8a98b9997cef
@@ -438,6 +439,7 @@ spec:
         - $(market_id)
         - -google_key
         - /var/secrets/google/key.json
+        - $(notary_extra_args)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
