@@ -25,7 +25,7 @@ module.exports = {
         "https://dai.poa.network"
       ),
       network_id: 100,
-      gasPrice: 1000000000
+      gasPrice: 1000000000,
     },
     xdaidev: { // 0xA9c0F76cA045163E28afDdFe035ec76a44f5C1F3
       provider: new HDWalletProvider(

@@ -183,6 +183,8 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
 	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
 	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
+	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
+	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
 	return nil
 }
 
@@ -244,6 +246,8 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
 	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
 	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
+	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
+	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
 	b.updateStats()
 	return nil
 }

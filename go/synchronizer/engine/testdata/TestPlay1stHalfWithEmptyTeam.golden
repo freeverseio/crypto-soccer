@@ -13,6 +13,8 @@
 		},
 		HomeGoals: (uint8) 0,
 		VisitorGoals: (uint8) 0,
+		HomeTeamSumSkills: (uint32) 0,
+		VisitorTeamSumSkills: (uint32) 0,
 		State: (storage.MatchState) (len=4) "half",
 		StateExtra: (string) "",
 		StartEpoch: (int64) 0

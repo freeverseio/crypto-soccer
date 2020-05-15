@@ -19,19 +19,21 @@ const (
 )
 
 type Match struct {
-	TimezoneIdx   uint8
-	CountryIdx    uint32
-	LeagueIdx     uint32
-	MatchDayIdx   uint8
-	MatchIdx      uint8
-	HomeTeamID    *big.Int
-	VisitorTeamID *big.Int
-	Seed          [32]byte
-	HomeGoals     uint8
-	VisitorGoals  uint8
-	State         MatchState
-	StateExtra    string
-	StartEpoch    int64
+	TimezoneIdx          uint8
+	CountryIdx           uint32
+	LeagueIdx            uint32
+	MatchDayIdx          uint8
+	MatchIdx             uint8
+	HomeTeamID           *big.Int
+	VisitorTeamID        *big.Int
+	Seed                 [32]byte
+	HomeGoals            uint8
+	VisitorGoals         uint8
+	HomeTeamSumSkills    uint32
+	VisitorTeamSumSkills uint32
+	State                MatchState
+	StateExtra           string
+	StartEpoch           int64
 }
 
 func NewMatch() *Match {
@@ -61,7 +63,7 @@ func (b *Match) Insert(tx *sql.Tx) error {
 }
 
 func MatchReset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8, matchIdx uint8) error {
-	_, err := tx.Exec("UPDATE matches SET home_team_id = NULL, visitor_team_id = NULL, home_goals = 0, visitor_goals = 0, state = 'begin', state_extra = '', start_epoch = 0 WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);",
+	_, err := tx.Exec("UPDATE matches SET home_team_id = NULL, visitor_team_id = NULL, home_goals = 0, visitor_goals = 0, home_teamsumskills = 0, visitor_teamsumskills = 0, state = 'begin', state_extra = '', start_epoch = 0 WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);",
 		timezoneIdx,
 		countryIdx,
 		leagueIdx,
@@ -105,17 +107,21 @@ func (b Match) Update(tx *sql.Tx, blockNumber uint64) error {
 	if _, err := tx.Exec(`
 		UPDATE matches SET 
 		home_team_id = $1, 
-		visitor_team_id = $2 ,
+		visitor_team_id = $2,
 		home_goals = $3,
 		visitor_goals = $4,
-		state = $5,
-		seed = $6,
-		state_extra = $7
-		WHERE (timezone_idx = $8 AND country_idx = $9 AND league_idx = $10 AND match_day_idx = $11 AND match_idx = $12);`,
+		home_teamsumskills = $5,
+		visitor_teamsumskills = $6,
+		state = $7,
+		seed = $8,
+		state_extra = $9
+		WHERE (timezone_idx = $10 AND country_idx = $11 AND league_idx = $12 AND match_day_idx = $13 AND match_idx = $14);`,
 		b.HomeTeamID.String(),
 		b.VisitorTeamID.String(),
 		b.HomeGoals,
 		b.VisitorGoals,
+		b.HomeTeamSumSkills,
+		b.VisitorTeamSumSkills,
 		b.State,
 		hex.EncodeToString(b.Seed[:]),
 		b.StateExtra,
@@ -185,6 +191,8 @@ func MatchesByTimezoneIdxAndMatchDay(tx *sql.Tx, timezoneIdx uint8, matchDayIdx 
 		visitor_team_id, 
 		home_goals, 
 		visitor_goals, 
+		home_teamsumskills,
+		visitor_teamsumskills,
 		state
 		FROM matches WHERE (timezone_idx = $1 AND match_day_idx = $2);`,
 		timezoneIdx,
@@ -209,6 +217,8 @@ func MatchesByTimezoneIdxAndMatchDay(tx *sql.Tx, timezoneIdx uint8, matchDayIdx 
 			&visitorTeamID,
 			&match.HomeGoals,
 			&match.VisitorGoals,
+			&match.HomeTeamSumSkills,
+			&match.VisitorTeamSumSkills,
 			&match.State,
 		)
 		if err != nil {
@@ -223,7 +233,7 @@ func MatchesByTimezoneIdxAndMatchDay(tx *sql.Tx, timezoneIdx uint8, matchDayIdx 
 
 func MatchesByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
-	rows, err := tx.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
+	rows, err := tx.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals, home_teamsumskills, visitor_teamsumskills FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return nil, err
 	}
@@ -243,6 +253,8 @@ func MatchesByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, coun
 			&visitorTeamID,
 			&match.HomeGoals,
 			&match.VisitorGoals,
+			&match.HomeTeamSumSkills,
+			&match.VisitorTeamSumSkills,
 		)
 		if err != nil {
 			return nil, err

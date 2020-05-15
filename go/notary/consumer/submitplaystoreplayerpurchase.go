@@ -11,6 +11,9 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"google.golang.org/api/androidpublisher/v3"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func SubmitPlayStorePlayerPurchase(
@@ -19,6 +22,8 @@ func SubmitPlayStorePlayerPurchase(
 	googleCredentials []byte,
 	in input.SubmitPlayStorePlayerPurchaseInput,
 ) error {
+	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)
+
 	playerId, _ := new(big.Int).SetString(string(in.PlayerId), 10)
 	if playerId == nil {
 		return fmt.Errorf("invalid playerId %v", in.PlayerId)
@@ -32,6 +37,30 @@ func SubmitPlayStorePlayerPurchase(
 	if err != nil {
 		return err
 	}
+	ctx := context.Background()
+
+	purchase, err := client.VerifyProduct(
+		ctx,
+		string(in.PackageName),
+		string(in.ProductId),
+		in.PurchaseToken,
+	)
+	if err != nil {
+		return err
+	}
+
+	if !isTestPurchase(purchase) {
+		payload := "Hello World!" // TODO
+		if err := client.AcknowledgeProduct(
+			ctx,
+			string(in.PackageName),
+			string(in.ProductId),
+			in.PurchaseToken,
+			payload,
+		); err != nil {
+			return err
+		}
+	}
 
 	auth := bind.NewKeyedTransactor(pvc)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
@@ -43,24 +72,20 @@ func SubmitPlayStorePlayerPurchase(
 	if err != nil {
 		return err
 	}
-	receipt, err := helper.WaitReceipt(contracts.Client, tx, 60)
-	if err != nil {
-		return err
-	}
-	if receipt.Status == 0 {
+	if _, err = helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
 		return err
 	}
 
-	ctx := context.Background()
-	err = client.AcknowledgeProduct(
-		ctx,
-		string(in.PackageName),
-		string(in.ProductId),
-		in.PurchaseToken,
-		receipt.TxHash.String(),
-	)
-	if err != nil {
-		return fmt.Errorf("CRITIC: order with purchaseToken %v with player %v: %v", in.PurchaseToken, playerId, err.Error())
-	}
+	log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
+
 	return nil
+}
+
+func isTestPurchase(purchase *androidpublisher.ProductPurchase) bool {
+	if purchase.PurchaseType != nil {
+		if *purchase.PurchaseType == 0 { // Test
+			return true
+		}
+	}
+	return false
 }
