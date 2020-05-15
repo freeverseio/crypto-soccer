@@ -36,9 +36,11 @@ module.exports = {
       gasPrice: 1000000000,
       singleTimezone: 10,
       auth: {
-        superOwner: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
-        marketOwner: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
-        relayOwner: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
+        company: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
+        superuser: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
+        coo: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
+        market: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
+        relay: "0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79",
         trustedParties: ["0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79"]
       },
       requiredStake: 1000000000000,

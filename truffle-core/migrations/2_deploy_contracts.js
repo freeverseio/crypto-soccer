@@ -32,9 +32,11 @@ function getDefaultSetup(accounts) {
   return {
     singleTimezone: -1,
     auth: {
-      superOwner: accounts[0],
-      marketOwner: accounts[0],
-      relayOwner: accounts[0],
+      company:  accounts[0],
+      superuser:  accounts[0],
+      coo:  accounts[0],
+      market:  accounts[0],
+      relay:  accounts[0],
       trustedParties: [accounts[0]]
     },
     requiredStake: 1000000000000,
