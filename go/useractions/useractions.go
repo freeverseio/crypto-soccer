@@ -47,29 +47,29 @@ func New() *UserActions {
 }
 
 func newShell(url string) (*shell.Shell, error) {
-	useIpfsCluster := false
-	if !useIpfsCluster {
-		return shell.NewShell(url), nil
+	useIpfsCluster := true // false
+	if useIpfsCluster {
+		if len(url) == 0 {
+			url = "/ip4/127.0.0.1/tcp/5001" // localhost
+		}
+		maddr, err := ma.NewMultiaddr(url)
+		if err != nil {
+			return nil, err
+		}
+		cfg := &cluster.Config{
+			APIAddr: maddr,
+			//Username: *username,
+			//Password: *pw,
+		}
+		cfg.SSL = false //true
+		cfg.NoVerifyCert = true
+		client, err := cluster.NewDefaultClient(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return client.IPFS(context.Background()), nil
 	}
-	if len(url) == 0 {
-		url = "/ip4/127.0.0.1/tcp/5001" // localhost
-	}
-	maddr, err := ma.NewMultiaddr(url)
-	if err != nil {
-		return nil, err
-	}
-	cfg := &cluster.Config{
-		APIAddr: maddr,
-		//Username: *username,
-		//Password: *pw,
-	}
-	cfg.SSL = false //true
-	cfg.NoVerifyCert = true
-	client, err := cluster.NewDefaultClient(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return client.IPFS(context.Background()), nil
+	return shell.NewShell(url), nil
 }
 
 func NewFromIpfs(url string, cid string) (*UserActions, error) {
