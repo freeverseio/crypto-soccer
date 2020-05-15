@@ -67,6 +67,7 @@ commands:
       - run: wget https://dist.ipfs.io/ipfs-cluster-service/v0.12.1/ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
       - run: tar xvzf ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
       - run: chmod +x ipfs-cluster-service/ipfs-cluster-service
+      - run: uname -a
         #- run: sudo mv ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
       - run: ls -alsh ipfs-cluster-service
       - run: chown root:root ipfs-cluster-service/ipfs-cluster-service
@@ -97,7 +98,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-        #- install_and_run_ipfs_cluster
+      - install_and_run_ipfs_cluster
       - run: cd go/contracts && go test 
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
