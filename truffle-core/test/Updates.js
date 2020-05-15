@@ -304,7 +304,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = -10);
         await timeTravel.advanceTime(20);
 
-        isTime = await updates.isTimeToUpdate().should.be.fulfilled;
+        isTime = await updates.isTimeToUpdate(verse = 1).should.be.fulfilled;
         isTime.should.be.equal(false);
         await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.rejected;
 
@@ -312,7 +312,7 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
-        isTime = await updates.isTimeToUpdate().should.be.fulfilled;
+        isTime = await updates.isTimeToUpdate(verse = 1).should.be.fulfilled;
         isTime.should.be.equal(true);
         await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
     });
@@ -348,20 +348,20 @@ contract('Updates', (accounts) => {
         const cif = "ciao2";
         for (i = 0; i < 110; i++) {
             await moveToNextVerse(updates, extraSecs = 10);
-            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+            await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
 
-            isTime = await updates.isTimeToUpdate().should.be.fulfilled;
+            isTime = await updates.isTimeToUpdate(verse = i + 1).should.be.fulfilled;
             if (isTime == true) {
-                await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
+                await updates.updateTZ(verse = i + 1, root = web3.utils.keccak256("hiboyz"), { from: erin }).should.be.fulfilled;
             }
         }
         // after these few cycles, we now do a cycle which tells us to update, but we don't... and so, we fail to do another submitActions
         await moveToNextVerse(updates, extraSecs = 10);
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
 
-        isTime = await updates.isTimeToUpdate().should.be.fulfilled;
+        isTime = await updates.isTimeToUpdate(verse = 1).should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = 10);
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+        await updates.submitActionsRoot(verse = 1, actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
     
     });
     
@@ -420,7 +420,7 @@ contract('Updates', (accounts) => {
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA, {from:alice}).should.be.rejected;
 
         // So let's update with rootA...
-        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
+        await updates.updateTZ(verse= 1, root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
 
         // We can not challenge with something compatible with rootA:
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitA, {from:bob}).should.be.rejected;
@@ -511,10 +511,10 @@ contract('Updates', (accounts) => {
         //      we're not in the next verse yet
         //      the previous verse is not settled yet
         // In this case, it fails because of the first reason. TODO: add test for 2nd.
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+        await updates.submitActionsRoot(verse = 2, actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
         await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
 
-        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0], {from: erin}).should.be.rejected;
+        await updates.updateTZ(verse = 2, root = merkleStructA[lev = 0][pos = 0], {from: erin}).should.be.rejected;
         
         await timeTravel.advanceTime(challengeTime.toNumber() + 10).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
@@ -761,7 +761,7 @@ contract('Updates', (accounts) => {
         var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
 
         // Level0: A
-        await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
+        await updates.updateTZ(verse = 1, root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
 
         // Level1: B
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.fulfilled;
