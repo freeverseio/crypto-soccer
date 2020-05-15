@@ -97,7 +97,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - install_and_run_ipfs_cluster
+        #- install_and_run_ipfs_cluster
       - run: cd go/contracts && go test 
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
