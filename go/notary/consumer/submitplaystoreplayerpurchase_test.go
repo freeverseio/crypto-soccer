@@ -15,6 +15,7 @@ func TestSubmitPlayStorePlayerPurchaseEmptyEvent(t *testing.T) {
 		bc.Owner,
 		googleCredentials,
 		in,
+		false,
 	), "invalid playerId ")
 }
 
@@ -30,5 +31,6 @@ func TestSubmitPlayStorePlayerPurchase(t *testing.T) {
 		bc.Owner,
 		googleCredentials,
 		in,
+		false,
 	), "unexpected end of JSON input")
 }
