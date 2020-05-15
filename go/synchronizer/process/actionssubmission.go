@@ -46,7 +46,7 @@ func ConsumeActionsSubmission(
 	}
 
 	if staker != nil {
-		if err := staker.Play(*contracts, universeHash); err != nil {
+		if err := staker.Play(*contracts, v.Verse.Int64(), universeHash); err != nil {
 			return err
 		}
 	}
