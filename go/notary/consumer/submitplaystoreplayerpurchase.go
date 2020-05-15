@@ -11,6 +11,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"google.golang.org/api/androidpublisher/v3"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -21,7 +22,7 @@ func SubmitPlayStorePlayerPurchase(
 	googleCredentials []byte,
 	in input.SubmitPlayStorePlayerPurchaseInput,
 ) error {
-	log.Infof("SubmitPlayStorePlayerPurchase %+v", in)
+	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)
 
 	playerId, _ := new(big.Int).SetString(string(in.PlayerId), 10)
 	if playerId == nil {
@@ -32,14 +33,33 @@ func SubmitPlayStorePlayerPurchase(
 		return fmt.Errorf("invalid teamId %v", in.TeamId)
 	}
 
-	if err := AcknowledgeProduct(
-		googleCredentials,
+	client, err := playstore.New(googleCredentials)
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+
+	purchase, err := client.VerifyProduct(
+		ctx,
 		string(in.PackageName),
 		string(in.ProductId),
 		in.PurchaseToken,
-		"hello world!",
-	); err != nil {
-		return fmt.Errorf("CRITIC: order with purchaseToken %v with player %v: %v", in.PurchaseToken, playerId, err.Error())
+	)
+	if err != nil {
+		return err
+	}
+
+	if !isTestPurchase(purchase) {
+		payload := "Hello World!" // TODO
+		if err := client.AcknowledgeProduct(
+			ctx,
+			string(in.PackageName),
+			string(in.ProductId),
+			in.PurchaseToken,
+			payload,
+		); err != nil {
+			return err
+		}
 	}
 
 	auth := bind.NewKeyedTransactor(pvc)
@@ -56,45 +76,16 @@ func SubmitPlayStorePlayerPurchase(
 		return err
 	}
 
+	log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
+
 	return nil
 }
 
-func AcknowledgeProduct(
-	credentials []byte,
-	packageName string,
-	productID string,
-	token string,
-	payload string,
-) error {
-	client, err := playstore.New(credentials)
-	if err != nil {
-		return err
-	}
-	ctx := context.Background()
-
-	purchase, err := client.VerifyProduct(
-		ctx,
-		packageName,
-		productID,
-		token,
-	)
-	if err != nil {
-		return err
-	}
-
-	// if testing product it's ok
+func isTestPurchase(purchase *androidpublisher.ProductPurchase) bool {
 	if purchase.PurchaseType != nil {
 		if *purchase.PurchaseType == 0 { // Test
-			log.Infof("[TEST] OrderId %v", purchase.OrderId)
-			return nil
+			return true
 		}
 	}
-
-	return client.AcknowledgeProduct(
-		ctx,
-		packageName,
-		productID,
-		token,
-		payload,
-	)
+	return false
 }

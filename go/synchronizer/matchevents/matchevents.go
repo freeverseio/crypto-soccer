@@ -259,6 +259,8 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]ui
 		}
 		events = append(events, thisEvent)
 	}
+	endOfGameMin := rounds2mins[len(rounds2mins)-1] + 1
+	rounds2mins = append(rounds2mins, endOfGameMin)
 	return events, rounds2mins
 }
 
