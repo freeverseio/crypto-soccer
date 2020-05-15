@@ -64,8 +64,9 @@ commands:
       - run: tar xvzf ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
       - run: chmod +x ipfs-cluster-service/ipfs-cluster-service
         #- run: sudo mv ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
-      - run: ipfs-cluster-service/ipfs-cluster-service init
-      - run: ipfs-cluster-service/ipfs-cluster-service daemon
+      - run: ls -alsh ipfs-cluster-service
+      - run: ./ipfs-cluster-service/ipfs-cluster-service init
+      - run: ./ipfs-cluster-service/ipfs-cluster-service daemon
 
         #- run: git clone https://github.com/ipfs/ipfs-cluster.git
         #- run: cd ipfs-cluster
