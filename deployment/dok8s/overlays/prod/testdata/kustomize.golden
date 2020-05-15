@@ -433,6 +433,7 @@ spec:
         - $(market_id)
         - -google_key
         - /var/secrets/google/key.json
+        - $(notary_extra_args)
         envFrom:
         - configMapRef:
             name: freeverse-configmap

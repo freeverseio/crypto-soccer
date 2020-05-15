@@ -33,6 +33,7 @@ func main() {
 	processWait := flag.Int("process_wait", 5, "secs to wait for next process")
 	marketID := flag.String("market_id", "", "WARNING: market identifier. If set connecting the real market")
 	googleKey := flag.String("google_key", "", "google credentials")
+	iapTestOn := flag.Bool("iap_test", false, "allow purchase of testing iap players")
 	flag.Parse()
 
 	log.Infof("[PARAM] postgres                   : %v", *postgresURL)
@@ -54,6 +55,7 @@ func main() {
 		log.Infof("[PARAM] market                     : REAL")
 	}
 	log.Infof("[PARAM] google credentials         : %v", *googleKey)
+	log.Infof("[PARAM] iap test                   : %v", *iapTestOn)
 	log.Infof("-------------------------------------------------------------------")
 
 	if *debug {
@@ -123,6 +125,7 @@ func main() {
 			*contracts,
 			privateKey,
 			googleCredentials,
+			false,
 		)
 		if err != nil {
 			return err

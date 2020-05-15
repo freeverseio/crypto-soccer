@@ -21,6 +21,7 @@ func SubmitPlayStorePlayerPurchase(
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
 	in input.SubmitPlayStorePlayerPurchaseInput,
+	iapTestOn bool,
 ) error {
 	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)
 
@@ -49,17 +50,20 @@ func SubmitPlayStorePlayerPurchase(
 		return err
 	}
 
-	if !isTestPurchase(purchase) {
-		payload := "Hello World!" // TODO
-		if err := client.AcknowledgeProduct(
-			ctx,
-			string(in.PackageName),
-			string(in.ProductId),
-			in.PurchaseToken,
-			payload,
-		); err != nil {
-			return err
-		}
+	if isTestPurchase(purchase) && !iapTestOn {
+		log.Warningf("[consumer|iap] received test orderId %v", purchase.OrderId)
+		return nil
+	}
+
+	payload := "Hello World!" // TODO
+	if err := client.AcknowledgeProduct(
+		ctx,
+		string(in.PackageName),
+		string(in.ProductId),
+		in.PurchaseToken,
+		payload,
+	); err != nil {
+		return err
 	}
 
 	auth := bind.NewKeyedTransactor(pvc)

@@ -20,6 +20,7 @@ func TestConsumerNew(t *testing.T) {
 		*bc.Contracts,
 		bc.Owner,
 		googleCredentials,
+		false,
 	)
 	assert.NilError(t, err)
 }
@@ -33,6 +34,7 @@ func TestConsumerConsumeSubmitPlayStorePlayerPurchaseInput(t *testing.T) {
 		*bc.Contracts,
 		bc.Owner,
 		googleCredentials,
+		false,
 	)
 	assert.NilError(t, err)
 	in := input.SubmitPlayStorePlayerPurchaseInput{}
@@ -48,6 +50,7 @@ func TestConsumerConsumeCreateAuction(t *testing.T) {
 		*bc.Contracts,
 		bc.Owner,
 		googleCredentials,
+		false,
 	)
 	assert.NilError(t, err)
 	in := input.CreateAuctionInput{}
@@ -63,6 +66,7 @@ func TestConsumerConsumeCancelAuction(t *testing.T) {
 		*bc.Contracts,
 		bc.Owner,
 		googleCredentials,
+		false,
 	)
 	assert.NilError(t, err)
 	in := input.CancelAuctionInput{}
@@ -78,6 +82,7 @@ func TestConsumerConsumeCreateBid(t *testing.T) {
 		*bc.Contracts,
 		bc.Owner,
 		googleCredentials,
+		false,
 	)
 	assert.NilError(t, err)
 	in := input.CreateBidInput{}
@@ -93,6 +98,7 @@ func TestConsumerConsumeUnknownEvent(t *testing.T) {
 		*bc.Contracts,
 		bc.Owner,
 		googleCredentials,
+		false,
 	)
 	assert.NilError(t, err)
 	in := struct{}{}

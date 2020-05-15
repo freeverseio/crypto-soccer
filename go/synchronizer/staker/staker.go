@@ -67,10 +67,10 @@ func (b Staker) IsTrustedParty(contracts contracts.Contracts) (bool, error) {
 	return contracts.Stakers.IsTrustedParty(&bind.CallOpts{}, b.Address())
 }
 
-func (b Staker) SubmitRoot(contracts contracts.Contracts, root [32]byte) error {
+func (b Staker) SubmitRoot(contracts contracts.Contracts, verse int64, root [32]byte) error {
 	auth := bind.NewKeyedTransactor(b.privateKey)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
-	tx, err := contracts.Updates.UpdateTZ(auth, root)
+	tx, err := contracts.Updates.UpdateTZ(auth, big.NewInt(verse), root)
 	if err != nil {
 		return err
 	}
@@ -81,8 +81,8 @@ func (b Staker) SubmitRoot(contracts contracts.Contracts, root [32]byte) error {
 	return nil
 }
 
-func (b Staker) Play(contracts contracts.Contracts, root [32]byte) error {
-	isTimeToUpdate, err := contracts.Updates.IsTimeToUpdate(&bind.CallOpts{})
+func (b Staker) Play(contracts contracts.Contracts, verse int64, root [32]byte) error {
+	isTimeToUpdate, err := contracts.Updates.IsTimeToUpdate(&bind.CallOpts{}, big.NewInt(verse))
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (b Staker) Play(contracts contracts.Contracts, root [32]byte) error {
 		return nil
 	}
 	log.Infof("[staker] it's time ... let's try to submit universe root %v", hex.EncodeToString(root[:]))
-	return b.SubmitRoot(contracts, root)
+	return b.SubmitRoot(contracts, verse, root)
 }
 
 func requiredStake(contracts contracts.Contracts) (*big.Int, error) {

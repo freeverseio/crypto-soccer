@@ -19,6 +19,7 @@ type Consumer struct {
 	pvc               *ecdsa.PrivateKey
 	market            marketpay.IMarketPay
 	googleCredentials []byte
+	iapTestOn         bool
 }
 
 func New(
@@ -28,6 +29,7 @@ func New(
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
+	iapTestOn bool,
 ) (*Consumer, error) {
 	consumer := Consumer{}
 	consumer.ch = ch
@@ -36,6 +38,7 @@ func New(
 	consumer.pvc = pvc
 	consumer.market = market
 	consumer.googleCredentials = googleCredentials
+	consumer.iapTestOn = iapTestOn
 	return &consumer, nil
 }
 
@@ -105,6 +108,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			b.pvc,
 			b.googleCredentials,
 			in,
+			b.iapTestOn,
 		); err != nil {
 			return err
 		}
