@@ -53,17 +53,19 @@ func SubmitPlayStorePlayerPurchase(
 	if isTestPurchase(purchase) && !iapTestOn {
 		log.Warningf("[consumer|iap] received test orderId %v ... skip", purchase.OrderId)
 		return nil
-	}
-
-	payload := "Hello World!" // TODO
-	if err := client.AcknowledgeProduct(
-		ctx,
-		string(in.PackageName),
-		string(in.ProductId),
-		in.PurchaseToken,
-		payload,
-	); err != nil {
-		return err
+	} else if isTestPurchase(purchase) && iapTestOn {
+		log.Infof("[consumer|iap] test order: skip sending acknowledge to google service")
+	} else {
+		payload := fmt.Sprintf("playerId: %v", in.PlayerId)
+		if err := client.AcknowledgeProduct(
+			ctx,
+			string(in.PackageName),
+			string(in.ProductId),
+			in.PurchaseToken,
+			payload,
+		); err != nil {
+			return err
+		}
 	}
 
 	auth := bind.NewKeyedTransactor(pvc)
