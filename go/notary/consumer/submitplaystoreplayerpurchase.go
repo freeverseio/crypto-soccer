@@ -51,7 +51,7 @@ func SubmitPlayStorePlayerPurchase(
 	}
 
 	if isTestPurchase(purchase) && !iapTestOn {
-		log.Warningf("[consumer|iap] received test orderId %v", purchase.OrderId)
+		log.Warningf("[consumer|iap] received test orderId %v ... skip", purchase.OrderId)
 		return nil
 	}
 
