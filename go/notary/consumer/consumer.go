@@ -121,6 +121,8 @@ func (b *Consumer) Consume(event interface{}) error {
 func (b *Consumer) Start() {
 	for {
 		event := <-b.ch
-		b.Consume(event)
+		if err := b.Consume(event); err != nil {
+			log.Error(err)
+		}
 	}
 }
