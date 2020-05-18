@@ -51,38 +51,34 @@ func SubmitPlayStorePlayerPurchase(
 	}
 
 	if isTestPurchase(purchase) && !iapTestOn {
-		log.Warningf("[consumer|iap] received test orderId %v ... skip", purchase.OrderId)
-		return nil
-	} else if isTestPurchase(purchase) && iapTestOn {
-		log.Infof("[consumer|iap] test order: skip sending acknowledge to google service")
+		log.Warningf("[consumer|iap] received test orderId %v ... skip creating player", purchase.OrderId)
 	} else {
-		payload := fmt.Sprintf("playerId: %v", in.PlayerId)
-		if err := client.AcknowledgeProduct(
-			ctx,
-			string(in.PackageName),
-			string(in.ProductId),
-			in.PurchaseToken,
-			payload,
-		); err != nil {
+		auth := bind.NewKeyedTransactor(pvc)
+		auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
+		tx, err := contracts.Market.TransferBuyNowPlayer(
+			auth,
+			playerId,
+			teamId,
+		)
+		if err != nil {
 			return err
 		}
+		if _, err = helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
+			return err
+		}
+		log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
 	}
 
-	auth := bind.NewKeyedTransactor(pvc)
-	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
-	tx, err := contracts.Market.TransferBuyNowPlayer(
-		auth,
-		playerId,
-		teamId,
-	)
-	if err != nil {
+	payload := fmt.Sprintf("playerId: %v", in.PlayerId)
+	if err := client.AcknowledgeProduct(
+		ctx,
+		string(in.PackageName),
+		string(in.ProductId),
+		in.PurchaseToken,
+		payload,
+	); err != nil {
 		return err
 	}
-	if _, err = helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
-		return err
-	}
-
-	log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
 
 	return nil
 }
