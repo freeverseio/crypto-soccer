@@ -89,7 +89,6 @@ contract('Privileged', (accounts) => {
         internalId2.should.be.bignumber.equal(internalId);
         now = epochInDays*24*3600;
         expectedDayOfBirth = Math.floor(secsToDays(now) - ageYears*365/14);
-        console.log(dayOfBirth.toNumber(), expectedDayOfBirth);
         (Math.abs(dayOfBirth.toNumber() - expectedDayOfBirth) < 14).should.be.equal(true);
         
     });
