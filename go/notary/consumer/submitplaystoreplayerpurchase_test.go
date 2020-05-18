@@ -23,14 +23,12 @@ func TestSubmitPlayStorePlayerPurchase(t *testing.T) {
 	in := input.SubmitPlayStorePlayerPurchaseInput{}
 	in.PlayerId = "3"
 	in.TeamId = "4"
-	in.PackageName = "PackageId"
-	in.ProductId = "ProductId"
-	in.PurchaseToken = "44434r"
-	assert.Error(t, consumer.SubmitPlayStorePlayerPurchase(
+	in.Receipt = "PackageId"
+	assert.NilError(t, consumer.SubmitPlayStorePlayerPurchase(
 		*bc.Contracts,
 		bc.Owner,
 		googleCredentials,
 		in,
-		false,
-	), "unexpected end of JSON input")
+		false))
+	// ), "unexpected end of JSON input")
 }

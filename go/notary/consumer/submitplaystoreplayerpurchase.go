@@ -1,15 +1,11 @@
 package consumer
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"fmt"
 	"math/big"
 
-	"github.com/awa/go-iap/playstore"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"google.golang.org/api/androidpublisher/v3"
 
@@ -34,51 +30,51 @@ func SubmitPlayStorePlayerPurchase(
 		return fmt.Errorf("invalid teamId %v", in.TeamId)
 	}
 
-	client, err := playstore.New(googleCredentials)
-	if err != nil {
-		return err
-	}
-	ctx := context.Background()
+	// client, err := playstore.New(googleCredentials)
+	// if err != nil {
+	// 	return err
+	// }
+	// ctx := context.Background()
 
-	purchase, err := client.VerifyProduct(
-		ctx,
-		string(in.PackageName),
-		string(in.ProductId),
-		in.PurchaseToken,
-	)
-	if err != nil {
-		return err
-	}
+	// purchase, err := client.VerifyProduct(
+	// 	ctx,
+	// 	string(in.PackageName),
+	// 	string(in.ProductId),
+	// 	in.PurchaseToken,
+	// )
+	// if err != nil {
+	// 	return err
+	// }
 
-	if isTestPurchase(purchase) && !iapTestOn {
-		log.Warningf("[consumer|iap] received test orderId %v ... skip creating player", purchase.OrderId)
-	} else {
-		auth := bind.NewKeyedTransactor(pvc)
-		auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
-		tx, err := contracts.Market.TransferBuyNowPlayer(
-			auth,
-			playerId,
-			teamId,
-		)
-		if err != nil {
-			return err
-		}
-		if _, err = helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
-			return err
-		}
-		log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
-	}
+	// if isTestPurchase(purchase) && !iapTestOn {
+	// 	log.Warningf("[consumer|iap] received test orderId %v ... skip creating player", purchase.OrderId)
+	// } else {
+	// 	auth := bind.NewKeyedTransactor(pvc)
+	// 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
+	// 	tx, err := contracts.Market.TransferBuyNowPlayer(
+	// 		auth,
+	// 		playerId,
+	// 		teamId,
+	// 	)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if _, err = helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
+	// 		return err
+	// 	}
+	// 	log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
+	// }
 
-	payload := fmt.Sprintf("playerId: %v", in.PlayerId)
-	if err := client.AcknowledgeProduct(
-		ctx,
-		string(in.PackageName),
-		string(in.ProductId),
-		in.PurchaseToken,
-		payload,
-	); err != nil {
-		return err
-	}
+	// payload := fmt.Sprintf("playerId: %v", in.PlayerId)
+	// if err := client.AcknowledgeProduct(
+	// 	ctx,
+	// 	string(in.PackageName),
+	// 	string(in.ProductId),
+	// 	in.PurchaseToken,
+	// 	payload,
+	// ); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

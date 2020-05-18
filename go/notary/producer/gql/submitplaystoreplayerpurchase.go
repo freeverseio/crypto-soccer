@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -94,39 +93,41 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, errors.New("Not team owner")
 	}
 
-	orderId, err := GetOrderId(
-		b.googleCredentials,
-		string(args.Input.PackageName),
-		string(args.Input.ProductId),
-		args.Input.PurchaseToken,
-	)
-	if err != nil {
-		return result, err
-	}
+	log.Info(args.Input.Receipt)
 
-	value := int64(1000)     // TODO: value is forced to be 1000
-	maxPotential := uint8(9) // TODO: value is forced to be 9
+	// orderId, err := GetOrderId(
+	// 	b.googleCredentials,
+	// 	string(args.Input.PackageName),
+	// 	string(args.Input.ProductId),
+	// 	args.Input.PurchaseToken,
+	// )
+	// if err != nil {
+	// 	return result, err
+	// }
 
-	isValidPlayer, err := b.IsValidPlayer(
-		string(args.Input.PlayerId),
-		value,
-		maxPotential,
-		string(args.Input.TeamId),
-		time.Now().Unix(),
-	)
-	if err != nil {
-		return result, err
-	}
-	if !isValidPlayer {
-		return result, fmt.Errorf("orderId %v has an invalid playerId %v", orderId, args.Input.PlayerId)
-	}
+	// value := int64(1000)     // TODO: value is forced to be 1000
+	// maxPotential := uint8(9) // TODO: value is forced to be 9
 
-	select {
-	case b.ch <- args.Input:
-	default:
-		log.Warning("channel is full")
-		return result, errors.New("channel is full")
-	}
+	// isValidPlayer, err := b.IsValidPlayer(
+	// 	string(args.Input.PlayerId),
+	// 	value,
+	// 	maxPotential,
+	// 	string(args.Input.TeamId),
+	// 	time.Now().Unix(),
+	// )
+	// if err != nil {
+	// 	return result, err
+	// }
+	// if !isValidPlayer {
+	// 	return result, fmt.Errorf("orderId %v has an invalid playerId %v", orderId, args.Input.PlayerId)
+	// }
+
+	// select {
+	// case b.ch <- args.Input:
+	// default:
+	// 	log.Warning("channel is full")
+	// 	return result, errors.New("channel is full")
+	// }
 
 	return args.Input.PlayerId, nil
 }
