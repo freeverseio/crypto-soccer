@@ -68,6 +68,7 @@ commands:
           command: |
             set -x
             wget https://dist.ipfs.io/ipfs-cluster-service/v0.12.1/ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
+            tar -zxvf ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
             chmod +x ipfs-cluster-service/ipfs-cluster-service
             chown root:root ipfs-cluster-service/ipfs-cluster-service
             sudo mv  ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
