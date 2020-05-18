@@ -67,9 +67,9 @@ commands:
      steps:
        - run: git clone https://github.com/ipfs/ipfs-cluster.git
        - run: cd ipfs-cluster
-       - run: go install ./cmd/ipfs-cluster-service
-       - run: go install ./cmd/ipfs-cluster-ctl
-       - run: go install ./cmd/ipfs-cluster-follow
+       - run: go install cmd/ipfs-cluster-service
+       - run: go install cmd/ipfs-cluster-ctl
+       - run: go install cmd/ipfs-cluster-follow
        - run: ipfs-cluster-servicer init
        - run: ipfs-cluster-servicer daemon
 
