@@ -46,16 +46,30 @@ contract('Proxy', (accounts) => {
         await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
     });
 
+    
     it('superUser: permissions check to change owner of proxy', async () => {
-        await proxy.proposeSuperUser(coo, {from: company}).should.be.rejected;
-        await proxy.proposeSuperUser(accounts[5], {from: superuser}).should.be.fulfilled;
-        await proxy.proposeSuperUser(coo, {from: superuser}).should.be.fulfilled;
-        await proxy.acceptSuperUser({from: superuser}).should.be.rejected;
-        await proxy.acceptSuperUser({from: coo}).should.be.fulfilled;
-        await proxy.proposeSuperUser(superuser, {from: superuser}).should.be.rejected;
-        await proxy.proposeSuperUser(superuser, {from: coo}).should.be.fulfilled;
-        await proxy.acceptSuperUser({from: superuser}).should.be.fulfilled;
+        await proxy.proposeCompanyOwner(coo, {from: superuser}).should.be.rejected;
+        await proxy.proposeCompanyOwner(accounts[5], {from: company}).should.be.fulfilled;
+        await proxy.proposeCompanyOwner(coo, {from: company}).should.be.fulfilled;
+        await proxy.acceptCompanyOwner({from: company}).should.be.rejected;
+        await proxy.acceptCompanyOwner({from: coo}).should.be.fulfilled;
+        await proxy.proposeCompanyOwner(company, {from: company}).should.be.rejected;
+        await proxy.proposeCompanyOwner(company, {from: coo}).should.be.fulfilled;
+        await proxy.acceptCompanyOwner({from: company}).should.be.fulfilled;
     });
+
+    
+    // it('superUser: permissions check to change owner of proxy', async () => {
+    //     await proxy.proposeCompanyOwner(coo, {from: company}).should.be.rejected;
+    //     await proxy.proposeCompanyOwner(accounts[5], {from: superuser}).should.be.fulfilled;
+    //     await proxy.proposeCompanyOwner(coo, {from: superuser}).should.be.fulfilled;
+    //     await proxy.acceptCompanyOwner({from: superuser}).should.be.rejected;
+    //     await proxy.acceptCompanyOwner({from: coo}).should.be.fulfilled;
+    //     await proxy.proposeCompanyOwner(superuser, {from: superuser}).should.be.rejected;
+    //     await proxy.proposeCompanyOwner(superuser, {from: coo}).should.be.fulfilled;
+    //     await proxy.acceptCompanyOwner({from: superuser}).should.be.fulfilled;
+    // });
+
 
     return
     it('full deploy should work', async () => {

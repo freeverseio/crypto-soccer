@@ -80,7 +80,7 @@ contract Proxy is ProxyStorage {
     }
 
     function proposeCompanyOwner(address addr) public onlyCompany {
-        _companyOwner = addr;
+        _proposedCompanyOwner = addr;
     }
 
     /**
@@ -92,7 +92,7 @@ contract Proxy is ProxyStorage {
         _proposedSuperUser = address(0);
     }
 
-    function acceptCompanyOnwer() public  {
+    function acceptCompanyOwner() public  {
         require(msg.sender == _proposedCompanyOwner, "only proposed owner can become owner");
         _companyOwner = _proposedCompanyOwner;
         _proposedCompanyOwner = address(0);
