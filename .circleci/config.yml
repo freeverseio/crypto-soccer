@@ -71,6 +71,8 @@ commands:
             tar -zxvf ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
             chmod +x ipfs-cluster-service/ipfs-cluster-service
             mv ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
+            whoami
+            groups
             chown root:root /usr/local/bin/ipfs-cluster-service
             ls -alsh /usr/local/bin/ipfs-cluster-service
             file /usr/local/bin/ipfs-cluster-service
@@ -91,6 +93,8 @@ jobs:
       - generate_contracts_code
       - submit_universe_db_schema
       - install_ipfs_cluster
+      - install_kustomize
+      - run: kustomize version
       - run: cd go/contracts && go test 
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
