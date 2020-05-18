@@ -71,7 +71,7 @@ commands:
             tar -zxvf ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
             chmod +x ipfs-cluster-service/ipfs-cluster-service
             mv ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
-            chown root:root usr/local/bin/ipfs-cluster-service
+            chown root:root /usr/local/bin/ipfs-cluster-service
             ls -alsh /usr/local/bin/ipfs-cluster-service
             file /usr/local/bin/ipfs-cluster-service
             /usr/local/bin/ipfs-cluster-service init
