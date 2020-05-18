@@ -45,7 +45,8 @@ contract('Assets', (accounts) => {
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
-        depl = await deployUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        depl = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         proxy = depl[0]
         assets = depl[1]
         market = depl[2]
@@ -106,8 +107,11 @@ contract('Assets', (accounts) => {
     });
 
     it('check DivisionCreation event on initSingleTz', async () => {
-        const {0: proxy2, 1: assets2, 2: markV0, 3: updV0, 4: chll} =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
-        tx = await assets2.initSingleTZ(tz = 4).should.be.fulfilled;
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        defaultSetup.singleTimezone = 4;
+        depl2 = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        assets2 = depl2[1];
+        tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
             return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
         });

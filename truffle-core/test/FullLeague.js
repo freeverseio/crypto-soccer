@@ -474,7 +474,8 @@ contract('FullLeague', (accounts) => {
     });
     
     it('challenge unexpected zero values', async () => {
-        depl =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        depl = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         proxy  = depl[0];
         updates = depl[3];
         challenges = depl[4];

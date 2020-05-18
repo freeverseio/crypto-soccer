@@ -45,7 +45,8 @@ contract("Market", accounts => {
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
-    depl =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
+    defaultSetup = deployUtils.getDefaultSetup(accounts);
+    depl = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
     proxy  = depl[0];
     assets = depl[1];
     market = depl[2];
@@ -1087,7 +1088,6 @@ contract("Market", accounts => {
     });
 
     ids = await market.getPlayerIdsInTeam(teamId).should.be.fulfilled;
-    console.log(ids)
     isFree = await market.isFreeShirt(ids[shirtNum = playerIdxInCountry], shirtNum ).should.be.fulfilled
     isFree.should.be.equal(true);
     isFree = await market.isFreeShirt(ids[shirtNum= playerIdxInCountry + 1], shirtNum).should.be.fulfilled

@@ -67,7 +67,8 @@ contract('Updates', (accounts) => {
     
 
     beforeEach(async () => {
-        depl =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        depl = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         proxy  = depl[0];
         assets = depl[1];
         market = depl[2];
