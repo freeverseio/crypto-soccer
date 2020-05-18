@@ -14,12 +14,10 @@ import (
 )
 
 type SubmitPlayStorePlayerPurchaseInput struct {
-	Signature     string
-	PackageName   string
-	ProductId     graphql.ID
-	PurchaseToken string
-	PlayerId      graphql.ID
-	TeamId        graphql.ID
+	Signature string
+	Receipt   string
+	PlayerId  graphql.ID
+	TeamId    graphql.ID
 }
 
 func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
@@ -27,8 +25,6 @@ func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
 	stringTy, _ := abi.NewType("string", "string", nil)
 
 	arguments := abi.Arguments{
-		{Type: stringTy},
-		{Type: stringTy},
 		{Type: stringTy},
 		{Type: uint256Ty},
 		{Type: uint256Ty},
@@ -44,9 +40,7 @@ func (b SubmitPlayStorePlayerPurchaseInput) Hash() (common.Hash, error) {
 	}
 
 	bytes, err := arguments.Pack(
-		b.PackageName,
-		b.ProductId,
-		b.PurchaseToken,
+		b.Receipt,
 		playerId,
 		teamId,
 	)
