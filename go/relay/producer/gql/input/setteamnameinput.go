@@ -1,12 +1,14 @@
 package input
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/graph-gophers/graphql-go"
 )
 
@@ -39,4 +41,16 @@ func (b SetTeamNameInput) Hash() (common.Hash, error) {
 	}
 	return crypto.Keccak256Hash(bytes), nil
 	return common.Hash{}, nil
+}
+
+func (b SetTeamNameInput) IsValidSignature() (bool, error) {
+	hash, err := b.Hash()
+	if err != nil {
+		return false, err
+	}
+	sign, err := hex.DecodeString(b.Signature)
+	if err != nil {
+		return false, err
+	}
+	return helper.VerifySignature(hash, sign)
 }
