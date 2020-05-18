@@ -73,6 +73,7 @@ commands:
             chown root:root ipfs-cluster-service/ipfs-cluster-service
             sudo mv  ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
             ls -alsh /usr/local/bin/ipfs-cluster-service
+            file /usr/local/bin/ipfs-cluster-service
             /usr/local/bin/ipfs-cluster-service init
             /usr/local/bin/ipfs-cluster-service daemon
 jobs:
