@@ -47,7 +47,7 @@ contract('Proxy', (accounts) => {
     });
 
     
-    it('superUser: permissions check to change owner of proxy', async () => {
+    it('companyOwner: permissions check', async () => {
         await proxy.proposeCompanyOwner(coo, {from: superuser}).should.be.rejected;
         await proxy.proposeCompanyOwner(accounts[5], {from: company}).should.be.fulfilled;
         await proxy.proposeCompanyOwner(coo, {from: company}).should.be.fulfilled;
@@ -58,20 +58,20 @@ contract('Proxy', (accounts) => {
         await proxy.acceptCompanyOwner({from: company}).should.be.fulfilled;
     });
 
+    it('superUser: permissions check', async () => {
+        selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
+
+        await proxy.setSuperUser(coo, {from: superuser}).should.be.rejected;
+        await proxy.setSuperUser(coo, {from: company}).should.be.fulfilled;
+        tx0 = await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: coo}).should.be.fulfilled;
+
+        await proxy.setSuperUser(superuser, {from: company}).should.be.fulfilled;
+        tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: coo}).should.be.rejected;
+        tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+    });
+
     
-    // it('superUser: permissions check to change owner of proxy', async () => {
-    //     await proxy.proposeCompanyOwner(coo, {from: company}).should.be.rejected;
-    //     await proxy.proposeCompanyOwner(accounts[5], {from: superuser}).should.be.fulfilled;
-    //     await proxy.proposeCompanyOwner(coo, {from: superuser}).should.be.fulfilled;
-    //     await proxy.acceptCompanyOwner({from: superuser}).should.be.rejected;
-    //     await proxy.acceptCompanyOwner({from: coo}).should.be.fulfilled;
-    //     await proxy.proposeCompanyOwner(superuser, {from: superuser}).should.be.rejected;
-    //     await proxy.proposeCompanyOwner(superuser, {from: coo}).should.be.fulfilled;
-    //     await proxy.acceptCompanyOwner({from: superuser}).should.be.fulfilled;
-    // });
-
-
-    return
     it('full deploy should work', async () => {
         const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
     });

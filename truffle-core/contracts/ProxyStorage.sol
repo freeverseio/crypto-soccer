@@ -8,7 +8,6 @@ contract ProxyStorage {
     address internal _companyOwner; 
     address internal _proposedCompanyOwner;
     address internal _superUser; 
-    address internal _proposedSuperUser;
     
     ContractInfo[] internal _contractsInfo;
     mapping (bytes4 => address) internal _selectorToContractAddr;
