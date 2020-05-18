@@ -61,7 +61,19 @@ commands:
       - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
       - run: chmod +x ./kustomize
       - run: sudo mv ./kustomize /usr/local/bin
-
+  install_ipfs_cluster:
+    steps:
+      - run:
+          name: "download and install ipfs-cluster"
+          command: |
+            set -x
+            wget https://dist.ipfs.io/ipfs-cluster-service/v0.12.1/ipfs-cluster-service_v0.12.1_linux-amd64.tar.gz
+            chmod +x ipfs-cluster-service/ipfs-cluster-service
+            chown root:root ipfs-cluster-service/ipfs-cluster-service
+            sudo mv  ipfs-cluster-service/ipfs-cluster-service /usr/local/bin
+            ls -alsh /usr/local/bin/ipfs-cluster-service
+            /usr/local/bin/ipfs-cluster-service init
+            /usr/local/bin/ipfs-cluster-service daemon
 jobs:
   truffle_core:
     executor: freeverse
@@ -76,6 +88,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
+      - install_ipfs_cluster
       - run: cd go/contracts && go test 
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
@@ -89,6 +102,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
+      - install_ipfs_cluster
       - run: cd go/useractions && go test ./...
       - run: cd go/marketpay/v1 && go test ./...
       - run: cd go/storage && go test ./...
