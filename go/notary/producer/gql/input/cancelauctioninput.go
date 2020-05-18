@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/graph-gophers/graphql-go"
 )
 
@@ -47,7 +48,7 @@ func (b CancelAuctionInput) VerifySignature() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return VerifySignature(hash, sign)
+	return helper.VerifySignature(hash, sign)
 }
 
 func (b CancelAuctionInput) SignerAddress() (common.Address, error) {
@@ -59,5 +60,5 @@ func (b CancelAuctionInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return AddressFromSignature(hash, sign)
+	return helper.AddressFromSignature(hash, sign)
 }

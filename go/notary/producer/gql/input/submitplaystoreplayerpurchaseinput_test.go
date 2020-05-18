@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"gotest.tools/assert"
 )
@@ -45,8 +46,8 @@ func TestSubmitPlayStorePlayerPurchaseInputSignature(t *testing.T) {
 
 	hash, err := in.Hash()
 	assert.NilError(t, err)
-	hash = input.PrefixedHash(hash)
-	sign, err := input.Sign(hash.Bytes(), bc.Owner)
+	hash = helper.PrefixedHash(hash)
+	sign, err := helper.Sign(hash.Bytes(), bc.Owner)
 	assert.NilError(t, err)
 
 	in.Signature = hex.EncodeToString(sign)

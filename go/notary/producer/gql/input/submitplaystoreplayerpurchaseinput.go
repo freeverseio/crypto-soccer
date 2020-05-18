@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/graph-gophers/graphql-go"
 )
 
@@ -61,12 +62,12 @@ func (b SubmitPlayStorePlayerPurchaseInput) SignerAddress() (common.Address, err
 	if err != nil {
 		return common.Address{}, err
 	}
-	hash = PrefixedHash(hash)
+	hash = helper.PrefixedHash(hash)
 	sign, err := hex.DecodeString(b.Signature)
 	if err != nil {
 		return common.Address{}, err
 	}
-	return AddressFromSignature(hash, sign)
+	return helper.AddressFromSignature(hash, sign)
 }
 
 func (b SubmitPlayStorePlayerPurchaseInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
@@ -94,5 +95,5 @@ func (b SubmitPlayStorePlayerPurchaseInput) IsValidSignature() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return VerifySignature(hash, sign)
+	return helper.VerifySignature(hash, sign)
 }
