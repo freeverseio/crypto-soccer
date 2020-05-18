@@ -42,14 +42,14 @@ const deployContractsToDelegateTo = async (owners, proxyAddress, Assets, Market,
     return [assets, market, updates, challenges, addresses, allSelectors, names];
 }
 
-const addContracts = async (proxy, addresses, allSelectors, names, firstNewContractId) => {
+const addContracts = async (superuser, proxy, addresses, allSelectors, names, firstNewContractId) => {
     // Add all contracts to ids = [firstNewContractId, firstNewContractId+1,...]
     nContracts = namesStr.length;
     newContractIds = [];
     for (c = 0; c < nContracts; c++) {
         if (allSelectors[c].length > 0) {
             newContractIds.push(firstNewContractId + c);
-            tx0 = await proxy.addContract(newContractIds[c], addresses[c], allSelectors[c], names[c]).should.be.fulfilled;
+            tx0 = await proxy.addContract(newContractIds[c], addresses[c], allSelectors[c], names[c], {from: superuser}).should.be.fulfilled;
         }
     }
     return newContractIds;
@@ -137,6 +137,7 @@ const deploy = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets
     // Next: proxy is built either by deploy, or by assignement to already deployed address
     var proxy;
     if (versionNumber == 0) {
+        
         const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
         proxy = await Proxy.new(owners.company, owners.superuser, proxySelectors).should.be.fulfilled;
     } else {
@@ -159,7 +160,7 @@ const deploy = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
     // Adds new contracts to proxy
-    const newContractIds = await addContracts(proxy, addresses, allSelectors, versionedNames, firstNewContractId);
+    const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
 
     // Build list of contracts to deactivate
     //  - example: when deploying v1, we have activated already [0,1,2,3]
@@ -173,7 +174,7 @@ const deploy = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets
 
     // await assertActiveStatusIs(deactivateContractIds, true, proxy);
     // Deactivate and Activate all contracts atomically
-    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds, newContractIds).should.be.fulfilled;
+    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds, newContractIds, {from: owners.superuser}).should.be.fulfilled;
 
     // await assertActiveStatusIs(deactivateContractIds, false, proxy);
     // await assertActiveStatusIs(newContractIds, true, proxy);
@@ -208,11 +209,11 @@ function getDefaultSetup(accounts) {
       singleTimezone: -1,
       owners: {
         company:  accounts[0],
-        superuser:  accounts[0],
-        coo:  accounts[0],
-        market:  accounts[0],
-        relay:  accounts[0],
-        trustedParties: [accounts[0]]
+        superuser:  accounts[1],
+        coo:  accounts[2],
+        market:  accounts[3],
+        relay:  accounts[4],
+        trustedParties: [accounts[5]]
       },
       requiredStake: 1000000000000,
     }

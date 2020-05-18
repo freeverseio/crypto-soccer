@@ -22,10 +22,11 @@ contract Proxy is ProxyStorage {
     * @dev Stores proxy selectors in _contractsInfo[0], pointing to PROXY_DUMMY_ADDR
     */
     constructor(address companyOwner, address superUser, bytes4[] memory proxySelectors) public {
-        _companyOwner = companyOwner;
-        _superUser = superUser;
+        _superUser = msg.sender;
         _contractsInfo.push(ContractInfo(PROXY_DUMMY_ADDR, proxySelectors, "Proxy", false));
         activateContracts(new uint256[](1)); 
+        _companyOwner = companyOwner;
+        _superUser = superUser;
     }
     
     modifier onlyCompany() 
