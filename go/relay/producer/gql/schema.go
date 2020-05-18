@@ -2,8 +2,10 @@
 package gql
 
 const Schema = ` 
-	type Query {
-		ping: Boolean!,
+	input SetTeamNameInput {
+		signature: String!
+		teamId: ID!
+		name: String!
 	}
 
 	type Mutation {
@@ -11,6 +13,11 @@ const Schema = `
           	timezone: Int!,
           	countryIdxInTimezone: ID!,
           	address: String!
-		): Boolean!,
+		): Boolean!
+		setTeamName (input: SetTeamNameInput!): ID!
+	}
+
+	type Query {
+		ping: Boolean!
 	}
 `
