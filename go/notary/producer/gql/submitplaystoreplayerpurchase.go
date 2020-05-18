@@ -93,6 +93,8 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, errors.New("Not team owner")
 	}
 
+	log.Info(args.Input.Receipt)
+
 	// orderId, err := GetOrderId(
 	// 	b.googleCredentials,
 	// 	string(args.Input.PackageName),
