@@ -65,6 +65,7 @@ commands:
   install_and_run_ipfs_cluster:
      description: "Install ipfs_cluster"
      steps:
+       - run: export GO111MODULE=on
        - run: git clone https://github.com/ipfs/ipfs-cluster.git
        - run: cd ipfs-cluster
        - run: go install cmd/ipfs-cluster-service
