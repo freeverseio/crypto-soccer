@@ -7,7 +7,6 @@ orbs:
 environment:
   PATH: >-
     /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/local/go/bin:/go/bin
-  GO111MODULE: on
 
 executors:
   freeverse:
@@ -62,17 +61,6 @@ commands:
       - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
       - run: chmod +x ./kustomize
       - run: sudo mv ./kustomize /usr/local/bin
-  install_and_run_ipfs_cluster:
-     description: "Install ipfs_cluster"
-     steps:
-       - run: export GO111MODULE=on
-       - run: git clone https://github.com/ipfs/ipfs-cluster.git
-       - run: cd ipfs-cluster
-       - run: go install cmd/ipfs-cluster-service
-       - run: go install cmd/ipfs-cluster-ctl
-       - run: go install cmd/ipfs-cluster-follow
-       - run: ipfs-cluster-servicer init
-       - run: ipfs-cluster-servicer daemon
 
 jobs:
   truffle_core:
@@ -88,7 +76,6 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - install_and_run_ipfs_cluster
       - run: cd go/contracts && go test 
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
@@ -102,7 +89,6 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - install_and_run_ipfs_cluster
       - run: cd go/useractions && go test ./...
       - run: cd go/marketpay/v1 && go test ./...
       - run: cd go/storage && go test ./...
