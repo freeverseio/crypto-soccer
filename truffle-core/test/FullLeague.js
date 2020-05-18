@@ -286,7 +286,7 @@ contract('FullLeague', (accounts) => {
         evo = await Evolution.new().should.be.fulfilled;
         play = await PlayAndEvolve.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
-        assets = await Assets.new().should.be.fulfilled;
+        assets = await Assets.new(accounts[0]).should.be.fulfilled;
         await assets.init().should.be.fulfilled;
         market = await Market.new().should.be.fulfilled;
         shop = await Shop.new().should.be.fulfilled;
