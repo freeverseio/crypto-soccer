@@ -22,8 +22,11 @@ func TestPlaystoreOrderInsert(t *testing.T) {
 	order.PackageName = "dsd"
 	order.ProductId = "444"
 	order.PurchaseToken = "fdrd"
+	order.PlayerId = "4"
+	order.TeamId = "pippo"
 	order.State = storage.PlaystoreOrderFailed
 	order.StateExtra = "prova"
+	order.Signature = "erere"
 	assert.NilError(t, order.Insert(tx))
 
 	result, err := storage.PlaystoreOrderByOrderId(tx, order.OrderId)

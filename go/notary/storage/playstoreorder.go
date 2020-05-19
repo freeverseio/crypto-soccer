@@ -15,6 +15,9 @@ type PlaystoreOrder struct {
 	PackageName   string
 	ProductId     string
 	PurchaseToken string
+	PlayerId      string
+	TeamId        string
+	Signature     string
 	State         PlaystoreOrderState
 	StateExtra    string
 }
@@ -30,6 +33,9 @@ func PlaystoreOrderByOrderId(tx *sql.Tx, orderId string) (*PlaystoreOrder, error
 	package_name,
 	product_id,
 	purchase_token,
+	player_id,
+	team_id,
+	signature,
 	state, 
 	state_extra 
 	FROM playstore_orders WHERE order_id=$1;`, orderId)
@@ -49,6 +55,9 @@ func PlaystoreOrderByOrderId(tx *sql.Tx, orderId string) (*PlaystoreOrder, error
 		&order.PackageName,
 		&order.ProductId,
 		&order.PurchaseToken,
+		&order.PlayerId,
+		&order.TeamId,
+		&order.Signature,
 		&order.State,
 		&order.StateExtra,
 	)
@@ -65,13 +74,19 @@ func (b PlaystoreOrder) Insert(tx *sql.Tx) error {
 		package_name,
 		product_id,
 		purchase_token,
+		player_id,
+		team_id,
+		signature,
 		state, 
 		state_extra
-		) VALUES ($1, $2, $3, $4, $5, $6);`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
 		b.OrderId,
 		b.PackageName,
 		b.ProductId,
 		b.PurchaseToken,
+		b.PlayerId,
+		b.TeamId,
+		b.Signature,
 		b.State,
 		b.StateExtra,
 	)

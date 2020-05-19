@@ -6,7 +6,9 @@ import (
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"google.golang.org/api/androidpublisher/v3"
 
 	log "github.com/sirupsen/logrus"
@@ -29,6 +31,20 @@ func SubmitPlayStorePlayerPurchase(
 	if teamId == nil {
 		return fmt.Errorf("invalid teamId %v", in.TeamId)
 	}
+
+	data, err := playstore.InappPurchaseDataFromReceipt(in.Receipt)
+	if err != nil {
+		return err
+	}
+
+	order := storage.NewPlaystoreOrder()
+	order.OrderId = data.OrderId
+	order.PackageName = data.PackageName
+	order.ProductId = data.ProductId
+	order.PurchaseToken = data.PurchaseToken
+	order.PlayerId = playerId
+	order.TeamId = teamId
+	order.Signature = in.Signature
 
 	// client, err := playstore.New(googleCredentials)
 	// if err != nil {
