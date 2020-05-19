@@ -94,8 +94,6 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, errors.New("Not team owner")
 	}
 
-	log.Info(args.Input.Receipt)
-
 	data, err := InappPurchaseDataFromReceipt(args.Input.Receipt)
 	if err != nil {
 		return result, err
