@@ -51,22 +51,22 @@ contract("Market", accounts => {
     [proxy, assets, market, updates] = depl;
     await deployUtils.setContractOwners(assets, updates, owners);
 
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
 
     constants = await ConstantsGetters.new().should.be.fulfilled;
     marketCrypto = await MarketCrypto.new().should.be.fulfilled;
 
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
-    await assets.init().should.be.fulfilled;
+    await assets.init({from: owners.COO}).should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;
     sellerAccount = await web3.eth.accounts.create("iamaseller");
     buyerAccount = await web3.eth.accounts.create("iamabuyer");
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
     buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address).should.be.fulfilled;
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address, {from: owners.market}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address, {from: owners.market}).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
 
     AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
@@ -90,8 +90,8 @@ contract("Market", accounts => {
     minLapseTime.toNumber().should.be.equal(3600*24*5);
   
     // cannot change because I didn't wait enough
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 25000, newLapseTime = 3600*24*4).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 25000, newLapseTime = 3600*24*4, {from: owners.COO}).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.rejected;
 
     await timeTravel.advanceTime(minLapseTime.toNumber()+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
@@ -102,17 +102,17 @@ contract("Market", accounts => {
     minLapseTime.toNumber().should.be.equal(newLapseTime);
     
     // But now we will fail if we don't wait for 4 days...
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 30000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 30000, newLapseTime2 = 3600*24*1, {from: owners.COO}).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.rejected;
 
     await timeTravel.advanceTime(minLapseTime.toNumber()+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
 
     // we will now have to wait for 1 day... or decrease the value:
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 31000, newLapseTime2 = 3600*24*1).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.rejected;
-    await market.lowerNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 29000).should.be.fulfilled;
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 31000, newLapseTime2 = 3600*24*1, {from: owners.COO}).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.rejected;
+    await market.lowerNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 29000, {from: owners.COO}).should.be.fulfilled;
     var {0: sumSkills, 1: minLapseTime2, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(sumSkillsAllowed);
     minLapseTime2.toNumber().should.be.equal(newLapseTime2);
@@ -1226,18 +1226,18 @@ contract("Market", accounts => {
     
     var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0).should.be.fulfilled;
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0, {from: owners.COO}).should.be.fulfilled;
     await timeTravel.advanceTime(minLapseTime.toNumber()+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.rejected;
 
     // if value is too low, it fails
     sumSkillsAllowed = 20000;
     sum = await market.getSumOfSkills(playerId).should.be.fulfilled;
     (sum.toNumber() < sumSkillsAllowed).should.be.equal(true);
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0, {from: owners.COO}).should.be.fulfilled;
+    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId).should.be.fulfilled;
   });
   

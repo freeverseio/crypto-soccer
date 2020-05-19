@@ -64,8 +64,14 @@ contract('Championships', (accounts) => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
         champs = await Championships.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
-        assets = await Assets.new(accounts[0]).should.be.fulfilled;
-        await assets.initSingleTZ(INIT_TZ).should.be.fulfilled;
+
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        [proxy, assets, market, updates, challenges] = depl;
+        await deployUtils.setContractOwners(assets, updates, owners);
+        await assets.initSingleTZ(INIT_TZ, {from: owners.COO}).should.be.fulfilled;
+
         await champs.setEngineAdress(engine.address).should.be.fulfilled;
         await champs.setAssetsAdress(assets.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await constants.get_TEAMS_PER_LEAGUE().should.be.fulfilled;

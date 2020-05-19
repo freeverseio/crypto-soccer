@@ -77,8 +77,8 @@ contract('Updates', (accounts) => {
         
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
-        await updates.initUpdates().should.be.fulfilled;
-        await updates.setChallengeLevels(nLevelsInOneChallenge, nNonNullLeafsInLeague, nLevelsInLastChallenge).should.be.fulfilled;
+        await updates.initUpdates({from: owners.COO}).should.be.fulfilled;
+        await updates.setChallengeLevels(nLevelsInOneChallenge, nNonNullLeafsInLeague, nLevelsInLastChallenge, {from: owners.COO}).should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
@@ -178,7 +178,7 @@ contract('Updates', (accounts) => {
 
     
     it('test that cannot initialize updates twice', async () =>  {
-        await updates.initUpdates().should.be.rejected;
+        await updates.initUpdates({from: owners.COO}).should.be.rejected;
     });
     
     it('check timezones for this verse', async () =>  {

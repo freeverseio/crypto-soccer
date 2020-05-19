@@ -290,9 +290,14 @@ contract('Evolution', (accounts) => {
         evo = await Evolution.new().should.be.fulfilled;
         play = await PlayAndEvolve.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
-        assets = await Assets.new(accounts[0]).should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
-        market = await Market.new().should.be.fulfilled;
+
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        [proxy, assets, market, updates, challenges] = depl;
+        await deployUtils.setContractOwners(assets, updates, owners);
+        await assets.init({from: owners.COO}).should.be.fulfilled;
+        
         shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
