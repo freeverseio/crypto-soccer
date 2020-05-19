@@ -382,23 +382,13 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - env:
-        - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/market.db:0.18.1
+      - image: freeverseio/market.db:0.18.1
         imagePullPolicy: Always
         name: marketdb
         ports:
         - containerPort: 5432
-        volumeMounts:
-        - mountPath: /var/lib/postgresql/data
-          name: marketdb-storage
       imagePullSecrets:
       - name: docker-secret
-      volumes:
-      - name: marketdb-storage
-        persistentVolumeClaim:
-          claimName: marketdb-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment
