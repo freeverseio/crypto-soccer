@@ -78,6 +78,7 @@ jobs:
       - submit_universe_db_schema
       - install_kustomize
       - run: kustomize version
+      - run: file /usr/local/bin/kustomize
       - run: cd go/contracts && go test 
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
