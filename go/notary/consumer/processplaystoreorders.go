@@ -14,6 +14,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/api/androidpublisher/v3"
 )
 
 func ProcessPlaystoreOrders(
@@ -96,15 +97,27 @@ func processPlaystoreOrder(
 		log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
 	}
 
-	payload := fmt.Sprintf("playerId: %v", order.PlayerId)
-	if err := client.AcknowledgeProduct(
-		ctx,
-		order.PackageName,
-		order.ProductId,
-		order.PurchaseToken,
-		payload,
-	); err != nil {
-		return err
+	if !isTestPurchase(purchase) {
+		payload := fmt.Sprintf("playerId: %v", order.PlayerId)
+		if err := client.AcknowledgeProduct(
+			ctx,
+			order.PackageName,
+			order.ProductId,
+			order.PurchaseToken,
+			payload,
+		); err != nil {
+			return err
+		}
 	}
+
 	return nil
+}
+
+func isTestPurchase(purchase *androidpublisher.ProductPurchase) bool {
+	if purchase.PurchaseType != nil {
+		if *purchase.PurchaseType == 0 { // Test
+			return true
+		}
+	}
+	return false
 }
