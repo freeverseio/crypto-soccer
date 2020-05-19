@@ -1,4 +1,4 @@
-package gql_test
+package playstore_test
 
 import (
 	"testing"

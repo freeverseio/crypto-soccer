@@ -1,4 +1,4 @@
-package gql
+package playstore
 
 import log "github.com/sirupsen/logrus"
 
