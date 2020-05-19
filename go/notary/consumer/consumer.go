@@ -45,7 +45,7 @@ func New(
 func (b *Consumer) Consume(event interface{}) error {
 	switch in := event.(type) {
 	case input.CreateAuctionInput:
-		log.Debug("Received CreateAuctionInput")
+		log.Info("Received CreateAuctionInput")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
@@ -58,7 +58,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case input.CancelAuctionInput:
-		log.Debug("Received CancelAuctionInput")
+		log.Info("Received CancelAuctionInput")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
@@ -71,7 +71,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case input.CreateBidInput:
-		log.Debug("Received CreateBidInput")
+		log.Info("Received CreateBidInput")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
@@ -84,7 +84,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case producer.ProcessEvent:
-		log.Debug("Received ProcessEvent")
+		log.Info("Received ProcessEvent")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
@@ -102,7 +102,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case producer.PlaystoreOrderEvent:
-		log.Debug("Received PlaystoreOrderEvent")
+		log.Info("Received PlaystoreOrderEvent")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
@@ -121,7 +121,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case input.SubmitPlayStorePlayerPurchaseInput:
-		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
+		log.Info("Received SubmitPlayStorePlayerPurchaseInput")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
