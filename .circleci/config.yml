@@ -67,6 +67,7 @@ commands:
       - run: wget https://github.com/ipfs/ipfs-cluster/archive/v0.12.0.tar.gz
       - run: tar -zxvf v0.12.0.tar.gz
       - run: cd ipfs-cluster-0.12.0/cmd/ipfs-cluster-service
+      - run: export GO111MODULE=on
       - run: go build -a -ldflags '-w -extldflags "-static"'
       - run: mv ipfs-cluster-service /usr/local/bin
       - run: ipfs-cluster-service init
