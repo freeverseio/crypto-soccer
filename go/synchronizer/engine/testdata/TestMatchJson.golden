@@ -42,6 +42,8 @@
 	],
 	"HomeGoals": 0,
 	"VisitorGoals": 0,
+	"HomeTeamSumSkills": 0,
+	"VisitorTeamSumSkills": 0,
 	"State": "begin",
 	"StateExtra": "",
 	"StartEpoch": 0,

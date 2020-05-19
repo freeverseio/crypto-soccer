@@ -1,27 +1,57 @@
 package gql_test
 
 import (
-	"context"
-	"io/ioutil"
 	"testing"
 
-	"github.com/awa/go-iap/playstore"
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"gotest.tools/assert"
 )
 
-func TestProva(t *testing.T) {
-	t.Skip("Runme to check the purchase communication")
-	packageName := "com.freeverse.phoenix"
-	productID := "coinpack_45"
+func TestSubmitPlaystorePlayerPurchaseInValidPlayer(t *testing.T) {
+	value := int64(1000)     // TODO: value is forced to be 1000
+	maxPotential := uint8(9) // TODO: value is forced to be 9
+	teamId := "1099511627778"
+	epoch := int64(1589456942)
+	playerId := "423"
 
-	credentials, err := ioutil.ReadFile("../../../../../key.json")
+	ch := make(chan interface{}, 10)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)
+	isValid, err := r.IsValidPlayer(
+		playerId,
+		value,
+		maxPotential,
+		teamId,
+		epoch,
+	)
+	assert.NilError(t, err)
+	assert.Assert(t, !isValid)
+}
+
+func TestSubmitPlaystorePlayerPurchaseValidPlayer(t *testing.T) {
+	value := int64(1000)     // TODO: value is forced to be 1000
+	maxPotential := uint8(9) // TODO: value is forced to be 9
+	teamId := "1099511627778"
+	epoch := int64(1589456942)
+
+	players, err := gql.CreateWorldPlayerBatch(
+		*bc.Contracts,
+		namesdb,
+		value,
+		maxPotential,
+		teamId,
+		epoch,
+	)
 	assert.NilError(t, err)
 
-	token := "hjjfppagdilpbmnmjaajpcgc.AO-J1Owne5VpLZzOtfFZkDY1k5T4kEXCgack0gmEYssqCgEYzlNgPtHdp72TPELzOl3T8XCYhc0k818EbCi7hiYcEgbCGNVyNCGd1I2wdz9pxGRHXs1-msWvAD9ztmd11v_hr9NqCSn1"
-	client, err := playstore.New(credentials)
+	ch := make(chan interface{}, 10)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)
+	isValid, err := r.IsValidPlayer(
+		string(players[2].PlayerId()),
+		value,
+		maxPotential,
+		teamId,
+		epoch,
+	)
 	assert.NilError(t, err)
-	ctx := context.Background()
-	result, err := client.VerifyProduct(ctx, packageName, productID, token)
-	assert.NilError(t, err)
-	t.Log(result)
+	assert.Assert(t, isValid)
 }

@@ -14,6 +14,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 14,
+HomeTeamSumSkills: (uint32) 54956,
+VisitorTeamSumSkills: (uint32) 54967,
 State: (storage.MatchState) (len=3) "end",
 StateExtra: (string) "",
 StartEpoch: (int64) 0
@@ -1536,6 +1538,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 12,
+HomeTeamSumSkills: (uint32) 54956,
+VisitorTeamSumSkills: (uint32) 54967,
 State: (storage.MatchState) (len=3) "end",
 StateExtra: (string) "",
 StartEpoch: (int64) 0

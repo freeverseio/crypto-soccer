@@ -80,3 +80,28 @@ func TestUniverseTimezoneEncodedState(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, hex.EncodeToString(hash[:]), "d87c2b8160619ad83073b161249233c293d5afb601476b97255eb7b9f28e465b")
 }
+
+func TestUniverseOrder(t *testing.T) {
+	t.Parallel()
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	createMinimumUniverse(t, tx)
+	blockNumber := uint64(0)
+	player := storage.Player{}
+	player.PlayerId = big.NewInt(7)
+	player.EncodedState = big.NewInt(5)
+	player.TeamId = teamID
+	assert.NilError(t, player.Insert(tx, blockNumber))
+
+	player.PlayerId = big.NewInt(4)
+	player.EncodedSkills = big.NewInt(6)
+	assert.NilError(t, player.Insert(tx, blockNumber))
+
+	universe, err := universe.NewFromStorage(tx, int(timezoneIdx))
+	assert.NilError(t, err)
+	hash, err := universe.Hash()
+	assert.NilError(t, err)
+	assert.Equal(t, hex.EncodeToString(hash[:]), "51af3d3b5b660965dbf28d1a0f63788b8484e15cf19a10055251c727cd4fbc82")
+}
