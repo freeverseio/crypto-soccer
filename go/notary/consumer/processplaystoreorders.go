@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"database/sql"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -36,7 +37,7 @@ func ProcessPlaystoreOrders(
 			iapTestOn,
 			order,
 		); err != nil {
-			log.Error(err)
+			log.Errorf("[consumer|error] %v, playstore order %+v", err.Error(), order)
 		}
 	}
 
@@ -53,11 +54,11 @@ func processPlaystoreOrder(
 ) error {
 	playerId, _ := new(big.Int).SetString(order.PlayerId, 10)
 	if playerId == nil {
-		return fmt.Errorf("invalid playerId %v", order)
+		return errors.New("invalid playerId")
 	}
-	teamId, _ := new(big.Int).SetString(order.PlayerId, 10)
+	teamId, _ := new(big.Int).SetString(order.TeamId, 10)
 	if teamId == nil {
-		return fmt.Errorf("invalid teamId %v", order)
+		return errors.New("invalid teamId")
 	}
 
 	client, err := playstore.New(googleCredentials)
