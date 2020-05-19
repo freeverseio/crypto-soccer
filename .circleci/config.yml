@@ -64,15 +64,13 @@ commands:
   install_ipfs_cluster:
     description: "install ipfs cluster"
     steps:
-      - run: wget https://dist.ipfs.io/ipfs-cluster-service/v0.12.0/ipfs-cluster-service_v0.12.0_linux-amd64.tar.gz
-      - run: tar xvzf ipfs-cluster-service_v0.12.0_linux-amd64.tar.gz
-      - run: rm ipfs-cluster-service_v0.12.0_linux-amd64.tar.gz
-      - run: chmod +x ipfs-cluster-service/ipfs-cluster-service
-      - run: sudo mv ipfs-cluster-service/ipfs-cluster-service /usr/local/bin/ipfs-cluster-service
-      - run: ls -alsh /usr/local/bin
-      - run: file /usr/local/bin/ipfs-cluster-service
+      - run: wget https://github.com/ipfs/ipfs-cluster/archive/v0.12.0.tar.gz
+      - run: tar -zxvf v0.12.0.tar.gz
+      - run: cd ipfs-cluster-0.12.0/cmd/ipfs-cluster-service
+      - run: go build -a -ldflags '-w -extldflags "-static"'
+      - run: mv ipfs-cluster-service /usr/local/bin
       - run: ipfs-cluster-service init
-      - run: ipfs-cluster-service daemon
+      - run: ipfs-cluster-service daemon&
 
 jobs:
   truffle_core:
