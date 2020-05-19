@@ -34,7 +34,7 @@ func ProcessPlaystoreOrders(
 			pvc,
 			googleCredentials,
 			iapTestOn,
-			order,
+			&order,
 		); err != nil {
 			return err
 		}
