@@ -129,6 +129,30 @@ async function signAgreeToBuyTeamMTx(currencyId, price, extraPrice, sellerRnd, b
 //   return sigBuyer;
 // }
 
+async function freezeAcademyPlayer(contractOwner, currencyId, price, sellerRnd, validUntil, playerId) {
+  // The correctness of the seller message can also be checked in the BC:
+  const NULL_BYTES32 = web3.eth.abi.encodeParameter('bytes32','0x0');
+
+  const sellerHiddenPrice = concatHash(
+    ["uint8", "uint256", "uint256"],
+    [currencyId, price, sellerRnd]
+  );
+  
+  // Then, the buyer builds a message to sign
+  let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
+  isPlayerFrozen.should.be.equal(false);
+
+  tx = await market.freezePlayer(
+    sellerHiddenPrice,
+    validUntil,
+    playerId,
+    sigSellerRS = [NULL_BYTES32, NULL_BYTES32],
+    sigSellerV = 0,
+    {from: contractOwner}
+  ).should.be.fulfilled;
+  return tx;
+}
+
 async function freezePlayer(contractOwner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount) {
   // Mobile app does this:
   sigSeller = await signPutAssetForSaleMTx(
@@ -397,10 +421,6 @@ module.exports = {
   freezeTeam,
   completeTeamAuction,
   signDismissPlayerMTx,
-  transferTeamViaAuction
-  
-  // signOfferToBuyPlayerMTx,
-  // signOfferToBuyTeamMTx,  
-  // buildOfferToBuyPlayerMsg,
-  // buildOfferToBuyTeamMsg,
+  transferTeamViaAuction,
+  freezeAcademyPlayer
 }
