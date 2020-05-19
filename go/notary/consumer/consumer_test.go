@@ -38,7 +38,7 @@ func TestConsumerConsumeSubmitPlayStorePlayerPurchaseInput(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	in := input.SubmitPlayStorePlayerPurchaseInput{}
-	assert.NilError(t, c.Consume(in))
+	assert.Error(t, c.Consume(in), "unexpected end of JSON input")
 }
 
 func TestConsumerConsumeCreateAuction(t *testing.T) {
