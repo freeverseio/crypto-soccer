@@ -61,14 +61,18 @@ commands:
       - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
       - run: chmod +x ./kustomize
       - run: sudo mv ./kustomize /usr/local/bin
-  install_kustomize_2:
-    description: "Install kustomize 2"
+  install_ipfs_cluster:
+    description: "install ipfs cluster"
     steps:
-      - run: wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.4/kustomize_v3.5.4_linux_amd64.tar.gz
-      - run: tar xvzf ./kustomize_v3.5.4_linux_amd64.tar.gz
-      - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
-      - run: chmod +x ./kustomize
-      - run: sudo mv ./kustomize /usr/local/bin/kustomize2
+      - run: wget https://dist.ipfs.io/ipfs-cluster-service/v0.12.0/ipfs-cluster-service_v0.12.0_linux-amd64.tar.gz
+      - run: tar xvzf ipfs-cluster-service_v0.12.0_linux-amd64.tar.gz
+      - run: rm ipfs-cluster-service_v0.12.0_linux-amd64.tar.gz
+      - run: chmod +x ipfs-cluster-service/ipfs-cluster-service
+      - run: sudo mv ipfs-cluster-service/ipfs-cluster-service /usr/local/bin/ipfs-cluster-service
+      - run: ls -alsh /usr/local/bin
+      - run: file /usr/local/bin/ipfs-cluster-service
+      - run: ipfs-cluster-service init
+      - run: ipfs-cluster-service daemon
 
 jobs:
   truffle_core:
@@ -84,7 +88,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - install_kustomize_2
+      - install_ipfs_cluster
       - run: kustomize2 version
       - run: file /usr/local/bin/kustomize2
       - run: cd go/contracts && go test 
