@@ -143,6 +143,7 @@ contract("Market", accounts => {
   });
 
   it("crypto flow with player" , async () => {
+    await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
     ALICE = accounts[0];
     BOB = accounts[1];
@@ -253,9 +254,10 @@ contract("Market", accounts => {
     await timeTravel.advanceTime(0.1*3600);
     await timeTravel.advanceBlock().should.be.fulfilled;
     await marketCrypto.withdraw(auctionId, {from: ALICE}).should.be.fulfilled;
-    // fails because marketCrypto is not yet authotized:
+    // fails because marketCrypto is not authotized:
+    await market.setCryptoMarketAddress(owners.superuser, {from: owners.COO}).should.be.fulfilled;
     tx = await marketCrypto.executePlayerTransfer(playerId0).should.be.rejected;
-
+    // authorize:
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     tx = await marketCrypto.executePlayerTransfer(playerId0).should.be.fulfilled;
     truffleAssert.eventEmitted(tx, "AssetWentToNewOwner", (event) => {
