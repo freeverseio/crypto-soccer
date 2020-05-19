@@ -28,6 +28,18 @@ func NewPlaystoreOrder() *PlaystoreOrder {
 	return &order
 }
 
+func (b PlaystoreOrder) UpdateState(tx *sql.Tx) error {
+	_, err := tx.Exec(`UPDATE playstore_orders SET 
+		state=$1, 
+		state_extra=$2
+		WHERE order_id=$3;`,
+		b.State,
+		b.StateExtra,
+		b.OrderId,
+	)
+	return err
+}
+
 func PendingPlaystoreOrders(tx *sql.Tx) ([]PlaystoreOrder, error) {
 	rows, err := tx.Query(`SELECT 
 	order_id,
