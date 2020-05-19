@@ -110,6 +110,7 @@ func main() {
 
 		go gql.NewServer(ch, *contracts, namesdb, googleCredentials)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
+		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(*processWait)*time.Second)
 
 		var market marketpay.IMarketPay
 		if *marketID == "" {
