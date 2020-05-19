@@ -4,6 +4,10 @@ version: 2.1
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
 
+environment:
+  PATH: >-
+    /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/local/go/bin:/go/bin
+
 executors:
   freeverse:
     docker:
@@ -57,6 +61,20 @@ commands:
       - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
       - run: chmod +x ./kustomize
       - run: sudo mv ./kustomize /usr/local/bin
+  install_ipfs_cluster:
+    steps:
+      - run:
+            name: "compiling ipfs-cluster"
+            command: |
+              set -x
+              wget https://github.com/ipfs/ipfs-cluster/archive/v0.12.0.tar.gz
+              tar -zxvf v0.12.0.tar.gz
+              cd ipfs-cluster-0.12.0/cmd/ipfs-cluster-service
+              export GO111MODULE=on
+              go build -a -ldflags '-w -extldflags "-static"'
+              mv ipfs-cluster-service /usr/local/bin
+              ipfs-cluster-service init
+              #ipfs-cluster-service daemon&
 
 jobs:
   truffle_core:
@@ -73,9 +91,16 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
+      - install_ipfs_cluster
       - run: cd go/contracts && go test 
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
-      - run: cd go/synchronizer/process && go test ./... -v
+      - run: 
+          command: |
+            set -e
+            set -x
+            ipfs-cluster-service daemon& 
+            cd go/synchronizer/process
+            go test ./... -v
       - run: cd go/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
       - run: cd go/synchronizer/staker && go test ./... 
@@ -86,7 +111,14 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - run: cd go/useractions && go test ./...
+      - install_ipfs_cluster
+      - run: 
+          command: |
+            set -e
+            set -x
+            ipfs-cluster-service daemon& 
+            cd go/useractions
+            go test ./...
       - run: cd go/marketpay/v1 && go test ./...
       - run: cd go/storage && go test ./...
       - run: cd go/authproxy && go test ./...
