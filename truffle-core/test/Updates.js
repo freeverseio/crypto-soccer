@@ -260,7 +260,7 @@ contract('Updates', (accounts) => {
         await timeTravel.advanceTime(20);
         await timeTravel.advanceBlock().should.be.fulfilled;
         const cif = "ciao";
-        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verse = await updates.getCurrentVerse().should.be.fulfilled;
         verse.toNumber().should.be.equal(verseBefore.toNumber() + 1); 
@@ -283,7 +283,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = -10);
         await timeTravel.advanceTime(20);
         const cif = "ciao2";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
@@ -308,7 +308,7 @@ contract('Updates', (accounts) => {
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.rejected;
 
         const cif = "ciao2";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         isTime = await updates.isTimeToUpdate().should.be.fulfilled;
@@ -334,9 +334,9 @@ contract('Updates', (accounts) => {
         result.toNumber().should.be.equal(0);
         await moveToNextVerse(updates, extraSecs = 10);
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = 10);
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
     });
     
     it('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
@@ -347,7 +347,7 @@ contract('Updates', (accounts) => {
         const cif = "ciao2";
         for (i = 0; i < 110; i++) {
             await moveToNextVerse(updates, extraSecs = 10);
-            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
 
             isTime = await updates.isTimeToUpdate().should.be.fulfilled;
             if (isTime == true) {
@@ -356,11 +356,11 @@ contract('Updates', (accounts) => {
         }
         // after these few cycles, we now do a cycle which tells us to update, but we don't... and so, we fail to do another submitActions
         await moveToNextVerse(updates, extraSecs = 10);
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
 
         isTime = await updates.isTimeToUpdate().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = 10);
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
     
     });
     
@@ -368,7 +368,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         var {0: tzAfter, 1: dayAfter, 2: turnInDayAfter} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         tzAfter.toNumber().should.be.equal(tzBefore.toNumber());
         dayAfter.toNumber().should.be.equal(dayBefore.toNumber());
@@ -392,7 +392,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         tzZeroBased = 2;
 
         // create leafs by building them from an orgmap:
@@ -510,7 +510,7 @@ contract('Updates', (accounts) => {
         //      we're not in the next verse yet
         //      the previous verse is not settled yet
         // In this case, it fails because of the first reason. TODO: add test for 2nd.
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
         await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
 
         await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0], {from: erin}).should.be.rejected;
@@ -733,7 +733,7 @@ contract('Updates', (accounts) => {
         half    = half.toNumber();
         differentDay = (day == 7) ? 8 : 7;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         tzZeroBased = tz-1;
         // create leafs by building them from an orgmap:
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
