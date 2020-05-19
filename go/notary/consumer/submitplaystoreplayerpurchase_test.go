@@ -9,26 +9,35 @@ import (
 )
 
 func TestSubmitPlayStorePlayerPurchaseEmptyEvent(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
 	in := input.SubmitPlayStorePlayerPurchaseInput{}
-	assert.Error(t, consumer.SubmitPlayStorePlayerPurchase(
+	assert.NilError(t, consumer.SubmitPlayStorePlayerPurchase(
 		*bc.Contracts,
+		tx,
 		bc.Owner,
 		googleCredentials,
 		in,
 		false,
-	), "invalid playerId ")
+	))
 }
 
 func TestSubmitPlayStorePlayerPurchase(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
 	in := input.SubmitPlayStorePlayerPurchaseInput{}
 	in.PlayerId = "3"
 	in.TeamId = "4"
 	in.Receipt = "PackageId"
 	assert.NilError(t, consumer.SubmitPlayStorePlayerPurchase(
 		*bc.Contracts,
+		tx,
 		bc.Owner,
 		googleCredentials,
 		in,
 		false))
-	// ), "unexpected end of JSON input")
 }

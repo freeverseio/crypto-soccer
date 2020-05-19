@@ -2,8 +2,7 @@ package consumer
 
 import (
 	"crypto/ecdsa"
-	"fmt"
-	"math/big"
+	"database/sql"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
@@ -16,6 +15,7 @@ import (
 
 func SubmitPlayStorePlayerPurchase(
 	contracts contracts.Contracts,
+	tx *sql.Tx,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
 	in input.SubmitPlayStorePlayerPurchaseInput,
@@ -23,14 +23,14 @@ func SubmitPlayStorePlayerPurchase(
 ) error {
 	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)
 
-	playerId, _ := new(big.Int).SetString(string(in.PlayerId), 10)
-	if playerId == nil {
-		return fmt.Errorf("invalid playerId %v", in.PlayerId)
-	}
-	teamId, _ := new(big.Int).SetString(string(in.TeamId), 10)
-	if teamId == nil {
-		return fmt.Errorf("invalid teamId %v", in.TeamId)
-	}
+	// playerId, _ := new(big.Int).SetString(string(in.PlayerId), 10)
+	// if playerId == nil {
+	// 	return fmt.Errorf("invalid playerId %v", in.PlayerId)
+	// }
+	// teamId, _ := new(big.Int).SetString(string(in.TeamId), 10)
+	// if teamId == nil {
+	// 	return fmt.Errorf("invalid teamId %v", in.TeamId)
+	// }
 
 	data, err := playstore.InappPurchaseDataFromReceipt(in.Receipt)
 	if err != nil {
@@ -42,9 +42,12 @@ func SubmitPlayStorePlayerPurchase(
 	order.PackageName = data.PackageName
 	order.ProductId = data.ProductId
 	order.PurchaseToken = data.PurchaseToken
-	order.PlayerId = playerId
-	order.TeamId = teamId
+	order.PlayerId = string(in.PlayerId)
+	order.TeamId = string(in.TeamId)
 	order.Signature = in.Signature
+	if err := order.Insert(tx); err != nil {
+		return err
+	}
 
 	// client, err := playstore.New(googleCredentials)
 	// if err != nil {
