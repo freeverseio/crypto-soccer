@@ -74,7 +74,7 @@ commands:
               go build -a -ldflags '-w -extldflags "-static"'
               mv ipfs-cluster-service /usr/local/bin
               ipfs-cluster-service init
-              ipfs-cluster-service daemon&
+              #ipfs-cluster-service daemon&
 
 jobs:
   truffle_core:
@@ -92,7 +92,7 @@ jobs:
       - submit_universe_db_schema
       - install_ipfs_cluster
       - run: cd go/contracts && go test 
-      - run: cd go/cmd/synchronizer && go build ./synchronizer.go
+      - run: ipfs-cluster-service daemon& && cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
       - run: cd go/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
