@@ -8,11 +8,8 @@ import (
 )
 
 func TestPlaystoreOrderCreate(t *testing.T) {
-	orderId := "ciao"
-	order := storage.NewPlaystoreOrder(orderId)
-	assert.Equal(t, order.OrderId, orderId)
+	order := storage.NewPlaystoreOrder()
 	assert.Equal(t, order.State, storage.PlaystoreOrderPending)
-	assert.Equal(t, order.StateExtra, "")
 }
 
 func TestPlaystoreOrderInsert(t *testing.T) {
@@ -20,13 +17,20 @@ func TestPlaystoreOrderInsert(t *testing.T) {
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
-	orderId := "ciao"
-	order := storage.NewPlaystoreOrder(orderId)
+	order := storage.NewPlaystoreOrder()
+	order.OrderId = "ciao"
+	order.PackageName = "dsd"
+	order.ProductId = "444"
+	order.PurchaseToken = "fdrd"
+	order.PlayerId = "4"
+	order.TeamId = "pippo"
 	order.State = storage.PlaystoreOrderFailed
 	order.StateExtra = "prova"
+	order.Signature = "erere"
 	assert.NilError(t, order.Insert(tx))
 
-	result, err := storage.PlaystoreOrderByOrderId(tx, orderId)
+	result, err := storage.PlaystoreOrderByOrderId(tx, order.OrderId)
 	assert.NilError(t, err)
+	assert.Assert(t, result != nil)
 	assert.Equal(t, *result, *order)
 }

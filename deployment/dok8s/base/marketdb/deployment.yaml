@@ -17,15 +17,18 @@ spec:
       containers:
       - name: marketdb
         image: freeverseio/market.db:dev
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         imagePullPolicy: Always
         ports:
         - containerPort: 5432
-        #volumeMounts:
-        #- mountPath: "/var/lib/postgresql/data"
-        #  name: marketdb-storage
+        volumeMounts:
+        - name: marketdb-storage
+          mountPath: "/var/lib/postgresql/data"
       imagePullSecrets:
       - name: docker-secret
-      #volumes:
-      #- name: marketdb-storage
-      #  persistentVolumeClaim:
-      #    claimName: marketdb-pvclaim
+      volumes:
+      - name: marketdb-storage
+        persistentVolumeClaim:
+          claimName: marketdb-pvc
