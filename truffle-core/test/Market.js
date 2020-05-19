@@ -942,7 +942,7 @@ contract("Market", accounts => {
     owner = await market.getOwnerTeam(ACADEMY_TEAM_ID).should.be.fulfilled;
     owner.should.be.equal(NULL_ADDR);
 
-    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    tx = await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
 
     owner = await market.getOwnerTeam(ACADEMY_TEAM_ID).should.be.fulfilled;
     owner.should.be.equal(freeverseAccount.address);
@@ -981,7 +981,7 @@ contract("Market", accounts => {
     playerId = await createSpecialPlayerId();
 
     tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
-    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    tx = await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
       return event.teamId.toNumber() == 1 && event.to == freeverseAccount.address;
     });
@@ -1018,7 +1018,7 @@ contract("Market", accounts => {
   });
   
   it("special players: same special player cannot be sold twice", async () => {
-    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    tx = await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
     tx = await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
@@ -1038,7 +1038,7 @@ contract("Market", accounts => {
   it("special players: check children of special players", async () => {
     training = await TrainingPoints.new().should.be.fulfilled;
     await training.setAssetsAddress(assets.address).should.be.fulfilled;
-    tx = await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    tx = await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     sumSkills = await market.getSumOfSkills(playerId).should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(16912);
@@ -1054,7 +1054,7 @@ contract("Market", accounts => {
   });
 
   it("retire player works", async () => {
-    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = false, sellerAccount);
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
@@ -1098,7 +1098,7 @@ contract("Market", accounts => {
   
   
   it("dismissPlayers works", async () => {
-    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
@@ -1128,7 +1128,7 @@ contract("Market", accounts => {
   });
   
   it("dismissPlayers: Academy can sell in auction again after a dismiss", async () => {
-    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
 
@@ -1145,7 +1145,7 @@ contract("Market", accounts => {
   });
 
   it("dismissPlayers: Academy can sell as buynow", async () => {
-    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
 
@@ -1163,7 +1163,7 @@ contract("Market", accounts => {
   });
   
   it("dismissPlayers fails when already sold, not owner any more", async () => {
-    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
     
@@ -1182,7 +1182,7 @@ contract("Market", accounts => {
   });
   
   it("dismissPlayers fails if frozen first", async () => {
-    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
     await marketUtils.freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
@@ -1198,7 +1198,7 @@ contract("Market", accounts => {
   });
   
   it("dismissPlayers fails if too long passed", async () => {
-    await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
 
@@ -1243,7 +1243,7 @@ contract("Market", accounts => {
   
   it("buyNow: buy now player", async () => {
     // TODO: add test that it fails if not sent from Academy address.
-    // CURRENTLY: it works regardless of: await assets.setAcademyAddr(freeverseAccount.address).should.be.fulfilled;
+    // CURRENTLY: it works regardless of: await assets.setMarket(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId(id = 4312432432);
 
     // it currently has no owner:

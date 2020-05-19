@@ -25,22 +25,10 @@ contract Proxy is ProxyStorage {
         _superUser = msg.sender;
         _contractsInfo.push(ContractInfo(PROXY_DUMMY_ADDR, proxySelectors, "Proxy", false));
         activateContracts(new uint256[](1)); 
-        _companyOwner = companyOwner;
+        _company = companyOwner;
         _superUser = superUser;
     }
     
-    modifier onlyCompany() 
-    {
-        require(msg.sender == _companyOwner, "Only company is authorized.");
-        _;
-    }
-
-    modifier onlySuperUser() 
-    {
-        require(msg.sender == _superUser, "Only owner is authorized.");
-        _;
-    }
-
     /**
     * @dev execute a delegate call via fallback function
     */
@@ -75,17 +63,17 @@ contract Proxy is ProxyStorage {
     /**
     * @dev Proposes a new owners, who need to later accept it
     */
-    function proposeCompanyOwner(address addr) public onlyCompany {
-        _proposedCompanyOwner = addr;
+    function proposeCompany(address addr) public onlyCompany {
+        _proposedCompany = addr;
     }
 
     /**
     * @dev The proposed owners can call these functions to become the owners
     */
-    function acceptCompanyOwner() public  {
-        require(msg.sender == _proposedCompanyOwner, "only proposed owner can become owner");
-        _companyOwner = _proposedCompanyOwner;
-        _proposedCompanyOwner = address(0);
+    function acceptCompany() public  {
+        require(msg.sender == _proposedCompany, "only proposed owner can become owner");
+        _company = _proposedCompany;
+        _proposedCompany = address(0);
     }
 
     // SuperUser manages the proxy contract. No need to propose/accept, since it can be changed by company.

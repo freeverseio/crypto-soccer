@@ -2,25 +2,21 @@ var Web3 = require('web3');
 var assert = require('assert')
 var web3 = new Web3(Web3.givenProvider);
 
-const deployPair = async (proxyAddress, Contr, owner) => {
+const deployPair = async (proxyAddress, Contr) => {
     if (Contr == "") return ["", "", []];
     selectors = extractSelectorsFromAbi(Contr.abi);
     contr = await Contr.at(proxyAddress).should.be.fulfilled;
     let contrAsLib
-    if (owner == null) {
-        contrAsLib = await Contr.new().should.be.fulfilled;
-    } else {
-        contrAsLib = await Contr.new(owner).should.be.fulfilled;
-    }
+    contrAsLib = await Contr.new().should.be.fulfilled;
     return [contr, contrAsLib, selectors];
 };
 
 const deployContractsToDelegateTo = async (owners, proxyAddress, Assets, Market, Updates, Challenges) => {
     // setting up StorageProxy delegate calls to Assets
-    const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(proxyAddress, Assets, owners.market);
-    const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(proxyAddress, Market, null);
-    const {0: updates, 1: updatesAsLib, 2: selectorsUpdates} = await deployPair(proxyAddress, Updates, owners.relay);
-    const {0: challenges, 1: challengesAsLib, 2: selectorsChallenges} = await deployPair(proxyAddress, Challenges, null);
+    const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(proxyAddress, Assets);
+    const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(proxyAddress, Market);
+    const {0: updates, 1: updatesAsLib, 2: selectorsUpdates} = await deployPair(proxyAddress, Updates);
+    const {0: challenges, 1: challengesAsLib, 2: selectorsChallenges} = await deployPair(proxyAddress, Challenges);
     
     namesStr            = ['Assets', 'Market', 'Updates', 'Challenges'];
     contractsAsLib      = [assetsAsLib, marketAsLib, updatesAsLib, challengesAsLib];
@@ -210,7 +206,7 @@ function getDefaultSetup(accounts) {
       owners: {
         company:  accounts[0],
         superuser:  accounts[1],
-        coo:  accounts[2],
+        COO:  accounts[2],
         market:  accounts[3],
         relay:  accounts[4],
         trustedParties: [accounts[5]]

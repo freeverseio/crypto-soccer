@@ -32,6 +32,7 @@ contract MarketCrypto {
     mapping (uint256 => bool) private  _assetWentToNewOwner;
     mapping (uint256 => mapping(address => uint256)) private _balance;
     
+    // TODO: restrict access
     function setMarketAddress(address proxyAddr) external {
         _market = Market(proxyAddr);
     }
