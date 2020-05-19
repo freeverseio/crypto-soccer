@@ -11,20 +11,28 @@ const (
 )
 
 type PlaystoreOrder struct {
-	OrderId    string
-	State      PlaystoreOrderState
-	StateExtra string
+	OrderId       string
+	PackageName   string
+	ProductId     string
+	PurchaseToken string
+	State         PlaystoreOrderState
+	StateExtra    string
 }
 
-func NewPlaystoreOrder(orderId string) *PlaystoreOrder {
+func NewPlaystoreOrder() *PlaystoreOrder {
 	order := PlaystoreOrder{}
-	order.OrderId = orderId
 	order.State = PlaystoreOrderPending
 	return &order
 }
 
 func PlaystoreOrderByOrderId(tx *sql.Tx, orderId string) (*PlaystoreOrder, error) {
-	rows, err := tx.Query("SELECT state, state_extra FROM playstore_orders WHERE order_id=$1;", orderId)
+	rows, err := tx.Query(`SELECT 
+	package_name,
+	product_id,
+	purchase_token,
+	state, 
+	state_extra 
+	FROM playstore_orders WHERE order_id=$1;`, orderId)
 	if err != nil {
 		return nil, err
 	}
@@ -38,6 +46,9 @@ func PlaystoreOrderByOrderId(tx *sql.Tx, orderId string) (*PlaystoreOrder, error
 	order.OrderId = orderId
 
 	err = rows.Scan(
+		&order.PackageName,
+		&order.ProductId,
+		&order.PurchaseToken,
 		&order.State,
 		&order.StateExtra,
 	)
@@ -49,8 +60,18 @@ func PlaystoreOrderByOrderId(tx *sql.Tx, orderId string) (*PlaystoreOrder, error
 }
 
 func (b PlaystoreOrder) Insert(tx *sql.Tx) error {
-	_, err := tx.Exec("INSERT INTO playstore_orders (order_id, state, state_extra) VALUES ($1, $2, $3);",
+	_, err := tx.Exec(`INSERT INTO playstore_orders (
+		order_id, 
+		package_name,
+		product_id,
+		purchase_token,
+		state, 
+		state_extra
+		) VALUES ($1, $2, $3, $4, $5, $6);`,
 		b.OrderId,
+		b.PackageName,
+		b.ProductId,
+		b.PurchaseToken,
 		b.State,
 		b.StateExtra,
 	)
