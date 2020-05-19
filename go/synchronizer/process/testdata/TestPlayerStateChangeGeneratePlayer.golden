@@ -1,0 +1,19 @@
+(*storage.Player)({
+PlayerId: (*big.Int)(57896044618658097728977029352596290682772831803419867568648239153975217095645),
+PreferredPosition: (string) (len=4) "D CR",
+Potential: (uint64) 4,
+DayOfBirth: (uint64) 17561,
+TeamId: (string) (len=13) "1099511627776",
+Name: (string) (len=16) "Brahim Herschler",
+Defence: (uint64) 847,
+Speed: (uint64) 1513,
+Pass: (uint64) 1352,
+Shoot: (uint64) 989,
+Endurance: (uint64) 908,
+ShirtNumber: (uint8) 24,
+EncodedSkills: (*big.Int)(57896044618658097728977029352596290682772831803419867568648239153975217095645),
+EncodedState: (*big.Int)(24519655528918455736691326674010135),
+RedCard: (bool) false,
+InjuryMatchesLeft: (uint8) 0,
+Tiredness: (int) 0
+})

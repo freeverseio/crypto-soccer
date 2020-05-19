@@ -6,15 +6,16 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"gotest.tools/assert"
+	"gotest.tools/golden"
 )
 
 func TestPlayerStateChangeGeneratePlayer(t *testing.T) {
 	playerId, _ := new(big.Int).SetString("57896044618658097728977029352596290682772831803419867568648239153975217095645", 10)
 	state, _ := new(big.Int).SetString("24519655528918455736691326674010135", 10)
 	teamId := big.NewInt(1099511627776)
-	player, err := process.GeneratePlayerByPlayerIdAndState(bc.Contracts, namesdb, 0, playerId, teamId, state)
+	player, err := process.GeneratePlayerByPlayerIdAndState(bc.Contracts, namesdb, playerId, teamId, state)
 	assert.NilError(t, err)
-	assert.Equal(t, player.Name, "Brahim Herschler")
+	golden.Assert(t, dump.Sdump(player), t.Name()+".golden")
 }
 
 // func TestNewSpecialPlayer(t *testing.T) {

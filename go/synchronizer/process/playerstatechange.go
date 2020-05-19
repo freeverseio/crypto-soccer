@@ -33,7 +33,7 @@ func ConsumePlayerStateChange(
 		return err
 	}
 	if player == nil {
-		if player, err = GeneratePlayerByPlayerIdAndState(contracts, namesdb, event.Raw.BlockNumber, playerID, teamID, state); err != nil {
+		if player, err = GeneratePlayerByPlayerIdAndState(contracts, namesdb, playerID, teamID, state); err != nil {
 			return err
 		}
 		log.Infof("[processor|consume] %v is born", player.Name)
@@ -51,7 +51,6 @@ func ConsumePlayerStateChange(
 func GeneratePlayerByPlayerIdAndState(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
-	blockNumber uint64,
 	playerId *big.Int,
 	teamId *big.Int,
 	encodedState *big.Int,
