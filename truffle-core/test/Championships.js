@@ -10,6 +10,9 @@ const deployUtils = require('../utils/deployUtils.js');
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Championships = artifacts.require('Championships');
 const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
+const Updates = artifacts.require('Updates');
+const Challenges = artifacts.require('Challenges');
 const Engine = artifacts.require('Engine');
 
 contract('Championships', (accounts) => {

@@ -80,7 +80,7 @@ contract('Updates', (accounts) => {
         await deployUtils.setContractOwners(assets, updates, owners);
         // // done with delegate calls
         await updates.setChallengeTime(60, {from: owners.COO}).should.be.fulfilled;
-        stakes = await deployAndConfigureStakers(Stakers, updates, defaultSetup);
+        stakers = await deployAndConfigureStakers(Stakers, updates, defaultSetup);
         await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
 
         constants = await ConstantsGetters.new().should.be.fulfilled;
@@ -305,7 +305,7 @@ contract('Updates', (accounts) => {
     it('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        stakers = await deployAndConfigureStakers(Stakers, owner, parties, updates);
 
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -352,7 +352,7 @@ contract('Updates', (accounts) => {
         console.log("warning: the next test lasts about 20 secs...")
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        stakers = await deployAndConfigureStakers(Stakers, owner, parties, updates);
         const cif = "ciao2";
         for (i = 0; i < 110; i++) {
             await moveToNextVerse(updates, extraSecs = 10);
@@ -391,7 +391,7 @@ contract('Updates', (accounts) => {
     it('challenging a tz', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        stakers = await deployAndConfigureStakers(Stakers, owner, parties, updates);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
@@ -728,7 +728,7 @@ contract('Updates', (accounts) => {
     it('vefiable challenge', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        stakers = await deployAndConfigureStakers(Stakers, owner, parties, updates);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
