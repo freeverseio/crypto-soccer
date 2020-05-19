@@ -110,6 +110,7 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
+      - install_ipfs_cluster
       - run: 
           command: |
             set -e
