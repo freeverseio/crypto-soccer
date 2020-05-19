@@ -71,5 +71,31 @@ func TestPlaystoreOrderPendingOrders(t *testing.T) {
 	orders, err = storage.PendingPlaystoreOrders(tx)
 	assert.NilError(t, err)
 	assert.Equal(t, len(orders), 2)
+}
 
+func TestPlaystoreOrderUpdateState(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	order := storage.NewPlaystoreOrder()
+	order.OrderId = "ciao"
+	order.PackageName = "dsd"
+	order.ProductId = "444"
+	order.PurchaseToken = "fdrd"
+	order.PlayerId = "4"
+	order.TeamId = "pippo"
+	order.State = storage.PlaystoreOrderFailed
+	order.StateExtra = "prova"
+	order.Signature = "erere"
+	assert.NilError(t, order.Insert(tx))
+
+	order.State = storage.PlaystoreOrderPending
+	order.StateExtra = "recdia"
+	assert.NilError(t, order.UpdateState(tx))
+
+	result, err := storage.PlaystoreOrderByOrderId(tx, order.OrderId)
+	assert.NilError(t, err)
+	assert.Equal(t, result.State, order.State)
+	assert.Equal(t, result.StateExtra, order.StateExtra)
 }

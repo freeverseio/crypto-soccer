@@ -6,7 +6,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"google.golang.org/api/androidpublisher/v3"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -35,13 +34,4 @@ func SubmitPlayStorePlayerPurchase(
 	}
 
 	return nil
-}
-
-func isTestPurchase(purchase *androidpublisher.ProductPurchase) bool {
-	if purchase.PurchaseType != nil {
-		if *purchase.PurchaseType == 0 { // Test
-			return true
-		}
-	}
-	return false
 }
