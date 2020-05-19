@@ -51,16 +51,16 @@ func processPlaystoreOrder(
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
 	iapTestOn bool,
-	order storage.PlaystoreOrder,
+	order *storage.PlaystoreOrder,
 ) error {
 	playerId, _ := new(big.Int).SetString(order.PlayerId, 10)
 	if playerId == nil {
-		setState(&order, storage.PlaystoreOrderFailed, "invalid player")
+		setState(order, storage.PlaystoreOrderFailed, "invalid player")
 		return nil
 	}
 	teamId, _ := new(big.Int).SetString(order.TeamId, 10)
 	if teamId == nil {
-		setState(&order, storage.PlaystoreOrderFailed, "invalid team")
+		setState(order, storage.PlaystoreOrderFailed, "invalid team")
 		return nil
 	}
 
@@ -77,7 +77,7 @@ func processPlaystoreOrder(
 		order.PurchaseToken,
 	)
 	if err != nil {
-		setState(&order, storage.PlaystoreOrderFailed, err.Error())
+		setState(order, storage.PlaystoreOrderFailed, err.Error())
 		return nil
 	}
 
@@ -92,11 +92,11 @@ func processPlaystoreOrder(
 			teamId,
 		)
 		if err != nil {
-			setState(&order, storage.PlaystoreOrderFailed, err.Error())
+			setState(order, storage.PlaystoreOrderFailed, err.Error())
 			return nil
 		}
 		if _, err = helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
-			setState(&order, storage.PlaystoreOrderFailed, err.Error())
+			setState(order, storage.PlaystoreOrderFailed, err.Error())
 			return nil
 		}
 		log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
@@ -111,12 +111,12 @@ func processPlaystoreOrder(
 			order.PurchaseToken,
 			payload,
 		); err != nil {
-			setState(&order, storage.PlaystoreOrderFailed, err.Error())
+			setState(order, storage.PlaystoreOrderFailed, err.Error())
 			return err
 		}
 	}
 
-	setState(&order, storage.PlaystoreOrderComplete, "")
+	setState(order, storage.PlaystoreOrderComplete, "")
 	return nil
 }
 
