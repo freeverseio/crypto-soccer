@@ -325,6 +325,8 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     
     function getNPlayersInTransitInTeam(uint256 teamId) public view returns (uint8) { return _nPlayersInTransitInTeam[teamId]; }        
 
+    function getTargetTeamIdForTransitPlayer(uint256 playerId) public view returns (uint256) { return _playerInTransitToTeam[playerId]; }        
+
     function getNewMaxSumSkillsBuyNowPlayer() public view returns(uint256 sumSkills, uint256 minLapseTime, uint256 lastUpdate) {
         sumSkills = _maxSumSkillsBuyNowPlayer;
         minLapseTime = _maxSumSkillsBuyNowPlayerMinLapse;

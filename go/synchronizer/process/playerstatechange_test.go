@@ -12,7 +12,6 @@ import (
 func TestPlayerStateChangeGeneratePlayer(t *testing.T) {
 	playerId, _ := new(big.Int).SetString("57896044618658097728977029352596290682772831803419867568648239153975217095645", 10)
 	state, _ := new(big.Int).SetString("24519655528918455736691326674010135", 10)
-	// teamId := big.NewInt(1099511627776)
 	player, err := process.GeneratePlayerByPlayerIdAndState(bc.Contracts, namesdb, playerId, state)
 	assert.NilError(t, err)
 	golden.Assert(t, dump.Sdump(player), t.Name()+".golden")

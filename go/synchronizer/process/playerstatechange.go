@@ -49,29 +49,33 @@ func ConsumePlayerStateChange(
 }
 
 func GeneratePlayerByPlayerIdAndState(
-	contracts *contracts.Contracts,
+	contr *contracts.Contracts,
 	namesdb *names.Generator,
 	playerId *big.Int,
 	encodedState *big.Int,
 ) (*storage.Player, error) {
 	opts := &bind.CallOpts{}
-	teamId, err := contracts.Assets.GetCurrentTeamIdFromPlayerState(&bind.CallOpts{}, encodedState)
+	teamId, err := contr.Assets.GetCurrentTeamIdFromPlayerState(&bind.CallOpts{}, encodedState)
 	if err != nil {
 		return nil, err
 	}
-	timezone, countryIdxInTZ, _, err := contracts.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, teamId)
+	targetTeamId := teamId
+	if targetTeamId.Int64() == int64(contracts.InTransitTeam) {
+		targetTeamId, err = contr.Market.GetTargetTeamIdForTransitPlayer(&bind.CallOpts{}, playerId)
+	}
+	timezone, countryIdxInTZ, _, err := contr.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, targetTeamId)
 	if err != nil {
 		return nil, err
 	}
-	if encodedSkills, err := contracts.Assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
+	if encodedSkills, err := contr.Assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
 		return nil, err
-	} else if generation, err := contracts.Assets.GetGeneration(opts, encodedSkills); err != nil {
+	} else if generation, err := contr.Assets.GetGeneration(opts, encodedSkills); err != nil {
 		return nil, err
-	} else if decodedSkills, err := contracts.Utils.FullDecodeSkills(opts, encodedSkills); err != nil {
+	} else if decodedSkills, err := contr.Utils.FullDecodeSkills(opts, encodedSkills); err != nil {
 		return nil, err
-	} else if preferredPosition, err := GetPlayerPreferredPosition(contracts, encodedSkills); err != nil {
+	} else if preferredPosition, err := GetPlayerPreferredPosition(contr, encodedSkills); err != nil {
 		return nil, err
-	} else if shirtNumber, err := contracts.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
+	} else if shirtNumber, err := contr.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 		return nil, err
 	} else if name, err := namesdb.GeneratePlayerFullName(playerId, uint8(generation.Int64()), timezone, countryIdxInTZ.Uint64()); err != nil {
 		return nil, err
