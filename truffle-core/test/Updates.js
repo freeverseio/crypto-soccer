@@ -55,13 +55,19 @@ contract('Updates', (accounts) => {
         return y;
     }
 
-    async function deployAndConfigureStakers(Stakers, owner, parties, updates) {
-        stakers  = await Stakers.new(1000000000000000, {from:owner});
-        await stakers.setGameOwner(updates.address, {from:owner}).should.be.fulfilled;
-        stake = await stakers.requiredStake();
-        await deployUtils.addTrustedParties(stakers, owner, parties);
-        await deployUtils.enroll(stakers, stake, parties);
-        await updates.setStakersAddress(stakers.address).should.be.fulfilled;
+    async function deployAndConfigureStakers(Stakers, updates, setup) {
+        const { singleTimezone, owners, requiredStake } = setup;
+        const stake = requiredStake ? requiredStake : 1000000000000;
+        const stakers  = await Stakers.new(stake).should.be.fulfilled;
+        await stakers.setGameOwner(updates.address).should.be.fulfilled;
+        for (trustedParty of owners.trustedParties) {
+            console.log("Add TrustedParty", trustedParty);
+            await stakers.addTrustedParty(trustedParty).should.be.fulfilled;
+        }
+        for (trustedParty of owners.trustedParties) {
+            console.log("Enrol TrustedParty", trustedParty);
+            await stakers.enroll({from:trustedParty, value: stake}).should.be.fulfilled;
+        }
         return stakers;
     }
     
@@ -74,7 +80,9 @@ contract('Updates', (accounts) => {
         await deployUtils.setContractOwners(assets, updates, owners);
         // // done with delegate calls
         await updates.setChallengeTime(60, {from: owners.COO}).should.be.fulfilled;
-        
+        stakes = await deployAndConfigureStakers(Stakers, updates, defaultSetup);
+        await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
+
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
         await updates.initUpdates({from: owners.COO}).should.be.fulfilled;
@@ -275,8 +283,9 @@ contract('Updates', (accounts) => {
 
     it('update Timezone once', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.enroll(stakers, stake, parties);
 
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
