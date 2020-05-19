@@ -10,6 +10,7 @@ var JSONbig = require('json-bigint');
 const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');

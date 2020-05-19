@@ -5,6 +5,7 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Championships = artifacts.require('Championships');

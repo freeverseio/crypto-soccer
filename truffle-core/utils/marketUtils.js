@@ -129,7 +129,7 @@ async function signAgreeToBuyTeamMTx(currencyId, price, extraPrice, sellerRnd, b
 //   return sigBuyer;
 // }
 
-async function freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount) {
+async function freezePlayer(owner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount) {
   // Mobile app does this:
   sigSeller = await signPutAssetForSaleMTx(
     currencyId,
@@ -166,13 +166,14 @@ async function freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, 
     validUntil,
     playerId,
     sigSellerRS,
-    sigSeller.v
+    sigSeller.v,
+    {from: owner}
   ).should.be.fulfilled;
   return tx;
 }
 
 
-async function transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAccount, buyerAccount) {
+async function transferPlayerViaAuction(owner, market, playerId, buyerTeamId, sellerAccount, buyerAccount) {
   currencyId = 1;
   price = 41234;
   rnd = 42321;  
@@ -183,13 +184,14 @@ async function transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAcc
   now = await market.getBlockchainNowTime().should.be.fulfilled;
   AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
   validUntil = now.toNumber() + AUCTION_TIME.toNumber();
-  tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+  tx = await freezePlayer(owner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
   isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
   isPlayerFrozen.should.be.equal(true);
   truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
     return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
   });
   tx = await completePlayerAuction(
+    owner, 
     currencyId, price,  sellerRnd, validUntil, playerId, 
     extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
   ).should.be.fulfilled;
@@ -198,6 +200,7 @@ async function transferPlayerViaAuction(market, playerId, buyerTeamId, sellerAcc
 }
 
 async function completePlayerAuction(
+  owner, 
   currencyId, price, sellerRnd, validUntil, playerId, 
   extraPrice, buyerRnd, isOffer2StartAuctionSig, isOffer2StartAuctionBC, buyerTeamId, buyerAccount
 ) {
@@ -243,13 +246,14 @@ async function completePlayerAuction(
     buyerTeamId.toString(),
     sigBuyerRS,
     sigBuyer.v,
-    isOffer2StartAuctionBC
+    isOffer2StartAuctionBC,
+    {from: owner}
   ).should.be.fulfilled;
 
   return tx
 }
 
-async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sellerAccount) {
+async function freezeTeam(owner, currencyId, price, sellerRnd, validUntil, teamId, sellerAccount) {
   // Mobile app does this:
   sigSeller = await signPutAssetForSaleMTx(
     currencyId,
@@ -288,13 +292,15 @@ async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sell
     validUntil,
     teamId.toNumber(),
     sigSellerRS,
-    sigSeller.v
+    sigSeller.v,
+    {from: owner}
   ).should.be.fulfilled;
   
   return tx;
 };
 
 async function completeTeamAuction(
+  owner,
   currencyId, price, sellerRnd, validUntil, sellerTeamId, 
   extraPrice, buyerRnd, isOffer2StartAuctionSig, isOffer2StartAuctionBC, buyerAccount) 
 {
@@ -339,7 +345,8 @@ async function completeTeamAuction(
     sigBuyerRS,
     sigBuyer.v,
     recoveredBuyerAddr,
-    isOffer2StartAuctionBC
+    isOffer2StartAuctionBC,
+    {from: owner}
   ).should.be.fulfilled;
   return tx;
 }

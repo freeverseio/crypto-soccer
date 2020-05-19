@@ -6,6 +6,7 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const logUtils = require('../utils/matchLogUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
 const Utils = artifacts.require('Utils');
 const Engine = artifacts.require('Engine');

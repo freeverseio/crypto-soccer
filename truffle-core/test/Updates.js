@@ -73,7 +73,7 @@ contract('Updates', (accounts) => {
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setContractOwners(assets, updates, owners);
         // // done with delegate calls
-        await updates.setChallengeTime(60).should.be.fulfilled;
+        await updates.setChallengeTime(60, {from: owners.COO}).should.be.fulfilled;
         
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
