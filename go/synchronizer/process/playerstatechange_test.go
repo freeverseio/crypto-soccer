@@ -17,14 +17,6 @@ func TestPlayerStateChangeGeneratePlayer(t *testing.T) {
 	golden.Assert(t, dump.Sdump(player), t.Name()+".golden")
 }
 
-func TestPlayerStateChangeGeneratePlayer1(t *testing.T) {
-	playerId, _ := new(big.Int).SetString("57896044618658097727656018196439043214166702490819946753272071133973936341776", 10)
-	state, _ := new(big.Int).SetString("24733138288693219564883825634836482", 10)
-	player, err := process.GeneratePlayerByPlayerIdAndState(bc.Contracts, namesdb, playerId, state)
-	assert.NilError(t, err)
-	golden.Assert(t, dump.Sdump(player), t.Name()+".golden")
-}
-
 // func TestNewSpecialPlayer(t *testing.T) {
 // 	t.Parallel()
 // 	tx, err := universedb.Begin()
