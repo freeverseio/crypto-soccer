@@ -226,6 +226,11 @@ function getDefaultSetup(accounts) {
     return needsDefaultValues ? getDefaultSetup(accounts) : networkParams;
   }
   
+async function setContractOwners(assets, updates, owners) {
+    await assets.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
+    await assets.setMarket(owners.market, {from: owners.superuser}).should.be.fulfilled;
+    await updates.setRelay(owners.relay, {from: owners.superuser}).should.be.fulfilled;
+  }
 
 
 module.exports = {
@@ -236,6 +241,7 @@ module.exports = {
     addTrustedParties,
     enroll,
     getExplicitOrDefaultSetup,
-    getDefaultSetup
+    getDefaultSetup,
+    setContractOwners
 }
 

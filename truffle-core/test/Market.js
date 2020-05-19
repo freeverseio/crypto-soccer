@@ -46,10 +46,10 @@ contract("Market", accounts => {
   
   beforeEach(async () => {
     defaultSetup = deployUtils.getDefaultSetup(accounts);
-    depl = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
-    proxy  = depl[0];
-    assets = depl[1];
-    market = depl[2];
+    owners = defaultSetup.owners;
+    depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+    [proxy, assets, market, updates] = depl;
+    await deployUtils.setContractOwners(assets, updates, owners);
 
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;

@@ -58,9 +58,7 @@ module.exports = function (deployer, network, accounts) {
     console.log("Setting up ...");
 
     if (versionNumber == 0) { 
-      await assets.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
-      await assets.setMarket(owners.market, {from: owners.superuser}).should.be.fulfilled;
-      await updates.setRelay(owners.relay, {from: owners.superuser}).should.be.fulfilled;
+      await deployUtils.setContractOwners(assets, updates, owners);
       await updates.initUpdates({from: owners.COO}).should.be.fulfilled; 
     }
     

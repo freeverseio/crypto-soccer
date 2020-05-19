@@ -46,13 +46,13 @@ contract('Assets', (accounts) => {
 
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
-        depl = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
-        proxy = depl[0]
-        assets = depl[1]
-        market = depl[2]
-        
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        [proxy, assets, market, updates] = depl;
+        await deployUtils.setContractOwners(assets, updates, owners);
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        initTx = await assets.init().should.be.fulfilled;
+        initTx = await assets.init({from: owners.COO}).should.be.fulfilled;
+        
         PLAYERS_PER_TEAM_INIT = await constants.get_PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await constants.get_LEAGUES_PER_DIV().should.be.fulfilled;
@@ -109,7 +109,7 @@ contract('Assets', (accounts) => {
     it('check DivisionCreation event on initSingleTz', async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         defaultSetup.singleTimezone = 4;
-        depl2 = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        depl2 = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         assets2 = depl2[1];
         tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {

@@ -83,7 +83,6 @@ contract('Proxy', (accounts) => {
         await assets.init({from: COO}).should.be.rejected;
 
         await assets.setCOO(COO, {from: COO}).should.be.rejected;
-        console.log(COO, owners.COO);
         await assets.setCOO(COO, {from: superuser}).should.be.fulfilled;
         
         await assets.init({from: COO}).should.be.fulfilled;
@@ -93,7 +92,6 @@ contract('Proxy', (accounts) => {
         teamIdxInCountry = 0;
         teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: superuser}).should.be.rejected;
-        console.log(market, owners.market);
         
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: market}).should.be.rejected;
         await assets.setMarket(market, {from: COO}).should.be.rejected;
@@ -139,14 +137,19 @@ contract('Proxy', (accounts) => {
 
     it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
         await assets.init({from: COO}).should.be.rejected;
+        await assets.setCOO(COO, {from: superuser}).should.be.rejected;
 
         // add function (still not enough to call assets):
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
         contractId = 1;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
         await assets.init({from: COO}).should.be.rejected;
+        await assets.setCOO(COO, {from: superuser}).should.be.rejected;
+        
         // activate function, now, enough to call assets:
         tx1 = await proxy.activateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
+        await assets.init({from: COO}).should.be.rejected;
+        await assets.setCOO(COO, {from: superuser}).should.be.fulfilled;
         await assets.init({from: COO}).should.be.fulfilled;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
@@ -173,7 +176,6 @@ contract('Proxy', (accounts) => {
 
         now = Math.floor(Date.now()/1000);
         truffleAssert.eventEmitted(tx1, "ContractsActivated", (event) => { 
-            console.log();
             return event.contractIds[0].toNumber().should.be.equal(3) && (Math.abs(event.time.toNumber()-now) < 30).should.be.equal(true)
         });
         truffleAssert.eventEmitted(tx1, "ContractsDeactivated", (event) => { 
