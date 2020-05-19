@@ -61,6 +61,14 @@ commands:
       - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
       - run: chmod +x ./kustomize
       - run: sudo mv ./kustomize /usr/local/bin
+  install_kustomize_2:
+    description: "Install kustomize 2"
+    steps:
+      - run: wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.4/kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: tar xvzf ./kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
+      - run: chmod +x ./kustomize
+      - run: sudo mv ./kustomize /usr/local/bin/kustomize2
 
 jobs:
   truffle_core:
@@ -76,9 +84,9 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - install_kustomize
-      - run: kustomize version
-      - run: file /usr/local/bin/kustomize
+      - install_kustomize_2
+      - run: kustomize2 version
+      - run: file /usr/local/bin/kustomize2
       - run: cd go/contracts && go test 
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer/process && go test ./... -v
