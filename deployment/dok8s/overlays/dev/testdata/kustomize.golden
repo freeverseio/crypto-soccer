@@ -388,13 +388,23 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/market.db:dev
+      - env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: freeverseio/market.db:dev
         imagePullPolicy: Always
         name: marketdb
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: marketdb-storage
       imagePullSecrets:
       - name: docker-secret
+      volumes:
+      - name: marketdb-storage
+        persistentVolumeClaim:
+          claimName: marketdb-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -839,6 +849,23 @@ spec:
   - hosts:
     - dashboard.gorengine.com
     secretName: cryptosoccer-dashboard-tls
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/app: marketdb
+    app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: marketdb-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: do-block-storage
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
