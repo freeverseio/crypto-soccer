@@ -111,6 +111,8 @@ func (b *Consumer) Consume(event interface{}) error {
 			tx,
 			b.contracts,
 			b.pvc,
+			b.googleCredentials,
+			b.iapTestOn,
 		); err != nil {
 			tx.Rollback()
 			return err
@@ -125,12 +127,8 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 		if err := SubmitPlayStorePlayerPurchase(
-			b.contracts,
 			tx,
-			b.pvc,
-			b.googleCredentials,
 			in,
-			b.iapTestOn,
 		); err != nil {
 			tx.Rollback()
 			return err
