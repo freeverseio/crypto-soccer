@@ -202,7 +202,7 @@ async function transferTeamViaAuction(contractOwner, market, sellerTeamId, selle
 
   let finalOwner = await market.getOwnerTeam(sellerTeamId.toNumber()).should.be.fulfilled;
   finalOwner.should.be.equal(buyerAccount.address);
-  
+  return tx;
 }
 
 
