@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"database/sql"
-	"errors"
 	"fmt"
 	"math/big"
 
@@ -31,14 +30,16 @@ func ProcessPlaystoreOrders(
 
 	for _, order := range orders {
 		if err := processPlaystoreOrder(
-			tx,
 			contracts,
 			pvc,
 			googleCredentials,
 			iapTestOn,
 			order,
 		); err != nil {
-			log.Errorf("[consumer|error] %v, playstore order %+v", err.Error(), order)
+			return err
+		}
+		if err := order.UpdateState(tx); err != nil {
+			return err
 		}
 	}
 
@@ -46,7 +47,6 @@ func ProcessPlaystoreOrders(
 }
 
 func processPlaystoreOrder(
-	tx *sql.Tx,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
@@ -55,11 +55,13 @@ func processPlaystoreOrder(
 ) error {
 	playerId, _ := new(big.Int).SetString(order.PlayerId, 10)
 	if playerId == nil {
-		return errors.New("invalid playerId")
+		setState(&order, storage.PlaystoreOrderFailed, "invalid player")
+		return nil
 	}
 	teamId, _ := new(big.Int).SetString(order.TeamId, 10)
 	if teamId == nil {
-		return errors.New("invalid teamId")
+		setState(&order, storage.PlaystoreOrderFailed, "invalid team")
+		return nil
 	}
 
 	client, err := playstore.New(googleCredentials)
@@ -75,7 +77,8 @@ func processPlaystoreOrder(
 		order.PurchaseToken,
 	)
 	if err != nil {
-		return err
+		setState(&order, storage.PlaystoreOrderFailed, err.Error())
+		return nil
 	}
 
 	if isTestPurchase(purchase) && !iapTestOn {
@@ -89,10 +92,12 @@ func processPlaystoreOrder(
 			teamId,
 		)
 		if err != nil {
-			return err
+			setState(&order, storage.PlaystoreOrderFailed, err.Error())
+			return nil
 		}
 		if _, err = helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
-			return err
+			setState(&order, storage.PlaystoreOrderFailed, err.Error())
+			return nil
 		}
 		log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
 	}
@@ -106,10 +111,12 @@ func processPlaystoreOrder(
 			order.PurchaseToken,
 			payload,
 		); err != nil {
+			setState(&order, storage.PlaystoreOrderFailed, err.Error())
 			return err
 		}
 	}
 
+	setState(&order, storage.PlaystoreOrderComplete, "")
 	return nil
 }
 
@@ -120,4 +127,12 @@ func isTestPurchase(purchase *androidpublisher.ProductPurchase) bool {
 		}
 	}
 	return false
+}
+
+func setState(order *storage.PlaystoreOrder, state storage.PlaystoreOrderState, extra string) {
+	if state == storage.PlaystoreOrderFailed {
+		log.Warnf("order %v in state %v with %v", order.OrderId, state, extra)
+	}
+	order.State = state
+	order.StateExtra = extra
 }
