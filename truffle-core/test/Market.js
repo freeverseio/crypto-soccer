@@ -710,6 +710,11 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
+  it("teams: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs (same as previous, but with one single call)", async () => {
+    await marketUtils.transferTeamViaAuction(owners.market, market, sellerTeamId, sellerAccount, buyerAccount); 
+  });
+
+  
   it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
     tx, sellerHiddenPrice = await marketUtils.freezeTeam(owners.market, currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
