@@ -74,7 +74,6 @@ commands:
               go build -a -ldflags '-w -extldflags "-static"'
               mv ipfs-cluster-service /usr/local/bin
               ipfs-cluster-service init
-              #ipfs-cluster-service daemon&
 
 jobs:
   truffle_core:
