@@ -80,8 +80,17 @@ contract('Stakers', (accounts) => {
       stakers.enroll({from:alice, value: stake}),
       "failed to enroll alice"
     )
+    await expect.passes(
+      stakers.setOwner(bob, {from:owner}),
+      "failed to set new owner address"
+    )
+    await expect.passes(
+      stakers.addTrustedParty(carol, {from:bob}),
+      "failed to add carol as trusted party"
+    )
+    
   });
-
+  
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests stake", async () => {
