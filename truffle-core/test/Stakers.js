@@ -10,8 +10,10 @@ contract('Stakers', (accounts) => {
   let stake
 
   beforeEach(async () => {
-    stakers  = await Stakers.new(1000000000000000, {from:owner});
-    stake = await stakers.requiredStake();
+    stakers  = await Stakers.new(1000000000000000, {from:owner}).should.be.fulfilled;
+    stake = await stakers.requiredStake().should.be.fulfilled;
+    await stakers.setCOO(owner, {from:owner}).should.be.fulfilled;
+
   });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,11 +28,6 @@ contract('Stakers', (accounts) => {
       stakers.setGameOwner(gameAddr, {from:alice}),
       "Only COO can call this function",
       "wrong sender, so it should revert"
-    )
-    await expect.reverts(
-      stakers.setGameOwner(gameAddr, {from:owner}),
-      "Only COO can call this function",
-      "wrong sender, even if it is owner, so it should revert"
     )
     await expect.passes(
       stakers.setCOO(COO, {from:owner}),
@@ -78,7 +75,7 @@ contract('Stakers', (accounts) => {
   })
   
   return
-
+  
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests enrolling", async () => {
@@ -106,7 +103,7 @@ contract('Stakers', (accounts) => {
       "failed to enroll alice"
     )
   });
-
+  
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests stake", async () => {

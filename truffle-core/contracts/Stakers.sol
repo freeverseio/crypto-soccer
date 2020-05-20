@@ -6,13 +6,13 @@ contract Owned {
   address public owner = address(0x0);
 
   constructor() public {
-    owner = msg.sender;
+    owner = tx.origin;
   }
   function setOwner(address _address) external virtual onlyOwner {
     owner = _address;
   }
   modifier onlyOwner {
-    require( msg.sender == owner, "Only owner can call this function.");
+    require( tx.origin == owner, "Only owner can call this function.");
         _;
   }
 }
@@ -91,8 +91,7 @@ contract AddressStack is Owned{
   }
 }
 
-contract AddressMapping is Owned{
-
+contract AddressMapping is Owned {
   mapping(address => bool) public data;
 
   function add(address _address) external onlyOwner {
@@ -138,6 +137,14 @@ contract Stakers is Owned {
   constructor(uint stake) public {
     requiredStake =  stake;
   }
+  
+  function setOwner(address _address) external override (Owned) onlyOwner {
+    owner = _address;
+    updaters.setOwner(_address);
+    rewards.setOwner(_address);
+    slashed.setOwner(_address);
+    trustedParties.setOwner(_address);
+  }
 
   /// @notice owner of this contract can only change COO,
   //     who is in charge of every authorized method.
@@ -173,7 +180,6 @@ contract Stakers is Owned {
 
   /// @notice sets the address of the gameOwner that interacts with this contract
   function setGameOwner(address _address) external onlyCOO {
-    require (gameOwner == address(0x0),     "gameOwner is already set");
     require (_address != address(0x0), "invalid address 0x0");
     gameOwner = _address;
   }
