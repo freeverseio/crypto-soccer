@@ -105,9 +105,9 @@ contract Stakers {
   function unEnroll() external {
     require (!alreadyDidUpdate(msg.sender), "failed to unenroll: staker currently updating");
     require (removeStaker(msg.sender), "failed to unenroll");
+    uint256 amount = pendingWithdrawals[msg.sender] + stakes[msg.sender];
     pendingWithdrawals[msg.sender] = 0;
     stakes[msg.sender]  = 0;
-    uint256 amount = pendingWithdrawals[msg.sender] + stakes[msg.sender];
     if (amount > 0) { msg.sender.transfer(amount); }
   }
 

@@ -1,5 +1,6 @@
 const Stakers = artifacts.require("Stakers")
 const expect = require('truffle-assertions');
+const deployUtils = require('../utils/deployUtils.js');
 
 // TODO: add more tests that execute withdraw
 
@@ -9,6 +10,8 @@ contract('Stakers', (accounts) => {
   let stakers
   let stake
 
+  const it2 = async(text, f) => {};
+
   beforeEach(async () => {
     stakers  = await Stakers.new(1000000000000000, {from:owner});
     stake = await stakers.requiredStake();
@@ -16,7 +19,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests game address", async () => {
+  it2("Tests game address", async () => {
     await expect.reverts(
       stakers.update(level = 1, alice),
       "Only gameOwner can call this function",
@@ -33,7 +36,7 @@ contract('Stakers', (accounts) => {
     )
   })
 
-  it("Tests owner address change", async () => {
+  it2("Tests owner address change", async () => {
     await expect.reverts(
       stakers.setOwner(alice, {from:alice}),
       "Only owner can call this function",
@@ -56,7 +59,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests enrolling", async () => {
+  it2("Tests enrolling", async () => {
     await expect.reverts(
       stakers.enroll({from:alice, value: stake}),
       null,
@@ -97,15 +100,15 @@ contract('Stakers', (accounts) => {
     assert.equal(0, await web3.eth.getBalance(stakers.address), "Initial contract should have 0 stake in place");
 
     parties = [alice, bob, carol, dave, erin, frank]
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
+    await deployUtils.addTrustedParties(stakers, owner, parties);
+    await deployUtils.enroll(stakers, stake, parties);
 
     assert.equal(parties.length*Number(stake),
       await web3.eth.getBalance(stakers.address),
       "Total stake is not the sum of all enrolled stakers stake"
     );
 
-    await unenroll(stakers, parties);
+    await deployUtils.unenroll(stakers, parties);
     assert.equal(0, await web3.eth.getBalance(stakers.address));
   });
 
@@ -130,7 +133,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests adding reward", async () => {
+  it2("Tests adding reward", async () => {
     assert.equal(0, Number(await web3.eth.getBalance(await stakers.rewards())));
     await expect.passes(
       stakers.addReward({value: stake}),
@@ -146,12 +149,12 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 -> L1 true -> start -> L1 true, the usual path", async () => {
+  it2("Tests L0 -> L1 true -> start -> L1 true, the usual path", async () => {
 
     stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
+    await deployUtils.addTrustedParties(stakers, owner, parties);
+    await deployUtils.enroll(stakers, stake, parties);
     await expect.passes(
       stakers.addReward({value: stake}),
       "failed to add reward")
@@ -207,12 +210,12 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 -> L1 lie  -> L2 true -> start -> L1 lie  -> L2 true", async () => {
+  it2("Tests L0 -> L1 lie  -> L2 true -> start -> L1 lie  -> L2 true", async () => {
 
     stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
+    await deployUtils.addTrustedParties(stakers, owner, parties);
+    await deployUtils.enroll(stakers, stake, parties);
 
     // L0: first updater lies
     assert.equal(0, (await stakers.level()).toNumber());
@@ -279,12 +282,12 @@ contract('Stakers', (accounts) => {
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-  it("Tests L0 -> L1 true -> L2 lie  -> L3 true -> start", async () => {
+  it2("Tests L0 -> L1 true -> L2 lie  -> L3 true -> start", async () => {
 
     stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
+    await deployUtils.addTrustedParties(stakers, owner, parties);
+    await deployUtils.enroll(stakers, stake, parties);
 
     // L0
     assert.equal(0, (await stakers.level()).toNumber());
@@ -337,12 +340,12 @@ contract('Stakers', (accounts) => {
   })
 
 
-  it("Tests L0 -> L1 lie  -> L2 lie  -> L3 true -> L1 -> L2 true", async () => {
+  it2("Tests L0 -> L1 lie  -> L2 lie  -> L3 true -> L1 -> L2 true", async () => {
 
     stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
+    await deployUtils.addTrustedParties(stakers, owner, parties);
+    await deployUtils.enroll(stakers, stake, parties);
 
     // L0
     assert.equal(0, (await stakers.level()).toNumber());
@@ -406,11 +409,11 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 -> L1 true -> L2 lie  -> L3 lie  -> L4 true -> L2 -> L3 true -> start", async () => {
+  it2("Tests L0 -> L1 true -> L2 lie  -> L3 lie  -> L4 true -> L2 -> L3 true -> start", async () => {
     stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
+    await deployUtils.addTrustedParties(stakers, owner, parties);
+    await deployUtils.enroll(stakers, stake, parties);
 
     // L0
     assert.equal(0, (await stakers.level()).toNumber());
@@ -490,11 +493,11 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 -> L1 lie  -> L2 true -> L3 lie  -> L4 true -> start", async () => {
+  it2("Tests L0 -> L1 lie  -> L2 true -> L3 lie  -> L4 true -> start", async () => {
     stakers.setGameOwner(gameAddr, {from:owner})
     parties = [alice, bob, carol, dave, erin, frank]
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
+    await deployUtils.addTrustedParties(stakers, owner, parties);
+    await deployUtils.enroll(stakers, stake, parties);
     // L0
     assert.equal(0, (await stakers.level()).toNumber());
     await expect.passes(
@@ -571,13 +574,13 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 -> L1 lie  -> L2 lie  -> L3 true  -> L4 lie -> challenge -> L3", async () => {
+  it2("Tests L0 -> L1 lie  -> L2 lie  -> L3 true  -> L4 lie -> challenge -> L3", async () => {
 
     // start (L0) ->  alice updates (L1) -> bob updates (L2) -> carol updates (L3) -> dave updates (L4) -> erin challenges dave (L3) -> erin updates (L4)
     stakers.setGameOwner(gameAddr, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
-    await addTrustedParties(stakers, owner, parties);
-    await enroll(stakers, stake, parties);
+    await deployUtils.addTrustedParties(stakers, owner, parties);
+    await deployUtils.enroll(stakers, stake, parties);
 
     assert.equal(0, (await stakers.level()).toNumber());
 
@@ -653,25 +656,3 @@ contract('Stakers', (accounts) => {
   })
 })
 
-////////////////////////////////////////////////////////////////////////////////////////////
-
-async function asyncForEach(array, callback) {
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array);
-  }
-}
-async function addTrustedParties(contract, owner, addresses) {
-  await asyncForEach(addresses, async (address) => {
-    contract.addTrustedParty(address, {from:owner})
-  });
-}
-async function enroll(contract, stake, addresses) {
-  await asyncForEach(addresses, async (address) => {
-    await contract.enroll({from:address, value: stake})
-  });
-}
-async function unenroll(contract, addresses) {
-  await asyncForEach(addresses, async (address) => {
-    await contract.unEnroll({from:address})
-  });
-}

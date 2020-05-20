@@ -182,12 +182,12 @@ const deploy = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets
 
 async function addTrustedParties(contract, owner, addresses) {
     await asyncForEach(addresses, async (address) => {
-        contract.addTrustedParty(address, {from:owner})
+        await contract.addTrustedParty(address, {from:owner}).should.be.fulfilled;
     });
 }
 async function enroll(contract, stake, addresses) {
     await asyncForEach(addresses, async (address) => {
-        await contract.enroll({from:address, value: stake})
+        await contract.enroll({from:address, value: stake}).should.be.fulfilled;
     });
 }
 
@@ -199,7 +199,7 @@ async function asyncForEach(array, callback) {
 
 async function unenroll(contract, addresses) {
     await asyncForEach(addresses, async (address) => {
-        await contract.unEnroll({from:address})
+        await contract.unEnroll({from:address}).should.be.fulfilled;
     });
 }
 
@@ -243,6 +243,7 @@ module.exports = {
     deploy,
     addTrustedParties,
     enroll,
+    unenroll,
     getExplicitOrDefaultSetup,
     getDefaultSetup,
     setContractOwners
