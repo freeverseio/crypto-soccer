@@ -118,11 +118,11 @@ contract Stakers {
   //       level is below current or level has reached the end
   function update(uint16 _level, address _staker) external onlyGame {
     require (_level <= level(),        "failed to update: wrong level");
-    //require (_level <= maxNumLevels(), "failed to update: max level exceeded"); // already covered by previous require
+    //require (_level <= updatersCapacity, "failed to update: max level exceeded"); // already covered by previous require
     require (isStaker[_staker],        "failed to update: staker not registered");
     //require (!isSlashed(_staker),      "failed to update: staker was slashed"); // also covered by not being part of stakers, because slashing removes address from stakers
 
-    if (_level < maxNumLevels()) {
+    if (_level < updatersCapacity) {
       if (_level < level()) {
         // If level is below current, it means the challenge
         // period has passed, so last updater told the truth.
@@ -165,24 +165,6 @@ contract Stakers {
     return updaters.length;
   }
 
-  /// @notice get the maximum level
-  function maxNumLevels() public pure returns (uint256) {
-    return updatersCapacity;
-  }
-
-  // ----------------- private functions -----------------------
-
-  // WARNING: careful with this list ever-growing and not being able to check in one TX.
-  // TODO: create a mapping isSlashed(address => bool) instead of an array.
-  function contains(address[] storage _array, address _value) private view returns (bool) {
-    for (uint256 i=0; i<_array.length; i++) {
-      if (_array[i] == _value) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   function addStaker(address _staker) private returns (bool) {
     if (_staker == NULL_ADDR) return false; // prevent null addr
     if (isStaker[_staker]) return false; // staker already registered
@@ -220,13 +202,12 @@ contract Stakers {
     // NULL_ADDR.transfer(requiredStake); // burn stake
   }
   
-  
   function addRewardToPot() external payable {
     require (msg.value > 0, "failed to add reward of zero");
     potBalance += msg.value;
   }
 
-  function addRewardToUpdater(address _addr) internal {
+  function addRewardToUpdater(address _addr) private {
     if (howManyUpdates[_addr] == 0) {
       toBeRewarded.push(_addr);
     }
@@ -234,21 +215,13 @@ contract Stakers {
     totalNumUpdates++;
   }
 
-
-
-  function returnTo(address payable _addr) public onlyOwner {
-    _addr.transfer(pendingWithdrawals[_addr]);
-    pendingWithdrawals[_addr] = 0;
-  }
-
-  
   function popUpdaters() private view returns (address _address) {
     uint256 updatersLength = updaters.length;
     require (updatersLength > 0, "cannot pop from an empty AddressStack");
     _address = updaters[--updatersLength];
   }
 
-
+  // this function iterates over a storage array, but of max length 4.
   function alreadyDidUpdate(address _address) public view returns (bool) {
     for (uint256 i = 0; i < updaters.length; i++) {
       if (updaters[i] == _address) {
@@ -257,6 +230,5 @@ contract Stakers {
     }
     return false;
   }
-    
 }
 
