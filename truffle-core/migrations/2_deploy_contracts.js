@@ -36,7 +36,7 @@ module.exports = function (deployer, network, accounts) {
     const versionNumber = 0;
     const proxyAddress  = "0x0";
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
-      await deployUtils.deploy(versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
+      await deployUtils.deploy(versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges).should.be.fulfilled;
   
     const stakers  = await deployer.deploy(Stakers, requiredStake, {from: owners.superuser}).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
@@ -58,15 +58,15 @@ module.exports = function (deployer, network, accounts) {
     console.log("Setting up ...");
 
     if (versionNumber == 0) { 
-      await deployUtils.setContractOwners(assets, updates, owners);
+      await deployUtils.setContractOwners(assets, updates, owners).should.be.fulfilled;
       // await assets.setMarket("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0", {from: owners.superuser});
       await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
       await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
       await updates.initUpdates({from: owners.COO}).should.be.fulfilled; 
       await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
       await stakers.setGameOwner(updates.address, {from: owners.superuser}).should.be.fulfilled;
-      await deployUtils.addTrustedParties(stakers, owners.superuser, owners.trustedParties);
-      await deployUtils.enroll(stakers, requiredStake, owners.trustedParties);
+      await deployUtils.addTrustedParties(stakers, owners.superuser, owners.trustedParties).should.be.fulfilled;
+      await deployUtils.enroll(stakers, requiredStake, owners.trustedParties).should.be.fulfilled;
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
         await assets.initSingleTZ(singleTimezone, {from: owners.COO}).should.be.fulfilled;
