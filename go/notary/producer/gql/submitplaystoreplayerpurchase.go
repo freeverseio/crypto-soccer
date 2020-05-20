@@ -69,7 +69,7 @@ import (
 func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	Input input.SubmitPlayStorePlayerPurchaseInput
 }) (graphql.ID, error) {
-	log.Debugf("SubmitPlayStorePlayerPurchase %v", args)
+	log.Infof("SubmitPlayStorePlayerPurchase %v", args)
 
 	result := graphql.ID(args.Input.PlayerId)
 
