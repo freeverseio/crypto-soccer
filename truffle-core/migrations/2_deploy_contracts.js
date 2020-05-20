@@ -87,7 +87,7 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
     await marketCrypto.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
-    await marketCrypto.setMarketAddress(proxy.address, {from: owners.COO}).should.be.fulfilled;
+    await marketCrypto.setMarketFiatAddress(proxy.address, {from: owners.COO}).should.be.fulfilled;
 
     namesAndAddresses = [
       ["ASSETS", assets.address],

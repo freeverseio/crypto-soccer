@@ -8,6 +8,8 @@ import "./Market.sol";
  
 contract MarketCrypto {
 
+    address constant private NULL_ADDR = address(0x0);
+
     event PlayerPutForSaleCrypto(uint256 playerId, uint256 startingPrice);
     event BidForPlayerCrypto(uint256 playerId, uint256 bidderTeamId, uint256 totalAmount);
     event AssetWentToNewOwner(uint256 playerId, uint256 auctionId);
@@ -18,7 +20,6 @@ contract MarketCrypto {
     
     uint32 internal _auctionDuration = 24 hours; 
     uint256 internal _minimumBidIncrement = 0.5 ether; // bid for at least this amount of XDAI, or increase previous by this amount
-    address constant private NULL_ADDR = address(0x0);
     
     Market private _market;
 
@@ -64,7 +65,7 @@ contract MarketCrypto {
         _COO = addr;
     }
     
-    function setMarketAddress(address proxyAddr) external onlyCOO {
+    function setMarketFiatAddress(address proxyAddr) external onlyCOO {
         _market = Market(proxyAddr);
     }
     
