@@ -53,7 +53,7 @@ module.exports = function (deployer, network, accounts) {
     const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
-    const marketCrypto = await deployer.deploy(MarketCrypto).should.be.fulfilled;
+    const marketCrypto = await deployer.deploy(MarketCrypto, {from: owners.superuser}).should.be.fulfilled;
 
     console.log("Setting up ...");
 
@@ -67,7 +67,6 @@ module.exports = function (deployer, network, accounts) {
       await stakers.setGameOwner(updates.address, {from: owners.superuser}).should.be.fulfilled;
       await deployUtils.addTrustedParties(stakers, owners.superuser, owners.trustedParties);
       await deployUtils.enroll(stakers, requiredStake, owners.trustedParties);
-    
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
         await assets.initSingleTZ(singleTimezone, {from: owners.COO}).should.be.fulfilled;
@@ -75,7 +74,6 @@ module.exports = function (deployer, network, accounts) {
         await assets.init({from: owners.COO}).should.be.fulfilled;
       }
     }
-
 
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
@@ -88,7 +86,8 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
-    await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
+    await marketCrypto.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
+    await marketCrypto.setMarketAddress(proxy.address, {from: owners.COO}).should.be.fulfilled;
 
     namesAndAddresses = [
       ["ASSETS", assets.address],

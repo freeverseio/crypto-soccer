@@ -85,11 +85,11 @@ function findDuplicates(data) {
     return result;
 }
   
-function informNoCollisions(Assets, Market, Updates) {
+function informNoCollisions(contractsArray) {
     allSelectors = [];
-    allSelectors = allSelectors.concat(extractSelectorsFromAbi(Assets.abi));
-    allSelectors = allSelectors.concat(extractSelectorsFromAbi(Market.abi));
-    allSelectors = allSelectors.concat(extractSelectorsFromAbi(Updates.abi));
+    for (contract of contractsArray){ 
+        allSelectors = allSelectors.concat(extractSelectorsFromAbi(contract.abi));
+    }
     duplicates = findDuplicates(allSelectors);
     if (duplicates.length != 0) {
         console.log("There are collisions between the contracts to delegate. No panic. It is normal when they inherit common libs")
@@ -126,14 +126,17 @@ function appendVersionNumberToNames(names, versionNumber) {
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified if versionNumber > 0.
 const deploy = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets, Market, Updates, Challenges) => {
-    // Inform about possible collisions between contracts to delegate (among them, and with proxy)
-    // informNoCollisions(Proxy, Assets, Market, Updates);
+    if (versionNumber == 0) assert.equal(proxyAddress, "0x0", "proxyAddress must be 0x0 for version = 0");
+    if (versionNumber != 0) assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for version > 0");
+    
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
+
+    // Optionally inform about duplicates between the contracts themselves
+    // informNoCollisions(Assets, Market, Updates, Challenges);
     
     // Next: proxy is built either by deploy, or by assignement to already deployed address
     var proxy;
     if (versionNumber == 0) {
-        
         const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
         proxy = await Proxy.new(owners.company, owners.superuser, proxySelectors).should.be.fulfilled;
     } else {
