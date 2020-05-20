@@ -542,7 +542,7 @@ spec:
         - -assetsContractAddress
         - $(ASSETS_CONTRACT_ADDRESS)
         - -ipfs
-        - ipfsnode:5001
+        - /dns4/ipfsnode/tcp/5001
         - -private_key
         - $(relay_private_key)
         envFrom:
