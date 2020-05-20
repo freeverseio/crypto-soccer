@@ -38,7 +38,7 @@ module.exports = function (deployer, network, accounts) {
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await deployUtils.deploy(versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges).should.be.fulfilled;
   
-    const stakers  = await deployer.deploy(Stakers, requiredStake, {from: owners.superuser}).should.be.fulfilled;
+    const stakers  = await deployer.deploy(Stakers, requiredStake).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -53,20 +53,28 @@ module.exports = function (deployer, network, accounts) {
     const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
-    const marketCrypto = await deployer.deploy(MarketCrypto, {from: owners.superuser}).should.be.fulfilled;
+    const marketCrypto = await deployer.deploy(MarketCrypto).should.be.fulfilled;
 
     console.log("Setting up ...");
 
     if (versionNumber == 0) { 
       await deployUtils.setContractOwners(assets, updates, owners).should.be.fulfilled;
-      // await assets.setMarket("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0", {from: owners.superuser});
+
+      await marketCrypto.proposeOwner(owners.superuser).should.be.fulfilled;
+      await marketCrypto.acceptOwner({from: owners.superuser}).should.be.fulfilled;
+      await marketCrypto.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
+
       await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
       await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
       await updates.initUpdates({from: owners.COO}).should.be.fulfilled; 
       await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
-      await stakers.setGameOwner(updates.address, {from: owners.superuser}).should.be.fulfilled;
-      await deployUtils.addTrustedParties(stakers, owners.superuser, owners.trustedParties).should.be.fulfilled;
-      await deployUtils.enroll(stakers, requiredStake, owners.trustedParties).should.be.fulfilled;
+
+      await stakers.setGameOwner(updates.address).should.be.fulfilled;
+      await stakers.setOwner(owners.superuser).should.be.fulfilled;
+
+      // TODO: re-enable when stakers bug is fixed
+      // await deployUtils.addTrustedParties(stakers, owners.superuser, owners.trustedParties).should.be.fulfilled;
+      // await deployUtils.enroll(stakers, requiredStake, owners.trustedParties).should.be.fulfilled;
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
         await assets.initSingleTZ(singleTimezone, {from: owners.COO}).should.be.fulfilled;
@@ -75,6 +83,7 @@ module.exports = function (deployer, network, accounts) {
       }
     }
 
+    // note: all the calls that follow will require a setOwner first very soon!
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
@@ -86,8 +95,6 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
-    await marketCrypto.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
-    await marketCrypto.setMarketFiatAddress(proxy.address, {from: owners.COO}).should.be.fulfilled;
 
     namesAndAddresses = [
       ["ASSETS", assets.address],

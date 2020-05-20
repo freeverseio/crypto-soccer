@@ -11,7 +11,7 @@ const deployPair = async (proxyAddress, Contr) => {
     return [contr, contrAsLib, selectors];
 };
 
-const deployContractsToDelegateTo = async (owners, proxyAddress, Assets, Market, Updates, Challenges) => {
+const deployContractsToDelegateTo = async (proxyAddress, Assets, Market, Updates, Challenges) => {
     // setting up StorageProxy delegate calls to Assets
     const {0: assets, 1: assetsAsLib, 2: selectorsAssets} = await deployPair(proxyAddress, Assets);
     const {0: market, 1: marketAsLib, 2: selectorsMarket} = await deployPair(proxyAddress, Market);
@@ -154,7 +154,7 @@ const deploy = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets
     //  - deploy new contracts (not proxy) to delegate to, and return their addresses
     //  - build interfaces to those contracts which point to the proxy address
     const {0: assets, 1: market, 2: updates, 3: challenges, 4: addresses, 5: allSelectors, 6: names} = 
-        await deployContractsToDelegateTo(owners, proxy.address, Assets, Market, Updates, Challenges);
+        await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates, Challenges);
         
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
