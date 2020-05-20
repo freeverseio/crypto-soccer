@@ -193,10 +193,12 @@ contract Stakers {
     isSlashed[_staker] = true;
   }
 
+  // the slashed stake goes into the "pendingWithdrawals" of the good staker,
+  // not to his "stake". This way, he can cash it without unenrolling.
   function earnStake(address _goodStaker, address _badStaker) private {
     uint256 amount = stakes[_badStaker];
     stakes[_badStaker] = 0;
-    stakes[_goodStaker] += amount;
+    pendingWithdrawals[_goodStaker] += amount;
     // TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
     // The idea behind it, is not to promote interest in stealing someone else's stake
     // NULL_ADDR.transfer(requiredStake); // burn stake
@@ -215,10 +217,11 @@ contract Stakers {
     totalNumUpdates++;
   }
 
-  function popUpdaters() private view returns (address _address) {
+  function popUpdaters() private returns (address _address) {
     uint256 updatersLength = updaters.length;
     require (updatersLength > 0, "cannot pop from an empty AddressStack");
-    _address = updaters[--updatersLength];
+    _address = updaters[updatersLength - 1];
+    updaters.pop();
   }
 
   // this function iterates over a storage array, but of max length 4.
