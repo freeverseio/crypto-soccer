@@ -121,6 +121,7 @@ contract Stakers {
     //require (_level <= updatersCapacity, "failed to update: max level exceeded"); // already covered by previous require
     require (isStaker[_staker],        "failed to update: staker not registered");
     //require (!isSlashed(_staker),      "failed to update: staker was slashed"); // also covered by not being part of stakers, because slashing removes address from stakers
+    require(!alreadyDidUpdate(_staker), "staker has already updated this game");
 
     if (_level < updatersCapacity) {
       if (_level < level()) {

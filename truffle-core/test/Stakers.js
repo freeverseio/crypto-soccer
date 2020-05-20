@@ -379,7 +379,7 @@ contract('Stakers', (accounts) => {
 
     await expect.reverts(
       stakers.enroll({from:bob, value: stake}),
-      "failed to enroll: staker was slashed",
+      "candidate was slashed previously",
       "bob was slashed, so it should revert"
     )
     await expect.passes(
@@ -398,7 +398,7 @@ contract('Stakers', (accounts) => {
 
     await expect.reverts(
       stakers.enroll({from:bob, value: stake}),
-      "failed to enroll: staker was slashed",
+      "candidate was slashed previously",
       "bob was slashed and will never be able to enroll again, so it should revert"
     )
   })
@@ -458,7 +458,7 @@ contract('Stakers', (accounts) => {
                  "Erin current balance should be higher now, since she earned Dave's stake");
     await expect.reverts(
       stakers.enroll({from:dave, value: stake}),
-      "failed to enroll: staker was slashed",
+      "candidate was slashed previously",
       "dave was slashed and will never be able to enroll again, so it should revert"
     )
 
@@ -482,7 +482,7 @@ contract('Stakers', (accounts) => {
 
     await expect.reverts(
       stakers.enroll({from:bob, value: stake}),
-      "failed to enroll: staker was slashed",
+      "candidate was slashed previously",
       "bob was slashed and will never be able to enroll again, so it should revert"
     )
   })
@@ -558,12 +558,12 @@ contract('Stakers', (accounts) => {
 
     await expect.reverts(
       stakers.enroll({from:alice, value: stake}),
-      "failed to enroll: staker was slashed",
+      "candidate was slashed previously",
       "alice was slashed and will never be able to enroll again, so it should revert"
     )
     await expect.reverts(
       stakers.enroll({from:dave, value: stake}),
-      "failed to enroll: staker was slashed",
+      "candidate was slashed previously",
       "dave was slashed and will never be able to enroll again, so it should revert"
     )
   })
