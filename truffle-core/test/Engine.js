@@ -267,6 +267,27 @@ contract('Engine', (accounts) => {
         expected = [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 0, 0, 0, 0, 1, 1, 9, 1, 8, 1, 0, 0, 0, 0, 1, 1, 9, 1, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
         debug.compareArrays(newLog.slice(2), expected, toNum = true);
     });
+    
+    it('computeExceptionalEvents shows no goalies with redcards', async () => {
+        // this choice of seed used to lead to a GK with redcard, now forbidden
+        RED = 3;
+        skills = [1000, 1000, 1000, 1000, 1000];
+        sumSkills = skills.reduce((a, b) => a + b, 0);
+        agressiveGK = await assets.encodePlayerSkills(
+            skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 7],
+            alignedEndOfLast = false, redCardLastGame = false, gamesNonStopping = 0, 
+            injuryWeeks = 0, subLast = false, sumSkills
+        ).should.be.fulfilled;
+        teamStateAll50Half1[0] = agressiveGK;
+        for (t = 7; t <= 7; t++) {
+            seedRed = web3.utils.toBN(web3.utils.keccak256(t.toString()));
+            log = await precomp.computeExceptionalEvents(log0 = 0, teamStateAll50Half1, tactics442NoChanges, is2nd = false, seedRed).should.be.fulfilled;
+            typeOf = await precomp.getOutOfGameType(log, is2nd = false).should.be.fulfilled;
+            player = await precomp.getOutOfGamePlayer(log, is2nd = false).should.be.fulfilled;
+            assert.equal( (typeOf.toNumber() == RED && player.toNumber() == 0), false, "GK saw a redcard")
+        }
+    });
+
 
     it('computeExceptionalEvents no clashes with redcards', async () => {
         // there is a red card with this seed, to player 9, but he's not involved in any change

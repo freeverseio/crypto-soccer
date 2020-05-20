@@ -433,6 +433,7 @@ spec:
         - $(market_id)
         - -google_key
         - /var/secrets/google/key.json
+        - $(notary_extra_args)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -535,7 +536,7 @@ spec:
         - -assetsContractAddress
         - $(ASSETS_CONTRACT_ADDRESS)
         - -ipfs
-        - ipfsnode:5001
+        - /dns4/ipfsnode/tcp/5001
         - -private_key
         - $(relay_private_key)
         envFrom:
@@ -581,7 +582,7 @@ spec:
         - -ethereum
         - http://xdai:8545
         - -ipfs
-        - ipfsnode:5001
+        - /dns4/ipfsnode/tcp/5001
         - -leaguesContractAddress
         - $(LEAGUES_CONTRACT_ADDRESS)
         - -engineContractAddress
@@ -832,6 +833,23 @@ spec:
   - hosts:
     - dashboard.goalrevolution.live
     secretName: cryptosoccer-dashboard-tls
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/app: marketdb
+    app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: marketdb-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: do-block-storage
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

@@ -19,6 +19,7 @@ type Consumer struct {
 	pvc               *ecdsa.PrivateKey
 	market            marketpay.IMarketPay
 	googleCredentials []byte
+	iapTestOn         bool
 }
 
 func New(
@@ -28,6 +29,7 @@ func New(
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
+	iapTestOn bool,
 ) (*Consumer, error) {
 	consumer := Consumer{}
 	consumer.ch = ch
@@ -36,6 +38,7 @@ func New(
 	consumer.pvc = pvc
 	consumer.market = market
 	consumer.googleCredentials = googleCredentials
+	consumer.iapTestOn = iapTestOn
 	return &consumer, nil
 }
 
@@ -98,14 +101,39 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err = tx.Commit(); err != nil {
 			return err
 		}
-	case input.SubmitPlayStorePlayerPurchaseInput:
-		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
-		if err := SubmitPlayStorePlayerPurchase(
+	case producer.PlaystoreOrderEvent:
+		log.Debug("Received PlaystoreOrderEvent")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := ProcessPlaystoreOrders(
+			tx,
 			b.contracts,
 			b.pvc,
 			b.googleCredentials,
+			b.iapTestOn,
+		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case input.SubmitPlayStorePlayerPurchaseInput:
+		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := SubmitPlayStorePlayerPurchase(
+			tx,
 			in,
 		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
 			return err
 		}
 	default:
@@ -117,6 +145,8 @@ func (b *Consumer) Consume(event interface{}) error {
 func (b *Consumer) Start() {
 	for {
 		event := <-b.ch
-		b.Consume(event)
+		if err := b.Consume(event); err != nil {
+			log.Error(err)
+		}
 	}
 }

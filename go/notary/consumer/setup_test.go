@@ -2,12 +2,13 @@ package consumer_test
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // var db *sql.DB

@@ -105,9 +105,17 @@ func CreateWorldPlayerBatch(
 	}
 
 	for i := range worldPlayers.PlayerIdArray {
+		isSellable, err := isSellable(contr, worldPlayers.PlayerIdArray[i])
+		if err != nil {
+			return nil, err
+		}
+		if !isSellable {
+			continue
+		}
+
+		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
 		leftishness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsLeftishnessIdx]
 		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
-		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
 		generation := uint8(0)
 		name, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
 		if err != nil {
@@ -142,4 +150,15 @@ func CreateWorldPlayerBatch(
 	}
 
 	return result, nil
+}
+
+func isSellable(contr contracts.Contracts, playerId *big.Int) (bool, error) {
+	teamId, err := contr.Market.GetCurrentTeamIdFromPlayerId(
+		&bind.CallOpts{},
+		playerId,
+	)
+	if err != nil {
+		return false, err
+	}
+	return teamId.Cmp(big.NewInt(contracts.AccademyTeamId)) == 0, nil
 }

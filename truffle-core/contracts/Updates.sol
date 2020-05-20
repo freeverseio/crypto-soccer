@@ -73,10 +73,10 @@ contract Updates is UpdatesBase {
     // in order to accept it, either:
     //  - timezone is null,
     //  - timezone has not been updated yet (lastUpdate < _lastActionsSubmissionTime)
-    function updateTZ(bytes32 root) public {
+    function updateTZ(uint256 verse, bytes32 root) public {
         // when actionRoots were submitted, nextTimeZone points to the future.
         // so the timezone waiting for updates & challenges is provided by prevTimeZoneToUpdate()
-        require(isTimeToUpdate(), "it is not time to update yet");
+        require(isTimeToUpdate(verse), "it is not time to update yet");
         (uint8 tz,,) = prevTimeZoneToUpdate();
         _setTZRoot(tz, root); // first time that we update this TZ
         emit TimeZoneUpdate(currentVerse, tz, root, now);
