@@ -13,6 +13,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 
 	shell "github.com/ipfs/go-ipfs-api"
+	cluster "github.com/ipfs/ipfs-cluster/api/rest/client"
+	ma "github.com/multiformats/go-multiaddr"
 )
 
 type UserActions struct {
@@ -44,9 +46,29 @@ func New() *UserActions {
 	return &UserActions{}
 }
 
+func newShell(url string) (*shell.Shell, error) {
+	maddr, err := ma.NewMultiaddr(url)
+	if err != nil {
+		return nil, err
+	}
+	cfg := &cluster.Config{
+		APIAddr: maddr,
+	}
+	cfg.SSL = false
+	cfg.NoVerifyCert = true
+	client, err := cluster.NewDefaultClient(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return client.IPFS(context.Background()), nil
+}
+
 func NewFromIpfs(url string, cid string) (*UserActions, error) {
 	var ua UserActions
-	sh := shell.NewShell(url)
+	sh, err := newShell(url)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
 	if err != nil {
 		return nil, err
@@ -119,7 +141,10 @@ func (b *UserActions) Unmarshal(data []byte) error {
 }
 
 func (b *UserActions) ToIpfs(url string) (string, error) {
-	sh := shell.NewShell(url)
+	sh, err := newShell(url)
+	if err != nil {
+		return "", err
+	}
 	buf, err := b.Marshal()
 	if err != nil {
 		return "", err

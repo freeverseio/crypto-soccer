@@ -19,7 +19,7 @@ var bc *testutils.BlockchainNode
 var dump spew.ConfigState
 var namesdb *names.Generator
 
-const ipfsURL = "localhost:5001"
+const ipfsURL = "/ip4/127.0.0.1/tcp/5001"
 
 func TestMain(m *testing.M) {
 	var err error
