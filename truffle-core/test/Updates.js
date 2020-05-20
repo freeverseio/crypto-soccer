@@ -285,7 +285,7 @@ contract('Updates', (accounts) => {
     it('update Timezone once', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
-        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
         await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
 
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -306,7 +306,7 @@ contract('Updates', (accounts) => {
     it('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
-        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
         await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
         
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -354,7 +354,7 @@ contract('Updates', (accounts) => {
         console.log("warning: the next test lasts about 20 secs...")
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
-        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
         await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
         const cif = "ciao2";
         for (i = 0; i < 110; i++) {
@@ -394,7 +394,7 @@ contract('Updates', (accounts) => {
     it('challenging a tz', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
-        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
         await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
 
         await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
@@ -734,7 +734,7 @@ contract('Updates', (accounts) => {
     it('vefiable challenge', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
-        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
         await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
