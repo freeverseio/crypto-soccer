@@ -57,16 +57,13 @@ contract('Updates', (accounts) => {
 
     async function deployAndConfigureStakers(Stakers, updates, setup) {
         const { singleTimezone, owners, requiredStake } = setup;
-        const stake = requiredStake ? requiredStake : 1000000000000;
-        const stakers  = await Stakers.new(stake).should.be.fulfilled;
+        const stakers  = await Stakers.new(requiredStake).should.be.fulfilled;
         await stakers.setGameOwner(updates.address).should.be.fulfilled;
         for (trustedParty of owners.trustedParties) {
-            // console.log("Add TrustedParty", trustedParty);
             await stakers.addTrustedParty(trustedParty).should.be.fulfilled;
         }
         for (trustedParty of owners.trustedParties) {
-            // console.log("Enrol TrustedParty", trustedParty);
-            await stakers.enroll({from:trustedParty, value: stake}).should.be.fulfilled;
+            await stakers.enroll({from:trustedParty, value: requiredStake}).should.be.fulfilled;
         }
         return stakers;
     }

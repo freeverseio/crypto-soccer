@@ -38,7 +38,7 @@ module.exports = function (deployer, network, accounts) {
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await deployUtils.deploy(versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
-    const stakers  = await deployer.deploy(Stakers, requiredStake ? requiredStake : 1000000000000).should.be.fulfilled;
+    const stakers  = await deployer.deploy(Stakers, requiredStake).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -63,10 +63,11 @@ module.exports = function (deployer, network, accounts) {
       await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
       await updates.initUpdates({from: owners.COO}).should.be.fulfilled; 
     }
-    
-    await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
+
     await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
     await stakers.setGameOwner(updates.address).should.be.fulfilled;
+
+    await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
