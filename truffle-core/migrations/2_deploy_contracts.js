@@ -68,6 +68,9 @@ module.exports = function (deployer, network, accounts) {
       await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
       await updates.initUpdates({from: owners.COO}).should.be.fulfilled; 
       await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
+
+      await stakers.proposeOwner(owners.superuser).should.be.fulfilled;
+      await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled; 
       await stakers.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
       await stakers.setGameOwner(updates.address, {from: owners.COO}).should.be.fulfilled;
       await deployUtils.addTrustedParties(stakers, owners.COO, owners.trustedParties);

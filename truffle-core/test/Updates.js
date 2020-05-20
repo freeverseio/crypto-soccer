@@ -58,9 +58,14 @@ contract('Updates', (accounts) => {
     async function deployAndConfigureStakers(Stakers, updates, setup) {
         const { singleTimezone, owners, requiredStake } = setup;
         const stakers  = await Stakers.new(requiredStake).should.be.fulfilled;
-        await stakers.setGameOwner(updates.address).should.be.fulfilled;
+
+        await stakers.proposeOwner(owners.superuser).should.be.fulfilled;
+        await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled; 
+        await stakers.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
+        await stakers.setGameOwner(updates.address, {from: owners.COO}).should.be.fulfilled;
+
         for (trustedParty of owners.trustedParties) {
-            await stakers.addTrustedParty(trustedParty).should.be.fulfilled;
+            await stakers.addTrustedParty(trustedParty, {from: owners.COO}).should.be.fulfilled;
         }
         for (trustedParty of owners.trustedParties) {
             await stakers.enroll({from:trustedParty, value: requiredStake}).should.be.fulfilled;
