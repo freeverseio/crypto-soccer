@@ -64,9 +64,9 @@ module.exports = function (deployer, network, accounts) {
       await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
       await updates.initUpdates({from: owners.COO}).should.be.fulfilled; 
       await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
-      // await stakers.setGameOwner(updates.address, {from: owners.superuser}).should.be.fulfilled;
-      // await deployUtils.addTrustedParties(stakers, owners.trustedParties, parties);
-      // await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+      await stakers.setGameOwner(updates.address, {from: owners.superuser}).should.be.fulfilled;
+      await deployUtils.addTrustedParties(stakers, owners.superuser, owners.trustedParties);
+      await deployUtils.enroll(stakers, requiredStake, owners.trustedParties);
     
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);

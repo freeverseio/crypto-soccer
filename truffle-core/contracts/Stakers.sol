@@ -6,13 +6,13 @@ contract Owned {
   address public owner = address(0x0);
 
   constructor() public {
-    owner = tx.origin;
+    owner = msg.sender;
   }
   function setOwner(address _address) external virtual onlyOwner {
     owner = _address;
   }
   modifier onlyOwner {
-    require( tx.origin == owner, "Only owner can call this function.");
+    require( msg.sender == owner, "Only owner can call this function.");
         _;
   }
 }
@@ -91,7 +91,8 @@ contract AddressStack is Owned{
   }
 }
 
-contract AddressMapping is Owned {
+contract AddressMapping is Owned{
+
   mapping(address => bool) public data;
 
   function add(address _address) external onlyOwner {
@@ -109,8 +110,7 @@ contract Stakers is Owned {
   uint16 public constant NUM_STAKERS = 32;
 
   uint public requiredStake;
-  address public gameOwner;
-  address public COO;
+  address public gameOwner = address(0x0);
   AddressStack private updaters = new AddressStack();
   Rewards public rewards = new Rewards();
   address[NUM_STAKERS] public stakers;
@@ -127,29 +127,15 @@ contract Stakers is Owned {
             "Only gameOwner can call this function.");
     _;
   }
-  modifier onlyCOO {
-    require( msg.sender == COO, "Only COO can call this function.");
-        _;
-  }
 
   // ----------------- public functions -----------------------
 
   constructor(uint stake) public {
     requiredStake =  stake;
   }
-  
+
   function setOwner(address _address) external override (Owned) onlyOwner {
     owner = _address;
-    updaters.setOwner(_address);
-    rewards.setOwner(_address);
-    slashed.setOwner(_address);
-    trustedParties.setOwner(_address);
-  }
-
-  /// @notice owner of this contract can only change COO,
-  //     who is in charge of every authorized method.
-  function setCOO(address _address) external onlyOwner {
-    COO = _address;
     updaters.setOwner(_address);
     rewards.setOwner(_address);
     slashed.setOwner(_address);
@@ -179,13 +165,14 @@ contract Stakers is Owned {
   }
 
   /// @notice sets the address of the gameOwner that interacts with this contract
-  function setGameOwner(address _address) external onlyCOO {
+  function setGameOwner(address _address) external onlyOwner {
+    require (gameOwner == address(0x0),     "gameOwner is already set");
     require (_address != address(0x0), "invalid address 0x0");
     gameOwner = _address;
   }
 
   /// @notice adds address as trusted party
-  function addTrustedParty(address _staker) external onlyCOO {
+  function addTrustedParty(address _staker) external onlyOwner {
     trustedParties.add(_staker);
   }
 

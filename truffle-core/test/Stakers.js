@@ -4,16 +4,14 @@ const expect = require('truffle-assertions');
 // TODO: add more tests that execute withdraw
 
 contract('Stakers', (accounts) => {
-  const [owner, gameAddr, alice, bob, carol, dave, erin, frank, COO] = accounts
+  const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts
 
   let stakers
   let stake
 
   beforeEach(async () => {
-    stakers  = await Stakers.new(1000000000000000, {from:owner}).should.be.fulfilled;
-    stake = await stakers.requiredStake().should.be.fulfilled;
-    await stakers.setCOO(owner, {from:owner}).should.be.fulfilled;
-
+    stakers  = await Stakers.new(1000000000000000, {from:owner});
+    stake = await stakers.requiredStake();
   });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,15 +24,11 @@ contract('Stakers', (accounts) => {
     )
     await expect.reverts(
       stakers.setGameOwner(gameAddr, {from:alice}),
-      "Only COO can call this function",
+      "Only owner can call this function",
       "wrong sender, so it should revert"
     )
     await expect.passes(
-      stakers.setCOO(COO, {from:owner}),
-      "failed to set COO"
-    )
-    await expect.passes(
-      stakers.setGameOwner(gameAddr, {from:COO}),
+      stakers.setGameOwner(gameAddr, {from:owner}),
       "failed to set game address"
     )
   })
@@ -45,37 +39,21 @@ contract('Stakers', (accounts) => {
       "Only owner can call this function",
       "wrong sender, so it should revert"
     )
-    await expect.reverts(
-      stakers.setCOO(alice, {from:alice}),
-      "Only owner can call this function",
-      "wrong sender, so it should revert"
-    )
     await expect.passes(
       stakers.setOwner(alice, {from:owner}),
       "failed to set new owner address"
     )
-    await expect.passes(
-      stakers.setCOO(COO, {from:alice}),
-      "failed to set COO"
-    )
     await expect.reverts(
       stakers.setGameOwner(gameAddr, {from:owner}),
-      "Only COO can call this function",
-      "owner is not true owner anymore, so it should revert"
-    )
-    await expect.reverts(
-      stakers.setGameOwner(gameAddr, {from:alice}),
-      "Only COO can call this function",
+      "Only owner can call this function",
       "owner is not true owner anymore, so it should revert"
     )
     await expect.passes(
-      stakers.setGameOwner(gameAddr, {from:COO}),
+      stakers.setGameOwner(gameAddr, {from:alice}),
       "failed to set game address by updated owner"
     )
   })
-  
-  return
-  
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests enrolling", async () => {
@@ -102,8 +80,16 @@ contract('Stakers', (accounts) => {
       stakers.enroll({from:alice, value: stake}),
       "failed to enroll alice"
     )
+    await expect.passes(
+      stakers.setOwner(bob, {from:owner}),
+      "failed to set new owner address"
+    )
+    await expect.passes(
+      stakers.addTrustedParty(carol, {from:bob}),
+      "failed to add carol as trusted party"
+    )
   });
-  
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests stake", async () => {
