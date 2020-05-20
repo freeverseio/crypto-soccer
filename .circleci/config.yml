@@ -19,7 +19,7 @@ executors:
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
-      - image: postgres:11.6-alpine
+      - image: postgres:alpine
         environment:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
@@ -34,7 +34,7 @@ executors:
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
-      - image: postgres:11.6-alpine
+      - image: postgres:alpine
         environment:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
