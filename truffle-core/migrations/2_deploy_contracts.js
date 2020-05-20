@@ -38,7 +38,7 @@ module.exports = function (deployer, network, accounts) {
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await deployUtils.deploy(versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges);
   
-    const stakers  = await deployer.deploy(Stakers, requiredStake).should.be.fulfilled;
+    const stakers  = await deployer.deploy(Stakers, requiredStake, {from: owners.superuser}).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
@@ -59,13 +59,23 @@ module.exports = function (deployer, network, accounts) {
 
     if (versionNumber == 0) { 
       await deployUtils.setContractOwners(assets, updates, owners);
+      // await assets.setMarket("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0", {from: owners.superuser});
       await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
       await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
       await updates.initUpdates({from: owners.COO}).should.be.fulfilled; 
+      await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
+      // await stakers.setGameOwner(updates.address, {from: owners.superuser}).should.be.fulfilled;
+      // await deployUtils.addTrustedParties(stakers, owners.trustedParties, parties);
+      // await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+    
+      if (singleTimezone != -1) {
+        console.log("Init single timezone", singleTimezone);
+        await assets.initSingleTZ(singleTimezone, {from: owners.COO}).should.be.fulfilled;
+      } else {
+        await assets.init({from: owners.COO}).should.be.fulfilled;
+      }
     }
 
-    await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
-    await stakers.setGameOwner(updates.address).should.be.fulfilled;
 
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
@@ -79,23 +89,6 @@ module.exports = function (deployer, network, accounts) {
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
     await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
     await marketCrypto.setMarketAddress(proxy.address).should.be.fulfilled;
-
-    if (versionNumber == 0) {
-
-      if (singleTimezone != -1) {
-        console.log("Init single timezone", singleTimezone);
-        await assets.initSingleTZ(singleTimezone, {from: owners.COO}).should.be.fulfilled;
-      } else {
-        await assets.init({from: owners.COO}).should.be.fulfilled;
-      }
-
-      for (trustedParty of owners.trustedParties) {
-        console.log("Add TrustedPart", trustedParty);
-        await stakers.addTrustedParty(trustedParty).should.be.fulfilled;
-      }
-
-      await assets.setMarket("0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0", {from: owners.superuser});
-    }
 
     namesAndAddresses = [
       ["ASSETS", assets.address],

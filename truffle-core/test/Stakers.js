@@ -4,7 +4,7 @@ const expect = require('truffle-assertions');
 // TODO: add more tests that execute withdraw
 
 contract('Stakers', (accounts) => {
-  const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts
+  const [owner, gameAddr, alice, bob, carol, dave, erin, frank, COO] = accounts
 
   let stakers
   let stake
@@ -24,11 +24,20 @@ contract('Stakers', (accounts) => {
     )
     await expect.reverts(
       stakers.setGameOwner(gameAddr, {from:alice}),
-      "Only owner can call this function",
+      "Only COO can call this function",
       "wrong sender, so it should revert"
     )
-    await expect.passes(
+    await expect.reverts(
       stakers.setGameOwner(gameAddr, {from:owner}),
+      "Only COO can call this function",
+      "wrong sender, even if it is owner, so it should revert"
+    )
+    await expect.passes(
+      stakers.setCOO(COO, {from:owner}),
+      "failed to set COO"
+    )
+    await expect.passes(
+      stakers.setGameOwner(gameAddr, {from:COO}),
       "failed to set game address"
     )
   })
@@ -39,20 +48,36 @@ contract('Stakers', (accounts) => {
       "Only owner can call this function",
       "wrong sender, so it should revert"
     )
+    await expect.reverts(
+      stakers.setCOO(alice, {from:alice}),
+      "Only owner can call this function",
+      "wrong sender, so it should revert"
+    )
     await expect.passes(
       stakers.setOwner(alice, {from:owner}),
       "failed to set new owner address"
     )
+    await expect.passes(
+      stakers.setCOO(COO, {from:alice}),
+      "failed to set COO"
+    )
     await expect.reverts(
       stakers.setGameOwner(gameAddr, {from:owner}),
-      "Only owner can call this function",
+      "Only COO can call this function",
+      "owner is not true owner anymore, so it should revert"
+    )
+    await expect.reverts(
+      stakers.setGameOwner(gameAddr, {from:alice}),
+      "Only COO can call this function",
       "owner is not true owner anymore, so it should revert"
     )
     await expect.passes(
-      stakers.setGameOwner(gameAddr, {from:alice}),
+      stakers.setGameOwner(gameAddr, {from:COO}),
       "failed to set game address by updated owner"
     )
   })
+  
+  return
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
