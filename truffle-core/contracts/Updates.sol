@@ -83,10 +83,12 @@ contract Updates is UpdatesBase {
         _stakers.update(0, msg.sender);
     }
 
-    // TODO: as soon as challenges code is done => remove onlyRelay requirement and open to everyone
+    function setAllowChallenges(bool areAllowed) external onlySuperUser { _allowChallenges = areAllowed; }
+
     // TODO: specify which leaf you challenge!!! And bring Merkle proof!
-    function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] calldata proofChallLeave, bytes32[] calldata providedRoots) external onlyRelay {
+    function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] calldata proofChallLeave, bytes32[] calldata providedRoots) external {
         // intData = [tz, level, levelVerifiable, idx]
+        require(_allowChallenges, "challenges are currently not allowed");
         uint8[4] memory intData = _cleanTimeAcceptedChallenges();
         bytes32 root = _assertFormallyCorrectChallenge(
             intData,

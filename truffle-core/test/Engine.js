@@ -9,6 +9,7 @@ const logUtils = require('../utils/matchLogUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
 
 const Utils = artifacts.require('Utils');
+const Proxy = artifacts.require('Proxy');
 const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');

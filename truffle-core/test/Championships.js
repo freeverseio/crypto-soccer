@@ -9,6 +9,7 @@ const deployUtils = require('../utils/deployUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Championships = artifacts.require('Championships');
+const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
@@ -65,16 +66,16 @@ contract('Championships', (accounts) => {
     }
     
     beforeEach(async () => {
-        constants = await ConstantsGetters.new().should.be.fulfilled;
-        champs = await Championships.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
-
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
         depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setContractOwners(assets, updates, owners);
         await assets.initSingleTZ(INIT_TZ, {from: owners.COO}).should.be.fulfilled;
+
+        constants = await ConstantsGetters.new().should.be.fulfilled;
+        champs = await Championships.new().should.be.fulfilled;
+        engine = await Engine.new().should.be.fulfilled;
 
         await champs.setEngineAdress(engine.address).should.be.fulfilled;
         await champs.setAssetsAdress(assets.address).should.be.fulfilled;

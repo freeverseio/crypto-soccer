@@ -61,11 +61,11 @@ contract('Updates', (accounts) => {
         const stakers  = await Stakers.new(stake).should.be.fulfilled;
         await stakers.setGameOwner(updates.address).should.be.fulfilled;
         for (trustedParty of owners.trustedParties) {
-            console.log("Add TrustedParty", trustedParty);
+            // console.log("Add TrustedParty", trustedParty);
             await stakers.addTrustedParty(trustedParty).should.be.fulfilled;
         }
         for (trustedParty of owners.trustedParties) {
-            console.log("Enrol TrustedParty", trustedParty);
+            // console.log("Enrol TrustedParty", trustedParty);
             await stakers.enroll({from:trustedParty, value: stake}).should.be.fulfilled;
         }
         return stakers;
@@ -93,7 +93,6 @@ contract('Updates', (accounts) => {
         snapshotId = snapShot['result'];
         VERSES_PER_DAY = await constants.get_VERSES_PER_DAY().should.be.fulfilled;
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
-
     });
     
     it('test getAllMatchdaysUTCInRound', async () =>  {
@@ -282,10 +281,10 @@ contract('Updates', (accounts) => {
     });
 
     it('update Timezone once', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owner, parties);
-        await deployUtils.enroll(stakers, stake, parties);
+        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
 
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -303,10 +302,11 @@ contract('Updates', (accounts) => {
     });
     
     it('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakers = await deployAndConfigureStakers(Stakers, owner, parties, updates);
-
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+        
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = -10);
@@ -350,9 +350,10 @@ contract('Updates', (accounts) => {
     
     it('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakers = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
         const cif = "ciao2";
         for (i = 0; i < 110; i++) {
             await moveToNextVerse(updates, extraSecs = 10);
@@ -389,9 +390,12 @@ contract('Updates', (accounts) => {
     // level 2: 640 leafs for each
     
     it('challenging a tz', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakers = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+
+        await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
@@ -414,7 +418,7 @@ contract('Updates', (accounts) => {
         // set the levelVerifiableByBC to adjust to as many leagues as you have
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
-        await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
+        await updates.setLevelVerifiableByBC(levelVerifiableByBC, {from: owners.relay}).should.be.fulfilled;
 
         // build merkle structs for 2 different days
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
@@ -520,7 +524,7 @@ contract('Updates', (accounts) => {
         //      the previous verse is not settled yet
         // In this case, it fails because of the first reason. TODO: add test for 2nd.
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
-        await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
+        await updates.setLevelVerifiableByBC(3, {from: owners.relay}).should.be.fulfilled;
 
         await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0], {from: erin}).should.be.rejected;
         
@@ -726,9 +730,10 @@ contract('Updates', (accounts) => {
     // C = incorrect day and incorrect half
     // 0: A, 1: B, 2: A => so the leafs provided by A are the correct ones and everyone fails to challenge A.
     it('vefiable challenge', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakers = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owner, parties);
+        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
@@ -756,7 +761,7 @@ contract('Updates', (accounts) => {
         // set the levelVerifiableByBC to adjust to as many leagues as you have
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
-        await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
+        await updates.setLevelVerifiableByBC(levelVerifiableByBC, {from: owners.relay}).should.be.fulfilled;
 
         // build merkle structs for 2 different days
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
@@ -772,6 +777,9 @@ contract('Updates', (accounts) => {
         await updates.updateTZ(root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
 
         // Level1: B
+        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.rejected;
+        await updates.setAllowChallenges(true, {from: owners.COO}).should.be.rejected;
+        await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.fulfilled;
 
         var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 

@@ -15,6 +15,7 @@ const deployUtils = require('../utils/deployUtils.js');
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
+const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
