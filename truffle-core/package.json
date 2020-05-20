@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@codechecks/client": "^0.1.10",
+    "@openzeppelin/contracts": "^3.0.1",
     "@truffle/hdwallet-provider": "^1.0.34",
     "bn.js": "^4.11.8",
     "json-bigint": "^0.3.0",
