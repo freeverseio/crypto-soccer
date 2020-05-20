@@ -11,6 +11,8 @@ contract Stakers {
   uint16 public constant updatersCapacity = 4;
 
   address public owner;
+  address public proposedOwner;
+  address public COO;
   address public gameOwner;
 
   mapping (address => bool) public isStaker;
@@ -28,6 +30,8 @@ contract Stakers {
   address [] public toBeRewarded;
   address[] public updaters;
 
+  // Permission handling
+  
   modifier onlyOwner {
     require( msg.sender == owner, "Only owner can call this function.");
         _;
@@ -39,24 +43,41 @@ contract Stakers {
     _;
   }
 
-  constructor(uint256 stake) public {
-    requiredStake = stake;
-    owner = msg.sender;
+  modifier onlyCOO {
+      require( msg.sender == COO, "Only COO can call this function.");
+          _;
   }
   
-  function setOwner(address _address) external onlyOwner {
-    owner = _address;
+  constructor(uint256 _stake) public {
+    requiredStake = _stake;
+    owner = msg.sender;
+  }
+    
+  function proposeOwner(address _addr) public onlyOwner {
+      proposedOwner = _addr;
   }
 
+  function acceptOwner() public {
+      require(msg.sender == proposedOwner, "only proposed owner can become owner");
+      owner = proposedOwner;
+      proposedOwner = address(0);
+  }
+
+  function setCOO(address _addr) external onlyOwner {
+      COO = _addr;
+  }
+  
+  // External / Public Functions
+
   /// @notice sets the address of the external contract that interacts with this contract
-  function setGameOwner(address _address) external onlyOwner {
+  function setGameOwner(address _address) external onlyCOO {
     require (_address != NULL_ADDR, "invalid address 0x0");
     gameOwner = _address;
   }
   
 
   /// @notice executes rewards
-  function executeReward() external onlyOwner {
+  function executeReward() external onlyCOO {
     require (toBeRewarded.length > 0, "failed to execute rewards: empty array");
     require (potBalance >= toBeRewarded.length, "failed to execute rewards: Not enough balance to share");
     for (uint256 i = 0; i < toBeRewarded.length; i++) {
@@ -86,7 +107,7 @@ contract Stakers {
   }
 
   /// @notice adds address as trusted party
-  function addTrustedParty(address _staker) external onlyOwner {
+  function addTrustedParty(address _staker) external onlyCOO {
     assertGoodCandidate(msg.sender);
     require(!isTrustedParty[_staker], "trying to add a trusted party that is already trusted");
     isTrustedParty[_staker] = true;
@@ -161,10 +182,13 @@ contract Stakers {
     require (level() == 0, "failed to finalize: no updaters should have been left");
   }
 
-  /// @notice get the current level
-  function level() public view returns (uint256) {
-    return updaters.length;
+
+  function addRewardToPot() external payable {
+    require (msg.value > 0, "failed to add reward of zero");
+    potBalance += msg.value;
   }
+
+  // Private Functions
 
   function addStaker(address _staker) private returns (bool) {
     if (_staker == NULL_ADDR) return false; // prevent null addr
@@ -205,10 +229,7 @@ contract Stakers {
     // NULL_ADDR.transfer(requiredStake); // burn stake
   }
   
-  function addRewardToPot() external payable {
-    require (msg.value > 0, "failed to add reward of zero");
-    potBalance += msg.value;
-  }
+
 
   function addRewardToUpdater(address _addr) private {
     if (howManyUpdates[_addr] == 0) {
@@ -225,6 +246,9 @@ contract Stakers {
     updaters.pop();
   }
 
+
+  // View Functions
+
   // this function iterates over a storage array, but of max length 4.
   function alreadyDidUpdate(address _address) public view returns (bool) {
     for (uint256 i = 0; i < updaters.length; i++) {
@@ -234,5 +258,11 @@ contract Stakers {
     }
     return false;
   }
+  
+  /// @notice get the current level
+  function level() public view returns (uint256) {
+    return updaters.length;
+  }
+
 }
 

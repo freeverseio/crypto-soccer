@@ -14,10 +14,34 @@ contract('Stakers', (accounts) => {
 
   beforeEach(async () => {
     stakers  = await Stakers.new(1000000000000000, {from:owner});
+    await stakers.setCOO(owner, {from: owner}).should.be.fulfilled;
     stake = await stakers.requiredStake();
   });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
+  it("propose/accept owner, and combination with setCOO" , async () => {
+    await stakers.proposeOwner(alice, {from: bob}).should.be.rejected; // only owner can
+    await stakers.proposeOwner(alice, {from: owner}).should.be.fulfilled;
+    await stakers.proposeOwner(bob, {from: owner}).should.be.fulfilled;
+
+    await stakers.setCOO(dave, {from: bob}).should.be.rejected; // only owner can
+    await stakers.setGameOwner(frank, {from: dave}).should.be.rejected; // only COO can
+    await stakers.setCOO(dave, {from: owner}).should.be.fulfilled;
+    await stakers.setGameOwner(frank, {from: dave}).should.be.fulfilled;
+
+    await stakers.acceptOwner({from: owner}).should.be.rejected; // only proposed owner = bob can
+    await stakers.acceptOwner({from: alice}).should.be.rejected; // only proposed owner = bob can
+    await stakers.acceptOwner({from: bob}).should.be.fulfilled;
+
+    await stakers.proposeOwner(carol, {from: owner}).should.be.rejected; // only owner = bob can
+    await stakers.proposeOwner(carol, {from: alice}).should.be.rejected; // only owner = bob can
+    await stakers.proposeOwner(carol, {from: bob}).should.be.fulfilled;
+
+    await stakers.setCOO(erin, {from: owner}).should.be.rejected; // only owner = bob can
+    await stakers.setGameOwner(frank, {from: erin}).should.be.rejected; // only COO = dave can
+    await stakers.setCOO(erin, {from: bob}).should.be.fulfilled;
+    await stakers.setGameOwner(frank, {from: erin}).should.be.fulfilled;
+  });
 
   it("Tests game address", async () => {
     await expect.reverts(
@@ -27,33 +51,12 @@ contract('Stakers', (accounts) => {
     )
     await expect.reverts(
       stakers.setGameOwner(gameAddr, {from:alice}),
-      "Only owner can call this function",
+      "Only COO can call this function.",
       "wrong sender, so it should revert"
     )
     await expect.passes(
       stakers.setGameOwner(gameAddr, {from:owner}),
       "failed to set game address"
-    )
-  })
-
-  it("Tests owner address change", async () => {
-    await expect.reverts(
-      stakers.setOwner(alice, {from:alice}),
-      "Only owner can call this function",
-      "wrong sender, so it should revert"
-    )
-    await expect.passes(
-      stakers.setOwner(alice, {from:owner}),
-      "failed to set new owner address"
-    )
-    await expect.reverts(
-      stakers.setGameOwner(gameAddr, {from:owner}),
-      "Only owner can call this function",
-      "owner is not true owner anymore, so it should revert"
-    )
-    await expect.passes(
-      stakers.setGameOwner(gameAddr, {from:alice}),
-      "failed to set game address by updated owner"
     )
   })
 
@@ -83,15 +86,26 @@ contract('Stakers', (accounts) => {
       stakers.enroll({from:alice, value: stake}),
       "failed to enroll alice"
     )
-    // TODO!!! WARNING!!! Uncomment these tests when bug is fixed:
-    // await expect.passes(
-    //   stakers.setOwner(bob, {from:owner}),
-    //   "failed to set new owner address"
-    // )
-    // await expect.passes(
-    //   stakers.addTrustedParty(carol, {from:bob}),
-    //   "failed to add carol as trusted party"
-    // )
+
+    await expect.passes(
+      stakers.proposeOwner(bob, {from: owner}),
+      "failed to set propose owner address"
+    )
+
+    await expect.passes(
+      stakers.acceptOwner({from: bob}),
+      "failed to accept owner"
+    )
+
+    await expect.passes(
+      stakers.setCOO(erin, {from: bob}),
+      "failed to set COO"
+    )
+
+    await expect.passes(
+      stakers.addTrustedParty(carol, {from:erin}),
+      "failed to add carol as trusted party"
+    )
   });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
