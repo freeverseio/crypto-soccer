@@ -5,7 +5,7 @@ import "database/sql"
 type PlaystoreOrderState string
 
 const (
-	PlaystoreOrderPending       PlaystoreOrderState = "pending"
+	PlaystoreOrderOpen          PlaystoreOrderState = "open"
 	PlaystoreOrderAssetAssigned PlaystoreOrderState = "asset_assigned"
 	PlaystoreOrderComplete      PlaystoreOrderState = "complete"
 	PlaystoreOrderRefunding     PlaystoreOrderState = "refunding"
@@ -27,7 +27,7 @@ type PlaystoreOrder struct {
 
 func NewPlaystoreOrder() *PlaystoreOrder {
 	order := PlaystoreOrder{}
-	order.State = PlaystoreOrderPending
+	order.State = PlaystoreOrderOpen
 	return &order
 }
 

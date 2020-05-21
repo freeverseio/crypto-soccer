@@ -49,7 +49,7 @@ func (b *Machine) Process() error {
 	ctx := context.Background()
 
 	switch b.order.State {
-	case storage.PlaystoreOrderPending:
+	case storage.PlaystoreOrderOpen:
 		return b.processPendingState(ctx)
 	case storage.PlaystoreOrderAssetAssigned:
 		return b.processAssetAssigned(ctx)
