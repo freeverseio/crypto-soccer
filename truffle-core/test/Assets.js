@@ -122,14 +122,13 @@ contract('Assets', (accounts) => {
     });
     
     
-   it('check cannot initialize contract twice', async () => {
+    it('check cannot initialize contract twice', async () => {
         await assets.init().should.be.rejected;
     });
 
-   it('emit event upon creation', async () => {
-        truffleAssert.eventEmitted(initTx, "AssetsInit", (event) => {
-            return event.creatorAddr.should.be.equal(owners.COO);
-        });
+    it('emit event upon init of the Assets contract', async () => {
+        past = await assets.getPastEvents( 'AssetsInit', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+        past[0].args.creatorAddr.should.be.equal(owners.superuser);
     });
 
    it('check initial and max number of players per team', async () =>  {

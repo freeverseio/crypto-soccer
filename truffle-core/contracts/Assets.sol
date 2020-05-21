@@ -17,6 +17,7 @@ contract Assets is AssetsView {
     function setMarket(address addr) public onlySuperUser {
         _market = addr;
         teamIdToOwner[ACADEMY_TEAM] = addr;
+        if (gameDeployDay == 0) { emit AssetsInit(msg.sender); }
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }
     
@@ -26,7 +27,7 @@ contract Assets is AssetsView {
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
-        emit AssetsInit(msg.sender);
+        if (_market == NULL_ADDR) { emit AssetsInit(msg.sender); }
     }
 
     // hack for testing: we can init only one timezone
@@ -35,7 +36,7 @@ contract Assets is AssetsView {
         require(gameDeployDay == 0, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
-        emit AssetsInit(msg.sender);
+        if (_market == NULL_ADDR) { emit AssetsInit(msg.sender); }
     }
     
 
