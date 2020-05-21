@@ -91,11 +91,14 @@ module.exports = function (deployer, network, accounts) {
       await stakers.proposeOwner(owners.superuser).should.be.fulfilled;
       await proxy.proposeCompany(owners.company).should.be.fulfilled;
 
-      // Execute the final ownerships (WARNING: needs privKeys)
-      await marketCrypto.acceptOwner({from: owners.superuser}).should.be.fulfilled;
-      await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled;
-      await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
- 
+      if (network == "test") {
+        console.log("Acquiring final ownership -- only available in TEST network -- requires privKeys");
+        await marketCrypto.acceptOwner({from: owners.superuser}).should.be.fulfilled;
+        await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled;
+        await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
+      } else {
+        console.log("You need to perform the final ownership stage with your HD wallets");
+      }
 
       // If we want stakers signed up during deploy, uncomment this:
       // await deployUtils.addTrustedParties(stakers, owners.COO, owners.trustedParties);
