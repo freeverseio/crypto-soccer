@@ -75,7 +75,9 @@ contract('Championships', (accounts) => {
 
         constants = await ConstantsGetters.new().should.be.fulfilled;
         champs = await Championships.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
+        precomp = await EnginePreComp.new().should.be.fulfilled;
+        applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
+        engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
 
         await champs.setEngineAdress(engine.address).should.be.fulfilled;
         await champs.setAssetsAdress(assets.address).should.be.fulfilled;
