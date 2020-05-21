@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	ps "github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
@@ -40,18 +39,18 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, errors.New("Not team owner")
 	}
 
-	data, err := playstore.InappPurchaseDataFromReceipt(args.Input.Receipt)
+	data, err := playstore.DataFromReceipt(args.Input.Receipt)
 	if err != nil {
 		return result, err
 	}
 
 	ctx := context.Background()
-	client, err := ps.New(b.googleCredentials)
+	client, err := playstore.NewGoogleClientService(b.googleCredentials)
 	if err != nil {
 		return result, err
 	}
 
-	purchase, err := client.VerifyProduct(
+	purchase, err := client.GetPurchase(
 		ctx,
 		data.PackageName,
 		data.ProductId,

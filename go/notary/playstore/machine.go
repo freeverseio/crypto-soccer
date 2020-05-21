@@ -5,33 +5,26 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 
-	"github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 type Machine struct {
-	googleCredentials []byte
-	client            *playstore.Client
-	order             storage.PlaystoreOrder
-	contracts         contracts.Contracts
-	pvc               *ecdsa.PrivateKey
-	iapTestOn         bool
+	client    ClientService
+	order     storage.PlaystoreOrder
+	contracts contracts.Contracts
+	pvc       *ecdsa.PrivateKey
+	iapTestOn bool
 }
 
 func New(
-	googleCredentials []byte,
+	client ClientService,
 	order storage.PlaystoreOrder,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	iapTestOn bool,
 ) (*Machine, error) {
-	client, err := playstore.New(googleCredentials)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Machine{
 		client:    client,
 		order:     order,
@@ -54,7 +47,15 @@ func (b *Machine) Process() error {
 	case storage.PlaystoreOrderAcknowledged:
 		return b.processAcknowledged(ctx)
 	case storage.PlaystoreOrderRefunding:
-		log.Warning("playerstoreorder refunding TODO")
+		return b.processRefundingState(ctx)
+	case storage.PlaystoreOrderFailed:
+		log.Warning("failed order ... skip")
+		return nil
+	case storage.PlaystoreOrderRefunded:
+		log.Warning("refunded order ... skip")
+		return nil
+	case storage.PlaystoreOrderComplete:
+		log.Warning("complete order ... skip")
 		return nil
 	default:
 		return fmt.Errorf("unknown state %v", b.order.State)
