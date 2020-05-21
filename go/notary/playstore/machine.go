@@ -1,9 +1,11 @@
 package playstore
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"fmt"
 
+	"github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
@@ -11,6 +13,7 @@ import (
 
 type Machine struct {
 	googleCredentials []byte
+	client            *playstore.Client
 	order             storage.PlaystoreOrder
 	contracts         contracts.Contracts
 	pvc               *ecdsa.PrivateKey
@@ -23,15 +26,19 @@ func New(
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	iapTestOn bool,
-) *Machine {
+) (*Machine, error) {
+	client, err := playstore.New(googleCredentials)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Machine{
-		googleCredentials: googleCredentials,
-		order:             order,
-		contracts:         contracts,
-		pvc:               pvc,
-		iapTestOn:         iapTestOn,
-	}
+		client:    client,
+		order:     order,
+		contracts: contracts,
+		pvc:       pvc,
+		iapTestOn: iapTestOn,
+	}, nil
 }
 
 func (b Machine) Order() storage.PlaystoreOrder {
@@ -39,9 +46,13 @@ func (b Machine) Order() storage.PlaystoreOrder {
 }
 
 func (b *Machine) Process() error {
+	ctx := context.Background()
+
 	switch b.order.State {
 	case storage.PlaystoreOrderPending:
-		return b.processPendingState()
+		return b.processPendingState(ctx)
+	case storage.PlaystoreOrderAssetAssigned:
+		return b.processAssetAssigned(ctx)
 	default:
 		return fmt.Errorf("unknown state %v", b.order.State)
 	}

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/awa/go-iap/playstore"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -13,14 +12,8 @@ import (
 	"google.golang.org/api/androidpublisher/v3"
 )
 
-func (b *Machine) processPendingState() error {
-	client, err := playstore.New(b.googleCredentials)
-	if err != nil {
-		return err
-	}
-	ctx := context.Background()
-
-	purchase, err := client.VerifyProduct(
+func (b *Machine) processPendingState(ctx context.Context) error {
+	purchase, err := b.client.VerifyProduct(
 		ctx,
 		b.order.PackageName,
 		b.order.ProductId,

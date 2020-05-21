@@ -8,8 +8,9 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestMachineCreation(t *testing.T) {
+func TestAssignedStateProcess(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
+	order.State = storage.PlaystoreOrderAssetAssigned
 	iapTestOn := true
 	_, err := playstore.New(
 		[]byte{},
