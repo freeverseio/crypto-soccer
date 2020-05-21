@@ -25,7 +25,7 @@ const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const Shop = artifacts.require('Shop');
-const Championships = artifacts.require('Championships');
+const Leagues = artifacts.require('Leagues');
 
 
 contract('FullLeague', (accounts) => {
@@ -332,10 +332,10 @@ contract('FullLeague', (accounts) => {
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
 
-        champs = await Championships.new().should.be.fulfilled;
+        leagues = await Leagues.new().should.be.fulfilled;
         teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
-        leagueData = await chllUtils.createLeagueData(champs, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
+        leagueData = await chllUtils.createLeagueData(leagues, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
         
         if (mode == WRITE_NEW_EXPECTED_RESULTS) {
             fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {

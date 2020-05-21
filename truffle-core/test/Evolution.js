@@ -26,7 +26,7 @@ const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const Shop = artifacts.require('Shop');
-const Championships = artifacts.require('Championships');
+const Leagues = artifacts.require('Leagues');
 
 
 contract('Evolution', (accounts) => {

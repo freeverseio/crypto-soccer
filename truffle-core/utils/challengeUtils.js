@@ -124,7 +124,7 @@ function clone(a) {
   return JSON.parse(JSON.stringify(a));
 }
 
-async function createLeagueData(champs, play, encodeLog, now, teamState442, teamId) {
+async function createLeagueData(leagues, play, encodeLog, now, teamState442, teamId) {
   let secsBetweenMatches = 12*3600;
   var leagueData = {
       seeds: [], // [2 * nMatchDays]
@@ -172,7 +172,7 @@ async function createLeagueData(champs, play, encodeLog, now, teamState442, team
   for (day = 0; day < nMatchdays; day++) {
       // 1st half
       for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
-          var {0: t0, 1: t1} = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
+          var {0: t0, 1: t1} = await leagues.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
           t0 = t0.toNumber();
           t1 = t1.toNumber();
           console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 0,  teams:", t0, t1);
@@ -194,7 +194,7 @@ async function createLeagueData(champs, play, encodeLog, now, teamState442, team
       leagueData.matchLogs.push([...allMatchLogs]);        
       // 2nd half
       for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
-          var {0: t0, 1: t1} = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
+          var {0: t0, 1: t1} = await leagues.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
           t0 = t0.toNumber();
           t1 = t1.toNumber();
           console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 1,  teams:", t0, t1);
@@ -216,7 +216,7 @@ async function createLeagueData(champs, play, encodeLog, now, teamState442, team
       }
       leagueData.teamStates.push([...allTeamsSkills]);        
       leagueData.matchLogs.push([...allMatchLogs]);   
-      var {0: rnking, 1: lPoints} = await champs.computeLeagueLeaderBoard([...leagueData.results], day, leagueData.seeds[2*day + 1]).should.be.fulfilled;
+      var {0: rnking, 1: lPoints} = await leagues.computeLeagueLeaderBoard([...leagueData.results], day, leagueData.seeds[2*day + 1]).should.be.fulfilled;
       leagueData.points.push(vec2str(lPoints));   
   }
   return leagueData;
