@@ -102,6 +102,7 @@ func processPlaystoreOrder(
 		log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, playerId, teamId)
 	}
 
+	// if !isTestPurchase(purchase) {
 	payload := fmt.Sprintf("playerId: %v", order.PlayerId)
 	if err := client.AcknowledgeProduct(
 		ctx,
@@ -113,6 +114,7 @@ func processPlaystoreOrder(
 		setState(order, storage.PlaystoreOrderPending, err.Error())
 		return err
 	}
+	// }
 
 	setState(order, storage.PlaystoreOrderComplete, "")
 	return nil
