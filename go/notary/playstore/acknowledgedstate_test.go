@@ -10,7 +10,7 @@ import (
 
 func TestAssignedStateProcess(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
-	order.State = storage.PlaystoreOrderAssetAssigned
+	order.State = storage.PlaystoreOrderAcknowledged
 	iapTestOn := true
 	_, err := playstore.New(
 		[]byte{},

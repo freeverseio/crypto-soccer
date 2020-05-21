@@ -51,8 +51,11 @@ func (b *Machine) Process() error {
 	switch b.order.State {
 	case storage.PlaystoreOrderOpen:
 		return b.processOpenState(ctx)
-	case storage.PlaystoreOrderAssetAssigned:
-		return b.processAssetAssigned(ctx)
+	case storage.PlaystoreOrderAcknowledged:
+		return b.processAcknowledged(ctx)
+	case storage.PlaystoreOrderRefunding:
+		log.Warning("playerstoreorder refunding TODO")
+		return nil
 	default:
 		return fmt.Errorf("unknown state %v", b.order.State)
 	}

@@ -5,12 +5,12 @@ import "database/sql"
 type PlaystoreOrderState string
 
 const (
-	PlaystoreOrderOpen          PlaystoreOrderState = "open"
-	PlaystoreOrderAssetAssigned PlaystoreOrderState = "asset_assigned"
-	PlaystoreOrderComplete      PlaystoreOrderState = "complete"
-	PlaystoreOrderRefunding     PlaystoreOrderState = "refunding"
-	PlaystoreOrderRefunded      PlaystoreOrderState = "refunded"
-	PlaystoreOrderFailed        PlaystoreOrderState = "failed"
+	PlaystoreOrderOpen         PlaystoreOrderState = "open"
+	PlaystoreOrderAcknowledged PlaystoreOrderState = "acknowledged"
+	PlaystoreOrderComplete     PlaystoreOrderState = "complete"
+	PlaystoreOrderRefunding    PlaystoreOrderState = "refunding"
+	PlaystoreOrderRefunded     PlaystoreOrderState = "refunded"
+	PlaystoreOrderFailed       PlaystoreOrderState = "failed"
 )
 
 type PlaystoreOrder struct {
