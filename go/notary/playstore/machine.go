@@ -47,8 +47,7 @@ func (b *Machine) Process() error {
 	case storage.PlaystoreOrderAcknowledged:
 		return b.processAcknowledged(ctx)
 	case storage.PlaystoreOrderRefunding:
-		log.Warning("playerstoreorder refunding TODO")
-		return nil
+		return b.processRefundingState(ctx)
 	case storage.PlaystoreOrderFailed:
 		log.Warning("failed order ... skip")
 		return nil
