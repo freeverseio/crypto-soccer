@@ -1082,8 +1082,7 @@ contract("Market", accounts => {
   });
 
   it("special players: check children of special players", async () => {
-    training = await TrainingPoints.new().should.be.fulfilled;
-    await training.setAssetsAddress(assets.address).should.be.fulfilled;
+    training= await TrainingPoints.new(assets.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     sumSkills = await market.getSumOfSkills(playerId).should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(16912);

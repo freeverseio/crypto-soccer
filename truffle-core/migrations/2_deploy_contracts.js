@@ -42,7 +42,7 @@ module.exports = function (deployer, network, accounts) {
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
     const engine = await deployer.deploy(Engine, enginePreComp.address, engineApplyBoosters.address).should.be.fulfilled;
-    const trainingPoints= await deployer.deploy(TrainingPoints).should.be.fulfilled;
+    const trainingPoints= await deployer.deploy(TrainingPoints, assets.address).should.be.fulfilled;
     const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
     const leagues = await deployer.deploy(Leagues).should.be.fulfilled;
     const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
@@ -89,8 +89,6 @@ module.exports = function (deployer, network, accounts) {
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
-    await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
-    await trainingPoints.setMarketAddress(market.address).should.be.fulfilled;
     await playAndEvolve.setTrainingAddress(trainingPoints.address).should.be.fulfilled;
     await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
     await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;

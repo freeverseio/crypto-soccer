@@ -282,7 +282,6 @@ contract('FullLeague', (accounts) => {
     }
 
     beforeEach(async () => {
-        training = await TrainingPoints.new().should.be.fulfilled;
         evo = await Evolution.new().should.be.fulfilled;
         play = await PlayAndEvolve.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
@@ -296,10 +295,9 @@ contract('FullLeague', (accounts) => {
         await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, owners.company).should.be.fulfilled;
         await assets.init({from: owners.COO}).should.be.fulfilled;
         
+        training= await TrainingPoints.new(assets.address).should.be.fulfilled;
         shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
-        await training.setAssetsAddress(assets.address).should.be.fulfilled;
-        await training.setMarketAddress(market.address).should.be.fulfilled;
         await play.setEngineAddress(engine.address).should.be.fulfilled;
         await play.setTrainingAddress(training.address).should.be.fulfilled;
         await play.setEvolutionAddress(evo.address).should.be.fulfilled;
