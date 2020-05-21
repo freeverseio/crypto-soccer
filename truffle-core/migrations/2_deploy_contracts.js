@@ -64,20 +64,13 @@ module.exports = function (deployer, network, accounts) {
       await updates.setRelay(accounts[0]).should.be.fulfilled;
       await stakers.setCOO(accounts[0]).should.be.fulfilled;
 
-      console.log("---");
       // do these operations:
       await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
-      console.log("---");
       await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
-      console.log("---");
       await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
-      console.log("---");
       await updates.initUpdates().should.be.fulfilled; 
-      console.log("---");
       await updates.setStakersAddress(stakers.address).should.be.fulfilled;
-      console.log("---");
       await stakers.setGameOwner(updates.address).should.be.fulfilled;
-      console.log("---");
 
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
@@ -88,17 +81,11 @@ module.exports = function (deployer, network, accounts) {
 
       // Prepare the final ownerships
       await marketCrypto.setCOO(owners.COO).should.be.fulfilled;
-      console.log("---");
       await stakers.setCOO(owners.COO).should.be.fulfilled;
-      console.log("---");
       await assets.setCOO(owners.COO).should.be.fulfilled;
-      console.log("---");
       await assets.setMarket(owners.market).should.be.fulfilled;
-      console.log("---");
       await updates.setRelay(owners.relay).should.be.fulfilled;
-      console.log("---");
       await proxy.setSuperUser(owners.superuser).should.be.fulfilled;
-      console.log("---");
 
       await marketCrypto.proposeOwner(owners.superuser).should.be.fulfilled;
       await stakers.proposeOwner(owners.superuser).should.be.fulfilled;
