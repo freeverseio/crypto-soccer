@@ -218,6 +218,17 @@ function getDefaultSetup(accounts) {
     }
   }
   
+  function getAccount0Owner(account0) {
+    return {
+          company:  account0,
+          superuser:  account0,
+          COO:  account0,
+          market:  account0,
+          relay:  account0,
+          trustedParties: [account0]
+      }
+  }
+  
   function getExplicitOrDefaultSetup(networkParams, accounts) {
     const { singleTimezone, owners, requiredStake } = networkParams;
     // Safety check: either ALL or NONE of the networkParams must be defined (otherwise, expect having forgotten to assign some)
@@ -229,7 +240,13 @@ function getDefaultSetup(accounts) {
     return needsDefaultValues ? getDefaultSetup(accounts) : networkParams;
   }
   
-async function setContractOwners(assets, updates, owners) {
+async function setProxyContractOwners(proxy, assets, updates, owners, prevCompany) {
+    // Order matters. First, company is established:
+    await proxy.proposeCompany(owners.company, {from: prevCompany}).should.be.fulfilled;
+    await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
+    // company authorizes superUser to do everything else:
+    await proxy.setSuperUser(owners.superuser, {from: owners.company}).should.be.fulfilled;
+    // finally, superUser sets the rest of the roles:
     await assets.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
     await assets.setMarket(owners.market, {from: owners.superuser}).should.be.fulfilled;
     await updates.setRelay(owners.relay, {from: owners.superuser}).should.be.fulfilled;
@@ -246,6 +263,7 @@ module.exports = {
     unenroll,
     getExplicitOrDefaultSetup,
     getDefaultSetup,
-    setContractOwners
+    setProxyContractOwners,
+    getAccount0Owner
 }
 

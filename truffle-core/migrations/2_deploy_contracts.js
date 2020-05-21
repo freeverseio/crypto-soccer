@@ -32,12 +32,12 @@ const deployUtils = require('../utils/deployUtils.js');
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
     const { singleTimezone, owners, requiredStake } = deployUtils.getExplicitOrDefaultSetup(deployer.networks[network], accounts);
-
+    const account0Owners = deployUtils.getAccount0Owner(accounts[0]);
     const versionNumber = 0;
     const proxyAddress  = "0x0";
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
-      await deployUtils.deploy(versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges).should.be.fulfilled;
-  
+      await deployUtils.deploy(versionNumber, account0Owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges).should.be.fulfilled;
+
     const stakers  = await deployer.deploy(Stakers, requiredStake).should.be.fulfilled;
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
@@ -58,7 +58,7 @@ module.exports = function (deployer, network, accounts) {
     console.log("Setting up ...");
 
     if (versionNumber == 0) { 
-      await deployUtils.setContractOwners(assets, updates, owners).should.be.fulfilled;
+      await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, account0Owners.company).should.be.fulfilled;
 
       await marketCrypto.proposeOwner(owners.superuser).should.be.fulfilled;
       await marketCrypto.acceptOwner({from: owners.superuser}).should.be.fulfilled;

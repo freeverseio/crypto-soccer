@@ -299,7 +299,7 @@ contract('Evolution', (accounts) => {
         owners = defaultSetup.owners;
         depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         [proxy, assets, market, updates, challenges] = depl;
-        await deployUtils.setContractOwners(assets, updates, owners);
+        await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, owners.company).should.be.fulfilled;
         await assets.init({from: owners.COO}).should.be.fulfilled;
         
         shop = await Shop.new().should.be.fulfilled;

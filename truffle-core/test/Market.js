@@ -49,7 +49,7 @@ contract("Market", accounts => {
     owners = defaultSetup.owners;
     depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
     [proxy, assets, market, updates] = depl;
-    await deployUtils.setContractOwners(assets, updates, owners);
+    await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, owners.company).should.be.fulfilled;
 
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
