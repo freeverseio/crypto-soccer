@@ -41,6 +41,17 @@ contract('Stakers', (accounts) => {
     await stakers.setGameOwner(frank, {from: erin}).should.be.rejected; // only COO = dave can
     await stakers.setCOO(erin, {from: bob}).should.be.fulfilled;
     await stakers.setGameOwner(frank, {from: erin}).should.be.fulfilled;
+
+    past = await stakers.getPastEvents( 'ProposedOwner', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.proposedOwner.should.be.equal(alice);
+    past[1].args.proposedOwner.should.be.equal(bob);
+    past[2].args.proposedOwner.should.be.equal(carol);
+    past = await stakers.getPastEvents( 'AcceptedNewOwner', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.newOwner.should.be.equal(bob);
+    past = await stakers.getPastEvents( 'NewCOO', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.newCOO.should.be.equal(owner);
+    past[1].args.newCOO.should.be.equal(dave);
+    past[2].args.newCOO.should.be.equal(erin);
   });
 
   it("Tests game address", async () => {
@@ -58,6 +69,8 @@ contract('Stakers', (accounts) => {
       stakers.setGameOwner(gameAddr, {from:owner}),
       "failed to set game address"
     )
+    past = await stakers.getPastEvents( 'NewGameOwner', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.newOwner.should.be.equal(gameAddr);
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,6 +146,7 @@ contract('Stakers', (accounts) => {
     await stakers.addTrustedParty(alice, {from:owner}).should.be.fulfilled;
     await stakers.enroll({from:alice, value: stake}).should.be.fulfilled;
     await stakers.update(level = 0, alice, {from:gameAddr}).should.be.fulfilled;
+
     await expect.reverts(
       stakers.unEnroll({from:alice}),
       "failed to unenroll: staker currently updating",
@@ -143,6 +157,10 @@ contract('Stakers', (accounts) => {
       stakers.unEnroll({from:alice}),
       "failed unenrolling alice"
     )
+
+    past = await stakers.getPastEvents( 'NewGameLevel', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.level.toNumber().should.be.equal(1);
+
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
