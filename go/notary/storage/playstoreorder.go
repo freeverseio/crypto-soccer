@@ -54,7 +54,7 @@ func PendingPlaystoreOrders(tx *sql.Tx) ([]PlaystoreOrder, error) {
 	signature,
 	state,
 	state_extra 
-	FROM playstore_orders WHERE state='pending';`)
+	FROM playstore_orders WHERE NOT (state='failed' OR state='refunded' OR state='complete');`)
 	if err != nil {
 		return nil, err
 	}

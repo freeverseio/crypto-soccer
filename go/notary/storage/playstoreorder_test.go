@@ -65,7 +65,15 @@ func TestPlaystoreOrderPendingOrders(t *testing.T) {
 	assert.Equal(t, len(orders), 1)
 
 	order.OrderId = "43d1"
-	order.State = storage.PlaystoreOrderPending
+	order.State = storage.PlaystoreOrderAssetAssigned
+	assert.NilError(t, order.Insert(tx))
+
+	orders, err = storage.PendingPlaystoreOrders(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(orders), 2)
+
+	order.OrderId = "43d2"
+	order.State = storage.PlaystoreOrderComplete
 	assert.NilError(t, order.Insert(tx))
 
 	orders, err = storage.PendingPlaystoreOrders(tx)
