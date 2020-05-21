@@ -109,16 +109,12 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 	log.Debugf("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
 
 	switch v := e.Value.(type) {
-	case assets.AssetsTeamTransfer:
-		// First event is: team transfer of Academy Team.
-		// So we create Academy, InTransitTeam, etc, first.
-		err := p.assetsInitProcessor.Process(tx)
-		if err != nil {
-			return err
-		}
-		return ConsumeTeamTransfer(tx, v)
+	case assets.AssetsAssetsInit:
+		return p.assetsInitProcessor.Process(tx, v)
 	case assets.AssetsDivisionCreation:
 		return p.divisionCreationProcessor.Process(tx, v)
+	case assets.AssetsTeamTransfer:
+		return ConsumeTeamTransfer(tx, v)
 	case market.MarketPlayerStateChange:
 		return ConsumePlayerStateChange(tx, p.contracts, p.namesdb, v)
 	case updates.UpdatesActionsSubmission:
