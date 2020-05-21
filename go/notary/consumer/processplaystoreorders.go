@@ -7,6 +7,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 func ProcessPlaystoreOrders(
@@ -33,7 +34,8 @@ func ProcessPlaystoreOrders(
 			return err
 		}
 		if err := machine.Process(); err != nil {
-			return err
+			log.Error(err)
+			continue
 		}
 		if err := machine.Order().UpdateState(tx); err != nil {
 			return err
