@@ -5,9 +5,12 @@ import "database/sql"
 type PlaystoreOrderState string
 
 const (
-	PlaystoreOrderPending  PlaystoreOrderState = "pending"
-	PlaystoreOrderComplete PlaystoreOrderState = "complete"
-	PlaystoreOrderFailed   PlaystoreOrderState = "failed"
+	PlaystoreOrderOpen         PlaystoreOrderState = "open"
+	PlaystoreOrderAcknowledged PlaystoreOrderState = "acknowledged"
+	PlaystoreOrderComplete     PlaystoreOrderState = "complete"
+	PlaystoreOrderRefunding    PlaystoreOrderState = "refunding"
+	PlaystoreOrderRefunded     PlaystoreOrderState = "refunded"
+	PlaystoreOrderFailed       PlaystoreOrderState = "failed"
 )
 
 type PlaystoreOrder struct {
@@ -24,7 +27,7 @@ type PlaystoreOrder struct {
 
 func NewPlaystoreOrder() *PlaystoreOrder {
 	order := PlaystoreOrder{}
-	order.State = PlaystoreOrderPending
+	order.State = PlaystoreOrderOpen
 	return &order
 }
 
@@ -51,7 +54,7 @@ func PendingPlaystoreOrders(tx *sql.Tx) ([]PlaystoreOrder, error) {
 	signature,
 	state,
 	state_extra 
-	FROM playstore_orders WHERE state='pending';`)
+	FROM playstore_orders WHERE NOT (state='failed' OR state='refunded' OR state='complete');`)
 	if err != nil {
 		return nil, err
 	}

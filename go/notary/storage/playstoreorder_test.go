@@ -9,7 +9,7 @@ import (
 
 func TestPlaystoreOrderCreate(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
-	assert.Equal(t, order.State, storage.PlaystoreOrderPending)
+	assert.Equal(t, order.State, storage.PlaystoreOrderOpen)
 }
 
 func TestPlaystoreOrderInsert(t *testing.T) {
@@ -35,7 +35,7 @@ func TestPlaystoreOrderInsert(t *testing.T) {
 	assert.Equal(t, *result, *order)
 }
 
-func TestPlaystoreOrderPendingOrders(t *testing.T) {
+func TestPlaystoreOrderOpenOrders(t *testing.T) {
 	tx, err := db.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
@@ -57,7 +57,7 @@ func TestPlaystoreOrderPendingOrders(t *testing.T) {
 	assert.Equal(t, len(orders), 0)
 
 	order.OrderId = "43d"
-	order.State = storage.PlaystoreOrderPending
+	order.State = storage.PlaystoreOrderOpen
 	assert.NilError(t, order.Insert(tx))
 
 	orders, err = storage.PendingPlaystoreOrders(tx)
@@ -65,7 +65,15 @@ func TestPlaystoreOrderPendingOrders(t *testing.T) {
 	assert.Equal(t, len(orders), 1)
 
 	order.OrderId = "43d1"
-	order.State = storage.PlaystoreOrderPending
+	order.State = storage.PlaystoreOrderAcknowledged
+	assert.NilError(t, order.Insert(tx))
+
+	orders, err = storage.PendingPlaystoreOrders(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(orders), 2)
+
+	order.OrderId = "43d2"
+	order.State = storage.PlaystoreOrderComplete
 	assert.NilError(t, order.Insert(tx))
 
 	orders, err = storage.PendingPlaystoreOrders(tx)
@@ -90,7 +98,7 @@ func TestPlaystoreOrderUpdateState(t *testing.T) {
 	order.Signature = "erere"
 	assert.NilError(t, order.Insert(tx))
 
-	order.State = storage.PlaystoreOrderPending
+	order.State = storage.PlaystoreOrderOpen
 	order.StateExtra = "recdia"
 	assert.NilError(t, order.UpdateState(tx))
 

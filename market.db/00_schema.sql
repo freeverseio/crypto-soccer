@@ -39,7 +39,7 @@ CREATE TABLE shop_items (
     PRIMARY KEY(uuid)
 );
 
-CREATE TYPE playstore_order_state AS ENUM ('pending','complete', 'failed');
+CREATE TYPE playstore_order_state AS ENUM ('open','acknowledged', 'complete', 'refunding', 'refunded', 'failed');
 CREATE TABLE playstore_orders(
     order_id TEXT NOT NULL,
     package_name TEXT NOT NULL,
