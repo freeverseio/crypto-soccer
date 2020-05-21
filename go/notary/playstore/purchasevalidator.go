@@ -27,3 +27,12 @@ func (b PurchaseValidator) IsPending() bool {
 func (b PurchaseValidator) IsAcknowledged() bool {
 	return b.purchase.AcknowledgementState == 1
 }
+
+func (b PurchaseValidator) IsTest() bool {
+	if b.purchase.PurchaseType != nil {
+		if *b.purchase.PurchaseType == 0 {
+			return true
+		}
+	}
+	return false
+}

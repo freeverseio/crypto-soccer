@@ -9,7 +9,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/api/androidpublisher/v3"
 )
 
 func (b *Machine) processOpenState(ctx context.Context) error {
@@ -24,9 +23,25 @@ func (b *Machine) processOpenState(ctx context.Context) error {
 		return nil
 	}
 
-	log.Infof("Order %v, state %v, consumed %v, ack %v", purchase.OrderId, purchase.PurchaseState, purchase.ConsumptionState, purchase.AcknowledgementState)
+	validator := NewPurchaseValidator(*purchase)
+	if validator.IsCanceled() {
+		b.setState(storage.PlaystoreOrderComplete, "cancelled")
+		return nil
+	}
+	if validator.IsPending() {
+		b.setState(storage.PlaystoreOrderOpen, "pending")
+		return nil
+	}
+	if !validator.IsPurchased() {
+		b.setState(storage.PlaystoreOrderFailed, "invalid puchase state")
+		return nil
+	}
+	if validator.IsAcknowledged() {
+		b.setState(storage.PlaystoreOrderFailed, "already acknowledged")
+		return nil
+	}
 
-	if isTestPurchase(purchase) && !b.iapTestOn {
+	if validator.IsTest() && !b.iapTestOn {
 		log.Warningf("[consumer|iap] received test orderId %v ... skip creating player", purchase.OrderId)
 	} else {
 		if err := b.assignAsset(); err != nil {
@@ -38,15 +53,6 @@ func (b *Machine) processOpenState(ctx context.Context) error {
 
 	b.setState(storage.PlaystoreOrderAssetAssigned, "")
 	return nil
-}
-
-func isTestPurchase(purchase *androidpublisher.ProductPurchase) bool {
-	if purchase.PurchaseType != nil {
-		if *purchase.PurchaseType == 0 { // Test
-			return true
-		}
-	}
-	return false
 }
 
 func (b Machine) assignAsset() error {

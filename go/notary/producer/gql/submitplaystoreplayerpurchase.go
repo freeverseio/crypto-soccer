@@ -1,10 +1,12 @@
 package gql
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
+	ps "github.com/awa/go-iap/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
@@ -41,6 +43,30 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	data, err := playstore.InappPurchaseDataFromReceipt(args.Input.Receipt)
 	if err != nil {
 		return result, err
+	}
+
+	ctx := context.Background()
+	client, err := ps.New(b.googleCredentials)
+	if err != nil {
+		return result, err
+	}
+
+	purchase, err := client.VerifyProduct(
+		ctx,
+		data.PackageName,
+		data.ProductId,
+		data.PurchaseToken,
+	)
+	if err != nil {
+		return result, err
+	}
+
+	validator := playstore.NewPurchaseValidator(*purchase)
+	if validator.IsCanceled() {
+		return result, errors.New("cancelled order")
+	}
+	if validator.IsAcknowledged() {
+		return result, errors.New("already acknowledged order")
 	}
 
 	value := int64(1000)     // TODO: value is forced to be 1000
