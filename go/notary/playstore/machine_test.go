@@ -9,14 +9,18 @@ import (
 )
 
 func TestMachineCreation(t *testing.T) {
-	order := storage.NewPlaystoreOrder()
+	client := NewMockClientService()
 	iapTestOn := true
-	_, err := playstore.New(
-		[]byte{},
+
+	order := storage.NewPlaystoreOrder()
+	m, err := playstore.New(
+		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
 		iapTestOn,
 	)
-	assert.Error(t, err, "unexpected end of JSON input")
+	assert.NilError(t, err)
+	assert.NilError(t, m.Process())
+	assert.Equal(t, m.Order().State, storage.PlaystoreOrderFailed)
 }
