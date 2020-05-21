@@ -22,9 +22,14 @@ func ProcessPlaystoreOrders(
 		return err
 	}
 
+	client, err := playstore.NewGoogleClientService(googleCredentials)
+	if err != nil {
+		return err
+	}
+
 	for _, order := range orders {
 		machine, err := playstore.New(
-			googleCredentials,
+			client,
 			order,
 			contracts,
 			pvc,
