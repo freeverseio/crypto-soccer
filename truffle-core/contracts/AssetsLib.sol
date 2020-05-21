@@ -11,6 +11,16 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     
     event TeamTransfer(uint256 teamId, address to);
 
+    modifier onlyMarket() {
+        require(msg.sender == _market, "Only market owner is authorized.");
+        _;
+    }
+
+    modifier onlyCOO() {
+        require(msg.sender == _COO, "Only COO is authorized.");
+        _;
+    }
+
     function _tzExists(uint8 timeZone) internal pure returns(bool) {
         return(timeZone > NULL_TIMEZONE && timeZone < 25);
     }

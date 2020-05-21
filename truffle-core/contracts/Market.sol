@@ -22,7 +22,12 @@ contract Market is MarketView {
     event ProposedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
     event UpdatedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
 
-    function setCryptoMarketAddress(address addr) external {
+    modifier onlyCryptoMarket() {
+        require(msg.sender == _cryptoMktAddr, "Only CryptoMarket is authorized.");
+        _;
+    }
+
+    function setCryptoMarketAddress(address addr) external onlyCOO {
         _cryptoMktAddr = addr;
     }
     
@@ -31,12 +36,12 @@ contract Market is MarketView {
         _teamIdToIsBuyNowForbidden[teamId] = !isAllowed;
     }
     
-    function setIsPlayerFrozenCrypto(uint256 playerId, bool isFrozen) public {
+    function setIsPlayerFrozenCrypto(uint256 playerId, bool isFrozen) public onlyCryptoMarket {
         _playerIdToIsFrozenCrypto[playerId] = isFrozen;
         emit PlayerFreezeCrypto(playerId, isFrozen);
     }
 
-    function proposeNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime) public {
+    function proposeNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime) public onlyCOO{
         _maxSumSkillsBuyNowPlayerProposed = newSumSkills;
         _maxSumSkillsBuyNowPlayerMinLapseProposed = newLapseTime;
         _maxSumSkillsBuyNowPlayerLastUpdate = now;
@@ -44,14 +49,14 @@ contract Market is MarketView {
     }
 
     // maxSumSkills can always be lowered, regardless of lapse period 
-    function lowerNewMaxSumSkillsBuyNowPlayer(uint256 newMaxSum) public {
+    function lowerNewMaxSumSkillsBuyNowPlayer(uint256 newMaxSum) public onlyCOO {
         require (newMaxSum < _maxSumSkillsBuyNowPlayer, "newMaxSum is not lower than previous");
         _maxSumSkillsBuyNowPlayer = newMaxSum;
         emit UpdatedNewMaxSumSkillsBuyNowPlayer(newMaxSum, _maxSumSkillsBuyNowPlayerMinLapse);
     }
     
     // maxSumSkills can only grow if enough time has passed 
-    function updateNewMaxSumSkillsBuyNowPlayer() public {
+    function updateNewMaxSumSkillsBuyNowPlayer() public onlyCOO {
         require (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapse),
             "not enough time passed to update new maxSumSkills"
         );
@@ -60,7 +65,8 @@ contract Market is MarketView {
         emit UpdatedNewMaxSumSkillsBuyNowPlayer(_maxSumSkillsBuyNowPlayer, _maxSumSkillsBuyNowPlayerMinLapse);
     }
     
-    function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
+    // TODO: require signature from team owner
+    function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public onlyCOO {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
         bool success;
@@ -74,7 +80,7 @@ contract Market is MarketView {
         require(success, "this team is already signed up in 7 contrained friendly championships");
     }
     
-    function decreaseMaxAllowedAcquisitions(uint256 teamId) public {
+    function decreaseMaxAllowedAcquisitions(uint256 teamId) private {
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
         if (remainingAcqs == 0) return;
         for (uint8 acq = 0; acq < MAX_ACQUISITON_CONSTAINTS; acq++) {
@@ -92,7 +98,7 @@ contract Market is MarketView {
         uint256 playerId,
         bytes32[2] memory sig,
         uint8 sigV
-    ) public {
+    ) public onlyMarket {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreezePlayer requirements not met");
         // // Freeze player
         _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
@@ -102,7 +108,7 @@ contract Market is MarketView {
     function transferBuyNowPlayer(
         uint256 playerId,
         uint256 targetTeamId
-     ) public {
+     ) public onlyMarket {
         // isAcademy checks that player isSpecial, and not written.
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
         require(getSumOfSkills(playerId) < _maxSumSkillsBuyNowPlayer, "buy now player has sum of skills larger than allowed");
@@ -120,8 +126,7 @@ contract Market is MarketView {
     function transferPlayerFromCryptoMkt(
         uint256 playerId,
         uint256 targetTeamId
-     ) external {
-        require(msg.sender == _cryptoMktAddr, "only authorized cryptoMarket contract can transfer players");
+     ) external onlyCryptoMarket {
         transferPlayer(playerId, targetTeamId);
         decreaseMaxAllowedAcquisitions(targetTeamId);
     }
@@ -135,7 +140,7 @@ contract Market is MarketView {
         bytes32[2] memory sig,
         uint8 sigV,
         bool isOffer2StartAuction
-     ) public {
+     ) public onlyMarket {
         require(areCompletePlayerAuctionRequirementsOK(
             sellerHiddenPrice,
             validUntil,
@@ -160,7 +165,7 @@ contract Market is MarketView {
         uint256 teamId,
         bytes32[2] memory sig,
         uint8 sigV
-    ) public {
+    ) public onlyMarket {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezeTeam requirements not met");
         // // Freeze player
         _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
@@ -176,7 +181,7 @@ contract Market is MarketView {
         uint8 sigV,
         address buyerAddress,
         bool isOffer2StartAuction
-     ) public {
+     ) public onlyMarket {
         bool ok = areCompleteTeamAuctionRequirementsOK(
             sellerHiddenPrice,
             validUntil,
@@ -200,7 +205,7 @@ contract Market is MarketView {
         bytes32 sigS,
         uint8 sigV,
         bool returnToAcademy
-    ) public {
+    ) public onlyMarket {
         uint256 state = getPlayerState(playerId);
         uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
         address owner = getOwnerTeam(teamIdOrigin);
@@ -229,7 +234,7 @@ contract Market is MarketView {
         }
     }
 
-    function transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
+    function transferPlayer(uint256 playerId, uint256 teamIdTarget) private  {
         // warning: check of ownership of players and teams should be done before calling this function
         // so in this function, both teams are asumed to exist, be different, and belong to the rightful (nonBot) owners
 
@@ -290,7 +295,7 @@ contract Market is MarketView {
         emit PlayerStateChange(playerId, state);
     }
         
-    function transferTeam(uint256 teamId, address addr) public {
+    function transferTeam(uint256 teamId, address addr) private {
         // requiring that team is not bot already ensures that tz and countryIdxInTz exist 
         require(!isBotTeam(teamId), "cannot transfer a bot team");
         require(addr != NULL_ADDR, "cannot transfer to a null address");

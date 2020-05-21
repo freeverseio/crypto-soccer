@@ -1,199 +1,135 @@
 pragma solidity >= 0.6.3;
 
+import "@openzeppelin/contracts/math/SafeMath.sol";
+
 // TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
 
-contract Owned {
-  address public owner = address(0x0);
+contract Stakers {
+  using SafeMath for uint256;
+  
+  address constant internal NULL_ADDR = address(0x0);
+  uint16 public constant updatersCapacity = 4;
 
-  constructor() public {
-    owner = msg.sender;
-  }
-  function setOwner(address _address) external virtual onlyOwner {
-    owner = _address;
-  }
+  address public owner;
+  address public proposedOwner;
+  address public COO;
+  address public gameOwner;
+
+  mapping (address => bool) public isStaker;
+  mapping (address => bool) public isSlashed;
+  mapping (address => bool) public isTrustedParty;
+
+  mapping (address => uint256) public stakes;
+  mapping (address => uint256) public pendingWithdrawals;
+  mapping (address => uint256) public howManyUpdates;
+  
+  uint256 public nStakers;  
+  uint256 public requiredStake;
+  uint256 public potBalance;
+  uint256 public totalNumUpdates;
+  address [] public toBeRewarded;
+  address[] public updaters;
+
+  // Permission handling
+  
   modifier onlyOwner {
     require( msg.sender == owner, "Only owner can call this function.");
         _;
   }
-}
-
-contract Rewards is Owned{
-
-  uint balanceToShare = 0;
-  uint totalNumUpdates = 0;
-  mapping (address => uint) pendingWithdrawals;
-  mapping (address => uint) howManyUpdates;
-  address [] whoToBeRewarded;
-
-  function addReward() external payable {
-    require (msg.value > 0, "failed to add reward of zero");
-    balanceToShare += msg.value;
-  }
-
-  function execute() external onlyOwner {
-    require (whoToBeRewarded.length > 0, "failed to execute rewards: empty array");
-    require (balanceToShare >= whoToBeRewarded.length, "failed to execute rewards: Not enough balance to share");
-    uint amount = balanceToShare / totalNumUpdates;
-    for (uint i=0; i<whoToBeRewarded.length; i++) {
-    }
-    for (uint i=0; i<whoToBeRewarded.length; i++) {
-      address who = whoToBeRewarded[i];
-      pendingWithdrawals[who] = amount*howManyUpdates[who];
-      howManyUpdates[who] = 0;
-    }
-    delete whoToBeRewarded;
-    balanceToShare = 0;
-    totalNumUpdates = 0;
-  }
-
-  function withdraw(address payable _addr) public onlyOwner {
-    _addr.transfer(pendingWithdrawals[_addr]);
-    pendingWithdrawals[_addr] = 0;
-  }
-
-  function push(address _addr) external onlyOwner {
-    require (_addr != address(0x0));
-    if (howManyUpdates[_addr] == 0)
-    {
-      whoToBeRewarded.push(_addr);
-    }
-    howManyUpdates[_addr] += 1;
-    totalNumUpdates++;
-  }
-}
-
-contract AddressStack is Owned{
-  uint16 public constant capacity = 4;
-  uint16 public length = 0;
-  address[capacity] private array;
-
-  /// @notice adds a new element. Reverts in case the element is found in array or array is full
-  function push(address _address) external onlyOwner {
-    require (length < capacity, "cannot push to a full AddressStack");
-    require (!contains(_address), "cannot push, address is already in AddressStack");
-    array[length++] = _address;
-  }
-
-  /// notice: removes the last element that was pushed. Reverts in case it is empty.
-  /// returns the element that has been removed from the array
-  function pop() external  onlyOwner returns (address _address) {
-    require (length > 0, "cannot pop from an empty AddressStack");
-    _address = array[--length];
-  }
-
-  function contains(address _address) public view returns (bool) {
-    for (uint16 i=0; i<length; i++) {
-      if (array[i] == _address) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
-contract AddressMapping is Owned{
-
-  mapping(address => bool) public data;
-
-  function add(address _address) external onlyOwner {
-    require (!has(_address), "failed to add to AddressMapping, address already exists");
-    data[_address] = true;
-  }
-  function has(address _address) public view returns (bool) {
-    return data[_address] == true;
-  }
-}
-
-
-contract Stakers is Owned {
-
-  uint16 public constant NUM_STAKERS = 32;
-
-  uint public requiredStake;
-  address public gameOwner = address(0x0);
-  AddressStack private updaters = new AddressStack();
-  Rewards public rewards = new Rewards();
-  address[NUM_STAKERS] public stakers;
-  AddressMapping public slashed = new AddressMapping();
-  AddressMapping public trustedParties = new AddressMapping();
-
-  mapping (address => uint) stakes;
-
-
-  // ----------------- modifiers -----------------------
 
   modifier onlyGame {
-    require(msg.sender == gameOwner && gameOwner != address(0x0),
+    require(msg.sender == gameOwner && gameOwner != NULL_ADDR,
             "Only gameOwner can call this function.");
     _;
   }
 
-  // ----------------- public functions -----------------------
-
-  constructor(uint stake) public {
-    requiredStake =  stake;
+  modifier onlyCOO {
+      require( msg.sender == COO, "Only COO can call this function.");
+          _;
+  }
+  
+  constructor(uint256 _stake) public {
+    requiredStake = _stake;
+    owner = msg.sender;
+  }
+    
+  function proposeOwner(address _addr) public onlyOwner {
+      proposedOwner = _addr;
   }
 
-  function setOwner(address _address) external override (Owned) onlyOwner {
-    owner = _address;
-    updaters.setOwner(_address);
-    rewards.setOwner(_address);
-    slashed.setOwner(_address);
-    trustedParties.setOwner(_address);
+  function acceptOwner() public {
+      require(msg.sender == proposedOwner, "only proposed owner can become owner");
+      owner = proposedOwner;
+      proposedOwner = address(0);
   }
 
-  /// @notice adds amount to rewards contract
-  function addReward() external payable {
-    rewards.addReward.value(msg.value)();
+  function setCOO(address _addr) external onlyOwner {
+      COO = _addr;
   }
+  
+  // External / Public Functions
+
+  /// @notice sets the address of the external contract that interacts with this contract
+  function setGameOwner(address _address) external onlyCOO {
+    require (_address != NULL_ADDR, "invalid address 0x0");
+    gameOwner = _address;
+  }
+  
 
   /// @notice executes rewards
-  function executeReward() external {
-    rewards.execute();
-  }
-
-  /// @notice transfers earnings to the calling staker
-  function withdraw() external {
-    require (isStaker(msg.sender), "failed to withdraw: staker not registered");
-    rewards.withdraw(msg.sender);
-    if (stakes[msg.sender] > requiredStake)
-    {
-      uint amount = stakes[msg.sender] - requiredStake;
-      stakes[msg.sender] = requiredStake;
-      msg.sender.transfer(amount);
+  function executeReward() external onlyCOO {
+    require (toBeRewarded.length > 0, "failed to execute rewards: empty array");
+    require (potBalance >= toBeRewarded.length, "failed to execute rewards: Not enough balance to share");
+    for (uint256 i = 0; i < toBeRewarded.length; i++) {
+      address who = toBeRewarded[i];
+      // better to multiply, and then divide, each time, to minimize rounding errors.
+      pendingWithdrawals[who] += (potBalance * howManyUpdates[who]) / totalNumUpdates;
+      howManyUpdates[who] = 0;
     }
+    delete toBeRewarded;
+    potBalance = 0; // there could be a negligible loss of funds in the Pot.
+    totalNumUpdates = 0;
+  }  
+
+  /// @notice transfers pendingWithdrawals to the calling staker; the stake remains until unenrol is called
+  function withdraw() external {
+    // no need to require (isStaker[msg.sender], "failed to withdraw: staker not registered");
+    uint256 amount = pendingWithdrawals[msg.sender];
+    require(amount > 0, "nothing to withdraw by this msg.sender");
+    pendingWithdrawals[msg.sender] = 0;
+    msg.sender.transfer(amount);
   }
 
-  /// @notice sets the address of the gameOwner that interacts with this contract
-  function setGameOwner(address _address) external onlyOwner {
-    require (gameOwner == address(0x0),     "gameOwner is already set");
-    require (_address != address(0x0), "invalid address 0x0");
-    gameOwner = _address;
+  function assertGoodCandidate(address _addr) public view {
+    require(_addr != NULL_ADDR, "candidate is null addr");
+    require(!isSlashed[_addr], "candidate was slashed previously");
+    require(stakes[_addr] == 0, "candidate already has a stake");
   }
 
   /// @notice adds address as trusted party
-  function addTrustedParty(address _staker) external onlyOwner {
-    trustedParties.add(_staker);
+  function addTrustedParty(address _staker) external onlyCOO {
+    assertGoodCandidate(msg.sender);
+    require(!isTrustedParty[_staker], "trying to add a trusted party that is already trusted");
+    isTrustedParty[_staker] = true;
   }
 
   /// @notice registers a new staker
   function enroll() external payable {
+    assertGoodCandidate(msg.sender);
     require (msg.value == requiredStake, "failed to enroll: wrong stake amount");
-    require (!isSlashed(msg.sender),      "failed to enroll: staker was slashed");
-    require (isTrustedParty(msg.sender),  "failed to enroll: staker is not trusted party");
-    require (addStaker(msg.sender),       "failed to enroll");
+    require (isTrustedParty[msg.sender], "failed to enroll: staker is not trusted party");
+    require (addStaker(msg.sender), "failed to enroll: cannot add staker");
     stakes[msg.sender] = msg.value;
-
   }
 
-  /// @notice unregisters a new staker and transfers all earnings
+  /// @notice unregisters a new staker and transfers all earnings, and pot
   function unEnroll() external {
-    require (!updaters.contains(msg.sender), "failed to unenroll: staker currently updating");
-    require (removeStaker(msg.sender),       "failed to unenroll");
-    rewards.withdraw(msg.sender);
-    uint amount = stakes[msg.sender];
+    require (!alreadyDidUpdate(msg.sender), "failed to unenroll: staker currently updating");
+    require (removeStaker(msg.sender), "failed to unenroll");
+    uint256 amount = pendingWithdrawals[msg.sender] + stakes[msg.sender];
+    pendingWithdrawals[msg.sender] = 0;
     stakes[msg.sender]  = 0;
-    msg.sender.transfer(amount);
+    if (amount > 0) { msg.sender.transfer(amount); }
   }
 
   /// @notice update to a new level
@@ -203,11 +139,12 @@ contract Stakers is Owned {
   //       level is below current or level has reached the end
   function update(uint16 _level, address _staker) external onlyGame {
     require (_level <= level(),        "failed to update: wrong level");
-    //require (_level <= maxNumLevels(), "failed to update: max level exceeded"); // already covered by previous require
-    require (isStaker(_staker),        "failed to update: staker not registered");
+    //require (_level <= updatersCapacity, "failed to update: max level exceeded"); // already covered by previous require
+    require (isStaker[_staker],        "failed to update: staker not registered");
     //require (!isSlashed(_staker),      "failed to update: staker was slashed"); // also covered by not being part of stakers, because slashing removes address from stakers
+    require(!alreadyDidUpdate(_staker), "staker has already updated this game");
 
-    if (_level < maxNumLevels()) {
+    if (_level < updatersCapacity) {
       if (_level < level()) {
         // If level is below current, it means the challenge
         // period has passed, so last updater told the truth.
@@ -222,7 +159,7 @@ contract Stakers is Owned {
       // The very last possible update: the challenge.
       // It resolves immediately by slashing the last
       // updater
-      address badStaker = updaters.pop();
+      address badStaker = popUpdaters();
       slash(badStaker);
       earnStake(_staker, badStaker);
     }
@@ -240,105 +177,92 @@ contract Stakers is Owned {
       resolve();
     }
     if (level() == 1) {
-      rewards.push(updaters.pop());
+      addRewardToUpdater(popUpdaters());
     }
     require (level() == 0, "failed to finalize: no updaters should have been left");
   }
 
-  /// @notice get the current level
-  function level() public view returns (uint) {
-    return updaters.length();
+
+  function addRewardToPot() external payable {
+    require (msg.value > 0, "failed to add reward of zero");
+    potBalance += msg.value;
   }
 
-  /// @notice get the maximum level
-  function maxNumLevels() public view returns (uint) {
-    return updaters.capacity();
-  }
-
-  // ----------------- private functions -----------------------
-
-  // WARNING: careful with this list ever-growing and not being able to check in one TX.
-  // TODO: create a mapping isSlashed(address => bool) instead of an array.
-  function contains(address[] storage _array, address _value) private view returns (bool) {
-    for (uint i=0; i<_array.length; i++) {
-      if (_array[i] == _value) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function isTrustedParty(address _addr) public view returns (bool) {
-    return trustedParties.has(_addr);
-  }
-
-  function isSlashed(address _addr) public view returns (bool) {
-    return slashed.has(_addr);
-  }
-
-  function isStaker(address _addr) public view returns (bool) {
-    for (uint16 i=0; i<NUM_STAKERS; i++) {
-      if (stakers[i] == _addr) {
-        return true;
-      }
-    }
-    return false;
-  }
+  // Private Functions
 
   function addStaker(address _staker) private returns (bool) {
-    for (uint16 i = 0; i<NUM_STAKERS; i++){
-      if (stakers[i] == _staker) {
-        // staker already registered
-        return false;
-      }
-      if (stakers[i] == address(0x0)) {
-        stakers[i] = _staker;
-        return true;
-      }
-    }
-    return false;
+    if (_staker == NULL_ADDR) return false; // prevent null addr
+    if (isStaker[_staker]) return false; // staker already registered
+    isStaker[_staker] = true;
+    nStakers++;
+    return true;
   }
 
   function removeStaker(address _staker) private returns (bool){
-    // find index of staker
-    uint16 stakerIndex = 0;
-    while (stakerIndex < NUM_STAKERS) {
-      if (stakers[stakerIndex] == _staker) {
-        break;
-      }
-      ++stakerIndex;
-    }
-
-    if (stakerIndex < NUM_STAKERS) {
-      // remove gaps
-      for (uint16 i = stakerIndex; i<NUM_STAKERS-1; i++){
-       stakers[i] = stakers[i+1];
-      }
-      stakers[NUM_STAKERS-1] = address(0x0);
-      return true;
-    }
-    return false;
+    if (_staker == NULL_ADDR) return false; // prevent null addr
+    if (!isStaker[_staker]) return false; // staker not registered
+    isStaker[_staker] = false;
+    nStakers--;
+    return true;
   }
 
   function resolve() private {
-    address goodStaker = updaters.pop();
-    address badStaker = updaters.pop();
-    earnStake(goodStaker,badStaker);
+    address goodStaker = popUpdaters();
+    address badStaker = popUpdaters();
+    earnStake(goodStaker, badStaker);
     slash(badStaker);
   }
 
   function slash(address _staker) private {
     require (removeStaker(_staker), "failed to slash: staker not found");
-    slashed.add(_staker);
+    isSlashed[_staker] = true;
   }
 
+  // the slashed stake goes into the "pendingWithdrawals" of the good staker,
+  // not to his "stake". This way, he can cash it without unenrolling.
   function earnStake(address _goodStaker, address _badStaker) private {
-    require (stakes[_badStaker] > 0);
-    uint amount = stakes[_badStaker];
+    uint256 amount = stakes[_badStaker];
     stakes[_badStaker] = 0;
-    stakes[_goodStaker] += amount;
+    pendingWithdrawals[_goodStaker] += amount;
     // TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
     // The idea behind it, is not to promote interest in stealing someone else's stake
-    // address(0x0).transfer(requiredStake); // burn stake
+    // NULL_ADDR.transfer(requiredStake); // burn stake
   }
+  
+
+
+  function addRewardToUpdater(address _addr) private {
+    if (howManyUpdates[_addr] == 0) {
+      toBeRewarded.push(_addr);
+    }
+    howManyUpdates[_addr] += 1;
+    totalNumUpdates++;
+  }
+
+  function popUpdaters() private returns (address _address) {
+    uint256 updatersLength = updaters.length;
+    require (updatersLength > 0, "cannot pop from an empty AddressStack");
+    _address = updaters[updatersLength - 1];
+    updaters.pop();
+  }
+
+
+  // View Functions
+
+  // this function iterates over a storage array, but of max length 4.
+  function alreadyDidUpdate(address _address) public view returns (bool) {
+    for (uint256 i = 0; i < updaters.length; i++) {
+      if (updaters[i] == _address) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  /// @notice get the current level
+  function level() public view returns (uint256) {
+    return updaters.length;
+  }
+
 }
+

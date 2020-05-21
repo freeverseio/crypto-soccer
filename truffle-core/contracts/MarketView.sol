@@ -165,21 +165,29 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
         view 
         returns (bool)
     {
-        address prevOwner = getOwnerPlayer(playerId);
-        bytes32 msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
-        return (
+        uint256 currentTeamId = getCurrentTeamIdFromPlayerId(playerId);
+        bool areOK = 
             // check validUntil has not expired
             (now < validUntil) &&
             // check player is not already frozen
             (!isPlayerFrozenInAnyMarket(playerId)) &&  
+            // check that auction time is less that the required 32 bit
+            (validUntil < now + MAX_VALID_UNTIL);
+        
+        // If this is an academy player, just check that the msg arrives from the owner of the Academy.
+        if (currentTeamId == ACADEMY_TEAM) { return(areOK && (msg.sender == _market)); }
+
+        // Otherwise, check that the signature is from the owner, and that the team is OK.
+        address prevOwner = getOwnerTeam(currentTeamId);
+        bytes32 msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
+        return (
+            areOK &&
             // check that the team it belongs to not already frozen
-            !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
+            !isTeamFrozen(currentTeamId) &&
             // check asset is owned by legit address
             (prevOwner != address(0)) && 
             // check signatures are valid by requiring that they own the asset:
-            (prevOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&    
-            // check that auction time is less that the required 32 bit
-            (validUntil < now + MAX_VALID_UNTIL)
+            (prevOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s]))   
         );
     }
     
