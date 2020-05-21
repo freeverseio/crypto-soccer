@@ -73,8 +73,10 @@ module.exports = function (deployer, network, accounts) {
       await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled; 
       await stakers.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
       await stakers.setGameOwner(updates.address, {from: owners.COO}).should.be.fulfilled;
-      await deployUtils.addTrustedParties(stakers, owners.COO, owners.trustedParties);
-      await deployUtils.enroll(stakers, requiredStake, owners.trustedParties);
+
+      // If we want stakers signed up during deploy, uncomment this:
+      // await deployUtils.addTrustedParties(stakers, owners.COO, owners.trustedParties);
+      // await deployUtils.enroll(stakers, requiredStake, owners.trustedParties);
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
         await assets.initSingleTZ(singleTimezone, {from: owners.COO}).should.be.fulfilled;
