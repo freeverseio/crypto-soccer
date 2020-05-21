@@ -138,7 +138,9 @@ contract('Engine', (accounts) => {
 
     beforeEach(async () => {
         encodingSet = await EncodingSkillsSetters.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
+        precomp = await EnginePreComp.new().should.be.fulfilled;
+        applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
+        engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
         
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
@@ -148,10 +150,6 @@ contract('Engine', (accounts) => {
         await assets.init({from: owners.COO}).should.be.fulfilled;
 
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
-        precomp = await EnginePreComp.new().should.be.fulfilled;
-        applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
-        await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
-        await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
@@ -174,7 +172,7 @@ contract('Engine', (accounts) => {
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
     });
-    
+
     it('create 442 team', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         var result = JSON.stringify(teamState);

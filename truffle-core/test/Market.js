@@ -143,7 +143,7 @@ contract("Market", accounts => {
   });
 
   it("cryptomarket: change owner and COO" , async () => {
-    const [dummy1, dummy2, dummy3, dummy4, dummy5, alice, bob, carol, dave, erin] = accounts
+    const [dummy1, dummy2, dummy3, dummy4, dummy5, alice, bob, carol, dave, erin] = accounts;
     await marketCrypto.setMarketFiatAddress(proxy.address).should.be.rejected;
     await marketCrypto.proposeOwner(alice).should.be.rejected;
     await marketCrypto.proposeOwner(alice, {from: owners.superuser}).should.be.fulfilled;

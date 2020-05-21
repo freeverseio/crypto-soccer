@@ -293,7 +293,9 @@ contract('Evolution', (accounts) => {
         training = await TrainingPoints.new().should.be.fulfilled;
         evo = await Evolution.new().should.be.fulfilled;
         play = await PlayAndEvolve.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
+        precomp = await EnginePreComp.new().should.be.fulfilled;
+        applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
+        engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
 
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
@@ -304,10 +306,6 @@ contract('Evolution', (accounts) => {
         
         shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
-        precomp = await EnginePreComp.new().should.be.fulfilled;
-        applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
-        await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
-        await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
         await training.setAssetsAddress(assets.address).should.be.fulfilled;
         await training.setMarketAddress(market.address).should.be.fulfilled;
         await play.setEngineAddress(engine.address).should.be.fulfilled;

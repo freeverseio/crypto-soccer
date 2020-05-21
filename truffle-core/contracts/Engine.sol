@@ -48,15 +48,11 @@ contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
     EnginePreComp private _precomp;
     EngineApplyBoosters private _applyBoosters;
 
-    function setPreCompAddr(address addr) public {
-        _precomp = EnginePreComp(addr);
+    constructor(address precompAddr, address applyBoosterAddr) public {
+        _precomp = EnginePreComp(precompAddr);
+        _applyBoosters = EngineApplyBoosters(applyBoosterAddr);
     }
-
-    function setApplyBoostersAddr(address addr) public {
-        _applyBoosters = EngineApplyBoosters(addr);
-    }
-
-
+    
     /**
      * @dev playHalfMatch is the main function that simulates a match
      * @param seed the pseudo-random number to use as a seed for the match; it's someone else's due to make it unique for each match.
