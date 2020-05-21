@@ -40,7 +40,7 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, errors.New("Not team owner")
 	}
 
-	data, err := playstore.InappPurchaseDataFromReceipt(args.Input.Receipt)
+	data, err := playstore.DataFromReceipt(args.Input.Receipt)
 	if err != nil {
 		return result, err
 	}
