@@ -6,7 +6,6 @@ type PlaystoreOrderState string
 
 const (
 	PlaystoreOrderPending       PlaystoreOrderState = "pending"
-	PlaystoreOrderVerified      PlaystoreOrderState = "verified"
 	PlaystoreOrderAssetAssigned PlaystoreOrderState = "asset_assigned"
 	PlaystoreOrderComplete      PlaystoreOrderState = "complete"
 	PlaystoreOrderRefunding     PlaystoreOrderState = "refunding"

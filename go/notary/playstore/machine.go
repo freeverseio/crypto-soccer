@@ -1,8 +1,10 @@
 package playstore
 
 import (
+	"crypto/ecdsa"
 	"fmt"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -10,15 +12,25 @@ import (
 type Machine struct {
 	googleCredentials []byte
 	order             storage.PlaystoreOrder
+	contracts         contracts.Contracts
+	pvc               *ecdsa.PrivateKey
+	iapTestOn         bool
 }
 
 func New(
 	googleCredentials []byte,
 	order storage.PlaystoreOrder,
+	contracts contracts.Contracts,
+	pvc *ecdsa.PrivateKey,
+	iapTestOn bool,
 ) *Machine {
+
 	return &Machine{
 		googleCredentials: googleCredentials,
 		order:             order,
+		contracts:         contracts,
+		pvc:               pvc,
+		iapTestOn:         iapTestOn,
 	}
 }
 
