@@ -12,7 +12,7 @@ import (
 	"google.golang.org/api/androidpublisher/v3"
 )
 
-func (b *Machine) processPendingState(ctx context.Context) error {
+func (b *Machine) processOpenState(ctx context.Context) error {
 	purchase, err := b.client.VerifyProduct(
 		ctx,
 		b.order.PackageName,

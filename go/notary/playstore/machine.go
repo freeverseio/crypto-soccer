@@ -50,7 +50,7 @@ func (b *Machine) Process() error {
 
 	switch b.order.State {
 	case storage.PlaystoreOrderOpen:
-		return b.processPendingState(ctx)
+		return b.processOpenState(ctx)
 	case storage.PlaystoreOrderAssetAssigned:
 		return b.processAssetAssigned(ctx)
 	default:
