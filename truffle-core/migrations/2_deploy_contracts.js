@@ -44,12 +44,12 @@ module.exports = function (deployer, network, accounts) {
     const engine = await deployer.deploy(Engine, enginePreComp.address, engineApplyBoosters.address).should.be.fulfilled;
     const trainingPoints= await deployer.deploy(TrainingPoints, assets.address).should.be.fulfilled;
     const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
-    const leagues = await deployer.deploy(Leagues).should.be.fulfilled;
+    const leagues = await deployer.deploy(Leagues, assets.address).should.be.fulfilled;
     const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
     const shop = await deployer.deploy(Shop).should.be.fulfilled;
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
     const utils = await deployer.deploy(Utils).should.be.fulfilled;
-    const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
+    const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address, shop.address).should.be.fulfilled;
     const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
@@ -58,41 +58,63 @@ module.exports = function (deployer, network, accounts) {
     console.log("Setting up ...");
 
     if (versionNumber == 0) { 
-      await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, account0Owners.company).should.be.fulfilled;
+      // first set all owners to accounts[0] so that we can do some operations
+      await assets.setCOO(accounts[0]).should.be.fulfilled;
+      await assets.setMarket(accounts[0]).should.be.fulfilled;
+      await updates.setRelay(accounts[0]).should.be.fulfilled;
+      await stakers.setCOO(accounts[0]).should.be.fulfilled;
+
+      console.log("---");
+      // do these operations:
+      await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
+      console.log("---");
+      await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
+      console.log("---");
+      await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+      console.log("---");
+      await updates.initUpdates().should.be.fulfilled; 
+      console.log("---");
+      await updates.setStakersAddress(stakers.address).should.be.fulfilled;
+      console.log("---");
+      await stakers.setGameOwner(updates.address).should.be.fulfilled;
+      console.log("---");
+
+      if (singleTimezone != -1) {
+        console.log("Init single timezone", singleTimezone);
+        await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
+      } else {
+        await assets.init().should.be.fulfilled;
+      }
+
+      // Prepare the final ownerships
+      await marketCrypto.setCOO(owners.COO).should.be.fulfilled;
+      console.log("---");
+      await stakers.setCOO(owners.COO).should.be.fulfilled;
+      console.log("---");
+      await assets.setCOO(owners.COO).should.be.fulfilled;
+      console.log("---");
+      await assets.setMarket(owners.market).should.be.fulfilled;
+      console.log("---");
+      await updates.setRelay(owners.relay).should.be.fulfilled;
+      console.log("---");
+      await proxy.setSuperUser(owners.superuser).should.be.fulfilled;
+      console.log("---");
 
       await marketCrypto.proposeOwner(owners.superuser).should.be.fulfilled;
-      await marketCrypto.acceptOwner({from: owners.superuser}).should.be.fulfilled;
-      await marketCrypto.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
-
-      await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
-      await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
-      await updates.initUpdates({from: owners.COO}).should.be.fulfilled; 
-      await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
-
       await stakers.proposeOwner(owners.superuser).should.be.fulfilled;
-      await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled; 
-      await stakers.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
-      await stakers.setGameOwner(updates.address, {from: owners.COO}).should.be.fulfilled;
+      await proxy.proposeCompany(owners.company).should.be.fulfilled;
+
+      // Execute the final ownerships (WARNING: needs privKeys)
+      await marketCrypto.acceptOwner({from: owners.superuser}).should.be.fulfilled;
+      await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled;
+      await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
+ 
 
       // If we want stakers signed up during deploy, uncomment this:
       // await deployUtils.addTrustedParties(stakers, owners.COO, owners.trustedParties);
       // await deployUtils.enroll(stakers, requiredStake, owners.trustedParties);
-      if (singleTimezone != -1) {
-        console.log("Init single timezone", singleTimezone);
-        await assets.initSingleTZ(singleTimezone, {from: owners.COO}).should.be.fulfilled;
-      } else {
-        await assets.init({from: owners.COO}).should.be.fulfilled;
-      }
     }
 
-    // note: all the calls that follow will require a setOwner first very soon!
-    await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
-    await leagues.setEngineAdress(engine.address).should.be.fulfilled;
-    await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
-    await playAndEvolve.setTrainingAddress(trainingPoints.address).should.be.fulfilled;
-    await playAndEvolve.setEvolutionAddress(evolution.address).should.be.fulfilled;
-    await playAndEvolve.setEngineAddress(engine.address).should.be.fulfilled;
-    await playAndEvolve.setShopAddress(shop.address).should.be.fulfilled;
 
     namesAndAddresses = [
       ["ASSETS", assets.address],

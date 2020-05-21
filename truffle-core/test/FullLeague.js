@@ -283,7 +283,6 @@ contract('FullLeague', (accounts) => {
 
     beforeEach(async () => {
         evo = await Evolution.new().should.be.fulfilled;
-        play = await PlayAndEvolve.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
         engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
@@ -298,10 +297,7 @@ contract('FullLeague', (accounts) => {
         training= await TrainingPoints.new(assets.address).should.be.fulfilled;
         shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
-        await play.setEngineAddress(engine.address).should.be.fulfilled;
-        await play.setTrainingAddress(training.address).should.be.fulfilled;
-        await play.setEvolutionAddress(evo.address).should.be.fulfilled;
-        await play.setShopAddress(shop.address).should.be.fulfilled;
+        play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
@@ -332,7 +328,7 @@ contract('FullLeague', (accounts) => {
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
 
-        leagues = await Leagues.new().should.be.fulfilled;
+        leagues = await Leagues.new(assets.address).should.be.fulfilled;
         teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
         leagueData = await chllUtils.createLeagueData(leagues, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;

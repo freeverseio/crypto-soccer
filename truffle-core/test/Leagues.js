@@ -79,13 +79,11 @@ contract('Leagues', (accounts) => {
 
         trainingPoints= await TrainingPoints.new(assets.address).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        leagues = await Leagues.new().should.be.fulfilled;
+        leagues = await Leagues.new(assets.address).should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
         engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
 
-        await leagues.setEngineAdress(engine.address).should.be.fulfilled;
-        await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await constants.get_TEAMS_PER_LEAGUE().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         MATCHDAYS = await leagues.MATCHDAYS().should.be.fulfilled;

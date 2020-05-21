@@ -21,15 +21,10 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint64 constant private SKILLS_AT_START = 18000; // 18 players per team at start with 50 avg
     uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; // 268435455 = 2**28 - 1 
 
-    Engine private _engine;
     Assets private _assets;
 
-    function setEngineAdress(address addr) public {
-        _engine = Engine(addr);
-    }
-
-    function setAssetsAdress(address addr) public {
-        _assets = Assets(addr);
+    constructor(address assetsAddr) public {
+        _assets = Assets(assetsAddr);
     }
 
     // groupIdx = 0,...,15

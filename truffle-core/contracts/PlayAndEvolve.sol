@@ -16,20 +16,11 @@ contract PlayAndEvolve {
     Engine private _engine;
     Shop private _shop;
 
-    function setTrainingAddress(address addr) public {
-        _training = TrainingPoints(addr);
-    }
- 
-    function setEvolutionAddress(address addr) public {
-        _evo = Evolution(addr);
-    }
- 
-    function setEngineAddress(address addr) public {
-        _engine = Engine(addr);
-    }
-
-    function setShopAddress(address addr) public {
-        _shop = Shop(addr);
+    constructor(address trainingAddr, address evolutionAddr, address engineAddr, address shopAddr) public {
+        _training = TrainingPoints(trainingAddr);
+        _evo = Evolution(evolutionAddr);
+        _engine = Engine(engineAddr);
+        _shop = Shop(shopAddr);
     }
 
     function generateMatchSeed(bytes32 seed, uint256[2] memory teamIds) public pure returns (uint256) {

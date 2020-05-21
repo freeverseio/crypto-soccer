@@ -26,7 +26,6 @@ const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const Shop = artifacts.require('Shop');
-const Leagues = artifacts.require('Leagues');
 
 
 contract('Evolution', (accounts) => {
@@ -291,7 +290,6 @@ contract('Evolution', (accounts) => {
     
     beforeEach(async () => {
         evo = await Evolution.new().should.be.fulfilled;
-        play = await PlayAndEvolve.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
         engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
@@ -306,10 +304,7 @@ contract('Evolution', (accounts) => {
         training = await TrainingPoints.new(assets.address).should.be.fulfilled;
         shop = await Shop.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
-        await play.setEngineAddress(engine.address).should.be.fulfilled;
-        await play.setTrainingAddress(training.address).should.be.fulfilled;
-        await play.setEvolutionAddress(evo.address).should.be.fulfilled;
-        await play.setShopAddress(shop.address).should.be.fulfilled;
+        play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
