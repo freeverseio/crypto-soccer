@@ -49,6 +49,15 @@ func (b *Machine) Process() error {
 	case storage.PlaystoreOrderRefunding:
 		log.Warning("playerstoreorder refunding TODO")
 		return nil
+	case storage.PlaystoreOrderFailed:
+		log.Warning("failed order ... skip")
+		return nil
+	case storage.PlaystoreOrderRefunded:
+		log.Warning("refunded order ... skip")
+		return nil
+	case storage.PlaystoreOrderComplete:
+		log.Warning("complete order ... skip")
+		return nil
 	default:
 		return fmt.Errorf("unknown state %v", b.order.State)
 	}

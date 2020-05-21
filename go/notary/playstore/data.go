@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 )
 
-type InappPurchaseData struct {
+type Data struct {
 	OrderId       string
 	PackageName   string
 	ProductId     string
 	PurchaseToken string
 }
 
-func InappPurchaseDataFromReceipt(receipt string) (*InappPurchaseData, error) {
+func DataFromReceipt(receipt string) (*Data, error) {
 	var temp0 struct{ Payload string }
 	if err := json.Unmarshal([]byte(receipt), &temp0); err != nil {
 		return nil, err
@@ -22,13 +22,13 @@ func InappPurchaseDataFromReceipt(receipt string) (*InappPurchaseData, error) {
 		return nil, err
 	}
 
-	data := InappPurchaseData{}
+	data := Data{}
 	if err := json.Unmarshal([]byte(temp1.Json), &data); err != nil {
 		return nil, err
 	}
 	return &data, nil
 }
 
-func (b InappPurchaseData) ToReceipt() string {
+func (b Data) ToReceipt() string {
 	return ""
 }
