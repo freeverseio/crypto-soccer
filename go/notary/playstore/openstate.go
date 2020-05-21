@@ -3,12 +3,12 @@ package playstore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	log "github.com/sirupsen/logrus"
 )
 
 func (b *Machine) processOpenState(ctx context.Context) error {
@@ -41,17 +41,19 @@ func (b *Machine) processOpenState(ctx context.Context) error {
 		return nil
 	}
 
-	if validator.IsTest() && !b.iapTestOn {
-		log.Warningf("[consumer|iap] received test orderId %v ... skip creating player", purchase.OrderId)
-	} else {
-		if err := b.assignAsset(); err != nil {
-			b.setState(storage.PlaystoreOrderFailed, err.Error())
-			return nil
-		}
-		log.Infof("[consumer|iap] orderId %v playerId %v assigned to teamId %v", purchase.OrderId, b.order.PlayerId, b.order.TeamId)
+	payload := fmt.Sprintf("playerId: %v", b.order.PlayerId)
+	if err := b.client.AcknowledgeProduct(
+		ctx,
+		b.order.PackageName,
+		b.order.ProductId,
+		b.order.PurchaseToken,
+		payload,
+	); err != nil {
+		b.setState(storage.PlaystoreOrderFailed, err.Error())
+		return err
 	}
 
-	b.setState(storage.PlaystoreOrderAssetAssigned, "")
+	b.setState(storage.PlaystoreOrderAcknowledged, "")
 	return nil
 }
 
