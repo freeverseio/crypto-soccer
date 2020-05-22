@@ -16,7 +16,7 @@ func NewPlaystoreOrderService(tx *sql.Tx) *PlaystoreOrderService {
 	}
 }
 
-func (b PlaystoreOrderService) UpdateState(order *storage.PlaystoreOrder) error {
+func (b PlaystoreOrderService) UpdateState(order storage.PlaystoreOrder) error {
 	_, err := b.tx.Exec(`UPDATE playstore_orders SET 
 		state=$1, 
 		state_extra=$2

@@ -27,7 +27,7 @@ type PlaystoreOrderService interface {
 	Order(orderId string) (*PlaystoreOrder, error)
 	PendingOrders() ([]PlaystoreOrder, error)
 	Insert(order *PlaystoreOrder) error
-	UpdateState(order *PlaystoreOrder) error
+	UpdateState(order PlaystoreOrder) error
 }
 
 func NewPlaystoreOrder() *PlaystoreOrder {

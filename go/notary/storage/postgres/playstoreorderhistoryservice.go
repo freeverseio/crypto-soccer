@@ -14,7 +14,7 @@ func NewPlaystoreOrderHistoryService(service storage.PlaystoreOrderService) *Pla
 	}
 }
 
-func (b PlaystoreOrderHistoryService) UpdateState(order *storage.PlaystoreOrder) error {
+func (b PlaystoreOrderHistoryService) UpdateState(order storage.PlaystoreOrder) error {
 	return b.service.UpdateState(order)
 }
 
