@@ -158,9 +158,15 @@ contract('Stakers', (accounts) => {
       "failed unenrolling alice"
     )
 
+    past = await stakers.getPastEvents( 'NewEnrol', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.staker.should.be.equal(alice);
+    past = await stakers.getPastEvents( 'AddedTrustedParty', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.party.should.be.equal(alice);
     past = await stakers.getPastEvents( 'NewGameLevel', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
     past[0].args.level.toNumber().should.be.equal(1);
-
+    past = await stakers.getPastEvents( 'FinalizedGameRound', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past.length.should.be.equal(1);
+    
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,6 +183,8 @@ contract('Stakers', (accounts) => {
       "failed to execute rewards: empty array",
       "no one deserves reward cause nothing has been played, so it should revert"
     )
+    past = await stakers.getPastEvents( 'PotBalanceChange', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.newBalance.toNumber().should.be.equal(stake);
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -237,6 +245,9 @@ contract('Stakers', (accounts) => {
 
     assert.isBelow(aliceBalanceBeforeRewarded, Number(await web3.eth.getBalance(alice)),
                  "Alice's current balance should be higher since she was rewarded");
+                 
+    past = await stakers.getPastEvents( 'RewardsExecuted', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past.length.should.be.equal(1);
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -281,6 +292,10 @@ contract('Stakers', (accounts) => {
       stakers.finalize({from:gameAddr}),
       "failed starting new verse"
     )
+    
+    past = await stakers.getPastEvents( 'SlashedBy', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.slashedStaker.should.be.equal(alice);
+    past[0].args.goodStaker.should.be.equal(bob);
 
     // L0: check that Alice is not registered as staker anymore
     assert.equal(0, (await stakers.level()).toNumber());
