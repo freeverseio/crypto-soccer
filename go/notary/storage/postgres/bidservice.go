@@ -11,7 +11,7 @@ type BidService struct {
 	tx *sql.Tx
 }
 
-func NewBidService(tx *sql.Tx) storage.BidService {
+func NewBidService(tx *sql.Tx) *BidService {
 	return &BidService{
 		tx: tx,
 	}
@@ -52,7 +52,8 @@ func (b BidService) Insert(bid storage.Bid) error {
 	_, err := b.tx.Exec(`INSERT INTO bids 
 			(auction_id, 
 			extra_price,
-			rnd, team_id, 
+			rnd, 
+			team_id, 
 			signature, 
 			state,
 			state_extra,
