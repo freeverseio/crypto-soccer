@@ -1,0 +1,11 @@
+(*storage.PlaystoreOrder)({
+	OrderId: (string) "",
+	PackageName: (string) "",
+	ProductId: (string) "",
+	PurchaseToken: (string) "",
+	PlayerId: (string) "",
+	TeamId: (string) "",
+	Signature: (string) "",
+	State: (storage.PlaystoreOrderState) (len=4) "open",
+	StateExtra: (string) ""
+})
