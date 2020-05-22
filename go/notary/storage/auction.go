@@ -1,9 +1,5 @@
 package storage
 
-import (
-	"database/sql"
-)
-
 type AuctionState string
 
 const (
@@ -39,8 +35,8 @@ func NewAuction() *Auction {
 }
 
 type AuctionService interface {
-	PendingAuctions(tx *sql.Tx) ([]Auction, error)
-	AuctionByID(tx *sql.Tx, ID string) (*Auction, error)
-	Insert(tx *sql.Tx) error
-	Update(tx *sql.Tx) error
+	PendingAuctions() ([]Auction, error)
+	Auction(ID string) (*Auction, error)
+	Insert(auction Auction) error
+	Update(auction Auction) error
 }
