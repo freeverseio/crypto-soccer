@@ -3,6 +3,7 @@ version: 2.1
 
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
+  circleci-cli: circleci/circleci-cli@0.1.8
 
 environment:
   PATH: >-
@@ -79,11 +80,17 @@ jobs:
   truffle_core:
     executor: freeverse
     resource_class: xlarge
+    parallelism: 4
     steps:
       - checkout
+      - cli/install
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
-      - run: cd truffle-core && ./node_modules/.bin/truffle test
+      - run:
+          command: |
+            cd truffle-core
+            echo $(circleci tests glob "test/*")
+            circleci tests glob "test/*" | xargs -n 1 ./node_modules/.bin/truffle test 
   synchronizer:
     executor: freeverse_ethereum
     steps:
