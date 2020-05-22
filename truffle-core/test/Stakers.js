@@ -137,6 +137,11 @@ contract('Stakers', (accounts) => {
 
     await deployUtils.unenroll(stakers, parties);
     assert.equal(0, await web3.eth.getBalance(stakers.address).should.be.fulfilled);
+
+    past = await stakers.getPastEvents( 'NewUnenrol', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    for (i = 0; i < parties.length; i++){ 
+      past[i].args.staker.should.be.equal(parties[i]);
+    }
   });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,7 +189,7 @@ contract('Stakers', (accounts) => {
       "no one deserves reward cause nothing has been played, so it should revert"
     )
     past = await stakers.getPastEvents( 'PotBalanceChange', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
-    past[0].args.newBalance.toNumber().should.be.equal(stake);
+    past[0].args.newBalance.toNumber().should.be.equal(stake.toNumber());
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////

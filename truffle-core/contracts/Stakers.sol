@@ -184,7 +184,6 @@ contract Stakers {
       address badStaker = popUpdaters();
       slash(badStaker);
       earnStake(_staker, badStaker);
-      emit SlashedBy(badStaker, _staker);
     }
     emit NewGameLevel(level());
   }
@@ -250,6 +249,7 @@ contract Stakers {
     uint256 amount = stakes[_badStaker];
     stakes[_badStaker] = 0;
     pendingWithdrawals[_goodStaker] += amount;
+    emit SlashedBy(_badStaker, _goodStaker);
     // TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
     // The idea behind it, is not to promote interest in stealing someone else's stake
     // NULL_ADDR.transfer(requiredStake); // burn stake
