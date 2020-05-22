@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <=0.6.3;
+pragma solidity >= 0.6.3;
 
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
