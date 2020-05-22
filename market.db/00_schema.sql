@@ -51,9 +51,10 @@ CREATE TABLE playstore_orders(
     state playstore_order_state NOT NULL,
     state_extra TEXT NOT NULL,
     PRIMARY KEY(order_id)
-)
+);
 
 CREATE TABLE playstore_orders_histories(
+    inserted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     order_id TEXT NOT NULL REFERENCES playstore_orders(order_id),
     package_name TEXT NOT NULL,
     product_id TEXT NOT NULL,
@@ -62,6 +63,6 @@ CREATE TABLE playstore_orders_histories(
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
     state playstore_order_state NOT NULL,
-    state_extra TEXT NOT NULL,
-)
+    state_extra TEXT NOT NULL
+);
 
