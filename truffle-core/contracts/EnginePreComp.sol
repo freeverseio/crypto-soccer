@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <=0.6.3;
+pragma solidity >= 0.6.3;
 
 import "./EncodingSkills.sol";
 import "./EncodingTacticsPart1.sol";
@@ -603,6 +603,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1
     }
 
     function verifyCanPlay(uint8 lineup, uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {
+        lineup = 0; // revisit this when subst at 1st half is ready
         bool isWrong =  (playerSkills == 0) ||
                         (getInjuryWeeksLeft(playerSkills) != 0) ||
                         getRedCardLastGame(playerSkills);

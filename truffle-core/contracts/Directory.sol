@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <=0.6.3;
+pragma solidity >= 0.6.3;
 
 /**
 * @title Directory for contract addresses related to the project
