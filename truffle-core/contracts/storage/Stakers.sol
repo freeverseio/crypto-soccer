@@ -1,8 +1,11 @@
 pragma solidity >= 0.6.3;
 
+import "./Storage.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 // TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
+
+
 
 contract Stakers {
   using SafeMath for uint256;
@@ -18,15 +21,11 @@ contract Stakers {
   event NewUnenrol(address staker);
   event SlashedBy(address slashedStaker, address goodStaker);
   event AddedRewardToUpdater(address staker);
-  event ProposedOwner(address proposedOwner);
-  event AcceptedNewOwner(address newOwner);
-  event NewCOO(address newCOO);
   event FinalizedGameRound();
   event NewGameLevel(uint16 level);
 
-  address public owner;
-  address public proposedOwner;
-  address public COO;
+  Storage private _storage;
+
   address public gameOwner;
 
   mapping (address => bool) public isStaker;
@@ -46,11 +45,6 @@ contract Stakers {
 
   // Permission handling
   
-  modifier onlyOwner {
-    require( msg.sender == owner, "Only owner can call this function.");
-        _;
-  }
-
   modifier onlyGame {
     require(msg.sender == gameOwner && gameOwner != NULL_ADDR,
             "Only gameOwner can call this function.");
@@ -58,32 +52,15 @@ contract Stakers {
   }
 
   modifier onlyCOO {
-      require( msg.sender == COO, "Only COO can call this function.");
+      require( _storage.isCOO(msg.sender), "Only COO can call this function.");
           _;
   }
   
-  constructor(uint256 _stake) public {
+  constructor(address _storageAddress, uint256 _stake) public {
+    _storage = Storage(_storageAddress);
     requiredStake = _stake;
-    owner = msg.sender;
   }
     
-  function proposeOwner(address _addr) public onlyOwner {
-      proposedOwner = _addr;
-      emit ProposedOwner(_addr);
-  }
-
-  function acceptOwner() public {
-      require(msg.sender == proposedOwner, "only proposed owner can become owner");
-      owner = proposedOwner;
-      proposedOwner = address(0);
-      emit AcceptedNewOwner(msg.sender);
-  }
-
-  function setCOO(address _addr) external onlyOwner {
-      COO = _addr;
-      emit NewCOO(_addr);
-  }
-  
   // External / Public Functions
 
   /// @notice sets the address of the external contract that interacts with this contract

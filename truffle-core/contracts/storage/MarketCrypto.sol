@@ -37,32 +37,13 @@ contract MarketCrypto {
     mapping (uint256 => bool) private  _assetWentToNewOwner;
     mapping (uint256 => mapping(address => uint256)) private _balance;
 
-    constructor() public {
-        _owner = msg.sender;
-    }
-
-    modifier onlyOwner {
-        require( msg.sender == _owner, "Only owner can call this function.");
-            _;
+    constructor(address proxyAddr) public {
+        _market = Market(proxyAddr);
     }
 
     modifier onlyCOO {
-        require( msg.sender == _COO, "Only COO can call this function.");
+        require( _market.isCOO(msg.sender), "Only COO can call this function.");
             _;
-    }
-    
-    function proposeOwner(address addr) public onlyOwner {
-        _proposedOwner = addr;
-    }
-
-    function acceptOwner() public {
-        require(msg.sender == _proposedOwner, "only proposed owner can become owner");
-        _owner = _proposedOwner;
-        _proposedOwner = address(0);
-    }
-
-    function setCOO(address addr) external onlyOwner {
-        _COO = addr;
     }
     
     function setMarketFiatAddress(address proxyAddr) external onlyCOO {

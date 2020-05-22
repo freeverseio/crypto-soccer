@@ -25,7 +25,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         require(msg.sender == _COO, "Only COO is authorized.");
         _;
     }
-
+    
     function _tzExists(uint8 timeZone) internal pure returns(bool) {
         return(timeZone > NULL_TIMEZONE && timeZone < 25);
     }

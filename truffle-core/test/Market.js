@@ -55,7 +55,7 @@ contract("Market", accounts => {
     await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
 
     constants = await ConstantsGetters.new().should.be.fulfilled;
-    marketCrypto = await MarketCrypto.new({from: owners.superuser}).should.be.fulfilled;
+    marketCrypto = await MarketCrypto.new(proxy.address, {from: owners.superuser}).should.be.fulfilled;
 
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
     await assets.init({from: owners.COO}).should.be.fulfilled;
@@ -142,40 +142,24 @@ contract("Market", accounts => {
 
   });
 
-  it("cryptomarket: change owner and COO" , async () => {
+  it("cryptomarket: only COO" , async () => {
     const [dummy1, dummy2, dummy3, dummy4, dummy5, alice, bob, carol, dave, erin] = accounts;
-    await marketCrypto.setMarketFiatAddress(proxy.address).should.be.rejected;
-    await marketCrypto.proposeOwner(alice).should.be.rejected;
-    await marketCrypto.proposeOwner(alice, {from: owners.superuser}).should.be.fulfilled;
-    await marketCrypto.proposeOwner(bob, {from: owners.superuser}).should.be.fulfilled;
-
-    await marketCrypto.setCOO(dave, {from: bob}).should.be.rejected;
     await marketCrypto.setAuctionDuration(360, {from: dave}).should.be.rejected;
-    await marketCrypto.setCOO(dave, {from: owners.superuser}).should.be.fulfilled;
+    await marketCrypto.setAuctionDuration(360, {from: owners.COO}).should.be.fulfilled;
+
+    await assets.setCOO(dave, {from: bob}).should.be.rejected;
+    await assets.setCOO(dave, {from: owners.superuser}).should.be.fulfilled;
+
+    await marketCrypto.setAuctionDuration(360, {from: owners.COO}).should.be.rejected;
     await marketCrypto.setAuctionDuration(360, {from: dave}).should.be.fulfilled;
-
-    await marketCrypto.acceptOwner({from: owners.superuser}).should.be.rejected;
-    await marketCrypto.acceptOwner({from: alice}).should.be.rejected;
-    await marketCrypto.acceptOwner({from: bob}).should.be.fulfilled;
-
-    await marketCrypto.proposeOwner(carol, {from: owners.superuser}).should.be.rejected;
-    await marketCrypto.proposeOwner(carol, {from: alice}).should.be.rejected;
-    await marketCrypto.proposeOwner(carol, {from: bob}).should.be.fulfilled;
-
-    await marketCrypto.setCOO(erin, {from: owners.superuser}).should.be.rejected;
-    await marketCrypto.setAuctionDuration(360, {from: erin}).should.be.rejected;
-    await marketCrypto.setCOO(erin, {from: bob}).should.be.fulfilled;
-    await marketCrypto.setAuctionDuration(360, {from: erin}).should.be.fulfilled;
   });
   
   it("crypto flow with player" , async () => {
-    await marketCrypto.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     // set up teams: team 2 - ALICE, team 3 - BOB, team 4 - CAROL
     ALICE = accounts[0];
     BOB = accounts[1];
     CAROL = accounts[2];
-    await marketCrypto.setMarketFiatAddress(proxy.address, {from: owners.COO}).should.be.fulfilled;
     startingPrice = web3.utils.toWei('1');
     teamIdxInCountry0 = 2; 
     playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+3);
@@ -312,12 +296,10 @@ contract("Market", accounts => {
   });
 
   it("crypto mkt shows that we can get past 25 players" , async () => {
-    await marketCrypto.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     // set up teams: team 2 - ALICE, team 3 - BOB
     ALICE = accounts[0];
     BOB = accounts[1];
-    await marketCrypto.setMarketFiatAddress(proxy.address, {from: owners.COO}).should.be.fulfilled;
     startingPrice = web3.utils.toWei('1');
     teamIdxInCountry0 = 2; 
 
@@ -391,12 +373,10 @@ contract("Market", accounts => {
 
   it("crypto mkt cannot bid if buyerTeamId = sellerTeamId" , async () => {
     // set up teams: ALICE, BOB, ALICE
-    await marketCrypto.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     ALICE = accounts[0];
     BOB = accounts[1];
 
-    await marketCrypto.setMarketFiatAddress(proxy.address, {from: owners.COO}).should.be.fulfilled;
     startingPrice = web3.utils.toWei('1');
     teamIdxInCountry0 = 2; 
 
