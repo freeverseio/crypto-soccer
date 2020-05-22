@@ -68,7 +68,7 @@ contract Assets is AssetsView {
 
     // this function will crash if it cannot handle all transfers in one single TX
     // it is the responsibility of the caller to ensure that the arrays match correctly
-    function transferFirstBotsToAddresses(uint8[] calldata tz, uint256[] calldata countryIdxInTZ, address[] calldata addr) external onlyMarket {
+    function transferFirstBotsToAddresses(uint8[] calldata tz, uint256[] calldata countryIdxInTZ, address[] calldata addr) external onlyRelay {
         for (uint256 i = 0; i < tz.length; i++) {
             transferFirstBotToAddr(tz[i], countryIdxInTZ[i], addr[i]); 
         }            
