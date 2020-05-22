@@ -87,8 +87,9 @@ jobs:
       - run:
           command: |
             cd truffle-core
-            echo $(circleci tests glob "test/*")
-            circleci tests glob "test/*" | xargs -n 1 ./node_modules/.bin/truffle test 
+            circleci tests glob "test/*" | circleci tests split > /tmp/tests-to-run
+            cat /tmp/tests-to-run
+            ./node_modules/.bin/truffle test $(cat /tmp/tests-to-run)
   synchronizer:
     executor: freeverse_ethereum
     steps:
