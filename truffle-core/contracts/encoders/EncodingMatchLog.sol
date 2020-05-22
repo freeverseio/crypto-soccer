@@ -1,8 +1,8 @@
 pragma solidity >= 0.6.3;
 
-import "../encoders/EncodingMatchLogPart1.sol";
-import "./EncodingMatchLogPart2.sol";
-import "../encoders/EncodingMatchLogPart3.sol";
+import "../encoders/EncodingMatchLogBase1.sol";
+import "./EncodingMatchLogBase2.sol";
+import "../encoders/EncodingMatchLogBase3.sol";
 // note: both part1 and part2 inherit from part4
 
 /**
@@ -38,6 +38,6 @@ import "../encoders/EncodingMatchLogPart3.sol";
     // trainingPoints, 12b, offset 238
     // bool isHomeStadium, // 1b each, offset 250
 
-contract EncodingMatchLog is EncodingMatchLogPart1, EncodingMatchLogPart2, EncodingMatchLogPart3 {
+contract EncodingMatchLog is EncodingMatchLogBase1, EncodingMatchLogBase2, EncodingMatchLogBase3 {
 
 }

@@ -2,11 +2,11 @@ pragma solidity >= 0.6.3;
 
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
-import "../encoders/EncodingMatchLogPart3.sol";
+import "../encoders/EncodingMatchLogBase3.sol";
 import "../encoders/EncodingTactics.sol";
 import "./EngineApplyBoosters.sol";
 
-contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {
+contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
     // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker

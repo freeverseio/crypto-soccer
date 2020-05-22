@@ -7,9 +7,9 @@ import "./Engine.sol";
 import "../encoders/EncodingTPAssignment.sol";
 import "../encoders/EncodingSkills.sol";
 import "../encoders/EncodingSkillsSetters.sol";
-import "../encoders/EncodingTacticsPart2.sol";
+import "../encoders/EncodingTacticsBase2.sol";
 
-contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsPart2 {
+contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsBase2 {
     
     uint256 constant internal YEARS_30  = 946080000; // 30 years in sec
     uint256 constant internal YEARS_35h = 1119528000; // 35.5 years in sec

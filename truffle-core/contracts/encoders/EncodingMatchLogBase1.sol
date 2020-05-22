@@ -1,11 +1,11 @@
 pragma solidity >= 0.6.3;
-import "./EncodingMatchLogPart4.sol";
+import "./EncodingMatchLogBase4.sol";
 
 /**
  * @title Library of functions to serialize matchLogs
  */
 
-contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
+contract EncodingMatchLogBase1 is EncodingMatchLogBase4{
 
     uint256 private constant ONE256       = 1; 
 

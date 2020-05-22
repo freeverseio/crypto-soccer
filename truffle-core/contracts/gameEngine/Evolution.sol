@@ -6,9 +6,9 @@ import "../encoders/EncodingMatchLog.sol";
 import "./Engine.sol";
 import "../encoders/EncodingTPAssignment.sol";
 import "../encoders/EncodingSkillsSetters.sol";
-import "../encoders/EncodingTacticsPart1.sol";
+import "../encoders/EncodingTacticsBase1.sol";
 
-contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsPart1 {
+contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsBase1 {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
 
     // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
