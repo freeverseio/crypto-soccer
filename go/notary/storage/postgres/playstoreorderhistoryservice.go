@@ -7,34 +7,22 @@ import (
 )
 
 type PlaystoreOrderHistoryService struct {
-	tx      *sql.Tx
-	service storage.PlaystoreOrderService
+	PlaystoreOrderService
 }
 
-func NewPlaystoreOrderHistoryService(tx *sql.Tx, service storage.PlaystoreOrderService) *PlaystoreOrderHistoryService {
-	return &PlaystoreOrderHistoryService{
-		tx:      tx,
-		service: service,
-	}
+func NewPlaystoreOrderHistoryService(tx *sql.Tx) *PlaystoreOrderHistoryService {
+	return &PlaystoreOrderHistoryService{*NewPlaystoreOrderService(tx)}
 }
 
 func (b PlaystoreOrderHistoryService) UpdateState(order storage.PlaystoreOrder) error {
-	if err := b.service.UpdateState(order); err != nil {
+	if err := b.PlaystoreOrderService.UpdateState(order); err != nil {
 		return err
 	}
 	return b.insertHistory(order)
 }
 
-func (b PlaystoreOrderHistoryService) PendingOrders() ([]storage.PlaystoreOrder, error) {
-	return b.service.PendingOrders()
-}
-
-func (b PlaystoreOrderHistoryService) Order(orderId string) (*storage.PlaystoreOrder, error) {
-	return b.service.Order(orderId)
-}
-
 func (b PlaystoreOrderHistoryService) Insert(order storage.PlaystoreOrder) error {
-	if err := b.service.Insert(order); err != nil {
+	if err := b.PlaystoreOrderService.Insert(order); err != nil {
 		return err
 	}
 	return b.insertHistory(order)

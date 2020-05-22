@@ -14,6 +14,21 @@ CREATE TABLE auctions (
     PRIMARY KEY(id)
 );
 
+CREATE TABLE auctions_histories (
+    inserted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id TEXT NOT NULL REFERENCES auctions(id),
+    player_id TEXT NOT NULL,
+    currency_id INT NOT NULL,
+    price BIGINT NOT NULL,
+    rnd BIGINT NOT NULL,
+    valid_until BIGINT NOT NULL,
+    signature TEXT NOT NULL,
+    state auction_state NOT NULL,
+    state_extra TEXT NOT NULL,
+    payment_url TEXT NOT NULL,
+    seller TEXT NOT NULL
+);
+
 CREATE TYPE bid_state AS ENUM ('accepted','paying','paid','failed');
 CREATE TABLE bids (
     auction_id TEXT NOT NULL REFERENCES auctions(id),
@@ -27,6 +42,21 @@ CREATE TABLE bids (
     payment_url TEXT NOT NULL,
     payment_deadline TEXT NOT NULL,
     PRIMARY KEY(auction_id, extra_price)
+);
+
+CREATE TABLE bids_histories (
+    inserted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    auction_id TEXT NOT NULL, 
+    extra_price INT NOT NULL,
+    rnd INT NOT NULL,
+    team_id TEXT NOT NULL,
+    signature TEXT NOT NULL,
+    state bid_state NOT NULL,
+    state_extra TEXT NOT NULL,
+    payment_id TEXT NOT NULL,
+    payment_url TEXT NOT NULL,
+    payment_deadline TEXT NOT NULL,
+    FOREIGN KEY (auction_id, extra_price) REFERENCES bids (auction_id, extra_price)
 );
 
 CREATE TABLE shop_items (
