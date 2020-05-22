@@ -112,6 +112,82 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *auction)
 	})
+
+	t.Run("TestBidInsert", func(t *testing.T) {
+		auction := NewAuction()
+		auction.ID = "0"
+		assert.NilError(t, service.Insert(*auction))
+
+		bid := NewBid()
+		bid.AuctionID = auction.ID
+		assert.NilError(t, service.BidInsert(*bid))
+	})
+
+	t.Run("TestBidsByAuctionID", func(t *testing.T) {
+		auction := NewAuction()
+		auction.ID = "03"
+		assert.NilError(t, service.Insert(*auction))
+
+		bid := NewBid()
+		bid.AuctionID = auction.ID
+		assert.NilError(t, service.BidInsert(*bid))
+		bid.ExtraPrice = 10
+		assert.NilError(t, service.BidInsert(*bid))
+
+		bids, err := service.Bids(auction.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, len(bids), 2)
+
+		auction.ID = "1"
+		assert.NilError(t, service.Insert(*auction))
+
+		bid = NewBid()
+		bid.AuctionID = auction.ID
+		assert.NilError(t, service.BidInsert(*bid))
+
+		bids, err = service.Bids(auction.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, len(bids), 1)
+	})
+
+	t.Run("TestBidUpdate", func(t *testing.T) {
+		auction := NewAuction()
+		auction.ID = "04324"
+		assert.NilError(t, service.Insert(*auction))
+
+		bid := NewBid()
+		bid.AuctionID = auction.ID
+		bid.ExtraPrice = 10
+		bid.State = BidAccepted
+		assert.NilError(t, service.BidInsert(*bid))
+
+		bid.State = BidPaid
+		bid.StateExtra = "vciao"
+		bid.PaymentID = "3"
+		bid.PaymentURL = "http"
+		bid.PaymentDeadline = 4
+		assert.NilError(t, service.BidUpdate(*bid))
+
+		bids, err := service.Bids(auction.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, len(bids), 1)
+		assert.Equal(t, bids[0], *bid)
+	})
+
+	t.Run("TestBidFindBids", func(t *testing.T) {
+		bids := []Bid{}
+		bids = append(bids, *NewBid())
+		bids = append(bids, *NewBid())
+		bids = append(bids, *NewBid())
+		bids = append(bids, *NewBid())
+		result := FindBids(bids, BidPaid)
+		assert.Equal(t, len(result), 0)
+		result = FindBids(bids, BidAccepted)
+		assert.Equal(t, len(result), 4)
+		result[0].State = BidPaid
+		result = FindBids(bids, BidPaid)
+		assert.Equal(t, len(result), 1)
+	})
 }
 
 func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderService) {
