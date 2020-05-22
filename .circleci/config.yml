@@ -90,6 +90,8 @@ jobs:
             circleci tests glob "test/*.js" | circleci tests split --split-by=timings > /tmp/tests-to-run
             cat /tmp/tests-to-run
             ./node_modules/.bin/truffle test $(cat /tmp/tests-to-run)
+      - store_test_results:
+          path: ~/reports
   synchronizer:
     executor: freeverse_ethereum
     steps:
