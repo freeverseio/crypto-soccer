@@ -11,10 +11,10 @@ type PlaystoreOrderHistoryService struct {
 	service storage.PlaystoreOrderService
 }
 
-func NewPlaystoreOrderHistoryService(tx *sql.Tx, service storage.PlaystoreOrderService) *PlaystoreOrderHistoryService {
+func NewPlaystoreOrderHistoryService(tx *sql.Tx) *PlaystoreOrderHistoryService {
 	return &PlaystoreOrderHistoryService{
 		tx:      tx,
-		service: service,
+		service: NewPlaystoreOrderService(tx),
 	}
 }
 
