@@ -3,7 +3,6 @@ version: 2.1
 
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
-  circleci-cli: circleci/circleci-cli@0.1.8
 
 environment:
   PATH: >-
@@ -83,7 +82,6 @@ jobs:
     parallelism: 4
     steps:
       - checkout
-      # - circleci-cli/install
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run:
