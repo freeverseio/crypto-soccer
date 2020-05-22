@@ -70,7 +70,6 @@ contract('Proxy', (accounts) => {
         tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: COO}).should.be.rejected;
         tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
     });
-
     
     it('full deploy should work', async () => {
         const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
@@ -94,10 +93,9 @@ contract('Proxy', (accounts) => {
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: superuser}).should.be.rejected;
         
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: relay}).should.be.rejected;
-        await assets.setMarket(relay, {from: COO}).should.be.rejected;
-        await assets.setMarket(relay, {from: superuser}).should.be.fulfilled;
+        await assets.setRelay(relay, {from: COO}).should.be.rejected;
+        await assets.setRelay(relay, {from: superuser}).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: relay}).should.be.fulfilled;
-        
     });
 
     it('deploy storage by adding Assets selectors', async () => {
@@ -132,7 +130,6 @@ contract('Proxy', (accounts) => {
 
         result = await proxy.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(2);
-        
     });
 
     it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
@@ -221,11 +218,5 @@ contract('Proxy', (accounts) => {
             isActive.should.be.equal(true);
             assert(fromBytes32(nom) == expectedNamesV1[c-1] , "wrong contract name");
         }    
-        
-
-        
     });
-
-    
-    
 });

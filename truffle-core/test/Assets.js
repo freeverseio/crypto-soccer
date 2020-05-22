@@ -255,7 +255,7 @@ contract('Assets', (accounts) => {
         teamId2 = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
         addresses = [ALICE, BOB];
         teamIds = [teamId1, teamId2];
-        tx = await assets.transferFirstBotsToAddresses([tz, tz], [countryIdxInTZ, countryIdxInTZ], addresses, {from: owners.market}).should.be.fulfilled;
+        tx = await assets.transferFirstBotsToAddresses([tz, tz], [countryIdxInTZ, countryIdxInTZ], addresses, {from: owners.relay}).should.be.fulfilled;
         let count = -1;
         truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
             count++;
