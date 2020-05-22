@@ -113,14 +113,14 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 		assert.Equal(t, *result, *auction)
 	})
 
-	t.Run("TestBidInsert", func(t *testing.T) {
+	t.Run("TestBid().Insert", func(t *testing.T) {
 		auction := NewAuction()
 		auction.ID = "0"
 		assert.NilError(t, service.Insert(*auction))
 
 		bid := NewBid()
 		bid.AuctionID = auction.ID
-		assert.NilError(t, service.BidInsert(*bid))
+		assert.NilError(t, service.Bid().Insert(*bid))
 	})
 
 	t.Run("TestBidsByAuctionID", func(t *testing.T) {
@@ -130,11 +130,11 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 
 		bid := NewBid()
 		bid.AuctionID = auction.ID
-		assert.NilError(t, service.BidInsert(*bid))
+		assert.NilError(t, service.Bid().Insert(*bid))
 		bid.ExtraPrice = 10
-		assert.NilError(t, service.BidInsert(*bid))
+		assert.NilError(t, service.Bid().Insert(*bid))
 
-		bids, err := service.Bids(auction.ID)
+		bids, err := service.Bid().Bids(auction.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, len(bids), 2)
 
@@ -143,9 +143,9 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 
 		bid = NewBid()
 		bid.AuctionID = auction.ID
-		assert.NilError(t, service.BidInsert(*bid))
+		assert.NilError(t, service.Bid().Insert(*bid))
 
-		bids, err = service.Bids(auction.ID)
+		bids, err = service.Bid().Bids(auction.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, len(bids), 1)
 	})
@@ -159,16 +159,16 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 		bid.AuctionID = auction.ID
 		bid.ExtraPrice = 10
 		bid.State = BidAccepted
-		assert.NilError(t, service.BidInsert(*bid))
+		assert.NilError(t, service.Bid().Insert(*bid))
 
 		bid.State = BidPaid
 		bid.StateExtra = "vciao"
 		bid.PaymentID = "3"
 		bid.PaymentURL = "http"
 		bid.PaymentDeadline = 4
-		assert.NilError(t, service.BidUpdate(*bid))
+		assert.NilError(t, service.Bid().Update(*bid))
 
-		bids, err := service.Bids(auction.ID)
+		bids, err := service.Bid().Bids(auction.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, len(bids), 1)
 		assert.Equal(t, bids[0], *bid)

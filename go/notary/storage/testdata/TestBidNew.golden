@@ -1,0 +1,12 @@
+(*storage.Bid)({
+	AuctionID: (string) "",
+	ExtraPrice: (int64) 0,
+	Rnd: (int64) 0,
+	TeamID: (string) "",
+	Signature: (string) "",
+	State: (storage.BidState) (len=8) "accepted",
+	StateExtra: (string) "",
+	PaymentID: (string) "",
+	PaymentURL: (string) "",
+	PaymentDeadline: (int64) 0
+})

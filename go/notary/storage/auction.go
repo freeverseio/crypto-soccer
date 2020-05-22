@@ -39,8 +39,5 @@ type AuctionService interface {
 	Auction(ID string) (*Auction, error)
 	Insert(auction Auction) error
 	Update(auction Auction) error
-
-	Bids(auctionId string) ([]Bid, error)
-	BidInsert(bid Bid) error
-	BidUpdate(bid Bid) error
+	Bid() BidService
 }
