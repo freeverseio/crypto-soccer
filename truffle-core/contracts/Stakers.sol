@@ -8,7 +8,21 @@ contract Stakers {
   using SafeMath for uint256;
   
   address constant internal NULL_ADDR = address(0x0);
-  uint16 public constant updatersCapacity = 4;
+  uint16 constant public UPDT_CAPACITY = 4;
+
+  event PotBalanceChange(uint256 newBalance);
+  event RewardsExecuted();
+  event AddedTrustedParty(address party);
+  event NewGameOwner(address newOwner);
+  event NewEnrol(address staker);
+  event NewUnenrol(address staker);
+  event SlashedBy(address slashedStaker, address goodStaker);
+  event AddedRewardToUpdater(address staker);
+  event ProposedOwner(address proposedOwner);
+  event AcceptedNewOwner(address newOwner);
+  event NewCOO(address newCOO);
+  event FinalizedGameRound();
+  event NewGameLevel(uint16 level);
 
   address public owner;
   address public proposedOwner;
@@ -55,16 +69,19 @@ contract Stakers {
     
   function proposeOwner(address _addr) public onlyOwner {
       proposedOwner = _addr;
+      emit ProposedOwner(_addr);
   }
 
   function acceptOwner() public {
       require(msg.sender == proposedOwner, "only proposed owner can become owner");
       owner = proposedOwner;
       proposedOwner = address(0);
+      emit AcceptedNewOwner(msg.sender);
   }
 
   function setCOO(address _addr) external onlyOwner {
       COO = _addr;
+      emit NewCOO(_addr);
   }
   
   // External / Public Functions
@@ -73,6 +90,7 @@ contract Stakers {
   function setGameOwner(address _address) external onlyCOO {
     require (_address != NULL_ADDR, "invalid address 0x0");
     gameOwner = _address;
+    emit NewGameOwner(_address);
   }
   
 
@@ -89,6 +107,7 @@ contract Stakers {
     delete toBeRewarded;
     potBalance = 0; // there could be a negligible loss of funds in the Pot.
     totalNumUpdates = 0;
+    emit RewardsExecuted();
   }  
 
   /// @notice transfers pendingWithdrawals to the calling staker; the stake remains until unenrol is called
@@ -111,15 +130,17 @@ contract Stakers {
     assertGoodCandidate(msg.sender);
     require(!isTrustedParty[_staker], "trying to add a trusted party that is already trusted");
     isTrustedParty[_staker] = true;
+    emit AddedTrustedParty(_staker);
   }
 
   /// @notice registers a new staker
-  function enroll() external payable {
+  function enrol() external payable {
     assertGoodCandidate(msg.sender);
-    require (msg.value == requiredStake, "failed to enroll: wrong stake amount");
-    require (isTrustedParty[msg.sender], "failed to enroll: staker is not trusted party");
-    require (addStaker(msg.sender), "failed to enroll: cannot add staker");
+    require (msg.value == requiredStake, "failed to enrol: wrong stake amount");
+    require (isTrustedParty[msg.sender], "failed to enrol: staker is not trusted party");
+    require (addStaker(msg.sender), "failed to enrol: cannot add staker");
     stakes[msg.sender] = msg.value;
+    emit NewEnrol(msg.sender);
   }
 
   /// @notice unregisters a new staker and transfers all earnings, and pot
@@ -130,6 +151,7 @@ contract Stakers {
     pendingWithdrawals[msg.sender] = 0;
     stakes[msg.sender]  = 0;
     if (amount > 0) { msg.sender.transfer(amount); }
+    emit NewUnenrol(msg.sender);
   }
 
   /// @notice update to a new level
@@ -139,12 +161,12 @@ contract Stakers {
   //       level is below current or level has reached the end
   function update(uint16 _level, address _staker) external onlyGame {
     require (_level <= level(),        "failed to update: wrong level");
-    //require (_level <= updatersCapacity, "failed to update: max level exceeded"); // already covered by previous require
+    //require (_level <= UPDT_CAPACITY, "failed to update: max level exceeded"); // already covered by previous require
     require (isStaker[_staker],        "failed to update: staker not registered");
     //require (!isSlashed(_staker),      "failed to update: staker was slashed"); // also covered by not being part of stakers, because slashing removes address from stakers
     require(!alreadyDidUpdate(_staker), "staker has already updated this game");
 
-    if (_level < updatersCapacity) {
+    if (_level < UPDT_CAPACITY) {
       if (_level < level()) {
         // If level is below current, it means the challenge
         // period has passed, so last updater told the truth.
@@ -162,7 +184,9 @@ contract Stakers {
       address badStaker = popUpdaters();
       slash(badStaker);
       earnStake(_staker, badStaker);
+      emit SlashedBy(badStaker, _staker);
     }
+    emit NewGameLevel(level());
   }
 
   /// @notice finalize current game, get ready for next one.
@@ -180,12 +204,14 @@ contract Stakers {
       addRewardToUpdater(popUpdaters());
     }
     require (level() == 0, "failed to finalize: no updaters should have been left");
+    emit FinalizedGameRound();
   }
 
 
   function addRewardToPot() external payable {
     require (msg.value > 0, "failed to add reward of zero");
     potBalance += msg.value;
+    emit PotBalanceChange(potBalance);
   }
 
   // Private Functions
@@ -237,6 +263,7 @@ contract Stakers {
     }
     howManyUpdates[_addr] += 1;
     totalNumUpdates++;
+    emit AddedRewardToUpdater(_addr);
   }
 
   function popUpdaters() private returns (address _address) {
@@ -260,8 +287,8 @@ contract Stakers {
   }
   
   /// @notice get the current level
-  function level() public view returns (uint256) {
-    return updaters.length;
+  function level() public view returns (uint16) {
+    return uint16(updaters.length);
   }
 
 }

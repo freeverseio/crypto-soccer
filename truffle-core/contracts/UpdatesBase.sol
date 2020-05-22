@@ -9,12 +9,7 @@ import "./Challenges.sol";
 
 contract UpdatesBase is UpdatesView, Merkle {
     event ChallengeResolved(uint8 tz, uint8 resolvedLevel, bool isSuccessful);
-
-    modifier onlyRelay() {
-        require(msg.sender == _relay, "Only Relay owner is authorized.");
-        _;
-    }
-    
+   
     function _cleanTimeAcceptedChallenges() internal returns (uint8[4] memory intData) {
         // intData = [tz, level, levelVerifiable, idx]
         (intData[0],,) = prevTimeZoneToUpdate();

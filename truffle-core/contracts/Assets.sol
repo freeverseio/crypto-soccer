@@ -21,6 +21,8 @@ contract Assets is AssetsView {
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }
     
+    function setRelay(address addr) public onlySuperUser { _relay = addr; }
+   
     function init() public onlyCOO {
         require(gameDeployDay == 0, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
@@ -66,14 +68,14 @@ contract Assets is AssetsView {
 
     // this function will crash if it cannot handle all transfers in one single TX
     // it is the responsibility of the caller to ensure that the arrays match correctly
-    function transferFirstBotsToAddresses(uint8[] calldata tz, uint256[] calldata countryIdxInTZ, address[] calldata addr) external onlyMarket {
+    function transferFirstBotsToAddresses(uint8[] calldata tz, uint256[] calldata countryIdxInTZ, address[] calldata addr) external onlyRelay {
         for (uint256 i = 0; i < tz.length; i++) {
             transferFirstBotToAddr(tz[i], countryIdxInTZ[i], addr[i]); 
         }            
     }
 
     // Entry point for new users: acquiring a bot team
-    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyMarket {
+    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyRelay {
         require(tzToNCountries[tz] != 0, "Timezone has not been initialized");
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
         uint256 firstBotIdx = countryIdToNHumanTeams[countryId];

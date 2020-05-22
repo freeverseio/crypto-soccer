@@ -74,7 +74,7 @@ contract('Leagues', (accounts) => {
         owners = defaultSetup.owners;
         depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         [proxy, assets, market, updates, challenges] = depl;
-        await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, owners.company).should.be.fulfilled;
+        await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         await assets.initSingleTZ(INIT_TZ, {from: owners.COO}).should.be.fulfilled;
 
         trainingPoints= await TrainingPoints.new(assets.address).should.be.fulfilled;
@@ -124,7 +124,7 @@ contract('Leagues', (accounts) => {
         result[0].toNumber().should.be.equal(0 * TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
         result[1].toNumber().should.be.equal(0);
         // make it human:
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, accounts[0], {from: owners.market}).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, accounts[0], {from: owners.relay}).should.be.fulfilled;
         result = await leagues.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId).should.be.fulfilled;
         result[0].toNumber().should.be.equal(386000*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2

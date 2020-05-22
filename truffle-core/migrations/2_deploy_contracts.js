@@ -7,7 +7,6 @@ const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
 const Leagues = artifacts.require('Leagues');
 const Updates = artifacts.require('Updates');
-const Friendlies = artifacts.require('Friendlies');
 const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
 const Utils = artifacts.require('Utils');
@@ -45,7 +44,6 @@ module.exports = function (deployer, network, accounts) {
     const trainingPoints= await deployer.deploy(TrainingPoints, assets.address).should.be.fulfilled;
     const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
     const leagues = await deployer.deploy(Leagues, assets.address).should.be.fulfilled;
-    const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
     const shop = await deployer.deploy(Shop).should.be.fulfilled;
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
     const utils = await deployer.deploy(Utils).should.be.fulfilled;
@@ -61,7 +59,7 @@ module.exports = function (deployer, network, accounts) {
       // first set all owners to accounts[0] so that we can do some operations
       await assets.setCOO(accounts[0]).should.be.fulfilled;
       await assets.setMarket(accounts[0]).should.be.fulfilled;
-      await updates.setRelay(accounts[0]).should.be.fulfilled;
+      await assets.setRelay(accounts[0]).should.be.fulfilled;
       await stakers.setCOO(accounts[0]).should.be.fulfilled;
 
       // do these operations:
@@ -71,7 +69,11 @@ module.exports = function (deployer, network, accounts) {
       await updates.initUpdates().should.be.fulfilled; 
       await updates.setStakersAddress(stakers.address).should.be.fulfilled;
       await stakers.setGameOwner(updates.address).should.be.fulfilled;
+      for (trustedParty of owners.trustedParties) {
+        await stakers.addTrustedParty(trustedParty);
+      }
 
+      
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
         await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
@@ -84,7 +86,7 @@ module.exports = function (deployer, network, accounts) {
       await stakers.setCOO(owners.COO).should.be.fulfilled;
       await assets.setCOO(owners.COO).should.be.fulfilled;
       await assets.setMarket(owners.market).should.be.fulfilled;
-      await updates.setRelay(owners.relay).should.be.fulfilled;
+      await assets.setRelay(owners.relay).should.be.fulfilled;
       await proxy.setSuperUser(owners.superuser).should.be.fulfilled;
 
       await marketCrypto.proposeOwner(owners.superuser).should.be.fulfilled;
@@ -96,13 +98,16 @@ module.exports = function (deployer, network, accounts) {
         await marketCrypto.acceptOwner({from: owners.superuser}).should.be.fulfilled;
         await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled;
         await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
+        for (trustedParty of owners.trustedParties) {
+          await stakers.enrol({from: trustedParty, value: requiredStake});
+        }
       } else {
         console.log("You need to perform the final ownership stage with your HD wallets");
       }
 
       // If we want stakers signed up during deploy, uncomment this:
       // await deployUtils.addTrustedParties(stakers, owners.COO, owners.trustedParties);
-      // await deployUtils.enroll(stakers, requiredStake, owners.trustedParties);
+      // await deployUtils.enrol(stakers, requiredStake, owners.trustedParties);
     }
 
 
@@ -116,7 +121,6 @@ module.exports = function (deployer, network, accounts) {
       ["UPDATES", updates.address],
       ["TRAININGPOINTS", trainingPoints.address],
       ["EVOLUTION", evolution.address],
-      ["FRIENDLIES", friendlies.address],
       ["SHOP_CONTRACT", shop.address],
       ["PRIVILEGED", privileged.address],
       ["UTILS", utils.address],
