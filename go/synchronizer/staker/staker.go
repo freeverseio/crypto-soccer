@@ -41,13 +41,13 @@ func (b Staker) Init(contracts contracts.Contracts) error {
 		return err
 	}
 	if !isEnrolled {
-		log.Info("[staker] trying to enroll")
+		log.Info("[staker] trying to enrol")
 		stake, err := requiredStake(contracts)
 		if err != nil {
 			return err
 		}
 		log.Infof("[staker] stake required %v", stake.String())
-		if err := b.enroll(contracts, stake); err != nil {
+		if err := b.enrol(contracts, stake); err != nil {
 			return err
 		}
 		log.Info("[staker] enrollment successful")
@@ -101,12 +101,12 @@ func requiredStake(contracts contracts.Contracts) (*big.Int, error) {
 	return stake, nil
 }
 
-func (b Staker) enroll(contracts contracts.Contracts, stake *big.Int) error {
+func (b Staker) enrol(contracts contracts.Contracts, stake *big.Int) error {
 	auth := bind.NewKeyedTransactor(b.privateKey)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixed to 1 GWei
 	auth.Value = stake
 
-	tx, err := contracts.Stakers.Enroll(auth)
+	tx, err := contracts.Stakers.Enrol(auth)
 	if err != nil {
 		return err
 	}

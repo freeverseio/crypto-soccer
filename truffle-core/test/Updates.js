@@ -68,7 +68,7 @@ contract('Updates', (accounts) => {
             await stakers.addTrustedParty(trustedParty, {from: owners.COO}).should.be.fulfilled;
         }
         for (trustedParty of owners.trustedParties) {
-            await stakers.enroll({from:trustedParty, value: requiredStake}).should.be.fulfilled;
+            await stakers.enrol({from:trustedParty, value: requiredStake}).should.be.fulfilled;
         }
         return stakers;
     }
@@ -286,7 +286,7 @@ contract('Updates', (accounts) => {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
-        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
 
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -307,7 +307,7 @@ contract('Updates', (accounts) => {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
-        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
         
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -355,7 +355,7 @@ contract('Updates', (accounts) => {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
-        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
         const cif = "ciao2";
         for (i = 0; i < 110; i++) {
             await moveToNextVerse(updates, extraSecs = 10);
@@ -395,7 +395,7 @@ contract('Updates', (accounts) => {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
-        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
 
         await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
 
@@ -735,7 +735,7 @@ contract('Updates', (accounts) => {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
-        await deployUtils.enroll(stakers, defaultSetup.requiredStake, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];

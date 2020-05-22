@@ -134,11 +134,11 @@ contract Stakers {
   }
 
   /// @notice registers a new staker
-  function enroll() external payable {
+  function enrol() external payable {
     assertGoodCandidate(msg.sender);
-    require (msg.value == requiredStake, "failed to enroll: wrong stake amount");
-    require (isTrustedParty[msg.sender], "failed to enroll: staker is not trusted party");
-    require (addStaker(msg.sender), "failed to enroll: cannot add staker");
+    require (msg.value == requiredStake, "failed to enrol: wrong stake amount");
+    require (isTrustedParty[msg.sender], "failed to enrol: staker is not trusted party");
+    require (addStaker(msg.sender), "failed to enrol: cannot add staker");
     stakes[msg.sender] = msg.value;
     emit NewEnrol(msg.sender);
   }

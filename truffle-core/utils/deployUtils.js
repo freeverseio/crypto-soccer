@@ -185,9 +185,9 @@ async function addTrustedParties(contract, owner, addresses) {
         await contract.addTrustedParty(address, {from:owner}).should.be.fulfilled;
     });
 }
-async function enroll(contract, stake, addresses) {
+async function enrol(contract, stake, addresses) {
     await asyncForEach(addresses, async (address) => {
-        await contract.enroll({from:address, value: stake}).should.be.fulfilled;
+        await contract.enrol({from:address, value: stake}).should.be.fulfilled;
     });
 }
 
@@ -259,7 +259,7 @@ module.exports = {
     assertNoCollisionsWithProxy,
     deploy,
     addTrustedParties,
-    enroll,
+    enrol,
     unenroll,
     getExplicitOrDefaultSetup,
     getDefaultSetup,
