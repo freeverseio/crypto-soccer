@@ -18,7 +18,7 @@ func ProcessPlaystoreOrders(
 	googleCredentials []byte,
 	iapTestOn bool,
 ) error {
-	service := postgres.NewPlaystoreOrderHistoryService(tx, postgres.NewPlaystoreOrderService(tx))
+	service := postgres.NewPlaystoreOrderHistoryService(tx)
 
 	orders, err := service.PendingOrders()
 	if err != nil {
