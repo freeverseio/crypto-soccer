@@ -37,10 +37,10 @@ contract('Stakers', (accounts) => {
     await assets.setCOO(erin, {from: bob}).should.be.rejected;
     await assets.setCOO(erin, {from: owners.superuser}).should.be.fulfilled;
 
-    await stakers.setGameOwner(frank, {from: dave}).should.be.rejected; // only COO can
-    await stakers.setGameOwner(frank, {from: owners.COO}).should.be.fulfilled;
+    await stakers.setGameOwner(frank, {from: owners.COO}).should.be.rejected; // only COO can
+    await stakers.setGameOwner(frank, {from: erin}).should.be.fulfilled;
   });
-
+  
   it("Tests game address", async () => {
     await expect.reverts(
       stakers.update(level = 1, alice),
