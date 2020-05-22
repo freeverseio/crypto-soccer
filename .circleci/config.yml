@@ -83,7 +83,7 @@ jobs:
     parallelism: 4
     steps:
       - checkout
-      - circle-cli/install
+      - circleci-cli/install
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run:
