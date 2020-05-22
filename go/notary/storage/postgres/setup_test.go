@@ -1,4 +1,4 @@
-package storage_test
+package postgres_test
 
 import (
 	"database/sql"
@@ -6,12 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 var db *sql.DB
-var dump spew.ConfigState
 
 func TestMain(m *testing.M) {
 	var err error
@@ -19,8 +17,5 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	dump = spew.ConfigState{DisablePointerAddresses: true, Indent: "\t"}
-
 	os.Exit(m.Run())
 }

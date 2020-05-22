@@ -4,9 +4,10 @@ import (
 	"crypto/ecdsa"
 	"database/sql"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,7 +18,9 @@ func ProcessPlaystoreOrders(
 	googleCredentials []byte,
 	iapTestOn bool,
 ) error {
-	orders, err := storage.PendingPlaystoreOrders(tx)
+	service := postgres.NewPlaystoreOrderHistoryService(tx, postgres.NewPlaystoreOrderService(tx))
+
+	orders, err := service.PendingOrders()
 	if err != nil {
 		return err
 	}
@@ -42,7 +45,7 @@ func ProcessPlaystoreOrders(
 			log.Error(err)
 			continue
 		}
-		if err := machine.Order().UpdateState(tx); err != nil {
+		if err := service.UpdateState(machine.Order()); err != nil {
 			return err
 		}
 	}

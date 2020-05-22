@@ -6,6 +6,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -29,7 +30,9 @@ func SubmitPlayStorePlayerPurchase(
 	order.PlayerId = string(in.PlayerId)
 	order.TeamId = string(in.TeamId)
 	order.Signature = in.Signature
-	if err := order.Insert(tx); err != nil {
+
+	service := postgres.NewPlaystoreOrderHistoryService(tx, postgres.NewPlaystoreOrderService(tx))
+	if err := service.Insert(*order); err != nil {
 		return err
 	}
 
