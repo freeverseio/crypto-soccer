@@ -1,7 +1,7 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingSkillsSetters.sol";
-import "./EncodingTacticsPart2.sol";
+import "../encoders/EncodingSkillsSetters.sol";
+import "../encoders/EncodingTacticsPart2.sol";
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions
  * @dev Timezones range from 1 to 24, with timeZone = 0 being null.

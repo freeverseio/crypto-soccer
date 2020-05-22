@@ -1,13 +1,13 @@
 pragma solidity >= 0.6.3;
 
-import "./Assets.sol";
+import "../storage/Assets.sol";
 import "./EngineLib.sol";
-import "./EncodingMatchLog.sol";
+import "../encoders/EncodingMatchLog.sol";
 import "./Engine.sol";
-import "./EncodingTPAssignment.sol";
-import "./EncodingSkills.sol";
-import "./EncodingSkillsSetters.sol";
-import "./EncodingTacticsPart2.sol";
+import "../encoders/EncodingTPAssignment.sol";
+import "../encoders/EncodingSkills.sol";
+import "../encoders/EncodingSkillsSetters.sol";
+import "../encoders/EncodingTacticsPart2.sol";
 
 contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsPart2 {
     

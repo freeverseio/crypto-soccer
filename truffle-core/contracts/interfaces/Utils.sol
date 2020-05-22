@@ -1,6 +1,6 @@
 pragma solidity >= 0.6.3;
-import "./EncodingMatchLog.sol";
-import "./AssetsView.sol";
+import "../encoders/EncodingMatchLog.sol";
+import "../storage/AssetsView.sol";
 
 contract Utils is EncodingMatchLog, AssetsView{
 

@@ -1,8 +1,8 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingMatchLogPart1.sol";
+import "../encoders/EncodingMatchLogPart1.sol";
 import "./EncodingMatchLogPart2.sol";
-import "./EncodingMatchLogPart3.sol";
+import "../encoders/EncodingMatchLogPart3.sol";
 // note: both part1 and part2 inherit from part4
 
 /**

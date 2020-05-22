@@ -3,8 +3,8 @@ pragma solidity >= 0.6.3;
  * @title Library of functions to serialize values into uints, and deserialize back
  */
 
-import "./EncodingTacticsPart1.sol";
-import "./EncodingTacticsPart2.sol";
+import "../encoders/EncodingTacticsPart1.sol";
+import "../encoders/EncodingTacticsPart2.sol";
  
 /**
     * @dev Tactics serializes a total of 157 bits.

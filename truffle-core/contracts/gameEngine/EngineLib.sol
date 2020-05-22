@@ -1,6 +1,6 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingSkillsGetters.sol";
+import "../encoders/EncodingSkillsGetters.sol";
 
 contract EngineLib is EncodingSkillsGetters {
     uint8 private constant BITS_PER_RND     = 36;   // Number of bits allowed for random numbers inside match decisisons

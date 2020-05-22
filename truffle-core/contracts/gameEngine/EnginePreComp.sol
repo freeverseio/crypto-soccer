@@ -1,10 +1,10 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingSkills.sol";
-import "./EncodingTacticsPart1.sol";
+import "../encoders/EncodingSkills.sol";
+import "../encoders/EncodingTacticsPart1.sol";
 import "./EngineLib.sol";
 import "./SortValues.sol";
-import "./EncodingMatchLogPart1.sol";
+import "../encoders/EncodingMatchLogPart1.sol";
 
 contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1, SortValues {
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;

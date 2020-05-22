@@ -2,8 +2,8 @@ pragma solidity >= 0.6.3;
 
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
-import "./EncodingMatchLogPart3.sol";
-import "./EncodingTactics.sol";
+import "../encoders/EncodingMatchLogPart3.sol";
+import "../encoders/EncodingTactics.sol";
 import "./EngineApplyBoosters.sol";
 
 contract Engine is EngineLib, EncodingMatchLogPart3, EncodingTactics  {

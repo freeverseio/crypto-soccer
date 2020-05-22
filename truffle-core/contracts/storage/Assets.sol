@@ -1,6 +1,6 @@
 pragma solidity >= 0.6.3;
 
-import "./AssetsView.sol";
+import "../storage/AssetsView.sol";
 
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions

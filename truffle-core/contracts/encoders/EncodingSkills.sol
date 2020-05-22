@@ -1,6 +1,6 @@
 pragma solidity >= 0.6.3;
 
-import "./Constants.sol";
+import "../storage/Constants.sol";
 
 /**
  * @title Library of functions to serialize values into uints, and deserialize back

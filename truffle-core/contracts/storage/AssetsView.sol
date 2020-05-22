@@ -1,8 +1,8 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingSkills.sol";
-import "./EncodingIDs.sol";
-import "./EncodingState.sol";
+import "../encoders/EncodingSkills.sol";
+import "../encoders/EncodingIDs.sol";
+import "../encoders/EncodingState.sol";
 import "./Storage.sol";
 import "./AssetsLib.sol";
 
