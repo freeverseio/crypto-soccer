@@ -19,7 +19,7 @@ func ProcessAuctions(
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 ) error {
-	service := postgres.NewAuctionService(tx)
+	service := postgres.NewAuctionHistoryService(tx)
 	auctions, err := service.PendingAuctions()
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func processAuction(
 	pvc *ecdsa.PrivateKey,
 	contracts contracts.Contracts,
 ) error {
-	service := postgres.NewAuctionService(tx)
+	service := postgres.NewAuctionHistoryService(tx)
 	bids, err := service.Bid().Bids(auction.ID)
 	if err != nil {
 		return err

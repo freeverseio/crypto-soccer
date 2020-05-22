@@ -22,7 +22,10 @@ func (b BidHistoryService) Insert(bid storage.Bid) error {
 }
 
 func (b BidHistoryService) Update(bid storage.Bid) error {
-	return b.BidService.Update(bid)
+	if err := b.BidService.Update(bid); err != nil {
+		return err
+	}
+	return b.insertHistory(bid)
 }
 
 func (b BidHistoryService) insertHistory(bid storage.Bid) error {

@@ -11,7 +11,7 @@ import (
 )
 
 func CancelAuction(tx *sql.Tx, in input.CancelAuctionInput) error {
-	service := postgres.NewAuctionService(tx)
+	service := postgres.NewAuctionHistoryService(tx)
 	auction, err := service.Auction(string(in.AuctionId))
 	if err != nil {
 		return err

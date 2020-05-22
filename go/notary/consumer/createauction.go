@@ -34,7 +34,7 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 		return err
 	}
 	auction.Seller = signerAddress.Hex()
-	service := postgres.NewAuctionService(tx)
+	service := postgres.NewAuctionHistoryService(tx)
 	if err = service.Insert(*auction); err != nil {
 		return err
 	}
