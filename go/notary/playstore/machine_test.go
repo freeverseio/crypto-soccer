@@ -9,14 +9,63 @@ import (
 )
 
 func TestMachineCreation(t *testing.T) {
-	order := storage.NewPlaystoreOrder()
+	client := NewMockClientService()
 	iapTestOn := true
+	order := storage.NewPlaystoreOrder()
 	_, err := playstore.New(
-		[]byte{},
+		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
 		iapTestOn,
 	)
-	assert.Error(t, err, "unexpected end of JSON input")
+	assert.NilError(t, err)
+}
+
+func TestMachineCreationFailedState(t *testing.T) {
+	client := NewMockClientService()
+	iapTestOn := true
+	order := storage.NewPlaystoreOrder()
+	order.State = storage.PlaystoreOrderFailed
+	m, err := playstore.New(
+		client,
+		*order,
+		*bc.Contracts,
+		bc.Owner,
+		iapTestOn,
+	)
+	assert.NilError(t, err)
+	assert.NilError(t, m.Process())
+}
+
+func TestMachineCreationRefundedState(t *testing.T) {
+	client := NewMockClientService()
+	iapTestOn := true
+	order := storage.NewPlaystoreOrder()
+	order.State = storage.PlaystoreOrderRefunded
+	m, err := playstore.New(
+		client,
+		*order,
+		*bc.Contracts,
+		bc.Owner,
+		iapTestOn,
+	)
+	assert.NilError(t, err)
+	assert.NilError(t, m.Process())
+}
+
+func TestMachineCreationCompleteState(t *testing.T) {
+	client := NewMockClientService()
+	iapTestOn := true
+	order := storage.NewPlaystoreOrder()
+	order.State = storage.PlaystoreOrderComplete
+	m, err := playstore.New(
+		client,
+		*order,
+		*bc.Contracts,
+		bc.Owner,
+		iapTestOn,
+	)
+	assert.NilError(t, err)
+	assert.NilError(t, m.Process())
 }

@@ -2,17 +2,13 @@ package playstore
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 func (b *Machine) processOpenState(ctx context.Context) error {
-	purchase, err := b.client.VerifyProduct(
+	purchase, err := b.client.GetPurchase(
 		ctx,
 		b.order.PackageName,
 		b.order.ProductId,
@@ -42,43 +38,17 @@ func (b *Machine) processOpenState(ctx context.Context) error {
 	}
 
 	payload := fmt.Sprintf("playerId: %v", b.order.PlayerId)
-	if err := b.client.AcknowledgeProduct(
+	if err := b.client.AcknowledgedPurchase(
 		ctx,
 		b.order.PackageName,
 		b.order.ProductId,
 		b.order.PurchaseToken,
 		payload,
 	); err != nil {
-		b.setState(storage.PlaystoreOrderFailed, err.Error())
-		return err
+		b.setState(storage.PlaystoreOrderOpen, err.Error())
+		return nil
 	}
 
 	b.setState(storage.PlaystoreOrderAcknowledged, "")
-	return nil
-}
-
-func (b Machine) assignAsset() error {
-	playerId, _ := new(big.Int).SetString(b.order.PlayerId, 10)
-	if playerId == nil {
-		return errors.New("invalid player")
-	}
-	teamId, _ := new(big.Int).SetString(b.order.TeamId, 10)
-	if teamId == nil {
-		return errors.New("invalid team")
-	}
-
-	auth := bind.NewKeyedTransactor(b.pvc)
-	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
-	tx, err := b.contracts.Market.TransferBuyNowPlayer(
-		auth,
-		playerId,
-		teamId,
-	)
-	if err != nil {
-		return err
-	}
-	if _, err = helper.WaitReceipt(b.contracts.Client, tx, 60); err != nil {
-		return err
-	}
 	return nil
 }
