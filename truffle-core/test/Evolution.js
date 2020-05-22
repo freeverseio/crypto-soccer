@@ -10,19 +10,22 @@ var JSONbig = require('json-bigint');
 const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
+const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
+const Updates = artifacts.require('Updates');
+const Challenges = artifacts.require('Challenges');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const Shop = artifacts.require('Shop');
-const Championships = artifacts.require('Championships');
 
 
 contract('Evolution', (accounts) => {
@@ -286,25 +289,22 @@ contract('Evolution', (accounts) => {
     }
     
     beforeEach(async () => {
-        training = await TrainingPoints.new().should.be.fulfilled;
         evo = await Evolution.new().should.be.fulfilled;
-        play = await PlayAndEvolve.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
-        assets = await Assets.new().should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
-        market = await Market.new().should.be.fulfilled;
-        shop = await Shop.new().should.be.fulfilled;
-        encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
-        await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
-        await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
-        await training.setAssetsAddress(assets.address).should.be.fulfilled;
-        await training.setMarketAddress(market.address).should.be.fulfilled;
-        await play.setEngineAddress(engine.address).should.be.fulfilled;
-        await play.setTrainingAddress(training.address).should.be.fulfilled;
-        await play.setEvolutionAddress(evo.address).should.be.fulfilled;
-        await play.setShopAddress(shop.address).should.be.fulfilled;
+        engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
+
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        [proxy, assets, market, updates, challenges] = depl;
+        await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, owners.company).should.be.fulfilled;
+        await assets.init({from: owners.COO}).should.be.fulfilled;
+        
+        training = await TrainingPoints.new(assets.address).should.be.fulfilled;
+        shop = await Shop.new().should.be.fulfilled;
+        encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
+        play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;

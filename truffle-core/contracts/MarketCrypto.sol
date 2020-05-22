@@ -1,6 +1,5 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
-import "./Proxy.sol";
 import "./Market.sol";
 
 /**
@@ -9,13 +8,18 @@ import "./Market.sol";
  
 contract MarketCrypto {
 
+    address constant private NULL_ADDR = address(0x0);
+
     event PlayerPutForSaleCrypto(uint256 playerId, uint256 startingPrice);
     event BidForPlayerCrypto(uint256 playerId, uint256 bidderTeamId, uint256 totalAmount);
     event AssetWentToNewOwner(uint256 playerId, uint256 auctionId);
 
+    address public _owner;
+    address public _proposedOwner;
+    address public _COO;
+    
     uint32 internal _auctionDuration = 24 hours; 
     uint256 internal _minimumBidIncrement = 0.5 ether; // bid for at least this amount of XDAI, or increase previous by this amount
-    address constant private NULL_ADDR = address(0x0);
     
     Market private _market;
 
@@ -32,16 +36,44 @@ contract MarketCrypto {
     mapping (uint256 => uint256) private  _teamIdHighestBidder;
     mapping (uint256 => bool) private  _assetWentToNewOwner;
     mapping (uint256 => mapping(address => uint256)) private _balance;
+
+    constructor() public {
+        _owner = msg.sender;
+    }
+
+    modifier onlyOwner {
+        require( msg.sender == _owner, "Only owner can call this function.");
+            _;
+    }
+
+    modifier onlyCOO {
+        require( msg.sender == _COO, "Only COO can call this function.");
+            _;
+    }
     
-    function setMarketAddress(address proxyAddr) external {
+    function proposeOwner(address addr) public onlyOwner {
+        _proposedOwner = addr;
+    }
+
+    function acceptOwner() public {
+        require(msg.sender == _proposedOwner, "only proposed owner can become owner");
+        _owner = _proposedOwner;
+        _proposedOwner = address(0);
+    }
+
+    function setCOO(address addr) external onlyOwner {
+        _COO = addr;
+    }
+    
+    function setMarketFiatAddress(address proxyAddr) external onlyCOO {
         _market = Market(proxyAddr);
     }
     
-    function setActionDuration(uint32 newDuration) external {
+    function setAuctionDuration(uint32 newDuration) external onlyCOO {
         _auctionDuration = newDuration;
     }
 
-    function setMinimumBid(uint128 newMinimum) external {
+    function setMinimumBid(uint128 newMinimum) external onlyCOO {
         _minimumBidIncrement = newMinimum;
     }
 
@@ -89,7 +121,6 @@ contract MarketCrypto {
         _sellerTeamId[auctionId] = currentTeamId;
         emit PlayerPutForSaleCrypto(playerId, startingPrice);
     }
-
     
     // TODO: encode isForeignMarket so that we cannot complete the auction ourselves
     function bidForPlayer(uint256 playerId, uint256 bidderTeamId) external payable {

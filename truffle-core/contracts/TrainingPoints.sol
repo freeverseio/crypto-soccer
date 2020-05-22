@@ -1,7 +1,6 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
 import "./Assets.sol";
-import "./Market.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLog.sol";
 import "./Engine.sol";
@@ -18,16 +17,11 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     uint256 constant internal YEARS_2   = 63072000; // 2 year in sec
     uint256 constant internal YEARS_16  = 504576000; // 16 year in sec
     uint256 constant internal DAYS_1    = 86400; // 1 day in sec
-    
 
     Assets private _assets;
-    Market private _market;
 
-    function setAssetsAddress(address addr) public {
-        _assets = Assets(addr);
-    }
-    function setMarketAddress(address addr) public {
-        _market = Market(addr);
+    constructor(address assetsAddr) public {
+        _assets = Assets(assetsAddr);
     }
 
     function computeTrainingPoints(uint256 matchLog0, uint256 matchLog1) public pure returns (uint256, uint256)

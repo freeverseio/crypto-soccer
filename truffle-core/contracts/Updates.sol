@@ -1,22 +1,24 @@
 pragma solidity >=0.5.12 <=0.6.3;
 
 import "./UpdatesBase.sol";
+
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
  */
-
 contract Updates is UpdatesBase {
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint256 verse, uint8 timeZone, bytes32 root, uint256 submissionTime);
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
 
-    function setStakersAddress(address payable addr) public {
+    function setRelay(address addr) public onlySuperUser { _relay = addr; }
+
+    function setStakersAddress(address payable addr) public onlySuperUser {
         _stakers = Stakers(addr);
     }
 
-    function setChallengeTime(uint256 newTime) public { _challengeTime = newTime; }
+    function setChallengeTime(uint256 newTime) public onlyCOO { _challengeTime = newTime; }
 
-    function initUpdates() public {
+    function initUpdates() public onlyCOO {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         // that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
@@ -41,28 +43,30 @@ contract Updates is UpdatesBase {
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
     }
     
-    function submitActionsRoot(bytes32 actionsRoot, bytes32 activeTeamsPerCountryRoot, bytes32 orgMapRoot, uint8 levelVerifiableByBC, string memory ipfsCid) public {
+    function submitActionsRoot(bytes32 actionsRoot, bytes32 activeTeamsPerCountryRoot, bytes32 orgMapRoot, uint8 levelVerifiableByBC, string calldata ipfsCid) external onlyRelay {
         require(now > nextVerseTimestamp, "too early to accept actions root");
-        (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
-        (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
-        if (prevTz != NULL_TIMEZONE) {
-            ( , , bool isSettled) = getStatus(prevTz, true);
+        (uint8 tz,,) = prevTimeZoneToUpdate();
+        if (tz != NULL_TIMEZONE) {
+            ( , , bool isSettled) = getStatus(tz, true);
             require(isSettled, "last verse is still under challenge period");
             _stakers.finalize();
         }
-        if(newTZ != NULL_TIMEZONE) {
-            uint8 idx = 1 - _newestRootsIdx[newTZ];
-            _newestRootsIdx[newTZ] = idx;
-            _actionsRoot[newTZ][idx] = actionsRoot;
-            _activeTeamsPerCountryRoot[newTZ][idx] = activeTeamsPerCountryRoot;
-            _orgMapRoot[newTZ][idx] = orgMapRoot;
-            _levelVerifiableByBC[newTZ][idx] = levelVerifiableByBC;
+        uint8 day;
+        uint8 turnInDay;
+        (tz, day, turnInDay) = nextTimeZoneToUpdate();
+        if(tz != NULL_TIMEZONE) {
+            uint8 idx = 1 - _newestRootsIdx[tz];
+            _newestRootsIdx[tz] = idx;
+            _actionsRoot[tz][idx] = actionsRoot;
+            _activeTeamsPerCountryRoot[tz][idx] = activeTeamsPerCountryRoot;
+            _orgMapRoot[tz][idx] = orgMapRoot;
+            _levelVerifiableByBC[tz][idx] = levelVerifiableByBC;
         }
-        _lastActionsSubmissionTime[newTZ] = now;
+        _lastActionsSubmissionTime[tz] = now;
         _incrementVerse();
         _setCurrentVerseSeed(blockhash(block.number-1));
-        emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
+        emit ActionsSubmission(currentVerse, tz, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
     }
 
     // accepts an update about the root of the current state of a timezone. 
@@ -79,9 +83,12 @@ contract Updates is UpdatesBase {
         _stakers.update(0, msg.sender);
     }
 
+    function setAllowChallenges(bool areAllowed) external onlySuperUser { _allowChallenges = areAllowed; }
+
     // TODO: specify which leaf you challenge!!! And bring Merkle proof!
-    function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] memory proofChallLeave, bytes32[] memory providedRoots) public {
+    function challengeTZ(bytes32 challLeaveVal, uint256 challLeavePos, bytes32[] calldata proofChallLeave, bytes32[] calldata providedRoots) external {
         // intData = [tz, level, levelVerifiable, idx]
+        require(_allowChallenges, "challenges are currently not allowed");
         uint8[4] memory intData = _cleanTimeAcceptedChallenges();
         bytes32 root = _assertFormallyCorrectChallenge(
             intData,
@@ -100,7 +107,7 @@ contract Updates is UpdatesBase {
         _stakers.update(level, msg.sender);
     }
 
-    function _setTZRoot(uint8 tz, bytes32 root) internal {
+    function _setTZRoot(uint8 tz, bytes32 root) private {
         uint8 idx = _newestRootsIdx[tz];
         _roots[tz][idx][0] = root;
         for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][idx][level] = 0;
@@ -112,14 +119,14 @@ contract Updates is UpdatesBase {
     }
 
     // TODO: remove this test function
-    function setLevelVerifiableByBC(uint8 newVal) public {
+    function setLevelVerifiableByBC(uint8 newVal) external onlyRelay {
         for (uint8 tz = 1; tz < 25; tz++) {
             _levelVerifiableByBC[tz][0] = newVal;
             _levelVerifiableByBC[tz][1] = newVal;
         }
     }
     
-    function setChallengeLevels(uint16 levelsInOneChallenge, uint16 leafsInLeague, uint16 levelsInLastChallenge) public {
+    function setChallengeLevels(uint16 levelsInOneChallenge, uint16 leafsInLeague, uint16 levelsInLastChallenge) external onlyRelay {
         _levelsInOneChallenge   = levelsInOneChallenge;
         _leafsInLeague          = leafsInLeague;
         _levelsInLastChallenge  = levelsInLastChallenge;

@@ -6,10 +6,15 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const logUtils = require('../utils/matchLogUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
 const Utils = artifacts.require('Utils');
+const Proxy = artifacts.require('Proxy');
 const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
+const Updates = artifacts.require('Updates');
+const Challenges = artifacts.require('Challenges');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
@@ -133,14 +138,18 @@ contract('Engine', (accounts) => {
 
     beforeEach(async () => {
         encodingSet = await EncodingSkillsSetters.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
-        assets = await Assets.new().should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
-        encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
-        await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
-        await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
+        engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
+        
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        [proxy, assets, market, updates, challenges] = depl;
+        await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, owners.company).should.be.fulfilled;
+        await assets.init({from: owners.COO}).should.be.fulfilled;
+
+        encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
@@ -163,7 +172,7 @@ contract('Engine', (accounts) => {
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
     });
-    
+
     it('create 442 team', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         var result = JSON.stringify(teamState);

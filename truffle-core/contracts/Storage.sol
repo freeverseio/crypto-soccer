@@ -11,7 +11,9 @@ contract Storage is ProxyStorage, Constants{
 
     uint256[2**12] _slotReserve;
    
-    address internal _academyAddr;
+    address internal _market;
+    address internal _COO;
+    address internal _relay;
     address internal _cryptoMktAddr;
     
     mapping(uint256 => uint256) internal _playerIdToState;
@@ -48,6 +50,7 @@ contract Storage is ProxyStorage, Constants{
     uint16 _leafsInLeague;
     uint16 _levelsInLastChallenge;
     uint256 _challengeTime;
+    bool _allowChallenges;
     mapping (uint256 => bytes32[2]) _actionsRoot;
     mapping (uint256 => bytes32[2]) _activeTeamsPerCountryRoot;
     mapping (uint256 => bytes32[2]) _orgMapRoot;

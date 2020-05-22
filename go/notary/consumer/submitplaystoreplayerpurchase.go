@@ -16,7 +16,7 @@ func SubmitPlayStorePlayerPurchase(
 ) error {
 	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)
 
-	data, err := playstore.InappPurchaseDataFromReceipt(in.Receipt)
+	data, err := playstore.DataFromReceipt(in.Receipt)
 	if err != nil {
 		return err
 	}
