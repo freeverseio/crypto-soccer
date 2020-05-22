@@ -107,7 +107,7 @@ func (b PlaystoreOrderService) Order(orderId string) (*storage.PlaystoreOrder, e
 	return &order, nil
 }
 
-func (b PlaystoreOrderService) Insert(order *storage.PlaystoreOrder) error {
+func (b PlaystoreOrderService) Insert(order storage.PlaystoreOrder) error {
 	_, err := b.tx.Exec(`INSERT INTO playstore_orders (
 		order_id, 
 		package_name,

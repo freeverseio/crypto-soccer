@@ -18,7 +18,7 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 	order.StateExtra = "prova"
 	order.Signature = "erere"
 
-	assert.NilError(t, service.Insert(order))
+	assert.NilError(t, service.Insert(*order))
 	result, err := service.Order(order.OrderId)
 	assert.NilError(t, err)
 	assert.Assert(t, result != nil)
