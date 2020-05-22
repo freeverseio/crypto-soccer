@@ -61,7 +61,7 @@ module.exports = function (deployer, network, accounts) {
       // first set all owners to accounts[0] so that we can do some operations
       await assets.setCOO(accounts[0]).should.be.fulfilled;
       await assets.setMarket(accounts[0]).should.be.fulfilled;
-      await updates.setRelay(accounts[0]).should.be.fulfilled;
+      await assets.setRelay(accounts[0]).should.be.fulfilled;
       await stakers.setCOO(accounts[0]).should.be.fulfilled;
 
       // do these operations:
@@ -84,7 +84,7 @@ module.exports = function (deployer, network, accounts) {
       await stakers.setCOO(owners.COO).should.be.fulfilled;
       await assets.setCOO(owners.COO).should.be.fulfilled;
       await assets.setMarket(owners.market).should.be.fulfilled;
-      await updates.setRelay(owners.relay).should.be.fulfilled;
+      await assets.setRelay(owners.relay).should.be.fulfilled;
       await proxy.setSuperUser(owners.superuser).should.be.fulfilled;
 
       await marketCrypto.proposeOwner(owners.superuser).should.be.fulfilled;

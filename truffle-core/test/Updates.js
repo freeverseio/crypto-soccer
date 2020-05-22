@@ -79,7 +79,7 @@ contract('Updates', (accounts) => {
         owners = defaultSetup.owners;
         depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         [proxy, assets, market, updates, challenges] = depl;
-        await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, owners.company).should.be.fulfilled;
+        await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         // // done with delegate calls
         await updates.setChallengeTime(60, {from: owners.COO}).should.be.fulfilled;
         stakers = await deployAndConfigureStakers(Stakers, updates, defaultSetup);

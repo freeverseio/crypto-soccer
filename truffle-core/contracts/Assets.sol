@@ -21,6 +21,8 @@ contract Assets is AssetsView {
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }
     
+    function setRelay(address addr) public onlySuperUser { _relay = addr; }
+   
     function init() public onlyCOO {
         require(gameDeployDay == 0, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
@@ -73,7 +75,7 @@ contract Assets is AssetsView {
     }
 
     // Entry point for new users: acquiring a bot team
-    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyMarket {
+    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyRelay {
         require(tzToNCountries[tz] != 0, "Timezone has not been initialized");
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
         uint256 firstBotIdx = countryIdToNHumanTeams[countryId];

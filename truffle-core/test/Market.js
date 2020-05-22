@@ -49,7 +49,7 @@ contract("Market", accounts => {
     owners = defaultSetup.owners;
     depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
     [proxy, assets, market, updates] = depl;
-    await deployUtils.setProxyContractOwners(proxy, assets, updates, owners, owners.company).should.be.fulfilled;
+    await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
 
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
@@ -65,8 +65,8 @@ contract("Market", accounts => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
     buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address, {from: owners.market}).should.be.fulfilled;
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address, {from: owners.market}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address, {from: owners.relay}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address, {from: owners.relay}).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
 
     AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
@@ -180,7 +180,7 @@ contract("Market", accounts => {
     teamIdxInCountry0 = 2; 
     playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry0 = teamIdxInCountry0*18+3);
     sellerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0);
-    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE, {from: owners.market}).should.be.fulfilled;
+    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE, {from: owners.relay}).should.be.fulfilled;
 
     // ALICE puts for sale
     tx = await marketCrypto.putPlayerForSale(playerId0, startingPrice, {from: ALICE}).should.be.fulfilled;
@@ -203,7 +203,7 @@ contract("Market", accounts => {
 
     
     // BOB does first bid
-    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB, {from: owners.market}).should.be.fulfilled;
+    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB, {from: owners.relay}).should.be.fulfilled;
     buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 1);
 
     tx = await marketCrypto.bidForPlayer(playerId0, buyerTeamId0, {from: BOB, value: startingPrice}).should.be.fulfilled;
@@ -229,7 +229,7 @@ contract("Market", accounts => {
     (Math.abs(validUn - now.toNumber()) > 24*3600 - 10).should.be.equal(true);
     
  
-    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, CAROL,  {from: owners.market}).should.be.fulfilled;
+    tx = await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, CAROL,  {from: owners.relay}).should.be.fulfilled;
     buyerTeamId1 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
 
     await marketCrypto.bidForPlayer(playerId0, buyerTeamId1, {from: CAROL, value: startingPrice}).should.be.rejected;
@@ -323,9 +323,9 @@ contract("Market", accounts => {
 
     // ALICE will be selling
     sellerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0);
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE,  {from: owners.market}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE,  {from: owners.relay}).should.be.fulfilled;
     // BOB will be buying
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB,  {from: owners.market}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB,  {from: owners.relay}).should.be.fulfilled;
     buyerTeamId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 1);
 
     nTransfers = 10;
@@ -402,12 +402,12 @@ contract("Market", accounts => {
 
     // ALICE will be 
     sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0);
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE, {from: owners.market}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, ALICE, {from: owners.relay}).should.be.fulfilled;
     // BOB will be buying
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB, {from: owners.market}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB, {from: owners.relay}).should.be.fulfilled;
     buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 1);
     // ALICE will be buying too
-    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB, {from: owners.market}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, BOB, {from: owners.relay}).should.be.fulfilled;
     allice2ndTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry0 + 2);
 
     
@@ -1351,7 +1351,7 @@ contract("Market", accounts => {
     playerId = await createSpecialPlayerId(id = 4312432432);
     targetTeamId = await assets.encodeTZCountryAndVal(tz = 2, countryIdxInTZ = 0, teamIdxInCountry2 = 0);
     JOSE = accounts[0];
-    await assets.transferFirstBotToAddr(tz = 2, countryIdxInTZ = 0, JOSE, {from: owners.market}).should.be.fulfilled;
+    await assets.transferFirstBotToAddr(tz = 2, countryIdxInTZ = 0, JOSE, {from: owners.relay}).should.be.fulfilled;
     teamOwner = await market.getOwnerTeam(targetTeamId).should.be.fulfilled;
     teamOwner.should.be.equal(JOSE);
     // if user explicitly forbidds buyNows, it will fail:

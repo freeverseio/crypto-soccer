@@ -16,6 +16,11 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         _;
     }
 
+    modifier onlyRelay() {
+        require(msg.sender == _relay, "Only Relay owner is authorized.");
+        _;
+    }
+    
     modifier onlyCOO() {
         require(msg.sender == _COO, "Only COO is authorized.");
         _;

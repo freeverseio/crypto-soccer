@@ -93,10 +93,10 @@ contract('Proxy', (accounts) => {
         teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: superuser}).should.be.rejected;
         
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: market}).should.be.rejected;
-        await assets.setMarket(market, {from: COO}).should.be.rejected;
-        await assets.setMarket(market, {from: superuser}).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: market}).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: relay}).should.be.rejected;
+        await assets.setMarket(relay, {from: COO}).should.be.rejected;
+        await assets.setMarket(relay, {from: superuser}).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: relay}).should.be.fulfilled;
         
     });
 

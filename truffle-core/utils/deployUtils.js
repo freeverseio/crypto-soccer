@@ -240,7 +240,7 @@ function getDefaultSetup(accounts) {
     return needsDefaultValues ? getDefaultSetup(accounts) : networkParams;
   }
   
-async function setProxyContractOwners(proxy, assets, updates, owners, prevCompany) {
+async function setProxyContractOwners(proxy, assets, owners, prevCompany) {
     // Order matters. First, company is established:
     await proxy.proposeCompany(owners.company, {from: prevCompany}).should.be.fulfilled;
     await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
@@ -249,7 +249,7 @@ async function setProxyContractOwners(proxy, assets, updates, owners, prevCompan
     // finally, superUser sets the rest of the roles:
     await assets.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
     await assets.setMarket(owners.market, {from: owners.superuser}).should.be.fulfilled;
-    await updates.setRelay(owners.relay, {from: owners.superuser}).should.be.fulfilled;
+    await assets.setRelay(owners.relay, {from: owners.superuser}).should.be.fulfilled;
   }
 
 
