@@ -14,7 +14,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	log "github.com/sirupsen/logrus"
@@ -70,7 +70,7 @@ func main() {
 
 	if err := func() error {
 		log.Info("Create the connection to DBMS")
-		db, err := storage.New(*postgresURL)
+		db, err := postgres.New(*postgresURL)
 		if err != nil {
 			return err
 		}
