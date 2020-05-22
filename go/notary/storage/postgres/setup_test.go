@@ -1,4 +1,4 @@
-package storage_test
+package postgres_test
 
 import (
 	"database/sql"
@@ -17,6 +17,5 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	os.Exit(m.Run())
 }

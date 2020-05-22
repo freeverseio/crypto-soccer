@@ -12,98 +12,75 @@ func TestPlaystoreOrderCreate(t *testing.T) {
 	assert.Equal(t, order.State, storage.PlaystoreOrderOpen)
 }
 
-func TestPlaystoreOrderInsert(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+// func TestPlaystoreOrderOpenOrders(t *testing.T) {
+// 	tx, err := db.Begin()
+// 	assert.NilError(t, err)
+// 	defer tx.Rollback()
 
-	order := storage.NewPlaystoreOrder()
-	order.OrderId = "ciao"
-	order.PackageName = "dsd"
-	order.ProductId = "444"
-	order.PurchaseToken = "fdrd"
-	order.PlayerId = "4"
-	order.TeamId = "pippo"
-	order.State = storage.PlaystoreOrderFailed
-	order.StateExtra = "prova"
-	order.Signature = "erere"
-	assert.NilError(t, order.Insert(tx))
+// 	order := storage.NewPlaystoreOrder()
+// 	order.OrderId = "ciao"
+// 	order.PackageName = "dsd"
+// 	order.ProductId = "444"
+// 	order.PurchaseToken = "fdrd"
+// 	order.PlayerId = "4"
+// 	order.TeamId = "pippo"
+// 	order.State = storage.PlaystoreOrderFailed
+// 	order.StateExtra = "prova"
+// 	order.Signature = "erere"
+// 	assert.NilError(t, order.Insert(tx))
 
-	result, err := storage.PlaystoreOrderByOrderId(tx, order.OrderId)
-	assert.NilError(t, err)
-	assert.Assert(t, result != nil)
-	assert.Equal(t, *result, *order)
-}
+// 	orders, err := storage.PendingPlaystoreOrders(tx)
+// 	assert.NilError(t, err)
+// 	assert.Equal(t, len(orders), 0)
 
-func TestPlaystoreOrderOpenOrders(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+// 	order.OrderId = "43d"
+// 	order.State = storage.PlaystoreOrderOpen
+// 	assert.NilError(t, order.Insert(tx))
 
-	order := storage.NewPlaystoreOrder()
-	order.OrderId = "ciao"
-	order.PackageName = "dsd"
-	order.ProductId = "444"
-	order.PurchaseToken = "fdrd"
-	order.PlayerId = "4"
-	order.TeamId = "pippo"
-	order.State = storage.PlaystoreOrderFailed
-	order.StateExtra = "prova"
-	order.Signature = "erere"
-	assert.NilError(t, order.Insert(tx))
+// 	orders, err = storage.PendingPlaystoreOrders(tx)
+// 	assert.NilError(t, err)
+// 	assert.Equal(t, len(orders), 1)
 
-	orders, err := storage.PendingPlaystoreOrders(tx)
-	assert.NilError(t, err)
-	assert.Equal(t, len(orders), 0)
+// 	order.OrderId = "43d1"
+// 	order.State = storage.PlaystoreOrderAcknowledged
+// 	assert.NilError(t, order.Insert(tx))
 
-	order.OrderId = "43d"
-	order.State = storage.PlaystoreOrderOpen
-	assert.NilError(t, order.Insert(tx))
+// 	orders, err = storage.PendingPlaystoreOrders(tx)
+// 	assert.NilError(t, err)
+// 	assert.Equal(t, len(orders), 2)
 
-	orders, err = storage.PendingPlaystoreOrders(tx)
-	assert.NilError(t, err)
-	assert.Equal(t, len(orders), 1)
+// 	order.OrderId = "43d2"
+// 	order.State = storage.PlaystoreOrderComplete
+// 	assert.NilError(t, order.Insert(tx))
 
-	order.OrderId = "43d1"
-	order.State = storage.PlaystoreOrderAcknowledged
-	assert.NilError(t, order.Insert(tx))
+// 	orders, err = storage.PendingPlaystoreOrders(tx)
+// 	assert.NilError(t, err)
+// 	assert.Equal(t, len(orders), 2)
+// }
 
-	orders, err = storage.PendingPlaystoreOrders(tx)
-	assert.NilError(t, err)
-	assert.Equal(t, len(orders), 2)
+// func TestPlaystoreOrderUpdateState(t *testing.T) {
+// 	tx, err := db.Begin()
+// 	assert.NilError(t, err)
+// 	defer tx.Rollback()
 
-	order.OrderId = "43d2"
-	order.State = storage.PlaystoreOrderComplete
-	assert.NilError(t, order.Insert(tx))
+// 	order := storage.NewPlaystoreOrder()
+// 	order.OrderId = "ciao"
+// 	order.PackageName = "dsd"
+// 	order.ProductId = "444"
+// 	order.PurchaseToken = "fdrd"
+// 	order.PlayerId = "4"
+// 	order.TeamId = "pippo"
+// 	order.State = storage.PlaystoreOrderFailed
+// 	order.StateExtra = "prova"
+// 	order.Signature = "erere"
+// 	assert.NilError(t, order.Insert(tx))
 
-	orders, err = storage.PendingPlaystoreOrders(tx)
-	assert.NilError(t, err)
-	assert.Equal(t, len(orders), 2)
-}
+// 	order.State = storage.PlaystoreOrderOpen
+// 	order.StateExtra = "recdia"
+// 	assert.NilError(t, order.UpdateState(tx))
 
-func TestPlaystoreOrderUpdateState(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
-
-	order := storage.NewPlaystoreOrder()
-	order.OrderId = "ciao"
-	order.PackageName = "dsd"
-	order.ProductId = "444"
-	order.PurchaseToken = "fdrd"
-	order.PlayerId = "4"
-	order.TeamId = "pippo"
-	order.State = storage.PlaystoreOrderFailed
-	order.StateExtra = "prova"
-	order.Signature = "erere"
-	assert.NilError(t, order.Insert(tx))
-
-	order.State = storage.PlaystoreOrderOpen
-	order.StateExtra = "recdia"
-	assert.NilError(t, order.UpdateState(tx))
-
-	result, err := storage.PlaystoreOrderByOrderId(tx, order.OrderId)
-	assert.NilError(t, err)
-	assert.Equal(t, result.State, order.State)
-	assert.Equal(t, result.StateExtra, order.StateExtra)
-}
+// 	result, err := storage.PlaystoreOrderByOrderId(tx, order.OrderId)
+// 	assert.NilError(t, err)
+// 	assert.Equal(t, result.State, order.State)
+// 	assert.Equal(t, result.StateExtra, order.StateExtra)
+// }
