@@ -31,7 +31,7 @@ func SubmitPlayStorePlayerPurchase(
 	order.TeamId = string(in.TeamId)
 	order.Signature = in.Signature
 
-	service := postgres.NewPlaystoreOrderHistoryService(tx, postgres.NewPlaystoreOrderService(tx))
+	service := postgres.NewPlaystoreOrderHistoryService(tx)
 	if err := service.Insert(*order); err != nil {
 		return err
 	}

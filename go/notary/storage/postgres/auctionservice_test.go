@@ -8,11 +8,11 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestPlaystoreHistoryOrder(t *testing.T) {
+func TestAuctionServiceInterface(t *testing.T) {
 	tx, err := db.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
-	service := postgres.NewPlaystoreOrderHistoryService(tx)
-	storage.TestPlaystoreOrderServiceInterface(t, service)
+	service := postgres.NewAuctionService(tx)
+	storage.TestAuctionServiceInterface(t, service)
 }
