@@ -153,15 +153,13 @@ func main() {
 		}
 		defer namesdb.Close()
 
-		processor, err := process.NewEventProcessor(
+		processor := process.NewEventProcessor(
 			contracts,
 			namesdb,
 			*ipfsURL,
 			stkr,
 		)
-		if err != nil {
-			return err
-		}
+
 		log.Info("On Going ...")
 
 		for {
