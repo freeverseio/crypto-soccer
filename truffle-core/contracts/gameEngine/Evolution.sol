@@ -10,15 +10,15 @@ import "../encoders/EncodingTacticsBase1.sol";
 contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsBase1 {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
 
-    // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
-    uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
-    uint8 public constant RED_CARD = 3;   // noone saw a card
+    /// uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
+    uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   /// noone saw a card
+    uint8 public constant RED_CARD = 3;   /// noone saw a card
     uint8 public constant SOFT_INJURY  = 1;  
     uint8 public constant HARD_INJURY  = 2;  
-    uint8 public constant WEEKS_HARD_INJ = 5;  // weeks a player is out when suffered a hard injury
-    uint8 public constant WEEKS_SOFT_INJ = 2;  // weeks a player is out when suffered a soft injury
+    uint8 public constant WEEKS_HARD_INJ = 5;  /// weeks a player is out when suffered a hard injury
+    uint8 public constant WEEKS_SOFT_INJ = 2;  /// weeks a player is out when suffered a soft injury
     uint8 private constant CHG_HAPPENED        = uint8(1); 
-    // uint8 constant public N_SKILLS = 5;
+    /// uint8 constant public N_SKILLS = 5;
 
     function updateSkillsAfterPlayHalf(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
@@ -30,16 +30,16 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         pure
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
-        // after 1st Half, update:
-        //  - subtDuringFirstHalf, alignedEndOfFirstHalf => properly update
-        //  - redCards, injury => add if any of this happens
-        //  - adds +2 to daysNonStopping to all linedUp players
-        // after 2nd Half, update:
-        //  - subtDuringFirstHalf = 0, alignedEndOfFirstHalf = 0
-        //  - redCards: 
-        //      - set all to false unless it happens in 1st or 2nd half
-        //  -  injury => 
-        //      - decrease by one unless it happens in 1st or 2nd half
+        /// after 1st Half, update:
+        ///  - subtDuringFirstHalf, alignedEndOfFirstHalf => properly update
+        ///  - redCards, injury => add if any of this happens
+        ///  - adds +2 to daysNonStopping to all linedUp players
+        /// after 2nd Half, update:
+        ///  - subtDuringFirstHalf = 0, alignedEndOfFirstHalf = 0
+        ///  - redCards: 
+        ///      - set all to false unless it happens in 1st or 2nd half
+        ///  -  injury => 
+        ///      - decrease by one unless it happens in 1st or 2nd half
         if (!is2ndHalf) {
             writeOutOfGameInSkills(skills, tactics, matchLog, false);
             writeFirstHalfLineUp(skills, tactics, matchLog);
@@ -62,12 +62,12 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     {
         uint8[3] memory joinedAt2ndHalf;
         uint8 nJoined = 0;
-        // first increase +2 the gamesNonStopping for those who joined
+        /// first increase +2 the gamesNonStopping for those who joined
         (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
         for (uint8 posInHalf = 0; posInHalf < 3; posInHalf++) {
-            // First: those who joined at half time:
-            // note that getHalfTimeSubs: returns lineUp[p]+1 for halftime subs, 0 = NO_SUBS
-            // let us keep with this meaning, and store: joinedAt2ndHalf = shirtNum+1
+            /// First: those who joined at half time:
+            /// note that getHalfTimeSubs: returns lineUp[p]+1 for halftime subs, 0 = NO_SUBS
+            /// let us keep with this meaning, and store: joinedAt2ndHalf = shirtNum+1
             uint8 enteringPlayer = getHalfTimeSubs(matchLog, posInHalf); 
             if (enteringPlayer > 0) {
                 joinedAt2ndHalf[nJoined] = enteringPlayer;
@@ -91,7 +91,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     }
 
     function hasPlayedThisMatch(uint256 skills, uint8 p, uint8[3] memory joinedAt2ndHalf) public pure returns(bool) {
-        // recall the meaning: joinedAt2ndHalf = shirtNum+1, so that joinedAt2ndHalf == 0 => NO SUBS
+        /// recall the meaning: joinedAt2ndHalf = shirtNum+1, so that joinedAt2ndHalf == 0 => NO SUBS
         return (
                     getAlignedEndOfFirstHalf(skills) || 
                     getSubstitutedFirstHalf(skills) ||
@@ -119,7 +119,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         pure 
     {
         (uint8[3] memory  substitutions,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
-        // NO_LINEUP = 25, NO_SUBS = 11
+        /// NO_LINEUP = 25, NO_SUBS = 11
         for (uint8 p = 0; p < 11; p++) {
             uint8 linedUp = lineUp[p];
             if ((linedUp < NO_LINEUP) && (skills[linedUp] != 0)) {
@@ -143,7 +143,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         }
     }    
     
-    // we increase 2 units, so that we get a maximum of 7. 
+    /// we increase 2 units, so that we get a maximum of 7. 
     function increaseGamesNonStopping(uint256 skills) public pure returns (uint256) {
         uint8 gamesNonStopping = getGamesNonStopping(skills);
         if (gamesNonStopping < 7) return setGamesNonStopping(skills, gamesNonStopping + 1); 
@@ -152,10 +152,10 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
 
     function writeOutOfGameInSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog, bool is2ndHalf) private pure {
         (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
-        // check if there was an out of player event:
+        /// check if there was an out of player event:
         uint8 outOfGamePlayer = uint8(getOutOfGamePlayer(matchLog, is2ndHalf));
         if (outOfGamePlayer == NO_OUT_OF_GAME_PLAYER) return;
-        // convert outOfGamePlayer [0...13] to the index that points to the skills in the team [0,..24]
+        /// convert outOfGamePlayer [0...13] to the index that points to the skills in the team [0,..24]
         outOfGamePlayer = lineUp[outOfGamePlayer];
         if (skills[outOfGamePlayer] == 0) return;
         uint256 outOfGameType = getOutOfGameType(matchLog, is2ndHalf);
@@ -170,8 +170,8 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         }
     }
         
-    // at the end of a match, decrease the weeks left from injury, and set redcards = false.
-    // the function called right after this one will add the redcards of this particular game where appropriate
+    /// at the end of a match, decrease the weeks left from injury, and set redcards = false.
+    /// the function called right after this one will add the redcards of this particular game where appropriate
     function decreaseOutOfGames(uint256[PLAYERS_PER_TEAM_MAX] memory skills) public pure {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if (skills[p] != 0) {

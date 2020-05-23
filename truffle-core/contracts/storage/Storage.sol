@@ -11,10 +11,10 @@ contract Storage is ProxyStorage, Constants{
 
     uint256[2**12] _slotReserve;
    
-    address internal _market;
-    address internal _COO;
-    address internal _relay;
-    address internal _cryptoMktAddr;
+    address public _market;
+    address public _COO;
+    address public _relay;
+    address public _cryptoMktAddr;
     
     mapping(uint256 => uint256) internal _playerIdToState;
     mapping (uint256 => uint256) internal _playerIdToAuctionData;
@@ -25,11 +25,11 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => uint8) internal _nPlayersInTransitInTeam;
     mapping (uint256 => bool) internal _teamIdToIsBuyNowForbidden;
 
-    uint256 _maxSumSkillsBuyNowPlayer;
-    uint256 _maxSumSkillsBuyNowPlayerMinLapse;
-    uint256 _maxSumSkillsBuyNowPlayerProposed;
-    uint256 _maxSumSkillsBuyNowPlayerMinLapseProposed;
-    uint256 _maxSumSkillsBuyNowPlayerLastUpdate;
+    uint256 internal _maxSumSkillsBuyNowPlayer;
+    uint256 internal _maxSumSkillsBuyNowPlayerMinLapse;
+    uint256 internal _maxSumSkillsBuyNowPlayerProposed;
+    uint256 internal _maxSumSkillsBuyNowPlayerMinLapseProposed;
+    uint256 internal _maxSumSkillsBuyNowPlayerLastUpdate;
 
     uint256 internal nextVerseTimestamp;
     uint8 internal timeZoneForRound1;
@@ -64,8 +64,4 @@ contract Storage is ProxyStorage, Constants{
  
     Stakers internal _stakers;
     
-    function isCompany(address addr) public view returns (bool) { return addr == _company; }
-    function isSuperUser(address addr) public view returns (bool) { return addr == _superUser; }
-    function isRelay(address addr) public view returns (bool) { return addr == _relay; }
-    function isCOO(address addr) public view returns (bool)  { return addr == _COO; }
 }

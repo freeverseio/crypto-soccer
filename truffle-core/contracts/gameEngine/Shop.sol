@@ -30,8 +30,8 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
 
     struct ShopItem {
-        // boosts from [0,..4] -> in percentage, order: shoot, speed, pass, defence, endurance
-        // boosts[5] in units, for potential
+        /// boosts from [0,..4] -> in percentage, order: shoot, speed, pass, defence, endurance
+        /// boosts[5] in units, for potential
         uint256 countriesRoot;
         uint256 championshipsRoot;
         uint256 teamsRoot;
@@ -63,7 +63,7 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
 
     constructor() public {
         _shopItems.push(ShopItem(0, 0, 0, 0, 0, 0, 0, ""));
-        // Adding one item for testing only. TODO: remove from production.
+        /// Adding one item for testing only. TODO: remove from production.
         uint8[N_SKILLS+1] memory skillsBoost;
         for (uint8 sk = 0; sk < N_SKILLS; sk++) skillsBoost[sk] = 20;
         skillsBoost[N_SKILLS] = 1;

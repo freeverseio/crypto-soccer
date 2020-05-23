@@ -38,7 +38,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         return teamIdToOwner[teamId] == NULL_ADDR;
     }
 
-    // returns NULL_ADDR if team is bot
+    /// returns NULL_ADDR if team is bot
     function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
         if (!_tzExists(timeZone) || !_countryInTZExists(timeZone, countryIdxInTZ)) return NULL_ADDR;
         return teamIdToOwner[encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry)];
@@ -84,12 +84,12 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     }
 
     function getCurrentRoundPure(uint8 tz, uint8 tz1, uint256 verse) public pure returns (uint256) { 
-        // first, compute "roundTZ1" for the first timezone that played a match
-        // first, ensure that round is always >= 1.
+        /// first, compute "roundTZ1" for the first timezone that played a match
+        /// first, ensure that round is always >= 1.
         if (verse < VERSES_PER_ROUND) return 0;
         uint256 roundTZ1 = verse / VERSES_PER_ROUND;
-        // Next, note that verses where this tz plays first matches of rounds:
-        //   verses(round) = deltaN * 4 + VERSES_PER_ROUND * round
+        /// Next, note that verses where this tz plays first matches of rounds:
+        ///   verses(round) = deltaN * 4 + VERSES_PER_ROUND * round
         uint256 deltaN = (tz >= tz1) ? (tz - tz1) : ((tz + 24) - tz1);
         if (verse < 4 * deltaN + roundTZ1 * VERSES_PER_ROUND) {
             return roundTZ1 - 1;

@@ -9,7 +9,7 @@ contract Proxy is ProxyStorage {
 
     address constant private NULL_ADDR  = address(0);
     address constant private PROXY_DUMMY_ADDR = address(1);
-    uint256 constant private FWD_GAS_LIMIT = 10000;  // TODO: is this future-proof? shall we have it re-settable?
+    uint256 constant private FWD_GAS_LIMIT = 10000;  /// TODO: is this future-proof? shall we have it re-settable?
 
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
     event ContractsActivated(uint256[] contractIds, uint256 time);
@@ -51,8 +51,8 @@ contract Proxy is ProxyStorage {
             let ptr := mload(0x40)
             returndatacopy(ptr, 0, size)
 
-            // revert instead of invalid() bc if the underlying call failed with invalid() it already wasted gas.
-            // if the call returned error data, forward it
+            /// revert instead of invalid() bc if the underlying call failed with invalid() it already wasted gas.
+            /// if the call returned error data, forward it
             switch result case 0 { revert(ptr, size) }
             default { return(ptr, size) }
         }
@@ -74,7 +74,7 @@ contract Proxy is ProxyStorage {
         _proposedCompany = address(0);
     }
 
-    // SuperUser manages the proxy contract. No need to propose/accept, since it can be changed by company.
+    /// SuperUser manages the proxy contract. No need to propose/accept, since it can be changed by company.
     function setSuperUser(address addr) public onlyCompany {
         _superUser = addr;
     }
@@ -91,8 +91,8 @@ contract Proxy is ProxyStorage {
     * @param name The name of the added contract, only for reference
     */
     function addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) public onlySuperUser {
-        // we require that the contract gets assigned an Id that is as specified from outside, 
-        // to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
+        /// we require that the contract gets assigned an Id that is as specified from outside, 
+        /// to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
         require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
         assertPointsToContract(addr);
         ContractInfo memory info;

@@ -6,7 +6,7 @@ pragma solidity >= 0.6.3;
 contract EncodingSkillsGetters {
 
     function getSkill(uint256 encodedSkills, uint8 skillIdx) public pure returns (uint256) {
-        return (encodedSkills >> (uint256(skillIdx) * 20)) & 1048575; // 1048575 = 2**20 - 1
+        return (encodedSkills >> (uint256(skillIdx) * 20)) & 1048575; /// 1048575 = 2**20 - 1
     }
 
     function getBirthDay(uint256 encodedSkills) public pure returns (uint256) {
@@ -18,7 +18,7 @@ contract EncodingSkillsGetters {
     }
 
     function getInternalPlayerId(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 129 & 8796093022207); // 2**43 - 1 = 8796093022207
+        return uint256(encodedSkills >> 129 & 8796093022207); /// 2**43 - 1 = 8796093022207
     }
 
     function getPotential(uint256 encodedSkills) public pure returns (uint256) {
@@ -58,7 +58,7 @@ contract EncodingSkillsGetters {
     }
 
     function getSumOfSkills(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 181 & 524287); // 2**19-1
+        return uint256(encodedSkills >> 181 & 524287); /// 2**19-1
     }
     
     function getIsSpecial(uint256 encodedSkills) public pure returns (bool) {

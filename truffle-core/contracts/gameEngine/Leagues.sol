@@ -14,11 +14,11 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
-    uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
+    uint8 constant public MATCHES_PER_LEAGUE = 56; /// = 4 * 14 = 7*8
     uint64 constant private INERTIA = 4;
     uint64 constant private WEIGHT_SKILLS = 20;
-    uint64 constant private SKILLS_AT_START = 18000; // 18 players per team at start with 50 avg
-    uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; // 268435455 = 2**28 - 1 
+    uint64 constant private SKILLS_AT_START = 18000; /// 18 players per team at start with 50 avg
+    uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; /// 268435455 = 2**28 - 1 
 
     Assets private _assets;
 
@@ -26,9 +26,9 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         _assets = Assets(assetsAddr);
     }
 
-    // groupIdx = 0,...,15
-    // posInGroup = 0, ...7
-    // teamIdx  = 0,...,128
+    /// groupIdx = 0,...,15
+    /// posInGroup = 0, ...7
+    /// teamIdx  = 0,...,128
     function getTeamIdxInCup(uint8 groupIdx, uint8 posInGroup) public pure returns(uint8) {
         if (groupIdx % 2 == 0) {
                 return 8 * posInGroup + groupIdx / 2;
@@ -47,13 +47,13 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         }
     }
 
-    // sortedTeamIdxInCup contains 64 teams, made up from the top 4 in each of the 16 leagues.
-    // they are flattened by groupIdx, and then by final classifications in that group.
-    // [groupIdx0_1st, ..., groupIdx0_4th; groupIdx1_1st, ...,]
-    // so the index of the array is  groupIdx * 4 + classInGroup
-    //      M(2m) 	= L(m mod M, 0) vs L(m+1 mod M, 3), 	m = 0,..., M-1,  M = 16
-    //      M(2m+1) = L(m+2 mod M, 1) vs L(m+3 mod M, 2),	m = 0,..., M-1,  M = 16
-    // returns indices in sortedTeamIdxInCup
+    /// sortedTeamIdxInCup contains 64 teams, made up from the top 4 in each of the 16 leagues.
+    /// they are flattened by groupIdx, and then by final classifications in that group.
+    /// [groupIdx0_1st, ..., groupIdx0_4th; groupIdx1_1st, ...,]
+    /// so the index of the array is  groupIdx * 4 + classInGroup
+    ///      M(2m) 	= L(m mod M, 0) vs L(m+1 mod M, 3), 	m = 0,..., M-1,  M = 16
+    ///      M(2m+1) = L(m+2 mod M, 1) vs L(m+3 mod M, 2),	m = 0,..., M-1,  M = 16
+    /// returns indices in sortedTeamIdxInCup
     function getTeamsInCupPlayoffMatch(uint8 matchIdxInDay) public pure returns (uint8 team0, uint8 team1) {
         require(matchIdxInDay < 32, "there are only 32 mathches on day 9 of a cup");
         if (matchIdxInDay % 2 == 0) {
@@ -65,7 +65,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         }
     }
     
-    // same as above, but returns teamIdxInCup as correctly provided by sortedTeamIdxInCup
+    /// same as above, but returns teamIdxInCup as correctly provided by sortedTeamIdxInCup
     function getTeamsInCupPlayoffMatch(uint8 matchIdxInDay, uint8[64] memory sortedTeamIdxInCup) public pure returns (uint8 team0, uint8 team1) {
         (team0, team1) = getTeamsInCupPlayoffMatch(matchIdxInDay);
         return (sortedTeamIdxInCup[team0], sortedTeamIdxInCup[team1]);
@@ -90,7 +90,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
             (visitorIdx, homeIdx) = _getTeamsInMatchFirstHalf(matchday - (TEAMS_PER_LEAGUE - 1), matchIdxInDay);
     }
 
-    // TODO: do this by exact formula instead of brute force search
+    /// TODO: do this by exact formula instead of brute force search
     function getMatchesForTeams(uint8 team0, uint8 team1) public pure returns (uint8 match0, uint8 match1) 
     {
         uint8 home;
@@ -158,22 +158,22 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
                 teamSkills += uint64(getSumOfSkills(skills[p]));
         }
         
-        // Nomenclature:    R = rankingPoints, W = Weight_Skills, SK = TeamSkills, SK0 = TeamSkillsAtStart, I = 
-        //                  I = Inertia, I0 = inertia Max, P0 = prevPerfPoints, P1 = currenteLeaguePerfPoints
-        // 
-        // Note that we use P = [0, 20] instead of the user-facing P' = [-10, 10] to avoid negatives.
-        // I/I0 is the percentage of the previous perfPoints that we carry here. 
-        // Formula: R = W SK/SK0 + P - 10 = W SK/SK0 + (I P0 + (10-I) P1)/I0 - 10
-        // So we can avoid dividing, and simply compute:  R * SK0 * I0 = W SK I0 + SK0 (I P0 + (10-I)P1) - 10 SK0 I0
-        // Note that if we do not need to divide, we can just keep I = 4, I0 = 10
-        //  R * SK0 * I0 = 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10 W SK + SK0 Pnow
-        // And finall  RankingPoints = 10W SK + SK0 Pnow
+        /// Nomenclature:    R = rankingPoints, W = Weight_Skills, SK = TeamSkills, SK0 = TeamSkillsAtStart, I = 
+        ///                  I = Inertia, I0 = inertia Max, P0 = prevPerfPoints, P1 = currenteLeaguePerfPoints
+        /// 
+        /// Note that we use P = [0, 20] instead of the user-facing P' = [-10, 10] to avoid negatives.
+        /// I/I0 is the percentage of the previous perfPoints that we carry here. 
+        /// Formula: R = W SK/SK0 + P - 10 = W SK/SK0 + (I P0 + (10-I) P1)/I0 - 10
+        /// So we can avoid dividing, and simply compute:  R * SK0 * I0 = W SK I0 + SK0 (I P0 + (10-I)P1) - 10 SK0 I0
+        /// Note that if we do not need to divide, we can just keep I = 4, I0 = 10
+        ///  R * SK0 * I0 = 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10 W SK + SK0 Pnow
+        /// And finall  RankingPoints = 10W SK + SK0 Pnow
 
-        // The user knows that his performance points now are: (note I' = I/I0)
-        //  Pnow' = I' P0' + (1-I')P1' = I' P0 + (1-I')P1 - 10 = Pnow/I0
+        /// The user knows that his performance points now are: (note I' = I/I0)
+        ///  Pnow' = I' P0' + (1-I')P1' = I' P0 + (1-I')P1 - 10 = Pnow/I0
 
-        // Formula in terms of pos and neg terms:
-        //   pos = 10 W SK + SK0 (I P0 + 10 P1),   neg = SK0 (I P1 + 100)
+        /// Formula in terms of pos and neg terms:
+        ///   pos = 10 W SK + SK0 (I P0 + 10 P1),   neg = SK0 (I P1 + 100)
         uint64 perfPointsThisLeague = getPerfPoints(leagueRanking);
         uint64 pos = 10 * WEIGHT_SKILLS * teamSkills + SKILLS_AT_START * (INERTIA * prevPerfPoints + 10 * perfPointsThisLeague);
         uint64 neg = SKILLS_AT_START * (INERTIA * perfPointsThisLeague + 100);
@@ -193,9 +193,9 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         else return 2;
     }
 
-    // returns two sorted lists, [best teamIdxInLeague, points], ....
-    // corresponding to ranking and points AT THE END OF matchday
-    // so if we receive matchDay = 0, it is after playing the 1st game.
+    /// returns two sorted lists, [best teamIdxInLeague, points], ....
+    /// corresponding to ranking and points AT THE END OF matchday
+    /// so if we receive matchDay = 0, it is after playing the 1st game.
     function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay, uint256 matchDaySeed) public pure returns (
         uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
     ) {
@@ -216,7 +216,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
                 points[team1] += 3000000000;
             }
         }
-        // note that both points and ranking are returned ordered: (but goals and goalsAverage remain with old idxs)
+        /// note that both points and ranking are returned ordered: (but goals and goalsAverage remain with old idxs)
         for (uint8 i = 0; i < TEAMS_PER_LEAGUE; i++) ranking[i] = i;
         sortIdxs(points, ranking);
         uint8 lastNonTied;
@@ -233,7 +233,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         sortIdxs(points, ranking);
     }
     
-    // Points = nPoints in league * 1e9 + bestDirects * 1e6 + nGoalsInLeague * 1e3 + random % 999
+    /// Points = nPoints in league * 1e9 + bestDirects * 1e6 + nGoalsInLeague * 1e3 + random % 999
     function computeSecondaryPoints(
         uint8[TEAMS_PER_LEAGUE] memory ranking,
         uint256[TEAMS_PER_LEAGUE] memory points,

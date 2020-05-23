@@ -48,14 +48,14 @@ contract Market is MarketView {
         emit ProposedNewMaxSumSkillsBuyNowPlayer(newSumSkills, newLapseTime);
     }
 
-    // maxSumSkills can always be lowered, regardless of lapse period 
+    /// maxSumSkills can always be lowered, regardless of lapse period 
     function lowerNewMaxSumSkillsBuyNowPlayer(uint256 newMaxSum) public onlyCOO {
         require (newMaxSum < _maxSumSkillsBuyNowPlayer, "newMaxSum is not lower than previous");
         _maxSumSkillsBuyNowPlayer = newMaxSum;
         emit UpdatedNewMaxSumSkillsBuyNowPlayer(newMaxSum, _maxSumSkillsBuyNowPlayerMinLapse);
     }
     
-    // maxSumSkills can only grow if enough time has passed 
+    /// maxSumSkills can only grow if enough time has passed 
     function updateNewMaxSumSkillsBuyNowPlayer() public onlyCOO {
         require (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapse),
             "not enough time passed to update new maxSumSkills"
@@ -65,7 +65,7 @@ contract Market is MarketView {
         emit UpdatedNewMaxSumSkillsBuyNowPlayer(_maxSumSkillsBuyNowPlayer, _maxSumSkillsBuyNowPlayerMinLapse);
     }
     
-    // TODO: require signature from team owner
+    /// TODO: require signature from team owner
     function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public onlyCOO {
         require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
@@ -91,7 +91,7 @@ contract Market is MarketView {
         _teamIdToRemainingAcqs[teamId] = remainingAcqs;
     }
     
-    // Main PLAYER auction functions: freeze & complete
+    /// Main PLAYER auction functions: freeze & complete
     function freezePlayer(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -100,7 +100,7 @@ contract Market is MarketView {
         uint8 sigV
     ) public onlyMarket {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreezePlayer requirements not met");
-        // // Freeze player
+        /// /// Freeze player
         _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
@@ -109,14 +109,14 @@ contract Market is MarketView {
         uint256 playerId,
         uint256 targetTeamId
      ) public onlyMarket {
-        // isAcademy checks that player isSpecial, and not written.
+        /// isAcademy checks that player isSpecial, and not written.
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
         require(getSumOfSkills(playerId) < _maxSumSkillsBuyNowPlayer, "buy now player has sum of skills larger than allowed");
         require(!isBotTeam(targetTeamId), "cannot transfer to bot teams");
         require(!_teamIdToIsBuyNowForbidden[targetTeamId], "user has explicitly forbidden buyNow");
         require(targetTeamId != ACADEMY_TEAM, "targetTeam of buyNow player cannot be Academy Team");
 
-        // note that wasTeamCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
+        /// note that wasTeamCreatedVirtually(targetTeamId) &  !isBotTeam(targetTeamId) => already part of transferPlayer
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
         require(!(isConstrained && (nRemain == 0)), "trying to accept a buyNow player, but team is busy in constrained friendlies");
         transferPlayer(playerId, targetTeamId);
@@ -158,7 +158,7 @@ contract Market is MarketView {
         emit PlayerFreeze(playerId, 1, false);
     }
     
-    // Main TEAM auction functions: freeze & complete
+    /// Main TEAM auction functions: freeze & complete
     function freezeTeam(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -167,7 +167,7 @@ contract Market is MarketView {
         uint8 sigV
     ) public onlyMarket {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezeTeam requirements not met");
-        // // Freeze player
+        /// /// Freeze player
         _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
     }
@@ -211,17 +211,17 @@ contract Market is MarketView {
         address owner = getOwnerTeam(teamIdOrigin);
         bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId, returnToAcademy)));
         require (
-            // check validUntil has not expired
+            /// check validUntil has not expired
             (now < validUntil) &&
-            // check player is not already frozen
+            /// check player is not already frozen
             (!isPlayerFrozenInAnyMarket(playerId)) &&  
-            // check that the team it belongs to not already frozen
+            /// check that the team it belongs to not already frozen
             !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
-            // check asset is owned by legit address
+            /// check asset is owned by legit address
             (owner != address(0)) && 
-            // check signatures are valid by requiring that they own the asset:
+            /// check signatures are valid by requiring that they own the asset:
             (owner == recoverAddr(msgHash, sigV, sigR, sigS)) &&    
-            // check that auction time is less that the required 32 bit
+            /// check that auction time is less that the required 32 bit
             (validUntil < now + MAX_VALID_UNTIL),
             "conditions to dismiss player are not met"
         );  
@@ -235,10 +235,10 @@ contract Market is MarketView {
     }
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) private  {
-        // warning: check of ownership of players and teams should be done before calling this function
-        // so in this function, both teams are asumed to exist, be different, and belong to the rightful (nonBot) owners
+        /// warning: check of ownership of players and teams should be done before calling this function
+        /// so in this function, both teams are asumed to exist, be different, and belong to the rightful (nonBot) owners
 
-        // part related to origin team:
+        /// part related to origin team:
         uint256 state = getPlayerState(playerId);
         uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
     
@@ -247,9 +247,9 @@ contract Market is MarketView {
             teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
 
-        // part related to target team:
-        // - determine new state of player
-        // - if not Academy, write playerId in target team's shirt
+        /// part related to target team:
+        /// - determine new state of player
+        /// - if not Academy, write playerId in target team's shirt
         if (teamIdTarget == ACADEMY_TEAM) {
             state = setCurrentTeamId(state, ACADEMY_TEAM);
         } else {
@@ -296,7 +296,7 @@ contract Market is MarketView {
     }
         
     function transferTeam(uint256 teamId, address addr) private {
-        // requiring that team is not bot already ensures that tz and countryIdxInTz exist 
+        /// requiring that team is not bot already ensures that tz and countryIdxInTz exist 
         require(!isBotTeam(teamId), "cannot transfer a bot team");
         require(addr != NULL_ADDR, "cannot transfer to a null address");
         require(teamIdToOwner[teamId] != addr, "buyer and seller are the same addr");

@@ -9,7 +9,7 @@ import "./EngineApplyBoosters.sol";
 contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
-    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
+    /// prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
     uint8 constant public IDX_GK = 0;
     uint8 constant public IDX_D  = 1;
     uint8 constant public IDX_M  = 2;
@@ -17,16 +17,16 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant public IDX_MD = 4;
     uint8 constant public IDX_MF = 5;
     
-    // Skills: shoot, speed, pass, defence, endurance
+    /// Skills: shoot, speed, pass, defence, endurance
     uint8 constant public SK_SHO = 0;
     uint8 constant public SK_SPE = 1;
     uint8 constant public SK_PAS = 2;
     uint8 constant public SK_DEF = 3;
     uint8 constant public SK_END = 4;    
     
-    uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
-    uint8 public constant MAX_GOALS_IN_MATCH  = 15;   // Max number of goals that one single team in an entire match (no restriction on which half)
-    // // Idxs for vector of globSkills: 
+    uint8 public constant ROUNDS_PER_MATCH  = 12;   /// Number of relevant actions that happen during a game (12 equals one per 3.7 min)
+    uint8 public constant MAX_GOALS_IN_MATCH  = 15;   /// Max number of goals that one single team in an entire match (no restriction on which half)
+    /// /// Idxs for vector of globSkills: 
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
     uint8 private constant IDX_DEFEND_SHOOT = 2; 
@@ -39,9 +39,9 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     //
     uint8 private constant IDX_SEED         = 0; 
     uint8 private constant IDX_ST_TIME      = 1; 
-    // 
+    /// 
     uint256 private constant CHG_HAPPENED   = uint256(1); 
-    uint8 public constant RED_CARD  = 3;   // type of event = redCard
+    uint8 public constant RED_CARD  = 3;   /// type of event = redCard
     uint8 private constant WINNER_AWAY = 1;
     uint8 private constant WINNER_DRAW = 2;
 
@@ -63,7 +63,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
      * @param matchBools a 3-array containing: [is2ndHalf, isHomeStadium, isPlayoff]
      * @return an array containing: [matchLogs[0], matchLogs[1], event[0],..., event[last]]
      */
-    // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
+    /// for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
     function playHalfMatch(
         uint256 seed,
         uint256 matchStartTime, 
@@ -91,13 +91,13 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         );
 
         if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
-            matchLogs = _precomp.computePenalties(matchLogs, skills, block0, block1, uint64(seed));  // TODO seed
+            matchLogs = _precomp.computePenalties(matchLogs, skills, block0, block1, uint64(seed));  /// TODO seed
         } else {
-            // note that WINNER_HOME = 0, so no need to write anything if home wins.
+            /// note that WINNER_HOME = 0, so no need to write anything if home wins.
             if (getNGoals(matchLogs[0]) == getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_DRAW);
             else if (getNGoals(matchLogs[0]) < getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_AWAY);
         }
-        // convert seedAndStartTimeAndEvents --> matchLogsAndEvents
+        /// convert seedAndStartTimeAndEvents --> matchLogsAndEvents
         seedAndStartTimeAndEvents[0] = setIsHomeStadium(matchLogs[0], matchBools[IDX_IS_HOME_STADIUM]);
         seedAndStartTimeAndEvents[1] = setIsHomeStadium(matchLogs[1], matchBools[IDX_IS_HOME_STADIUM]);
         return seedAndStartTimeAndEvents;
@@ -112,7 +112,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
+        bool[3] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
     )
         private
         view
@@ -160,7 +160,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
             seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1]) ? 1 : 0;
             if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
-                // scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
+                /// scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
                     matchLogs[teamThatAttacks],
                     skills[teamThatAttacks],
@@ -177,16 +177,16 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         }
     }
     
-    // getLineUpAndPlayerPerZone:
-    //      1. Unpacks the tactics and lineUp, verifies validity 
-    //      2. Rewrites skills[25] so that the first [14] entries correspond to players that will actually play
-    //      3. Compute the yellow cards, red cards, injuries, and adds them to matchLog
-    // RETURNS: (matchLog, linedUpSkills, playerPerZone)
-    // On the unpacking:
-    //  - it translates from a high level tacticsId (e.g. 442) to a format that describes how many
-    //      players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
-    //  - note that we impose left-right symmetry: DR = DL, MR = ML, FR = FL,
-    //      so we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
+    /// getLineUpAndPlayerPerZone:
+    ///      1. Unpacks the tactics and lineUp, verifies validity 
+    ///      2. Rewrites skills[25] so that the first [14] entries correspond to players that will actually play
+    ///      3. Compute the yellow cards, red cards, injuries, and adds them to matchLog
+    /// RETURNS: (matchLog, linedUpSkills, playerPerZone)
+    /// On the unpacking:
+    ///  - it translates from a high level tacticsId (e.g. 442) to a format that describes how many
+    ///      players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
+    ///  - note that we impose left-right symmetry: DR = DL, MR = ML, FR = FL,
+    ///      so we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
     function getLineUpAndPlayerPerZone(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics,
@@ -205,7 +205,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return (matchLog, linedUpSkills, getPlayersPerZone(tacticsId));
     }
     
-    // adds to the matchLog the number of defenders actually linedUp (some skills could be empty slots)
+    /// adds to the matchLog the number of defenders actually linedUp (some skills could be empty slots)
     function writeNDefs(
         uint256 matchLog, 
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
@@ -219,7 +219,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return addNDefs(matchLog, nDefs, is2ndHalf);
     }
 
-    /// @dev Rescales global skills of both teams according to their endurance
+    //// @dev Rescales global skills of both teams according to their endurance
     function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
         public
         pure
@@ -234,7 +234,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return (skillsTeamA, skillsTeamB);
     }
 
-    /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
+    //// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
     function managesToShoot(uint8 teamThatAttacks, uint256[5][2] memory globSkills, uint256 rndNum)
         public
         pure
@@ -242,8 +242,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     {
         if (globSkills[teamThatAttacks][IDX_CREATE_SHOOT] == 0) return false;
         return throwDice(
-            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // globSkills[IDX_DEFEND_SHOOT] of defending team against...
-            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/10,  // globSkills[IDX_CREATE_SHOOT] of attacking team.
+            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       /// globSkills[IDX_DEFEND_SHOOT] of defending team against...
+            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/10,  /// globSkills[IDX_CREATE_SHOOT] of attacking team.
             rndNum
         ) == 1 ? true : false;
     }
@@ -260,8 +260,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         returns (uint8)
     {
         uint256[] memory weights = new uint256[](11);
-        // if selected assister == selected shooter =>  
-        //  there was no assist => individual play by shoorter
+        /// if selected assister == selected shooter =>  
+        ///  there was no assist => individual play by shoorter
         weights[0] = 1;
         uint256 teamPassCapacity = weights[0];
         uint8 p = 1;
@@ -281,12 +281,12 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             p++;
         }
         
-        // on average: teamPassCapacity442 = (1 + 4 * 20 + 4 * 100 + 2 * 200) < getPass > = 881 <pass>_team
-        // on average: shooterSumOfSkills = 5 * <skills>_shooter
-        // so a good ratio is shooterSumOfSkills/teamPassCapacity442 = 5/881 * <skills_shooter>/<pass>_team
-        // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
-        // or to have a 50% chance, multiply by 10, and to have say, 1/3, multiply by 10/3
-        // this is to be compensated by an overall factor of about.
+        /// on average: teamPassCapacity442 = (1 + 4 * 20 + 4 * 100 + 2 * 200) < getPass > = 881 <pass>_team
+        /// on average: shooterSumOfSkills = 5 * <skills>_shooter
+        /// so a good ratio is shooterSumOfSkills/teamPassCapacity442 = 5/881 * <skills_shooter>/<pass>_team
+        /// or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
+        /// or to have a 50% chance, multiply by 10, and to have say, 1/3, multiply by 10/3
+        /// this is to be compensated by an overall factor of about.
         if (teamPassCapacity <= weights[shooter]) return shooter;
         
         weights[shooter] = (weights[shooter] * getSumOfSkills(skills[shooter]) * uint256(8810))/ (uint256(3 * N_SKILLS) * (teamPassCapacity - weights[shooter]));
@@ -305,7 +305,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         returns (uint8)
     {
         uint256[] memory weights = new uint256[](11);
-        // GK has minimum weight, all others are relative to this.
+        /// GK has minimum weight, all others are relative to this.
         weights[0] = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
@@ -323,8 +323,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return throwDiceArray(weights, rnd);
     }
 
-    /// @dev Decides if a team that creates a shoot manages to score.
-    /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
+    //// @dev Decides if a team that creates a shoot manages to score.
+    //// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
         uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
@@ -341,12 +341,12 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint8 currentGoals = getNGoals(matchLog);
         uint8 shooter = selectShooter(skills, playersPerZone, extraAttack, rnds[0]);
         scoreData[1] = uint256(shooter);
-        // if we scored alread the max number of goals, return. Note that isGoal = 0 inside scoreData.
+        /// if we scored alread the max number of goals, return. Note that isGoal = 0 inside scoreData.
         if (currentGoals >= MAX_GOALS_IN_MATCH) return scoreData;
-        /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
+        //// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         uint256 shootPenalty = ( getForwardness(skills[shooter]) == IDX_GK ? 1 : 10);
-        // since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
-        // shooter weight =  shoot * shootPenalty/(10) * (7/10) = shoort * shootPenalty * 7 / 1e2 
+        /// since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
+        /// shooter weight =  shoot * shootPenalty/(10) * (7/10) = shoort * shootPenalty * 7 / 1e2 
         bool isGoal = throwDice((getSkill(skills[shooter], SK_SHO) * 7 * shootPenalty)/100, blockShoot, rnds[1]) == 0;
         scoreData[2] = uint256(isGoal ? 1: 0);
         uint8 assister;
@@ -355,7 +355,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             matchLog = addAssister(matchLog, assister, currentGoals);
             matchLog = addShooter(matchLog, shooter, currentGoals);
             matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);
-            matchLog++; // adds 1 goal because nGoals is the right-most number serialized
+            matchLog++; /// adds 1 goal because nGoals is the right-most number serialized
             scoreData[0] = matchLog;
             scoreData[3] = uint256(assister);
         }
@@ -371,7 +371,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     
     function wasPlayerAlignedEndOfLastHalf(uint8 shirtNum, uint256 tactics, uint256 matchLog) public pure returns (bool) {
         (uint8[3] memory  substitutions,,uint8[14] memory lineup,,) = decodeTactics(tactics);
-        // First check if it was in the starting eleven, and was not substituted
+        /// First check if it was in the starting eleven, and was not substituted
         for (uint8 p = 0; p < 11; p++) {
             if (shirtNum == lineup[p]) {
                 for (uint8 s = 0; s < 3; s++) {
@@ -380,7 +380,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
                 return true;
             }
         }
-        // Next check if it was in the planned substitutions and it did actually happen.
+        /// Next check if it was in the planned substitutions and it did actually happen.
         for (uint8 s = 0; s < 3; s++) {
             if ((shirtNum == lineup[11 + s]) && (getInGameSubsHappened(matchLog, s, false) == CHG_HAPPENED)) {
                 return true;
