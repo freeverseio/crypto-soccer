@@ -25,13 +25,12 @@ func TestProcessorDispatchUpdatesTimezoneUpdate(t *testing.T) {
 	event.Verse = big.NewInt(2)
 	abstractEvent := process.NewAbstractEvent(0, 0, "", event)
 
-	p, err := process.NewEventProcessor(
+	p := process.NewEventProcessor(
 		bc.Contracts,
 		namesdb,
 		ipfsURL,
 		nil,
 	)
-	assert.NilError(t, err)
 	assert.Error(t, p.Dispatch(tx, abstractEvent), "unexistent hash for verse 2")
 }
 
@@ -40,13 +39,12 @@ func TestSyncTeams(t *testing.T) {
 	tx, err := universedb.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
-	p, err := process.NewEventProcessor(
+	p := process.NewEventProcessor(
 		bc.Contracts,
 		namesdb,
 		ipfsURL,
 		nil,
 	)
-	assert.NilError(t, err)
 	_, err = p.Process(tx, 0)
 	assert.NilError(t, err)
 

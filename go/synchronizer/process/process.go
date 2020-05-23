@@ -21,12 +21,10 @@ import (
 )
 
 type EventProcessor struct {
-	contracts                 *contracts.Contracts
-	assetsInitProcessor       *AssetsInitProcessor
-	divisionCreationProcessor *DivisionCreationProcessor
-	staker                    *staker.Staker
-	ipfsURL                   string
-	namesdb                   *names.Generator
+	contracts *contracts.Contracts
+	staker    *staker.Staker
+	ipfsURL   string
+	namesdb   *names.Generator
 }
 
 // *****************************************************************************
@@ -39,28 +37,13 @@ func NewEventProcessor(
 	namesdb *names.Generator,
 	ipfsURL string,
 	staker *staker.Staker,
-) (*EventProcessor, error) {
-	assetsInitProcessor, err := NewAssetsInitProcessor(
-		contracts,
-	)
-	if err != nil {
-		return nil, err
-	}
-	divisionCreationProcessor, err := NewDivisionCreationProcessor(
-		contracts,
-		namesdb,
-	)
-	if err != nil {
-		return nil, err
-	}
+) *EventProcessor {
 	return &EventProcessor{
 		contracts,
-		assetsInitProcessor,
-		divisionCreationProcessor,
 		staker,
 		ipfsURL,
 		namesdb,
-	}, nil
+	}
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -110,9 +93,11 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case assets.AssetsAssetsInit:
-		return p.assetsInitProcessor.Process(tx, v)
+		assetsInitProcessor := NewAssetsInitProcessor(p.contracts)
+		return assetsInitProcessor.Process(tx, v)
 	case assets.AssetsDivisionCreation:
-		return p.divisionCreationProcessor.Process(tx, v)
+		divisionCreationProcessor := NewDivisionCreationProcessor(p.contracts, p.namesdb)
+		return divisionCreationProcessor.Process(tx, v)
 	case assets.AssetsTeamTransfer:
 		return ConsumeTeamTransfer(tx, v)
 	case market.MarketPlayerStateChange:

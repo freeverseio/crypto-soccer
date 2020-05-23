@@ -22,10 +22,7 @@ func ConsumeActionsSubmission(
 ) error {
 	log.Infof("[processor|consume] ActionsSubmission verse: %v, tz: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.IpfsCid)
 
-	leagueProcessor, err := NewLeagueProcessor(contracts, ipfsURL)
-	if err != nil {
-		return err
-	}
+	leagueProcessor := NewLeagueProcessor(contracts, ipfsURL)
 	if err := leagueProcessor.Process(tx, v); err != nil {
 		return err
 	}

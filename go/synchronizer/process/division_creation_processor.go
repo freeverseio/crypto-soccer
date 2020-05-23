@@ -33,17 +33,13 @@ type DivisionCreationProcessor struct {
 func NewDivisionCreationProcessor(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
-) (*DivisionCreationProcessor, error) {
-	calendarProcessor, err := NewCalendar(contracts)
-	if err != nil {
-		return nil, err
-	}
-
+) *DivisionCreationProcessor {
+	calendarProcessor := NewCalendar(contracts)
 	return &DivisionCreationProcessor{
 		contracts,
 		calendarProcessor,
 		namesdb,
-	}, nil
+	}
 }
 
 func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivisionCreation) error {

@@ -24,8 +24,7 @@ func TestActionsSubmissionFirstHalfEvents(t *testing.T) {
 	divisionCreationEvent.Timezone = timezone
 	divisionCreationEvent.CountryIdxInTZ = big.NewInt(0)
 	divisionCreationEvent.DivisionIdxInCountry = big.NewInt(0)
-	divisionCreation, err := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
-	assert.NilError(t, err)
+	divisionCreation := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
 	assert.NilError(t, divisionCreation.Process(tx, divisionCreationEvent))
 
 	ua, err := useractions.NewFromStorage(tx, int(timezone))
