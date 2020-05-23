@@ -590,7 +590,9 @@ contract('Stakers', (accounts) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
   it("Tests L0 -> L1 lie  -> L2 lie  -> L3 true  -> L4 lie -> challenge -> L3", async () => {
-    // start (L0) ->  alice updates (L1) -> bob updates (L2) -> carol updates (L3) -> dave updates (L4) -> erin challenges dave (L3) -> erin updates (L4)
+    // start (L0) ->  alice updates (L1) -> bob updates (L2) -> carol updates (L3) -> dave updates (L4) ->
+    // -> erin updates (L5) -> time passes -> L3 -> frank updates (L4)
+    // at finalization time, we slash: dave by erin, carol frank, alice by bob
     await stakers.setGameOwner(gameAddr, {from:owners.COO});
     parties = [alice, bob, carol, dave, erin, frank];
     await deployUtils.addTrustedParties(stakers, owners.COO, parties);
@@ -650,23 +652,84 @@ contract('Stakers', (accounts) => {
       "erin failed to challenge"
     )
 
-    assert.equal(3, (await stakers.level()).toNumber());
+    assert.equal(5, (await stakers.level()).toNumber());
 
-    await expect.reverts(
-      stakers.update(5, erin, {from:gameAddr}),
-      "failed to update: wrong level",
-      "this update level does not exist, so it should revert"
+    // time passes, meaning that erin was right, so dave lied.
+    // we implicitly go back to level 2, and frank updates there
+    await expect.passes(
+      stakers.update(3, frank, {from:gameAddr}),
+      "frank failed to update after time passed"
+    )
+
+    assert.equal(4, (await stakers.level()).toNumber());
+
+    await stakers.finalize({from:gameAddr}).should.be.fulfilled;
+    
+    // at finalization time, we slash: dave by erin, carol frank, alice by bob
+    past = await stakers.getPastEvents( 'SlashedBy', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.slashedStaker.should.be.equal(dave);
+    past[0].args.goodStaker.should.be.equal(erin);
+    past[1].args.slashedStaker.should.be.equal(carol);
+    past[1].args.goodStaker.should.be.equal(frank);
+    past[2].args.slashedStaker.should.be.equal(alice);
+    past[2].args.goodStaker.should.be.equal(bob);
+  })
+  
+  it("Tests L0 -> L1 lie  -> L2 lie  -> L3 true  -> L4 lie -> time passes -> L1 update", async () => {
+    // same as previous test up to L4, but then we update L1 directly after L4
+    // alice - bob - carol - dave // erin // finalize
+    // slashes: carol by dave, alice by bob
+    await stakers.setGameOwner(gameAddr, {from:owners.COO});
+    parties = [alice, bob, carol, dave, erin, frank];
+    await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+    await deployUtils.enrol(stakers, stake, parties);
+
+    assert.equal(0, (await stakers.level()).toNumber());
+
+    await expect.passes(
+      stakers.update(0, alice, {from:gameAddr}),
+      "alice failed to update"
+    )
+
+    assert.equal(1, (await stakers.level()).toNumber());
+
+    await expect.passes(
+      stakers.update(1, bob, {from:gameAddr}),
+      "bob failed to update"
+    )
+
+    assert.equal(2, (await stakers.level()).toNumber());
+
+    await expect.passes(
+      stakers.update(2, carol, {from:gameAddr}),
+      "carol failed to update"
     )
 
     assert.equal(3, (await stakers.level()).toNumber());
 
-    await expect.reverts(
-      stakers.update(4, erin, {from:gameAddr}),
-      "failed to update: wrong level",
-      "after erin slashed dave, level is 3, so it should revert"
+    await expect.passes(
+      stakers.update(3, dave, {from:gameAddr}),
+      "dave failed to update"
     )
 
-    assert.equal(3, (await stakers.level()).toNumber());
+    assert.equal(4, (await stakers.level()).toNumber());
+
+    // erin callenges the very last update L4
+    await expect.passes(
+      stakers.update(0, erin, {from:gameAddr}),
+      "erin failed to challenge"
+    )
+
+    assert.equal(1, (await stakers.level()).toNumber());
+
+    await stakers.finalize({from:gameAddr}).should.be.fulfilled;
+    
+    // at finalization time, we slash: dave by erin, carol frank, alice by bob
+    past = await stakers.getPastEvents( 'SlashedBy', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.slashedStaker.should.be.equal(carol);
+    past[0].args.goodStaker.should.be.equal(dave);
+    past[1].args.slashedStaker.should.be.equal(alice);
+    past[1].args.goodStaker.should.be.equal(bob);
   })
 })
 

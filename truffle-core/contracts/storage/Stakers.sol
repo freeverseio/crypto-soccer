@@ -5,13 +5,10 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 // TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
 
-
-
 contract Stakers {
   using SafeMath for uint256;
   
   address constant internal NULL_ADDR = address(0x0);
-  uint16 constant public UPDT_CAPACITY = 4;
 
   event PotBalanceChange(uint256 newBalance);
   event RewardsExecuted();
@@ -138,30 +135,19 @@ contract Stakers {
   //       level is below current or level has reached the end
   function update(uint16 _level, address _staker) external onlyGame {
     require (_level <= level(),        "failed to update: wrong level");
-    //require (_level <= UPDT_CAPACITY, "failed to update: max level exceeded"); // already covered by previous require
     require (isStaker[_staker],        "failed to update: staker not registered");
     //require (!isSlashed(_staker),      "failed to update: staker was slashed"); // also covered by not being part of stakers, because slashing removes address from stakers
     require(!alreadyDidUpdate(_staker), "staker has already updated this game");
 
-    if (_level < UPDT_CAPACITY) {
-      if (_level < level()) {
+    while (_level < level()) {
         // If level is below current, it means the challenge
         // period has passed, so last updater told the truth.
         // The last updater should be rewarded, the one before
         // last should be slashed and level moves back two positions
-        require (_level > 0 && _level == level() - 2, "failed to update: resolving wrong level");
+        require ((level() -_level) % 2 == 0, "failed to update: resolving wrong level");
         resolve();
-      }
-      updaters.push(_staker);
     }
-    else {
-      // The very last possible update: the challenge.
-      // It resolves immediately by slashing the last
-      // updater
-      address badStaker = popUpdaters();
-      slash(badStaker);
-      earnStake(_staker, badStaker);
-    }
+    updaters.push(_staker);
     emit NewGameLevel(level());
   }
 
