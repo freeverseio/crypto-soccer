@@ -37,7 +37,7 @@ module.exports = function (deployer, network, accounts) {
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
       await deployUtils.deploy(versionNumber, account0Owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges).should.be.fulfilled;
 
-    const stakers  = await deployer.deploy(Stakers, requiredStake).should.be.fulfilled;
+    const stakers  = await deployer.deploy(Stakers, proxy.address, requiredStake).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
     const engine = await deployer.deploy(Engine, enginePreComp.address, engineApplyBoosters.address).should.be.fulfilled;
@@ -51,7 +51,7 @@ module.exports = function (deployer, network, accounts) {
     const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
-    const marketCrypto = await deployer.deploy(MarketCrypto).should.be.fulfilled;
+    const marketCrypto = await deployer.deploy(MarketCrypto, proxy.address).should.be.fulfilled;
 
     console.log("Setting up ...");
 
@@ -60,7 +60,6 @@ module.exports = function (deployer, network, accounts) {
       await assets.setCOO(accounts[0]).should.be.fulfilled;
       await assets.setMarket(accounts[0]).should.be.fulfilled;
       await assets.setRelay(accounts[0]).should.be.fulfilled;
-      await stakers.setCOO(accounts[0]).should.be.fulfilled;
 
       // do these operations:
       await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
@@ -82,21 +81,15 @@ module.exports = function (deployer, network, accounts) {
       }
 
       // Prepare the final ownerships
-      await marketCrypto.setCOO(owners.COO).should.be.fulfilled;
-      await stakers.setCOO(owners.COO).should.be.fulfilled;
       await assets.setCOO(owners.COO).should.be.fulfilled;
       await assets.setMarket(owners.market).should.be.fulfilled;
       await assets.setRelay(owners.relay).should.be.fulfilled;
       await proxy.setSuperUser(owners.superuser).should.be.fulfilled;
 
-      await marketCrypto.proposeOwner(owners.superuser).should.be.fulfilled;
-      await stakers.proposeOwner(owners.superuser).should.be.fulfilled;
       await proxy.proposeCompany(owners.company).should.be.fulfilled;
 
       if (network == "test") {
         console.log("Acquiring final ownership -- only available in TEST network -- requires privKeys");
-        await marketCrypto.acceptOwner({from: owners.superuser}).should.be.fulfilled;
-        await stakers.acceptOwner({from: owners.superuser}).should.be.fulfilled;
         await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
         for (trustedParty of owners.trustedParties) {
           await stakers.enrol({from: trustedParty, value: requiredStake});
@@ -104,10 +97,6 @@ module.exports = function (deployer, network, accounts) {
       } else {
         console.log("You need to perform the final ownership stage with your HD wallets");
       }
-
-      // If we want stakers signed up during deploy, uncomment this:
-      // await deployUtils.addTrustedParties(stakers, owners.COO, owners.trustedParties);
-      // await deployUtils.enrol(stakers, requiredStake, owners.trustedParties);
     }
 
 

@@ -3,7 +3,7 @@ pragma solidity >= 0.6.3;
  * @title Library of functions to serialize values into uints, and deserialize back
  */
 
-contract EncodingTacticsPart2 {
+contract EncodingTacticsBase2 {
 
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant private N_SKILLS = 5;

@@ -3,7 +3,7 @@ pragma solidity >= 0.6.3;
  * @title Library of functions to serialize matchLogs
  */
 
-contract EncodingMatchLogPart2  {
+contract EncodingMatchLogBase2  {
 
     uint256 private constant ONE256       = 1; 
 

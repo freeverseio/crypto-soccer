@@ -8,7 +8,7 @@ const debug = require('../utils/debugUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Encoding = artifacts.require('EncodingSkills');
-const EncodingTact = artifacts.require('EncodingTacticsPart1');
+const EncodingTact = artifacts.require('EncodingTactics');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');

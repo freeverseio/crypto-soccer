@@ -1,10 +1,10 @@
 pragma solidity >= 0.6.3;
 
-import "./Assets.sol";
+import "../storage/Assets.sol";
 import "./Engine.sol";
 import "./SortIdxs.sol";
-import "./EncodingSkillsGetters.sol";
-import "./EncodingIDs.sol";
+import "../encoders/EncodingSkillsGetters.sol";
+import "../encoders/EncodingIDs.sol";
 
 /**
  * @title Scheduling of leagues, and calls to Engine to resolve games.

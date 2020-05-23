@@ -1,8 +1,8 @@
 pragma solidity >= 0.6.3;
 
 import "./Storage.sol";
-import "./EncodingIDs.sol";
-import "./EncodingSkillsGetters.sol";
+import "../encoders/EncodingIDs.sol";
+import "../encoders/EncodingSkillsGetters.sol";
 /**
  * @title Entry point for changing ownership of assets, and managing bids and auctions.
  */
@@ -25,7 +25,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         require(msg.sender == _COO, "Only COO is authorized.");
         _;
     }
-
+    
     function _tzExists(uint8 timeZone) internal pure returns(bool) {
         return(timeZone > NULL_TIMEZONE && timeZone < 25);
     }

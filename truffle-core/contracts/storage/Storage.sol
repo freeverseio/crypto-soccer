@@ -1,7 +1,7 @@
 pragma solidity >= 0.6.3;
 
 import "./ProxyStorage.sol";
-import "./Constants.sol";
+import "../storage/Constants.sol";
 import "./Stakers.sol";
 
 /**
@@ -63,4 +63,9 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => uint256) _lastUpdateTime;
  
     Stakers internal _stakers;
+    
+    function isCompany(address addr) public view returns (bool) { return addr == _company; }
+    function isSuperUser(address addr) public view returns (bool) { return addr == _superUser; }
+    function isRelay(address addr) public view returns (bool) { return addr == _relay; }
+    function isCOO(address addr) public view returns (bool)  { return addr == _COO; }
 }

@@ -1,13 +1,13 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingSkillsSetters.sol";
-import "./EncodingTacticsPart2.sol";
+import "../encoders/EncodingSkillsSetters.sol";
+import "../encoders/EncodingTacticsBase2.sol";
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions
  * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
  */
 
-contract Shop is EncodingSkillsSetters, EncodingTacticsPart2{
+contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
 
     event ItemOffered(
         uint16 itemId,
