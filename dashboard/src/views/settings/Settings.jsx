@@ -2,11 +2,15 @@ import React from 'react';
 import { Container, Table } from 'semantic-ui-react';
 import Config from '../../Config';
 
-export default function settings(params) {
-    // const [playerid, setplayerid] = usestate("");
-    const entries = Object.entries(Config) ;
+const directoryJSON = require("../../contracts/Directory.json");
 
-    console.log(entries)
+export default function settings(params) {
+    const { web3 } = params;
+    // const directory = new web3.eth.Contract(directoryJSON.abi, Config.directory_address);
+    // const d = directory.methods.getDirectory().call().then(console.log);
+    // console.log(d)
+    // const [playerid, setplayerid] = usestate("");
+    const entries = Object.entries(Config);
 
     return (
         <Container>
