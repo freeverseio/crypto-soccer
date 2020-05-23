@@ -169,7 +169,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 
 func (b *BlockchainNode) Init() error {
 	// Initing
-	tx, err := b.Contracts.Assets.Init(bind.NewKeyedTransactor(b.Owner))
+	tx, err := b.Contracts.Assets.InitTZs(bind.NewKeyedTransactor(b.Owner))
 	if err != nil {
 		return err
 	}
