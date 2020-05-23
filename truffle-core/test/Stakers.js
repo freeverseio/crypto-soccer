@@ -244,19 +244,26 @@ contract('Stakers', (accounts) => {
       "bob failed to update"
     )
 
-    // Ensure that nobody can update lev = 0 nor lev = 1 again, 
-    // since we are at level = 2
     assert.equal(2, (await stakers.level()).toNumber());
-    await expect.reverts(
-      stakers.update(level = 0, carol, {from:gameAddr}),
-      "failed to update: resolving wrong level",
-      "level 0 cannot be updated without starting a new verse, it should revert"
-    )
+
+    // Ensure that nobody can update lev = 1 again, since we are at level = 2
     await expect.reverts(
       stakers.update(1, carol, {from:gameAddr}),
       "failed to update: resolving wrong level",
       "level 1 is already updated, it should revert"
     )
+
+    // Allow update lev = 0 again, since we are at level = 2, it means that level 1
+    // lied, and time enough passed to prove it. So the update of level 0
+    // triggers a "resolve". Alice will be slashed by bob
+    await expect.passes(
+      stakers.update(level = 0, frank, {from:gameAddr}),
+      "failed to update after enough time passed"
+    )
+
+    past = await stakers.getPastEvents( 'SlashedBy', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+    past[0].args.slashedStaker.should.be.equal(alice);
+    past[0].args.goodStaker.should.be.equal(bob);
 
     // ------------- start new verse ----------------
     // which implicitly slashes alice, the first updater
@@ -265,9 +272,6 @@ contract('Stakers', (accounts) => {
       "failed starting new verse"
     )
     
-    past = await stakers.getPastEvents( 'SlashedBy', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
-    past[0].args.slashedStaker.should.be.equal(alice);
-    past[0].args.goodStaker.should.be.equal(bob);
 
     // L0: check that Alice is not registered as staker anymore
     assert.equal(0, (await stakers.level()).toNumber());
