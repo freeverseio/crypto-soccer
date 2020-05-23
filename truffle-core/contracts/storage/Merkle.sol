@@ -1,8 +1,9 @@
 pragma solidity >= 0.6.3;
 
- /**
- * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
- */
+/**
+  @title Standard Merkle Tree functions
+  @author Freeverse.io, www.freeverse.io
+*/
 
 contract Merkle {
     

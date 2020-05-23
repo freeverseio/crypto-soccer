@@ -4,6 +4,7 @@ import "../storage/AssetsView.sol";
 
 /**
  @title Creation of all "default" game assets via creation of timezones, countries and divisions
+ @author Freeverse.io, www.freeverse.io
  @dev Only other way of creating assets is via BuyNow pattern, in the Market contract.
  @dev All functions in this file modify storage. All view/pure funcions are inherited from AssetsView.
  @dev Timezones range from 1 to 24, with timeZone = 0 being null.
@@ -52,13 +53,29 @@ contract Assets is AssetsView {
 
     function addCountryManually(uint8 tz) external onlyCOO { _addCountry(tz); }
 
-    /// this function will crash if it cannot handle all transfers in one single TX
-    /// it is the responsibility of the caller to ensure that the arrays match correctly
+    /// Entry point for new users: acquiring a bot team
+    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyRelay {
+        require(tzToNCountries[tz] != 0, "Timezone has not been initialized");
+        uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
+        uint256 firstBotIdx = countryIdToNHumanTeams[countryId];
+        uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
+        require(isBotTeam(teamId), "cannot transfer a non-bot team");
+        require(addr != NULL_ADDR, "invalid address");
+        if ((firstBotIdx % TEAMS_PER_DIVISION) == (TEAMS_PER_DIVISION-1)) { _addDivision(tz, countryIdxInTZ); }
+        teamIdToOwner[teamId] = addr;
+        countryIdToNHumanTeams[countryId] = firstBotIdx + 1;
+        emit TeamTransfer(teamId, addr);
+    }
+    
+    /// Speeds up assignment to new users. 
+    /// This function will crash if it cannot handle all transfers in one single TX
+    /// It is the responsibility of the caller to ensure that the arrays length match correctly
     function transferFirstBotsToAddresses(uint8[] calldata tz, uint256[] calldata countryIdxInTZ, address[] calldata addr) external onlyRelay {
         for (uint256 i = 0; i < tz.length; i++) {
             transferFirstBotToAddr(tz[i], countryIdxInTZ[i], addr[i]); 
         }            
     }
+    
 
     // Private Functions
 
@@ -83,21 +100,4 @@ contract Assets is AssetsView {
         divisionIdToRound[divisionId] = getCurrentRound(tz) + 1;
         emit DivisionCreation(tz, countryIdxInTZ, nDivs);
     }
-
-
-
-    /// Entry point for new users: acquiring a bot team
-    function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyRelay {
-        require(tzToNCountries[tz] != 0, "Timezone has not been initialized");
-        uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
-        uint256 firstBotIdx = countryIdToNHumanTeams[countryId];
-        uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
-        require(isBotTeam(teamId), "cannot transfer a non-bot team");
-        require(addr != NULL_ADDR, "invalid address");
-        if ((firstBotIdx % TEAMS_PER_DIVISION) == (TEAMS_PER_DIVISION-1)) { _addDivision(tz, countryIdxInTZ); }
-        teamIdToOwner[teamId] = addr;
-        countryIdToNHumanTeams[countryId] = firstBotIdx + 1;
-        emit TeamTransfer(teamId, addr);
-    }
-
 }

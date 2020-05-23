@@ -7,9 +7,9 @@ import "./Storage.sol";
 import "./AssetsLib.sol";
 
 /**
- * @title Creation of all game assets via creation of timezones, countries and divisions
- * @dev Timezones range from 1 to 24, with tz = 0 being null.
- */
+ @title Library of View/Pure functions to needed by game assets
+ @author Freeverse.io, www.freeverse.io
+*/
 
 contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     

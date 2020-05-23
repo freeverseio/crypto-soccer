@@ -273,7 +273,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     /// TODO: we really don't need this function. Only for external use. Consider removal
     function getPlayerIdsInTeam(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+        require(teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         if (isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry)) {
             for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
                 playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);

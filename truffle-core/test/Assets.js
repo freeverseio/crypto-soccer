@@ -159,7 +159,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START - 1;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(true);            
@@ -171,7 +171,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(false);            
@@ -183,7 +183,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 1;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(false);
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;

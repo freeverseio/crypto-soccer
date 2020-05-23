@@ -3,13 +3,18 @@ pragma solidity >= 0.6.3;
 import "./Storage.sol";
 import "../encoders/EncodingIDs.sol";
 import "../encoders/EncodingSkillsGetters.sol";
+
 /**
  @title Library of View/Pure functions to needed by game assets and market
+ @author Freeverse.io, www.freeverse.io
 */
+
 contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     
     event TeamTransfer(uint256 teamId, address to);
 
+    /// Modifiers for all functions that write to Storage
+    
     modifier onlyMarket() {
         require(msg.sender == _market, "Only market owner is authorized.");
         _;
@@ -25,9 +30,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         _;
     }
     
-    function _tzExists(uint8 timeZone) internal pure returns(bool) {
-        return(timeZone > NULL_TIMEZONE && timeZone < 25);
-    }
+    /// Rest of view/pure functions 
     
     function isBotTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
         return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry) == NULL_ADDR;
@@ -43,18 +46,14 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         if (!_tzExists(timeZone) || !_countryInTZExists(timeZone, countryIdxInTZ)) return NULL_ADDR;
         return teamIdToOwner[encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry)];
     }
-
-    function _countryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) internal view returns(bool) {
-        return(countryIdxInTZ < tzToNCountries[timeZone]);
-    }
     
-    function _teamExistsInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
+    function teamExistsInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
         return (teamIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ));
     }
 
     function wasTeamCreatedVirtually(uint256 teamId) public view returns (bool) {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+        return teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
     
     function getNDivisionsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
@@ -75,10 +74,6 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }
 
-    function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
-        return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
-    }
-    
     function getCurrentRound(uint8 tz) public view returns (uint256) {
         return getCurrentRoundPure(tz, timeZoneForRound1, currentVerse);
     }
@@ -97,5 +92,16 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
             return roundTZ1;
         }
     }
+    
+    function _countryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) internal view returns(bool) {
+        return(countryIdxInTZ < tzToNCountries[timeZone]);
+    }
 
+    function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
+        return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
+    }
+    
+    function _tzExists(uint8 timeZone) internal pure returns(bool) {
+        return(timeZone > NULL_TIMEZONE && timeZone < 25);
+    }
 }

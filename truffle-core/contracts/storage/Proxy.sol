@@ -3,8 +3,13 @@ pragma solidity >= 0.6.3;
 import "./ProxyStorage.sol";
 
 /**
-* @title Manages the state variables of a DelegateProxy
+ @title Holds all assets Storage, and manages who to delegate the calls
+ @author Freeverse.io, www.freeverse.io
+ @dev Pattern: first, contracts-to-delegate-to info are added to this contract.
+ @dev Part of this info informs which function selector maps to each contract address.
+ @dev Second, in one atomic TX, we deactivate previous contracts, and activate newly added ones.
 */
+
 contract Proxy is ProxyStorage {
 
     address constant private NULL_ADDR  = address(0);
@@ -43,7 +48,7 @@ contract Proxy is ProxyStorage {
     * @param _target Target address to perform the delegatecall
     * @param _calldata Calldata for the delegatecall
     */
-    function delegate(address _target, bytes memory _calldata) internal {
+    function delegate(address _target, bytes memory _calldata) private {
         uint256 fwdGasLimit = FWD_GAS_LIMIT;
         assembly {
             let result := delegatecall(sub(gas(), fwdGasLimit), _target, add(_calldata, 0x20), mload(_calldata), 0, 0)
@@ -59,23 +64,23 @@ contract Proxy is ProxyStorage {
     }
     
     /**
-    * @dev Proposes a new owners, who need to later accept it
+    * @dev Proposes a new owner, who needs to later accept it
     */
-    function proposeCompany(address addr) public onlyCompany {
+    function proposeCompany(address addr) external onlyCompany {
         _proposedCompany = addr;
     }
 
     /**
-    * @dev The proposed owners can call these functions to become the owners
+    * @dev The proposed owner uses this function to become the new owner
     */
-    function acceptCompany() public  {
+    function acceptCompany() external  {
         require(msg.sender == _proposedCompany, "only proposed owner can become owner");
         _company = _proposedCompany;
         _proposedCompany = address(0);
     }
 
     /// SuperUser manages the proxy contract. No need to propose/accept, since it can be changed by company.
-    function setSuperUser(address addr) public onlyCompany {
+    function setSuperUser(address addr) external onlyCompany {
         _superUser = addr;
     }
 
@@ -90,7 +95,7 @@ contract Proxy is ProxyStorage {
     * @param selectors An array of all selectors needed inside the contract
     * @param name The name of the added contract, only for reference
     */
-    function addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) public onlySuperUser {
+    function addContract(uint256 contractId, address addr, bytes4[] calldata selectors, bytes32 name) external onlySuperUser {
         /// we require that the contract gets assigned an Id that is as specified from outside, 
         /// to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
         require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
@@ -111,7 +116,7 @@ contract Proxy is ProxyStorage {
     * @param deactContractIds The ids of the contracts to be de-activated
     * @param actContractIds The ids of the contracts to be activated
     */
-    function deactivateAndActivateContracts(uint256[] memory deactContractIds, uint256[] memory actContractIds) public onlySuperUser {
+    function deactivateAndActivateContracts(uint256[] calldata deactContractIds, uint256[] calldata actContractIds) external onlySuperUser {
         deactivateContracts(deactContractIds);
         activateContracts(actContractIds);
     }
@@ -163,7 +168,7 @@ contract Proxy is ProxyStorage {
     *      See EIP-1052 for more info
     *      This check is important to avoid delegateCall returning OK when delegating to nowhere
     */
-    function assertPointsToContract(address contractAddress) internal view {
+    function assertPointsToContract(address contractAddress) private view {
         bytes32 emptyContractHash = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
         bytes32 codeHashAtContractAddress;
         assembly { codeHashAtContractAddress := extcodehash(contractAddress) }
@@ -175,8 +180,10 @@ contract Proxy is ProxyStorage {
     * @dev  Standard getters
     */
     function countContracts() external view returns(uint256) { return _contractsInfo.length; }
-    function countAddressesInContract(uint256 contractId) external view returns(uint256) { return _contractsInfo[contractId].selectors.length; }
-    function getContractAddressForSelector(bytes4 selector) public view returns(address) { 
+    function countAddressesInContract(uint256 contractId) external view returns(uint256) { 
+        return _contractsInfo[contractId].selectors.length; 
+    }
+    function getContractAddressForSelector(bytes4 selector) external view returns(address) { 
         return _selectorToContractAddr[selector]; 
     }
     function getContractInfo(uint256 contractId) external view returns (address, bytes32, bytes4[] memory, bool) {
