@@ -26,16 +26,13 @@ type LeagueProcessor struct {
 func NewLeagueProcessor(
 	contracts *contracts.Contracts,
 	ipfsURL string,
-) (*LeagueProcessor, error) {
-	calendarProcessor, err := NewCalendar(contracts)
-	if err != nil {
-		return nil, err
-	}
+) *LeagueProcessor {
+	calendarProcessor := NewCalendar(contracts)
 	return &LeagueProcessor{
 		contracts,
 		calendarProcessor,
 		ipfsURL,
-	}, nil
+	}
 }
 
 func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {

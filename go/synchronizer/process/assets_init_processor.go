@@ -14,12 +14,10 @@ type AssetsInitProcessor struct {
 	contracts *contracts.Contracts
 }
 
-func NewAssetsInitProcessor(
-	contracts *contracts.Contracts,
-) (*AssetsInitProcessor, error) {
+func NewAssetsInitProcessor(contracts *contracts.Contracts) *AssetsInitProcessor {
 	return &AssetsInitProcessor{
 		contracts,
-	}, nil
+	}
 }
 
 func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit) error {
