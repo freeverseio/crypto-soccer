@@ -2,21 +2,24 @@ pragma solidity >= 0.6.3;
 
 import "./UpdatesBase.sol";
 
- /**
- * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
- */
+/**
+ @title Manages Updates and Challenges game
+ @author Freeverse.io, www.freeverse.io
+ @dev There are therefore "Two Markets", one operated in Crypto and one in Fiat.
+*/
+
 contract Updates is UpdatesBase {
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint256 verse, uint8 timeZone, bytes32 root, uint256 submissionTime);
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
 
-    function setStakersAddress(address payable addr) public onlySuperUser {
+    function setStakersAddress(address payable addr) external onlySuperUser {
         _stakers = Stakers(addr);
     }
 
-    function setChallengeTime(uint256 newTime) public onlyCOO { _challengeTime = newTime; }
+    function setChallengeTime(uint256 newTime) external onlyCOO { _challengeTime = newTime; }
 
-    function initUpdates() public onlyCOO {
+    function initUpdates() external onlyCOO {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
         /// the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         /// that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
@@ -35,13 +38,17 @@ contract Updates is UpdatesBase {
         }
         firstVerseTimeStamp = nextVerseTimestamp;
     }
- 
-    function _incrementVerse() private {
-        currentVerse += 1;
-        nextVerseTimestamp += SECS_BETWEEN_VERSES;
-    }
-    
-    function submitActionsRoot(bytes32 actionsRoot, bytes32 activeTeamsPerCountryRoot, bytes32 orgMapRoot, uint8 levelVerifiableByBC, string calldata ipfsCid) external onlyRelay {
+
+    function submitActionsRoot(
+        bytes32 actionsRoot, 
+        bytes32 activeTeamsPerCountryRoot, 
+        bytes32 orgMapRoot, 
+        uint8 levelVerifiableByBC, 
+        string calldata ipfsCid
+    ) 
+        external 
+        onlyRelay 
+    {
         require(now > nextVerseTimestamp, "too early to accept actions root");
         /// make sure the last verse is settled
         (uint8 tz,,) = prevTimeZoneToUpdate();
@@ -129,5 +136,11 @@ contract Updates is UpdatesBase {
         _leafsInLeague          = leafsInLeague;
         _levelsInLastChallenge  = levelsInLastChallenge;
     }
+    
+    function _incrementVerse() private {
+        currentVerse += 1;
+        nextVerseTimestamp += SECS_BETWEEN_VERSES;
+    }
+    
     
 }
