@@ -4,9 +4,8 @@ import "./Storage.sol";
 import "../encoders/EncodingIDs.sol";
 import "../encoders/EncodingSkillsGetters.sol";
 /**
- * @title Entry point for changing ownership of assets, and managing bids and auctions.
- */
-
+ @title Library of View/Pure functions to needed by game assets and market
+*/
 contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     
     event TeamTransfer(uint256 teamId, address to);

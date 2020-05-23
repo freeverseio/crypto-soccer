@@ -2,9 +2,6 @@ pragma solidity >= 0.6.3;
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */
-import "../encoders/EncodingSkills.sol";
-import "../encoders/EncodingSkillsGetters.sol";
-import "../encoders/EncodingSkillsSetters.sol";
 import "../storage/AssetsView.sol";
 
 contract Privileged is AssetsView {

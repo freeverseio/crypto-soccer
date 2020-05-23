@@ -1,7 +1,6 @@
 pragma solidity >= 0.6.3;
 
 import "../storage/Assets.sol";
-import "./Engine.sol";
 import "./SortIdxs.sol";
 import "../encoders/EncodingSkillsGetters.sol";
 import "../encoders/EncodingIDs.sol";

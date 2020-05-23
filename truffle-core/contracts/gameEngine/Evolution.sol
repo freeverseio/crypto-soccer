@@ -1,6 +1,5 @@
 pragma solidity >= 0.6.3;
 
-import "../storage/Assets.sol";
 import "./EngineLib.sol";
 import "../encoders/EncodingMatchLog.sol";
 import "./Engine.sol";

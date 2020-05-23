@@ -3,9 +3,10 @@ pragma solidity >= 0.6.3;
 import "../storage/AssetsView.sol";
 
 /**
- * @title Creation of all game assets via creation of timezones, countries and divisions
- * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
- */
+ @title Creation of all game assets via creation of timezones, countries and divisions
+ @dev All functions in this file modify storage. All view/pure funcions are inherited from AssetsView.
+ @dev Timezones range from 1 to 24, with timeZone = 0 being null.
+*/
 
 contract Assets is AssetsView {
 

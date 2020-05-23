@@ -1,6 +1,5 @@
 pragma solidity >= 0.6.3;
 
-import "../encoders/EncodingSkills.sol";
 import "../encoders/EncodingTacticsBase1.sol";
 import "./EngineLib.sol";
 import "./SortValues.sol";

@@ -7,15 +7,13 @@ import "./ProxyStorage.sol";
 */
 contract Proxy is ProxyStorage {
 
+    address constant private NULL_ADDR  = address(0);
+    address constant private PROXY_DUMMY_ADDR = address(1);
+    uint256 constant private FWD_GAS_LIMIT = 10000;  // TODO: is this future-proof? shall we have it re-settable?
+
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
     event ContractsActivated(uint256[] contractIds, uint256 time);
     event ContractsDeactivated(uint256[] contractIds, uint256 time);
-
-    address constant private NULL_ADDR  = address(0);
-    address constant private PROXY_DUMMY_ADDR = address(1);
-
-    // TODO: is this future-proof? shall we have it re-settable?
-    uint256 constant private FWD_GAS_LIMIT = 10000; 
 
     /**
     * @dev Sets CompanyOwner and SuperUser
