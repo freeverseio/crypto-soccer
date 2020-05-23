@@ -101,6 +101,7 @@ module.exports = function (deployer, network, accounts) {
 
 
     namesAndAddresses = [
+      ["DIRECTORY", directory.address],
       ["ASSETS", assets.address],
       ["MARKET", market.address],
       ["ENGINE", engine.address],
@@ -119,7 +120,7 @@ module.exports = function (deployer, network, accounts) {
       ["PROXY", proxy.address],
       ["CHALLENGES", challenges.address],
       ["MARKETCRYPTO", marketCrypto.address],
-      ["STAKERS", stakers.address]
+      ["STAKERS", stakers.address],
     ]
 
     // Build arrays "names" and "addresses" and store in Directory contract
