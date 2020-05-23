@@ -79,7 +79,8 @@ contract('Updates', (accounts) => {
         await updates.setChallengeTime(60, {from: owners.COO}).should.be.fulfilled;
         stakers = await deployAndConfigureStakers(Stakers, updates, defaultSetup);
         await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
-
+        await stakers.setGameOwner(updates.address, {from:owners.COO}).should.be.fulfilled;
+        
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
         await updates.initUpdates({from: owners.COO}).should.be.fulfilled;
@@ -288,6 +289,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = -10);
         await timeTravel.advanceTime(20);
         const cif = "ciao2";
+
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
