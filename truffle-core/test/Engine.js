@@ -147,7 +147,7 @@ contract('Engine', (accounts) => {
         depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
-        await assets.init({from: owners.COO}).should.be.fulfilled;
+        await assets.initTZs({from: owners.COO}).should.be.fulfilled;
 
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 

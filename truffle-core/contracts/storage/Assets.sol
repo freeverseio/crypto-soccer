@@ -28,10 +28,10 @@ contract Assets is AssetsView {
     function setRelay(address addr) external onlySuperUser { _relay = addr; }
    
 
-    //// Extenernal Functions
+    /// External Functions
 
     /// Inits all 24 timezones, each with one country, each with one division
-    function init() external onlyCOO {
+    function initTZs() external onlyCOO {
         require(gameDeployDay == 0, "cannot initialize twice");
         gameDeployDay = secsToDays(now);
         for (uint8 tz = 1; tz < 25; tz++) {
@@ -52,8 +52,16 @@ contract Assets is AssetsView {
 
     function addCountryManually(uint8 tz) external onlyCOO { _addCountry(tz); }
 
+    /// this function will crash if it cannot handle all transfers in one single TX
+    /// it is the responsibility of the caller to ensure that the arrays match correctly
+    function transferFirstBotsToAddresses(uint8[] calldata tz, uint256[] calldata countryIdxInTZ, address[] calldata addr) external onlyRelay {
+        for (uint256 i = 0; i < tz.length; i++) {
+            transferFirstBotToAddr(tz[i], countryIdxInTZ[i], addr[i]); 
+        }            
+    }
 
-    /// VIEW and PURE
+    // Private Functions
+
     function _initTimeZone(uint8 tz) private {
         _orgMapRoot[tz][0] = INIT_ORGMAP_HASH;
         _addCountry(tz);
@@ -77,13 +85,6 @@ contract Assets is AssetsView {
     }
 
 
-    /// this function will crash if it cannot handle all transfers in one single TX
-    /// it is the responsibility of the caller to ensure that the arrays match correctly
-    function transferFirstBotsToAddresses(uint8[] calldata tz, uint256[] calldata countryIdxInTZ, address[] calldata addr) external onlyRelay {
-        for (uint256 i = 0; i < tz.length; i++) {
-            transferFirstBotToAddr(tz[i], countryIdxInTZ[i], addr[i]); 
-        }            
-    }
 
     /// Entry point for new users: acquiring a bot team
     function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyRelay {

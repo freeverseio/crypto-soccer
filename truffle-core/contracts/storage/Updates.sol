@@ -20,7 +20,7 @@ contract Updates is UpdatesBase {
         require(timeZoneForRound1 == 0, "cannot initialize updates twice");
         /// the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         /// that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
-        /// the call to the contract init() function.
+        /// the call to the contract initTZs() function.
         /// TZ = 1 => starts at 1:00... TZ = 23 => starts at 23:00, TZ = 24, starts at 0:00
         uint256 secsOfDay   = now % (3600 * 24);
         uint256 hour        = secsOfDay / 3600;  /// 0, ..., 23
