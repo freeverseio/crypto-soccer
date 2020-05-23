@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
-import { Menu, Icon, Header } from 'semantic-ui-react'
+import { Menu, Icon } from 'semantic-ui-react'
 
 class TopBar extends Component {
     render() {
-        const { url } = this.props;
         const location = this.props.location.pathname;
 
         return (
