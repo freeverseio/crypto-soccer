@@ -1,14 +1,14 @@
 pragma solidity >= 0.6.3;
 
-import "./Assets.sol";
+import "../storage/Assets.sol";
 import "./EngineLib.sol";
-import "./EncodingMatchLog.sol";
+import "../encoders/EncodingMatchLog.sol";
 import "./Engine.sol";
-import "./EncodingTPAssignment.sol";
-import "./EncodingSkillsSetters.sol";
-import "./EncodingTacticsPart1.sol";
+import "../encoders/EncodingTPAssignment.sol";
+import "../encoders/EncodingSkillsSetters.sol";
+import "../encoders/EncodingTacticsBase1.sol";
 
-contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsPart1 {
+contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsBase1 {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
 
     // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;

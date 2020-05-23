@@ -1,6 +1,6 @@
 pragma solidity >= 0.6.3;
 
-import "./Constants.sol";
+import "../storage/Constants.sol";
 
 /**
  * @title Constants used in the project

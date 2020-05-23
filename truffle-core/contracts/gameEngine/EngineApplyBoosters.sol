@@ -1,8 +1,8 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingTactics.sol";
-import "./EncodingSkillsGetters.sol";
-import "./EncodingSkillsSetters.sol";
+import "../encoders/EncodingTactics.sol";
+import "../encoders/EncodingSkillsGetters.sol";
+import "../encoders/EncodingSkillsSetters.sol";
 
 contract EngineApplyBoosters is EncodingSkillsSetters, EncodingSkillsGetters, EncodingTactics  {
 

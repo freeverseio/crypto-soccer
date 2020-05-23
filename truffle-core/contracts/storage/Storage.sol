@@ -1,7 +1,7 @@
 pragma solidity >= 0.6.3;
 
 import "./ProxyStorage.sol";
-import "./Constants.sol";
+import "../storage/Constants.sol";
 import "./Stakers.sol";
 
 /**

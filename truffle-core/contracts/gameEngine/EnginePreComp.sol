@@ -1,12 +1,12 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingSkills.sol";
-import "./EncodingTacticsPart1.sol";
+import "../encoders/EncodingSkills.sol";
+import "../encoders/EncodingTacticsBase1.sol";
 import "./EngineLib.sol";
 import "./SortValues.sol";
-import "./EncodingMatchLogPart1.sol";
+import "../encoders/EncodingMatchLogBase1.sol";
 
-contract EnginePreComp is EngineLib, EncodingMatchLogPart1, EncodingTacticsPart1, SortValues {
+contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1, SortValues {
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     // Skills: shoot, speed, pass, defence, endurance
     uint8 constant public SK_SHO = 0;

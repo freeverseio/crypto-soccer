@@ -1,7 +1,7 @@
 pragma solidity >= 0.6.3;
 
-import "./EncodingSkills.sol";
-import "./EncodingIDs.sol";
+import "../encoders/EncodingSkills.sol";
+import "../encoders/EncodingIDs.sol";
 import "./SortIdxsAnySize.sol";
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions

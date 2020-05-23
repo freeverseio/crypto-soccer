@@ -1,10 +1,10 @@
 pragma solidity >= 0.6.3;
-import "./EncodingMatchLogPart4.sol";
+import "./EncodingMatchLogBase4.sol";
 /**
  * @title Library of functions to serialize matchLogs
  */
 
-contract EncodingMatchLogPart3 is EncodingMatchLogPart4 {
+contract EncodingMatchLogBase3 is EncodingMatchLogBase4 {
 
     function addAssister(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
         return log | (uint256(player) << (4 + 4 * pos));
