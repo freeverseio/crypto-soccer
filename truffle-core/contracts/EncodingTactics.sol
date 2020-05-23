@@ -1,4 +1,4 @@
-pragma solidity >=0.5.12 <=0.6.3;
+pragma solidity >= 0.6.3;
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */

@@ -3,7 +3,7 @@ mkdir -p tmp;
 rm -rf tmp2;
 mkdir -p tmp2;
 
-firstLine="pragma solidity >=0.5.12 <=0.6.3;"
+firstLine="pragma solidity >= 0.6.3;"
 for f in *sol; 
 do
     echo ${f};
