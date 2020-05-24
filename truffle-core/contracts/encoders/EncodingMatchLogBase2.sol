@@ -28,7 +28,7 @@ contract EncodingMatchLogBase2  {
         return ((log >> 250) & 1) == 1;
     }
     
-    // recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+    /// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
     function getHalfTimeSubs(uint256 log, uint8 pos)  public pure returns (uint8) {
         return uint8((log >> (185 + 5 * pos)) & 31);
     }
@@ -50,7 +50,7 @@ contract EncodingMatchLogBase2  {
     }
     
     function getTeamSumSkills(uint256 log) public pure returns (uint256) {
-        return (log >> 214) & 16777215; // 2^24 - 1
+        return (log >> 214) & 16777215; /// 2^24 - 1
     }
     
     function addTrainingPoints(uint256 log, uint256 points)  public pure returns (uint256) {
@@ -58,7 +58,7 @@ contract EncodingMatchLogBase2  {
     }
 
     function getTrainingPoints(uint256 log)  public pure returns (uint16) {
-        return  uint16((log >> 238) & 4095); // 2^12-1
+        return  uint16((log >> 238) & 4095); /// 2^12-1
     }
     
 }

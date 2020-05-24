@@ -21,11 +21,11 @@ contract UpdatesView is AssetsLib {
         return _lastActionsSubmissionTime[tz];
     }
         
-    // each day has 24 hours, each with 4 verses => 96 verses per day.
-    // day = 0,..13
-    // turnInDay = 0, 1, 2, 3
-    // so for each TZ, we go from (day, turn) = (0, 0) ... (13,3) => a total of 14*4 = 56 turns per tz
-    // from these, all map easily to timeZones
+    /// each day has 24 hours, each with 4 verses => 96 verses per day.
+    /// day = 0,..13
+    /// turnInDay = 0, 1, 2, 3
+    /// so for each TZ, we go from (day, turn) = (0, 0) ... (13,3) => a total of 14*4 = 56 turns per tz
+    /// from these, all map easily to timeZones
     function nextTimeZoneToUpdate() public view returns (uint8 tz, uint8 day, uint8 turnInDay) {
         return _timeZoneToUpdatePure(currentVerse, timeZoneForRound1);
     }
@@ -38,18 +38,18 @@ contract UpdatesView is AssetsLib {
     }
 
 
-    // tz0  : v = 0, V_DAY, 2 * V_DAY...
-    // tzN  : v = 4N + V_DAY * day,  day = 0,...6
-    // tzN  : v = 4N + V_DAY * day,  day = 0,...6
-    //  => tzN - tz0 = (v - V_DAY*day)
-    //  => 4 tzN = 4 tz0 + v % VERSES_PER_DAY
-    // last : v = V_DAY + DELTA + V_DAY * 6 
-    // Imagine 2 tzs:
-    // 0:00 - tz0; 0:30 - NUL; 1:00 - tz1; 1:30 - tz0; 0:00 - tz0; 0:30 - tz1;
-    // So the last
+    /// tz0  : v = 0, V_DAY, 2 * V_DAY...
+    /// tzN  : v = 4N + V_DAY * day,  day = 0,...6
+    /// tzN  : v = 4N + V_DAY * day,  day = 0,...6
+    ///  => tzN - tz0 = (v - V_DAY*day)
+    ///  => 4 tzN = 4 tz0 + v % VERSES_PER_DAY
+    /// last : v = V_DAY + DELTA + V_DAY * 6 
+    /// Imagine 2 tzs:
+    /// 0:00 - tz0; 0:30 - NUL; 1:00 - tz1; 1:30 - tz0; 0:00 - tz0; 0:30 - tz1;
+    /// So the last
     function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timezone, uint8 day, uint8 turnInDay) {
-        // if currentVerse = 0, we should be updating timeZoneForRound1
-        // recall that timeZones range from 1...24 (not from 0...24)
+        /// if currentVerse = 0, we should be updating timeZoneForRound1
+        /// recall that timeZones range from 1...24 (not from 0...24)
         turnInDay = uint8(verse % 4);
         uint256 delta = 9 * 4 + turnInDay;
         uint256 tz;
@@ -112,19 +112,19 @@ contract UpdatesView is AssetsLib {
         isSettled = nowTime > lastUpdate + (nJumps + 1) * challengeTime;
     }
     
-    // tz(n0)   : 11.30 = 0
-    //          : 21.00 = 11.30 + 9.30h
-    // tz(n)    : 11.30 + (n-n0)*1h
-    //          : 21.00 + (n-n0)*1h
-    //          : 11.30 + (n-n0)*1h + 24h * day (day = mDay/2)
-    //              = 11.30 + ( deltaN + 12 * mDay ) * 1h
-    //          : 21.00 + (n-n0) + 24h * day (day = (mDay-1)/2)
-    //              = 11.30 + (9.5 + deltaN + 12 * (mDay-1) ) * 1h
-    // add round * T_round = round * 7 * 24 * 3600 = round * DAYS_PER_ROUND * 24 * 1h
-    // 
-    // if even: 11.30 + ( deltaN + 12 * mDay + 24 * round * DAYS_PER_ROUND ) * 1h
-    // if odd:  11.30 + (9.5 + deltaN + 12 * (mDay-1) + 24 * round * DAYS_PER_ROUND ) * 1h
-    //        = 11.30 + (19 + 2*deltaN + 24 * (mDay-1) + 48 * round * DAYS_PER_ROUND ) * (1h/2)
+    /// tz(n0)   : 11.30 = 0
+    ///          : 21.00 = 11.30 + 9.30h
+    /// tz(n)    : 11.30 + (n-n0)*1h
+    ///          : 21.00 + (n-n0)*1h
+    ///          : 11.30 + (n-n0)*1h + 24h * day (day = mDay/2)
+    ///              = 11.30 + ( deltaN + 12 * mDay ) * 1h
+    ///          : 21.00 + (n-n0) + 24h * day (day = (mDay-1)/2)
+    ///              = 11.30 + (9.5 + deltaN + 12 * (mDay-1) ) * 1h
+    /// add round * T_round = round * 7 * 24 * 3600 = round * DAYS_PER_ROUND * 24 * 1h
+    /// 
+    /// if even: 11.30 + ( deltaN + 12 * mDay + 24 * round * DAYS_PER_ROUND ) * 1h
+    /// if odd:  11.30 + (9.5 + deltaN + 12 * (mDay-1) + 24 * round * DAYS_PER_ROUND ) * 1h
+    ///        = 11.30 + (19 + 2*deltaN + 24 * (mDay-1) + 48 * round * DAYS_PER_ROUND ) * (1h/2)
     
     function getMatchUTC(uint8 tz, uint256 round, uint256 matchDay) public view returns(uint256 timeUTC) {
         require(tz > 0 && tz < 25, "timezone out of range");

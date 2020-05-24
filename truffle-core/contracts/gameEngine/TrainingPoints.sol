@@ -11,12 +11,12 @@ import "../encoders/EncodingTacticsBase2.sol";
 
 contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsBase2 {
     
-    uint256 constant internal YEARS_30  = 946080000; // 30 years in sec
-    uint256 constant internal YEARS_35h = 1119528000; // 35.5 years in sec
-    uint256 constant internal YEARS_1   = 31536000; // 1 year in sec
-    uint256 constant internal YEARS_2   = 63072000; // 2 year in sec
-    uint256 constant internal YEARS_16  = 504576000; // 16 year in sec
-    uint256 constant internal DAYS_1    = 86400; // 1 day in sec
+    uint256 constant internal YEARS_30  = 946080000; /// 30 years in sec
+    uint256 constant internal YEARS_35h = 1119528000; /// 35.5 years in sec
+    uint256 constant internal YEARS_1   = 31536000; /// 1 year in sec
+    uint256 constant internal YEARS_2   = 63072000; /// 2 year in sec
+    uint256 constant internal YEARS_16  = 504576000; /// 16 year in sec
+    uint256 constant internal DAYS_1    = 86400; /// 1 day in sec
 
     Assets private _assets;
 
@@ -26,34 +26,34 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
 
     function computeTrainingPoints(uint256 matchLog0, uint256 matchLog1) public pure returns (uint256, uint256)
     {
-        // +11 point for winning at home, +22 points for winning
-        // away, or in a cup match. 0 points for drawing.
+        /// +11 point for winning at home, +22 points for winning
+        /// away, or in a cup match. 0 points for drawing.
         uint256 nGoals0 = getNGoals(matchLog0);
         uint256 nGoals1 = getNGoals(matchLog1);
         uint256[2] memory points;
         points[0] = POINTS_FOR_HAVING_PLAYED;
         points[1] = POINTS_FOR_HAVING_PLAYED;
 
-        if (getWinner(matchLog0)==0) { // we can get winner from [0] or [1], they are the same   
-            points[0] += (getIsHomeStadium(matchLog0) ? 11 : 22); // we can get homeStadium from [0] or [1], they are the same   
+        if (getWinner(matchLog0)==0) { /// we can get winner from [0] or [1], they are the same   
+            points[0] += (getIsHomeStadium(matchLog0) ? 11 : 22); /// we can get homeStadium from [0] or [1], they are the same   
         } else if (getWinner(matchLog0)==1) {
             points[1] += (getIsHomeStadium(matchLog0) ? 22 : 22);    
         }
         
-        // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
+        /// +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
         points[0] += pointsPerWhoScoredGoalsAndAssists(matchLog0, nGoals0);
         points[1] += pointsPerWhoScoredGoalsAndAssists(matchLog1, nGoals1);
 
-        // if clean-sheet (opponent did not score):
-        // +2 per half played by GK/D, +1 per half played for Mids and Atts
+        /// if clean-sheet (opponent did not score):
+        /// +2 per half played by GK/D, +1 per half played for Mids and Atts
         if (nGoals1 == 0) points[0] += pointsPerCleanSheet(matchLog0);
         if (nGoals0 == 0) points[1] += pointsPerCleanSheet(matchLog1);
 
         uint256[2] memory pointsNeg;
-        // -1 for each opponent goal
+        /// -1 for each opponent goal
         pointsNeg[0] = nGoals1;
         pointsNeg[1] = nGoals0;
-        // -3 for redCards, -1 for yellows
+        /// -3 for redCards, -1 for yellows
         for (uint8 team = 0; team <2; team++) {
             uint256 thisLog = (team == 0 ? matchLog0 : matchLog1);
             pointsNeg[team] += 
@@ -65,11 +65,11 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
                 +   ((getYellowCard(thisLog, 1, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0);
         }
         
-        // subtract points, keeping them always non-negativre
+        /// subtract points, keeping them always non-negativre
         points[0] = (points[0] > pointsNeg[0]) ? (points[0] - pointsNeg[0]) : 0;
         points[1] = (points[1] > pointsNeg[1]) ? (points[1] - pointsNeg[1]) : 0;
         
-        // +10% for each extra 50 points of lack of balance between teams
+        /// +10% for each extra 50 points of lack of balance between teams
         uint256 teamSumSkills0 = getTeamSumSkills(matchLog0);
         uint256 teamSumSkills1 = getTeamSumSkills(matchLog1);
 
@@ -89,14 +89,14 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         return (matchLog0, matchLog1);
     }
     
-    // if clean-sheet (opponent did not score):
-    // +2 per half played by GK/D, +1 per half played for Mids and Atts
+    /// if clean-sheet (opponent did not score):
+    /// +2 per half played by GK/D, +1 per half played for Mids and Atts
     function pointsPerCleanSheet(uint256 matchLog) public pure returns (uint256) {
-        // formula: (note that for a given half: 1 + nDef + nMid + nAtt = nTot)
-        //      pointsPerHalf   = 2 (for GK) + 2 * nDef + nMid + nAtt 
-        //                      = 2 + 2 * nDef + nTot - nDef - 1 = nTot + 1 + nDef
-        //      note also that by constraint, nTot = 11 in the first half
-        //      pointsPerMatch  = 2 + nTot1 + nTot2 + nDef1 + nDef2 = 13 + nTot2 + nDef1 + nDef2 
+        /// formula: (note that for a given half: 1 + nDef + nMid + nAtt = nTot)
+        ///      pointsPerHalf   = 2 (for GK) + 2 * nDef + nMid + nAtt 
+        ///                      = 2 + 2 * nDef + nTot - nDef - 1 = nTot + 1 + nDef
+        ///      note also that by constraint, nTot = 11 in the first half
+        ///      pointsPerMatch  = 2 + nTot1 + nTot2 + nDef1 + nDef2 = 13 + nTot2 + nDef1 + nDef2 
         return 13   + (getOutOfGameType(matchLog, false) == RED_CARD ? 10 : 11) 
                     +  getNDefs(matchLog, false) + getNDefs(matchLog, true);
     }
@@ -113,14 +113,14 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         }
     }
     
-    // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
+    /// +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
     function pointsPerWhoScoredGoalsAndAssists(uint256 matchLog, uint256 nGoals) public pure returns(uint256 points) {
         for (uint8 goal = 0; goal < nGoals; goal++) {
             uint256 fwdPos = getForwardPos(matchLog, goal);
             if (fwdPos < 2) {points += 6;}
             else if (fwdPos == 2) {points += 5;}
             else {points += 4;}
-            // if assister is different the shooter, it was a true assist
+            /// if assister is different the shooter, it was a true assist
             if (getShooter(matchLog, goal) != getAssister(matchLog, goal)) {points += 3;}
         }
     }
@@ -140,7 +140,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         uint8 specialPlayer; 
         uint16 TP; 
         
-        // even if assignedTPs = 0, players can get older, and use stamina pills to reduce nGamesNonStopping
+        /// even if assignedTPs = 0, players can get older, and use stamina pills to reduce nGamesNonStopping
         if (assignedTPs != 0) {
             (TPperSkill, specialPlayer, TP )= decodeTP(assignedTPs);
             require(earnedTPs == TP, "assignedTPs used an amount of TP that does not match the earned TPs in previous match");
@@ -151,8 +151,8 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         uint16[5] memory singleTPperSkill;
         (uint8[PLAYERS_PER_TEAM_MAX] memory staminas,,) = getItemsData(tactics);
                 
-        // note that if no special player was selected => specialPlayer = PLAYERS_PER_TEAM_MAX 
-        // ==> it will never be processed in this loop
+        /// note that if no special player was selected => specialPlayer = PLAYERS_PER_TEAM_MAX 
+        /// ==> it will never be processed in this loop
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             uint256 thisSkills = teamSkills[p];
             if (thisSkills == 0) continue; 
@@ -170,15 +170,15 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         return teamSkills;
     }
     
-    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*f), where f = 1 for slow, 16 for fast
-    // If age is in days, define Yd = year2days
-    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Yd - 3 * ageDays + 48 Yd)/ (6 Yd)] - max(0,(ageDays-31)*f/Yd)
-    // If age is in secs, define Ys = year2secs
-    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Ys - 3 * ageInSecs + 48 Ys)/ (6 Ys)] - max(0,(ageInSecs-31)*f/Ys)
-    // skill(i)     = max(0, skill(i) + deltaS(i))
-    // deltaS(i)    = max[ TP(i), TP(i) * numerator / denominator] - max(0,(ageInSecs-31)*f/Ys)
-    // skill(i)     = max(0, skill(i) + deltaS(i))
-    // shoot, speed, pass, defence, endurance
+    /// deltaS(i)    = max[ TP(i), TP(i) * (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*f), where f = 1 for slow, 16 for fast
+    /// If age is in days, define Yd = year2days
+    /// deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Yd - 3 * ageDays + 48 Yd)/ (6 Yd)] - max(0,(ageDays-31)*f/Yd)
+    /// If age is in secs, define Ys = year2secs
+    /// deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Ys - 3 * ageInSecs + 48 Ys)/ (6 Ys)] - max(0,(ageInSecs-31)*f/Ys)
+    /// skill(i)     = max(0, skill(i) + deltaS(i))
+    /// deltaS(i)    = max[ TP(i), TP(i) * numerator / denominator] - max(0,(ageInSecs-31)*f/Ys)
+    /// skill(i)     = max(0, skill(i) + deltaS(i))
+    /// shoot, speed, pass, defence, endurance
     function evolvePlayer(uint256 skills, uint16[5] memory TPperSkill, uint256 matchStartTime) public view returns(uint256) {
         uint256 ageInSecs = INGAMETIME_VS_REALTIME * (matchStartTime - getBirthDay(skills) * DAYS_1); 
         uint256 deltaNeg;
@@ -188,7 +188,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             deltaNeg = (ageInSecs-YEARS_30)/YEARS_1;
         }
         uint256 numerator;
-        if (getPotential(skills) * 252288000 + 1513728000 > 3 * ageInSecs) {  // 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
+        if (getPotential(skills) * 252288000 + 1513728000 > 3 * ageInSecs) {  /// 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
             numerator = (getPotential(skills) * 252288000 + 1513728000 - 3 * ageInSecs);
         } else {
             numerator = 0;
@@ -203,10 +203,10 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         return generateChildIfNeeded(skills, ageInSecs, matchStartTime);
     } 
     
-    // stamina = 0 => do not reduce
-    // stamina = 1 => reduce 2 games
-    // stamina = 2 => reduce 4 games
-    // stamina = 3 => full recovery
+    /// stamina = 0 => do not reduce
+    /// stamina = 1 => reduce 2 games
+    /// stamina = 2 => reduce 4 games
+    /// stamina = 3 => full recovery
     function reduceGamesNonStopping(uint256 skills, uint8 stamina) public pure returns (uint256) {
         require(stamina < 4, "stamina value too large");
         uint8 gamesNonStopping = getGamesNonStopping(skills);
@@ -223,29 +223,29 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     }
 
     function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public view returns (uint256) {
-        if (ageInSecs < 1166832000) { return skills; }   // 1166832000 = 37 * Ys
+        if (ageInSecs < 1166832000) { return skills; }   /// 1166832000 = 37 * Ys
 
-        // 75% chances to lead to a child, 25% to lead to academy player:
+        /// 75% chances to lead to a child, 25% to lead to academy player:
         uint256 dna = uint256(keccak256(abi.encode(skills, ageInSecs)));
         bool isChild = (dna % 4) > 0;
         
-        // Generation syntax: 0, 1, 2, 3... but with +32 if is child, so it can go: 0, 1, 32+2, 32+3, 4, 32+5,...
-        //  - which would mean that 1 was child, 2 was Academy, etc...
-        //  - we will start having uint8 overflow at generation 32 (after 64 years of real gameplay), and even then it'll look like a new player
-        //  - Formula copied directly to avoid stack overflow: uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (isChild ? 0 : 32));
+        /// Generation syntax: 0, 1, 2, 3... but with +32 if is child, so it can go: 0, 1, 32+2, 32+3, 4, 32+5,...
+        ///  - which would mean that 1 was child, 2 was Academy, etc...
+        ///  - we will start having uint8 overflow at generation 32 (after 64 years of real gameplay), and even then it'll look like a new player
+        ///  - Formula copied directly to avoid stack overflow: uint8 generation = uint8((getGeneration(skills) % 32) + 1 + (isChild ? 0 : 32));
 
-        // AGe determination: age is a random between 16 and 18.
-        //  - Formula copied directly to avoid stack overflow: uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1; 
+        /// AGe determination: age is a random between 16 and 18.
+        ///  - Formula copied directly to avoid stack overflow: uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1; 
         ageInSecs = YEARS_16 + (dna % YEARS_2);
 
         (uint32[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(
             dna, 
-            forwardnessToShirtNum(dna, getForwardness(skills)), // ensure they play in the same pos in field:
+            forwardnessToShirtNum(dna, getForwardness(skills)), /// ensure they play in the same pos in field:
             0
         );
-        // Potential determination:
-        //  - if child, ensure potential is potential(father) + 1, otherwise, random
-        //  - this rewards users that keep the same player over many years
+        /// Potential determination:
+        ///  - if child, ensure potential is potential(father) + 1, otherwise, random
+        ///  - this rewards users that keep the same player over many years
         if (isChild && (getPotential(skills) < 9)) {
             birthTraits[IDX_POT] = uint8(getPotential(skills)) + 1;
         } else {
@@ -254,8 +254,8 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
 
         uint256 finalSkills = encodePlayerSkills(
             newSkills, 
-            (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1, // day of Birth, formula above
-            uint8(1 + (getGeneration(skills) % 32) + (isChild ? 0 : 32)), // generation, formula above
+            (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1, /// day of Birth, formula above
+            uint8(1 + (getGeneration(skills) % 32) + (isChild ? 0 : 32)), /// generation, formula above
             getInternalPlayerId(skills), 
             birthTraits, 
             false, false, 0, 0, false, sumSkills

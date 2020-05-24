@@ -78,13 +78,13 @@ contract('Proxy', (accounts) => {
     it('Assets permissions check on full deploy', async () => {
         depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
         assets = depl[1]
-        await assets.init().should.be.rejected;
-        await assets.init({from: COO}).should.be.rejected;
+        await assets.initTZs().should.be.rejected;
+        await assets.initTZs({from: COO}).should.be.rejected;
 
         await assets.setCOO(COO, {from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.fulfilled;
         
-        await assets.init({from: COO}).should.be.fulfilled;
+        await assets.initTZs({from: COO}).should.be.fulfilled;
         await assets.countCountries(tz = 1).should.be.fulfilled;
         tz = 1;
         countryIdxInTZ = 0;
@@ -132,35 +132,35 @@ contract('Proxy', (accounts) => {
         result.toNumber().should.be.equal(2);
     });
 
-    it('call init() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
-        await assets.init({from: COO}).should.be.rejected;
+    it('call initTZs() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
+        await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
 
         // add function (still not enough to call assets):
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
         contractId = 1;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
-        await assets.init({from: COO}).should.be.rejected;
+        await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
         
         // activate function, now, enough to call assets:
         tx1 = await proxy.activateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
-        await assets.init({from: COO}).should.be.rejected;
+        await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.fulfilled;
-        await assets.init({from: COO}).should.be.fulfilled;
+        await assets.initTZs({from: COO}).should.be.fulfilled;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
 
         // test that deactivateContracts destroys all calls to assets functions
         tx1 = await proxy.deactivateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
-        await assets.init().should.be.rejected;
+        await assets.initTZs().should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.rejected;
 
-        // I can re-activate, and, because storage is preserved, I cannot init again, but nCountries is still OK
+        // I can re-activate, and, because storage is preserved, I cannot initTZs again, but nCountries is still OK
         contractId = 2;
         tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
         tx1 = await proxy.activateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
-        await assets.init({from: COO}).should.be.rejected;
+        await assets.initTZs({from: COO}).should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractId).should.be.fulfilled;
@@ -181,7 +181,7 @@ contract('Proxy', (accounts) => {
 
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(2).should.be.fulfilled;
         isActive.should.be.equal(false);
-        await assets.init({from: COO}).should.be.rejected;
+        await assets.initTZs({from: COO}).should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
     });

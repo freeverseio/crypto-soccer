@@ -9,7 +9,7 @@ contract EngineApplyBoosters is EncodingSkillsSetters, EncodingSkillsGetters, En
     uint8 constant private PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public N_SKILLS = 5;
 
-    // skills order: shoot, speed, pass, defence, endurance
+    /// skills order: shoot, speed, pass, defence, endurance
     function applyItemBoost(uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills, uint256 tactics) public pure returns(uint256[PLAYERS_PER_TEAM_MAX] memory) {
         ( , uint16 itemId, uint32 boost) = getItemsData(tactics);
         if (itemId == 0) return linedUpSkills;

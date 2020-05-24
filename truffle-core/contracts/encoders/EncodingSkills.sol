@@ -48,7 +48,7 @@ contract EncodingSkills is Constants {
         pure
         returns (uint256 encoded)
     {
-        // checks:
+        /// checks:
         require(birthTraits[IDX_POT] < 10, "potential out of bound");
         require(birthTraits[IDX_FWD] < 6, "forwardness out of bound");
         require(birthTraits[IDX_LEF] < 8, "lefitshness out of bound");
@@ -58,7 +58,7 @@ contract EncodingSkills is Constants {
         require(dayOfBirth < 2**16, "dayOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**43, "playerId out of bound");
 
-        // start encoding:
+        /// start encoding:
         for (uint16 sk = 0; sk < N_SKILLS; sk++) {
             encoded |= uint256(skills[sk]) << 20 * sk;
         }

@@ -34,8 +34,8 @@ contract EncodingMatchLogBase1 is EncodingMatchLogBase4{
 
     function addOutOfGame(uint256 log, uint8 player, uint8 round, uint8 typeOfOutOfGame, bool is2ndHalf)  public pure returns (uint256) {
         uint8 offset = is2ndHalf ? 155 : 135;
-        // in total, we will write 4b + 4b + 2b = 10b
-        log &= ~(uint256(1023) << offset); // note: 2**10-1 = 1023
+        /// in total, we will write 4b + 4b + 2b = 10b
+        log &= ~(uint256(1023) << offset); /// note: 2**10-1 = 1023
         log |= (uint256(player) << offset);
         log |= (uint256(round) << offset+4);
         return log | (uint256(typeOfOutOfGame) << offset+8);
@@ -59,7 +59,7 @@ contract EncodingMatchLogBase1 is EncodingMatchLogBase4{
         return ((log >> (153 + posInHaf)) & 1) == 1;
     }
     
-    // recall that 0 means no subs, and we store here lineUp[p]+1 (where lineUp[p] = player shirt in the 25 that was substituted)
+    /// recall that 0 means no subs, and we store here lineUp[p]+1 (where lineUp[p] = player shirt in the 25 that was substituted)
     function addHalfTimeSubs(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
         return log | (uint256(player) << (185 + 5 * pos));
     }

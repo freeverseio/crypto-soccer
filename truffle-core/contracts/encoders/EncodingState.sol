@@ -68,7 +68,7 @@ contract EncodingState {
 
     function setLastSaleBlock(uint256 state, uint256 lastSaleBlock) public pure returns (uint256) {
         require(lastSaleBlock <= TWO_TO_35_MINUS_ONE, "lastSaleBlock out of bound");
-        state &= ~(TWO_TO_35_MINUS_ONE << 91); // 256 - 43 - 43 - 5 - 43 - 35
+        state &= ~(TWO_TO_35_MINUS_ONE << 91); /// 256 - 43 - 43 - 5 - 43 - 35
         state |= (lastSaleBlock << 91);
         return state;
     }

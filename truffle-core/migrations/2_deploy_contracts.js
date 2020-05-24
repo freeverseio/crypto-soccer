@@ -77,7 +77,7 @@ module.exports = function (deployer, network, accounts) {
         console.log("Init single timezone", singleTimezone);
         await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
       } else {
-        await assets.init().should.be.fulfilled;
+        await assets.initTZs().should.be.fulfilled;
       }
 
       // Prepare the final ownerships

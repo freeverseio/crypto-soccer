@@ -51,7 +51,7 @@ contract('Assets', (accounts) => {
         [proxy, assets, market, updates] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        initTx = await assets.init({from: owners.COO}).should.be.fulfilled;
+        initTx = await assets.initTZs({from: owners.COO}).should.be.fulfilled;
         
         sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
         buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
@@ -101,7 +101,7 @@ contract('Assets', (accounts) => {
         result.toNumber().should.be.equal(sk[0]);        
     });
 
-   it('check DivisionCreation event on init', async () => {
+   it('check DivisionCreation event on initTZs', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
             timezone++;
@@ -123,10 +123,10 @@ contract('Assets', (accounts) => {
     
     
     it('check cannot initialize contract twice', async () => {
-        await assets.init().should.be.rejected;
+        await assets.initTZs().should.be.rejected;
     });
 
-    it('emit event upon init of the Assets contract', async () => {
+    it('emit event upon initTZs of the Assets contract', async () => {
         past = await assets.getPastEvents( 'AssetsInit', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
         past[0].args.creatorAddr.should.be.equal(owners.superuser);
     });
@@ -159,7 +159,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START - 1;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(true);            
@@ -171,7 +171,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(false);            
@@ -183,7 +183,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 1;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(false);
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;

@@ -3,8 +3,11 @@ pragma solidity >= 0.6.3;
 import "./Market.sol";
 
 /**
- * @title Auctions operated in cryptocurrency, without anyone's permission (other than sellers and buyers)
- */
+ @title Auctions operated in cryptocurrency, without anyone's permission (other than sellers and buyers)
+ @author Freeverse.io, www.freeverse.io
+ @dev There are therefore "Two Markets", one operated in Crypto and one in Fiat.
+ @dev Where necessary we make functions explicit, e.g. isPlayerFrozenInAnyMarket.
+*/
  
 contract MarketCrypto {
 
@@ -14,27 +17,23 @@ contract MarketCrypto {
     event BidForPlayerCrypto(uint256 playerId, uint256 bidderTeamId, uint256 totalAmount);
     event AssetWentToNewOwner(uint256 playerId, uint256 auctionId);
 
-    address public _owner;
-    address public _proposedOwner;
-    address public _COO;
-    
-    uint32 internal _auctionDuration = 24 hours; 
-    uint256 internal _minimumBidIncrement = 0.5 ether; // bid for at least this amount of XDAI, or increase previous by this amount
+    uint32 public _auctionDuration = 24 hours; 
+    uint256 public _minimumBidIncrement = 0.5 ether; /// bid for at least this amount of XDAI, or increase previous by this amount
     
     Market private _market;
 
-    mapping (uint256 => uint256) internal _playerIdToAuctionId;
+    /// an auction exists: if id < nAcutions, or if startingPrice > 0
+    /// an auction had at least one bid: if highestBid > 0
     uint256 _nAuctions;
-    // an auction exists if id < nAcutions, or if startingPrice > 0
-    // an auction had at least one bid if highestBid > 0
+    mapping (uint256 => uint256) private _playerIdToAuctionId;
     mapping (uint256 => uint256) private _startingPrice;
-    mapping (uint256 => uint256) private  _highestBid;
-    mapping (uint256 => uint256) private  _validUntil;
-    mapping (uint256 => address) private  _seller;
-    mapping (uint256 => uint256) private  _sellerTeamId;
-    mapping (uint256 => address) private  _highestBidder;
-    mapping (uint256 => uint256) private  _teamIdHighestBidder;
-    mapping (uint256 => bool) private  _assetWentToNewOwner;
+    mapping (uint256 => uint256) private _highestBid;
+    mapping (uint256 => uint256) private _validUntil;
+    mapping (uint256 => address) private _seller;
+    mapping (uint256 => uint256) private _sellerTeamId;
+    mapping (uint256 => address) private _highestBidder;
+    mapping (uint256 => uint256) private _teamIdHighestBidder;
+    mapping (uint256 => bool) private _assetWentToNewOwner;
     mapping (uint256 => mapping(address => uint256)) private _balance;
 
     constructor(address proxyAddr) public {
@@ -42,7 +41,7 @@ contract MarketCrypto {
     }
 
     modifier onlyCOO {
-        require( _market.isCOO(msg.sender), "Only COO can call this function.");
+        require( _market.COO() == msg.sender, "Only COO can call this function.");
             _;
     }
     
@@ -58,38 +57,21 @@ contract MarketCrypto {
         _minimumBidIncrement = newMinimum;
     }
 
-    // an asset is ready to be put for sale again if it either has never been assigned to an auction or, in case it has:
-    //  - if the auction never received a bid
-    //  - if the auction received bids, and the new owner finally executed the "receive asset" function.
-    // Note that the difference with isPlayerFrozenCrypto is that isAuctionSettled is a bit more restrictive, and triggered
-    // as soon as asset is putForSale. In contrast, isPlayerFrozenCrypto on triggers when first bid arrives.
-    function isAuctionSettled(uint256 auctionId) public view returns(bool) {
-        if (auctionId == 0) return true;
-        if (_assetWentToNewOwner[auctionId]) return true;
-        // check if it was put for sale but experied without bids
-        return (_highestBid[auctionId] == 0) && (_validUntil[auctionId] < now);
-    } 
-
-    // this will check also for local crypto freeze of team when feature is added
-    function isTeamFrozenInAnyMarket(uint256 teamId) public view returns (bool) {
-        return _market.isTeamFrozen(teamId);
-    }
-
     function putPlayerForSale(uint256 playerId, uint256 startingPrice) external {
-        // TODO: cheaper if we return the 4 needed data in just 1 call
+        /// TODO: it will be cheaper if we add a function to return the 4 needed data in just 1 call
         uint256 currentTeamId  = _market.getCurrentTeamIdFromPlayerId(playerId);
         address currentOwner   = _market.getOwnerTeam(currentTeamId);
         uint256 prevAuctionId  = _playerIdToAuctionId[playerId];
         bool OK = (
-            // check asset is not already for sale, or if data exists, that the auction has been fully settled
+            /// check asset is not already for sale, or if data exists, that the auction has been fully settled
             isAuctionSettled(prevAuctionId) &&
-            // check player is not already frozen
+            /// check player is not already frozen
             !_market.isPlayerFrozenInAnyMarket(playerId) &&  
-            // check that the team it belongs to is not already frozen
+            /// check that the team it belongs to is not already frozen
             !_market.isTeamFrozen(currentTeamId) &&
-            // check asset is owned by legit address
+            /// check asset is owned by legit address
             (currentOwner != NULL_ADDR) && 
-            // check asset is owned by sender of this TX
+            /// check asset is owned by sender of this TX
             (currentOwner == msg.sender)   
         );
         require(OK, "conditions to putPlayerForSale not met");
@@ -103,9 +85,8 @@ contract MarketCrypto {
         emit PlayerPutForSaleCrypto(playerId, startingPrice);
     }
     
-    // TODO: encode isForeignMarket so that we cannot complete the auction ourselves
     function bidForPlayer(uint256 playerId, uint256 bidderTeamId) external payable {
-        // TODO: save gas by calling 1 once and returning all data in 1 call
+        /// TODO: save gas by calling 1 once and returning all data in 1 call
         require(msg.sender != NULL_ADDR, "sender cannot be the null address");
         require(msg.sender != _seller[playerId], "seller is not allowed to bid for its own assets");
         
@@ -121,7 +102,7 @@ contract MarketCrypto {
 
         uint256 bidAmount = _balance[auctionId][msg.sender] + msg.value;
 
-        // if this is the first bid, freeze the asset from every market
+        /// if this is the first bid, freeze the asset, preventing sale in any other market
         if (!_market.isPlayerFrozenInAnyMarket(playerId)) {
             require (bidAmount >= _startingPrice[auctionId], "bid did not increment the previous bid above the minimum allowed");
             uint256 currentTeamId  = _market.getCurrentTeamIdFromPlayerId(playerId);
@@ -138,18 +119,18 @@ contract MarketCrypto {
         emit BidForPlayerCrypto(playerId, bidderTeamId, bidAmount);
     }
 
-    // Note that this function can be executed by anyone. Of course, only the highest bidder is expected to 
-    // be the interest party in executing it, but we allow anyone to operate it, since this was the intention of the auction.
+    /// Note that this function can be executed by anyone. Of course, only the highest bidder is expected to 
+    /// be the interest party in executing it, but we allow anyone to operate it, since this was the intention of the auction.
     function withdraw(uint256 auctionId) external {
         require(msg.sender != _highestBidder[auctionId], "higher bidder can never withdraw");
         uint256 amount;
         if (msg.sender == _seller[auctionId]) {
-            // seller can only withdraw after the auction ended
+            /// seller can only withdraw after the auction ended
             require(now > _validUntil[auctionId], "highest bid goes to seller, so highest bidder cannot withdraw");
             amount = _highestBid[auctionId];
             _highestBid[auctionId] = 0;
         } else {
-            // outbid users can withdraw any time
+            /// outbid users can withdraw any time
             amount = _balance[auctionId][msg.sender];
             _balance[auctionId][msg.sender] = 0;
         }
@@ -157,8 +138,8 @@ contract MarketCrypto {
         require(msg.sender.send(amount), "failure when withdrawing legit funds");
     }
 
-    // Note that this function can be executed by anyone. Of course, only the highest bidder is expected to 
-    // be the interest party in executing it, but we allow anyone to operate it, since this was the intention of the auction.
+    /// Note that this function can be executed by anyone. Of course, only the highest bidder is expected to 
+    /// be the interest party in executing it, but we allow anyone to operate it, since this was the intention of the auction.
     function executePlayerTransfer(uint256 playerId) external {
         uint256 auctionId = _playerIdToAuctionId[playerId];
         require(now > _validUntil[auctionId], "cannot transfer player to highest bidder until auction finishes");
@@ -169,6 +150,24 @@ contract MarketCrypto {
         emit AssetWentToNewOwner(playerId, auctionId);
     }
     
+    
+    /// an asset is ready to be put for sale again if it either has never been assigned to an auction or, in case it has:
+    ///  - if the auction never received a bid
+    ///  - if the auction received bids, and the new owner finally executed the "receive asset" function.
+    /// Note that the difference with isPlayerFrozenCrypto is that isAuctionSettled is a bit more restrictive, and triggered
+    /// as soon as asset is putForSale. In contrast, isPlayerFrozenCrypto on triggers when first bid arrives.
+    function isAuctionSettled(uint256 auctionId) public view returns(bool) {
+        if (auctionId == 0) return true;
+        if (_assetWentToNewOwner[auctionId]) return true;
+        /// check if it was put for sale but experied without bids
+        return (_highestBid[auctionId] == 0) && (_validUntil[auctionId] < now);
+    } 
+
+    /// this will check also for local crypto freeze of team when feature is added
+    function isTeamFrozenInAnyMarket(uint256 teamId) public view returns (bool) {
+        return _market.isTeamFrozen(teamId);
+    }
+
     function getAuctionData(uint256 auctionId) external view returns(
         uint256 validUntil,
         uint256 teamIdHighestBidder,
@@ -186,6 +185,7 @@ contract MarketCrypto {
             _assetWentToNewOwner[auctionId]
         );
     }
+    
     function getBalance(uint256 auctionId, address addr) external view returns (uint256) { return _balance[auctionId][addr]; }
     function getCurrentAuctionForPlayer(uint256 playerId) external view returns (uint256) { return _playerIdToAuctionId[playerId]; }
 }

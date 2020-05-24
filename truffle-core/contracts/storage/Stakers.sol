@@ -1,9 +1,9 @@
 pragma solidity >= 0.6.3;
 
-import "./Storage.sol";
+import "./Assets.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-// TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
+/// TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
 
 contract Stakers {
   using SafeMath for uint256;
@@ -21,7 +21,7 @@ contract Stakers {
   event FinalizedGameRound();
   event NewGameLevel(uint16 level);
 
-  Storage private _storage;
+  Assets private _assets;
 
   address public gameOwner;
 
@@ -40,7 +40,7 @@ contract Stakers {
   address [] public toBeRewarded;
   address[] public updaters;
 
-  // Permission handling
+  /// Permission handling
   
   modifier onlyGame {
     require(msg.sender == gameOwner && gameOwner != NULL_ADDR,
@@ -49,18 +49,18 @@ contract Stakers {
   }
 
   modifier onlyCOO {
-      require( _storage.isCOO(msg.sender), "Only COO can call this function.");
+      require( _assets.COO() == msg.sender, "Only COO can call this function.");
           _;
   }
   
   constructor(address _storageAddress, uint256 _stake) public {
-    _storage = Storage(_storageAddress);
+    _assets = Assets(_storageAddress);
     requiredStake = _stake;
   }
     
-  // External / Public Functions
+  /// External / Public Functions
 
-  /// @notice sets the address of the external contract that interacts with this contract
+  //// @notice sets the address of the external contract that interacts with this contract
   function setGameOwner(address _address) external onlyCOO {
     require (_address != NULL_ADDR, "invalid address 0x0");
     gameOwner = _address;
@@ -68,25 +68,25 @@ contract Stakers {
   }
   
 
-  /// @notice executes rewards
+  //// @notice executes rewards
   function executeReward() external onlyCOO {
     require (toBeRewarded.length > 0, "failed to execute rewards: empty array");
     require (potBalance >= toBeRewarded.length, "failed to execute rewards: Not enough balance to share");
     for (uint256 i = 0; i < toBeRewarded.length; i++) {
       address who = toBeRewarded[i];
-      // better to multiply, and then divide, each time, to minimize rounding errors.
+      /// better to multiply, and then divide, each time, to minimize rounding errors.
       pendingWithdrawals[who] += (potBalance * howManyUpdates[who]) / totalNumUpdates;
       howManyUpdates[who] = 0;
     }
     delete toBeRewarded;
-    potBalance = 0; // there could be a negligible loss of funds in the Pot.
+    potBalance = 0; /// there could be a negligible loss of funds in the Pot.
     totalNumUpdates = 0;
     emit RewardsExecuted();
   }  
 
-  /// @notice transfers pendingWithdrawals to the calling staker; the stake remains until unenrol is called
+  //// @notice transfers pendingWithdrawals to the calling staker; the stake remains until unenrol is called
   function withdraw() external {
-    // no need to require (isStaker[msg.sender], "failed to withdraw: staker not registered");
+    /// no need to require (isStaker[msg.sender], "failed to withdraw: staker not registered");
     uint256 amount = pendingWithdrawals[msg.sender];
     require(amount > 0, "nothing to withdraw by this msg.sender");
     pendingWithdrawals[msg.sender] = 0;
@@ -99,7 +99,7 @@ contract Stakers {
     require(stakes[_addr] == 0, "candidate already has a stake");
   }
 
-  /// @notice adds address as trusted party
+  //// @notice adds address as trusted party
   function addTrustedParty(address _staker) external onlyCOO {
     assertGoodCandidate(msg.sender);
     require(!isTrustedParty[_staker], "trying to add a trusted party that is already trusted");
@@ -107,7 +107,7 @@ contract Stakers {
     emit AddedTrustedParty(_staker);
   }
 
-  /// @notice registers a new staker
+  //// @notice registers a new staker
   function enrol() external payable {
     assertGoodCandidate(msg.sender);
     require (msg.value == requiredStake, "failed to enrol: wrong stake amount");
@@ -117,7 +117,7 @@ contract Stakers {
     emit NewEnrol(msg.sender);
   }
 
-  /// @notice unregisters a new staker and transfers all earnings, and pot
+  //// @notice unregisters a new staker and transfers all earnings, and pot
   function unEnroll() external {
     require (!alreadyDidUpdate(msg.sender), "failed to unenroll: staker currently updating");
     require (removeStaker(msg.sender), "failed to unenroll");
@@ -128,22 +128,22 @@ contract Stakers {
     emit NewUnenrol(msg.sender);
   }
 
-  /// @notice update to a new level
-  /// @param _level to which update
-  /// @param _staker address of the staker that reports this update
-  /// @dev This function will also resolve previous updates when
-  //       level is below current or level has reached the end
+  //// @notice update to a new level
+  //// @param _level to which update
+  //// @param _staker address of the staker that reports this update
+  //// @dev This function will also resolve previous updates when
+  ///       level is below current or level has reached the end
   function update(uint16 _level, address _staker) external onlyGame {
     require (_level <= level(),        "failed to update: wrong level");
     require (isStaker[_staker],        "failed to update: staker not registered");
-    //require (!isSlashed(_staker),      "failed to update: staker was slashed"); // also covered by not being part of stakers, because slashing removes address from stakers
+    //require (!isSlashed(_staker),      "failed to update: staker was slashed"); /// also covered by not being part of stakers, because slashing removes address from stakers
     require(!alreadyDidUpdate(_staker), "staker has already updated this game");
 
     while (_level < level()) {
-        // If level is below current, it means the challenge
-        // period has passed, so last updater told the truth.
-        // The last updater should be rewarded, the one before
-        // last should be slashed and level moves back two positions
+        /// If level is below current, it means the challenge
+        /// period has passed, so last updater told the truth.
+        /// The last updater should be rewarded, the one before
+        /// last should be slashed and level moves back two positions
         require ((level() -_level) % 2 == 0, "failed to update: resolving wrong level");
         resolve();
     }
@@ -151,12 +151,12 @@ contract Stakers {
     emit NewGameLevel(level());
   }
 
-  /// @notice finalize current game, get ready for next one.
-  /// @dev current state will be resolved at this point.
-  /// If called from level 1, then staker is rewarded.
-  /// When called from any other level, means that every
-  /// other staker told the truth but the one in between
-  /// lied.
+  //// @notice finalize current game, get ready for next one.
+  //// @dev current state will be resolved at this point.
+  //// If called from level 1, then staker is rewarded.
+  //// When called from any other level, means that every
+  //// other staker told the truth but the one in between
+  //// lied.
   function finalize() external onlyGame {
     require (level() > 0, "failed to finalize: wrong level");
     while (level() > 1) {
@@ -176,19 +176,19 @@ contract Stakers {
     emit PotBalanceChange(potBalance);
   }
 
-  // Private Functions
+  /// Private Functions
 
   function addStaker(address _staker) private returns (bool) {
-    if (_staker == NULL_ADDR) return false; // prevent null addr
-    if (isStaker[_staker]) return false; // staker already registered
+    if (_staker == NULL_ADDR) return false; /// prevent null addr
+    if (isStaker[_staker]) return false; /// staker already registered
     isStaker[_staker] = true;
     nStakers++;
     return true;
   }
 
   function removeStaker(address _staker) private returns (bool){
-    if (_staker == NULL_ADDR) return false; // prevent null addr
-    if (!isStaker[_staker]) return false; // staker not registered
+    if (_staker == NULL_ADDR) return false; /// prevent null addr
+    if (!isStaker[_staker]) return false; /// staker not registered
     isStaker[_staker] = false;
     nStakers--;
     return true;
@@ -206,16 +206,16 @@ contract Stakers {
     isSlashed[_staker] = true;
   }
 
-  // the slashed stake goes into the "pendingWithdrawals" of the good staker,
-  // not to his "stake". This way, he can cash it without unenrolling.
+  /// the slashed stake goes into the "pendingWithdrawals" of the good staker,
+  /// not to his "stake". This way, he can cash it without unenrolling.
   function earnStake(address _goodStaker, address _badStaker) private {
     uint256 amount = stakes[_badStaker];
     stakes[_badStaker] = 0;
     pendingWithdrawals[_goodStaker] += amount;
     emit SlashedBy(_badStaker, _goodStaker);
-    // TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
-    // The idea behind it, is not to promote interest in stealing someone else's stake
-    // NULL_ADDR.transfer(requiredStake); // burn stake
+    /// TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
+    /// The idea behind it, is not to promote interest in stealing someone else's stake
+    /// NULL_ADDR.transfer(requiredStake); /// burn stake
   }
   
 
@@ -237,9 +237,9 @@ contract Stakers {
   }
 
 
-  // View Functions
+  /// View Functions
 
-  // this function iterates over a storage array, but of max length 4.
+  /// this function iterates over a storage array, but of max length 4.
   function alreadyDidUpdate(address _address) public view returns (bool) {
     for (uint256 i = 0; i < updaters.length; i++) {
       if (updaters[i] == _address) {
@@ -249,7 +249,7 @@ contract Stakers {
     return false;
   }
   
-  /// @notice get the current level
+  //// @notice get the current level
   function level() public view returns (uint16) {
     return uint16(updaters.length);
   }
