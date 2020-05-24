@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table } from 'semantic-ui-react';
 import Config from '../../Config';
 import RoleCard from './RoleCard';
 
-const assetsJSON = require("../../contracts/Assets.json");
+const RelayCard = ({account, assetsContract}) => {
+    const [relay, setRelay] = useState();
 
-const RelayCard = (props) => {
-    const {web3, account, assetsAddress} = props;
-    const [relay, setRelay] = useState("");
-
-    const assetsContract = new web3.eth.Contract(assetsJSON.abi, assetsAddress);
-    assetsContract.methods.relay().call()
-        .then(setRelay)
-        .catch(error => { setRelay("") })
+    useEffect(() => {
+        assetsContract.methods.relay().call()
+            .then(setRelay)
+            .catch(error => {
+                console.error(error);
+                setRelay("error");
+            });
+    }, [assetsContract]);
 
     const setAddress = (address) => {
         assetsContract.methods.setRelay(address).send({ from: account, gasPrice: Config.gasPrice })
-            .on('error', (error, receipt) => { console.error(error) });
+        .catch(console.error);
     }
 
     return (
@@ -24,7 +25,7 @@ const RelayCard = (props) => {
             <Table.Cell>relay</Table.Cell>
             <Table.Cell>{relay}</Table.Cell>
             <Table.Cell>
-                <RoleCard onChange={setAddress} />
+                <RoleCard onChange={setAddress} account={account}/>
             </Table.Cell>
         </Table.Row>
     )
