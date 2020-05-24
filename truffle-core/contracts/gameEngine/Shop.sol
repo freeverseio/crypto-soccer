@@ -2,6 +2,7 @@ pragma solidity >= 0.6.3;
 
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingTacticsBase2.sol";
+import "../storage/Assets.sol";
 
 /**
  @title Manages items in shop
@@ -43,13 +44,20 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
         string uri;
     }        
 
+    Assets private _assets;
     ShopItem[] private _shopItems;
     uint8 maxPercentPerSkill = 50;
     uint8 maxIncreasePotential = 1;
     uint8 maxMatchesDuration = 14;
     uint16 maxItemsInOneOffering = 10000;
 
-    constructor() public {
+    modifier onlyCOO {
+        require( _assets.COO() == msg.sender, "Only COO can call this function.");
+            _;
+    }
+  
+    constructor(address assetsAddress) public {
+        _assets = Assets(assetsAddress);
         _shopItems.push(ShopItem(0, 0, 0, 0, 0, 0, 0, ""));
         /// Adding one item for testing only. TODO: remove from production.
         uint8[N_SKILLS+1] memory skillsBoost;
@@ -69,6 +77,7 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
         string calldata uri
     ) 
         external 
+        onlyCOO
     {
         require(_shopItems.length < 2**16 - 1, "shop cannot accept more than 2**16-1 items");
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
@@ -103,12 +112,14 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
         );
     }
     
-    function reduceItemsRemaining(uint16 itemId, uint16 newItemsRemaining) public {
+    function reduceItemsRemaining(uint16 itemId, uint16 newItemsRemaining) public onlyCOO {
         require(itemId < _shopItems.length, "item not found in shop");
         uint16 prevItemsRemaining = _shopItems[itemId].itemsRemaining;
         require(newItemsRemaining < prevItemsRemaining, "new value for itemsRemaining is larger than previous value, yet calling it reduce?");
         _shopItems[itemId].itemsRemaining = newItemsRemaining;
     }
+    
+    /// View functions
     
     function addItemsToTactics(uint256 tactics, uint16 itemId, uint8[PLAYERS_PER_TEAM_MAX] memory staminaRecovery) public view returns(uint256) {
         tactics = setStaminaRecovery(tactics, staminaRecovery);

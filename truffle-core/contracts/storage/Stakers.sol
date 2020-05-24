@@ -59,8 +59,8 @@ contract Stakers {
           _;
   }
   
-  constructor(address _storageAddress, uint256 _stake) public {
-    assets = Assets(_storageAddress);
+  constructor(address _assetsAddress, uint256 _stake) public {
+    assets = Assets(_assetsAddress);
     requiredStake = _stake;
   }
     

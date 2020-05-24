@@ -8,7 +8,7 @@ pragma solidity >= 0.6.3;
 contract EncodingTacticsBase1 {
 
     uint8 constant private PLAYERS_PER_TEAM_MAX  = 25;
-    uint8 constant internal NO_SUBST = 11;
+    uint8 constant public NO_SUBST = 11;
     uint8 constant internal NO_LINEUP = PLAYERS_PER_TEAM_MAX; /// No player chosen in that position
     ///  Leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
     uint8 constant internal IDX_R = 1;
