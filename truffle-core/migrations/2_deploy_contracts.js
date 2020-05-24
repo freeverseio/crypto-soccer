@@ -101,6 +101,7 @@ module.exports = function (deployer, network, accounts) {
 
 
     namesAndAddresses = [
+      ["DIRECTORY", directory.address],
       ["ASSETS", assets.address],
       ["MARKET", market.address],
       ["ENGINE", engine.address],
@@ -134,7 +135,6 @@ module.exports = function (deployer, network, accounts) {
     await directory.deploy(namesBytes32, addresses).should.be.fulfilled;
 
     // Print Summary to Console
-    namesAndAddresses.push(["DIRECTORY", directory.address]);
     console.log("");
     console.log("🚀  Deployed on:", deployer.network)
     console.log("-----------AddressesStart-----------");

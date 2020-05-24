@@ -1,5 +1,5 @@
 export default {
     polling_ms: 2000,
     url: process.env.REACT_APP_API,
-    directory_address: '0xfE5864A8886ed17789EBcEF2cCC775C175F27b7b',
+    directory_address: '0x7FD101D4c028753b76ACbE42483D58033829288e',
 };
