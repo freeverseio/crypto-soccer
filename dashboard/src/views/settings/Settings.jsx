@@ -7,12 +7,13 @@ import RelayCard from './RelayCard';
 import CryptoMarketCard from './CryptoMarketCard';
 import SuperUserCard from './SuperUserCard';
 import CompanyCard from './CompanyCard';
+import ProposedCompanyCard from './ProposedCompanyCard';
 
 const directoryJSON = require("../../contracts/Directory.json");
 
 const Settings = (params) => {
     const notAvailable = 'n/a';
-    const { web3 } = params;
+    const { web3, account } = params;
     const [proxyAddress, setProxyAddress] = useState(notAvailable);
 
     useEffect(() => {
@@ -32,6 +33,9 @@ const Settings = (params) => {
                         <Table.HeaderCell>Value</Table.HeaderCell>
                     </Table.Row>
                 </Table.Header>
+            </Table>
+
+            <Table columns={2} color='blue'>
                 <Table.Body>
                     {
                         Object.entries(Config).map((entry, i) => (
@@ -63,6 +67,15 @@ const Settings = (params) => {
                     }
                 </Table.Body>
             </Table>
+
+            {
+                (proxyAddress !== notAvailable) &&
+                <Table color='red' >
+                    <Table.Body>
+                        <ProposedCompanyCard web3={web3} account={account} proxyAddress={proxyAddress} />
+                    </Table.Body>
+                </Table>
+            }
         </Container>
     )
 }

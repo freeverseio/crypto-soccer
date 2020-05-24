@@ -10,7 +10,7 @@ const TopBar = (props) => {
         <Menu pointing secondary>
             <Menu.Item as={Link} to="/" name='home' active={pathname === '/'} />
             <Menu.Item as={Link} to="/academy" name='Academy' active={pathname === '/academy'} />
-            <Menu.Item as={Link} to="/shop" name='Shop' active={pathname === '/shop'} />
+            {/* <Menu.Item as={Link} to="/shop" name='Shop' active={pathname === '/shop'} /> */}
             <Menu.Item as={Link} to="/teams" name='Teams' active={pathname === '/teams'} />
             <Menu.Item position='right' as={Link} to='/settings' active={pathname === '/settings'}>
                 <Icon name='settings' />

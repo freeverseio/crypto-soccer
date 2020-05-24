@@ -45,7 +45,7 @@ function App() {
       <ApolloProvider client={client}>
         <div className="App">
           <Header account={account} />
-          <Main web3={web3} privileged={privileged} market={market} />
+          <Main web3={web3}  account={account} privileged={privileged} market={market} />
         </div>
       </ApolloProvider>
     </Router>
