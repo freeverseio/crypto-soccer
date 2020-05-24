@@ -13,9 +13,7 @@ const proxyJSON = require("../../contracts/Proxy.json");
 const assetsJSON = require("../../contracts/Assets.json");
 const marketJSON = require("../../contracts/Market.json");
 
-const Settings = (params) => {
-    const notAvailable = 'n/a';
-    const { web3, account } = params;
+const Settings = ( { web3, account }) => {
     const [proxyAddress, setProxyAddress] = useState();
     const [proxyContract, setProxyContract] = useState();
     const [assetsContract, setAssetsContract] = useState();

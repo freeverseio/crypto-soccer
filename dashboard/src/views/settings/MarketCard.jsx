@@ -3,8 +3,6 @@ import { Table } from 'semantic-ui-react';
 import Config from '../../Config';
 import RoleCard from './RoleCard';
 
-const assetsJSON = require("../../contracts/Assets.json");
-
 const MarketCard = ({ account, assetsContract }) => {
     const [market, setMarket] = useState();
 
@@ -28,7 +26,7 @@ const MarketCard = ({ account, assetsContract }) => {
                 <Table.Cell>market</Table.Cell>
                 <Table.Cell>{market}</Table.Cell>
                 <Table.Cell>
-                    <RoleCard onChange={setAddress} />
+                    <RoleCard onChange={setAddress} account={account}/>
                 </Table.Cell>
             </Table.Row>
         </React.Fragment>

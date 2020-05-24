@@ -31,6 +31,8 @@ function App() {
 
   useEffect(() => {
     if (window.ethereum) {
+      setAccount(window.ethereum.selectedAddress);
+
       window.ethereum.on('accountsChanged', function (accounts) {
         setAccount(accounts[0]);
       });

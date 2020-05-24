@@ -25,7 +25,7 @@ const RelayCard = ({account, assetsContract}) => {
             <Table.Cell>relay</Table.Cell>
             <Table.Cell>{relay}</Table.Cell>
             <Table.Cell>
-                <RoleCard onChange={setAddress} />
+                <RoleCard onChange={setAddress} account={account}/>
             </Table.Cell>
         </Table.Row>
     )

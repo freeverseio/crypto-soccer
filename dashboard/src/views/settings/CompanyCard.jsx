@@ -3,7 +3,7 @@ import { Table, Input, Button } from 'semantic-ui-react';
 import Config from '../../Config';
 const Web3 = require('web3');
 
-const CompanyWidget = ({web3, proxyContract, account}) => {
+const CompanyWidget = ({proxyContract, account}) => {
     const [company, setCompany] = useState();
     const [proposedCompany, setProposedCompany] = useState();
 
@@ -45,7 +45,7 @@ const CompanyWidget = ({web3, proxyContract, account}) => {
                     iconPosition='left'
                     value={proposedCompany}
                     action={
-                        <Button size='mini' color='red' onClick={accept} disabled={!validAddress}>Accept</Button>
+                        <Button size='mini' color='red' onClick={accept} disabled={!validAddress || !account}>Accept</Button>
                     }
                 />
             </Table.Cell>

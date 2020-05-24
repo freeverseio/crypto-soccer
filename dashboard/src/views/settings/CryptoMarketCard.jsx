@@ -13,7 +13,7 @@ const CryptoMarketCard = ({account, marketContract}) => {
                 console.error(error);
                 setCryptoMarket("error");
             });
-    });
+    },[marketContract]);
 
     const setAddress = (address) => {
         marketContract.methods.setCryptoMarketAddress(address).send({ from: account, gasPrice: Config.gasPrice })
@@ -25,7 +25,7 @@ const CryptoMarketCard = ({account, marketContract}) => {
             <Table.Cell>cryptoMarket</Table.Cell>
             <Table.Cell>{cryptoMarket}</Table.Cell>
             <Table.Cell>
-                <RoleCard onChange={setAddress} />
+                <RoleCard onChange={setAddress} account={account}/>
             </Table.Cell>
         </Table.Row>
     )

@@ -2,9 +2,10 @@ import React from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { Menu, Icon, Button } from 'semantic-ui-react'
 
-const TopBar = (props) => {
-    const account = props.account;
-    const pathname = props.location.pathname;
+const TopBar = ({account, location}) => {
+    const pathname = location.pathname;
+
+    console.log(account)
 
     return (
         <Menu pointing secondary>
