@@ -6,16 +6,21 @@ const Web3 = require('web3');
 const CompanyWidget = ({web3, proxyContract, account}) => {
     const [company, setCompany] = useState();
     const [proposedCompany, setProposedCompany] = useState();
-    const [address, setAddress] = useState("");
 
     useEffect(() => {
         proxyContract.methods.company().call()
             .then(setCompany)
-            .catch(error => { setCompany("") })
+            .catch(error => {
+                console.error(error);
+                setCompany("error");
+            });
 
         proxyContract.methods.proposedCompany().call()
             .then(setProposedCompany)
-            .catch(error => { setProposedCompany("") })
+            .catch(error => {
+                console.error(error);
+                setProposedCompany("error");
+            });
     }, [proxyContract]);
 
     const accept = () => {
@@ -23,7 +28,7 @@ const CompanyWidget = ({web3, proxyContract, account}) => {
             from: account,
             gasPrice: Config.gasPrice,
         })
-        .catch(console.error);
+            .catch(console.error);
     };
 
     const validAddress = Web3.utils.isAddress(proposedCompany);
@@ -36,12 +41,9 @@ const CompanyWidget = ({web3, proxyContract, account}) => {
                 <Input fluid
                     size='mini'
                     error={!validAddress}
-                    disabled
                     icon='ethereum'
                     iconPosition='left'
-                    placeholder={proposedCompany}
-                    value={address}
-                    onChange={event => setAddress(event.target.value)}
+                    value={proposedCompany}
                     action={
                         <Button size='mini' color='red' onClick={accept} disabled={!validAddress}>Accept</Button>
                     }
