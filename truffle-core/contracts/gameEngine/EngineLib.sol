@@ -2,6 +2,11 @@ pragma solidity >= 0.6.3;
 
 import "../encoders/EncodingSkillsGetters.sol";
 
+/**
+ @title Library or pure functions, part of Engine
+ @author Freeverse.io, www.freeverse.io
+*/
+
 contract EngineLib is EncodingSkillsGetters {
     uint8 private constant BITS_PER_RND     = 36;   /// Number of bits allowed for random numbers inside match decisisons
     uint256 public constant MAX_RND         = 68719476735; /// Max random number allowed inside match decisions: 2^36-1

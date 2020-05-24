@@ -6,8 +6,11 @@ import "../encoders/EncodingSkillsGetters.sol";
 import "../encoders/EncodingIDs.sol";
 
 /**
- * @title Scheduling of leagues, and calls to Engine to resolve games.
- */
+ @title Scheduling of leagues, and calls to Engine to resolve games.
+ @author Freeverse.io, www.freeverse.io
+ @dev All functions are basically pure, but some had to be made view
+ @dev because they use a storage pointer to the Assets contracts.
+*/
 
 contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint8 constant public PLAYERS_PER_TEAM_MAX = 25;
@@ -70,8 +73,6 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         (team0, team1) = getTeamsInCupPlayoffMatch(matchIdxInDay);
         return (sortedTeamIdxInCup[team0], sortedTeamIdxInCup[team1]);
     }
-
-
 
     function getTeamsInCupLeagueMatch(uint8 groupIdx, uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8, uint8) 
     {
@@ -142,7 +143,6 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         return ((rankingPoints << 28) + (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry)), prevPerfPoints);
     }
 
-
     function computeTeamRankingPointsPure(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8 leagueRanking,
@@ -196,9 +196,18 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     /// returns two sorted lists, [best teamIdxInLeague, points], ....
     /// corresponding to ranking and points AT THE END OF matchday
     /// so if we receive matchDay = 0, it is after playing the 1st game.
-    function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay, uint256 matchDaySeed) public pure returns (
-        uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
-    ) {
+    function computeLeagueLeaderBoard(
+        uint8[2][MATCHES_PER_LEAGUE] memory results, 
+        uint8 matchDay,
+        uint256 matchDaySeed
+    ) 
+        public 
+        pure 
+        returns (
+            uint8[TEAMS_PER_LEAGUE] memory ranking, 
+            uint256[TEAMS_PER_LEAGUE] memory points
+        ) 
+    {
         require(matchDay < MATCHDAYS, "wrong matchDay");
         uint8 team0;
         uint8 team1;
@@ -242,7 +251,10 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         uint8 firstTeamInRank,
         uint8 lastTeamInRank,
         uint256 matchDaySeed
-    ) public pure {
+    ) 
+        public 
+        pure 
+    {
         for (uint8 team0 = firstTeamInRank; team0 <= lastTeamInRank; team0++) {
             points[team0] += uint256(goals[ranking[team0]])*1000 + (matchDaySeed >> team0 * 10) % 999;
             for (uint8 team1 = team0 + 1; team1 <= lastTeamInRank; team1++) {

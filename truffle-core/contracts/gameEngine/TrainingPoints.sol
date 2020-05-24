@@ -9,8 +9,16 @@ import "../encoders/EncodingSkills.sol";
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingTacticsBase2.sol";
 
+/**
+ @title Computes training points given a matchLog, and applies them given a TP assignment by user
+ @author Freeverse.io, www.freeverse.io
+ @dev all functions are pure except for several ones, that had to be made view to access the Assets code.
+ @dev Inheriting Assets led to too-large-to-deploy 
+*/
+
 contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsBase2 {
     
+    /// a set of constants that make the formulas below more readable
     uint256 constant internal YEARS_30  = 946080000; /// 30 years in sec
     uint256 constant internal YEARS_35h = 1119528000; /// 35.5 years in sec
     uint256 constant internal YEARS_1   = 31536000; /// 1 year in sec
@@ -97,11 +105,8 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         ///                      = 2 + 2 * nDef + nTot - nDef - 1 = nTot + 1 + nDef
         ///      note also that by constraint, nTot = 11 in the first half
         ///      pointsPerMatch  = 2 + nTot1 + nTot2 + nDef1 + nDef2 = 13 + nTot2 + nDef1 + nDef2 
-        return 13   + (getOutOfGameType(matchLog, false) == RED_CARD ? 10 : 11) 
-                    +  getNDefs(matchLog, false) + getNDefs(matchLog, true);
+        return 13 + (getOutOfGameType(matchLog, false) == RED_CARD ? 10 : 11) +  getNDefs(matchLog, false) + getNDefs(matchLog, true);
     }
-    
-    
     
     function computeTeamQuality(uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills) public pure returns (uint256 quality) {
         uint256 skills;

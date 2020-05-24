@@ -1,23 +1,15 @@
 pragma solidity >= 0.6.3;
 
 import "./SortIdxsAnySize.sol";
+
 /**
- * @title Creation of all game assets via creation of timezones, countries and divisions
- * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
- */
+ @title Library or pure functions that manage friendly games
+ @author Freeverse.io, www.freeverse.io
+*/
+
 
 contract Friendlies is SortIdxsAnySize {
 
-    struct Friendly {
-        bytes32[2] orgMapRoot;
-        bytes32[2] roots;
-        uint8 newestOrgMapIdx;
-        uint8 newestSkillsIdx;
-        bytes32 scoresRoot;
-        uint8 updateCycleIdx;
-        bytes32 actionsRoot;
-    }        
-    
     function getLeagueMatchDays(uint8 nTeams) private pure returns (uint8) { return 2 * (nTeams-1); }
     function getLeagueMatchesPerDay(uint8 nTeams) private pure returns (uint8) { return nTeams/2; }
     function getLeagueMatchesPerLeague(uint8 nTeams) private pure returns (uint8) { return nTeams * (nTeams-1); }

@@ -2,10 +2,11 @@ pragma solidity >= 0.6.3;
 
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingTacticsBase2.sol";
+
 /**
- * @title Creation of all game assets via creation of timezones, countries and divisions
- * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
- */
+ @title Manages items in shop
+ @author Freeverse.io, www.freeverse.io
+*/
 
 contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
 
@@ -48,19 +49,6 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
     uint8 maxMatchesDuration = 14;
     uint16 maxItemsInOneOffering = 10000;
 
-    function getEncodedBoost(uint16 itemId) public view returns (uint32) { return _shopItems[itemId].encodedBoost; }
-    function getCountriesRoot(uint16 itemId) public view returns (uint256) { return _shopItems[itemId].countriesRoot; }
-    function getChampionshipsRoot(uint16 itemId) public view returns (uint256) { return _shopItems[itemId].championshipsRoot; }
-    function getTeamsRoot(uint16 itemId) public view returns (uint256) { return _shopItems[itemId].teamsRoot; }
-    function getItemsRemaining(uint16 itemId) public view returns (uint16) { return _shopItems[itemId].itemsRemaining; }
-    function getMatchesDuration(uint16 itemId) public view returns (uint8) { return _shopItems[itemId].matchesDuration; }
-    function getOnlyTopInChampioniship(uint16 itemId) public view returns (uint8) { return _shopItems[itemId].onlyTopInChampioniship; }
-    function getUri(uint16 itemId) public view returns (string memory) { return _shopItems[itemId].uri; }
-    function setMaxPercentPerSkill(uint8 newVal) public { maxPercentPerSkill = newVal; } 
-    function setMaxIncreasePotential(uint8 newVal) public { maxIncreasePotential = newVal; } 
-    function setMaxMatchesDuration(uint8 newVal) public { maxMatchesDuration = newVal; } 
-    function setMaxItemsInOneOffering(uint16 newVal) public { maxItemsInOneOffering = newVal; } 
-
     constructor() public {
         _shopItems.push(ShopItem(0, 0, 0, 0, 0, 0, 0, ""));
         /// Adding one item for testing only. TODO: remove from production.
@@ -71,15 +59,17 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
     }
 
     function offerItem(
-        uint8[N_SKILLS+1] memory skillsBoost,
+        uint8[N_SKILLS+1] calldata skillsBoost,
         uint256 countriesRoot,
         uint256 championshipsRoot,
         uint256 teamsRoot,
         uint16 itemsRemaining,
         uint8 matchesDuration,
         uint8 onlyTopInChampioniship,
-        string memory uri
-    ) public {
+        string calldata uri
+    ) 
+        external 
+    {
         require(_shopItems.length < 2**16 - 1, "shop cannot accept more than 2**16-1 items");
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             require(skillsBoost[sk] <= maxPercentPerSkill, "cannot offer items that boost one skill so much");
@@ -113,6 +103,12 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
         );
     }
     
+    function reduceItemsRemaining(uint16 itemId, uint16 newItemsRemaining) public {
+        require(itemId < _shopItems.length, "item not found in shop");
+        uint16 prevItemsRemaining = _shopItems[itemId].itemsRemaining;
+        require(newItemsRemaining < prevItemsRemaining, "new value for itemsRemaining is larger than previous value, yet calling it reduce?");
+        _shopItems[itemId].itemsRemaining = newItemsRemaining;
+    }
     
     function addItemsToTactics(uint256 tactics, uint16 itemId, uint8[PLAYERS_PER_TEAM_MAX] memory staminaRecovery) public view returns(uint256) {
         tactics = setStaminaRecovery(tactics, staminaRecovery);
@@ -124,17 +120,23 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
         return tactics;
     }
     
-    function reduceItemsRemaining(uint16 itemId, uint16 newItemsRemaining) public {
-        require(itemId < _shopItems.length, "item not found in shop");
-        uint16 prevItemsRemaining = _shopItems[itemId].itemsRemaining;
-        require(newItemsRemaining < prevItemsRemaining, "new value for itemsRemaining is larger than previous value, yet calling it reduce?");
-        _shopItems[itemId].itemsRemaining = newItemsRemaining;
-    }
-    
     function validateItemsInTactics(uint256 tactics) public view {
         ( , uint16 itemId, uint32 boost) = getItemsData(tactics);
         if (itemId == 0) return;
         require(itemId < _shopItems.length, "item not found in shop");
         require(_shopItems[itemId].encodedBoost == boost, "tactics refer to an item with mismatching boost properties");
     }
+    
+    function getEncodedBoost(uint16 itemId) public view returns (uint32) { return _shopItems[itemId].encodedBoost; }
+    function getCountriesRoot(uint16 itemId) public view returns (uint256) { return _shopItems[itemId].countriesRoot; }
+    function getChampionshipsRoot(uint16 itemId) public view returns (uint256) { return _shopItems[itemId].championshipsRoot; }
+    function getTeamsRoot(uint16 itemId) public view returns (uint256) { return _shopItems[itemId].teamsRoot; }
+    function getItemsRemaining(uint16 itemId) public view returns (uint16) { return _shopItems[itemId].itemsRemaining; }
+    function getMatchesDuration(uint16 itemId) public view returns (uint8) { return _shopItems[itemId].matchesDuration; }
+    function getOnlyTopInChampioniship(uint16 itemId) public view returns (uint8) { return _shopItems[itemId].onlyTopInChampioniship; }
+    function getUri(uint16 itemId) public view returns (string memory) { return _shopItems[itemId].uri; }
+    function setMaxPercentPerSkill(uint8 newVal) public { maxPercentPerSkill = newVal; } 
+    function setMaxIncreasePotential(uint8 newVal) public { maxIncreasePotential = newVal; } 
+    function setMaxMatchesDuration(uint8 newVal) public { maxMatchesDuration = newVal; } 
+    function setMaxItemsInOneOffering(uint16 newVal) public { maxItemsInOneOffering = newVal; } 
 }
