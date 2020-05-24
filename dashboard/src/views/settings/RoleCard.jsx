@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, Button, Input, GridRow } from 'semantic-ui-react';
+import React, { useState } from 'react';
+import { Button, Input } from 'semantic-ui-react';
 const Web3 = require('web3');
 
 const ProposedCompanyWidget = ({ disabled, onChange }) => {
