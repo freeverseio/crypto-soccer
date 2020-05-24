@@ -24,17 +24,10 @@ const Settings = (params) => {
             .catch(error => { setProxyAddress(notAvailable) })
     }, [web3.eth.Contract, web3.utils]);
 
+ 
+
     return (
         <Container>
-            <Table columns={2}>
-                <Table.Header>
-                    <Table.Row>
-                        <Table.HeaderCell>Property</Table.HeaderCell>
-                        <Table.HeaderCell>Value</Table.HeaderCell>
-                    </Table.Row>
-                </Table.Header>
-            </Table>
-
             <Table columns={2} color='blue'>
                 <Table.Body>
                     {
@@ -48,7 +41,7 @@ const Settings = (params) => {
                 </Table.Body>
             </Table>
 
-            <Table columns={2} color='orange'>
+            <Table columns={4} color='orange'>
                 <Table.Body>
                     <Table.Row>
                         <Table.Cell>proxy</Table.Cell>
@@ -60,9 +53,9 @@ const Settings = (params) => {
                             <CompanyCard web3={web3} proxyAddress={proxyAddress} />
                             <SuperUserCard web3={web3} proxyAddress={proxyAddress} />
                             <COOCard web3={web3} assetsAddress={proxyAddress} />
-                            <RelayCard web3={web3} assetsAddress={proxyAddress} />
-                            <MarketCard web3={web3} assetsAddress={proxyAddress} />
-                            <CryptoMarketCard web3={web3} assetsAddress={proxyAddress} />
+                            <RelayCard web3={web3} account={account}assetsAddress={proxyAddress} />
+                            <MarketCard web3={web3} account={account} assetsAddress={proxyAddress} />
+                            <CryptoMarketCard web3={web3} account={account} assetsAddress={proxyAddress} />
                         </React.Fragment>
                     }
                 </Table.Body>
