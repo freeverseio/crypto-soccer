@@ -2,20 +2,17 @@ import React from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { Menu, Icon, Button } from 'semantic-ui-react'
 
-
-
 const TopBar = (props) => {
-    const { account, location } = props;
+    const account = props.account;
+    const pathname = props.location.pathname;
 
     return (
-        <Menu>
-            <Menu.Item as={Link} to="/" active={location === '/'} >
-                <img src='/logo62.png' alt="not found" />
-            </Menu.Item>
-            <Menu.Item as={Link} to="/academy" name='Academy' active={location === '/academy'} />
-            <Menu.Item as={Link} to="/shop" name='Shop' active={location === '/shop'} />
-            <Menu.Item as={Link} to="/teams" name='Teams' active={location === '/teams'} />
-            <Menu.Item position='right' as={Link} to='/settings' active={location === '/settings'}>
+        <Menu pointing secondary>
+            <Menu.Item as={Link} to="/" name='home' active={pathname === '/'} />
+            <Menu.Item as={Link} to="/academy" name='Academy' active={pathname === '/academy'} />
+            <Menu.Item as={Link} to="/shop" name='Shop' active={pathname === '/shop'} />
+            <Menu.Item as={Link} to="/teams" name='Teams' active={pathname === '/teams'} />
+            <Menu.Item position='right' as={Link} to='/settings' active={pathname === '/settings'}>
                 <Icon name='settings' />
             </Menu.Item>
             {window.ethereum &&
