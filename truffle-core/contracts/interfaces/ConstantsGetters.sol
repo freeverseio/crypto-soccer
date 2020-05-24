@@ -3,8 +3,9 @@ pragma solidity >= 0.6.3;
 import "../storage/Constants.sol";
 
 /**
- * @title Constants used in the project
- */
+ @title Constants used in the project
+ @author Freeverse.io, www.freeverse.io
+*/
 
 contract ConstantsGetters is Constants {
 

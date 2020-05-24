@@ -1,16 +1,16 @@
 pragma solidity >= 0.6.3;
+
 /**
- * @title Library of functions to serialize matchLogs
- */
+ @title Subset of Library of functions to serialize matchLogs
+ @author Freeverse.io, www.freeverse.io
+ @dev see EncodingMatchLog.sol for full spec
+*/
 
 contract EncodingMatchLogBase2  {
-
-    uint256 private constant ONE256       = 1; 
 
     function getAssister(uint256 log, uint8 pos) public pure returns (uint8) {
         return uint8((log >> (4 + 4 * pos)) & 15);
     }
-
   
     function getShooter(uint256 log, uint8 pos) public pure returns (uint8) {
         return uint8((log >> (52 + 4 * pos)) & 15);

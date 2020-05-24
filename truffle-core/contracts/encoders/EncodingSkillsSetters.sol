@@ -1,7 +1,9 @@
 pragma solidity >= 0.6.3;
+
 /**
- * @title Library of functions to serialize values into uints, and deserialize back
- */
+ @title Setters for library to serialize/deserialize player skills
+ @author Freeverse.io, www.freeverse.io
+*/
 
 contract EncodingSkillsSetters {
 
@@ -43,5 +45,9 @@ contract EncodingSkillsSetters {
     function setGamesNonStopping(uint256 encodedSkills, uint8 val) public pure returns (uint256) {
         require(val < 8, "gamesNonStopping out of bound");
         return (encodedSkills & ~(uint256(7) << 174)) | (uint256(val) << 174);
+    }
+
+    function addIsSpecial(uint256 encodedSkills) public pure returns (uint256) {
+        return (encodedSkills | (uint256(1) << 255));
     }
 }

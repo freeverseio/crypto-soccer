@@ -1,7 +1,9 @@
 pragma solidity >= 0.6.3;
+
 /**
- * @title Library of functions to serialize values into uints, and deserialize back
- */
+ @title Subset library to serialize/deserialize match tactics decided by users
+ @author Freeverse.io, www.freeverse.io
+*/ 
 
 contract EncodingTacticsBase2 {
 

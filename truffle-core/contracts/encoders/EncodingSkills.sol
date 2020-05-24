@@ -3,34 +3,41 @@ pragma solidity >= 0.6.3;
 import "../storage/Constants.sol";
 
 /**
- * @title Library of functions to serialize values into uints, and deserialize back
- */
+ @title Library of pure functions to serialize/deserialize player skills
+ @author Freeverse.io, www.freeverse.io
+ @dev Due to contract-too-large-to-deploy, these functions had to be split into:
+ @dev EncodingSkills (this contract, main constructor), EncodingGetters and EncodingSetters
+*/
+
+/**
+ Here is the full spec of this serialization:
+
+ PlayerSkills serializes a total of 213 bits:
+
+ 5 skills                  = 5 x 20 bits (offset: 0)
+                           = shoot, speed, pass, defence, endurance
+ dayOfBirth                = 16 bits  (since Unix time, max 180 years) (offset: 100)
+ birthTraits               = variable num of bits: [potential, forwardness, leftishness, aggressiveness] (offset: 116)
+ potential                 = 4 bits (number is limited to [0,...,9]) (offset: 116)
+ forwardness               = 3 bits (offset: 120)
+                             GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
+ leftishness               = 3 bits, in boolean triads: (L, C, R): (offset: 123)
+                             0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
+ aggressiveness            = 3  (offset: 126)
+ playerId                  = 43 bits (offset: 129)
+ 
+ alignedEndOfLastHalf      = 1b (bool) (offset: 172)
+ redCardLastGame           = 1b (bool) (offset: 173)
+ gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6. (offset: 174)
+ injuryWeeksLeft           = 3b  (offset: 177)
+ substitutedFirstHalf      = 1b (bool) (offset: 180)
+ sumSkills                 = 23b (must equal sum(skills), of if each is 20b, this can be at most 5x20b => use 23b) (offset 181)
+ isSpecialPlayer           = 1b (set at the left-most bit, 255) (offset: 204)
+ generation                = 8b. From [0,...,31] => not-a-child, from [32,..63] => a child (offset: 205)
+*/
 
 contract EncodingSkills is Constants {
 
-    /**
-     * @dev PlayerSkills serializes a total of 213 bits:
-     *      5 skills                  = 5 x 20 bits (offset: 0)
-     *                                = shoot, speed, pass, defence, endurance
-     *      dayOfBirth                = 16 bits  (since Unix time, max 180 years) (offset: 100)
-     *      birthTraits               = variable num of bits: [potential, forwardness, leftishness, aggressiveness] (offset: 116)
-     *      potential                 = 4 bits (number is limited to [0,...,9]) (offset: 116)
-     *      forwardness               = 3 bits (offset: 120)
-     *                                  GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
-     *      leftishness               = 3 bits, in boolean triads: (L, C, R): (offset: 123)
-     *                                  0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
-     *      aggressiveness            = 3  (offset: 126)
-     *      playerId                  = 43 bits (offset: 129)
-     *      
-     *      alignedEndOfLastHalf      = 1b (bool) (offset: 172)
-     *      redCardLastGame           = 1b (bool) (offset: 173)
-     *      gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6. (offset: 174)
-     *      injuryWeeksLeft           = 3b  (offset: 177)
-     *      substitutedFirstHalf      = 1b (bool) (offset: 180)
-     *      sumSkills                 = 23b (must equal sum(skills), of if each is 20b, this can be at most 5x20b => use 23b) (offset 181)
-     *      isSpecialPlayer           = 1b (set at the left-most bit, 255) (offset: 204)
-     *      generation                = 8b. From [0,...,31] => not-a-child, from [32,..63] => a child (offset: 205)
-    **/
     function encodePlayerSkills(
         uint32[N_SKILLS] memory skills, 
         uint256 dayOfBirth, 
@@ -76,5 +83,4 @@ contract EncodingSkills is Constants {
         encoded |= uint256(sumSkills) << 181;
         return (encoded | uint256(generation) << 205);
     }
-
 }

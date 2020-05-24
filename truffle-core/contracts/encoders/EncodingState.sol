@@ -1,7 +1,17 @@
 pragma solidity >= 0.6.3;
+
 /**
- * @title Library of functions to serialize values into uints, and deserialize back
- */
+ @title Getters for library to serialize/deserialize player state
+ @author Freeverse.io, www.freeverse.io
+*/
+
+/**
+ Spec: PlayerState serializes a total of 169 bits:
+  currentTeamId           = 43 bits, offset = 0
+  currentShirtNum         =  5 bits, offset = 43
+  prevPlayerTeamId        = 43 bits, offset = 48
+  lastSaleBlocknum        = 35 bits, offset = 91
+*/
 
 contract EncodingState {
 
@@ -9,13 +19,6 @@ contract EncodingState {
     uint256 constant internal TWO_TO_35_MINUS_ONE = 34359738367;
     uint256 constant internal TWO_TO_5_MINUS_ONE = 31;
 
-    /**
-     * @dev PlayerState serializes a total of 169 bits:
-     *  currentTeamId           = 43 bits, offset = 0
-     *  currentShirtNum         =  5 bits, offset = 43
-     *  prevPlayerTeamId        = 43 bits, offset = 48
-     *  lastSaleBlocknum        = 35 bits, offset = 91
-     */
     function encodePlayerState(
         uint256 currentTeamId,
         uint8 currentShirtNum,

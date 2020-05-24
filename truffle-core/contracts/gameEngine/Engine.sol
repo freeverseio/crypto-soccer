@@ -6,6 +6,13 @@ import "../encoders/EncodingMatchLogBase3.sol";
 import "../encoders/EncodingTactics.sol";
 import "./EngineApplyBoosters.sol";
 
+/**
+ @title Library to serialize/deserialize match tactics decided by users
+ @author Freeverse.io, www.freeverse.io
+ @dev Due to contract-too-large-to-deploy, these functions had to be split into Base1, Base2
+*/
+ 
+
 contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;

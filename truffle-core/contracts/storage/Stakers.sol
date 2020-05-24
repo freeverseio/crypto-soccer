@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
  @title Manages Stakers and their deposits. Agnostic of the rules behind the game.
  @author Freeverse.io, www.freeverse.io
  @dev All source of truth regarding updates & challenges comes from the GameOwner contract
+ @dev This contract's convention: prepend _ to function inputs only.
 */
  
 
@@ -26,7 +27,7 @@ contract Stakers {
   event FinalizedGameRound();
   event NewGameLevel(uint16 level);
 
-  Assets private _assets;
+  Assets private assets;
 
   address public gameOwner;
 
@@ -54,18 +55,18 @@ contract Stakers {
   }
 
   modifier onlyCOO {
-      require( _assets.COO() == msg.sender, "Only COO can call this function.");
+      require( assets.COO() == msg.sender, "Only COO can call this function.");
           _;
   }
   
   constructor(address _storageAddress, uint256 _stake) public {
-    _assets = Assets(_storageAddress);
+    assets = Assets(_storageAddress);
     requiredStake = _stake;
   }
     
   /// External / Public Functions
 
-  //// @notice sets the address of the external contract that interacts with this contract
+  /// sets the address of the external contract that interacts with this contract
   function setGameOwner(address _address) external onlyCOO {
     require (_address != NULL_ADDR, "invalid address 0x0");
     gameOwner = _address;
@@ -73,7 +74,7 @@ contract Stakers {
   }
   
 
-  //// @notice executes rewards
+  /// executes rewards
   function executeReward() external onlyCOO {
     require (toBeRewarded.length > 0, "failed to execute rewards: empty array");
     require (potBalance >= toBeRewarded.length, "failed to execute rewards: Not enough balance to share");
@@ -89,7 +90,7 @@ contract Stakers {
     emit RewardsExecuted();
   }  
 
-  //// @notice transfers pendingWithdrawals to the calling staker; the stake remains until unenrol is called
+  /// transfers pendingWithdrawals to the calling staker; the stake remains until unenrol is called
   function withdraw() external {
     /// no need to require (isStaker[msg.sender], "failed to withdraw: staker not registered");
     uint256 amount = pendingWithdrawals[msg.sender];
@@ -104,7 +105,7 @@ contract Stakers {
     require(stakes[_addr] == 0, "candidate already has a stake");
   }
 
-  //// @notice adds address as trusted party
+  /// adds address as trusted party
   function addTrustedParty(address _staker) external onlyCOO {
     assertGoodCandidate(msg.sender);
     require(!isTrustedParty[_staker], "trying to add a trusted party that is already trusted");
@@ -112,7 +113,7 @@ contract Stakers {
     emit AddedTrustedParty(_staker);
   }
 
-  //// @notice registers a new staker
+  /// registers a new staker
   function enrol() external payable {
     assertGoodCandidate(msg.sender);
     require (msg.value == requiredStake, "failed to enrol: wrong stake amount");
@@ -122,7 +123,7 @@ contract Stakers {
     emit NewEnrol(msg.sender);
   }
 
-  //// @notice unregisters a new staker and transfers all earnings, and pot
+  /// unregisters a new staker and transfers all earnings, and pot
   function unEnroll() external {
     require (!alreadyDidUpdate(msg.sender), "failed to unenroll: staker currently updating");
     require (removeStaker(msg.sender), "failed to unenroll");
@@ -133,7 +134,7 @@ contract Stakers {
     emit NewUnenrol(msg.sender);
   }
 
-  //// @notice update to a new level
+  /// update to a new level
   //// @param _level to which update
   //// @param _staker address of the staker that reports this update
   //// @dev This function will also resolve previous updates when
@@ -156,7 +157,7 @@ contract Stakers {
     emit NewGameLevel(level());
   }
 
-  //// @notice finalize current game, get ready for next one.
+  /// finalize current game, get ready for next one.
   //// @dev current state will be resolved at this point.
   //// If called from level 1, then staker is rewarded.
   //// When called from any other level, means that every
@@ -254,7 +255,7 @@ contract Stakers {
     return false;
   }
   
-  //// @notice get the current level
+  /// get the current level
   function level() public view returns (uint16) {
     return uint16(updaters.length);
   }

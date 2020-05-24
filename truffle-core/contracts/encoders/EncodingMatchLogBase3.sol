@@ -1,8 +1,11 @@
 pragma solidity >= 0.6.3;
 import "./EncodingMatchLogBase4.sol";
+
 /**
- * @title Library of functions to serialize matchLogs
- */
+ @title Subset of Library of functions to serialize matchLogs
+ @author Freeverse.io, www.freeverse.io
+ @dev see EncodingMatchLog.sol for full spec
+*/
 
 contract EncodingMatchLogBase3 is EncodingMatchLogBase4 {
 
