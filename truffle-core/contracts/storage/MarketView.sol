@@ -3,9 +3,11 @@ pragma solidity >= 0.6.3;
 import "./AssetsLib.sol";
 import "../encoders/EncodingState.sol";
 import "../encoders/EncodingSkillsSetters.sol";
+
 /**
- * @title Entry point for changing ownership of assets, and managing bids and auctions.
- */
+ @title View and Pure functions inherited by Market
+ @author Freeverse.io, www.freeverse.io
+*/
 
 contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     

@@ -2,15 +2,18 @@ pragma solidity >= 0.6.3;
 
 import "./UpdatesView.sol";
 import "./Merkle.sol";
-import "./Challenges.sol";
- /**
- * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
- */
+
+/**
+ @title Storage-writing Library inherited by both Updates and Challenges contracts
+ @author Freeverse.io, www.freeverse.io
+*/
 
 contract UpdatesBase is UpdatesView, Merkle {
+    
     event ChallengeResolved(uint8 tz, uint8 resolvedLevel, bool isSuccessful);
    
     function _cleanTimeAcceptedChallenges() internal returns (uint8[4] memory intData) {
+        /// intData encapsulates various variables, required due to avoid stack overflow
         /// intData = [tz, level, levelVerifiable, idx]
         (intData[0],,) = prevTimeZoneToUpdate();
         require(intData[0] != NULL_TIMEZONE, "cannot challenge the null timezone");
@@ -35,6 +38,8 @@ contract UpdatesBase is UpdatesView, Merkle {
     }
     
     function _assertFormallyCorrectChallenge(
+        /// intData encapsulates various variables, required due to avoid stack overflow
+        /// intData = [tz, level, levelVerifiable, idx]
         uint8[4] memory intData,
         bytes32 challLeaveVal, 
         uint256 challLeavePos, 
@@ -77,6 +82,7 @@ contract UpdatesBase is UpdatesView, Merkle {
     }
     
     function _completeSuccessfulVerifiableChallenge(uint8[4] memory intData) internal {
+        /// intData encapsulates various variables, required due to avoid stack overflow
         /// intData = [tz, level, levelVerifiable, idx]
         _roots[intData[0]][intData[3]][intData[1]] = 0;
         _challengeLevel[intData[0]][intData[3]] = intData[1] - 1;
@@ -84,5 +90,4 @@ contract UpdatesBase is UpdatesView, Merkle {
         emit ChallengeResolved(intData[0], intData[1], false);
         _stakers.update(intData[1]-1, msg.sender);
     }
-
 }

@@ -3,7 +3,12 @@ pragma solidity >= 0.6.3;
 import "./Assets.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-/// TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
+/**
+ @title Manages Stakers and their deposits. Agnostic of the rules behind the game.
+ @author Freeverse.io, www.freeverse.io
+ @dev All source of truth regarding updates & challenges comes from the GameOwner contract
+*/
+ 
 
 contract Stakers {
   using SafeMath for uint256;

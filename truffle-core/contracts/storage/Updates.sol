@@ -5,7 +5,8 @@ import "./UpdatesBase.sol";
 /**
  @title Manages Updates and Challenges game
  @author Freeverse.io, www.freeverse.io
- @dev There are therefore "Two Markets", one operated in Crypto and one in Fiat.
+ @dev It reports updates and challenges to the Stakers contract,
+ @dev which is responsible of managing stakes and rewards accordingly
 */
 
 contract Updates is UpdatesBase {

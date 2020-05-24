@@ -1,15 +1,13 @@
 pragma solidity >= 0.6.3;
 
 import "./AssetsLib.sol";
- /**
- * @title Entry point to submit user actions, and tz root updates, which makes time evolve.
- */
+
+/**
+ @title View/Pure functions inherited by both Updates and Challenges contracts
+ @author Freeverse.io, www.freeverse.io
+*/
 
 contract UpdatesView is AssetsLib {
-
-    function getNow() public view returns(uint256) {
-        return now;
-    }
 
     function getLastUpdateTime(uint8 tz) public view returns(uint256) {
         require(_tzExists(tz), "tz does not exist");
@@ -36,7 +34,6 @@ contract UpdatesView is AssetsLib {
         }
         return _timeZoneToUpdatePure(currentVerse - 1, timeZoneForRound1);
     }
-
 
     /// tz0  : v = 0, V_DAY, 2 * V_DAY...
     /// tzN  : v = 4N + V_DAY * day,  day = 0,...6
@@ -101,8 +98,6 @@ contract UpdatesView is AssetsLib {
         (,, bool isSettled) = getStatus(tz, true);
         return isSettled;
     }
-    
-
     
     function getStatusPure(uint256 nowTime, uint256 lastUpdate, uint256 challengeTime, uint8 writtenLevel) public pure returns(uint8 finalLevel, uint8 nJumps, bool isSettled) {
         if (challengeTime == 0) return (writtenLevel, 0, nowTime > lastUpdate);

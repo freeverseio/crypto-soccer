@@ -58,5 +58,7 @@ contract Utils is EncodingMatchLog, AssetsView{
         generationGamesNonStopInjuryWeeks[2] = getInjuryWeeksLeft(encodedSkills);
     }
     
-
+    function getNow() public view returns(uint256) {
+        return now;
+    }
 }

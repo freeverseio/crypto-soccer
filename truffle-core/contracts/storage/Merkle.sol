@@ -1,8 +1,8 @@
 pragma solidity >= 0.6.3;
 
 /**
-  @title Standard Merkle Tree functions
-  @author Freeverse.io, www.freeverse.io
+ @title Standard Merkle Tree functions
+ @author Freeverse.io, www.freeverse.io
 */
 
 contract Merkle {

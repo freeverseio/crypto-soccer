@@ -3,7 +3,7 @@ pragma solidity >= 0.6.3;
 import "./ProxyStorage.sol";
 
 /**
- @title Holds all assets Storage, and manages who to delegate the calls
+ @title Holds all storage for all assets, and manages who to delegate the calls
  @author Freeverse.io, www.freeverse.io
  @dev Pattern: first, contracts-to-delegate-to info are added to this contract.
  @dev Part of this info informs which function selector maps to each contract address.
