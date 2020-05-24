@@ -24,7 +24,7 @@ const RelayCard = (props) => {
             <Table.Cell>relay</Table.Cell>
             <Table.Cell>{relay}</Table.Cell>
             <Table.Cell>
-                <RoleCard onChange={setAddress} disabled={account ? false : true} />
+                <RoleCard onChange={setAddress} />
             </Table.Cell>
         </Table.Row>
     )

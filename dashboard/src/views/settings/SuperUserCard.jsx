@@ -23,7 +23,7 @@ const SuperUserWidget = ({web3, proxyAddress, account}) => {
             <Table.Cell>SuperUser</Table.Cell>
             <Table.Cell>{superUser}</Table.Cell>
             <Table.Cell>
-                <RoleCard onChange={setAddress} disabled={account ? false : true} />
+                <RoleCard onChange={setAddress} />
             </Table.Cell>
         </Table.Row>
     )

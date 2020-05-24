@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, Input } from 'semantic-ui-react';
 const Web3 = require('web3');
 
-const ProposedCompanyWidget = ({ disabled, onChange }) => {
+const ProposedCompanyWidget = ({ onChange }) => {
     const [address, setAddress] = useState("");
 
     const validAddress = Web3.utils.isAddress(address);
@@ -17,7 +17,7 @@ const ProposedCompanyWidget = ({ disabled, onChange }) => {
             value={address}
             onChange={event => setAddress(event.target.value)}
             action={
-                <Button size='mini' color='red' onClick={() => onChange(address)} disabled={disabled || !validAddress}>Set</Button>
+                <Button size='mini' color='red' onClick={() => onChange(address)} disabled={!validAddress}>Set</Button>
             }
         />
     )
