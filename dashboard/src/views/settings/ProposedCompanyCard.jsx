@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import { Table, Button } from 'semantic-ui-react';
+import { Input, Button } from 'semantic-ui-react';
 import Config from '../../Config';
 
 const proxyJSON = require("../../contracts/Proxy.json");
 
-const ProposedCompanyWidget = (props) => {
-    const { web3, proxyAddress, account } = props;
-    const [company, setProposedCompany] = useState("");
+const ProposedCompanyWidget = ({ web3, proxyAddress, account, proposedCompany }) => {
+    const [address, setAddress] = useState("");
 
     const proxyContract = new web3.eth.Contract(proxyJSON.abi, proxyAddress);
-    proxyContract.methods.proposedCompany().call()
-        .then(setProposedCompany)
-        .catch(error => { setProposedCompany("") })
 
     const accept = () => {
         proxyContract.methods.acceptCompany().send({
@@ -28,14 +24,22 @@ const ProposedCompanyWidget = (props) => {
             .on('error', (error, receipt) => { console.log(error) });
     };
 
+    const validAddress = web3.utils.isAddress(proposedCompany);
+
     return (
-        <Table.Row>
-            <Table.Cell>ProposedCompany</Table.Cell>
-            <Table.Cell>{company}</Table.Cell>
-            <Table.Cell>
-                <Button size='mini' color='red' onClick={accept} disabled={account ? false : true}>Accept</Button>
-            </Table.Cell>
-        </Table.Row>
+        <Input fluid
+            size='mini'
+            error={!validAddress}
+            disabled
+            icon='ethereum'
+            iconPosition='left'
+            placeholder={proposedCompany}
+            value={address}
+            onChange={event => setAddress(event.target.value)}
+            action={
+                <Button size='mini' color='red' onClick={accept} disabled={!validAddress}>Accept</Button>
+            }
+        />
     )
 }
 
