@@ -101,7 +101,6 @@ module.exports = function (deployer, network, accounts) {
 
 
     namesAndAddresses = [
-      ["DIRECTORY", directory.address],
       ["ASSETS", assets.address],
       ["MARKET", market.address],
       ["ENGINE", engine.address],
