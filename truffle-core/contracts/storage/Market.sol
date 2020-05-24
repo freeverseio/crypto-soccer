@@ -265,7 +265,7 @@ contract Market is MarketView {
             transferPlayer(playerId, ACADEMY_TEAM); 
         } else {
             uint256 shirtOrigin = getCurrentShirtNum(state);
-            teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+            _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
             emit PlayerRetired(playerId, teamIdOrigin);
         }
     }
@@ -285,7 +285,7 @@ contract Market is MarketView {
                     ), shirtTarget
                 );
         _playerIdToState[playerId] = state;
-        teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+        _teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
         _nPlayersInTransitInTeam[teamIdTarget] -= 1;
         delete _playerInTransitToTeam[playerId];
         emit PlayerStateChange(playerId, state);
@@ -303,7 +303,7 @@ contract Market is MarketView {
     
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
-            teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+            _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
         }
 
         /// part related to target team:
@@ -321,7 +321,7 @@ contract Market is MarketView {
                                 ), shirtTarget
                             ), block.number
                         );
-                teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
+                _teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
             } else {
                 _playerInTransitToTeam[playerId] = teamIdTarget;
                 _nPlayersInTransitInTeam[teamIdTarget] += 1;
@@ -340,8 +340,8 @@ contract Market is MarketView {
         /// requiring that team is not bot already ensures that tz and countryIdxInTz exist 
         require(!isBotTeam(teamId), "cannot transfer a bot team");
         require(addr != NULL_ADDR, "cannot transfer to a null address");
-        require(teamIdToOwner[teamId] != addr, "buyer and seller are the same addr");
-        teamIdToOwner[teamId] = addr;
+        require(_teamIdToOwner[teamId] != addr, "buyer and seller are the same addr");
+        _teamIdToOwner[teamId] = addr;
         emit TeamTransfer(teamId, addr);
     }
     

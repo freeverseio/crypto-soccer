@@ -20,7 +20,6 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         (uint256 dayOfBirth, uint8 potential) = computeBirthDayAndPotential(teamId, playerCreationDay, shirtNum);
         (uint32[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(teamId, shirtNum, potential);
         return encodePlayerSkills(skills, dayOfBirth, 0, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
-        
     }
 
     function getTeamIdCreationDayAndShirtNum(uint256 playerId) public view returns(uint256 teamId, uint256 creationDay, uint8 shirtNum) {
@@ -29,7 +28,7 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
         uint256 divisionIdx = teamIdxInCountry / TEAMS_PER_DIVISION;
         uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, divisionIdx);
         teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
-        creationDay = gameDeployDay + divisionIdToRound[divisionId] * DAYS_PER_ROUND;
+        creationDay = gameDeployDay + _divisionIdToRound[divisionId] * DAYS_PER_ROUND;
         shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
     }
 
@@ -135,16 +134,16 @@ contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
     }
 
 
-    function secsToDays(uint256 secs) internal pure returns (uint256) {
+    function secsToDays(uint256 secs) public pure returns (uint256) {
         return secs / 86400;  /// 86400 = 3600 * 24
     }
 
     function countCountries(uint8 tz) public view returns (uint256){
-        return tzToNCountries[tz];
+        return _tzToNCountries[tz];
     }
     
     /// TODO: remove from this contract, expose as interface for users
-    function daysToSecs(uint256 dayz) internal pure returns (uint256) {
+    function daysToSecs(uint256 dayz) public pure returns (uint256) {
         return dayz * 86400; /// 86400 = 3600 * 24 * 365
     }
 

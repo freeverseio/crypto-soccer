@@ -10,12 +10,12 @@ import "./AssetsLib.sol";
 contract UpdatesView is AssetsLib {
 
     function getLastUpdateTime(uint8 tz) public view returns(uint256) {
-        require(_tzExists(tz), "tz does not exist");
+        require(tzExists(tz), "tz does not exist");
         return _lastUpdateTime[tz];
     }
     
     function getLastActionsSubmissionTime(uint8 tz) public view returns(uint256) {
-        require(_tzExists(tz), "tz does not exist");
+        require(tzExists(tz), "tz does not exist");
         return _lastActionsSubmissionTime[tz];
     }
         
@@ -25,14 +25,14 @@ contract UpdatesView is AssetsLib {
     /// so for each TZ, we go from (day, turn) = (0, 0) ... (13,3) => a total of 14*4 = 56 turns per tz
     /// from these, all map easily to timeZones
     function nextTimeZoneToUpdate() public view returns (uint8 tz, uint8 day, uint8 turnInDay) {
-        return _timeZoneToUpdatePure(currentVerse, timeZoneForRound1);
+        return timeZoneToUpdatePure(_currentVerse, _timeZoneForRound1);
     }
 
     function prevTimeZoneToUpdate() public view returns (uint8 tz, uint8 day, uint8 turnInDay) {
-        if (currentVerse == 0) {
+        if (_currentVerse == 0) {
             return (NULL_TIMEZONE, 0, 0);
         }
-        return _timeZoneToUpdatePure(currentVerse - 1, timeZoneForRound1);
+        return timeZoneToUpdatePure(_currentVerse - 1, _timeZoneForRound1);
     }
 
     /// tz0  : v = 0, V_DAY, 2 * V_DAY...
@@ -44,8 +44,8 @@ contract UpdatesView is AssetsLib {
     /// Imagine 2 tzs:
     /// 0:00 - tz0; 0:30 - NUL; 1:00 - tz1; 1:30 - tz0; 0:00 - tz0; 0:30 - tz1;
     /// So the last
-    function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timezone, uint8 day, uint8 turnInDay) {
-        /// if currentVerse = 0, we should be updating timeZoneForRound1
+    function timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timezone, uint8 day, uint8 turnInDay) {
+        /// if _currentVerse = 0, we should be updating _timeZoneForRound1
         /// recall that timeZones range from 1...24 (not from 0...24)
         turnInDay = uint8(verse % 4);
         uint256 delta = 9 * 4 + turnInDay;
@@ -68,10 +68,10 @@ contract UpdatesView is AssetsLib {
         return uint8(1 + ((24 + tz - 1)% 24));
     }
 
-    function getNextVerseTimestamp() public view returns (uint256) { return nextVerseTimestamp; }
-    function getTimeZoneForRound1() public view returns (uint8) { return timeZoneForRound1; }
-    function getCurrentVerse() public view returns (uint256) { return currentVerse; }
-    function getCurrentVerseSeed() public view returns (bytes32) { return currentVerseSeed; }
+    function getNextVerseTimestamp() public view returns (uint256) { return _nextVerseTimestamp; }
+    function getTimeZoneForRound1() public view returns (uint8) { return _timeZoneForRound1; }
+    function getCurrentVerse() public view returns (uint256) { return _currentVerse; }
+    function getCurrentVerseSeed() public view returns (bytes32) { return _currentVerseSeed; }
 
     function getRoot(uint8 tz, uint8 level, bool current) public view returns(bytes32) { 
         return (current) ? _roots[tz][_newestRootsIdx[tz]][level] : _roots[tz][1-_newestRootsIdx[tz]][level];
@@ -91,7 +91,7 @@ contract UpdatesView is AssetsLib {
     }
     
     function isTimeToUpdate(uint256 verse) public view returns(bool) {
-        if (verse != currentVerse) return false;
+        if (verse != _currentVerse) return false;
         (uint8 tz,,) = prevTimeZoneToUpdate();
         if (tz == NULL_TIMEZONE) return false;
         if (getLastUpdateTime(tz) >= getLastActionsSubmissionTime(tz)) return false;
@@ -123,11 +123,11 @@ contract UpdatesView is AssetsLib {
     
     function getMatchUTC(uint8 tz, uint256 round, uint256 matchDay) public view returns(uint256 timeUTC) {
         require(tz > 0 && tz < 25, "timezone out of range");
-        uint256 deltaN = (tz >= timeZoneForRound1) ? (tz - timeZoneForRound1) : ((tz + 24) - timeZoneForRound1);
+        uint256 deltaN = (tz >= _timeZoneForRound1) ? (tz - _timeZoneForRound1) : ((tz + 24) - _timeZoneForRound1);
         if (matchDay % 2 == 0) {
-            return firstVerseTimeStamp + (deltaN + 12 * matchDay + 24 * DAYS_PER_ROUND * round) * 3600;
+            return _firstVerseTimeStamp + (deltaN + 12 * matchDay + 24 * DAYS_PER_ROUND * round) * 3600;
         } else {
-            return firstVerseTimeStamp + (19 + 2*deltaN + 24 * (matchDay-1) + 48 * DAYS_PER_ROUND * round) * 1800;
+            return _firstVerseTimeStamp + (19 + 2*deltaN + 24 * (matchDay-1) + 48 * DAYS_PER_ROUND * round) * 1800;
         }
     }
 

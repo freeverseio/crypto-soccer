@@ -21,7 +21,7 @@ contract Assets is AssetsView {
     
     function setMarket(address addr) external onlySuperUser {
         _market = addr;
-        teamIdToOwner[ACADEMY_TEAM] = addr;
+        _teamIdToOwner[ACADEMY_TEAM] = addr;
         if (gameDeployDay == 0) { emit AssetsInit(msg.sender); }
         emit TeamTransfer(ACADEMY_TEAM, addr);        
     }
@@ -55,15 +55,15 @@ contract Assets is AssetsView {
 
     /// Entry point for new users: acquiring a bot team
     function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyRelay {
-        require(tzToNCountries[tz] != 0, "Timezone has not been initialized");
+        require(_tzToNCountries[tz] != 0, "Timezone has not been initialized");
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
-        uint256 firstBotIdx = countryIdToNHumanTeams[countryId];
+        uint256 firstBotIdx = _countryIdToNHumanTeams[countryId];
         uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
         require(isBotTeam(teamId), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
         if ((firstBotIdx % TEAMS_PER_DIVISION) == (TEAMS_PER_DIVISION-1)) { _addDivision(tz, countryIdxInTZ); }
-        teamIdToOwner[teamId] = addr;
-        countryIdToNHumanTeams[countryId] = firstBotIdx + 1;
+        _teamIdToOwner[teamId] = addr;
+        _countryIdToNHumanTeams[countryId] = firstBotIdx + 1;
         emit TeamTransfer(teamId, addr);
     }
     
@@ -85,8 +85,8 @@ contract Assets is AssetsView {
     }
     
     function _addCountry(uint8 tz) private {
-        uint256 countryIdxInTZ = tzToNCountries[tz];
-        tzToNCountries[tz] = countryIdxInTZ + 1;
+        uint256 countryIdxInTZ = _tzToNCountries[tz];
+        _tzToNCountries[tz] = countryIdxInTZ + 1;
         for (uint8 division = 0 ; division < DIVS_PER_LEAGUE_AT_START; division++){
             _addDivision(tz, countryIdxInTZ); 
         }
@@ -94,10 +94,10 @@ contract Assets is AssetsView {
 
     function _addDivision(uint8 tz, uint256 countryIdxInTZ) private {
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0);
-        uint256 nDivs = countryIdToNDivisions[countryId];
+        uint256 nDivs = _countryIdToNDivisions[countryId];
         uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, nDivs);
-        countryIdToNDivisions[countryId] = nDivs + 1;
-        divisionIdToRound[divisionId] = getCurrentRound(tz) + 1;
+        _countryIdToNDivisions[countryId] = nDivs + 1;
+        _divisionIdToRound[divisionId] = getCurrentRound(tz) + 1;
         emit DivisionCreation(tz, countryIdxInTZ, nDivs);
     }
 }
