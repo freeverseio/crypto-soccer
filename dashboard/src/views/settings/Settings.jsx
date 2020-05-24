@@ -58,9 +58,9 @@ const Settings = (params) => {
                         (proxyAddress !== notAvailable) &&
                         <React.Fragment>
                             <CompanyCard web3={web3} proxyAddress={proxyAddress} />
-                            <SuperUserCard web3={web3} proxyAddress={proxyAddress} />
-                            <COOCard web3={web3} assetsAddress={proxyAddress} />
-                            <RelayCard web3={web3} account={account}assetsAddress={proxyAddress} />
+                            <SuperUserCard web3={web3} account={account} proxyAddress={proxyAddress} />
+                            <COOCard web3={web3} account={account} assetsAddress={proxyAddress} />
+                            <RelayCard web3={web3} account={account} assetsAddress={proxyAddress} />
                             <MarketCard web3={web3} account={account} assetsAddress={proxyAddress} />
                             <CryptoMarketCard web3={web3} account={account} marketAddress={proxyAddress} />
                         </React.Fragment>
