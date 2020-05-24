@@ -41,7 +41,14 @@ const Settings = (params) => {
                 </Table.Body>
             </Table>
 
-            <Table columns={4} color='orange'>
+            <Table color='orange'>
+                <Table.Header>
+                    <Table.Row>
+                        <Table.HeaderCell width={1}></Table.HeaderCell>
+                        <Table.HeaderCell width={1}></Table.HeaderCell>
+                        <Table.HeaderCell width='six'></Table.HeaderCell>
+                    </Table.Row>
+                </Table.Header>
                 <Table.Body>
                     <Table.Row>
                         <Table.Cell>proxy</Table.Cell>
@@ -55,7 +62,7 @@ const Settings = (params) => {
                             <COOCard web3={web3} assetsAddress={proxyAddress} />
                             <RelayCard web3={web3} account={account}assetsAddress={proxyAddress} />
                             <MarketCard web3={web3} account={account} assetsAddress={proxyAddress} />
-                            <CryptoMarketCard web3={web3} account={account} assetsAddress={proxyAddress} />
+                            <CryptoMarketCard web3={web3} account={account} marketAddress={proxyAddress} />
                         </React.Fragment>
                     }
                 </Table.Body>

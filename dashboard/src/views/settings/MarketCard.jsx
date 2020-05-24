@@ -24,7 +24,9 @@ const MarketCard = (props) => {
             <Table.Row>
                 <Table.Cell>market</Table.Cell>
                 <Table.Cell>{market}</Table.Cell>
-                {/* <RoleCard onChange={setAddress} disabled={account ? false : true} /> */}
+                <Table.Cell>
+                    <RoleCard onChange={setAddress} disabled={account ? false : true} />
+                </Table.Cell>
             </Table.Row>
         </React.Fragment>
 
