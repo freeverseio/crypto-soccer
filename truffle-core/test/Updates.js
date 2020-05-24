@@ -198,7 +198,7 @@ contract('Updates', (accounts) => {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
-            var {0: tz, 1: matchday, 2: turn} = await updates._timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
+            var {0: tz, 1: matchday, 2: turn} = await updates.timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
             day = Math.floor(0.25 * verse / 24);
             thisResult = " | verse = " + verse + 
                 ", tz = " + tz.toNumber() + 
