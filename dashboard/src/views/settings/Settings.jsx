@@ -1,26 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Table } from 'semantic-ui-react';
 import Config from '../../Config';
+import COOCard from './COOCard';
+import MarketCard from './MarketCard';
+import RelayCard from './RelayCard';
+import CryptoMarketCard from './CryptoMarketCard';
+import SuperUserCard from './SuperUserCard';
+import CompanyCard from './CompanyCard';
 
 const directoryJSON = require("../../contracts/Directory.json");
-const assetsJSON = require("../../contracts/Assets.json");
-const proxyJSON = require("../../contracts/Assets.json");
-
-const notAvailable = '0x0000000000000000000000000000000000000000';
 
 const Settings = (params) => {
+    const notAvailable = 'n/a';
     const { web3 } = params;
-    const [ proxyAddress, setProxyAddress ] = useState(notAvailable);
-    const [ superUserAddress, setSuperUserAddress ] = useState(notAvailable);
+    const [proxyAddress, setProxyAddress] = useState(notAvailable);
 
-    const directoryContract = new web3.eth.Contract(directoryJSON.abi, Config.directory_address);
-    const proxyContract = new web3.eth.Contract(proxyJSON.abi, proxyAddress);
-    const assetsContract = new web3.eth.Contract(assetsJSON.abi, proxyAddress);
-
-    const proxyKey = web3.utils.utf8ToHex('PROXY');
-    directoryContract.methods.getAddress(proxyKey).call()
-    .then(setProxyAddress)
-    .catch(error => {setProxyAddress(notAvailable)})
+    useEffect(() => {
+        const directoryContract = new web3.eth.Contract(directoryJSON.abi, Config.directory_address);
+        const proxyKey = web3.utils.utf8ToHex('PROXY');
+        directoryContract.methods.getAddress(proxyKey).call()
+            .then(setProxyAddress)
+            .catch(error => { setProxyAddress(notAvailable) })
+    }, [web3.eth.Contract, web3.utils]);
 
     return (
         <Container>
@@ -50,11 +51,15 @@ const Settings = (params) => {
                         <Table.Cell>{proxyAddress}</Table.Cell>
                     </Table.Row>
                     {
-                        (proxyAddress != notAvailable) &&
-                        <Table.Row>
-                            <Table.Cell>superUser</Table.Cell>
-                            <Table.Cell>{superUserAddress}</Table.Cell>
-                        </Table.Row>
+                        (proxyAddress !== notAvailable) &&
+                        <React.Fragment>
+                            <CompanyCard web3={web3} proxyAddress={proxyAddress} />
+                            <SuperUserCard web3={web3} proxyAddress={proxyAddress} />
+                            <COOCard web3={web3} assetsAddress={proxyAddress} />
+                            <RelayCard web3={web3} assetsAddress={proxyAddress} />
+                            <MarketCard web3={web3} assetsAddress={proxyAddress} />
+                            <CryptoMarketCard web3={web3} assetsAddress={proxyAddress} />
+                        </React.Fragment>
                     }
                 </Table.Body>
             </Table>
