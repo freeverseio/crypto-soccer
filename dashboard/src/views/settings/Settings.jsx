@@ -1,16 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Table } from 'semantic-ui-react';
 import Config from '../../Config';
+import COOCard from './COOCard';
+import MarketCard from './MarketCard';
+import RelayCard from './RelayCard';
+import CryptoMarketCard from './CryptoMarketCard';
+import SuperUserCard from './SuperUserCard';
+import CompanyCard from './CompanyCard';
 
 const directoryJSON = require("../../contracts/Directory.json");
 
-export default function settings(params) {
+const Settings = (params) => {
+    const notAvailable = 'n/a';
     const { web3 } = params;
-    // const directory = new web3.eth.Contract(directoryJSON.abi, Config.directory_address);
-    // const d = directory.methods.getDirectory().call().then(console.log);
-    // console.log(d)
-    // const [playerid, setplayerid] = usestate("");
-    const entries = Object.entries(Config);
+    const [proxyAddress, setProxyAddress] = useState(notAvailable);
+
+    useEffect(() => {
+        const directoryContract = new web3.eth.Contract(directoryJSON.abi, Config.directory_address);
+        const proxyKey = web3.utils.utf8ToHex('PROXY');
+        directoryContract.methods.getAddress(proxyKey).call()
+            .then(setProxyAddress)
+            .catch(error => { setProxyAddress(notAvailable) })
+    }, [web3.eth.Contract, web3.utils]);
 
     return (
         <Container>
@@ -21,10 +32,9 @@ export default function settings(params) {
                         <Table.HeaderCell>Value</Table.HeaderCell>
                     </Table.Row>
                 </Table.Header>
-
                 <Table.Body>
                     {
-                        entries.map((entry, i) => (
+                        Object.entries(Config).map((entry, i) => (
                             <Table.Row key={entry[0]}>
                                 <Table.Cell>{entry[0]}</Table.Cell>
                                 <Table.Cell>{entry[1]}</Table.Cell>
@@ -32,8 +42,29 @@ export default function settings(params) {
                         ))
                     }
                 </Table.Body>
+            </Table>
 
+            <Table columns={2} color='orange'>
+                <Table.Body>
+                    <Table.Row>
+                        <Table.Cell>proxy</Table.Cell>
+                        <Table.Cell>{proxyAddress}</Table.Cell>
+                    </Table.Row>
+                    {
+                        (proxyAddress !== notAvailable) &&
+                        <React.Fragment>
+                            <CompanyCard web3={web3} proxyAddress={proxyAddress} />
+                            <SuperUserCard web3={web3} proxyAddress={proxyAddress} />
+                            <COOCard web3={web3} assetsAddress={proxyAddress} />
+                            <RelayCard web3={web3} assetsAddress={proxyAddress} />
+                            <MarketCard web3={web3} assetsAddress={proxyAddress} />
+                            <CryptoMarketCard web3={web3} assetsAddress={proxyAddress} />
+                        </React.Fragment>
+                    }
+                </Table.Body>
             </Table>
         </Container>
     )
 }
+
+export default Settings;
