@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, Input } from 'semantic-ui-react';
 const Web3 = require('web3');
 
-const ProposedCompanyWidget = ({ onChange }) => {
+const RoleCard = ({ onChange }) => {
     const [address, setAddress] = useState("");
 
     const validAddress = Web3.utils.isAddress(address);
@@ -23,4 +23,4 @@ const ProposedCompanyWidget = ({ onChange }) => {
     )
 }
 
-export default ProposedCompanyWidget;
+export default RoleCard;

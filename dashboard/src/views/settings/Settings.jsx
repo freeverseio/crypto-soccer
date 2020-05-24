@@ -7,7 +7,6 @@ import RelayCard from './RelayCard';
 import CryptoMarketCard from './CryptoMarketCard';
 import SuperUserCard from './SuperUserCard';
 import CompanyCard from './CompanyCard';
-import ProposedCompanyCard from './ProposedCompanyCard';
 
 const directoryJSON = require("../../contracts/Directory.json");
 
@@ -57,7 +56,7 @@ const Settings = (params) => {
                     {
                         (proxyAddress !== notAvailable) &&
                         <React.Fragment>
-                            <CompanyCard web3={web3} proxyAddress={proxyAddress} />
+                            <CompanyCard web3={web3} account={account} proxyAddress={proxyAddress} />
                             <SuperUserCard web3={web3} account={account} proxyAddress={proxyAddress} />
                             <COOCard web3={web3} account={account} assetsAddress={proxyAddress} />
                             <RelayCard web3={web3} account={account} assetsAddress={proxyAddress} />
@@ -67,15 +66,6 @@ const Settings = (params) => {
                     }
                 </Table.Body>
             </Table>
-
-            {
-                (proxyAddress !== notAvailable) &&
-                <Table color='red' >
-                    <Table.Body>
-                        <ProposedCompanyCard web3={web3} account={account} proxyAddress={proxyAddress} />
-                    </Table.Body>
-                </Table>
-            }
         </Container>
     )
 }
