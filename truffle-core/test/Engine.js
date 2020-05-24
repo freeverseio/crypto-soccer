@@ -1,3 +1,10 @@
+/*
+ Tests for all functions in 
+  Engine.sol, 
+  EnginePreComp.sol, 
+  EngineApplyBoosters.sol, 
+  EngineLib.sol
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))

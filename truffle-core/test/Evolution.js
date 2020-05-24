@@ -1,3 +1,9 @@
+/*
+ Tests for all functions in 
+  PlayAndEvolve.sol   
+  Evolution.sol, 
+  TrainingPoints.sol, 
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))

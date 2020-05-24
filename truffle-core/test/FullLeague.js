@@ -1,3 +1,7 @@
+/*
+ Tests for the update/challenge part of the Updates.sol and Challenges.sol contracts
+ It also tests a javascript library: challengeUtils
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))

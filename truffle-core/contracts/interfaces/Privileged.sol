@@ -3,6 +3,8 @@ pragma solidity >= 0.6.3;
 /**
  @title Library of pure functions used by company to compute useful data
  @author Freeverse.io, www.freeverse.io
+ @dev The name Privileged is due to expectation that this is only valid for later,
+ @dev as the company, use the returned data to, e.g. offer BuyNow or Special players.
 */
 
 import "../storage/AssetsView.sol";

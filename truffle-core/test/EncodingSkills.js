@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in EncodingSkills.sol and contracts inherited by it
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))

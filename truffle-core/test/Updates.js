@@ -1,3 +1,9 @@
+/*
+ Tests for all functions in
+    Updates.sol
+    Challenges.sol
+    and how Updates relates to Stakers.sol
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))

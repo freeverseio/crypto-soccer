@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in Stakers.sol
+*/
 const expect = require('truffle-assertions');
 const deployUtils = require('../utils/deployUtils.js');
 

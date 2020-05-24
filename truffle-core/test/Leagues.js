@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in Leauges.sol
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -17,8 +20,6 @@ const Challenges = artifacts.require('Challenges');
 const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
-const TrainingPoints = artifacts.require('TrainingPoints');
-
 
 contract('Leagues', (accounts) => {
     const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
@@ -77,7 +78,6 @@ contract('Leagues', (accounts) => {
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         await assets.initSingleTZ(INIT_TZ, {from: owners.COO}).should.be.fulfilled;
 
-        trainingPoints= await TrainingPoints.new(assets.address).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
         leagues = await Leagues.new(assets.address).should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;

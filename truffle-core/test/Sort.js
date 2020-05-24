@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in Sort.sol
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
