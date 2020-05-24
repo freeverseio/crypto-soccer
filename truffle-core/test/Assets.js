@@ -14,6 +14,7 @@ const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');
+const EncodingSet = artifacts.require('EncodingSkillsSetters');
 
 
 
@@ -95,7 +96,9 @@ contract('Assets', (accounts) => {
         ).should.be.fulfilled;
         result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
-        specialPlayerId = await assets.addIsSpecial(specialPlayerId).should.be.fulfilled;
+        
+        encodingSet = await EncodingSet.new().should.be.fulfilled;
+        specialPlayerId = await encodingSet.addIsSpecial(specialPlayerId).should.be.fulfilled;
         skills = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
         result = await assets.getSkill(skills, SK_SHO).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        

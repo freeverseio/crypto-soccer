@@ -149,7 +149,7 @@ contract('EncodingSkills', (accounts) => {
         
         result =  await encodingGet.getIsSpecial(skills).should.be.fulfilled;
         result.should.be.equal(false);
-        skills2 = await encodingGet.addIsSpecial(skills).should.be.fulfilled;
+        skills2 = await encodingSet.addIsSpecial(skills).should.be.fulfilled;
         result =  await encodingGet.getIsSpecial(skills2).should.be.fulfilled;
         result.should.be.equal(true);
         

@@ -49,7 +49,7 @@ contract EncodingSkills is Constants {
         uint8 gamesNonStopping, 
         uint8 injuryWeeksLeft,
         bool substitutedFirstHalf,
-        uint32 sumSkills
+        uint32 sumSkills,
     )
         public
         pure
