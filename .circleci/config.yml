@@ -78,7 +78,6 @@ commands:
 jobs:
   truffle_core:
     executor: freeverse
-    resource_class: xlarge
     parallelism: 20
     steps:
       - checkout
