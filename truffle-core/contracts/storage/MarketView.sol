@@ -1,6 +1,6 @@
 pragma solidity >= 0.6.3;
 
-import "./AssetsLib.sol";
+import "./UniverseInfo.sol";
 import "../encoders/EncodingState.sol";
 import "../encoders/EncodingSkillsSetters.sol";
 
@@ -9,7 +9,7 @@ import "../encoders/EncodingSkillsSetters.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
-contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
+contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     
     function getMaxAllowedAcquisitions(uint256 teamId) public view returns (bool isConstrained, uint8) {
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];

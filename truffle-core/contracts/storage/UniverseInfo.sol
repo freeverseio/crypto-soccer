@@ -9,7 +9,7 @@ import "../encoders/EncodingSkillsGetters.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
-contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
+contract UniverseInfo is Storage, EncodingSkillsGetters, EncodingIDs {
     
     event TeamTransfer(uint256 teamId, address to);
 

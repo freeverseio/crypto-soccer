@@ -4,14 +4,14 @@ import "../encoders/EncodingSkills.sol";
 import "../encoders/EncodingIDs.sol";
 import "../encoders/EncodingState.sol";
 import "./Storage.sol";
-import "./AssetsLib.sol";
+import "./UniverseInfo.sol";
 
 /**
  @title Library of View/Pure functions to needed by game assets
  @author Freeverse.io, www.freeverse.io
 */
 
-contract AssetsView is AssetsLib, EncodingSkills, EncodingState {
+contract AssetsView is UniverseInfo, EncodingSkills, EncodingState {
     
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
         if (getIsSpecial(playerId)) return playerId;

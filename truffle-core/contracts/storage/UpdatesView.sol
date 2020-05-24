@@ -1,13 +1,13 @@
 pragma solidity >= 0.6.3;
 
-import "./AssetsLib.sol";
+import "./UniverseInfo.sol";
 
 /**
  @title View/Pure functions inherited by both Updates and Challenges contracts
  @author Freeverse.io, www.freeverse.io
 */
 
-contract UpdatesView is AssetsLib {
+contract UpdatesView is UniverseInfo {
 
     function getLastUpdateTime(uint8 tz) public view returns(uint256) {
         require(tzExists(tz), "tz does not exist");
