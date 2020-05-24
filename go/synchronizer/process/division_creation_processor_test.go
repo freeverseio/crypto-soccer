@@ -52,10 +52,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	process, err := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
-	if err != nil {
-		t.Fatal(err)
-	}
+	process := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
 
 	timezone := uint8(1)
 	event := assets.AssetsDivisionCreation{

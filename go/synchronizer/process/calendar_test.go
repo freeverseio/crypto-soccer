@@ -3,8 +3,9 @@ package process_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 )
 
 func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
@@ -14,11 +15,7 @@ func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	calendar, err := process.NewCalendar(bc.Contracts)
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	calendar := process.NewCalendar(bc.Contracts)
 	timezoneIdx := uint8(1)
 	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
@@ -35,10 +32,7 @@ func TestResetCalendar(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	calendarProcessor, err := process.NewCalendar(bc.Contracts)
-	if err != nil {
-		t.Fatal(err)
-	}
+	calendarProcessor := process.NewCalendar(bc.Contracts)
 
 	timezoneIdx := uint8(1)
 	timezone := storage.Timezone{timezoneIdx}
@@ -66,10 +60,7 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	calendarProcessor, err := process.NewCalendar(bc.Contracts)
-	if err != nil {
-		t.Fatal(err)
-	}
+	calendarProcessor := process.NewCalendar(bc.Contracts)
 	timezoneIdx := uint8(1)
 	timezone := storage.Timezone{timezoneIdx}
 	timezone.Insert(tx)
@@ -89,7 +80,7 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(matches) != int(calendarProcessor.MatchDays*calendarProcessor.MatchPerDay) {
+	if len(matches) != int(contracts.MatchDays*contracts.MatchesPerDay) {
 		t.Fatalf("Wrong matches %v", len(matches))
 	}
 }

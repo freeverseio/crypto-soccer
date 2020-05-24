@@ -2,18 +2,15 @@ pragma solidity >= 0.6.3;
 /**
  * @title Library of functions to serialize values into uints, and deserialize back
  */
-import "../encoders/EncodingSkills.sol";
-import "../encoders/EncodingSkillsGetters.sol";
-import "../encoders/EncodingSkillsSetters.sol";
 import "../storage/AssetsView.sol";
 
 contract Privileged is AssetsView {
     
-    // order of idxs:
-    // skills: shoot, speed, pass, defence, endurance
-    // birthTraits: potential, forwardness, leftishness, aggressiveness
-    // prefPosition: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
-    // leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
+    /// order of idxs:
+    /// skills: shoot, speed, pass, defence, endurance
+    /// birthTraits: potential, forwardness, leftishness, aggressiveness
+    /// prefPosition: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
+    /// leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
 
     function createSpecialPlayer(
         uint32[N_SKILLS] memory skillsVec,
@@ -22,7 +19,7 @@ contract Privileged is AssetsView {
         uint256 playerId,
         uint256 nowInSecs
     ) public pure returns (uint256) {
-        uint256 dayOfBirth = (nowInSecs - ageInSecs/INGAMETIME_VS_REALTIME)/86400; // 86400 = secsInDay
+        uint256 dayOfBirth = (nowInSecs - ageInSecs/INGAMETIME_VS_REALTIME)/86400; /// 86400 = secsInDay
         uint32 sumSkills;
         for (uint8 s = 0; s < N_SKILLS; s++) sumSkills += skillsVec[s];
         uint256 skills = encodePlayerSkills(
@@ -41,15 +38,15 @@ contract Privileged is AssetsView {
         return addIsSpecial(skills);
     }
     
-    // returns a value relative to 10000
-    // Relative to 1, it would be = age < 31) ? 1.15 - 0.013 * (age - 16) : 1.15 - 0.013*15 - 0.05 * (age - 31)
+    /// returns a value relative to 10000
+    /// Relative to 1, it would be = age < 31) ? 1.15 - 0.013 * (age - 16) : 1.15 - 0.013*15 - 0.05 * (age - 31)
     function ageModifier(uint256 ageYears) public pure returns(uint256) {
         return (ageYears < 31) ? 11500 - 130 * (ageYears - 16) : 9550 - 500 * (ageYears - 31);
     }
 
-    // returns a value relative to 10000
-    // relative to 1 it would be = 0.85 + potential/30
-    // relative to 1e4: 8500+10000*p/30 = (8500*30+10000* p)/30
+    /// returns a value relative to 10000
+    /// relative to 1 it would be = 0.85 + potential/30
+    /// relative to 1e4: 8500+10000*p/30 = (8500*30+10000* p)/30
     function potentialModifier(uint256 potential) public pure returns(uint256) {
         return (8500 * 30 + 10000 * potential) / 30;
     }
@@ -92,10 +89,10 @@ contract Privileged is AssetsView {
                 (uint256(skillsVec[sk]) * computeAvgSkills(playerValue, ageYears, potential))/uint256(1000)
             );
         }
-        internalPlayerId = encodeTZCountryAndVal(tz, countryIdxInTZ, seed % 268435455); // maxPlayerIdxInCountry (28b) = 2**28 - 1 = 268435455
+        internalPlayerId = encodeTZCountryAndVal(tz, countryIdxInTZ, seed % 268435455); /// maxPlayerIdxInCountry (28b) = 2**28 - 1 = 268435455
     }
 
-    // birthTraits = [potential, forwardness, leftishness, aggressiveness]
+    /// birthTraits = [potential, forwardness, leftishness, aggressiveness]
     function createBuyNowPlayerId(
         uint256 playerValue, 
         uint8 maxPotential,
@@ -118,7 +115,7 @@ contract Privileged is AssetsView {
     {
         uint256 ageYears;
         (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, maxPotential, seed, forwardPos, tz, countryIdxInTZ);
-        // 1 year = 31536000 sec
+        /// 1 year = 31536000 sec
         playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId, epochInDays*24*3600);
         dayOfBirth = uint16(getBirthDay(playerId));
     }

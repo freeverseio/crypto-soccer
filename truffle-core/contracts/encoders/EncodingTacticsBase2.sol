@@ -37,7 +37,7 @@ contract EncodingTacticsBase2 {
         );
     }
     
-    // bits: 5 skills * 6b per skill (max 64) + 2b for potential = 32b
+    /// bits: 5 skills * 6b per skill (max 64) + 2b for potential = 32b
     function encodeBoosts(uint8[N_SKILLS+1] memory skillsBoost) public pure returns(uint32 encoded) {
         require(skillsBoost[N_SKILLS] < 4, "cannot offer items that boost potential so much");
         for (uint8 sk = 0; sk <= N_SKILLS; sk++) {

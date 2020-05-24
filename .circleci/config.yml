@@ -78,8 +78,7 @@ commands:
 jobs:
   truffle_core:
     executor: freeverse
-    resource_class: xlarge
-    parallelism: 6
+    parallelism: 20
     steps:
       - checkout
       - run: cd truffle-core && npm install
