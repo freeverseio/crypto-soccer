@@ -223,7 +223,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
         public
         pure
-         returns (uint256[5] memory , uint256[5] memory ) 
+        returns (uint256[5] memory , uint256[5] memory ) 
     {
         uint256 currentEnduranceA = skillsTeamA[IDX_ENDURANCE];
         uint256 currentEnduranceB = skillsTeamB[IDX_ENDURANCE];

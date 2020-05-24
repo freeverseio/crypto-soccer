@@ -16,10 +16,10 @@ contract Storage is ProxyStorage, Constants{
     uint256[2**12] _slotReserve;
 
     /// Roles
-    address public _market;
-    address public _COO;
-    address public _relay;
-    address public _cryptoMktAddr;
+    address internal _market;
+    address internal _COO;
+    address internal _relay;
+    address internal _cryptoMktAddr;
     
     /// Assets Storage
     uint256 public gameDeployDay;

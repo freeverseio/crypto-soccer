@@ -101,6 +101,11 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
     }
     
+    function market() public view returns (address) { return _market; }
+    function COO() public view returns (address) { return _COO; }
+    function relay() public view returns (address) { return _relay; }
+    function cryptoMktAddr() public view returns (address) { return _cryptoMktAddr; }
+    
     function _tzExists(uint8 timeZone) internal pure returns(bool) {
         return(timeZone > NULL_TIMEZONE && timeZone < 25);
     }

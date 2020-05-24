@@ -1,6 +1,6 @@
 pragma solidity >= 0.6.3;
 
-import "./Storage.sol";
+import "./Assets.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 /// TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
@@ -21,7 +21,7 @@ contract Stakers {
   event FinalizedGameRound();
   event NewGameLevel(uint16 level);
 
-  Storage private _storage;
+  Assets private _assets;
 
   address public gameOwner;
 
@@ -49,12 +49,12 @@ contract Stakers {
   }
 
   modifier onlyCOO {
-      require( _storage._COO() == msg.sender, "Only COO can call this function.");
+      require( _assets.COO() == msg.sender, "Only COO can call this function.");
           _;
   }
   
   constructor(address _storageAddress, uint256 _stake) public {
-    _storage = Storage(_storageAddress);
+    _assets = Assets(_storageAddress);
     requiredStake = _stake;
   }
     

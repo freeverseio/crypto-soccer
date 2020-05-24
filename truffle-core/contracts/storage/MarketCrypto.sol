@@ -41,7 +41,7 @@ contract MarketCrypto {
     }
 
     modifier onlyCOO {
-        require( _market._COO() == msg.sender, "Only COO can call this function.");
+        require( _market.COO() == msg.sender, "Only COO can call this function.");
             _;
     }
     

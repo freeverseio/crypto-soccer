@@ -1,9 +1,13 @@
 pragma solidity >= 0.6.3;
 
 import "./UpdatesBase.sol";
- /**
- * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
- */
+
+/**
+ @title Library of functions used to Challenge
+ @author Freeverse.io, www.freeverse.io
+ @dev Under construction. Only a small subset implemented yet
+ @dev Currently, all functions in this contract are fully disabled.
+*/
 
 contract Challenges is UpdatesBase {
 

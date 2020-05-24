@@ -1,8 +1,12 @@
 pragma solidity >= 0.6.3;
 
 /**
- * @title Constants used in the project
- */
+ @title Constants used in the project
+ @author Freeverse.io, www.freeverse.io
+ @dev They are not public because it made the contracts
+ @dev too large to be deployable (!)
+ @dev Yes, their getters occupy space.
+*/
 
 contract Constants {
     
