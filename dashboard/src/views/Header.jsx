@@ -20,7 +20,10 @@ const TopBar = (props) => {
             </Menu.Item>
             {window.ethereum &&
                 <Menu.Item>
-                    <Button icon color={account ? 'green' : 'grey'} onClick={window.ethereum.enable} disabled={account}>
+                    <Button icon
+                        color={account ? 'green' : 'grey'}
+                        onClick={window.ethereum.enable}
+                        disabled={account ? true : false}>
                         <Icon name='ethereum' />
                     </Button>
                 </Menu.Item>
