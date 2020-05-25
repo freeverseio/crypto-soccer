@@ -193,10 +193,10 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderService) {
 	t.Run("insert", func(t *testing.T) {
 		order := NewPlaystoreOrder()
-		order.OrderId = "ciao"
+		order.PurchaseToken = "ciao"
 		order.PackageName = "dsd"
 		order.ProductId = "444"
-		order.PurchaseToken = "fdrd"
+		order.OrderId = "fdrd"
 		order.PlayerId = "4"
 		order.TeamId = "pippo"
 		order.State = PlaystoreOrderFailed
@@ -212,10 +212,10 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 
 	t.Run("pending orders", func(t *testing.T) {
 		order := NewPlaystoreOrder()
-		order.OrderId = "ciao1"
+		order.PurchaseToken = "ciao1"
 		order.PackageName = "dsd"
 		order.ProductId = "444"
-		order.PurchaseToken = "fdrd"
+		order.OrderId = "fdrd"
 		order.PlayerId = "4"
 		order.TeamId = "pippo"
 		order.State = PlaystoreOrderFailed
@@ -227,7 +227,7 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.NilError(t, err)
 		assert.Equal(t, len(orders), 0)
 
-		order.OrderId = "43d"
+		order.PurchaseToken = "43d"
 		order.State = PlaystoreOrderOpen
 		assert.NilError(t, service.Insert(*order))
 
@@ -235,7 +235,7 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.NilError(t, err)
 		assert.Equal(t, len(orders), 1)
 
-		order.OrderId = "43d1"
+		order.PurchaseToken = "43d1"
 		order.State = PlaystoreOrderAcknowledged
 		assert.NilError(t, service.Insert(*order))
 
@@ -243,7 +243,7 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.NilError(t, err)
 		assert.Equal(t, len(orders), 2)
 
-		order.OrderId = "43d2"
+		order.PurchaseToken = "43d2"
 		order.State = PlaystoreOrderComplete
 		assert.NilError(t, service.Insert(*order))
 
@@ -254,10 +254,10 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 
 	t.Run("update state", func(t *testing.T) {
 		order := NewPlaystoreOrder()
-		order.OrderId = "ciao"
+		order.PurchaseToken = "ciao"
 		order.PackageName = "dsd"
 		order.ProductId = "444"
-		order.PurchaseToken = "fdrd"
+		order.OrderId = "fdrd"
 		order.PlayerId = "4"
 		order.TeamId = "pippo"
 		order.State = PlaystoreOrderFailed
