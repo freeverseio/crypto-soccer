@@ -183,20 +183,32 @@ func New(
 	return &contracts, nil
 }
 
-func NewFromDeployedDirectory(event directory.DirectoryDeployedDirectory) (*Contracts, error) {
-	// assetsName, err := hex.DecodeString("ASSETS")
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// var assets32 [32]byte
-	// copy(assets32[:], assetsName)
-	// assetsAddress, err := directory.GetAddress(&bind.CallOpts{}, assets32)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// log.Infof("Assets %v", assetsAddress)
-	// return nil, nil
-	return nil, nil
+func NewFromDeployedDirectory(client *ethclient.Client, event directory.DirectoryDeployedDirectory) (*Contracts, error) {
+	contractMap := make(map[string]string)
+	for i := range event.Names {
+		name := event.Names[i]
+		address := event.Adresseses[i]
+		contractMap[string(name[:])] = address.String()
+	}
+
+	return New(
+		client,
+		contractMap["LEAGUES"],
+		contractMap["ASSETS"],
+		contractMap["EVOLUTION"],
+		contractMap["ENGINE"],
+		contractMap["ENGINEPRECOMP"],
+		contractMap["UPDATES"],
+		contractMap["MARKET"],
+		contractMap["UTILS"],
+		contractMap["PLAYANDEVOLVE"],
+		contractMap["SHOP"],
+		contractMap["TRAININGPOINTS"],
+		contractMap["CONSTANTSGETTERS"],
+		contractMap["PRIVILEGED"],
+		contractMap["STAKERS"],
+		contractMap["DIRECTORY"],
+	)
 }
 
 func GetContractAddress(directory *directory.Directory, name string) (common.Address, error) {
