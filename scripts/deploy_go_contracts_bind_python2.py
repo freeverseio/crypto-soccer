@@ -85,6 +85,7 @@ if __name__ == "__main__":
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Utils.json'), 'utils', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Privileged.json'), 'privileged', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Stakers.json'), 'stakers', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'Directory.json'), 'directory', dests)
 
 
 # with open('../truffle-core/build/contracts/TeamState.json', 'r') as fp:
