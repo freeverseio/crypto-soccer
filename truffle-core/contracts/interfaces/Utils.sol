@@ -2,6 +2,11 @@ pragma solidity >= 0.6.3;
 import "../encoders/EncodingMatchLog.sol";
 import "../storage/AssetsView.sol";
 
+/**
+ @title Library of pure functions used by company to compute useful data
+ @author Freeverse.io, www.freeverse.io
+*/
+
 contract Utils is EncodingMatchLog, AssetsView{
 
     function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {
@@ -58,5 +63,7 @@ contract Utils is EncodingMatchLog, AssetsView{
         generationGamesNonStopInjuryWeeks[2] = getInjuryWeeksLeft(encodedSkills);
     }
     
-
+    function getNow() public view returns(uint256) {
+        return now;
+    }
 }

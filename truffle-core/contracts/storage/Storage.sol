@@ -31,12 +31,12 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => uint256) internal _playerInTransitToTeam;
     mapping (uint256 => uint8) internal _nPlayersInTransitInTeam;
     mapping (uint256 => bool) internal _teamIdToIsBuyNowForbidden;
-    mapping (uint256 => uint256) internal countryIdToNDivisions;
-    mapping (uint256 => uint256) internal countryIdToNHumanTeams;
-    mapping (uint256 => uint256) internal divisionIdToRound;
-    mapping (uint256 => uint256[PLAYERS_PER_TEAM_MAX]) internal teamIdToPlayerIds;
-    mapping (uint256 => address) internal teamIdToOwner;
-    mapping (uint8 => uint256) internal tzToNCountries;
+    mapping (uint256 => uint256) internal _countryIdToNDivisions;
+    mapping (uint256 => uint256) internal _countryIdToNHumanTeams;
+    mapping (uint256 => uint256) internal _divisionIdToRound;
+    mapping (uint256 => uint256[PLAYERS_PER_TEAM_MAX]) internal _teamIdToPlayerIds;
+    mapping (uint256 => address) internal _teamIdToOwner;
+    mapping (uint8 => uint256) internal _tzToNCountries;
 
     /// Used for restricting skills of players offered via BuyNow pattern
     uint256 internal _maxSumSkillsBuyNowPlayer;
@@ -49,12 +49,12 @@ contract Storage is ProxyStorage, Constants{
     /// Time is often measured in verses
     /// A new verse starts with a userActions submission, 
     /// one every 15min
-    uint256 internal nextVerseTimestamp;
-    uint8 internal timeZoneForRound1;
-    uint256 internal currentVerse;
-    bytes32 internal currentVerseSeed;
+    uint256 internal _nextVerseTimestamp;
+    uint8 internal _timeZoneForRound1;
+    uint256 internal _currentVerse;
+    bytes32 internal _currentVerseSeed;
 
-    uint256 public firstVerseTimeStamp;
+    uint256 internal _firstVerseTimeStamp;
     uint16 internal _levelsInOneChallenge;
     uint16 internal _leafsInLeague;
     uint16 internal _levelsInLastChallenge;

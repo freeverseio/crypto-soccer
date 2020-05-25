@@ -5,7 +5,8 @@ import "./UpdatesBase.sol";
 /**
  @title Manages Updates and Challenges game
  @author Freeverse.io, www.freeverse.io
- @dev There are therefore "Two Markets", one operated in Crypto and one in Fiat.
+ @dev It reports updates and challenges to the Stakers contract,
+ @dev which is responsible of managing stakes and rewards accordingly
 */
 
 contract Updates is UpdatesBase {
@@ -20,7 +21,7 @@ contract Updates is UpdatesBase {
     function setChallengeTime(uint256 newTime) external onlyCOO { _challengeTime = newTime; }
 
     function initUpdates() external onlyCOO {
-        require(timeZoneForRound1 == 0, "cannot initialize updates twice");
+        require(_timeZoneForRound1 == 0, "cannot initialize updates twice");
         /// the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         /// that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
         /// the call to the contract initTZs() function.
@@ -30,13 +31,13 @@ contract Updates is UpdatesBase {
         uint256 minute      = (secsOfDay - hour * 3600) / 60; /// 0, ..., 59
         uint256 secs        = (secsOfDay - hour * 3600 - minute * 60); /// 0, ..., 59
         if (minute < 27) {
-            timeZoneForRound1 = normalizeTZ(uint8(hour));
-            nextVerseTimestamp = now + (29-minute)*60 + (60 - secs);
+            _timeZoneForRound1 = normalizeTZ(uint8(hour));
+            _nextVerseTimestamp = now + (29-minute)*60 + (60 - secs);
         } else {
-            timeZoneForRound1 = normalizeTZ(1+uint8(hour));
-            nextVerseTimestamp = now + (29-minute)*60 + (60 - secs) + 3600;
+            _timeZoneForRound1 = normalizeTZ(1+uint8(hour));
+            _nextVerseTimestamp = now + (29-minute)*60 + (60 - secs) + 3600;
         }
-        firstVerseTimeStamp = nextVerseTimestamp;
+        _firstVerseTimeStamp = _nextVerseTimestamp;
     }
 
     function submitActionsRoot(
@@ -49,7 +50,7 @@ contract Updates is UpdatesBase {
         external 
         onlyRelay 
     {
-        require(now > nextVerseTimestamp, "too early to accept actions root");
+        require(now > _nextVerseTimestamp, "too early to accept actions root");
         /// make sure the last verse is settled
         (uint8 tz,,) = prevTimeZoneToUpdate();
         if (tz != NULL_TIMEZONE) {
@@ -71,7 +72,7 @@ contract Updates is UpdatesBase {
         _lastActionsSubmissionTime[tz] = now;
         _incrementVerse();
         _setCurrentVerseSeed(blockhash(block.number-1));
-        emit ActionsSubmission(currentVerse, tz, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
+        emit ActionsSubmission(_currentVerse, tz, day, turnInDay, blockhash(block.number-1), now, actionsRoot, ipfsCid);
     }
 
     /// accepts an update about the root of the current state of a timezone. 
@@ -84,7 +85,7 @@ contract Updates is UpdatesBase {
         require(isTimeToUpdate(verse), "it is not time to update yet");
         (uint8 tz,,) = prevTimeZoneToUpdate();
         _setTZRoot(tz, root); /// first time that we update this TZ
-        emit TimeZoneUpdate(currentVerse, tz, root, now);
+        emit TimeZoneUpdate(_currentVerse, tz, root, now);
         _stakers.update(0, msg.sender);
     }
 
@@ -112,17 +113,6 @@ contract Updates is UpdatesBase {
         _stakers.update(level, msg.sender);
     }
 
-    function _setTZRoot(uint8 tz, bytes32 root) private {
-        uint8 idx = _newestRootsIdx[tz];
-        _roots[tz][idx][0] = root;
-        for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][idx][level] = 0;
-        _lastUpdateTime[tz] = now;
-    }
-
-    function _setCurrentVerseSeed(bytes32 seed) private {
-        currentVerseSeed = seed;
-    }
-
     /// TODO: remove this test function
     function setLevelVerifiableByBC(uint8 newVal) external onlyRelay {
         for (uint8 tz = 1; tz < 25; tz++) {
@@ -138,9 +128,18 @@ contract Updates is UpdatesBase {
     }
     
     function _incrementVerse() private {
-        currentVerse += 1;
-        nextVerseTimestamp += SECS_BETWEEN_VERSES;
+        _currentVerse += 1;
+        _nextVerseTimestamp += SECS_BETWEEN_VERSES;
     }
     
-    
+    function _setCurrentVerseSeed(bytes32 seed) private {
+        _currentVerseSeed = seed;
+    }
+
+    function _setTZRoot(uint8 tz, bytes32 root) private {
+        uint8 idx = _newestRootsIdx[tz];
+        _roots[tz][idx][0] = root;
+        for (uint8 level = 1; level < MAX_CHALLENGE_LEVELS; level++) _roots[tz][idx][level] = 0;
+        _lastUpdateTime[tz] = now;
+    }
 }

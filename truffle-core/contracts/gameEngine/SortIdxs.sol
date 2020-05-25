@@ -1,5 +1,10 @@
 pragma solidity >= 0.6.3;
 
+/**
+ @title Minimal library to sort a set of 8 Indices
+ @author Freeverse.io, www.freeverse.io
+*/
+
 contract SortIdxs {
     
     uint256 constant private N_IDXS = 8;

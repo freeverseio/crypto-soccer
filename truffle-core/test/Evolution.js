@@ -1,3 +1,9 @@
+/*
+ Tests for all functions in 
+  PlayAndEvolve.sol   
+  Evolution.sol, 
+  TrainingPoints.sol, 
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -302,7 +308,7 @@ contract('Evolution', (accounts) => {
         await assets.initTZs({from: owners.COO}).should.be.fulfilled;
         
         training = await TrainingPoints.new(assets.address).should.be.fulfilled;
-        shop = await Shop.new().should.be.fulfilled;
+        shop = await Shop.new(assets.address).should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
         

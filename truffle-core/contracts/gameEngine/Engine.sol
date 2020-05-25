@@ -6,6 +6,14 @@ import "../encoders/EncodingMatchLogBase3.sol";
 import "../encoders/EncodingTactics.sol";
 import "./EngineApplyBoosters.sol";
 
+/**
+ @title Library to compute matches
+ @author Freeverse.io, www.freeverse.io
+ @dev Due to contract-too-large-to-deploy, this contract was split into various
+ @dev Although funcions are basically pure, some remain view because of the pointer
+ @dev to the rest of the code (inheritance led to too-large-to-deploy)
+*/
+ 
 contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
@@ -26,7 +34,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     
     uint8 public constant ROUNDS_PER_MATCH  = 12;   /// Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 public constant MAX_GOALS_IN_MATCH  = 15;   /// Max number of goals that one single team in an entire match (no restriction on which half)
-    /// /// Idxs for vector of globSkills: 
+    /// Idxs for vector of globSkills: 
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
     uint8 private constant IDX_DEFEND_SHOOT = 2; 
@@ -39,7 +47,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     //
     uint8 private constant IDX_SEED         = 0; 
     uint8 private constant IDX_ST_TIME      = 1; 
-    /// 
+    //
     uint256 private constant CHG_HAPPENED   = uint256(1); 
     uint8 public constant RED_CARD  = 3;   /// type of event = redCard
     uint8 private constant WINNER_AWAY = 1;
@@ -211,7 +219,11 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint8 nDefsInTactics, 
         bool is2ndHalf
-    ) private pure returns (uint256) {
+    ) 
+        private 
+        pure 
+        returns (uint256) 
+    {
         uint8 nDefs = nDefsInTactics;
         for (uint8 p = 1; p < 1 + nDefsInTactics; p++) {
             if (skills[p] == 0) nDefs--;
@@ -234,7 +246,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return (skillsTeamA, skillsTeamB);
     }
 
-    //// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
+    /// Decides if a team manages to shoot by confronting attack and defense via globSkills
     function managesToShoot(uint8 teamThatAttacks, uint256[5][2] memory globSkills, uint256 rndNum)
         public
         pure
@@ -293,7 +305,6 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return throwDiceArray(weights, rnd);
     }
 
-
     function selectShooter(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8[9] memory playersPerZone,
@@ -323,8 +334,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return throwDiceArray(weights, rnd);
     }
 
-    //// @dev Decides if a team that creates a shoot manages to score.
-    //// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
+    /// Decides if a team that creates a shoot manages to score.
+    /// First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
         uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
@@ -388,7 +399,5 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         }
         return false;
     }
-
- 
 }
 

@@ -1,12 +1,14 @@
 pragma solidity >= 0.6.3;
 
 /**
-* @title Directory for contract addresses related to the project
-* @dev it keeps the current deployed contracts in the array bytes32[] _names
-* @dev      ...and their addresses in the mapping _name2addr
-* @dev eve ry time we invoke the deploy function, it deletes the _names array
-* @dev      ...and writes the new mapping entries (some will be over-written, some will remain)
+ @title Directory for contract addresses related to the project
+ @author Freeverse.io, www.freeverse.io
+ @dev it keeps the current deployed contracts in the array bytes32[] _names
+ @dev ...and their addresses in the mapping _name2addr
+ @dev every time we invoke the deploy function, it deletes the _names array
+ @dev ...and writes the new mapping entries (some will be over-written, some will remain)
 */
+
 contract Directory {
 
     event DeployedDirectory(bytes32[] names, address[] adresseses);

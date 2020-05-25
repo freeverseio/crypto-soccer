@@ -1,3 +1,8 @@
+/*
+ Tests for all functions in 
+  Market.sol   
+  MarketCrypto.sol, 
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))

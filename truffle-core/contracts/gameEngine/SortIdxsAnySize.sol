@@ -1,5 +1,10 @@
 pragma solidity >= 0.6.3;
 
+/**
+ @title Minimal library to sort an arbitrary number Indices
+ @author Freeverse.io, www.freeverse.io
+*/
+
 contract SortIdxsAnySize {
     
     function sortIdxs(uint256[] memory data, uint8[] memory idxs) public pure returns(uint8[] memory) {

@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in Directoy.sol
+*/
 const BN = require('bn.js');
 var fs = require('fs');
 

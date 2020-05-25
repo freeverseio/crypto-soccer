@@ -7,18 +7,21 @@ import "../encoders/EncodingTPAssignment.sol";
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingTacticsBase1.sol";
 
-contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsBase1 {
-    uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
+/**
+ @title Library or pure functions that manage how players evolve
+ @author Freeverse.io, www.freeverse.io
+*/
 
-    /// uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
+contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsBase1 {
+
+    uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   /// noone saw a card
     uint8 public constant RED_CARD = 3;   /// noone saw a card
-    uint8 public constant SOFT_INJURY  = 1;  
-    uint8 public constant HARD_INJURY  = 2;  
+    uint8 public constant SOFT_INJURY = 1;  
+    uint8 public constant HARD_INJURY = 2;  
     uint8 public constant WEEKS_HARD_INJ = 5;  /// weeks a player is out when suffered a hard injury
     uint8 public constant WEEKS_SOFT_INJ = 2;  /// weeks a player is out when suffered a soft injury
-    uint8 private constant CHG_HAPPENED        = uint8(1); 
-    /// uint8 constant public N_SKILLS = 5;
+    uint8 private constant CHG_HAPPENED = uint8(1); 
 
     function updateSkillsAfterPlayHalf(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
@@ -58,7 +61,9 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics, 
         uint256 matchLog 
-    ) private pure 
+    ) 
+        private 
+        pure 
     {
         uint8[3] memory joinedAt2ndHalf;
         uint8 nJoined = 0;
@@ -93,12 +98,12 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     function hasPlayedThisMatch(uint256 skills, uint8 p, uint8[3] memory joinedAt2ndHalf) public pure returns(bool) {
         /// recall the meaning: joinedAt2ndHalf = shirtNum+1, so that joinedAt2ndHalf == 0 => NO SUBS
         return (
-                    getAlignedEndOfFirstHalf(skills) || 
-                    getSubstitutedFirstHalf(skills) ||
-                    ((joinedAt2ndHalf[0] > 0) && ((p + 1) == joinedAt2ndHalf[0])) ||
-                    ((joinedAt2ndHalf[1] > 0) && ((p + 1) == joinedAt2ndHalf[1])) ||
-                    ((joinedAt2ndHalf[2] > 0) && ((p + 1) == joinedAt2ndHalf[2]))
-                );
+            getAlignedEndOfFirstHalf(skills) || 
+            getSubstitutedFirstHalf(skills) ||
+            ((joinedAt2ndHalf[0] > 0) && ((p + 1) == joinedAt2ndHalf[0])) ||
+            ((joinedAt2ndHalf[1] > 0) && ((p + 1) == joinedAt2ndHalf[1])) ||
+            ((joinedAt2ndHalf[2] > 0) && ((p + 1) == joinedAt2ndHalf[2]))
+        );
     }
 
     function updatePlayerAtEndOfMatch(uint256[PLAYERS_PER_TEAM_MAX] memory skills) private pure {

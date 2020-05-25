@@ -1,3 +1,8 @@
+/*
+ Tests for all functions in
+    Proxy.sol
+    Storage.sol
+*/
 const BN = require('bn.js');
 var fs = require('fs');
 

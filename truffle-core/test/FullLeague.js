@@ -1,3 +1,7 @@
+/*
+ Tests for the update/challenge part of the Updates.sol and Challenges.sol contracts
+ It also tests a javascript library: challengeUtils
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -295,7 +299,7 @@ contract('FullLeague', (accounts) => {
         await assets.initTZs({from: owners.COO}).should.be.fulfilled;
         
         training= await TrainingPoints.new(assets.address).should.be.fulfilled;
-        shop = await Shop.new().should.be.fulfilled;
+        shop = await Shop.new(assets.address).should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
         

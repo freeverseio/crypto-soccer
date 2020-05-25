@@ -5,6 +5,11 @@ import "./EngineLib.sol";
 import "./SortValues.sol";
 import "../encoders/EncodingMatchLogBase1.sol";
 
+/**
+ @title Library or pure functions, part of Engine
+ @author Freeverse.io, www.freeverse.io
+*/
+
 contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1, SortValues {
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     /// Skills: shoot, speed, pass, defence, endurance
@@ -195,7 +200,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         uint8[3] memory substitutions,
         uint8[3] memory subsRounds,
         uint64[2] memory rnds
-    ) private pure returns(uint256) 
+    ) 
+        private 
+        pure 
+        returns(uint256) 
     {
         if (selectedPlayer == NO_OUT_OF_GAME_PLAYER) return addOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
 
@@ -506,31 +514,31 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     }
 
     function penaltyForLefts(uint256 leftishness) private pure returns(uint16) {
-            if (leftishness == IDX_C || leftishness == IDX_CR) {return 1000;} 
-            else if (leftishness == IDX_R) {return 2000;}
+        if (leftishness == IDX_C || leftishness == IDX_CR) {return 1000;} 
+        else if (leftishness == IDX_R) {return 2000;}
     }
 
     function penaltyForCenters(uint256 leftishness) private pure returns(uint16) {
-            if (leftishness == IDX_L || leftishness == IDX_R) {return 1000;} 
+        if (leftishness == IDX_L || leftishness == IDX_R) {return 1000;} 
     }
 
     function penaltyForRights(uint256 leftishness) private pure returns(uint16) {
-            if (leftishness == IDX_C || leftishness == IDX_LC) {return 1000;} 
-            else if (leftishness == IDX_L) {return 2000;}
+        if (leftishness == IDX_C || leftishness == IDX_LC) {return 1000;} 
+        else if (leftishness == IDX_L) {return 2000;}
     }
     
     function penaltyForDefenders(uint256 forwardness) private pure returns(uint16) {
-            if (forwardness == IDX_M || forwardness == IDX_MF) {return 1000;}
-            else if (forwardness == IDX_F) {return 2000;}
+        if (forwardness == IDX_M || forwardness == IDX_MF) {return 1000;}
+        else if (forwardness == IDX_F) {return 2000;}
     }
 
     function penaltyForMids(uint256 forwardness) private pure returns(uint16) {
-            if (forwardness == IDX_D || forwardness == IDX_F) {return 1000;}
+        if (forwardness == IDX_D || forwardness == IDX_F) {return 1000;}
     }
 
     function penaltyForAttackers(uint256 forwardness) private pure returns(uint16) {
-            if (forwardness == IDX_M || forwardness == IDX_MD) {return 1000;}
-            else if (forwardness == IDX_D) {return 2000;}
+        if (forwardness == IDX_M || forwardness == IDX_MD) {return 1000;}
+        else if (forwardness == IDX_D) {return 2000;}
     }
 
     function getLinedUpSkills(

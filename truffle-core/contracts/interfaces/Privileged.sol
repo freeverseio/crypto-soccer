@@ -1,10 +1,16 @@
 pragma solidity >= 0.6.3;
-/**
- * @title Library of functions to serialize values into uints, and deserialize back
- */
-import "../storage/AssetsView.sol";
 
-contract Privileged is AssetsView {
+/**
+ @title Library of pure functions used by company to compute useful data
+ @author Freeverse.io, www.freeverse.io
+ @dev The name Privileged is due to expectation that this is only valid for later,
+ @dev as the company, use the returned data to, e.g. offer BuyNow or Special players.
+*/
+
+import "../storage/AssetsView.sol";
+import "../encoders/EncodingSkillsSetters.sol";
+
+contract Privileged is AssetsView, EncodingSkillsSetters {
     
     /// order of idxs:
     /// skills: shoot, speed, pass, defence, endurance
@@ -18,7 +24,11 @@ contract Privileged is AssetsView {
         uint8[4] memory birthTraits,
         uint256 playerId,
         uint256 nowInSecs
-    ) public pure returns (uint256) {
+    ) 
+        public 
+        pure 
+        returns (uint256) 
+    {
         uint256 dayOfBirth = (nowInSecs - ageInSecs/INGAMETIME_VS_REALTIME)/86400; /// 86400 = secsInDay
         uint32 sumSkills;
         for (uint8 s = 0; s < N_SKILLS; s++) sumSkills += skillsVec[s];

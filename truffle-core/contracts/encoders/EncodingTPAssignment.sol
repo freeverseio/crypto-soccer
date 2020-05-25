@@ -1,24 +1,32 @@
 pragma solidity >= 0.6.3;
 
+/**
+ @title Library to serialize/deserialize assignment of Traning points by users
+ @author Freeverse.io, www.freeverse.io
+*/
+
+/**
+ Spec: 
+ We have 5 buckets: GK, D, M, A, Special
+ We need 5 TPperSkill per bucket 
+      - 9 bit per each of the TPperSkill
+      - such that sum(TPperSkill) < TP (except for special player)
+ assignedTP encodes a total: 5 buckets * 5 TPperSKill * 9b + 1 totalTP * 9b + 5 for specialPlId = 239
+ offsets:
+      - TPperSkill: 0 --> 224
+      - TP: 225 --> 233
+      - specIf --> 234 -> 238
+ 9 bit for TP  => max val = 511
+ 5 bit for specialPlayer
+ TP: all the available Training point earned in the previous match log
+ specialPlayer: no specialPlayer if == 25
+*/
+
 contract EncodingTPAssignment {
 
     uint16 public constant MAX_PERCENT = 60; 
     uint8 private constant PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_PLAYER = PLAYERS_PER_TEAM_MAX; /// No player chosen
-
-    /// We have 5 buckets: GK, D, M, A, Special
-    /// We need 5 TPperSkill per bucket 
-    ///      - 9 bit per each of the TPperSkill
-    ///      - such that sum(TPperSkill) < TP (except for special player)
-    /// assignedTP encodes a total: 5 buckets * 5 TPperSKill * 9b + 1 totalTP * 9b + 5 for specialPlId = 239
-    /// offsets:
-    ///      - TPperSkill: 0 --> 224
-    ///      - TP: 225 --> 233
-    ///      - specIf --> 234 -> 238
-    /// 9 bit for TP  => max val = 511
-    /// 5 bit for specialPlayer
-    /// TP: all the available Training point earned in the previous match log
-    /// specialPlayer: no specialPlayer if == 25
     
     function encodeTP(uint16 TP, uint16[25] memory TPperSkill, uint8 specialPlayer) public pure returns (uint256 encoded) {
         require(specialPlayer <= PLAYERS_PER_TEAM_MAX, "specialPlayer value too large");

@@ -1,7 +1,13 @@
 pragma solidity >= 0.6.3;
+
 /**
- * @title Library of functions to serialize values into uints, and deserialize back
- */
+ @title Library of pure functions to serialize/deserialize IDs: playerId, countryID, etc
+ @author Freeverse.io, www.freeverse.io
+ @dev The structure of the Assets Universe is: there are 24 timezones (TZs)
+ @dev ... TZs range from 1,..24 (tz = 0 is Null)
+ @dev Each TZ has countries labeled by countryIdxInTZ = 0,.. 2**10-1
+ @dev Each country has teams or players, each labeled from 0,...2**28-1
+*/
 
 contract EncodingIDs {
 

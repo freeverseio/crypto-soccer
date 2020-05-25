@@ -1,22 +1,23 @@
 pragma solidity >= 0.6.3;
-/**
- * @title Library of functions to serialize values into uints, and deserialize back
- */
 
+/**
+ @title Subset library to serialize/deserialize match tactics decided by users
+ @author Freeverse.io, www.freeverse.io
+*/ 
+ 
 contract EncodingTacticsBase1 {
 
     uint8 constant private PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public NO_SUBST = 11;
-    uint8 public constant NO_LINEUP = PLAYERS_PER_TEAM_MAX; /// No player chosen in that position
+    uint8 constant internal NO_LINEUP = PLAYERS_PER_TEAM_MAX; /// No player chosen in that position
     ///  Leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
-    uint8 constant public IDX_R = 1;
-    uint8 constant public IDX_C = 2;
-    uint8 constant public IDX_CR = 3;
-    uint8 constant public IDX_L = 4;
-    uint8 constant public IDX_LR = 5;
-    uint8 constant public IDX_LC = 6;
-    uint8 constant public IDX_LCR = 7;
-
+    uint8 constant internal IDX_R = 1;
+    uint8 constant internal IDX_C = 2;
+    uint8 constant internal IDX_CR = 3;
+    uint8 constant internal IDX_L = 4;
+    uint8 constant internal IDX_LR = 5;
+    uint8 constant internal IDX_LC = 6;
+    uint8 constant internal IDX_LCR = 7;
 
     function encodeTactics(
         uint8[3] memory substitutions, 

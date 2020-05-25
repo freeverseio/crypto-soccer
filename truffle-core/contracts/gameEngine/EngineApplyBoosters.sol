@@ -4,9 +4,14 @@ import "../encoders/EncodingTactics.sol";
 import "../encoders/EncodingSkillsGetters.sol";
 import "../encoders/EncodingSkillsSetters.sol";
 
+/**
+ @title Library to manage how boosters affect skills
+ @author Freeverse.io, www.freeverse.io
+*/
+
 contract EngineApplyBoosters is EncodingSkillsSetters, EncodingSkillsGetters, EncodingTactics  {
 
-    uint8 constant private PLAYERS_PER_TEAM_MAX  = 25;
+    uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
 
     /// skills order: shoot, speed, pass, defence, endurance

@@ -1,7 +1,9 @@
 pragma solidity >= 0.6.3;
+
 /**
- * @title Library of functions to serialize values into uints, and deserialize back
- */
+ @title Getters for library to serialize/deserialize player skills
+ @author Freeverse.io, www.freeverse.io
+*/
 
 contract EncodingSkillsGetters {
 
@@ -65,10 +67,6 @@ contract EncodingSkillsGetters {
         return uint256(encodedSkills >> 255 & 1) == 1; 
     }
      
-    function addIsSpecial(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills | (uint256(1) << 255));
-    }
-
     function getGeneration(uint256 encodedSkills) public pure returns (uint256) {
         return (encodedSkills >> 205) & 255;
     }

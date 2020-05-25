@@ -1,3 +1,9 @@
+/*
+ Tests for all functions in
+    Updates.sol
+    Challenges.sol
+    and how Updates relates to Stakers.sol
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -17,6 +23,7 @@ const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');
 const Merkle = artifacts.require('Merkle');
 const Stakers = artifacts.require("Stakers")
+const Utils = artifacts.require('Utils');
 
 
 
@@ -33,7 +40,7 @@ contract('Updates', (accounts) => {
     }
 
     const moveToNextVerse = async (updates, extraSecs = 0) => {
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         await timeTravel.advanceTime(nextTime - now + extraSecs);
         await timeTravel.advanceBlock().should.be.fulfilled;
@@ -81,6 +88,7 @@ contract('Updates', (accounts) => {
         await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
         await stakers.setGameOwner(updates.address, {from:owners.COO}).should.be.fulfilled;
         
+        utils = await Utils.new().should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
         await updates.initUpdates({from: owners.COO}).should.be.fulfilled;
@@ -190,7 +198,7 @@ contract('Updates', (accounts) => {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
-            var {0: tz, 1: matchday, 2: turn} = await updates._timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
+            var {0: tz, 1: matchday, 2: turn} = await updates.timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
             day = Math.floor(0.25 * verse / 24);
             thisResult = " | verse = " + verse + 
                 ", tz = " + tz.toNumber() + 
@@ -203,7 +211,7 @@ contract('Updates', (accounts) => {
     });
     
     it('require that BC and local time are less than 15 sec out of sync', async () =>  {
-        blockChainTimeSec = await updates.getNow().should.be.fulfilled;
+        blockChainTimeSec = await utils.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
         // the substraction is in miliseconds:
         // require less than 3 hours
@@ -243,17 +251,17 @@ contract('Updates', (accounts) => {
     });
     
     it('wait some minutes', async () =>  {
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
         extraTime = 3*60
         await timeTravel.advanceTime(extraTime).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
-        newNow = await updates.getNow().should.be.fulfilled;
+        newNow = await utils.getNow().should.be.fulfilled;
         newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
         newBlock.should.be.equal(block+1);
         await isCloseEnough(newNow.toNumber(), now.toNumber() + extraTime).should.be.equal(true);
         await timeTravel.revertToSnapShot(snapshotId);
-        newNow = await updates.getNow().should.be.fulfilled;
+        newNow = await utils.getNow().should.be.fulfilled;
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
@@ -272,7 +280,7 @@ contract('Updates', (accounts) => {
         timeZoneToUpdate[0].toNumber().should.be.equal(timeZoneToUpdateBefore[0].toNumber()); // tz to update does not change during the first 4 verses
         seed1 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         seed1.should.not.be.equal(seed0);
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "ActionsSubmission", (event) => {
             return event.seed == seed1 && isCloseEnough(event.submissionTime.toNumber(), now.toNumber());
         });
@@ -292,7 +300,7 @@ contract('Updates', (accounts) => {
 
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
         submissionTime = await updates.getLastActionsSubmissionTime(timeZoneToUpdateBefore[0].toNumber()).should.be.fulfilled;
         timeZoneToUpdateAfter = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -318,7 +326,7 @@ contract('Updates', (accounts) => {
         const cif = "ciao2";
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         isTime = await updates.isTimeToUpdate(verse = 1).should.be.fulfilled;
         isTime.should.be.equal(true);
         await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
@@ -326,11 +334,11 @@ contract('Updates', (accounts) => {
 
 
     it('moveToNextVerse', async () =>  {
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
         await moveToNextVerse(updates, extraSecs = 0);
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(false)
         
     });

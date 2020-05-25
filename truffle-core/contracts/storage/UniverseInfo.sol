@@ -9,7 +9,7 @@ import "../encoders/EncodingSkillsGetters.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
-contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
+contract UniverseInfo is Storage, EncodingSkillsGetters, EncodingIDs {
     
     event TeamTransfer(uint256 teamId, address to);
 
@@ -38,13 +38,13 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
 
     function isBotTeam(uint256 teamId) public view returns(bool) {
         if (teamId == ACADEMY_TEAM) return false;
-        return teamIdToOwner[teamId] == NULL_ADDR;
+        return _teamIdToOwner[teamId] == NULL_ADDR;
     }
 
     /// returns NULL_ADDR if team is bot
     function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
-        if (!_tzExists(timeZone) || !_countryInTZExists(timeZone, countryIdxInTZ)) return NULL_ADDR;
-        return teamIdToOwner[encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry)];
+        if (!tzExists(timeZone) || !countryInTZExists(timeZone, countryIdxInTZ)) return NULL_ADDR;
+        return _teamIdToOwner[encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry)];
     }
     
     function teamExistsInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
@@ -57,8 +57,8 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     }
     
     function getNDivisionsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
-        if (!_tzExists(timeZone) || !_countryInTZExists(timeZone, countryIdxInTZ)) return 0;
-        return countryIdToNDivisions[encodeTZCountryAndVal(timeZone, countryIdxInTZ, 0)];
+        if (!tzExists(timeZone) || !countryInTZExists(timeZone, countryIdxInTZ)) return 0;
+        return _countryIdToNDivisions[encodeTZCountryAndVal(timeZone, countryIdxInTZ, 0)];
     }
 
     function getNLeaguesInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
@@ -71,11 +71,11 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     
     function wasPlayerCreatedVirtually(uint256 playerId) public view returns(bool) {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
-        return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
+        return wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }
 
     function getCurrentRound(uint8 tz) public view returns (uint256) {
-        return getCurrentRoundPure(tz, timeZoneForRound1, currentVerse);
+        return getCurrentRoundPure(tz, _timeZoneForRound1, _currentVerse);
     }
 
     function getCurrentRoundPure(uint8 tz, uint8 tz1, uint256 verse) public pure returns (uint256) { 
@@ -93,11 +93,11 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
         }
     }
     
-    function _countryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) internal view returns(bool) {
-        return(countryIdxInTZ < tzToNCountries[timeZone]);
+    function countryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) public view returns(bool) {
+        return(countryIdxInTZ < _tzToNCountries[timeZone]);
     }
 
-    function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
+    function wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) public view returns(bool) {
         return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
     }
     
@@ -106,7 +106,7 @@ contract AssetsLib is Storage, EncodingSkillsGetters, EncodingIDs {
     function relay() public view returns (address) { return _relay; }
     function cryptoMktAddr() public view returns (address) { return _cryptoMktAddr; }
     
-    function _tzExists(uint8 timeZone) internal pure returns(bool) {
+    function tzExists(uint8 timeZone) public pure returns(bool) {
         return(timeZone > NULL_TIMEZONE && timeZone < 25);
     }
 }

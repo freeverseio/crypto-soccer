@@ -2,12 +2,14 @@ pragma solidity >= 0.6.3;
 import "./EncodingMatchLogBase4.sol";
 
 /**
- * @title Library of functions to serialize matchLogs
- */
+ @title Subset of Library of functions to serialize matchLogs
+ @author Freeverse.io, www.freeverse.io
+ @dev see EncodingMatchLog.sol for full spec
+*/
 
 contract EncodingMatchLogBase1 is EncodingMatchLogBase4{
 
-    uint256 private constant ONE256       = 1; 
+    uint256 private constant ONE256 = 1; 
 
     function addNGoals(uint256 log, uint8 goals) public pure returns (uint256) {
         return log + goals;

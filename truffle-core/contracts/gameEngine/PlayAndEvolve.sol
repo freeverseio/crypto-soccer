@@ -5,11 +5,18 @@ import "./Evolution.sol";
 import "./Engine.sol";
 import "./Shop.sol";
 
+/**
+ @title Main entry point for backend. Plays 1st and 2nd half and evolves players.
+ @author Freeverse.io, www.freeverse.io
+ @dev All functions are basically pure, but some had to be made view
+ @dev because they use a storage pointer to other contracts.
+*/
+
 contract PlayAndEvolve {
 
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
-    uint8 private constant IDX_IS_2ND_HALF      = 0; 
-    uint8 public constant ROUNDS_PER_MATCH  = 12;   /// Number of relevant actions that happen during a game (12 equals one per 3.7 min)
+    uint8 private constant IDX_IS_2ND_HALF = 0; 
+    uint8 public constant ROUNDS_PER_MATCH = 12;   /// Number of relevant actions that happen during a game (12 equals one per 3.7 min)
 
     TrainingPoints private _training;
     Evolution private _evo;
@@ -42,7 +49,12 @@ contract PlayAndEvolve {
         bool[3] memory matchBools, /// [is2ndHalf, isHomeStadium, isPlayoff]
         uint256[2] memory assignedTPs
     )
-        public view returns(uint256[PLAYERS_PER_TEAM_MAX][2] memory, uint256[2+5*ROUNDS_PER_MATCH] memory)
+        public 
+        view 
+        returns (
+            uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
+            uint256[2+5*ROUNDS_PER_MATCH] memory
+        )
     {
         require(!matchBools[IDX_IS_2ND_HALF], "play1stHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 
@@ -80,7 +92,12 @@ contract PlayAndEvolve {
         uint256[2] memory matchLogs,
         bool[3] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
     )
-        public view returns(uint256[PLAYERS_PER_TEAM_MAX][2] memory, uint256[2+5*ROUNDS_PER_MATCH] memory)
+        public 
+        view 
+        returns(
+            uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
+            uint256[2+5*ROUNDS_PER_MATCH] memory
+        )
     {
         require(matchBools[IDX_IS_2ND_HALF], "play2ndHalfAndEvolve was called with the wrong is2ndHalf boolean!");
 

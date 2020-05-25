@@ -1,5 +1,10 @@
 pragma solidity >= 0.6.3;
 
+/**
+ @title Minimal library to sort a set of 14 values
+ @author Freeverse.io, www.freeverse.io
+*/
+
 contract SortValues {
     
     function sort14(uint8[14] memory data) public pure returns(uint8[14] memory) {

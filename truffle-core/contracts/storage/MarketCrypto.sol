@@ -17,8 +17,8 @@ contract MarketCrypto {
     event BidForPlayerCrypto(uint256 playerId, uint256 bidderTeamId, uint256 totalAmount);
     event AssetWentToNewOwner(uint256 playerId, uint256 auctionId);
 
-    uint32 public _auctionDuration = 24 hours; 
-    uint256 public _minimumBidIncrement = 0.5 ether; /// bid for at least this amount of XDAI, or increase previous by this amount
+    uint32 private _auctionDuration = 24 hours; 
+    uint256 private _minimumBidIncrement = 0.5 ether; /// bid for at least this amount of XDAI, or increase previous by this amount
     
     Market private _market;
 
@@ -188,4 +188,8 @@ contract MarketCrypto {
     
     function getBalance(uint256 auctionId, address addr) external view returns (uint256) { return _balance[auctionId][addr]; }
     function getCurrentAuctionForPlayer(uint256 playerId) external view returns (uint256) { return _playerIdToAuctionId[playerId]; }
+    function auctionDuration() external view returns (uint32) { return _auctionDuration; }
+    function minimumBidIncrement() external view returns (uint256) { return _minimumBidIncrement; }
+    function nAuctions() external view returns (uint256) { return _nAuctions; }
+    
 }

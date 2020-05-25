@@ -1,13 +1,15 @@
 pragma solidity >= 0.6.3;
 
-import "./AssetsLib.sol";
+import "./UniverseInfo.sol";
 import "../encoders/EncodingState.sol";
 import "../encoders/EncodingSkillsSetters.sol";
-/**
- * @title Entry point for changing ownership of assets, and managing bids and auctions.
- */
 
-contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
+/**
+ @title View and Pure functions inherited by Market
+ @author Freeverse.io, www.freeverse.io
+*/
+
+contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     
     function getMaxAllowedAcquisitions(uint256 teamId) public view returns (bool isConstrained, uint8) {
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
@@ -218,7 +220,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
 
     /// FUNCTIONS FOR SIGNATURE MANAGEMENT
     /// retrieves the addr that signed a message
-    function recoverAddr(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) internal pure returns (address) {
+    function recoverAddr(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) public pure returns (address) {
         return ecrecover(msgHash, v, r, s);
     }
 
@@ -251,7 +253,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     }
     
     function getOwnerTeam(uint256 teamId) public view returns(address) {
-        return teamIdToOwner[teamId];
+        return _teamIdToOwner[teamId];
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
@@ -280,7 +282,7 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
             }
         } else {
             for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
-                uint256 writtenId = teamIdToPlayerIds[teamId][shirtNum];
+                uint256 writtenId = _teamIdToPlayerIds[teamId][shirtNum];
                 if (writtenId == 0) {
                     playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
                 } else {
@@ -297,9 +299,9 @@ contract MarketView is AssetsLib, EncodingSkillsSetters, EncodingState {
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
         /// already assumes that there was a previous check that this team is not a bot
         for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum > 0; shirtNum--) {
-            if (isFreeShirt(teamIdToPlayerIds[teamId][shirtNum], shirtNum)) { return shirtNum; }
+            if (isFreeShirt(_teamIdToPlayerIds[teamId][shirtNum], shirtNum)) { return shirtNum; }
         }
-        return isFreeShirt(teamIdToPlayerIds[teamId][0], 0) ? 0 : PLAYERS_PER_TEAM_MAX;
+        return isFreeShirt(_teamIdToPlayerIds[teamId][0], 0) ? 0 : PLAYERS_PER_TEAM_MAX;
     }
     
     function isFreeShirt(uint256 playerId, uint8 shirtNum) public pure returns(bool) {

@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in EncodingSkills.sol and contracts inherited by it
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -149,7 +152,7 @@ contract('EncodingSkills', (accounts) => {
         
         result =  await encodingGet.getIsSpecial(skills).should.be.fulfilled;
         result.should.be.equal(false);
-        skills2 = await encodingGet.addIsSpecial(skills).should.be.fulfilled;
+        skills2 = await encodingSet.addIsSpecial(skills).should.be.fulfilled;
         result =  await encodingGet.getIsSpecial(skills2).should.be.fulfilled;
         result.should.be.equal(true);
         
