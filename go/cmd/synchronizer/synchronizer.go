@@ -35,6 +35,7 @@ func main() {
 	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
 	constantsgettersContractAddress := flag.String("constantsgettersContractAddress", "", "")
 	stakersContractAddress := flag.String("stakersContractAddress", "", "")
+	directoryContractAddress := flag.String("directoryContractAddress", "", "")
 	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	delta := flag.Int("delta", 10, "number of block to process at maximum")
@@ -85,6 +86,9 @@ func main() {
 	if *stakersContractAddress == "" {
 		log.Fatal("no stakers contract address")
 	}
+	if *directoryContractAddress == "" {
+		log.Fatal("no directory contract address")
+	}
 
 	log.Infof("ipfs URL: %v", *ipfsURL)
 
@@ -119,6 +123,7 @@ func main() {
 			*constantsgettersContractAddress,
 			privilegedContractAddress,
 			*stakersContractAddress,
+			*directoryContractAddress,
 		)
 		if err != nil {
 			return err
