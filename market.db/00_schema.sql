@@ -80,15 +80,15 @@ CREATE TABLE playstore_orders(
     signature TEXT NOT NULL,
     state playstore_order_state NOT NULL,
     state_extra TEXT NOT NULL,
-    PRIMARY KEY(order_id)
+    PRIMARY KEY(purchase_token)
 );
 
 CREATE TABLE playstore_orders_histories(
     inserted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    order_id TEXT NOT NULL REFERENCES playstore_orders(order_id),
+    order_id TEXT NOT NULL,
     package_name TEXT NOT NULL,
     product_id TEXT NOT NULL,
-    purchase_token TEXT NOT NULL,
+    purchase_token TEXT NOT NULL REFERENCES playstore_orders(purchase_token),
     player_id TEXT NOT NULL,
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
