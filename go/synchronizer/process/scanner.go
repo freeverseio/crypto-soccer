@@ -108,6 +108,9 @@ func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface
 }
 
 func (s *EventScanner) scanAssetsInit(opts *bind.FilterOpts) error {
+	if s.contracts.Assets == nil {
+		return nil
+	}
 	iter, err := s.contracts.Assets.FilterAssetsInit(opts)
 	if err != nil {
 		return err
@@ -121,6 +124,9 @@ func (s *EventScanner) scanAssetsInit(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
+	if s.contracts.Assets == nil {
+		return nil
+	}
 	iter, err := s.contracts.Assets.FilterDivisionCreation(opts)
 	if err != nil {
 		return err
@@ -134,6 +140,9 @@ func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
+	if s.contracts.Market == nil {
+		return nil
+	}
 	iter, err := s.contracts.Market.FilterPlayerStateChange(opts)
 	if err != nil {
 		return err
@@ -147,6 +156,9 @@ func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
+	if s.contracts.Assets == nil {
+		return nil
+	}
 	iter, err := s.contracts.Assets.FilterTeamTransfer(opts)
 	if err != nil {
 		return err
@@ -169,6 +181,9 @@ func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
 //}
 
 func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
+	if s.contracts.Market == nil {
+		return nil
+	}
 	iter, err := s.contracts.Market.FilterPlayerFreeze(opts)
 	if err != nil {
 		return err
@@ -182,6 +197,9 @@ func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
+	if s.contracts.Updates == nil {
+		return nil
+	}
 	iter, err := s.contracts.Updates.FilterActionsSubmission(opts)
 	if err != nil {
 		return err
@@ -195,6 +213,9 @@ func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanTimeZoneUpdate(opts *bind.FilterOpts) error {
+	if s.contracts.Updates == nil {
+		return nil
+	}
 	iter, err := s.contracts.Updates.FilterTimeZoneUpdate(opts)
 	if err != nil {
 		return err
