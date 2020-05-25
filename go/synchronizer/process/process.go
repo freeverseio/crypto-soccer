@@ -95,8 +95,9 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case directory.DirectoryDeployedDirectory:
-		log.Warning("TODO implement directory event")
-		return nil
+		var err error
+		p.contracts, err = contracts.NewFromDeployedDirectory(p.contracts.Client, v)
+		return err
 	case assets.AssetsAssetsInit:
 		assetsInitProcessor := NewAssetsInitProcessor(p.contracts)
 		return assetsInitProcessor.Process(tx, v)

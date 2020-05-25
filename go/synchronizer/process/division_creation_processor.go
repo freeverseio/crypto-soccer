@@ -43,7 +43,7 @@ func NewDivisionCreationProcessor(
 }
 
 func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivisionCreation) error {
-	log.Infof("[processor|consume] LeaguesDivisionCreation tx %v, country %v, division %v", event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry)
+	log.Infof("[processor|consume] LeaguesDivisionCreation tz %v, country %v, division %v", event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry)
 
 	if event.CountryIdxInTZ.Uint64() == 0 && event.DivisionIdxInCountry.Uint64() == 0 {
 		timezone := storage.Timezone{event.Timezone}

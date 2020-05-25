@@ -1,6 +1,7 @@
 package contracts
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"strings"
@@ -187,10 +188,10 @@ func NewFromDeployedDirectory(client *ethclient.Client, event directory.Director
 	contractMap := make(map[string]string)
 	for i := range event.Names {
 		name := event.Names[i]
+		n := bytes.Index(name[:], []byte{0})
 		address := event.Adresseses[i]
-		contractMap[string(name[:])] = address.String()
+		contractMap[string(name[:n])] = address.String()
 	}
-
 	return New(
 		client,
 		contractMap["LEAGUES"],

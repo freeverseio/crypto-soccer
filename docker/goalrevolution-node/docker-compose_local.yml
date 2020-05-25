@@ -49,6 +49,7 @@ services:
       -trainingpointsContractAddress "${TRAININGPOINTS_CONTRACT_ADDRESS}"
       -constantsgettersContractAddress "${CONSTANTSGETTERS_CONTRACT_ADDRESS}"
       -stakersContractAddress "${STAKERS_CONTRACT_ADDRESS}"
+      -directoryContractAddress "${DIRECTORY_CONTRACT_ADDRESS}"
       -staker "${STAKER_PVC}"
       -delta "${BLOCKS_PER_STEP}"
     depends_on:
