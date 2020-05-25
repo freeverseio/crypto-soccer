@@ -84,6 +84,9 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 	if err := s.scanTimeZoneUpdate(opts); err != nil {
 		return err
 	}
+	if err := s.scanDeployedDirectory(opts); err != nil {
+		return err
+	}
 
 	log.Debug("scanner got: ", len(s.Events), " Abstract Events")
 
@@ -233,6 +236,7 @@ func (s *EventScanner) scanDeployedDirectory(opts *bind.FilterOpts) error {
 	if s.contracts.Directory == nil {
 		return errors.New("contract Directory is nil")
 	}
+
 	iter, err := s.contracts.Directory.FilterDeployedDirectory(opts)
 	if err != nil {
 		return err
@@ -240,7 +244,7 @@ func (s *EventScanner) scanDeployedDirectory(opts *bind.FilterOpts) error {
 	for iter.Next() {
 		e := *(iter.Event)
 		log.Debugf("[scanner] scanDeployedDirectory")
-		s.addEvent(e.Raw, "DeployedDirectory", e)
+		s.addEvent(e.Raw, "DirectoryDeployedDirectory", e)
 	}
 	return nil
 }

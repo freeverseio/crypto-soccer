@@ -53,53 +53,6 @@ module.exports = function (deployer, network, accounts) {
     const directory = await deployer.deploy(Directory).should.be.fulfilled;
     const marketCrypto = await deployer.deploy(MarketCrypto, proxy.address).should.be.fulfilled;
 
-    console.log("Setting up ...");
-
-    if (versionNumber == 0) { 
-      // first set all owners to accounts[0] so that we can do some operations
-      await assets.setCOO(accounts[0]).should.be.fulfilled;
-      await assets.setMarket(accounts[0]).should.be.fulfilled;
-      await assets.setRelay(accounts[0]).should.be.fulfilled;
-
-      // do these operations:
-      await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
-      await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
-      await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
-      await updates.initUpdates().should.be.fulfilled; 
-      await updates.setStakersAddress(stakers.address).should.be.fulfilled;
-      await stakers.setGameOwner(updates.address).should.be.fulfilled;
-      for (trustedParty of owners.trustedParties) {
-        await stakers.addTrustedParty(trustedParty);
-      }
-
-      
-      if (singleTimezone != -1) {
-        console.log("Init single timezone", singleTimezone);
-        await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
-      } else {
-        await assets.initTZs().should.be.fulfilled;
-      }
-
-      // Prepare the final ownerships
-      await assets.setCOO(owners.COO).should.be.fulfilled;
-      await assets.setMarket(owners.market).should.be.fulfilled;
-      await assets.setRelay(owners.relay).should.be.fulfilled;
-      await proxy.setSuperUser(owners.superuser).should.be.fulfilled;
-
-      await proxy.proposeCompany(owners.company).should.be.fulfilled;
-
-      if (network == "test") {
-        console.log("Acquiring final ownership -- only available in TEST network -- requires privKeys");
-        await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
-        for (trustedParty of owners.trustedParties) {
-          await stakers.enrol({from: trustedParty, value: requiredStake});
-        }
-      } else {
-        console.log("You need to perform the final ownership stage with your HD wallets");
-      }
-    }
-
-
     namesAndAddresses = [
       ["DIRECTORY", directory.address],
       ["ASSETS", assets.address],
@@ -122,7 +75,6 @@ module.exports = function (deployer, network, accounts) {
       ["MARKETCRYPTO", marketCrypto.address],
       ["STAKERS", stakers.address],
     ]
-
     // Build arrays "names" and "addresses" and store in Directory contract
     names = [];
     namesBytes32 = [];
@@ -131,8 +83,54 @@ module.exports = function (deployer, network, accounts) {
       names.push(namesAndAddresses[c][0]);
       namesBytes32.push(web3.utils.utf8ToHex(namesAndAddresses[c][0]));
       addresses.push(namesAndAddresses[c][1]);
-    }
+    } 
     await directory.deploy(namesBytes32, addresses).should.be.fulfilled;
+
+    console.log("Setting up ...");
+
+    if (versionNumber == 0) { 
+      // first set all owners to accounts[0] so that we can do some operations
+      await assets.setCOO(accounts[0]).should.be.fulfilled;
+      await assets.setMarket(accounts[0]).should.be.fulfilled;
+      await assets.setRelay(accounts[0]).should.be.fulfilled;
+
+      // do these operations:
+      await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
+      await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
+      await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+      await updates.initUpdates().should.be.fulfilled; 
+      await updates.setStakersAddress(stakers.address).should.be.fulfilled;
+      await stakers.setGameOwner(updates.address).should.be.fulfilled;
+
+      if (singleTimezone != -1) {
+        console.log("Init single timezone", singleTimezone);
+        await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
+      } else {
+        await assets.initTZs().should.be.fulfilled;
+      }
+
+      for (trustedParty of owners.trustedParties) {
+        await stakers.addTrustedParty(trustedParty);
+      }
+
+      // Prepare the final ownerships
+      await assets.setCOO(owners.COO).should.be.fulfilled;
+      await assets.setMarket(owners.market).should.be.fulfilled;
+      await assets.setRelay(owners.relay).should.be.fulfilled;
+      await proxy.setSuperUser(owners.superuser).should.be.fulfilled;
+
+      await proxy.proposeCompany(owners.company).should.be.fulfilled;
+
+      if (network == "test") {
+        console.log("Acquiring final ownership -- only available in TEST network -- requires privKeys");
+        await proxy.acceptCompany({from: owners.company}).should.be.fulfilled;
+        for (trustedParty of owners.trustedParties) {
+          await stakers.enrol({from: trustedParty, value: requiredStake});
+        }
+      } else {
+        console.log("You need to perform the final ownership stage with your HD wallets");
+      }
+    }
 
     // Print Summary to Console
     console.log("");
