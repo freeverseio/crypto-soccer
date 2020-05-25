@@ -147,6 +147,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		contractMap["CONSTANTSGETTERS_CONTRACT_ADDRESS"],
 		contractMap["PRIVILEGED_CONTRACT_ADDRESS"],
 		contractMap["STAKERS_CONTRACT_ADDRESS"],
+		contractMap["DIRECTORY_CONTRACT_ADDRESS"],
 	)
 
 	b.Addresses = ContractAddresses{

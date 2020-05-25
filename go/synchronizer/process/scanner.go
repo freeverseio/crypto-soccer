@@ -1,6 +1,7 @@
 package process
 
 import (
+	"errors"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -224,6 +225,22 @@ func (s *EventScanner) scanTimeZoneUpdate(opts *bind.FilterOpts) error {
 		e := *(iter.Event)
 		log.Debugf("[scanner] scanTimeZoneUpdate")
 		s.addEvent(e.Raw, "UpdatesTimeZoneUpdate", e)
+	}
+	return nil
+}
+
+func (s *EventScanner) scanDeployedDirectory(opts *bind.FilterOpts) error {
+	if s.contracts.Directory == nil {
+		return errors.New("contract Directory is nil")
+	}
+	iter, err := s.contracts.Directory.FilterDeployedDirectory(opts)
+	if err != nil {
+		return err
+	}
+	for iter.Next() {
+		e := *(iter.Event)
+		log.Debugf("[scanner] scanDeployedDirectory")
+		s.addEvent(e.Raw, "DeployedDirectory", e)
 	}
 	return nil
 }
