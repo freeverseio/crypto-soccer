@@ -45,14 +45,14 @@ contract('Proxy', (accounts) => {
         assetsAsLib = await Assets.new().should.be.fulfilled;
     });
 
-    it2('fails when adding a contract to an address without contract', async () => {
+    it('fails when adding a contract to an address without contract', async () => {
         await proxy.addContracts(contractIds = [1], ['0x0'], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
         await proxy.addContracts(contractIds = [1], ['0x32132'], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
         await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
     });
 
     
-    it2('companyOwner: permissions check', async () => {
+    it('companyOwner: permissions check', async () => {
         await proxy.proposeCompany(COO, {from: superuser}).should.be.rejected;
         await proxy.proposeCompany(accounts[5], {from: company}).should.be.fulfilled;
         await proxy.proposeCompany(COO, {from: company}).should.be.fulfilled;
@@ -63,7 +63,7 @@ contract('Proxy', (accounts) => {
         await proxy.acceptCompany({from: company}).should.be.fulfilled;
     });
 
-    it2('superUser: permissions check', async () => {
+    it('superUser: permissions check', async () => {
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
 
         await proxy.setSuperUser(COO, {from: superuser}).should.be.rejected;
@@ -76,11 +76,11 @@ contract('Proxy', (accounts) => {
         tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
     });
     
-    it2('full deploy should work', async () => {
+    it('full deploy should work', async () => {
         const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
     });
     
-    it2('Assets permissions check on full deploy', async () => {
+    it('Assets permissions check on full deploy', async () => {
         depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         assets = depl[1]
         await assets.initTZs().should.be.rejected;
@@ -103,7 +103,7 @@ contract('Proxy', (accounts) => {
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: relay}).should.be.fulfilled;
     });
 
-    it2('deploy storage by adding Assets selectors', async () => {
+    it('deploy storage by adding Assets selectors', async () => {
         // contact[0] is the NULL contract
         result = await proxy.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
@@ -138,7 +138,7 @@ contract('Proxy', (accounts) => {
         result.toNumber().should.be.equal(2);
     });
 
-    it2('call initTZs() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
+    it('call initTZs() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
         await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
 
@@ -195,7 +195,9 @@ contract('Proxy', (accounts) => {
     });
     
     it('deploy and redeploy', async () => {
-        // contact[0] is the NULL contract
+        // contract[0] is the NULL contract
+        // proxy.address is the Proxy deployed at beforeEach, which we will leave with just the null contract
+        // proxyV0 will be th newly deployed Proxy, which we will here be updating.
         const nContractsToProxy = 4;
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
         const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
@@ -210,8 +212,16 @@ contract('Proxy', (accounts) => {
         }    
 
         // REDEPLOY
-        
-        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.upgrade(owners, Proxy, Assets, Market, Updates, Challenges);
+        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.upgrade(
+            versionNumber = 1,
+            owners, 
+            Proxy, 
+            proxyV0.address,
+            Assets, 
+            Market, 
+            Updates, 
+            Challenges
+        );
         assert.equal(await proxyV1.address, proxyV0.address);
         assert.equal(await proxyV0.countContracts(), '9', "wrong V1 number of contracts in proxyV0");
         assert.equal(await proxyV1.countContracts(), '9', "wrong V1 number of contracts in proxyV1");

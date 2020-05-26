@@ -11,6 +11,12 @@ Contains the three critical contracts that manage storage: Proxy, Stakers, Marke
     * Market
     * Updates
     * Challenges 
+  * The basic inheritance that is critical to manage the storage is:
+    * ProxyStorage -> Proxy
+    * ProxyStorage -> Storage -> UniverseInfo -> Assets
+    * ProxyStorage -> Storage -> UniverseInfo -> Market
+    * ProxyStorage -> Storage -> UniverseInfo -> Updates
+    * ProxyStorage -> Storage -> UniverseInfo -> Challenges
 
 * Stakers (holds money)
   * Mission: accepts stakers, manages their stake, offers rewards. It is slaved to receving calls from Proxy, whwere all the update-challenge logic resides.
@@ -21,7 +27,7 @@ Contains the three critical contracts that manage storage: Proxy, Stakers, Marke
 ## Folder contracts/gameEngine
 
 Libraries with the logic about playing matches, calendars, evolutions, etc.
-* **All functions are Pure**, except for the following ones, which are basically pure too. They had to be turned into View because some were so large, that they needed to call each others, and they keep their addresses in storage. We may turn these into Pure in the future by passing the addresses as calldata.
+* **All functions are Pure**, except for several, which are basically pure too... but they had to be turned into View because they were so large that they needed to call among themselves. They keep their addresses in storage. We may turn these into Pure in the future by passing the addresses as calldata.
   
 ## Folder contracts/encoders
 

@@ -88,31 +88,6 @@ contract Proxy is ProxyStorage {
         _superUser = addr;
     }
 
-    /**
-    * @dev Stores the info about a contract to be later called via delegate call,
-    * @dev by pushing to the _contractsInfo array, and emits an event with all the info.
-    * @dev NOTE: it does not activate it until "activateContracts" is invoked
-    * @param contractId The index in the array _contractsInfo where this contract should be placed
-    *   It must be equal to the next available idx in the array. Although not strictly necessary, 
-    *   it allows the external caller to ensure that the idx is as expected without parsing the event.
-    * @param addr Address of the contract that will be used in the delegate call
-    * @param selectors An array of all selectors needed inside the contract
-    * @param name The name of the added contract, only for reference
-    */
-    function _addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) private {
-        /// we require that the contract gets assigned an Id that is as specified from outside, 
-        /// to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
-        require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
-        assertPointsToContract(addr);
-        ContractInfo memory info;
-        info.addr = addr;
-        info.name = name;
-        info.isActive = false;
-        info.selectors = selectors;
-        _contractsInfo.push(info);
-        emit ContractAdded(contractId, name, selectors);        
-    }
-
     function addContracts(uint256[] calldata contractIds, address[] calldata addrs, bytes4[][] calldata selectors, bytes32[] calldata names) external onlySuperUser {
         for (uint256 c = 0; c < contractIds.length; c++) {
             _addContract(contractIds[c], addrs[c], selectors[c], names[c]);
@@ -170,6 +145,30 @@ contract Proxy is ProxyStorage {
         emit ContractsDeactivated(contractIds, now);        
     }
 
+    /**
+    * @dev Stores the info about a contract to be later called via delegate call,
+    * @dev by pushing to the _contractsInfo array, and emits an event with all the info.
+    * @dev NOTE: it does not activate it until "activateContracts" is invoked
+    * @param contractId The index in the array _contractsInfo where this contract should be placed
+    *   It must be equal to the next available idx in the array. Although not strictly necessary, 
+    *   it allows the external caller to ensure that the idx is as expected without parsing the event.
+    * @param addr Address of the contract that will be used in the delegate call
+    * @param selectors An array of all selectors needed inside the contract
+    * @param name The name of the added contract, only for reference
+    */
+    function _addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) private {
+        /// we require that the contract gets assigned an Id that is as specified from outside, 
+        /// to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
+        require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
+        assertPointsToContract(addr);
+        ContractInfo memory info;
+        info.addr = addr;
+        info.name = name;
+        info.isActive = false;
+        info.selectors = selectors;
+        _contractsInfo.push(info);
+        emit ContractAdded(contractId, name, selectors);        
+    }
 
    /**
     * @dev Reverts unless contractAddress points to a legit contract.

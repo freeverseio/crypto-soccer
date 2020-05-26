@@ -54,7 +54,7 @@ const addContracts = async (superuser, proxy, addresses, allSelectors, names, fi
 const assertActiveStatusIs = async (contractIds, status, proxy) => {
     for (c = 0; c < contractIds.length; c++) {
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractIds[c]).should.be.fulfilled;
-        if (isActive != status) throw new Error("unexpected contract state");
+        assert.equal(isActive, status, "unexpected contract state");
     }
 }
 
@@ -101,16 +101,16 @@ function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges)
     proxySelectors = extractSelectorsFromAbi(Proxy.abi);
 
     duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Assets.abi)));
-    if (duplicates.length != 0) throw new Error("duplicates found proxy-Assets!!!");
+    assert.equal(duplicates.length, 0, "duplicates found proxy-Assets!!!");
 
     duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Market.abi)));
-    if (duplicates.length != 0) throw new Error("duplicates found proxy-Market!!!");
+    assert.equal(duplicates.length, 0, "duplicates found proxy-Market!!!");
 
     duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Updates.abi)));
-    if (duplicates.length != 0) throw new Error("duplicates found proxy-Updates!!!");
+    assert.equal(duplicates.length, 0, "duplicates found proxy-Updates!!!");
 
     duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Challenges.abi)));
-    if (duplicates.length != 0) throw new Error("duplicates found proxy-Challenges!!!");
+    assert.equal(duplicates.length, 0, "duplicates found proxy-Challenges!!!");
 
     // console.log("No collisions were found with the proxy.")
 }
@@ -139,7 +139,7 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
     const nContractsToProxy = 4;
     const firstNewContractId = 1
     const nContractsNum = await proxy.countContracts().should.be.fulfilled;
-    if (firstNewContractId != nContractsNum.toNumber()) throw new Error("mismatch between firstNewContractId and nContractsNum");
+    assert.equal(firstNewContractId, nContractsNum.toNumber(), "mismatch between firstNewContractId and nContractsNum");
 
     // The following line does:
     //  - deploy new contracts (not proxy) to delegate to, and return their addresses
@@ -163,7 +163,7 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified for upgrades
-const upgrade = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets, Market, Updates, Challenges) => {
+const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges) => {
     assert.notEqual(versionNumber, 0, "version number must be larger than 0 for upgrades");
     assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for upgrades");
     
@@ -179,7 +179,7 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Asset
     const nContractsToProxy = 4;
     const firstNewContractId = 1 + versionNumber * nContractsToProxy;
     const nContractsNum = await proxy.countContracts().should.be.fulfilled;
-    if (firstNewContractId != nContractsNum.toNumber()) throw new Error("mismatch between firstNewContractId and nContractsNum");
+    assert.equal(firstNewContractId, nContractsNum.toNumber(), "mismatch between firstNewContractId and nContractsNum");
 
     // The following line does:
     //  - deploy new contracts (not proxy) to delegate to, and return their addresses
@@ -190,18 +190,13 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Asset
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
     
-    // Adds new contracts to proxy
+    // Adds new contracts to proxy in one single TX signed by owners.superuser
     const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
 
     // Build list of contracts to deactivate
     //  - example: when deploying v1, we have activated already [0,1,2,3]
     //  - so newId = 4, and we need to deactivate [1,2,3]
-    var deactivateContractIds;
-    if (versionNumber == 0) {
-        deactivateContractIds = [];
-    } else {
-        deactivateContractIds = Array.from(new Array(nContractsToProxy), (x,i) => firstNewContractId - nContractsToProxy + i);
-    }
+    const deactivateContractIds = Array.from(new Array(nContractsToProxy), (x,i) => firstNewContractId - nContractsToProxy + i);
 
     // await assertActiveStatusIs(deactivateContractIds, true, proxy);
     // Deactivate and Activate all contracts atomically
