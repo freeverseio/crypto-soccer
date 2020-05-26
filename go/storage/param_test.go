@@ -37,5 +37,31 @@ func TestParamInsertOrUpdate(t *testing.T) {
 	result, err = storage.ParamByName(tx, param.Name)
 	assert.NilError(t, err)
 	assert.Equal(t, *result, param)
+}
 
+func TestParamParams(t *testing.T) {
+	tx, err := s.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	params, err := storage.Params(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(params), 1)
+
+	param := storage.Param{}
+	param.Name = "prova"
+	param.Value = "3"
+	assert.NilError(t, param.InsertOrUpdate(tx))
+	param.Value = "4"
+	assert.NilError(t, param.InsertOrUpdate(tx))
+
+	params, err = storage.Params(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(params), 2)
+
+	param.Name = "riprova"
+	assert.NilError(t, param.InsertOrUpdate(tx))
+	params, err = storage.Params(tx)
+	assert.NilError(t, err)
+	assert.Equal(t, len(params), 3)
 }

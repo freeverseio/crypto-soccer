@@ -7,6 +7,28 @@ type Param struct {
 	Value string
 }
 
+func Params(tx *sql.Tx) ([]Param, error) {
+	rows, err := tx.Query("SELECT name, value FROM params;")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var params []Param
+	for rows.Next() {
+		param := Param{}
+		if err = rows.Scan(
+			&param.Name,
+			&param.Value,
+		); err != nil {
+			return nil, err
+		}
+		params = append(params, param)
+	}
+
+	return params, nil
+}
+
 func ParamByName(tx *sql.Tx, name string) (*Param, error) {
 	rows, err := tx.Query("SELECT value FROM params WHERE name=$1;", name)
 	if err != nil {
