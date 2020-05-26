@@ -33,9 +33,8 @@ module.exports = function (deployer, network, accounts) {
     const { singleTimezone, owners, requiredStake } = deployUtils.getExplicitOrDefaultSetup(deployer.networks[network], accounts);
     const account0Owners = deployUtils.getAccount0Owner(accounts[0]);
     const versionNumber = 0;
-    const proxyAddress  = "0x0";
     const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
-      await deployUtils.deploy(versionNumber, account0Owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges).should.be.fulfilled;
+      await deployUtils.deploy(account0Owners, Proxy, Assets, Market, Updates, Challenges).should.be.fulfilled;
 
     const stakers  = await deployer.deploy(Stakers, proxy.address, requiredStake).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;

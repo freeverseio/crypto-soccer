@@ -77,11 +77,11 @@ contract('Proxy', (accounts) => {
     });
     
     it('full deploy should work', async () => {
-        const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
     });
     
     it('Assets permissions check on full deploy', async () => {
-        depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         assets = depl[1]
         await assets.initTZs().should.be.rejected;
         await assets.initTZs({from: COO}).should.be.rejected;
@@ -195,7 +195,7 @@ contract('Proxy', (accounts) => {
         // contact[0] is the NULL contract
         const nContractsToProxy = 4;
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
-        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
         assert.equal(await proxyV0.countContracts(), '5', "wrong V0 number of contracts in proxy");
 
@@ -206,7 +206,7 @@ contract('Proxy', (accounts) => {
             assert(fromBytes32(nom) == expectedNamesV0[c-1] , "wrong contract name");
         }    
 
-        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.deploy(versionNumber = 1, owners, Proxy, proxyV0.address, Assets, Market, Updates, Challenges);
+        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         assert.equal(await proxyV1.address, proxyV0.address);
         assert.equal(await proxyV0.countContracts(), '9', "wrong V1 number of contracts in proxyV0");
         assert.equal(await proxyV1.countContracts(), '9', "wrong V1 number of contracts in proxyV1");

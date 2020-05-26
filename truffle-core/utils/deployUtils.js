@@ -125,7 +125,46 @@ function appendVersionNumberToNames(names, versionNumber) {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified if versionNumber > 0.
-const deploy = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets, Market, Updates, Challenges) => {
+const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
+    assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
+
+    // Optionally inform about duplicates between the contracts themselves:
+    // informNoCollisions(Assets, Market, Updates, Challenges);
+    
+    // Next: proxy is built either by deploy, or by assignement to already deployed address
+    const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
+    const proxy = await Proxy.new(owners.company, owners.superuser, proxySelectors).should.be.fulfilled;
+
+    // Check that the number of contracts already declared in Proxy is as expected.
+    //  - contactId = 0 is null, so the first available contract on a clean deploy is 1, and every version adds 3 contracts
+    const nContractsToProxy = 4;
+    const firstNewContractId = 1
+    const nContractsNum = await proxy.countContracts().should.be.fulfilled;
+    if (firstNewContractId != nContractsNum.toNumber()) throw new Error("mismatch between firstNewContractId and nContractsNum");
+
+    // The following line does:
+    //  - deploy new contracts (not proxy) to delegate to, and return their addresses
+    //  - build interfaces to those contracts which point to the proxy address
+    const {0: assets, 1: market, 2: updates, 3: challenges, 4: addresses, 5: allSelectors, 6: names} = 
+        await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates, Challenges);
+        
+    const versionedNames = appendVersionNumberToNames(names, versionNumber = 0);
+
+    // Adds new contracts to proxy
+    const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
+
+    // await assertActiveStatusIs(deactivateContractIds, true, proxy);
+    // Deactivate and Activate all contracts atomically
+    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds = [], newContractIds, {from: owners.superuser}).should.be.fulfilled;
+
+    // await assertActiveStatusIs(deactivateContractIds, false, proxy);
+    // await assertActiveStatusIs(newContractIds, true, proxy);
+    return [proxy, assets, market, updates, challenges];
+}
+
+// - versionNumber = 0 for first deploy
+// - proxyAddress needs only be specified if versionNumber > 0.
+const upgrade = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets, Market, Updates, Challenges) => {
     if (versionNumber == 0) assert.equal(proxyAddress, "0x0", "proxyAddress must be 0x0 for version = 0");
     if (versionNumber != 0) assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for version > 0");
     
@@ -264,6 +303,7 @@ module.exports = {
     getExplicitOrDefaultSetup,
     getDefaultSetup,
     setProxyContractOwners,
-    getAccount0Owner
+    getAccount0Owner,
+    upgrade
 }
 
