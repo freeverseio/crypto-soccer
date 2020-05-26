@@ -59,6 +59,22 @@ type Contracts struct {
 	directoryAddress        string
 }
 
+func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts, error) {
+	directoryContract, err := directory.NewDirectory(common.HexToAddress(address), client)
+	if err != nil {
+		return nil, err
+	}
+	names, addresses, err := directoryContract.GetDirectory(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	return newByNamesAndAddresses(client, names, addresses)
+}
+
+func NewByDeployedDirectoryEvent(client *ethclient.Client, event directory.DirectoryDeployedDirectory) (*Contracts, error) {
+	return newByNamesAndAddresses(client, event.Names, event.Adresseses)
+}
+
 func (b Contracts) Clone() (*Contracts, error) {
 	return new(
 		b.Client,
@@ -212,20 +228,4 @@ func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresse
 		contractMap["STAKERS"],
 		contractMap["DIRECTORY"],
 	)
-}
-
-func NewFromDeployedDirectory(client *ethclient.Client, event directory.DirectoryDeployedDirectory) (*Contracts, error) {
-	return newByNamesAndAddresses(client, event.Names, event.Adresseses)
-}
-
-func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts, error) {
-	directoryContract, err := directory.NewDirectory(common.HexToAddress(address), client)
-	if err != nil {
-		return nil, err
-	}
-	names, addresses, err := directoryContract.GetDirectory(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	return newByNamesAndAddresses(client, names, addresses)
 }

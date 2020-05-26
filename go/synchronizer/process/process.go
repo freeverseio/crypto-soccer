@@ -96,7 +96,7 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 	switch v := e.Value.(type) {
 	case directory.DirectoryDeployedDirectory:
 		var err error
-		p.contracts, err = contracts.NewFromDeployedDirectory(p.contracts.Client, v)
+		p.contracts, err = contracts.NewByDeployedDirectoryEvent(p.contracts.Client, v)
 		return err
 	case assets.AssetsAssetsInit:
 		assetsInitProcessor := NewAssetsInitProcessor(p.contracts)

@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func DeplyByTruffle() (string, error) {
+func Deploy() (string, error) {
 	cryptoRoot, err := exec.Command("/usr/bin/git", "rev-parse", "--show-toplevel").Output()
 	if err != nil {
 		return "", err

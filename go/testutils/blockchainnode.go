@@ -69,7 +69,7 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 }
 
 func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
-	directoryAddress, err := truffle.DeplyByTruffle()
+	directoryAddress, err := truffle.Deploy()
 	if err != nil {
 		return err
 	}
