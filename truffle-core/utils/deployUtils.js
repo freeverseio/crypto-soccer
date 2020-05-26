@@ -163,7 +163,7 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified for upgrades
-const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges) => {
+const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges, directoy, namesAndAddresses) => {
     assert.notEqual(versionNumber, 0, "version number must be larger than 0 for upgrades");
     assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for upgrades");
     
@@ -193,6 +193,10 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Marke
     // Adds new contracts to proxy in one single TX signed by owners.superuser
     const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
 
+    // Stores new addresses in Directory contract
+    // const {0: names, 1: nonProxyNames, 2: nonProxyAddresses} = splitNamesAndAdresses(namesAndAddresses);
+    // await directory.deploy(nonProxyNames, nonProxyAddresses).should.be.fulfilled;
+    
     // Build list of contracts to deactivate
     //  - example: when deploying v1, we have activated already [0,1,2,3]
     //  - so newId = 4, and we need to deactivate [1,2,3]
@@ -205,6 +209,18 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Marke
     // await assertActiveStatusIs(deactivateContractIds, false, proxy);
     // await assertActiveStatusIs(newContractIds, true, proxy);
     return [proxy, assets, market, updates, challenges];
+}
+
+function splitNamesAndAdresses(namesAndAddresses) {    
+    names = [];
+    namesBytes32 = [];
+    addresses = [];
+    for (c = 0; c < namesAndAddresses.length; c++) {
+        names.push(namesAndAddresses[c][0]);
+        namesBytes32.push(web3.utils.utf8ToHex(namesAndAddresses[c][0]));
+        addresses.push(namesAndAddresses[c][1]);
+    }
+    return [names, namesBytes32, addresses];
 }
 
 async function addTrustedParties(contract, owner, addresses) {
@@ -292,6 +308,7 @@ module.exports = {
     getDefaultSetup,
     setProxyContractOwners,
     getAccount0Owner,
-    upgrade
+    upgrade,
+    splitNamesAndAdresses
 }
 
