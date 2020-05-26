@@ -75,29 +75,8 @@ func NewByDeployedDirectoryEvent(client *ethclient.Client, event directory.Direc
 	return newByNamesAndAddresses(client, event.Names, event.Adresseses)
 }
 
-// func NewFromStorage(client *ethclient.Client, tx *sql.Tx) (*contracts.Contracts, error) {
-// 	storage.
-// 	return new(
-// 		client,
-// 		contractMap["LEAGUES"],
-// 		contractMap["ASSETS"],
-// 		contractMap["EVOLUTION"],
-// 		contractMap["ENGINE"],
-// 		contractMap["ENGINEPRECOMP"],
-// 		contractMap["UPDATES"],
-// 		contractMap["MARKET"],
-// 		contractMap["UTILS"],
-// 		contractMap["PLAYANDEVOLVE"],
-// 		contractMap["SHOP"],
-// 		contractMap["TRAININGPOINTS"],
-// 		contractMap["CONSTANTSGETTERS"],
-// 		contractMap["PRIVILEGED"],
-// 		contractMap["STAKERS"],
-// 		contractMap["DIRECTORY"],
-// }
-
 func (b Contracts) Clone() (*Contracts, error) {
-	return new(
+	return New(
 		b.Client,
 		b.leaguesAddress,
 		b.AssetsAddress,
@@ -121,7 +100,7 @@ func (b Contracts) DirectoryAddress() string {
 	return b.directoryAddress
 }
 
-func new(
+func New(
 	client *ethclient.Client,
 	leaguesAddress string,
 	assetsAddress string,
@@ -235,7 +214,7 @@ func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresse
 		contractMap[string(name[:n])] = address.String()
 	}
 
-	return new(
+	return New(
 		client,
 		contractMap["LEAGUES"],
 		contractMap["ASSETS"],
