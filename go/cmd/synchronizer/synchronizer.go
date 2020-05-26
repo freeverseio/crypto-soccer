@@ -22,7 +22,7 @@ func main() {
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
-	directoryContractAddress := flag.String("directoryContractAddress", "", "")
+	directoryContractAddress := flag.String("directory_address", "", "")
 	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	delta := flag.Int("delta", 10, "number of block to process at maximum")

@@ -23,8 +23,7 @@ spec:
               name: freeverse-configmap
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
                -ethereum, http://xdai:8545,
-               -updatesContractAddress, "$(UPDATES_CONTRACT_ADDRESS)",
-               -assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
+               -directory_address, "$(DIRECTORY_CONTRACT_ADDRESS)",
                -ipfs, "/dns4/ipfsnode/tcp/5001",
                -private_key, "$(relay_private_key)"]
         ports:
