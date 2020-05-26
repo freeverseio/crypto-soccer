@@ -1,7 +1,11 @@
 pragma solidity >= 0.6.3;
+// From SolidityDocs, we kept the same pragma, even though it is not considered experimental anymore:
+// This allows for nested arrays in the inputs of functions
+pragma experimental ABIEncoderV2;
+
+
 
 import "./ProxyStorage.sol";
-
 /**
  @title Holds all storage for all assets, and manages who to delegate the calls
  @author Freeverse.io, www.freeverse.io
@@ -95,7 +99,7 @@ contract Proxy is ProxyStorage {
     * @param selectors An array of all selectors needed inside the contract
     * @param name The name of the added contract, only for reference
     */
-    function addContract(uint256 contractId, address addr, bytes4[] calldata selectors, bytes32 name) external onlySuperUser {
+    function _addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) private {
         /// we require that the contract gets assigned an Id that is as specified from outside, 
         /// to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
         require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
@@ -107,6 +111,12 @@ contract Proxy is ProxyStorage {
         info.selectors = selectors;
         _contractsInfo.push(info);
         emit ContractAdded(contractId, name, selectors);        
+    }
+
+    function addContracts(uint256[] calldata contractIds, address[] calldata addrs, bytes4[][] calldata selectors, bytes32[] calldata names) external onlySuperUser {
+        for (uint256 c = 0; c < contractIds.length; c++) {
+            _addContract(contractIds[c], addrs[c], selectors[c], names[c]);
+        }
     }
     
     /**

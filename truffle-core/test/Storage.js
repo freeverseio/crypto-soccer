@@ -45,14 +45,14 @@ contract('Proxy', (accounts) => {
         assetsAsLib = await Assets.new().should.be.fulfilled;
     });
 
-    it('fails when adding a contract to an address without contract', async () => {
-        await proxy.addContract(contractId = 1, '0x0', selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
-        await proxy.addContract(contractId = 1, '0x32132', selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
-        await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+    it2('fails when adding a contract to an address without contract', async () => {
+        await proxy.addContracts(contractIds = [1], ['0x0'], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        await proxy.addContracts(contractIds = [1], ['0x32132'], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
     });
 
     
-    it('companyOwner: permissions check', async () => {
+    it2('companyOwner: permissions check', async () => {
         await proxy.proposeCompany(COO, {from: superuser}).should.be.rejected;
         await proxy.proposeCompany(accounts[5], {from: company}).should.be.fulfilled;
         await proxy.proposeCompany(COO, {from: company}).should.be.fulfilled;
@@ -63,24 +63,24 @@ contract('Proxy', (accounts) => {
         await proxy.acceptCompany({from: company}).should.be.fulfilled;
     });
 
-    it('superUser: permissions check', async () => {
+    it2('superUser: permissions check', async () => {
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
 
         await proxy.setSuperUser(COO, {from: superuser}).should.be.rejected;
         await proxy.setSuperUser(COO, {from: company}).should.be.fulfilled;
-        tx0 = await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
-        tx0 = await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: COO}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: COO}).should.be.fulfilled;
 
         await proxy.setSuperUser(superuser, {from: company}).should.be.fulfilled;
-        tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: COO}).should.be.rejected;
-        tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: COO}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
     });
     
-    it('full deploy should work', async () => {
+    it2('full deploy should work', async () => {
         const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
     });
     
-    it('Assets permissions check on full deploy', async () => {
+    it2('Assets permissions check on full deploy', async () => {
         depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         assets = depl[1]
         await assets.initTZs().should.be.rejected;
@@ -103,15 +103,16 @@ contract('Proxy', (accounts) => {
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, superuser, {from: relay}).should.be.fulfilled;
     });
 
-    it('deploy storage by adding Assets selectors', async () => {
+    it2('deploy storage by adding Assets selectors', async () => {
         // contact[0] is the NULL contract
         result = await proxy.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
-        tx0 = await proxy.addContract(contractId = 0, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
-        tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [0], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
         contractId = 1;
-        tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+        contractIds = [contractId];
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
 
         truffleAssert.eventEmitted(tx0, "ContractAdded", (event) => {
             ok = true;
@@ -137,19 +138,20 @@ contract('Proxy', (accounts) => {
         result.toNumber().should.be.equal(2);
     });
 
-    it('call initTZs() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
+    it2('call initTZs() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
         await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
 
         // add function (still not enough to call assets):
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
         contractId = 1;
-        tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+        contractIds = [contractId];
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
         
         // activate function, now, enough to call assets:
-        tx1 = await proxy.activateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
+        tx1 = await proxy.activateContracts(contractIds, {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.fulfilled;
@@ -163,8 +165,9 @@ contract('Proxy', (accounts) => {
 
         // I can re-activate, and, because storage is preserved, I cannot initTZs again, but nCountries is still OK
         contractId = 2;
-        tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
-        tx1 = await proxy.activateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
+        contractIds = [contractId];
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx1 = await proxy.activateContracts(contractIds , {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
@@ -173,7 +176,7 @@ contract('Proxy', (accounts) => {
 
         // I can do the same thing in one atomic TX:
         contractId = 3;
-        tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts([contractId], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
         tx1 = await proxy.deactivateAndActivateContracts(deactivate = [2], activate = [3], {from: superuser}).should.be.fulfilled;
 
         now = Math.floor(Date.now()/1000);
@@ -206,7 +209,9 @@ contract('Proxy', (accounts) => {
             assert(fromBytes32(nom) == expectedNamesV0[c-1] , "wrong contract name");
         }    
 
-        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        // REDEPLOY
+        
+        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.upgrade(owners, Proxy, Assets, Market, Updates, Challenges);
         assert.equal(await proxyV1.address, proxyV0.address);
         assert.equal(await proxyV0.countContracts(), '9', "wrong V1 number of contracts in proxyV0");
         assert.equal(await proxyV1.countContracts(), '9', "wrong V1 number of contracts in proxyV1");

@@ -45,9 +45,9 @@ const addContracts = async (superuser, proxy, addresses, allSelectors, names, fi
     for (c = 0; c < nContracts; c++) {
         if (allSelectors[c].length > 0) {
             newContractIds.push(firstNewContractId + c);
-            tx0 = await proxy.addContract(newContractIds[c], addresses[c], allSelectors[c], names[c], {from: superuser}).should.be.fulfilled;
         }
     }
+    tx0 = await proxy.addContracts(newContractIds, addresses, allSelectors, names, {from: superuser}).should.be.fulfilled;
     return newContractIds;
 }
 
@@ -124,7 +124,6 @@ function appendVersionNumberToNames(names, versionNumber) {
 }
 
 // - versionNumber = 0 for first deploy
-// - proxyAddress needs only be specified if versionNumber > 0.
 const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
 
@@ -163,24 +162,17 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
 }
 
 // - versionNumber = 0 for first deploy
-// - proxyAddress needs only be specified if versionNumber > 0.
+// - proxyAddress needs only be specified for upgrades
 const upgrade = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Assets, Market, Updates, Challenges) => {
-    if (versionNumber == 0) assert.equal(proxyAddress, "0x0", "proxyAddress must be 0x0 for version = 0");
-    if (versionNumber != 0) assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for version > 0");
+    assert.notEqual(versionNumber, 0, "version number must be larger than 0 for upgrades");
+    assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for upgrades");
     
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
 
     // Optionally inform about duplicates between the contracts themselves
     // informNoCollisions(Assets, Market, Updates, Challenges);
     
-    // Next: proxy is built either by deploy, or by assignement to already deployed address
-    var proxy;
-    if (versionNumber == 0) {
-        const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
-        proxy = await Proxy.new(owners.company, owners.superuser, proxySelectors).should.be.fulfilled;
-    } else {
-        proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
-    }
+    const proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
 
     // Check that the number of contracts already declared in Proxy is as expected.
     //  - contactId = 0 is null, so the first available contract on a clean deploy is 1, and every version adds 3 contracts
@@ -197,6 +189,7 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress = "0x0", Asset
         
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
+    
     // Adds new contracts to proxy
     const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
 
