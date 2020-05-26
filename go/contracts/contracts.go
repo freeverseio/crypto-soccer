@@ -96,6 +96,10 @@ func (b Contracts) Clone() (*Contracts, error) {
 	)
 }
 
+func (b Contracts) DirectoryAddress() string {
+	return b.directoryAddress
+}
+
 func new(
 	client *ethclient.Client,
 	leaguesAddress string,

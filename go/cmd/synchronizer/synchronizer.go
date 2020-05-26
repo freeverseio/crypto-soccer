@@ -54,14 +54,6 @@ func main() {
 		}
 		defer client.Close()
 
-		contracts, err := contracts.NewByDirectoryAddress(
-			client,
-			*directoryContractAddress,
-		)
-		if err != nil {
-			return err
-		}
-
 		var stkr *staker.Staker
 		if *stakerPrivateKey != "" {
 			log.Info("WARNING: STAKER address set")
@@ -92,7 +84,8 @@ func main() {
 		defer namesdb.Close()
 
 		processor := process.NewEventProcessor(
-			contracts,
+			client,
+			*directoryContractAddress
 			namesdb,
 			*ipfsURL,
 			stkr,
