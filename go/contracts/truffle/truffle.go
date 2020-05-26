@@ -5,10 +5,24 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	log "github.com/sirupsen/logrus"
 )
 
-func Deploy() (string, error) {
+func New() (*contracts.Contracts, error) {
+	client, err := ethclient.Dial("http://localhost:8545")
+	if err != nil {
+		return nil, err
+	}
+	directoryAddress, err := deploy()
+	if err != nil {
+		return nil, err
+	}
+	return contracts.NewByDirectoryAddress(client, directoryAddress)
+}
+
+func deploy() (string, error) {
 	cryptoRoot, err := exec.Command("/usr/bin/git", "rev-parse", "--show-toplevel").Output()
 	if err != nil {
 		return "", err
