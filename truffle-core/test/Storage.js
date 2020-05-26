@@ -13,7 +13,9 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
+const NULL_ADDR = '0x0';
 
+const Directory = artifacts.require('Directory');
 const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
@@ -177,7 +179,7 @@ contract('Proxy', (accounts) => {
         // I can do the same thing in one atomic TX:
         contractId = 3;
         tx0 = await proxy.addContracts([contractId], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
-        tx1 = await proxy.deactivateAndActivateContracts(deactivate = [2], activate = [3], {from: superuser}).should.be.fulfilled;
+        tx1 = await proxy.upgrade(deactivate = [2], activate = [3], directoryDummyAddr = superuser, {from: superuser}).should.be.fulfilled;
 
         now = Math.floor(Date.now()/1000);
         truffleAssert.eventEmitted(tx1, "ContractsActivated", (event) => { 
@@ -185,6 +187,9 @@ contract('Proxy', (accounts) => {
         });
         truffleAssert.eventEmitted(tx1, "ContractsDeactivated", (event) => { 
             return event.contractIds[0].toNumber().should.be.equal(2) && (Math.abs(event.time.toNumber()-now) < 30).should.be.equal(true)
+        });
+        truffleAssert.eventEmitted(tx1, "NewDirectory", (event) => { 
+            return event.addr.should.be.equal(directoryDummyAddr)
         });
 
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(2).should.be.fulfilled;
@@ -211,6 +216,11 @@ contract('Proxy', (accounts) => {
             assert(fromBytes32(nom) == expectedNamesV0[c-1] , "wrong contract name");
         }    
 
+        namesAndAddresses = [
+            ["ASSETS", assets.address],
+            ["MARKET", proxyV0.address]
+        ];
+          
         // REDEPLOY
         const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.upgrade(
             versionNumber = 1,
@@ -220,8 +230,11 @@ contract('Proxy', (accounts) => {
             Assets, 
             Market, 
             Updates, 
-            Challenges
-        );
+            Challenges,
+            Directory,
+            namesAndAddresses
+        ).should.be.fulfilled;
+        
         assert.equal(await proxyV1.address, proxyV0.address);
         assert.equal(await proxyV0.countContracts(), '9', "wrong V1 number of contracts in proxyV0");
         assert.equal(await proxyV1.countContracts(), '9', "wrong V1 number of contracts in proxyV1");

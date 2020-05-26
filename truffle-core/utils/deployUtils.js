@@ -1,6 +1,7 @@
 var Web3 = require('web3');
 var assert = require('assert')
 var web3 = new Web3(Web3.givenProvider);
+const NULL_ADDR = web3.utils.toHex("0");
 
 const deployPair = async (proxyAddress, Contr) => {
     if (Contr == "") return ["", "", []];
@@ -154,7 +155,7 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
 
     // await assertActiveStatusIs(deactivateContractIds, true, proxy);
     // Deactivate and Activate all contracts atomically
-    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds = [], newContractIds, {from: owners.superuser}).should.be.fulfilled;
+    tx1 = await proxy.activateContracts(newContractIds, {from: owners.superuser}).should.be.fulfilled;
 
     // await assertActiveStatusIs(deactivateContractIds, false, proxy);
     // await assertActiveStatusIs(newContractIds, true, proxy);
@@ -163,7 +164,7 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified for upgrades
-const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges, directoy, namesAndAddresses) => {
+const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges, Directory, namesAndAddresses) => {
     assert.notEqual(versionNumber, 0, "version number must be larger than 0 for upgrades");
     assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for upgrades");
     
@@ -194,8 +195,8 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Marke
     const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
 
     // Stores new addresses in Directory contract
-    // const {0: names, 1: nonProxyNames, 2: nonProxyAddresses} = splitNamesAndAdresses(namesAndAddresses);
-    // await directory.deploy(nonProxyNames, nonProxyAddresses).should.be.fulfilled;
+    const {0: dummy, 1: nonProxyNames, 2: nonProxyAddresses} = splitNamesAndAdresses(namesAndAddresses);
+    directory = await Directory.new(nonProxyNames, nonProxyAddresses).should.be.fulfilled;
     
     // Build list of contracts to deactivate
     //  - example: when deploying v1, we have activated already [0,1,2,3]
@@ -204,10 +205,9 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Marke
 
     // await assertActiveStatusIs(deactivateContractIds, true, proxy);
     // Deactivate and Activate all contracts atomically
-    tx1 = await proxy.deactivateAndActivateContracts(deactivateContractIds, newContractIds, {from: owners.superuser}).should.be.fulfilled;
+    // And point to the new directory
+    await proxy.upgrade(deactivateContractIds, newContractIds, directory.address, {from: owners.superuser}).should.be.fulfilled;
 
-    // await assertActiveStatusIs(deactivateContractIds, false, proxy);
-    // await assertActiveStatusIs(newContractIds, true, proxy);
     return [proxy, assets, market, updates, challenges];
 }
 

@@ -86,6 +86,7 @@ module.exports = function (deployer, network, accounts) {
     const directory = await deployer.deploy(Directory, namesBytes32, addresses).should.be.fulfilled;
     
     console.log("Setting up ...");
+    await proxy.setDirectory(directory.address).should.be.fulfilled;
     await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;

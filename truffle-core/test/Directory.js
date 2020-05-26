@@ -13,11 +13,6 @@ const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
 
 const Directory = artifacts.require('Directory');
-const Proxy = artifacts.require('Proxy');
-const Assets = artifacts.require('Assets');
-const Market = artifacts.require('Market');
-const Updates = artifacts.require('Updates');
-const Challenges = artifacts.require('Challenges');
 
 contract('Directory', (accounts) => {
     const FREEVERSE = accounts[0];
@@ -30,12 +25,6 @@ contract('Directory', (accounts) => {
     function fromBytes32(name) { return web3.utils.hexToUtf8(name); }
 
     beforeEach(async () => {
-        // defaultSetup = deployUtils.getDefaultSetup(accounts);
-        // owners = defaultSetup.owners;
-        // depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
-        // [proxy, assets, market, updates] = depl;
-        // await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
-        // directory = await Directory.new().should.be.fulfilled;
     });
     
     it('standard deploy', async () => {

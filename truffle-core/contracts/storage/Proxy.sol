@@ -23,6 +23,7 @@ contract Proxy is ProxyStorage {
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
     event ContractsActivated(uint256[] contractIds, uint256 time);
     event ContractsDeactivated(uint256[] contractIds, uint256 time);
+    event NewDirectory(address addr);
 
     /**
     * @dev Sets CompanyOwner and SuperUser
@@ -101,11 +102,12 @@ contract Proxy is ProxyStorage {
     * @param deactContractIds The ids of the contracts to be de-activated
     * @param actContractIds The ids of the contracts to be activated
     */
-    function deactivateAndActivateContracts(uint256[] calldata deactContractIds, uint256[] calldata actContractIds) external onlySuperUser {
+    function upgrade(uint256[] calldata deactContractIds, uint256[] calldata actContractIds, address newDirectory) external onlySuperUser {
         deactivateContracts(deactContractIds);
         activateContracts(actContractIds);
+        setDirectory(newDirectory);
     }
-        
+
     /**
     * @dev  Activates a set of contracts, by adding an entry in the 
     *       _selectorToContractAddr mapping for each selector of the contract. 
@@ -145,6 +147,14 @@ contract Proxy is ProxyStorage {
         emit ContractsDeactivated(contractIds, now);        
     }
 
+    /// Directory is just an external contract used by synchornizers to
+    /// read the addresses of all other contracts. The proxy just informs about
+    /// the location of this contract, which is typically changed in an upgrade.
+    function setDirectory(address addr) public onlySuperUser {
+        _directory = addr;
+        emit NewDirectory(addr);
+    }
+
     /**
     * @dev Stores the info about a contract to be later called via delegate call,
     * @dev by pushing to the _contractsInfo array, and emits an event with all the info.
@@ -169,7 +179,7 @@ contract Proxy is ProxyStorage {
         _contractsInfo.push(info);
         emit ContractAdded(contractId, name, selectors);        
     }
-
+   
    /**
     * @dev Reverts unless contractAddress points to a legit contract.
     *      Makes sure that the hash of the external code is neither 0x0 (not-yet created),
