@@ -38,30 +38,34 @@ contract('Directory', (accounts) => {
         directory = await Directory.new(proxy.address).should.be.fulfilled;
     });
     
-    it('deploy tests', async () => {
+    it('standard deploy', async () => {
         names = ["Baby1", "Baby2_Weird"];
         names32 = []
         for (n = 0; n < names.length; n++) names32.push(toBytes32(names[n]));        
         addresses = [ALICE, BOB];
-        console.log(directory.address, proxy.address);
+        // only COO can do deploy
         await directory.deploy(names32, addresses, {from: owners.relay}).should.be.rejected;
         await directory.deploy(names32, addresses, {from: owners.COO}).should.be.fulfilled;
-        // result = await directory.getAddress(toBytes32("Baby2_Weird")).should.be.fulfilled;
-        // result.should.be.equal(BOB);
+
         var {0: noms, 1: addr} = await directory.getDirectory().should.be.fulfilled;
         assert.equal(noms.length, 0, "there should be no contract until activated");
         assert.equal(addr.length, 0, "there should be no contract until activated");
 
+        // only COO can activate
+        await directory.activateNewDeploy({from: owners.relay}).should.be.rejected;
         await directory.activateNewDeploy({from: owners.COO}).should.be.fulfilled;
-        console.log("++");        
         var {0: noms, 1: addr} = await directory.getDirectory().should.be.fulfilled;
 
-        console.log(noms);        
         debug.compareArrays(addr, addresses, toNum = false);
         for (n = 0; n < noms.length; n++) noms[n] = fromBytes32(noms[n]);        
         debug.compareArrays(noms, names, toNum = false);
         
         // check events
+        past = await directory.getPastEvents( 'DeployedDirectory', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+        past[0].args.newActivePtr.toNumber().should.be.equal(1);
+        past[0].args.addrs[0].should.be.equal(addresses[0]);
+        name0 = fromBytes32(past[0].args.names[0]);
+        assert.equal(name0, names[0], "name do not match");
     });
 
     

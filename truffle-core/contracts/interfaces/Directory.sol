@@ -16,7 +16,7 @@ import "../storage/UniverseInfo.sol";
 
 contract Directory {
 
-    event DeployedDirectory(bytes32[] names, address[] adresseses, uint8 newActivePtr);
+    event DeployedDirectory(bytes32[] names, address[] addrs, uint8 newActivePtr);
     event Activation(uint8 activePtr);
 
     UniverseInfo private _universeInfo;
