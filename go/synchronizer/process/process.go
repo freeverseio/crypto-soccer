@@ -82,7 +82,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 
 	if lastProcessedBlock == 0 {
 		log.Info("[processor] BigBang")
-		bigBangEvent, err := p.getFirstDeployEvent(p.contracts.DirectoryAddress())
+		bigBangEvent, err := p.getFirstDeployEvent(p.contracts.DirectoryAddress)
 		if err != nil {
 			return 0, err
 		}

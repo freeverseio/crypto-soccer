@@ -27,7 +27,7 @@ func TestProcessorDispatchUpdatesTimezoneUpdate(t *testing.T) {
 
 	p := process.NewEventProcessor(
 		bc.Client,
-		bc.Contracts.DirectoryAddress(),
+		bc.Contracts.DirectoryAddress,
 		namesdb,
 		ipfsURL,
 		nil,
@@ -42,7 +42,7 @@ func TestSyncTeams(t *testing.T) {
 	defer tx.Rollback()
 	p := process.NewEventProcessor(
 		bc.Client,
-		bc.Contracts.DirectoryAddress(),
+		bc.Contracts.DirectoryAddress,
 		namesdb,
 		ipfsURL,
 		nil,

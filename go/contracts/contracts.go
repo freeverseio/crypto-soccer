@@ -42,21 +42,21 @@ type Contracts struct {
 	Privileged              *privileged.Privileged
 	Stakers                 *stakers.Stakers
 	Directory               *directory.Directory
-	leaguesAddress          string
+	LeaguesAddress          string
 	AssetsAddress           string
-	evolutionAddress        string
-	engineAddress           string
-	engineprecompAddress    string
-	updatesAddress          string
-	marketAddress           string
-	utilsAddress            string
-	playandevolveAddress    string
-	shopAddress             string
-	trainingpointsAddress   string
-	constantsgettersAddress string
-	privilegedAddress       string
-	stakersAddress          string
-	directoryAddress        string
+	EvolutionAddress        string
+	EngineAddress           string
+	EngineprecompAddress    string
+	UpdatesAddress          string
+	MarketAddress           string
+	UtilsAddress            string
+	PlayandevolveAddress    string
+	ShopAddress             string
+	TrainingpointsAddress   string
+	ConstantsgettersAddress string
+	PrivilegedAddress       string
+	StakersAddress          string
+	DirectoryAddress        string
 }
 
 func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts, error) {
@@ -78,26 +78,22 @@ func NewByDeployedDirectoryEvent(client *ethclient.Client, event directory.Direc
 func (b Contracts) Clone() (*Contracts, error) {
 	return New(
 		b.Client,
-		b.leaguesAddress,
+		b.LeaguesAddress,
 		b.AssetsAddress,
-		b.evolutionAddress,
-		b.engineAddress,
-		b.engineprecompAddress,
-		b.updatesAddress,
-		b.marketAddress,
-		b.utilsAddress,
-		b.playandevolveAddress,
-		b.shopAddress,
-		b.trainingpointsAddress,
-		b.constantsgettersAddress,
-		b.privilegedAddress,
-		b.stakersAddress,
-		b.directoryAddress,
+		b.EvolutionAddress,
+		b.EngineAddress,
+		b.EngineprecompAddress,
+		b.UpdatesAddress,
+		b.MarketAddress,
+		b.UtilsAddress,
+		b.PlayandevolveAddress,
+		b.ShopAddress,
+		b.TrainingpointsAddress,
+		b.ConstantsgettersAddress,
+		b.PrivilegedAddress,
+		b.StakersAddress,
+		b.DirectoryAddress,
 	)
-}
-
-func (b Contracts) DirectoryAddress() string {
-	return b.directoryAddress
 }
 
 func New(
@@ -120,21 +116,21 @@ func New(
 ) (*Contracts, error) {
 	var err error
 	contracts := Contracts{}
-	contracts.leaguesAddress = leaguesAddress
+	contracts.LeaguesAddress = leaguesAddress
 	contracts.AssetsAddress = assetsAddress
-	contracts.evolutionAddress = evolutionAddress
-	contracts.engineAddress = engineAddress
-	contracts.engineprecompAddress = engineprecompAddress
-	contracts.updatesAddress = updatesAddress
-	contracts.marketAddress = marketAddress
-	contracts.utilsAddress = utilsAddress
-	contracts.playandevolveAddress = playandevolveAddress
-	contracts.shopAddress = shopAddress
-	contracts.trainingpointsAddress = trainingpointsAddress
-	contracts.constantsgettersAddress = constantsgettersAddress
-	contracts.privilegedAddress = constantsgettersAddress
-	contracts.stakersAddress = stakersAddress
-	contracts.directoryAddress = directoryAddress
+	contracts.EvolutionAddress = evolutionAddress
+	contracts.EngineAddress = engineAddress
+	contracts.EngineprecompAddress = engineprecompAddress
+	contracts.UpdatesAddress = updatesAddress
+	contracts.MarketAddress = marketAddress
+	contracts.UtilsAddress = utilsAddress
+	contracts.PlayandevolveAddress = playandevolveAddress
+	contracts.ShopAddress = shopAddress
+	contracts.TrainingpointsAddress = trainingpointsAddress
+	contracts.ConstantsgettersAddress = constantsgettersAddress
+	contracts.PrivilegedAddress = constantsgettersAddress
+	contracts.StakersAddress = stakersAddress
+	contracts.DirectoryAddress = directoryAddress
 	contracts.Client = client
 
 	log.Debug("creating leagues bindings to: ", leaguesAddress)
