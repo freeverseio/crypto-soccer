@@ -52,7 +52,6 @@ module.exports = function (deployer, network, accounts) {
     const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address, shop.address).should.be.fulfilled;
     const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
-    const directory = await deployer.deploy(Directory, proxy.address).should.be.fulfilled;
     const marketCrypto = await deployer.deploy(MarketCrypto, proxy.address).should.be.fulfilled;
 
     console.log("Giving temporary control to accounts[0]...");
@@ -63,7 +62,6 @@ module.exports = function (deployer, network, accounts) {
     
     console.log("Writing to Directory...");
     namesAndAddresses = [
-      ["DIRECTORY", directory.address],
       ["ASSETS", assets.address],
       ["MARKET", market.address],
       ["ENGINE", engine.address],
@@ -85,8 +83,7 @@ module.exports = function (deployer, network, accounts) {
       ["STAKERS", stakers.address],
     ]
     const {0: names, 1: namesBytes32, 2: addresses} = deployUtils.splitNamesAndAdresses(namesAndAddresses);
-    await directory.deploy(namesBytes32, addresses).should.be.fulfilled;
-
+    const directory = await deployer.deploy(Directory, namesBytes32, addresses).should.be.fulfilled;
     
     console.log("Setting up ...");
     await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
