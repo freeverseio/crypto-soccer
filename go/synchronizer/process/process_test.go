@@ -49,6 +49,8 @@ func TestSyncTeams(t *testing.T) {
 	)
 	_, err = p.Process(tx, 0)
 	assert.NilError(t, err)
+	_, err = p.Process(tx, 0)
+	assert.NilError(t, err)
 
 	// the null timezone (0) is only used by the Academy Team
 	if count, err := storage.TimezoneCount(tx); err != nil {
