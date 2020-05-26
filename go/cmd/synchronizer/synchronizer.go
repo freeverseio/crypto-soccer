@@ -22,19 +22,6 @@ func main() {
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
-	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
-	assetsContractAddress := flag.String("assetsContractAddress", "", "")
-	evolutionContractAddress := flag.String("evolutionContractAddress", "", "")
-	engineContractAddress := flag.String("engineContractAddress", "", "")
-	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
-	updatesContractAddress := flag.String("updatesContractAddress", "", "")
-	marketContractAddress := flag.String("marketContractAddress", "", "")
-	utilsContractAddress := flag.String("utilsContractAddress", "", "")
-	playandevolveContractAddress := flag.String("playandevolveContractAddress", "", "")
-	shopContractAddress := flag.String("shopContractAddress", "", "")
-	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
-	constantsgettersContractAddress := flag.String("constantsgettersContractAddress", "", "")
-	stakersContractAddress := flag.String("stakersContractAddress", "", "")
 	directoryContractAddress := flag.String("directoryContractAddress", "", "")
 	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
@@ -47,45 +34,6 @@ func main() {
 		}
 	}
 
-	if *leaguesContractAddress == "" {
-		log.Fatal("no league contract address")
-	}
-	if *assetsContractAddress == "" {
-		log.Fatal("no assets contract address")
-	}
-	if *evolutionContractAddress == "" {
-		log.Fatal("no evolution contract address")
-	}
-	if *marketContractAddress == "" {
-		log.Fatal("no market contract address")
-	}
-	if *updatesContractAddress == "" {
-		log.Fatal("no updates contract address")
-	}
-	if *engineContractAddress == "" {
-		log.Fatal("no engine contract address")
-	}
-	if *enginePreCompContractAddress == "" {
-		log.Fatal("no enginePreComp contract address")
-	}
-	if *utilsContractAddress == "" {
-		log.Fatal("no utils contract address")
-	}
-	if *playandevolveContractAddress == "" {
-		log.Fatal("no playandevolve contract address")
-	}
-	if *shopContractAddress == "" {
-		log.Fatal("no shop contract address")
-	}
-	if *trainingpointsContractAddress == "" {
-		log.Fatal("no trainingpoints contract address")
-	}
-	if *constantsgettersContractAddress == "" {
-		log.Fatal("no constantsgetters contract address")
-	}
-	if *stakersContractAddress == "" {
-		log.Fatal("no stakers contract address")
-	}
 	if *directoryContractAddress == "" {
 		log.Fatal("no directory contract address")
 	}
@@ -106,23 +54,8 @@ func main() {
 		}
 		defer client.Close()
 
-		privilegedContractAddress := ""
-		contracts, err := contracts.New(
+		contracts, err := contracts.NewByDirectoryAddress(
 			client,
-			*leaguesContractAddress,
-			*assetsContractAddress,
-			*evolutionContractAddress,
-			*engineContractAddress,
-			*enginePreCompContractAddress,
-			*updatesContractAddress,
-			*marketContractAddress,
-			*utilsContractAddress,
-			*playandevolveContractAddress,
-			*shopContractAddress,
-			*trainingpointsContractAddress,
-			*constantsgettersContractAddress,
-			privilegedContractAddress,
-			*stakersContractAddress,
 			*directoryContractAddress,
 		)
 		if err != nil {
