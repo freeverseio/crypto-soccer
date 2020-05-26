@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"os/exec"
 	"strings"
@@ -62,7 +63,7 @@ type Contracts struct {
 }
 
 func (b Contracts) Clone() (*Contracts, error) {
-	return New(
+	return new(
 		b.Client,
 		b.leaguesAddress,
 		b.AssetsAddress,
@@ -82,7 +83,7 @@ func (b Contracts) Clone() (*Contracts, error) {
 	)
 }
 
-func New(
+func new(
 	client *ethclient.Client,
 	leaguesAddress string,
 	assetsAddress string,
@@ -184,15 +185,19 @@ func New(
 	return &contracts, nil
 }
 
-func NewFromDeployedDirectory(client *ethclient.Client, event directory.DirectoryDeployedDirectory) (*Contracts, error) {
+func NewByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresses []common.Address) (*Contracts, error) {
+	if len(names) != len(addresses) {
+		return nil, errors.New("names and addresses len mismatch")
+	}
 	contractMap := make(map[string]string)
-	for i := range event.Names {
-		name := event.Names[i]
+	for i := range names {
+		name := names[i]
 		n := bytes.Index(name[:], []byte{0})
-		address := event.Adresseses[i]
+		address := addresses[i]
 		contractMap[string(name[:n])] = address.String()
 	}
-	return New(
+
+	return new(
 		client,
 		contractMap["LEAGUES"],
 		contractMap["ASSETS"],
@@ -210,6 +215,22 @@ func NewFromDeployedDirectory(client *ethclient.Client, event directory.Director
 		contractMap["STAKERS"],
 		contractMap["DIRECTORY"],
 	)
+}
+
+func NewFromDeployedDirectory(client *ethclient.Client, event directory.DirectoryDeployedDirectory) (*Contracts, error) {
+	return NewByNamesAndAddresses(client, event.Names, event.Adresseses)
+}
+
+func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts, error) {
+	directoryContract, err := directory.NewDirectory(common.HexToAddress(address), client)
+	if err != nil {
+		return nil, err
+	}
+	names, addresses, err := directoryContract.GetDirectory(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	return NewByNamesAndAddresses(client, names, addresses)
 }
 
 func GetContractAddress(directory *directory.Directory, name string) (common.Address, error) {

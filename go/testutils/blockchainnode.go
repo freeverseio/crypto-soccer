@@ -13,27 +13,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type ContractAddresses struct {
-	Leagues        string
-	Assets         string
-	Evolution      string
-	Engine         string
-	Engineprecomp  string
-	Updates        string
-	Market         string
-	Utils          string
-	Playandevolve  string
-	Shop           string
-	Trainingpoints string
-	Privileged     string
-	Stakers        string
-}
-
 type BlockchainNode struct {
 	Client    *ethclient.Client
 	Owner     *ecdsa.PrivateKey
 	Contracts *contracts.Contracts
-	Addresses ContractAddresses
 }
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -73,7 +56,6 @@ func NewBlockchainNodeAt(address string) (*BlockchainNode, error) {
 		client,
 		creatorPrivateKey,
 		nil,
-		ContractAddresses{},
 	}, nil
 }
 
@@ -91,41 +73,12 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	b.Contracts, _ = contracts.New(
+	b.Contracts, err = contracts.NewByDirectoryAddress(
 		b.Client,
-		contractMap["LEAGUES_CONTRACT_ADDRESS"],
-		contractMap["ASSETS_CONTRACT_ADDRESS"],
-		contractMap["EVOLUTION_CONTRACT_ADDRESS"],
-		contractMap["ENGINE_CONTRACT_ADDRESS"],
-		contractMap["ENGINEPRECOMP_CONTRACT_ADDRESS"],
-		contractMap["UPDATES_CONTRACT_ADDRESS"],
-		contractMap["MARKET_CONTRACT_ADDRESS"],
-		contractMap["UTILS_CONTRACT_ADDRESS"],
-		contractMap["PLAYANDEVOLVE_CONTRACT_ADDRESS"],
-		contractMap["SHOP_CONTRACT_ADDRESS"],
-		contractMap["TRAININGPOINTS_CONTRACT_ADDRESS"],
-		contractMap["CONSTANTSGETTERS_CONTRACT_ADDRESS"],
-		contractMap["PRIVILEGED_CONTRACT_ADDRESS"],
-		contractMap["STAKERS_CONTRACT_ADDRESS"],
 		contractMap["DIRECTORY_CONTRACT_ADDRESS"],
 	)
 
-	b.Addresses = ContractAddresses{
-		contractMap["LEAGUES_CONTRACT_ADDRESS"],
-		contractMap["ASSETS_CONTRACT_ADDRESS"],
-		contractMap["EVOLUTION_CONTRACT_ADDRESS"],
-		contractMap["ENGINE_CONTRACT_ADDRESS"],
-		contractMap["ENGINEPRECOMP_CONTRACT_ADDRESS"],
-		contractMap["UPDATES_CONTRACT_ADDRESS"],
-		contractMap["MARKET_CONTRACT_ADDRESS"],
-		contractMap["UTILS_CONTRACT_ADDRESS"],
-		contractMap["PLAYANDEVOLVE_CONTRACT_ADDRESS"],
-		contractMap["SHOP_CONTRACT_ADDRESS"],
-		contractMap["TRAININGPOINTS_CONTRACT_ADDRESS"],
-		contractMap["PRIVILEGED_CONTRACT_ADDRESS"],
-		contractMap["STAKERS_CONTRACT_ADDRESS"],
-	}
-	return nil
+	return err
 }
 
 func (b *BlockchainNode) Init() error {
