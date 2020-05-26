@@ -15,11 +15,10 @@ var dump spew.ConfigState
 
 func TestMain(m *testing.M) {
 	var err error
-	bc, err = testutils.NewBlockchainNode()
+	bc, err = testutils.NewBlockchain()
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc.DeployContracts(bc.Owner)
 	dump = spew.ConfigState{DisablePointerAddresses: true, Indent: "\t"}
 	os.Exit(m.Run())
 }
