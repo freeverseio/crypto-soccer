@@ -47,9 +47,8 @@ func TestGetWorldPlayersDeterministicResult(t *testing.T) {
 }
 
 func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
+	bc, err := testutils.NewBlockchain()
 	assert.NilError(t, err)
-	bc.DeployContracts(bc.Owner)
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	bc.Contracts.Assets.TransferFirstBotToAddr(

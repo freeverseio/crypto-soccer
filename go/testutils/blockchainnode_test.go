@@ -11,11 +11,10 @@ import (
 )
 
 func TestConctactsDeploy(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
+	bc, err := testutils.NewBlockchain()
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.NilError(t, bc.DeployContracts(bc.Owner))
 	t.Log(fmt.Sprintf("%+v", bc.Contracts))
 	assert.Assert(t, bc.Contracts.Client != nil)
 	assert.Assert(t, bc.Contracts.Leagues != nil)
