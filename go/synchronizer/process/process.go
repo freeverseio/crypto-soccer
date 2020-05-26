@@ -44,6 +44,7 @@ func NewEventProcessor(
 	ipfsURL string,
 	staker *staker.Staker,
 ) *EventProcessor {
+
 	return &EventProcessor{
 		client,
 		nil,
@@ -95,10 +96,14 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
+		if err := p.staker.Init(*p.contracts); err != nil {
+			return 0, err
+		}
 		bigBangBlock := bigBangEvent.Raw.BlockNumber
 		if err = storage.SetBlockNumber(tx, bigBangBlock); err != nil {
 			return 0, err
 		}
+
 		return bigBangBlock, nil
 	}
 

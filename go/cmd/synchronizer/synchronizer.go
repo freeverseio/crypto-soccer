@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
@@ -65,9 +64,7 @@ func main() {
 			if err != nil {
 				return err
 			}
-			if err := stkr.Init(*contracts); err != nil {
-				return err
-			}
+
 		}
 
 		log.Info("Connecting to universe DBMS: ", *postgresURL)
@@ -85,7 +82,7 @@ func main() {
 
 		processor := process.NewEventProcessor(
 			client,
-			*directoryContractAddress
+			*directoryContractAddress,
 			namesdb,
 			*ipfsURL,
 			stkr,
