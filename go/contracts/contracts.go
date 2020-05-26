@@ -3,9 +3,6 @@ package contracts
 import (
 	"bytes"
 	"errors"
-	"os"
-	"os/exec"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -185,7 +182,7 @@ func new(
 	return &contracts, nil
 }
 
-func NewByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresses []common.Address) (*Contracts, error) {
+func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresses []common.Address) (*Contracts, error) {
 	if len(names) != len(addresses) {
 		return nil, errors.New("names and addresses len mismatch")
 	}
@@ -218,7 +215,7 @@ func NewByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresse
 }
 
 func NewFromDeployedDirectory(client *ethclient.Client, event directory.DirectoryDeployedDirectory) (*Contracts, error) {
-	return NewByNamesAndAddresses(client, event.Names, event.Adresseses)
+	return newByNamesAndAddresses(client, event.Names, event.Adresseses)
 }
 
 func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts, error) {
@@ -230,52 +227,5 @@ func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts
 	if err != nil {
 		return nil, err
 	}
-	return NewByNamesAndAddresses(client, names, addresses)
-}
-
-func GetContractAddress(directory *directory.Directory, name string) (common.Address, error) {
-	var name32 [32]byte
-	copy(name32[:], name)
-	address, err := directory.GetAddress(&bind.CallOpts{}, name32)
-	if err != nil {
-		return common.Address{}, err
-	}
-	return address, nil
-}
-
-func DeplyByTruffle() (map[string]string, error) {
-	cryptoRoot, err := exec.Command("/usr/bin/git", "rev-parse", "--show-toplevel").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Infof("Repo root at: %s", cryptoRoot)
-	workingDir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	if err = os.Chdir(string(cryptoRoot[:len(cryptoRoot)-1]) + "/truffle-core"); err != nil {
-		return nil, err
-	}
-	cmd := exec.Command("./node_modules/.bin/truffle", "migrate", "--network", "local", "--reset")
-	log.Infof("Deploy by truffle: %v", cmd.String())
-	o, err := cmd.Output()
-	if err != nil {
-		return nil, err
-	}
-	// log.Infof("%s", o)
-	output := string(o)
-	startIdx := strings.Index(output, "-----------AddressesStart-----------") + len("-----------AddressesStart-----------")
-	endIdx := strings.Index(output, "-----------AddressesEnd-----------")
-	var contracts map[string]string
-	contracts = make(map[string]string)
-	addresses := strings.Split(output[startIdx+1:endIdx-1], "\n")
-	for _, address := range addresses {
-		log.Info(address)
-		pair := strings.SplitN(address, "=", 2)
-		contracts[pair[0]] = pair[1]
-	}
-	if err = os.Chdir(workingDir); err != nil {
-		return nil, err
-	}
-	return contracts, nil
+	return newByNamesAndAddresses(client, names, addresses)
 }

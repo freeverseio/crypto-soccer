@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/contracts/truffle"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 
 	log "github.com/sirupsen/logrus"
@@ -68,14 +69,14 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 }
 
 func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
-	contractMap, err := contracts.DeplyByTruffle()
+	directoryAddress, err := truffle.DeplyByTruffle()
 	if err != nil {
 		return err
 	}
 
 	b.Contracts, err = contracts.NewByDirectoryAddress(
 		b.Client,
-		contractMap["DIRECTORY_CONTRACT_ADDRESS"],
+		directoryAddress,
 	)
 
 	return err
