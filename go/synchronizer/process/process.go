@@ -44,14 +44,9 @@ func NewEventProcessor(
 	ipfsURL string,
 	staker *staker.Staker,
 ) *EventProcessor {
-	contracts, _ := contracts.NewByDirectoryAddress(
-		client,
-		directoryContractAddress,
-	)
-
 	return &EventProcessor{
 		client,
-		contracts,
+		nil,
 		staker,
 		ipfsURL,
 		namesdb,

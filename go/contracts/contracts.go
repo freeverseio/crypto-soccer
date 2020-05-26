@@ -75,6 +75,24 @@ func NewByDeployedDirectoryEvent(client *ethclient.Client, event directory.Direc
 	return newByNamesAndAddresses(client, event.Names, event.Adresseses)
 }
 
+// func NewFromStorage(client *ethclient.Client, tx *sql.Tx) (*contracts.Contracts, error) {
+// 	rows, err := tx.Query("SELECT param, values FROM params")
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+// 	for rows.Next() {
+// 		var param string
+// 		var value string
+// 		if err = rows.Scan(
+// 			&param,
+// 			&value,
+// 		); err != nil {
+// 			return nil, err
+// 		}
+// 	}
+// }
+
 func (b Contracts) Clone() (*Contracts, error) {
 	return new(
 		b.Client,
