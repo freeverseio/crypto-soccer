@@ -80,7 +80,7 @@ func NewByNewDirectoryEvent(client *ethclient.Client, event proxy.ProxyNewDirect
 	}
 	names, addresses, err := directoryContract.GetDirectory(&bind.CallOpts{})
 	if err != nil {
-		returm nil err
+		return nil, err
 	}
 	return newByNamesAndAddresses(client, names, addresses)
 }
