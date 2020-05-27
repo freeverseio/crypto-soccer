@@ -22,11 +22,13 @@ func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
-	directoryContractAddress := flag.String("directory_address", "", "")
+	proxyAddress := flag.String("proxy_address", "", "")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
 	flag.Parse()
+
+	log.Infof("[PARAM] proxy_address              : %v", *proxyAddress)
 
 	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
 	if err != nil {
@@ -48,7 +50,7 @@ func main() {
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
 	log.Infof("Address : %v", crypto.PubkeyToAddress(privateKey.PublicKey).Hex())
 
-	bc, err := contracts.NewByDirectoryAddress(client, *directoryContractAddress)
+	bc, err := contracts.NewByProxyAddress(client, *proxyAddress)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -24,7 +24,7 @@ func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres url")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
-	directoryAddress := flag.String("directory_address", "", "directory contract address")
+	proxyAddress := flag.String("proxy_address", "", "proxy contract address")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	debug := flag.Bool("debug", false, "print debug logs")
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
@@ -36,7 +36,7 @@ func main() {
 
 	log.Infof("[PARAM] postgres                   : %v", *postgresURL)
 	log.Infof("[PARAM] ethereum_client            : %v", *ethereumClient)
-	log.Infof("[PARAM] directory_address          : %v", *directoryAddress)
+	log.Infof("[PARAM] proxy_address              : %v", *proxyAddress)
 	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
 	if err != nil {
 		log.Fatal(err)
@@ -84,9 +84,9 @@ func main() {
 			return err
 		}
 		defer client.Close()
-		contracts, err := contracts.NewByDirectoryAddress(
+		contracts, err := contracts.NewByProxyAddress(
 			client,
-			*directoryAddress,
+			*proxyAddress,
 		)
 		if err != nil {
 			return err
