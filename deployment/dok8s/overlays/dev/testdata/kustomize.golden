@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   BLOCKS_PER_STEP: "10000"
-  DIRECTORY_CONTRACT_ADDRESS: 0x348Cd8f21dB3C863551a13cA3973A6fD2bD113e9
+  DIRECTORY_CONTRACT_ADDRESS: 0x98dD59698D18F5eE997c72cdBf5BE9D0637cc971
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: ""
@@ -409,8 +409,8 @@ spec:
         - http://xdai:8545
         - -private_key
         - $(notary_private_key)
-        - -directory_address
-        - $(DIRECTORY_CONTRACT_ADDRESS)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -market_id
         - $(market_id)
         - -google_key
@@ -513,8 +513,8 @@ spec:
         - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
         - -ethereum
         - http://xdai:8545
-        - -directory_address
-        - $(DIRECTORY_CONTRACT_ADDRESS)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -ipfs
         - /dns4/ipfsnode/tcp/5001
         - -private_key
