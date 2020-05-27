@@ -4,8 +4,8 @@
 --
 
 CREATE TABLE IF NOT EXISTS `countries` (
-  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name` varchar(70) NOT NULL DEFAULT '',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(70) NOT NULL PRIMARY KEY DEFAULT '',
   `iso2` char(2) NOT NULL DEFAULT '',
   `iso3` char(3) NOT NULL,
   `phone_code` int(7) NOT NULL,
