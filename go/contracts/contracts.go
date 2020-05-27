@@ -72,8 +72,17 @@ func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts
 	return newByNamesAndAddresses(client, names, addresses)
 }
 
-func NewByDeployedDirectoryEvent(client *ethclient.Client, event proxy.ProxyNewDirectory) (*Contracts, error) {
-	return newByNamesAndAddresses(client, event.Names, event.Adresseses)
+func NewByNewDirectoryEvent(client *ethclient.Client, event proxy.ProxyNewDirectory) (*Contracts, error) {
+	directoryAddress := event.Addr
+	directoryContract, err := directory.NewDirectory(common.HexToAddress(directoryAddress), client)
+	if err != nil {
+		return nil, err
+	}
+	names, addresses, err := directoryContract.GetDirectory(&bind.CallOpts{})
+	if err != nil {
+		returm nil err
+	}
+	return newByNamesAndAddresses(client, names, addresses)
 }
 
 func (b Contracts) Clone() (*Contracts, error) {
@@ -203,6 +212,7 @@ func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresse
 	if len(names) != len(addresses) {
 		return nil, errors.New("names and addresses len mismatch")
 	}
+
 	contractMap := make(map[string]string)
 	for i := range names {
 		name := names[i]
