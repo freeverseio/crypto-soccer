@@ -1,16 +1,15 @@
 PRAGMA synchronous = OFF;
 PRAGMA journal_mode = MEMORY;
 BEGIN TRANSACTION;
-CREATE TABLE IF NOT EXISTS `world` (
-  `id` integer PRIMARY KEY
-,  `name` varchar(70) NOT NULL DEFAULT ''
-,  `iso2` char(2) NOT NULL DEFAULT ''
+CREATE TABLE IF NOT EXISTS `countries` (
+   `name` varchar(70) NOT NULL DEFAULT ''
+,  `iso2` char(2) NOT NULL DEFAULT '' PRIMARY KEY
 ,  `iso3` char(3) NOT NULL
 ,  `phone_code` integer NOT NULL
 ,  `postcode_required` integer NOT NULL DEFAULT '0'
 ,  `is_eu` integer NOT NULL DEFAULT '0'
 );
-INSERT INTO `world` (`iso2`, `iso3`, `name`, `phone_code`, `postcode_required`, `is_eu`) VALUES
+INSERT INTO `countries` (`iso2`, `iso3`, `name`, `phone_code`, `postcode_required`, `is_eu`) VALUES
   ('AD', 'AND', 'Andorra', 376, 0, 0),
   ('AE', 'ARE', 'United Arab Emirates', 971, 0, 0),
   ('AF', 'AFG', 'Afghanistan', 93, 0, 0),
