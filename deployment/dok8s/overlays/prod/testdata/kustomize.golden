@@ -406,8 +406,8 @@ spec:
         - http://xdai:8545
         - -private_key
         - $(notary_private_key)
-        - -directory_address
-        - $(DIRECTORY_CONTRACT_ADDRESS)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -market_id
         - $(market_id)
         - -google_key
@@ -510,8 +510,8 @@ spec:
         - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
         - -ethereum
         - http://xdai:8545
-        - -directory_address
-        - $(DIRECTORY_CONTRACT_ADDRESS)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -ipfs
         - /dns4/ipfsnode/tcp/5001
         - -private_key
