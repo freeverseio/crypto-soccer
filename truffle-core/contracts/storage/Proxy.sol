@@ -217,4 +217,5 @@ contract Proxy is ProxyStorage {
     function company() public view returns (address) { return _company; }
     function proposedCompany() public view returns (address) { return _proposedCompany; }
     function superUser() public view returns (address) { return _superUser; }
+    function directory() public view returns (address) { return _directory; }
 }
