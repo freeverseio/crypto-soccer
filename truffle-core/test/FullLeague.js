@@ -293,7 +293,7 @@ contract('FullLeague', (accounts) => {
 
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         await assets.initTZs({from: owners.COO}).should.be.fulfilled;
@@ -476,7 +476,7 @@ contract('FullLeague', (accounts) => {
     
     it('challenge unexpected zero values', async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
-        depl = await deployUtils.deploy(versionNumber = 0, defaultSetup.owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(defaultSetup.owners, Proxy, Assets, Market, Updates, Challenges);
         proxy  = depl[0];
         updates = depl[3];
         challenges = depl[4];

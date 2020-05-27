@@ -22,6 +22,7 @@ contract ProxyStorage {
     address internal _company; 
     address internal _proposedCompany;
     address internal _superUser; 
+    address internal _directory; 
 
     modifier onlyCompany() {
         require(msg.sender == _company, "Only company is authorized.");

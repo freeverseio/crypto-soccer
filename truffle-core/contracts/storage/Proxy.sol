@@ -1,7 +1,11 @@
 pragma solidity >= 0.6.3;
+// From SolidityDocs, we kept the same pragma, even though it is not considered experimental anymore:
+// This allows for nested arrays in the inputs of functions
+pragma experimental ABIEncoderV2;
+
+
 
 import "./ProxyStorage.sol";
-
 /**
  @title Holds all storage for all assets, and manages who to delegate the calls
  @author Freeverse.io, www.freeverse.io
@@ -19,6 +23,7 @@ contract Proxy is ProxyStorage {
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
     event ContractsActivated(uint256[] contractIds, uint256 time);
     event ContractsDeactivated(uint256[] contractIds, uint256 time);
+    event NewDirectory(address addr);
 
     /**
     * @dev Sets CompanyOwner and SuperUser
@@ -84,29 +89,10 @@ contract Proxy is ProxyStorage {
         _superUser = addr;
     }
 
-    /**
-    * @dev Stores the info about a contract to be later called via delegate call,
-    * @dev by pushing to the _contractsInfo array, and emits an event with all the info.
-    * @dev NOTE: it does not activate it until "activateContracts" is invoked
-    * @param contractId The index in the array _contractsInfo where this contract should be placed
-    *   It must be equal to the next available idx in the array. Although not strictly necessary, 
-    *   it allows the external caller to ensure that the idx is as expected without parsing the event.
-    * @param addr Address of the contract that will be used in the delegate call
-    * @param selectors An array of all selectors needed inside the contract
-    * @param name The name of the added contract, only for reference
-    */
-    function addContract(uint256 contractId, address addr, bytes4[] calldata selectors, bytes32 name) external onlySuperUser {
-        /// we require that the contract gets assigned an Id that is as specified from outside, 
-        /// to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
-        require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
-        assertPointsToContract(addr);
-        ContractInfo memory info;
-        info.addr = addr;
-        info.name = name;
-        info.isActive = false;
-        info.selectors = selectors;
-        _contractsInfo.push(info);
-        emit ContractAdded(contractId, name, selectors);        
+    function addContracts(uint256[] calldata contractIds, address[] calldata addrs, bytes4[][] calldata selectors, bytes32[] calldata names) external onlySuperUser {
+        for (uint256 c = 0; c < contractIds.length; c++) {
+            _addContract(contractIds[c], addrs[c], selectors[c], names[c]);
+        }
     }
     
     /**
@@ -116,11 +102,12 @@ contract Proxy is ProxyStorage {
     * @param deactContractIds The ids of the contracts to be de-activated
     * @param actContractIds The ids of the contracts to be activated
     */
-    function deactivateAndActivateContracts(uint256[] calldata deactContractIds, uint256[] calldata actContractIds) external onlySuperUser {
+    function upgrade(uint256[] calldata deactContractIds, uint256[] calldata actContractIds, address newDirectory) external onlySuperUser {
         deactivateContracts(deactContractIds);
         activateContracts(actContractIds);
+        setDirectory(newDirectory);
     }
-        
+
     /**
     * @dev  Activates a set of contracts, by adding an entry in the 
     *       _selectorToContractAddr mapping for each selector of the contract. 
@@ -160,7 +147,39 @@ contract Proxy is ProxyStorage {
         emit ContractsDeactivated(contractIds, now);        
     }
 
+    /// Directory is just an external contract used by synchornizers to
+    /// read the addresses of all other contracts. The proxy just informs about
+    /// the location of this contract, which is typically changed in an upgrade.
+    function setDirectory(address addr) public onlySuperUser {
+        _directory = addr;
+        emit NewDirectory(addr);
+    }
 
+    /**
+    * @dev Stores the info about a contract to be later called via delegate call,
+    * @dev by pushing to the _contractsInfo array, and emits an event with all the info.
+    * @dev NOTE: it does not activate it until "activateContracts" is invoked
+    * @param contractId The index in the array _contractsInfo where this contract should be placed
+    *   It must be equal to the next available idx in the array. Although not strictly necessary, 
+    *   it allows the external caller to ensure that the idx is as expected without parsing the event.
+    * @param addr Address of the contract that will be used in the delegate call
+    * @param selectors An array of all selectors needed inside the contract
+    * @param name The name of the added contract, only for reference
+    */
+    function _addContract(uint256 contractId, address addr, bytes4[] memory selectors, bytes32 name) private {
+        /// we require that the contract gets assigned an Id that is as specified from outside, 
+        /// to make deployment more predictable, and avoid having to parse the emitted event to get contractId:
+        require(contractId == _contractsInfo.length, "trying to add a new contract to a contractId that is non-consecutive");
+        assertPointsToContract(addr);
+        ContractInfo memory info;
+        info.addr = addr;
+        info.name = name;
+        info.isActive = false;
+        info.selectors = selectors;
+        _contractsInfo.push(info);
+        emit ContractAdded(contractId, name, selectors);        
+    }
+   
    /**
     * @dev Reverts unless contractAddress points to a legit contract.
     *      Makes sure that the hash of the external code is neither 0x0 (not-yet created),
