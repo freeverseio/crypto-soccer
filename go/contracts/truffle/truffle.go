@@ -15,14 +15,14 @@ func New() (*contracts.Contracts, error) {
 	if err != nil {
 		return nil, err
 	}
-	directoryAddress, err := deploy()
+	proxyAddress, err := Deploy()
 	if err != nil {
 		return nil, err
 	}
-	return contracts.NewByDirectoryAddress(client, directoryAddress)
+	return contracts.NewByProxyAddress(client, proxyAddress)
 }
 
-func deploy() (string, error) {
+func Deploy() (string, error) {
 	cryptoRoot, err := exec.Command("/usr/bin/git", "rev-parse", "--show-toplevel").Output()
 	if err != nil {
 		return "", err
@@ -56,5 +56,5 @@ func deploy() (string, error) {
 	if err = os.Chdir(workingDir); err != nil {
 		return "", err
 	}
-	return contracts["DIRECTORY_CONTRACT_ADDRESS"], nil
+	return contracts["PROXY_CONTRACT_ADDRESS"], nil
 }

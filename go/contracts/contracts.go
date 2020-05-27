@@ -43,6 +43,7 @@ type Contracts struct {
 	Privileged              *privileged.Privileged
 	Stakers                 *stakers.Stakers
 	Directory               *directory.Directory
+	Proxy                   *proxy.Proxy
 	LeaguesAddress          string
 	AssetsAddress           string
 	EvolutionAddress        string
@@ -58,10 +59,19 @@ type Contracts struct {
 	PrivilegedAddress       string
 	StakersAddress          string
 	DirectoryAddress        string
+	ProxyAddress            string
 }
 
-func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts, error) {
-	directoryContract, err := directory.NewDirectory(common.HexToAddress(address), client)
+func NewByProxyAddress(client *ethclient.Client, address string) (*Contracts, error) {
+	proxyContract, err := proxy.NewProxy(common.HexToAddress(address), client)
+	if err != nil {
+		return nil, err
+	}
+	directoryAddress, err := proxyContract.Directory(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	directoryContract, err := directory.NewDirectory(directoryAddress, client)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +84,7 @@ func NewByDirectoryAddress(client *ethclient.Client, address string) (*Contracts
 
 func NewByNewDirectoryEvent(client *ethclient.Client, event proxy.ProxyNewDirectory) (*Contracts, error) {
 	directoryAddress := event.Addr
-	directoryContract, err := directory.NewDirectory(common.HexToAddress(directoryAddress), client)
+	directoryContract, err := directory.NewDirectory(directoryAddress, client)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +113,7 @@ func (b Contracts) Clone() (*Contracts, error) {
 		b.PrivilegedAddress,
 		b.StakersAddress,
 		b.DirectoryAddress,
+		b.ProxyAddress,
 	)
 }
 
@@ -123,6 +134,7 @@ func New(
 	privilegedAddress string,
 	stakersAddress string,
 	directoryAddress string,
+	proxyAddress string,
 ) (*Contracts, error) {
 	var err error
 	contracts := Contracts{}
@@ -141,6 +153,7 @@ func New(
 	contracts.PrivilegedAddress = constantsgettersAddress
 	contracts.StakersAddress = stakersAddress
 	contracts.DirectoryAddress = directoryAddress
+	contracts.ProxyAddress = proxyAddress
 	contracts.Client = client
 
 	log.Debug("creating leagues bindings to: ", leaguesAddress)
@@ -204,6 +217,9 @@ func New(
 	if contracts.Directory, err = directory.NewDirectory(common.HexToAddress(directoryAddress), contracts.Client); err != nil {
 		return nil, err
 	}
+	if contracts.Proxy, err = proxy.NewProxy(common.HexToAddress(proxyAddress), contracts.Client); err != nil {
+		return nil, err
+	}
 
 	return &contracts, nil
 }
@@ -220,6 +236,7 @@ func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresse
 		address := addresses[i]
 		contractMap[string(name[:n])] = address.String()
 	}
+	log.Info(contractMap["PROXY"])
 
 	return New(
 		client,
@@ -238,5 +255,6 @@ func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresse
 		contractMap["PRIVILEGED"],
 		contractMap["STAKERS"],
 		contractMap["DIRECTORY"],
+		contractMap["PROXY"],
 	)
 }

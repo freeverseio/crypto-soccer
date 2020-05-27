@@ -84,7 +84,7 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 	if err := s.scanTimeZoneUpdate(opts); err != nil {
 		return err
 	}
-	if err := s.scanDeployedDirectory(opts); err != nil {
+	if err := s.scanNewDirectory(opts); err != nil {
 		return err
 	}
 
@@ -232,19 +232,19 @@ func (s *EventScanner) scanTimeZoneUpdate(opts *bind.FilterOpts) error {
 	return nil
 }
 
-func (s *EventScanner) scanDeployedDirectory(opts *bind.FilterOpts) error {
+func (s *EventScanner) scanNewDirectory(opts *bind.FilterOpts) error {
 	if s.contracts.Directory == nil {
 		return errors.New("contract Directory is nil")
 	}
 
-	iter, err := s.contracts.Directory.FilterDeployedDirectory(opts)
+	iter, err := s.contracts.Proxy.FilterNewDirectory(opts)
 	if err != nil {
 		return err
 	}
 	for iter.Next() {
 		e := *(iter.Event)
 		log.Debugf("[scanner] scanDeployedDirectory")
-		s.addEvent(e.Raw, "DirectoryDeployedDirectory", e)
+		s.addEvent(e.Raw, "ProxyNewDirectory", e)
 	}
 	return nil
 }

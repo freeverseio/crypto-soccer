@@ -12,6 +12,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
+	log "github.com/sirupsen/logrus"
 	"gotest.tools/assert"
 )
 
@@ -27,7 +28,7 @@ func TestProcessorDispatchUpdatesTimezoneUpdate(t *testing.T) {
 
 	p := process.NewEventProcessor(
 		bc.Client,
-		bc.Contracts.DirectoryAddress,
+		bc.Contracts.ProxyAddress,
 		namesdb,
 		ipfsURL,
 		nil,
@@ -42,11 +43,12 @@ func TestSyncTeams(t *testing.T) {
 	defer tx.Rollback()
 	p := process.NewEventProcessor(
 		bc.Client,
-		bc.Contracts.DirectoryAddress,
+		bc.Contracts.ProxyAddress,
 		namesdb,
 		ipfsURL,
 		nil,
 	)
+	log.Info(bc.Contracts.ProxyAddress)
 	_, err = p.Process(tx, 0)
 	assert.NilError(t, err)
 	_, err = p.Process(tx, 0)

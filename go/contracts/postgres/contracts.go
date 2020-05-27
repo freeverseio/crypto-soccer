@@ -36,6 +36,7 @@ func NewFromStorage(client *ethclient.Client, tx *sql.Tx) (*contracts.Contracts,
 		contractMap["PRIVILEGED"],
 		contractMap["STAKERS"],
 		contractMap["DIRECTORY"],
+		contractMap["PROXY"],
 	)
 }
 
