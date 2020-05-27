@@ -45,15 +45,16 @@ contract('Proxy', (accounts) => {
         proxy = await Proxy.new(owners.company, owners.superuser, deployUtils.extractSelectorsFromAbi(Proxy.abi)).should.be.fulfilled;
         assets = await Assets.at(proxy.address).should.be.fulfilled;
         assetsAsLib = await Assets.new().should.be.fulfilled;
+        selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
+        nSelPerContract = [selectors.length];
     });
 
     it('fails when adding a contract to an address without contract', async () => {
-        await proxy.addContracts(contractIds = [1], ['0x0'], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
-        await proxy.addContracts(contractIds = [1], ['0x32132'], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
-        await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        await proxy.addContracts(contractIds = [1], ['0x0'], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        await proxy.addContracts(contractIds = [1], ['0x32132'], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        await proxy.addContracts(contractIds = [1], [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
     });
 
-    
     it('companyOwner: permissions check', async () => {
         await proxy.proposeCompany(COO, {from: superuser}).should.be.rejected;
         await proxy.proposeCompany(accounts[5], {from: company}).should.be.fulfilled;
@@ -66,16 +67,15 @@ contract('Proxy', (accounts) => {
     });
 
     it('superUser: permissions check', async () => {
-        selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
 
         await proxy.setSuperUser(COO, {from: superuser}).should.be.rejected;
         await proxy.setSuperUser(COO, {from: company}).should.be.fulfilled;
-        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
-        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: COO}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: COO}).should.be.fulfilled;
 
         await proxy.setSuperUser(superuser, {from: company}).should.be.fulfilled;
-        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: COO}).should.be.rejected;
-        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: COO}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
     });
     
     it('full deploy should work', async () => {
@@ -109,12 +109,12 @@ contract('Proxy', (accounts) => {
         // contact[0] is the NULL contract
         result = await proxy.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
-        selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
-        tx0 = await proxy.addContracts(contractIds = [0], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
-        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+
+        tx0 = await proxy.addContracts(contractIds = [0], [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
         contractId = 1;
         contractIds = [contractId];
-        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
 
         truffleAssert.eventEmitted(tx0, "ContractAdded", (event) => {
             ok = true;
@@ -145,10 +145,9 @@ contract('Proxy', (accounts) => {
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
 
         // add function (still not enough to call assets):
-        selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
         contractId = 1;
         contractIds = [contractId];
-        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
         
@@ -168,7 +167,7 @@ contract('Proxy', (accounts) => {
         // I can re-activate, and, because storage is preserved, I cannot initTZs again, but nCountries is still OK
         contractId = 2;
         contractIds = [contractId];
-        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
         tx1 = await proxy.activateContracts(contractIds , {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
@@ -178,7 +177,7 @@ contract('Proxy', (accounts) => {
 
         // I can do the same thing in one atomic TX:
         contractId = 3;
-        tx0 = await proxy.addContracts([contractId], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts([contractId], [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
         tx1 = await proxy.upgrade(deactivate = [2], activate = [3], directoryDummyAddr = superuser, {from: superuser}).should.be.fulfilled;
 
         now = Math.floor(Date.now()/1000);

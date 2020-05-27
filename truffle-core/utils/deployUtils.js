@@ -43,12 +43,16 @@ const addContracts = async (superuser, proxy, addresses, allSelectors, names, fi
     // Add all contracts to ids = [firstNewContractId, firstNewContractId+1,...]
     nContracts = namesStr.length;
     newContractIds = [];
+    concatSelectors = [];
+    nSelectorsPerContract = [];
     for (c = 0; c < nContracts; c++) {
         if (allSelectors[c].length > 0) {
             newContractIds.push(firstNewContractId + c);
         }
+        nSelectorsPerContract.push(allSelectors[c].length);
+        concatSelectors = concatSelectors.concat(allSelectors[c]);
     }
-    tx0 = await proxy.addContracts(newContractIds, addresses, allSelectors, names, {from: superuser}).should.be.fulfilled;
+    tx0 = await proxy.addContracts(newContractIds, addresses, nSelectorsPerContract, concatSelectors, names, {from: superuser}).should.be.fulfilled;
     return newContractIds;
 }
 

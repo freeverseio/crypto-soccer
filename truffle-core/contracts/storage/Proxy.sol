@@ -1,9 +1,4 @@
 pragma solidity >= 0.6.3;
-// From SolidityDocs, we kept the same pragma, even though it is not considered experimental anymore:
-// This allows for nested arrays in the inputs of functions
-pragma experimental ABIEncoderV2;
-
-
 
 import "./ProxyStorage.sol";
 /**
@@ -89,9 +84,24 @@ contract Proxy is ProxyStorage {
         _superUser = addr;
     }
 
-    function addContracts(uint256[] calldata contractIds, address[] calldata addrs, bytes4[][] calldata selectors, bytes32[] calldata names) external onlySuperUser {
+    function addContracts(
+        uint256[] calldata contractIds, 
+        address[] calldata addrs, 
+        uint16[] calldata nSelectorsPerContract, 
+        bytes4[] calldata selectors,
+        bytes32[] calldata names
+    ) 
+        external 
+        onlySuperUser 
+    {
+        uint16 lastSelector;
         for (uint256 c = 0; c < contractIds.length; c++) {
-            _addContract(contractIds[c], addrs[c], selectors[c], names[c]);
+            bytes4[] memory thisSelectors = new bytes4[](nSelectorsPerContract[c]);
+            for (uint256 s = 0; s < nSelectorsPerContract[c]; s++) {
+                thisSelectors[s] = selectors[lastSelector + s];
+            }
+            _addContract(contractIds[c], addrs[c], thisSelectors, names[c]);
+            lastSelector += nSelectorsPerContract[c];
         }
     }
     
