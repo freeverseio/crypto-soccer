@@ -89,6 +89,7 @@ def getInternationalCountryName(countryId):
         "Russia": "Russian Federation",
         "Arabia": "Saudi Arabia",
         "Korea": "South Korea",
+        "SpainNames": "Spain",
     }
     countryName = [c[1] for c in allCodes if c[0] == countryId]
     print(countryId, len(countryName), countryName[0])
