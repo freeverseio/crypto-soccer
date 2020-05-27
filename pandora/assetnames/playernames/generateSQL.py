@@ -2,6 +2,7 @@ import sqlite3
 from db_utils import db_connect
 import os
 
+international_db = "../country_list/country-list.sql"
 db_name = "goalRev.db"
 countryCodesFile = 'tmp/goalRevCountryCodes'
 namesFile = 'tmp/goalRevNames'
@@ -74,16 +75,38 @@ def getNumInCountry(country_code, allNames, allSurnames):
     return len([name for name in allNames if name[0] == country_code] \
                + [name for name in allSurnames if name[0] == country_code] )
 
+def executeScriptsFromFile(c, filename):
+    # Open and read the file as a single buffer
+    fd = open(filename, 'r')
+    sqlFile = fd.read()
+    fd.close()
+
+    # all SQL commands (split on ';')
+    # sqlCommands = sqlFile.split(';')
+    sqlCommands = filter(None, sqlFile.split(';'))
+    # Execute every command from the input file
+    for command in sqlCommands:
+        # This will skip and report errors
+        # For example, if the tables do not yet exist, this will skip over
+        # the DROP TABLE commands
+        try:
+            c.execute(command)
+        except Exception as inst:
+            print("Command skipped: ", inst)
+
+
 allNames = readNames(namesFile)
 allSurnames = readNames(surnamesFile)
 allCodes = readCodes(countryCodesFile)
-
-
 
 deleteIfExists(db_name)
 # con = sqlite3.connect(':memory:') # connect to the database
 con = sqlite3.connect(db_name) # connect to the database
 cur = con.cursor() # instantiate a cursor obj
+executeScriptsFromFile(cur, international_db)
+
+import sys
+sys.exit()
 
 cur.execute("PRAGMA foreign_keys = ON;")
 
