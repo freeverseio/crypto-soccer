@@ -23,7 +23,7 @@ func NewFromStorage(client *ethclient.Client, tx *sql.Tx) (*contracts.Contracts,
 }
 
 func ToStorage(tx *sql.Tx, contracts *contracts.Contracts) error {
-	if err := (storage.Param{"DIRECTORY", contracts.DirectoryAddress}).InsertOrUpdate(tx); err != nil {
+	if err := (storage.Param{"PROXY", contracts.ProxyAddress}).InsertOrUpdate(tx); err != nil {
 		return err
 	}
 	return nil
