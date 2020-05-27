@@ -90,7 +90,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 			return 0, err
 		}
 		if bigBangEvent == nil {
-			log.Warning("[processor] no BigBang event found")
+			log.Error("[processor] no BigBang event found")
 			return 0, err
 		}
 

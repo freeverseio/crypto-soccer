@@ -40,7 +40,7 @@ services:
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       -ipfs /dns4/ipfs.node/tcp/5001
       -ethereum http://ethereum:8545
-      -directory_address "${DIRECTORY_CONTRACT_ADDRESS}"
+      -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
       -staker "${STAKER_PVC}"
       -delta "${BLOCKS_PER_STEP}"
     depends_on:
