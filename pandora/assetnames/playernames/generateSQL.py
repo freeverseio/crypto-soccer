@@ -78,6 +78,25 @@ def executeScriptsFromFile(c, filename):
         except Exception as inst:
             print("Command skipped: ", inst)
 
+def getInternationalCountryName(countryId):
+    properNaming = {
+        "Great Britain": "United Kingdom",
+        "U.S.A.": "United States of America",
+        "the Netherlands": "Netherlands",
+        "East Frisia": "Pass",
+        "Swiss": "Switzerland",
+        "Kosovo": "Pass",
+        "Russia": "Russian Federation",
+        "Arabia": "Saudi Arabia",
+        "Korea": "South Korea",
+    }
+    countryName = [c[1] for c in allCodes if c[0] == countryId]
+    print(countryId, len(countryName), countryName[0])
+    countryName = countryName[0]
+    if countryName in properNaming:
+        countryName = properNaming[countryName]
+    return countryName
+
 
 allNames = readNames(namesFile)
 allSurnames = readNames(surnamesFile)
@@ -111,27 +130,30 @@ for code in allCodes:
     if code[0] >= 1000:
         cur.execute("INSERT INTO surname_regions VALUES ('%s');" %(properNaming[code[0]]))
 
-import sys
-sys.exit()
-
-
 # ---------- Names ----------
 names_sql = """
 CREATE TABLE names (
     name text NOT NULL,
-    country_code integer REFERENCES countries(country_code),
-    idx_in_country integer NON NULL,
-    PRIMARY KEY (name, country_code))"""
+    iso2 char(2) REFERENCES countries(iso2),
+    PRIMARY KEY (name, iso2))"""
 cur.execute(names_sql)
 
 for name in allNames:
-    exists = cur.execute("SELECT COUNT(*) FROM names WHERE (name='%s' AND country_code='%i');" % (name[1], name[0]))
+    countryName = getInternationalCountryName(name[0])
+    if countryName == "Pass":
+        continue
+    exists = cur.execute("SELECT iso2 FROM countries WHERE (name='%s');" % countryName)
+    row = cur.fetchone()
+    iso2 = row[0]
+
+    exists = cur.execute("SELECT COUNT(*) FROM names WHERE (name='%s' AND iso2='%s');" % (name[1], iso2))
     row = cur.fetchone()
     if row[0] == 0: # avoid repeating
-        cur.execute("INSERT INTO names VALUES ('%s', '%i', '%i');" %(name[1], name[0], written_per_country[name[0]]))
-        print(name[1], name[0], written_per_country[name[0]])
-        written_per_country[name[0]] += 1
+        cur.execute("INSERT INTO names VALUES ('%s', '%s');" %(name[1], iso2))
+        print(name[1], iso2)
 
+import sys
+sys.exit()
 # ---------- Surnames ----------
 surnames_sql = """
 CREATE TABLE surnames (
