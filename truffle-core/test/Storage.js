@@ -13,7 +13,9 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
+const NULL_ADDR = '0x0';
 
+const Directory = artifacts.require('Directory');
 const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
@@ -46,9 +48,9 @@ contract('Proxy', (accounts) => {
     });
 
     it('fails when adding a contract to an address without contract', async () => {
-        await proxy.addContract(contractId = 1, '0x0', selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
-        await proxy.addContract(contractId = 1, '0x32132', selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
-        await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+        await proxy.addContracts(contractIds = [1], ['0x0'], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        await proxy.addContracts(contractIds = [1], ['0x32132'], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
     });
 
     
@@ -68,20 +70,20 @@ contract('Proxy', (accounts) => {
 
         await proxy.setSuperUser(COO, {from: superuser}).should.be.rejected;
         await proxy.setSuperUser(COO, {from: company}).should.be.fulfilled;
-        tx0 = await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
-        tx0 = await proxy.addContract(contractId = 1, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: COO}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: COO}).should.be.fulfilled;
 
         await proxy.setSuperUser(superuser, {from: company}).should.be.fulfilled;
-        tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: COO}).should.be.rejected;
-        tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: COO}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
     });
     
     it('full deploy should work', async () => {
-        const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
     });
     
     it('Assets permissions check on full deploy', async () => {
-        depl = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         assets = depl[1]
         await assets.initTZs().should.be.rejected;
         await assets.initTZs({from: COO}).should.be.rejected;
@@ -108,10 +110,11 @@ contract('Proxy', (accounts) => {
         result = await proxy.countContracts().should.be.fulfilled;
         result.toNumber().should.be.equal(1);
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
-        tx0 = await proxy.addContract(contractId = 0, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
-        tx0 = await proxy.addContract(contractId = 2, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [0], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
         contractId = 1;
-        tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+        contractIds = [contractId];
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
 
         truffleAssert.eventEmitted(tx0, "ContractAdded", (event) => {
             ok = true;
@@ -144,12 +147,13 @@ contract('Proxy', (accounts) => {
         // add function (still not enough to call assets):
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
         contractId = 1;
-        tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
+        contractIds = [contractId];
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
         
         // activate function, now, enough to call assets:
-        tx1 = await proxy.activateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
+        tx1 = await proxy.activateContracts(contractIds, {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.fulfilled;
@@ -163,8 +167,9 @@ contract('Proxy', (accounts) => {
 
         // I can re-activate, and, because storage is preserved, I cannot initTZs again, but nCountries is still OK
         contractId = 2;
-        tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
-        tx1 = await proxy.activateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
+        contractIds = [contractId];
+        tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx1 = await proxy.activateContracts(contractIds , {from: superuser}).should.be.fulfilled;
         await assets.initTZs({from: COO}).should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
@@ -173,8 +178,8 @@ contract('Proxy', (accounts) => {
 
         // I can do the same thing in one atomic TX:
         contractId = 3;
-        tx0 = await proxy.addContract(contractId, assetsAsLib.address, selectors, name = toBytes32("Assets"), {from: superuser}).should.be.fulfilled;
-        tx1 = await proxy.deactivateAndActivateContracts(deactivate = [2], activate = [3], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts([contractId], [assetsAsLib.address], [selectors], names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx1 = await proxy.upgrade(deactivate = [2], activate = [3], directoryDummyAddr = superuser, {from: superuser}).should.be.fulfilled;
 
         now = Math.floor(Date.now()/1000);
         truffleAssert.eventEmitted(tx1, "ContractsActivated", (event) => { 
@@ -182,6 +187,9 @@ contract('Proxy', (accounts) => {
         });
         truffleAssert.eventEmitted(tx1, "ContractsDeactivated", (event) => { 
             return event.contractIds[0].toNumber().should.be.equal(2) && (Math.abs(event.time.toNumber()-now) < 30).should.be.equal(true)
+        });
+        truffleAssert.eventEmitted(tx1, "NewDirectory", (event) => { 
+            return event.addr.should.be.equal(directoryDummyAddr)
         });
 
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(2).should.be.fulfilled;
@@ -192,10 +200,12 @@ contract('Proxy', (accounts) => {
     });
     
     it('deploy and redeploy', async () => {
-        // contact[0] is the NULL contract
+        // contract[0] is the NULL contract
+        // proxy.address is the Proxy deployed at beforeEach, which we will leave with just the null contract
+        // proxyV0 will be th newly deployed Proxy, which we will here be updating.
         const nContractsToProxy = 4;
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
-        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await deployUtils.deploy(versionNumber = 0, owners, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
+        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
         assert.equal(await proxyV0.countContracts(), '5', "wrong V0 number of contracts in proxy");
 
@@ -206,7 +216,25 @@ contract('Proxy', (accounts) => {
             assert(fromBytes32(nom) == expectedNamesV0[c-1] , "wrong contract name");
         }    
 
-        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.deploy(versionNumber = 1, owners, Proxy, proxyV0.address, Assets, Market, Updates, Challenges);
+        namesAndAddresses = [
+            ["ASSETS", assets.address],
+            ["MARKET", proxyV0.address]
+        ];
+          
+        // REDEPLOY
+        const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.upgrade(
+            versionNumber = 1,
+            owners, 
+            Proxy, 
+            proxyV0.address,
+            Assets, 
+            Market, 
+            Updates, 
+            Challenges,
+            Directory,
+            namesAndAddresses
+        ).should.be.fulfilled;
+        
         assert.equal(await proxyV1.address, proxyV0.address);
         assert.equal(await proxyV0.countContracts(), '9', "wrong V1 number of contracts in proxyV0");
         assert.equal(await proxyV1.countContracts(), '9', "wrong V1 number of contracts in proxyV1");
