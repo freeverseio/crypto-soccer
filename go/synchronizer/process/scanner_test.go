@@ -12,7 +12,7 @@ func TestScanningIniting(t *testing.T) {
 	assert.NilError(t, scanner.Process(nil))
 	events := scanner.Events
 	assert.Equal(t, 5, len(events))
-	assert.Equal(t, events[0].Name, "DirectoryDeployedDirectory")
+	assert.Equal(t, events[0].Name, "ProxyNewDirectory")
 	assert.Equal(t, events[1].Name, "AssetsInit")
 	assert.Equal(t, events[2].Name, "AssetsTeamTransfer")
 	assert.Equal(t, events[3].Name, "AssetsDivisionCreation")
