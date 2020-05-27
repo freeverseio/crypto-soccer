@@ -54,12 +54,6 @@ module.exports = function (deployer, network, accounts) {
     const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
     const marketCrypto = await deployer.deploy(MarketCrypto, proxy.address).should.be.fulfilled;
 
-    console.log("Giving temporary control to accounts[0]...");
-    // first set all owners to accounts[0] so that we can do some operations
-    await assets.setCOO(accounts[0]).should.be.fulfilled;
-    await assets.setMarket(accounts[0]).should.be.fulfilled;
-    await assets.setRelay(accounts[0]).should.be.fulfilled;
-    
     console.log("Writing to Directory...");
     namesAndAddresses = [
       ["ASSETS", assets.address],
@@ -87,6 +81,13 @@ module.exports = function (deployer, network, accounts) {
     
     console.log("Setting up ...");
     await proxy.setDirectory(directory.address).should.be.fulfilled;
+
+    console.log("Giving temporary control to accounts[0]...");
+    // first set all owners to accounts[0] so that we can do some operations
+    await assets.setCOO(accounts[0]).should.be.fulfilled;
+    await assets.setMarket(accounts[0]).should.be.fulfilled;
+    await assets.setRelay(accounts[0]).should.be.fulfilled;
+    
     await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
     await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
     await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
