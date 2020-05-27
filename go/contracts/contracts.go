@@ -137,6 +137,55 @@ func New(
 	proxyAddress string,
 ) (*Contracts, error) {
 	var err error
+	if leaguesAddress == "" {
+		return nil, errors.New("leaguesAddress empty address")
+	}
+	if assetsAddress == "" {
+		return nil, errors.New("assetsAddress empty address")
+	}
+	if evolutionAddress == "" {
+		return nil, errors.New("evolutionAddress empty address")
+	}
+	if engineAddress == "" {
+		return nil, errors.New("engineAddress empty address")
+	}
+	if engineprecompAddress == "" {
+		return nil, errors.New("engineprecompAddress empty address")
+	}
+	if updatesAddress == "" {
+		return nil, errors.New("updatesAddress empty address")
+	}
+	if marketAddress == "" {
+		return nil, errors.New("marketAddress empty address")
+	}
+	if utilsAddress == "" {
+		return nil, errors.New("utilsAddress empty address")
+	}
+	if playandevolveAddress == "" {
+		return nil, errors.New("playandevolveAddress empty address")
+	}
+	if shopAddress == "" {
+		return nil, errors.New("shopAddress empty address")
+	}
+	if trainingpointsAddress == "" {
+		return nil, errors.New("trainingpointsAddress empty address")
+	}
+	if constantsgettersAddress == "" {
+		return nil, errors.New("constantsgettersAddress empty address")
+	}
+	if privilegedAddress == "" {
+		return nil, errors.New("privilegedAddress empty address")
+	}
+	if stakersAddress == "" {
+		return nil, errors.New("stakersAddress empty address")
+	}
+	if directoryAddress == "" {
+		return nil, errors.New("directoryAddress empty address")
+	}
+	if proxyAddress == "" {
+		return nil, errors.New("proxyAddress empty address")
+	}
+
 	contracts := Contracts{}
 	contracts.LeaguesAddress = leaguesAddress
 	contracts.AssetsAddress = assetsAddress
