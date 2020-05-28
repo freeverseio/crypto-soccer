@@ -5,8 +5,8 @@ services:
     command: --min-peers 10 --max-peers 30
     volumes:
       - ethereum-data:/home/parity/.local/share/io.parity.ethereum
-    ports:
-      - "8545:8545"
+        #    ports:
+        #      - "8545:8545"
   ipfs.node:
     image: freeverseio/go-ipfs:v0.5.0
     restart: always
@@ -40,7 +40,7 @@ services:
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       -ipfs /dns4/ipfs.node/tcp/5001
       -ethereum http://ethereum:8545
-      -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
+      -proxy_address "${PROXY_CONTRACT_ADDRESS}"
       -staker "${STAKER_PVC}"
       -delta "${BLOCKS_PER_STEP}"
     depends_on:

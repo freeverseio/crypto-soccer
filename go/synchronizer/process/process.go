@@ -114,6 +114,10 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 		return bigBangBlock, nil
 	}
 
+	if p.contracts, err = contracts.NewFromStorage(p.Client, tx); err != nil {
+		return 0, err
+	}
+
 	return p.Process2(tx, delta)
 }
 
