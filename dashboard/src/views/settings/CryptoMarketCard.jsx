@@ -22,7 +22,7 @@ const CryptoMarketCard = ({account, marketContract}) => {
 
     return (
         <Table.Row>
-            <Table.Cell>cryptoMarket</Table.Cell>
+            <Table.Cell singleLine>Crypto Market Role</Table.Cell>
             <Table.Cell>{cryptoMarket}</Table.Cell>
             <Table.Cell>
                 <RoleCard onChange={setAddress} account={account}/>

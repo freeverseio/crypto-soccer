@@ -23,7 +23,7 @@ const MarketCard = ({ account, assetsContract }) => {
     return (
         <React.Fragment>
             <Table.Row>
-                <Table.Cell>market</Table.Cell>
+                <Table.Cell singleLine>Market Role</Table.Cell>
                 <Table.Cell>{market}</Table.Cell>
                 <Table.Cell>
                     <RoleCard onChange={setAddress} account={account}/>
