@@ -12,15 +12,13 @@ func TestPostgresNewContracts(t *testing.T) {
 	tx, err := db.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
-	c, err := contracts.NewFromStorage(bc.Client, tx)
+	_, err = contracts.NewFromStorage(bc.Client, tx)
+	assert.Error(t, err, "no proxy address in the storage")
+
+	assert.NilError(t, (storage.Param{contracts.ProxyName, "0x0"}).InsertOrUpdate(tx))
+
+	_, err = contracts.NewFromStorage(bc.Client, tx)
 	assert.Error(t, err, "no contract code at given address")
-
-	assert.NilError(t, c.ToStorage(tx))
-
-	contracts, err := contracts.NewFromStorage(bc.Client, tx)
-	assert.NilError(t, err)
-	assert.Assert(t, contracts != nil)
-	assert.Equal(t, contracts.ProxyAddress, bc.ProxyAddress)
 }
 
 func TestPostgresNewContractsToStorage(t *testing.T) {

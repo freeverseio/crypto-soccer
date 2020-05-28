@@ -71,7 +71,6 @@ module.exports = function (deployer, network, accounts) {
       ["PLAYANDEVOLVE", playAndEvolve.address],
       ["MERKLE", merkle.address],
       ["CONSTANTSGETTERS", constantsGetters.address],
-      ["PROXY", proxy.address],
       ["CHALLENGES", challenges.address],
       ["MARKETCRYPTO", marketCrypto.address],
       ["STAKERS", stakers.address],

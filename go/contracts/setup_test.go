@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db, err = postgres.New("postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable")
+	db, err = postgres.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

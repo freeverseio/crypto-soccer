@@ -62,11 +62,6 @@ type Contracts struct {
 	ProxyAddress            string
 }
 
-type ContractsStorageService interface {
-	To(c *Contracts) error
-	From() (*Contracts, error)
-}
-
 func NewByProxyAddress(client *ethclient.Client, address string) (*Contracts, error) {
 	proxyContract, err := proxy.NewProxy(common.HexToAddress(address), client)
 	if err != nil {
@@ -84,7 +79,13 @@ func NewByProxyAddress(client *ethclient.Client, address string) (*Contracts, er
 	if err != nil {
 		return nil, err
 	}
-	return newByNamesAndAddresses(client, names, addresses)
+	return newByNamesAndAddresses(
+		client,
+		address,
+		directoryAddress.String(),
+		names,
+		addresses,
+	)
 }
 
 func NewByNewDirectoryEvent(client *ethclient.Client, event proxy.ProxyNewDirectory) (*Contracts, error) {
@@ -97,7 +98,13 @@ func NewByNewDirectoryEvent(client *ethclient.Client, event proxy.ProxyNewDirect
 	if err != nil {
 		return nil, err
 	}
-	return newByNamesAndAddresses(client, names, addresses)
+	return newByNamesAndAddresses(
+		client,
+		event.Raw.Address.String(),
+		directoryAddress.String(),
+		names,
+		addresses,
+	)
 }
 
 func (b Contracts) Clone() (*Contracts, error) {
@@ -278,7 +285,13 @@ func New(
 	return &contracts, nil
 }
 
-func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresses []common.Address) (*Contracts, error) {
+func newByNamesAndAddresses(
+	client *ethclient.Client,
+	proxyAddress string,
+	directoryAddress string,
+	names [][32]byte,
+	addresses []common.Address,
+) (*Contracts, error) {
 	if len(names) != len(addresses) {
 		return nil, errors.New("names and addresses len mismatch")
 	}
@@ -308,7 +321,7 @@ func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresse
 		contractMap[ConstantsGettersName],
 		contractMap[PrivilegedName],
 		contractMap[StakersName],
-		contractMap[DirectoryName],
-		contractMap[ProxyName],
+		directoryAddress,
+		proxyAddress,
 	)
 }

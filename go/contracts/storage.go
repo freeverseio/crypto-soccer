@@ -2,23 +2,22 @@ package contracts
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
 func NewFromStorage(client *ethclient.Client, tx *sql.Tx) (*Contracts, error) {
-	params, err := storage.Params(tx)
+	proxyParam, err := storage.ParamByName(tx, ProxyName)
 	if err != nil {
 		return nil, err
 	}
-
-	contractMap := make(map[string]string)
-	for _, param := range params {
-		contractMap[param.Name] = param.Value
+	if proxyParam == nil {
+		return nil, errors.New("no proxy address in the storage")
 	}
 
-	return NewByProxyAddress(client, contractMap[ProxyName])
+	return NewByProxyAddress(client, proxyParam.Value)
 }
 
 func (b Contracts) ToStorage(tx *sql.Tx) error {
