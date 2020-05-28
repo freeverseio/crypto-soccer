@@ -99,6 +99,7 @@ func main() {
 			if err != nil {
 				log.Error(err)
 				tx.Rollback()
+				time.Sleep(2 * time.Second)
 				continue
 			}
 			if err := tx.Commit(); err != nil {
