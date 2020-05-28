@@ -2,11 +2,9 @@ package names
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"hash/fnv"
 	"math/big"
-	"strconv"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -15,9 +13,14 @@ import (
 
 type Generator struct {
 	db                     *sql.DB
+	nCountries             uint
+	nRegions               uint
 	countriesISO2          []string
 	regionNames            []string
-	nEntriesIn             map[string]uint
+	nonEmptyCountries      []string
+	nonEmptyRegions        []string
+	nNamesPerCountry       map[string]uint
+	nSurnamesPerRegion     map[string]uint
 	deployedCountriesSpecs map[uint64]DeployedCountriesSpecs
 	nTeamnamesMain         uint
 	nTeamnamesPreffix      uint
@@ -52,19 +55,24 @@ func New(db_filename string) (*Generator, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := generator.countPlayers("iso2", "countries", "names"); err != nil {
+	if err := generator.countCountries(); err != nil {
 		return nil, err
 	}
-	if err := generator.countPlayers("region", "regions", "surnames"); err != nil {
+	if err := generator.countRegions(); err != nil {
 		return nil, err
 	}
-	if err := generator.countTeamsDB(); err != nil {
-		return nil, err
-	}
-	if err := generator.readDeployedCountriesSpecs(); err != nil {
+	if err := generator.countEntriesPerArea(false, "iso2", "countries", "names"); err != nil {
 		return nil, err
 	}
 
+	if err := generator.countEntriesPerArea(true, "region", "regions", "surnames"); err != nil {
+		return nil, err
+	}
+
+	if err := generator.countTeamsDB(); err != nil {
+		return nil, err
+	}
+	generator.readDeployedCountriesSpecs()
 	return &generator, nil
 }
 
@@ -72,26 +80,63 @@ func (b *Generator) Close() error {
 	return b.db.Close()
 }
 
-func serializeTZandCountryIdx(tz uint64, countryIdxInTZ uint64) uint64 {
-	return tz*1000000 + countryIdxInTZ
+func serializeTZandCountryIdx(tz uint8, countryIdxInTZ uint64) uint64 {
+	return uint64(tz)*1000000 + countryIdxInTZ
 }
 
-func (b *Generator) readDeployedCountriesSpecs() error {
-	var err error
-	b.deployedCountriesSpecs[serializeTZandCountryIdx(uint64(19), uint64(0))] = DeployedCountriesSpecs{"SP", "Spanish", 55, 55}
-	b.deployedCountriesSpecs[serializeTZandCountryIdx(uint64(19), uint64(1))] = DeployedCountriesSpecs{"IT", "Spanish", 55, 55}
-	b.deployedCountriesSpecs[serializeTZandCountryIdx(uint64(16), uint64(0))] = DeployedCountriesSpecs{"China", "Chinese", 55, 55}
-	b.deployedCountriesSpecs[serializeTZandCountryIdx(uint64(18), uint64(0))] = DeployedCountriesSpecs{"UK", "NonHispWhite", 55, 55}
-	return nil
+func (b *Generator) readDeployedCountriesSpecs() {
+	m := make(map[uint64]DeployedCountriesSpecs)
+	m[serializeTZandCountryIdx(uint8(19), uint64(0))] = DeployedCountriesSpecs{"SP", "Spanish", 55, 55}
+	m[serializeTZandCountryIdx(uint8(19), uint64(1))] = DeployedCountriesSpecs{"IT", "Spanish", 55, 55}
+	m[serializeTZandCountryIdx(uint8(16), uint64(0))] = DeployedCountriesSpecs{"China", "Chinese", 55, 55}
+	m[serializeTZandCountryIdx(uint8(18), uint64(0))] = DeployedCountriesSpecs{"UK", "NonHispWhite", 55, 55}
+	b.deployedCountriesSpecs = m
 }
 
-func (b *Generator) countPlayers(colName string, areasTable string, entryPerAreaTable string) error {
+func (b *Generator) countCountries() error {
 	var err error
-	rows, err := b.db.Query(`SELECT ` + colName + `FROM ` + areasTable)
+	rows, err := b.db.Query(`SELECT COUNT (*) FROM countries`)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
+	for rows.Next() {
+		var count uint
+		err = rows.Scan(&count)
+		if err != nil {
+			return err
+		}
+		b.nCountries = count
+	}
+	return nil
+}
+
+func (b *Generator) countRegions() error {
+	var err error
+	rows, err := b.db.Query(`SELECT COUNT (*) FROM regions`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var count uint
+		err = rows.Scan(&count)
+		if err != nil {
+			return err
+		}
+		b.nRegions = count
+	}
+	return nil
+}
+
+func (b *Generator) countEntriesPerArea(isSurname bool, colName string, areasTable string, entryPerAreaTable string) error {
+	var err error
+	rows, err := b.db.Query(`SELECT ` + colName + ` FROM ` + areasTable)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	m := make(map[string]uint)
 	for rows.Next() {
 		var id string
 		err = rows.Scan(&id)
@@ -109,7 +154,19 @@ func (b *Generator) countPlayers(colName string, areasTable string, entryPerArea
 		if err != nil {
 			return err
 		}
-		b.nEntriesIn[id] = count
+		m[id] = count
+		if isSurname {
+			b.nonEmptyRegions = append(b.nonEmptyRegions, id)
+		}
+		if !isSurname {
+			b.nonEmptyCountries = append(b.nonEmptyCountries, id)
+		}
+	}
+	if isSurname {
+		b.nSurnamesPerRegion = m
+	}
+	if !isSurname {
+		b.nNamesPerCountry = m
 	}
 	return nil
 }
@@ -165,141 +222,123 @@ func (b *Generator) GenerateRnd(seed *big.Int, salt string, max_val uint64) uint
 	return result % max_val
 }
 
-func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, country_code uint, purity int) (string, error) {
-	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
-	isAcademyPlayer := generation > 31
-	if isAcademyPlayer {
-		generation = generation - 32
+func (b *Generator) GenerateName(playerId *big.Int, generation uint8, iso2 string, purity uint) (string, error) {
+	dice := b.GenerateRnd(playerId, "aa", 100)
+	if uint(dice) > purity {
+		newPick := b.GenerateRnd(playerId, "bb", uint64(len(b.nonEmptyCountries)))
+		iso2 = b.nonEmptyCountries[newPick]
 	}
-	salt := "a"
-	tableName := "names"
-	colName := "name"
-	codes := b.countriesISO2
-	final_country_code := country_code
-	// ensure that names are always different for all generations
-	seedTemp := b.GenerateRnd(playerId, "aa", 0) + uint64(generation)
-	if isSurname {
-		salt = "b"
-		tableName = "surnames"
-		colName = "surname"
-		codes = b.regionNames
-		seedTemp = b.GenerateRnd(playerId, "bb", 0) + uint64(generation)
-		isActualSon := generation > 0 && !isAcademyPlayer
-		if isActualSon {
-			seedTemp -= 1
-		}
-	}
-	seed := big.NewInt(int64(seedTemp))
-	dice := b.GenerateRnd(seed, salt+"cc", 100)
-	if int(dice) > purity {
-		// pick a different country
-		var nCountryCodes = len(codes)
-		var rnd_idx int = int(b.GenerateRnd(seed, salt+"dd", uint64(nCountryCodes)))
-		if country_code == codes[rnd_idx] {
-			final_country_code = codes[(rnd_idx+1)%nCountryCodes]
-		} else {
-			final_country_code = codes[rnd_idx]
-		}
-	}
-	var nEntriesIn uint = b.nEntriesIn[final_country_code]
-
-	// idxInCountry ranges from 0 to numNamesInCountry-1
-	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(nEntriesIn-1))
-
-	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, final_country_code, idxInCountry)
+	namePick := b.GenerateRnd(playerId, "cc", uint64(b.nNamesPerCountry[iso2]))
+	rows, err := b.db.Query(`SELECT name FROM countries WHERE (iso2 = $1) ORDER BY name OFFSET $2 LIMIT 1`, iso2, namePick)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
-	if !rows.Next() {
-		return "", fmt.Errorf("Rnd choice failed: final_country_code = %v, idxInCountry = %v, tableName = %v, colName = %v, in function with input params: isSurname = %v, playerId = %v, generation = %v, country_code = %v, purity = %v",
-			final_country_code,
-			idxInCountry,
-			tableName,
-			colName,
-			isSurname,
-			playerId,
-			generation,
-			country_code,
-			purity,
-		)
-	}
-
+	rows.Next()
 	var name string
-	rows.Scan(&name)
+	err = rows.Scan(&name)
+	if err != nil {
+		return "", err
+	}
 	return name, nil
 }
 
-// comparer is either "=" or "!="
-func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
-	var err error
-	rows, err := b.db.Query(`SELECT COUNT(*) FROM country_specs WHERE tz_idx = $1;`, strconv.FormatInt(int64(country_id), 10))
-	if err != nil {
-		return false, err
-	}
-	defer rows.Close()
-	rows.Next()
-	count := uint64(0)
-	err = rows.Scan(&count)
-	if err != nil {
-		return false, err
-	}
-	return (count == 1), nil
-}
+// // area can be either a country (for names) or a region (for surnames)
+// func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, area string, purity int) (string, error) {
+// 	// toni
+// 	dice := b.GenerateRnd(playerId, "aa", 100)
+// 	if int(dice) > purity {
 
-func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, timezone uint8, countryIdxInTZ uint64) (string, error) {
+// 	}
+
+// 	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
+// 	isAcademyPlayer := generation > 31
+// 	if isAcademyPlayer {
+// 		generation = generation - 32
+// 	}
+// 	salt := "a"
+// 	tableName := "names"
+// 	colName := "name"
+// 	filterBy := "iso2"
+// 	codes := b.countriesISO2
+// 	final_country_code := country_code
+// 	// ensure that names are always different for all generations
+// 	seedTemp := b.GenerateRnd(playerId, "aa", 0) + uint64(generation)
+// 	if isSurname {
+// 		salt = "b"
+// 		tableName = "surnames"
+// 		colName = "surname"
+// 		filterBy = "region"
+// 		codes = b.regionNames
+// 		seedTemp = b.GenerateRnd(playerId, "bb", 0) + uint64(generation)
+// 		isActualSon := generation > 0 && !isAcademyPlayer
+// 		if isActualSon {
+// 			seedTemp -= 1
+// 		}
+// 	}
+// 	seed := big.NewInt(int64(seedTemp))
+// 	dice := b.GenerateRnd(seed, salt+"cc", 100)
+// 	if int(dice) > purity {
+// 		// pick a different country
+// 		var nCountryCodes = len(codes)
+// 		var rnd_idx int = int(b.GenerateRnd(seed, salt+"dd", uint64(nCountryCodes)))
+// 		if country_code == codes[rnd_idx] {
+// 			final_country_code = codes[(rnd_idx+1)%nCountryCodes]
+// 		} else {
+// 			final_country_code = codes[rnd_idx]
+// 		}
+// 	}
+// 	var nEntriesIn uint = b.nEntriesIn[final_country_code]
+
+// 	// idxInCountry ranges from 0 to numNamesInCountry-1
+// 	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(nEntriesIn-1))
+
+// 	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (`+filterBy+` = $1)`, area)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	defer rows.Close()
+// 	if !rows.Next() {
+// 		return "", fmt.Errorf("Rnd choice failed: final_country_code = %v, idxInCountry = %v, tableName = %v, colName = %v, in function with input params: isSurname = %v, playerId = %v, generation = %v, country_code = %v, purity = %v",
+// 			final_country_code,
+// 			idxInCountry,
+// 			tableName,
+// 			colName,
+// 			isSurname,
+// 			playerId,
+// 			generation,
+// 			country_code,
+// 			purity,
+// 		)
+// 	}
+
+// 	var name string
+// 	rows.Scan(&name)
+// 	return name, nil
+// }
+
+func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, tz uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
-	if timezone == 0 || timezone > 24 {
-		return "", fmt.Errorf("Timezone should be within [1, 24], but it was %v", timezone)
+	if tz == 0 || tz > 24 {
+		return "", fmt.Errorf("Timezone should be within [1, 24], but it was %v", tz)
 	}
 	if generation >= 64 {
 		return "", fmt.Errorf("Generation should be within [0, 63], but it was %v", generation)
 	}
-	var country_id uint64
-	// country_id is an encoding of (tz, countryIdx):
-	country_id = uint64(timezone)*1000000 + countryIdxInTZ
-	// if the country is not defined, we use a default country: Spain, at tz = 19
-	isSpecified, err := b.isCountrySpecified(country_id)
+	specs, ok := b.deployedCountriesSpecs[serializeTZandCountryIdx(tz, countryIdxInTZ)]
+	if !ok {
+		// Spain is the default country if you query for one that is not specified
+		specs = b.deployedCountriesSpecs[serializeTZandCountryIdx(19, 0)]
+	}
+	name, err := b.GenerateName(playerId, generation, specs.iso2, specs.namePurity)
 	if err != nil {
 		return "", err
 	}
-	// Spain is the default country if you query for one that is not specified
-	if !isSpecified {
-		country_id = uint64(19)*1000000 + 0
-	}
-	rows, err := b.db.Query(`SELECT 
-		code_name,
-		code_surname,
-		pure_pure,
-		pure_foreign,
-		foreign_pure,
-		foreign_foreign
-	FROM country_specs WHERE tz_idx = $1;`, strconv.FormatInt(int64(country_id), 10))
-	if err != nil {
-		return "", err
-	}
-	var code_name uint
-	var code_surname uint
-	var pure_pure int
-	var pure_foreign int
-	var foreign_pure int
-	var foreign_foreign int
-	defer rows.Close()
-	if !rows.Next() {
-		return "", errors.New("Cannot find specs for country_id = %s" + strconv.FormatInt(int64(country_id), 10))
-	}
-	err = rows.Scan(&code_name, &code_surname, &pure_pure, &pure_foreign, &foreign_pure, &foreign_foreign)
-	if err != nil {
-		return "", err
-	}
-	name, err := b.GenerateName(false, playerId, generation, code_name, pure_pure+pure_foreign)
-	if err != nil {
-		return "", err
-	}
-	surname, err := b.GenerateName(true, playerId, generation, code_surname, pure_pure+foreign_pure)
-	if err != nil {
-		return "", err
-	}
+	surname := "tmp"
+	// surname, err := b.GenerateName(true, playerId, generation, specs.region, specs.surnamePurity)
+	// if err != nil {
+	// 	return "", err
+	// }
 	isActualSon := generation > 0 && generation < 32
 	if isActualSon {
 		surname += " Jr."
@@ -307,7 +346,7 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	return name + " " + surname, nil
 }
 
-func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
+func (b *Generator) GenerateTeamName(teamId *big.Int, tz uint8, countryIdxInTZ uint64) (string, error) {
 	// For the time being, we don't use the country information. At some point, we may.
 	salt := teamId.String() + "ff"
 	// MAIN NAME
@@ -319,12 +358,12 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return "", fmt.Errorf("Rnd choice failed in GenerateTeamName Part1: teamId = %v, tableName = %v, nameIdx = %v, in function with input params: teamId = %v, timezone = %v, countryIdxInTZ = %v",
+		return "", fmt.Errorf("Rnd choice failed in GenerateTeamName Part1: teamId = %v, tableName = %v, nameIdx = %v, in function with input params: teamId = %v, tz = %v, countryIdxInTZ = %v",
 			teamId,
 			tableName,
 			nameIdx,
 			teamId,
-			timezone,
+			tz,
 			countryIdxInTZ,
 		)
 	}
@@ -356,12 +395,12 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return "", fmt.Errorf("Rnd choice failed in GenerateTeamName Part2: teamId = %v, tableName = %v, nameIdx = %v, in function with input params: teamId = %v, timezone = %v, countryIdxInTZ = %v",
+		return "", fmt.Errorf("Rnd choice failed in GenerateTeamName Part2: teamId = %v, tableName = %v, nameIdx = %v, in function with input params: teamId = %v, tz = %v, countryIdxInTZ = %v",
 			teamId,
 			tableName,
 			nameIdx,
 			teamId,
-			timezone,
+			tz,
 			countryIdxInTZ,
 		)
 
