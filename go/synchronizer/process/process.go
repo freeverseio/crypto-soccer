@@ -119,7 +119,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process2(tx *sql.Tx, delta uint64) (uint64, error) {
-	opts, err := p.nextRange(tx, delta)
+	opts, err := p.nextRange(tx, 1)
 	if err != nil {
 		return 0, err
 	}
@@ -150,7 +150,7 @@ func (p *EventProcessor) Process2(tx *sql.Tx, delta uint64) (uint64, error) {
 	}
 
 	err = storage.SetBlockNumber(tx, *opts.End)
-	deltaBlock := *opts.End - opts.Start
+	deltaBlock := *opts.End - opts.Start + 1
 
 	return deltaBlock, err
 }
@@ -163,8 +163,12 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case proxy.ProxyNewDirectory:
+		log.Info("[processor|consume] new directory ... create the bindings to the new contracts")
 		var err error
 		p.contracts, err = contracts.NewByNewDirectoryEvent(p.contracts.Client, v)
+		if err != nil {
+			return err
+		}
 		return err
 	case assets.AssetsAssetsInit:
 		assetsInitProcessor := NewAssetsInitProcessor(p.contracts)
@@ -202,7 +206,7 @@ func (p *EventProcessor) nextRange(tx *sql.Tx, delta uint64) (*bind.FilterOpts, 
 	}
 	end := p.clientLastBlockNumber()
 	if delta != 0 {
-		end = uint64(math.Min(float64(start+delta), float64(end)))
+		end = uint64(math.Min(float64(start+delta-1), float64(end)))
 	}
 	if start > end {
 		return nil, nil
