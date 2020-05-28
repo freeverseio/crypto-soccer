@@ -9,7 +9,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -120,8 +119,7 @@ func matchTransferFirstBotMutation(r *http.Request) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	ex := `mutation(\s*).*(\s*){(\s*)transferFirstBotToAddr(\s*)\((\s*)timezone(\s*):(\s*)\d{1,2}(\s*),(\s*)countryIdxInTimezone(\s*):(\s*)[0-9]+(\s*),(\s*)address(\s*):(\s*)"[a-zA-Z0-9]+"(\s*)\)(\s*)}`
-	return regexp.MatchString(ex, query.Data)
+	return authproxy.MatchTransferFirstBotMutation(query.Data)
 }
 
 func checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
