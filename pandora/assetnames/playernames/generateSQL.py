@@ -111,8 +111,8 @@ executeScriptsFromFile(cur, international_db)
 # ---------- Country codes ----------
 written_per_country = {}
 countries_sql = """
-CREATE TABLE surname_regions (
-    region_name text NOT NULL PRIMARY KEY)"""
+CREATE TABLE regions (
+    region text NOT NULL PRIMARY KEY)"""
 cur.execute(countries_sql)
 properNaming = {
     1051: "Chinese",
@@ -122,13 +122,13 @@ properNaming = {
     1008: "AmericanIndian",
     1009: "TwoOrMoreRegions",
     1010: "Hispanic",
-    1100: "Spanish",
+    1100: "DEFAULT_MIX_RATIOS",
     1053: "Japanese"
 }
 
 for code in allCodes:
     if code[0] >= 1000:
-        cur.execute("INSERT INTO surname_regions VALUES ('%s');" %(properNaming[code[0]]))
+        cur.execute("INSERT INTO regions VALUES ('%s');" %(properNaming[code[0]]))
 
 # ---------- Names ----------
 names_sql = """
@@ -155,13 +155,12 @@ for name in allNames:
 surnames_sql = """
 CREATE TABLE surnames (
     surname text NOT NULL,
-    region_name text REFERENCES surname_regions(region_name),
-    PRIMARY KEY (surname, region_name))"""
+    region text REFERENCES regions(region),
+    PRIMARY KEY (surname, region))"""
 cur.execute(surnames_sql)
 for surname in allSurnames:
     regionName = properNaming[surname[0]]
     cur.execute("INSERT INTO surnames VALUES ('%s', '%s');" %(surname[1], regionName))
-    # print(surname[1], surname[0], written_per_country[surname[0]])
 
 con.commit()
 con.close()
