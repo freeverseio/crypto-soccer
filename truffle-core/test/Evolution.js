@@ -333,6 +333,33 @@ contract('Evolution', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
   
+    
+    it('test from real usage: TODO (fix pending) a red card in 1st half, and substituting that player in half time', async () => {
+        m = JSONbig.parse(fs.readFileSync('test/testdata/a102d90303aafcdae29c09bc6b338a50048b9cd4d8fa1942cf315bb7e3736aac.2nd.error.json', 'utf8'));
+        skills0 = [];
+        for (player of m.HomeTeam.Players){ 
+            skills0.push(player.EncodedSkills);
+        }
+        skills1 = [];
+        for (player of m.VisitorTeam.Players){ 
+            skills1.push(player.EncodedSkills);
+        }
+        // outOfGamePlayer = await training.getOutOfGamePlayer(m.HomeTeam.MatchLog, is2nd = false).should.be.fulfilled;
+        // outOfGameType = await training.getOutOfGameType(m.HomeTeam.MatchLog, is2nd = false).should.be.fulfilled;
+        // console.log("oplayer, otype - ",outOfGamePlayer.toNumber(), outOfGameType.toNumber());
+        // outOfGamePlayer = await training.getOutOfGamePlayer(m.HomeTeam.MatchLog, is2nd = true).should.be.fulfilled;
+        // outOfGameType = await training.getOutOfGameType(m.HomeTeam.MatchLog, is2nd = true).should.be.fulfilled;
+        // console.log("oplayer, otype - ",outOfGamePlayer.toNumber(), outOfGameType.toNumber());
+        // result = await evo.decodeTactics(m.HomeTeam.Tactic).should.be.fulfilled;
+        // lineUp = result[2];
+        // for (l of lineUp) { console.log(l.toNumber());}
+        var {0: skills, 1: matchLogsAndEvents} =  await play.play2ndHalfAndEvolve(
+            m.Seed, m.StartTime, [skills0, skills1], [m.HomeTeam.TeamID, m.VisitorTeam.TeamID], 
+            [m.HomeTeam.Tactic, m.VisitorTeam.Tactic], [m.HomeTeam.MatchLog, m.VisitorTeam.MatchLog],
+            [is2nd = true, isHom = true, isPlay = false]
+        ).should.be.fulfilled;
+    });
+    
     it('test from real usage with more than 3 substitutions in half time', async () => {
         m = JSONbig.parse(fs.readFileSync('test/testdata/fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json', 'utf8'));
         skills0 = [];
