@@ -34,7 +34,7 @@ func VerifyToken(token string, grace time.Duration) (common.Address, time.Time, 
 	// token have: unix_time:signature
 	tokenfields := strings.Split(token, ":")
 	if len(tokenfields) != 2 {
-		return common.Address{}, time.Time{}, errors.New("malformed token")
+		return common.Address{}, time.Time{}, errors.New("malformed token:" + token)
 	}
 	// check date
 	tsunix, err := strconv.Atoi(tokenfields[0])

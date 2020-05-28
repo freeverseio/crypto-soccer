@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -111,8 +112,19 @@ func checkPermissions(ctx context.Context, addr common.Address) (bool, error) {
 	return ok, nil
 }
 
-func checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
+func matchTransferFirstBotMutation(r *http.Request) (bool, error) {
+	var query struct {
+		Data string `json:"query"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&query)
+	if err != nil {
+		return false, err
+	}
+	ex := `mutation(\s*).*(\s*){(\s*)transferFirstBotToAddr(\s*)\((\s*)timezone(\s*):(\s*)\d{1,2}(\s*),(\s*)countryIdxInTimezone(\s*):(\s*)[0-9]+(\s*),(\s*)address(\s*):(\s*)"[a-zA-Z0-9]+"(\s*)\)(\s*)}`
+	return regexp.MatchString(ex, query.Data)
+}
 
+func checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
 	// check if token is well formed
 	auth := strings.TrimSpace(r.Header.Get("Authorization"))
 	if !strings.HasPrefix(auth, "Bearer") {
@@ -120,10 +132,20 @@ func checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
 	}
 	token := strings.TrimSpace(auth[len("Bearer"):])
 
-	// if backdoor is activated, check if is the godmode token
-	if *backdoor && token == godtoken {
+	match, err := matchTransferFirstBotMutation(r)
+	if match {
+		// Always ALLOW this query
 		return godtoken, nil
 	}
+
+	if err != nil {
+		log.Error("regex error:", err)
+	}
+
+	//// if backdoor is activated, check if is the godmode token
+	//if *backdoor && token == godtoken {
+	//	return godtoken, nil
+	//}
 
 	// check if token is cached
 	if addrHex, ok := cache.Get(token); ok {
