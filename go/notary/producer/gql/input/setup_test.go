@@ -15,11 +15,10 @@ var bc *testutils.BlockchainNode
 
 func TestMain(m *testing.M) {
 	var err error
-	bc, err = testutils.NewBlockchainNode()
+	bc, err = testutils.NewBlockchain()
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc.DeployContracts(bc.Owner)
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	bc.Contracts.Assets.TransferFirstBotToAddr(

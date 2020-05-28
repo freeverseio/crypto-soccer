@@ -104,7 +104,7 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber 
 		event.MatchIdx = int(b.MatchIdx)
 		event.Minute = int(computedEvent.Minute)
 		var err error
-		if event.Type, err = storage.MarchEventTypeByMatchEvent(computedEvent.Type); err != nil {
+		if event.Type, err = matchevents.MarchEventTypeByMatchEvent(computedEvent.Type); err != nil {
 			return err
 		}
 		event.ManageToShoot = computedEvent.ManagesToShoot

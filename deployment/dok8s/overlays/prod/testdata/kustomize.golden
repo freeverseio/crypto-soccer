@@ -1,23 +1,6 @@
 apiVersion: v1
 data:
-  ASSETS_CONTRACT_ADDRESS: 0xBd14538cD7C7253f5A4439765D01d4C00EeCdf04
   BLOCKS_PER_STEP: "1000"
-  CONSTANTSGETTERS_CONTRACT_ADDRESS: 0x2BDDab9468560D933651be0C79202A9D6d9dF2aa
-  ENGINE_CONTRACT_ADDRESS: 0xa0eD283A81c3EA402003b8E8351eF1B8Fd09A02A
-  ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS: 0x58440254Bbc3c43d970405fF7aF0291502972c49
-  ENGINEPRECOMP_CONTRACT_ADDRESS: 0x4725c61eF62F1b70897FA934dbd47A92f0220fc6
-  EVOLUTION_CONTRACT_ADDRESS: 0x033C9ee9430D06fAe69a55b829dDA92c60E0094C
-  FRIENDLIES_CONTRACT_ADDRESS: 0x29a56A7fea562Af008cB6ECD8f3E0a68E32bA3e6
-  LEAGUES_CONTRACT_ADDRESS: 0x54fC2c8608378bc28D7C1668F215B9eEec1c27BD
-  MARKET_CONTRACT_ADDRESS: 0xBd14538cD7C7253f5A4439765D01d4C00EeCdf04
-  PLAYANDEVOLVE_CONTRACT_ADDRESS: 0x3461E29e55423698bFd9235D119410BF08F4cC50
-  PRIVILEGED_CONTRACT_ADDRESS: 0xBd14538cD7C7253f5A4439765D01d4C00EeCdf04
-  PROXY_CONTRACT_ADDRESS: 0xBd14538cD7C7253f5A4439765D01d4C00EeCdf04
-  SHOP_CONTRACT_ADDRESS: 0x05E43062013fC33FAF573DB743Bd58634827b4d7
-  SHOP_CONTRACT_CONTRACT_ADDRESS: 0x5Ea41152e7874eede186C767cA3D1C479A3d1A05
-  TRAININGPOINTS_CONTRACT_ADDRESS: 0x56E29FCB1F29191A71601eC66A280bb2Ecd59f8a
-  UPDATES_CONTRACT_ADDRESS: 0xBd14538cD7C7253f5A4439765D01d4C00EeCdf04
-  UTILS_CONTRACT_ADDRESS: 0x81286e08ef7A83E91d9E7fC0D6946821501cBa0E
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: sk_production_AjWbpOPwS3HNi821Ma9mIgA2
@@ -423,12 +406,8 @@ spec:
         - http://xdai:8545
         - -private_key
         - $(notary_private_key)
-        - -market_address
-        - $(MARKET_CONTRACT_ADDRESS)
-        - -constantsgetters_address
-        - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
-        - -privileged_address
-        - $(PRIVILEGED_CONTRACT_ADDRESS)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -market_id
         - $(market_id)
         - -google_key
@@ -531,10 +510,8 @@ spec:
         - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
         - -ethereum
         - http://xdai:8545
-        - -updatesContractAddress
-        - $(UPDATES_CONTRACT_ADDRESS)
-        - -assetsContractAddress
-        - $(ASSETS_CONTRACT_ADDRESS)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -ipfs
         - /dns4/ipfsnode/tcp/5001
         - -private_key
@@ -583,32 +560,8 @@ spec:
         - http://xdai:8545
         - -ipfs
         - /dns4/ipfsnode/tcp/5001
-        - -leaguesContractAddress
-        - $(LEAGUES_CONTRACT_ADDRESS)
-        - -engineContractAddress
-        - $(ENGINE_CONTRACT_ADDRESS)
-        - -enginePreCompContractAddress
-        - $(ENGINEPRECOMP_CONTRACT_ADDRESS)
-        - -marketContractAddress
-        - $(MARKET_CONTRACT_ADDRESS)
-        - -updatesContractAddress
-        - $(UPDATES_CONTRACT_ADDRESS)
-        - -assetsContractAddress
-        - $(ASSETS_CONTRACT_ADDRESS)
-        - -evolutionContractAddress
-        - $(EVOLUTION_CONTRACT_ADDRESS)
-        - -playandevolveContractAddress
-        - $(PLAYANDEVOLVE_CONTRACT_ADDRESS)
-        - -trainingpointsContractAddress
-        - $(TRAININGPOINTS_CONTRACT_ADDRESS)
-        - -shopContractAddress
-        - $(SHOP_CONTRACT_ADDRESS)
-        - -utilsContractAddress
-        - $(UTILS_CONTRACT_ADDRESS)
-        - -constantsgettersContractAddress
-        - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
-        - -stakersContractAddress
-        - $(STAKERS_CONTRACT_ADDRESS)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -staker
         - $(staker_private_key)
         - -delta

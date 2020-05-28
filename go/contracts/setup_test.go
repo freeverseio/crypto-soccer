@@ -1,27 +1,25 @@
-package consumer_test
+package contracts_test
 
 import (
 	"database/sql"
 	"os"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
-
 	log "github.com/sirupsen/logrus"
 )
 
-var bc *testutils.BlockchainNode
+var bc *contracts.Contracts
 var db *sql.DB
-var googleCredentials []byte
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = postgres.New("postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable")
+	bc, err = contracts.NewByTruffle()
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc, err = testutils.NewBlockchain()
+	db, err = postgres.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

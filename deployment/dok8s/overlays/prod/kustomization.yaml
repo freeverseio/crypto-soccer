@@ -5,6 +5,7 @@ commonLabels:
   app.kubernetes.io/version: 1.0.0
 resources:
 - ../../base
+- configmap.yaml
 images:
 - name: freeverseio/authproxy
   newTag: 0.18.1
@@ -28,8 +29,6 @@ images:
   newTag: 0.18.1
 - name: freeverseio/dashboard
   newTag: 0.18.1
-patchesStrategicMerge:
-- configmap.yaml
 patchesJson6902:
 - target:
     group: networking.k8s.io

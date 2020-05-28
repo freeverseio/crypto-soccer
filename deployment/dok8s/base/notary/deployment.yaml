@@ -31,9 +31,7 @@ spec:
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable",
                -ethereum, http://xdai:8545,
                -private_key, "$(notary_private_key)",
-               -market_address, "$(MARKET_CONTRACT_ADDRESS)",
-               -constantsgetters_address, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)",
-               -privileged_address, "$(PRIVILEGED_CONTRACT_ADDRESS)",
+               -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
                -market_id, "$(market_id)",
                -google_key, "/var/secrets/google/key.json",
                "$(notary_extra_args)"]

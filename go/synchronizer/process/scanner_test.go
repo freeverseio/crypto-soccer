@@ -11,11 +11,12 @@ func TestScanningIniting(t *testing.T) {
 	scanner := process.NewEventScanner(bc.Contracts)
 	assert.NilError(t, scanner.Process(nil))
 	events := scanner.Events
-	assert.Equal(t, 4, len(events))
-	assert.Equal(t, events[0].Name, "AssetsInit")
-	assert.Equal(t, events[1].Name, "AssetsTeamTransfer")
-	assert.Equal(t, events[2].Name, "AssetsDivisionCreation")
-	assert.Equal(t, events[3].Name, "AssetsTeamTransfer")
+	assert.Equal(t, 5, len(events))
+	assert.Equal(t, events[0].Name, "ProxyNewDirectory")
+	assert.Equal(t, events[1].Name, "AssetsInit")
+	assert.Equal(t, events[2].Name, "AssetsTeamTransfer")
+	assert.Equal(t, events[3].Name, "AssetsDivisionCreation")
+	assert.Equal(t, events[4].Name, "AssetsTeamTransfer")
 }
 
 // func TestScanningTeamTransfer(t *testing.T) {
