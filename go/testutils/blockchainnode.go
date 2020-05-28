@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/contracts/truffle"
 )
 
 type BlockchainNode struct {
@@ -23,7 +22,7 @@ func NewBlockchain() (*BlockchainNode, error) {
 		return nil, err
 	}
 
-	bc.Contracts, err = truffle.New()
+	bc.Contracts, err = contracts.NewByTruffle()
 	if err != nil {
 		return nil, err
 	}
