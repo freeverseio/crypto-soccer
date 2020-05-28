@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/contracts/truffle"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	log "github.com/sirupsen/logrus"
 )
@@ -16,7 +15,7 @@ var db *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
-	bc, err = truffle.New()
+	bc, err = contracts.NewByTruffle()
 	if err != nil {
 		log.Fatal(err)
 	}

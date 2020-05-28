@@ -1,4 +1,4 @@
-package truffle
+package contracts
 
 import (
 	"os"
@@ -6,23 +6,22 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/go/contracts"
 	log "github.com/sirupsen/logrus"
 )
 
-func New() (*contracts.Contracts, error) {
+func NewByTruffle() (*Contracts, error) {
 	client, err := ethclient.Dial("http://localhost:8545")
 	if err != nil {
 		return nil, err
 	}
-	proxyAddress, err := Deploy()
+	proxyAddress, err := deploy()
 	if err != nil {
 		return nil, err
 	}
-	return contracts.NewByProxyAddress(client, proxyAddress)
+	return NewByProxyAddress(client, proxyAddress)
 }
 
-func Deploy() (string, error) {
+func deploy() (string, error) {
 	cryptoRoot, err := exec.Command("/usr/bin/git", "rev-parse", "--show-toplevel").Output()
 	if err != nil {
 		return "", err
@@ -56,5 +55,5 @@ func Deploy() (string, error) {
 	if err = os.Chdir(workingDir); err != nil {
 		return "", err
 	}
-	return contracts["PROXY_CONTRACT_ADDRESS"], nil
+	return contracts[ProxyName], nil
 }

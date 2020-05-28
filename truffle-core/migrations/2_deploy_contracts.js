@@ -65,7 +65,7 @@ module.exports = function (deployer, network, accounts) {
       ["UPDATES", updates.address],
       ["TRAININGPOINTS", trainingPoints.address],
       ["EVOLUTION", evolution.address],
-      ["SHOP_CONTRACT", shop.address],
+      ["SHOP", shop.address],
       ["PRIVILEGED", privileged.address],
       ["UTILS", utils.address],
       ["PLAYANDEVOLVE", playAndEvolve.address],
@@ -127,10 +127,8 @@ module.exports = function (deployer, network, accounts) {
     console.log("");
     console.log("🚀  Deployed on:", deployer.network)
     console.log("-----------AddressesStart-----------");
-    for (c = 0; c < names.length; c++) {
-      console.log(names[c] + "_CONTRACT_ADDRESS=" + addresses[c]);
-    }
-    console.log("-----------AddressesEnd-----------");
+    console.log("PROXY" + "=" + proxy.address),
+      console.log("-----------AddressesEnd-----------");
   });
 };
 
