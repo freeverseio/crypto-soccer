@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -31,6 +32,25 @@ func NewMatch() *Match {
 	mp.VisitorTeam = *NewTeam()
 	mp.State = storage.MatchBegin
 	return &mp
+}
+
+func MarchEventTypeByMatchEvent(event int16) (MatchEventType, error) {
+	switch event {
+	case matchevents.EVNT_ATTACK:
+		return Attack, nil
+	case matchevents.EVNT_YELLOW:
+		return YellowCard, nil
+	case matchevents.EVNT_RED:
+		return RedCard, nil
+	case matchevents.EVNT_SOFT:
+		return InjurySoft, nil
+	case matchevents.EVNT_HARD:
+		return InjuryHard, nil
+	case matchevents.EVNT_SUBST:
+		return Substitution, nil
+	default:
+		return "", fmt.Errorf("Unknown match event %v", event)
+	}
 }
 
 func NewMatchFromStorage(
@@ -104,7 +124,7 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber 
 		event.MatchIdx = int(b.MatchIdx)
 		event.Minute = int(computedEvent.Minute)
 		var err error
-		if event.Type, err = storage.MarchEventTypeByMatchEvent(computedEvent.Type); err != nil {
+		if event.Type, err = MarchEventTypeByMatchEvent(computedEvent.Type); err != nil {
 			return err
 		}
 		event.ManageToShoot = computedEvent.ManagesToShoot

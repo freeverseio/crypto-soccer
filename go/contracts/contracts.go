@@ -62,6 +62,11 @@ type Contracts struct {
 	ProxyAddress            string
 }
 
+type ContractsStorageService interface {
+	To(c *Contracts) error
+	From() (*Contracts, error)
+}
+
 func NewByProxyAddress(client *ethclient.Client, address string) (*Contracts, error) {
 	proxyContract, err := proxy.NewProxy(common.HexToAddress(address), client)
 	if err != nil {
@@ -285,25 +290,25 @@ func newByNamesAndAddresses(client *ethclient.Client, names [][32]byte, addresse
 		address := addresses[i]
 		contractMap[string(name[:n])] = address.String()
 	}
-	log.Info(contractMap["PROXY"])
+	log.Info(contractMap[ProxyName])
 
 	return New(
 		client,
-		contractMap["LEAGUES"],
-		contractMap["ASSETS"],
-		contractMap["EVOLUTION"],
-		contractMap["ENGINE"],
-		contractMap["ENGINEPRECOMP"],
-		contractMap["UPDATES"],
-		contractMap["MARKET"],
-		contractMap["UTILS"],
-		contractMap["PLAYANDEVOLVE"],
-		contractMap["SHOP"],
-		contractMap["TRAININGPOINTS"],
-		contractMap["CONSTANTSGETTERS"],
-		contractMap["PRIVILEGED"],
-		contractMap["STAKERS"],
-		contractMap["DIRECTORY"],
-		contractMap["PROXY"],
+		contractMap[LeaguesName],
+		contractMap[AssetsName],
+		contractMap[EvolutionName],
+		contractMap[EngineName],
+		contractMap[EnginePreCompName],
+		contractMap[UpdatesName],
+		contractMap[MarketName],
+		contractMap[UtilsName],
+		contractMap[PlayAndEvolveName],
+		contractMap[ShopName],
+		contractMap[TrainingPointsName],
+		contractMap[ConstantsGettersName],
+		contractMap[PrivilegedName],
+		contractMap[StakersName],
+		contractMap[DirectoryName],
+		contractMap[ProxyName],
 	)
 }
