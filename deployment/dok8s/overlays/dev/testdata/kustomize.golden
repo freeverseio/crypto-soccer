@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   BLOCKS_PER_STEP: "10000"
-  DIRECTORY_CONTRACT_ADDRESS: 0x98dD59698D18F5eE997c72cdBf5BE9D0637cc971
+  DIRECTORY_CONTRACT_ADDRESS: 0x6CCa0E9Bb1340A42222e48597578aD6E4A9fb84A
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: ""
