@@ -132,7 +132,7 @@ func (p *EventProcessor) Process2(tx *sql.Tx, delta uint64) (uint64, error) {
 	log.WithFields(log.Fields{
 		"start": opts.Start,
 		"end":   *opts.End,
-	}).Info("Syncing ...")
+	}).Info("digest ...")
 
 	scanner := NewEventScanner(p.contracts)
 	if scanner == nil {

@@ -37,7 +37,8 @@ func main() {
 		log.Fatal("no proxy contract address")
 	}
 
-	log.Infof("ipfs URL: %v", *ipfsURL)
+	log.Infof("[PARAM] proxy contract address       : %v", *proxyContractAddress)
+	log.Infof("[PARAM] ipfs URL                     : %v", *ipfsURL)
 
 	if *debug {
 		log.SetLevel(log.DebugLevel)

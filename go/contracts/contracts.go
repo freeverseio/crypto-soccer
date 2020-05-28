@@ -303,7 +303,6 @@ func newByNamesAndAddresses(
 		address := addresses[i]
 		contractMap[string(name[:n])] = address.String()
 	}
-	log.Info(contractMap[ProxyName])
 
 	return New(
 		client,
