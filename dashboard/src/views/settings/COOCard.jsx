@@ -22,7 +22,7 @@ const COOWidget = ({ assetsContract, account }) => {
 
     return (
         <Table.Row>
-            <Table.Cell>COO</Table.Cell>
+            <Table.Cell singleLine>COO Role</Table.Cell>
             <Table.Cell>{COO}</Table.Cell>
             <Table.Cell>
                 <RoleCard onChange={setAddress} account={account}/>

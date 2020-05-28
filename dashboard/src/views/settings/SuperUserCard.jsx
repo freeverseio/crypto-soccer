@@ -22,7 +22,7 @@ const SuperUserWidget = ({ proxyContract, account }) => {
 
     return (
         <Table.Row>
-            <Table.Cell>SuperUser</Table.Cell>
+            <Table.Cell singleLine>SuperUser Role</Table.Cell>
             <Table.Cell>{superUser}</Table.Cell>
             <Table.Cell>
                 <RoleCard onChange={setAddress} account={account}/>

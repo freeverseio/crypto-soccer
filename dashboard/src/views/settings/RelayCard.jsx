@@ -22,7 +22,7 @@ const RelayCard = ({account, assetsContract}) => {
 
     return (
         <Table.Row>
-            <Table.Cell>relay</Table.Cell>
+            <Table.Cell singleLine>Relay Role</Table.Cell>
             <Table.Cell>{relay}</Table.Cell>
             <Table.Cell>
                 <RoleCard onChange={setAddress} account={account}/>

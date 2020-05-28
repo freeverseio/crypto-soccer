@@ -35,7 +35,7 @@ const CompanyWidget = ({proxyContract, account}) => {
 
     return (
         <Table.Row>
-            <Table.Cell>Company</Table.Cell>
+            <Table.Cell singleLine>Company Role</Table.Cell>
             <Table.Cell>{company}</Table.Cell>
             <Table.Cell>
                 <Input fluid

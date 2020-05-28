@@ -53,6 +53,7 @@ services:
       - ethereum
     command: >
       -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
+      --enableCors true
 
 volumes:
   ethereum-data:
