@@ -51,8 +51,12 @@ func TestSyncTeams(t *testing.T) {
 	log.Info(bc.Contracts.ProxyAddress)
 	_, err = p.Process(tx, 0)
 	assert.NilError(t, err)
-	_, err = p.Process(tx, 0)
-	assert.NilError(t, err)
+
+	count := uint64(1)
+	for count != 0 {
+		count, err = p.Process(tx, 0)
+		assert.NilError(t, err)
+	}
 
 	// the null timezone (0) is only used by the Academy Team
 	if count, err := storage.TimezoneCount(tx); err != nil {
@@ -69,7 +73,7 @@ func TestSyncTeams(t *testing.T) {
 	}
 
 	// one team (the Academy) belongs to timezone = 0
-	count, err := storage.TeamCount(tx)
+	count, err = storage.TeamCount(tx)
 	assert.NilError(t, err)
 	assert.Equal(t, count, uint64(128+2))
 	if count, err := storage.PlayerCount(tx); err != nil {
