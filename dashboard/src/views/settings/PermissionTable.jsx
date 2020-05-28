@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table } from 'semantic-ui-react';
 import COOCard from './COOCard';
 import MarketCard from './MarketCard';
@@ -12,11 +12,20 @@ const assetsJSON = require("../../contracts/Assets.json");
 const marketJSON = require("../../contracts/Market.json");
 
 const PermissionTable = ({ web3, account, proxyAddress }) => {
+    const [seconds, setSeconds] = useState(0);
     const proxyContract = new web3.eth.Contract(proxyJSON.abi, proxyAddress);
     const assetsContract = new web3.eth.Contract(assetsJSON.abi, proxyAddress);
     const marketContract = new web3.eth.Contract(marketJSON.abi, proxyAddress);
 
-    return (
+    useEffect(() => {
+        let interval = null;
+        interval = setInterval(() => {
+            setSeconds(seconds => seconds + 1);
+        }, 5000);
+        return () => clearInterval(interval);
+    },[seconds]);
+
+return (
         <Table color='orange'>
             <Table.Header>
                 <Table.Row>
