@@ -77,7 +77,7 @@ func GeneratePlayerByPlayerIdAndState(
 		return nil, err
 	} else if shirtNumber, err := contr.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 		return nil, err
-	} else if name, err := namesdb.GeneratePlayerFullName(playerId, uint8(generation.Int64()), timezone, countryIdxInTZ.Uint64()); err != nil {
+	} else if name, countryOfBirth, race, err := namesdb.GeneratePlayerFullName(playerId, uint8(generation.Int64()), timezone, countryIdxInTZ.Uint64()); err != nil {
 		return nil, err
 	} else {
 		player := storage.Player{
@@ -96,6 +96,8 @@ func GeneratePlayerByPlayerIdAndState(
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
 			Tiredness:         int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1]),
+			CountryOfBirth:    countryOfBirth,
+			Race:              race,
 		}
 		return &player, nil
 	}

@@ -117,7 +117,7 @@ func CreateWorldPlayerBatch(
 		leftishness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsLeftishnessIdx]
 		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
 		generation := uint8(0)
-		name, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
+		name, countryOfBirth, race, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
 		if err != nil {
 			return nil, err
 		}
@@ -145,6 +145,8 @@ func CreateWorldPlayerBatch(
 			endurance,
 			potential,
 			validUntil,
+			countryOfBirth,
+			race,
 		)
 		result = append(result, worldPlayer)
 	}
