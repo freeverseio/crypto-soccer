@@ -113,7 +113,7 @@ func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	tiredness=$12,
 	country_of_birth=$13,
 	race=$14
-	WHERE player_id=$13;`,
+	WHERE player_id=$15;`,
 		b.TeamId,
 		b.Defence,
 		b.Speed,
@@ -126,9 +126,9 @@ func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 		b.InjuryMatchesLeft,
 		b.Name,
 		b.Tiredness,
-		b.PlayerId.String(),
 		b.CountryOfBirth,
 		b.Race,
+		b.PlayerId.String(),
 	); err != nil {
 		return err
 	}
