@@ -14,6 +14,8 @@ type WorldPlayer struct {
 	endurance         int32
 	potential         int32
 	validUntil        string
+	countryOfBirth    string
+	race              string
 }
 
 func NewWorldPlayer(
@@ -28,6 +30,8 @@ func NewWorldPlayer(
 	endurance int32,
 	potential int32,
 	validUntil string,
+	countryOfBirth string,
+	race string,
 ) *WorldPlayer {
 	player := WorldPlayer{}
 	player.playerId = playerId
@@ -42,7 +46,7 @@ func NewWorldPlayer(
 	player.potential = potential
 	player.validUntil = validUntil
 	player.countryOfBirth = countryOfBirth
-	player.race = ace
+	player.race = race
 	return &player
 }
 
@@ -55,7 +59,7 @@ func (b WorldPlayer) Name() string {
 }
 
 func (b WorldPlayer) CountryOfBirth() string {
-	return b.CountryOfBirth
+	return b.countryOfBirth
 }
 
 func (b WorldPlayer) Race() string {
