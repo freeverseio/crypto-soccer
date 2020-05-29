@@ -18,8 +18,7 @@ const PermissionTable = ({ web3, account, proxyAddress }) => {
     const marketContract = new web3.eth.Contract(marketJSON.abi, proxyAddress);
 
     useEffect(() => {
-        let interval = null;
-        interval = setInterval(() => {
+        const interval = setInterval(() => {
             setSeconds(seconds => seconds + 1);
         }, 5000);
         return () => clearInterval(interval);
@@ -36,7 +35,7 @@ return (
             </Table.Header>
             <Table.Body>
                 <Table.Row>
-                    <Table.Cell>proxy</Table.Cell>
+                    <Table.Cell>Proxy Address</Table.Cell>
                     <Table.Cell>{proxyAddress}</Table.Cell>
                 </Table.Row>
                 {proxyContract && <CompanyCard account={account} proxyContract={proxyContract} />}
