@@ -268,10 +268,12 @@ func (b *Generator) GenerateSurname(playerId *big.Int, generation uint8, region 
 	// If player is a son, then no matter which generation, it will have the same surname
 	// as the primary father (gen=0). Otherwise, random.
 	// So, "son" means descendant of the primary father, not descendant of the previous player.
-	salt := "ff"
-	isSon := generation > 0 && generation < 32
-	if !isSon {
-		salt += strconv.FormatUint(uint64(generation), 10)
+	// All players with gen > 32 are not sons
+	var salt string
+	if generation < 32 {
+		salt = "ff0"
+	} else {
+		salt = "ff" + strconv.FormatUint(uint64(generation), 10)
 	}
 	rowRandom := b.GenerateRnd(playerId, salt, uint64(b.nSurnamesPerRegion[region]))
 	// LIMIT m OFFSET n will skip the first n entries and return the next m entries
@@ -296,6 +298,7 @@ func (b *Generator) GenerateSurname(playerId *big.Int, generation uint8, region 
 	if err != nil {
 		return "", "", err
 	}
+	isSon := generation > 0 && generation < 32
 	if isSon {
 		surname += " Jr."
 	}
