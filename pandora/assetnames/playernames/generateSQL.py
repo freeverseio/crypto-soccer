@@ -122,7 +122,7 @@ properNaming = {
     1008: "AmericanIndian",
     1009: "TwoOrMoreRegions",
     1010: "Hispanic",
-    1100: "DEFAULT_MIX_RATIOS",
+    1100: "Spanish",
     1053: "Japanese"
 }
 
