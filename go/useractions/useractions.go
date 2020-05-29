@@ -21,6 +21,7 @@ type UserActionsPublishService interface {
 type UserActionsStorageService interface {
 	UserActionsByTimezone(timezone int) (*UserActions, error)
 	Insert(actions UserActions) error
+	InsertHistory(blockNumber uint64, actions UserActions) error
 }
 
 func (b *UserActions) Hash() ([32]byte, error) {

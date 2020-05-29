@@ -24,7 +24,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 
 	processor := process.NewLeagueProcessor(
 		bc.Contracts,
-		ipfsURL,
+		useractionsPublishService,
 	)
 	var event updates.UpdatesActionsSubmission
 	event.TimeZone = 25
@@ -60,7 +60,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 
 	divisionCreationProcessor := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
 	assert.NilError(t, divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}}))
-	processor := process.NewLeagueProcessor(bc.Contracts, ipfsURL)
+	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
 	day := uint8(0)
 	seed := [32]byte{0x2}
 	turnInDay := uint8(0)
@@ -68,7 +68,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	assert.NilError(t, err)
 	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
 	ua := useractions.UserActions{}
-	cid, err := ua.ToIpfs(ipfsURL)
+	cid, err := useractionsPublishService.Publish(ua)
 	assert.NilError(t, err)
 	root, err := ua.Root()
 	assert.NilError(t, err)

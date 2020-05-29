@@ -100,7 +100,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 	ua := useractions.UserActions{}
-	cid, err := ua.ToIpfs(ipfsURL)
+	cid, err := useractionsPublishService.Publish(ua)
 	assert.NilError(t, err)
 	seed, err := ua.Hash()
 	assert.NilError(t, err)

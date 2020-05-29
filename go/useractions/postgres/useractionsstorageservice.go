@@ -42,3 +42,14 @@ func (b UserActionsStorageService) Insert(actions useractions.UserActions) error
 	}
 	return nil
 }
+
+// TODO remove this
+func (b UserActionsStorageService) InsertHistory(blockNumber uint64, actions useractions.UserActions) error {
+	for _, tactic := range actions.Tactics {
+		th := storage.NewTacticHistory(blockNumber, tactic)
+		if err := th.Insert(b.tx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
