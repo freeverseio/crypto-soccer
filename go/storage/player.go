@@ -67,7 +67,7 @@ func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 	if _, err := tx.Exec(`INSERT INTO players 
 		(name, player_id, team_id, defence, speed,
 		pass, shoot, endurance, shirt_number, preferred_position, 
-		encoded_skills, encoded_state, potential, day_of_birth, tiredness, country_of_birth,race) 
+		encoded_skills, encoded_state, potential, day_of_birth, tiredness, country_of_birth, race) 
 		VALUES ($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17);`,
 		b.Name,
 		b.PlayerId.String(),
@@ -156,7 +156,9 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	day_of_birth, 
 	red_card,
 	injury_matches_left,
-	tiredness
+	tiredness,
+	country_of_birth,
+	race
 	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
 		return nil, err
@@ -213,7 +215,9 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	day_of_birth, 
 	red_card,
 	injury_matches_left,
-	tiredness
+	tiredness,
+	country_of_birth,
+	race
 	FROM players WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return nil, err

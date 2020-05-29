@@ -98,6 +98,8 @@ CREATE TABLE players (
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
     tiredness INT NOT NULL,
+    country_of_birth TEXT NOT NULL,
+    race TEXT NOT NULL,
     PRIMARY KEY(player_id)
 );
 comment on table players is E'@omit create,update,delete';
@@ -120,6 +122,8 @@ CREATE TABLE players_histories (
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
     tiredness INT NOT NULL,
+    country_of_birth TEXT NOT NULL,
+    race TEXT NOT NULL,
     PRIMARY KEY(block_number, player_id)
 );
 comment on table players_histories is E'@omit create,update,delete';
