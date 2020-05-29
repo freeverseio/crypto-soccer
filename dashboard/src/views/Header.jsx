@@ -5,8 +5,6 @@ import { Menu, Icon, Button } from 'semantic-ui-react'
 const TopBar = ({account, location}) => {
     const pathname = location.pathname;
 
-    console.log(account)
-
     return (
         <Menu pointing secondary>
             <Menu.Item as={Link} to="/" name='home' active={pathname === '/'} />
