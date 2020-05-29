@@ -17,9 +17,11 @@ Contains the three critical contracts that manage storage: Proxy, Stakers, Marke
     * ProxyStorage -> Storage -> UniverseInfo -> Market
     * ProxyStorage -> Storage -> UniverseInfo -> Updates
     * ProxyStorage -> Storage -> UniverseInfo -> Challenges
+  * The agreed permissioning of each function is documented [here](https://github.com/freeverseio/lioneldoc/blob/master/authorizations.md)
 
 * Stakers (holds money)
   * Mission: accepts stakers, manages their stake, offers rewards. It is slaved to receving calls from Proxy, whwere all the update-challenge logic resides.
+  * Stakers finite state machine is in slide 13 of [this GoogleSlides](https://docs.google.com/presentation/d/1LuqDhVnwTKULu8zJCxuKNc9sArvv0ITCG4r0_hrODFU/edit?usp=sharing)
   
 * MarketCrypto (holds money)
   * Mission: to operate the same auctions logic as the market in fiat, but in crypto, without anyone's permission.
