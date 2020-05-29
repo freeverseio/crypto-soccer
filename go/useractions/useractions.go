@@ -1,14 +1,11 @@
 package useractions
 
 import (
-	"archive/tar"
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
 
@@ -20,6 +17,11 @@ import (
 type UserActions struct {
 	Tactics   []storage.Tactic   `json:"tactics"`
 	Trainings []storage.Training `json:"trainings"`
+}
+
+type UserActionsPublishService interface {
+	Publish(actions UserActions) (string, error)
+	Retrive(cid string) (*UserActions, error)
 }
 
 func (b *UserActions) Equal(actions *UserActions) bool {
@@ -61,37 +63,6 @@ func newShell(url string) (*shell.Shell, error) {
 		return nil, err
 	}
 	return client.IPFS(context.Background()), nil
-}
-
-func NewFromIpfs(url string, cid string) (*UserActions, error) {
-	var ua UserActions
-	sh, err := newShell(url)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Close()
-
-	if resp.Error != nil {
-		return nil, resp.Error
-	}
-
-	tr := tar.NewReader(resp.Output)
-	_, err = tr.Next()
-	if err != nil {
-		return nil, err
-	}
-	buf, err := ioutil.ReadAll(tr)
-	if err != nil {
-		return nil, err
-	}
-	if err = ua.Unmarshal(buf); err != nil {
-		return nil, err
-	}
-	return &ua, nil
 }
 
 func NewFromStorage(tx *sql.Tx, timezone int) (*UserActions, error) {
@@ -138,16 +109,4 @@ func (b *UserActions) Marshal() ([]byte, error) {
 
 func (b *UserActions) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, &b)
-}
-
-func (b *UserActions) ToIpfs(url string) (string, error) {
-	sh, err := newShell(url)
-	if err != nil {
-		return "", err
-	}
-	buf, err := b.Marshal()
-	if err != nil {
-		return "", err
-	}
-	return sh.Add(bytes.NewReader(buf), shell.Pin(true))
 }

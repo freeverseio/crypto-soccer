@@ -41,27 +41,6 @@ func TestUnmarshal(t *testing.T) {
 	}
 }
 
-func TestIpfsPushAndPull(t *testing.T) {
-	t.Parallel()
-	var ua useractions.UserActions
-	tactic := storage.Tactic{}
-	tactic.TeamID = "ciao"
-	localhost := "/ip4/127.0.0.1/tcp/5001"
-	ua.Tactics = append(ua.Tactics, tactic)
-	cif, err := ua.ToIpfs(localhost)
-	assert.NilError(t, err)
-	assert.Equal(t, cif, "QmXCYKHSNDCHqzv6W7WDHyW1Zp2YLgt87gmt8tzZYTQtx7")
-	training := storage.Training{}
-	training.TeamID = "pippo"
-	ua.Trainings = append(ua.Trainings, training)
-	cif, err = ua.ToIpfs(localhost)
-	assert.NilError(t, err)
-	assert.Equal(t, cif, "QmbUVhwjGJQzPQQjs5QvJjRZLYuW2jKMKf1RcRiNP71qf2")
-	ua2, err := useractions.NewFromIpfs(localhost, cif)
-	assert.NilError(t, err)
-	assert.Assert(t, ua2.Equal(&ua))
-}
-
 func TestUserActionsPullFromStorageNoUserActions(t *testing.T) {
 	t.Parallel()
 	tx, err := db.Begin()
