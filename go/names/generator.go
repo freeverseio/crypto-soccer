@@ -14,10 +14,6 @@ import (
 
 type Generator struct {
 	db                     *sql.DB
-	nCountries             uint
-	nRegions               uint
-	countriesISO2          []string
-	regionNames            []string
 	nonEmptyCountries      []string
 	nonEmptyRegions        []string
 	nNamesPerCountry       map[string]uint
@@ -56,12 +52,6 @@ func New(db_filename string) (*Generator, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := generator.countCountries(); err != nil {
-		return nil, err
-	}
-	if err := generator.countRegions(); err != nil {
-		return nil, err
-	}
 	if err := generator.countEntriesPerArea(false, "iso2", "countries", "names"); err != nil {
 		return nil, err
 	}
@@ -92,42 +82,6 @@ func (b *Generator) readDeployedCountriesSpecs() {
 	m[serializeTZandCountryIdx(uint8(16), uint64(0))] = DeployedCountriesSpecs{"CN", "Chinese", 55, 55}
 	m[serializeTZandCountryIdx(uint8(18), uint64(0))] = DeployedCountriesSpecs{"GB", "NonHispWhite", 55, 55}
 	b.deployedCountriesSpecs = m
-}
-
-func (b *Generator) countCountries() error {
-	var err error
-	rows, err := b.db.Query(`SELECT COUNT (*) FROM countries`)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var count uint
-		err = rows.Scan(&count)
-		if err != nil {
-			return err
-		}
-		b.nCountries = count
-	}
-	return nil
-}
-
-func (b *Generator) countRegions() error {
-	var err error
-	rows, err := b.db.Query(`SELECT COUNT (*) FROM regions`)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var count uint
-		err = rows.Scan(&count)
-		if err != nil {
-			return err
-		}
-		b.nRegions = count
-	}
-	return nil
 }
 
 func (b *Generator) countEntriesPerArea(isSurname bool, colName string, areasTable string, entryPerAreaTable string) error {
