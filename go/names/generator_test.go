@@ -27,7 +27,7 @@ func TestGeneratePlayerName(t *testing.T) {
 	generation := uint8(0)
 	for i := 0; i < 10; i++ {
 		playerId := big.NewInt(int64(i))
-		timezone = 19
+		timezone = 10
 		countryIdxInTZ = 0
 		name, countryISO2, region, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 		if err != nil {

@@ -77,10 +77,10 @@ func serializeTZandCountryIdx(tz uint8, countryIdxInTZ uint64) uint64 {
 
 func (b *Generator) readDeployedCountriesSpecs() {
 	m := make(map[uint64]DeployedCountriesSpecs)
-	m[serializeTZandCountryIdx(uint8(19), uint64(0))] = DeployedCountriesSpecs{"ES", "Spanish", 55, 55}
-	m[serializeTZandCountryIdx(uint8(19), uint64(1))] = DeployedCountriesSpecs{"IT", "Spanish", 55, 55}
-	m[serializeTZandCountryIdx(uint8(16), uint64(0))] = DeployedCountriesSpecs{"CN", "Chinese", 55, 55}
-	m[serializeTZandCountryIdx(uint8(18), uint64(0))] = DeployedCountriesSpecs{"GB", "NonHispWhite", 55, 55}
+	m[serializeTZandCountryIdx(uint8(10), uint64(0))] = DeployedCountriesSpecs{"ES", "Spanish", 55, 55}
+	m[serializeTZandCountryIdx(uint8(10), uint64(1))] = DeployedCountriesSpecs{"IT", "Spanish", 55, 55}
+	m[serializeTZandCountryIdx(uint8(7), uint64(0))] = DeployedCountriesSpecs{"CN", "Chinese", 55, 55}
+	m[serializeTZandCountryIdx(uint8(9), uint64(0))] = DeployedCountriesSpecs{"GB", "NonHispWhite", 55, 55}
 	b.deployedCountriesSpecs = m
 }
 
@@ -270,7 +270,7 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	specs, ok := b.deployedCountriesSpecs[serializeTZandCountryIdx(tz, countryIdxInTZ)]
 	if !ok {
 		// Spain is the default country if you query for one that is not specified
-		specs = b.deployedCountriesSpecs[serializeTZandCountryIdx(19, 0)]
+		specs = b.deployedCountriesSpecs[serializeTZandCountryIdx(10, 0)]
 	}
 	name, countryISO2, err := b.GenerateName(playerId, generation, specs.iso2, specs.namePurity)
 	if err != nil {
