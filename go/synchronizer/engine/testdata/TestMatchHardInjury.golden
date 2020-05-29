@@ -60,7 +60,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -81,7 +83,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -102,7 +106,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -123,7 +129,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -144,7 +152,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -165,7 +175,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -186,7 +198,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -207,7 +221,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -228,7 +244,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -249,7 +267,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -270,7 +290,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 5,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -291,7 +313,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -312,7 +336,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -333,7 +359,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -354,7 +382,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -375,7 +405,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -396,7 +428,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -417,7 +451,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -438,7 +474,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -459,7 +497,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -480,7 +520,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -501,7 +543,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -522,7 +566,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -543,7 +589,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -564,7 +612,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			})
 		},
@@ -650,7 +700,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -671,7 +723,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -692,7 +746,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -713,7 +769,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -734,7 +792,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -755,7 +815,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -776,7 +838,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -797,7 +861,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -818,7 +884,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -839,7 +907,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -860,7 +930,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -881,7 +953,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -902,7 +976,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -923,7 +999,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -944,7 +1022,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -965,7 +1045,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -986,7 +1068,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -1007,7 +1091,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -1028,7 +1114,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -1049,7 +1137,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -1070,7 +1160,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -1091,7 +1183,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -1112,7 +1206,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -1133,7 +1229,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			}),
 			(*engine.Player)({
@@ -1154,7 +1252,9 @@
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 0
+					Tiredness: (int) 0,
+					CountryOfBirth: (string) "",
+					Race: (string) ""
 				}
 			})
 		},
