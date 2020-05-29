@@ -4,7 +4,7 @@ PreferredPosition: (string) (len=4) "D CR",
 Potential: (uint64) 4,
 DayOfBirth: (uint64) 17561,
 TeamId: (string) (len=13) "2748779069463",
-Name: (string) (len=16) "Brahim Herschler",
+Name: (string) (len=9) "Luke Lara",
 Defence: (uint64) 847,
 Speed: (uint64) 1513,
 Pass: (uint64) 1352,
@@ -15,5 +15,7 @@ EncodedSkills: (*big.Int)(578960446186580977289770293525962906827728318034198675
 EncodedState: (*big.Int)(24519655528918455736691326674010135),
 RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
-Tiredness: (int) 0
+Tiredness: (int) 0,
+CountryOfBirth: (string) (len=2) "MT",
+Race: (string) (len=7) "Spanish"
 })
