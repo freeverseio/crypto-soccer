@@ -146,7 +146,7 @@ func CreateWorldPlayerBatch(
 			potential,
 			validUntil,
 			countryOfBirth,
-			race
+			race,
 		)
 		result = append(result, worldPlayer)
 	}
