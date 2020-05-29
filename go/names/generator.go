@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"math/big"
+	"strconv"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -86,10 +87,10 @@ func serializeTZandCountryIdx(tz uint8, countryIdxInTZ uint64) uint64 {
 
 func (b *Generator) readDeployedCountriesSpecs() {
 	m := make(map[uint64]DeployedCountriesSpecs)
-	m[serializeTZandCountryIdx(uint8(19), uint64(0))] = DeployedCountriesSpecs{"SP", "Spanish", 55, 55}
+	m[serializeTZandCountryIdx(uint8(19), uint64(0))] = DeployedCountriesSpecs{"ES", "Spanish", 55, 55}
 	m[serializeTZandCountryIdx(uint8(19), uint64(1))] = DeployedCountriesSpecs{"IT", "Spanish", 55, 55}
-	m[serializeTZandCountryIdx(uint8(16), uint64(0))] = DeployedCountriesSpecs{"China", "Chinese", 55, 55}
-	m[serializeTZandCountryIdx(uint8(18), uint64(0))] = DeployedCountriesSpecs{"UK", "NonHispWhite", 55, 55}
+	m[serializeTZandCountryIdx(uint8(16), uint64(0))] = DeployedCountriesSpecs{"CN", "Chinese", 55, 55}
+	m[serializeTZandCountryIdx(uint8(18), uint64(0))] = DeployedCountriesSpecs{"GB", "NonHispWhite", 55, 55}
 	b.deployedCountriesSpecs = m
 }
 
@@ -155,11 +156,13 @@ func (b *Generator) countEntriesPerArea(isSurname bool, colName string, areasTab
 			return err
 		}
 		m[id] = count
-		if isSurname {
-			b.nonEmptyRegions = append(b.nonEmptyRegions, id)
-		}
-		if !isSurname {
-			b.nonEmptyCountries = append(b.nonEmptyCountries, id)
+		if count > 0 {
+			if isSurname {
+				b.nonEmptyRegions = append(b.nonEmptyRegions, id)
+			}
+			if !isSurname {
+				b.nonEmptyCountries = append(b.nonEmptyCountries, id)
+			}
 		}
 	}
 	if isSurname {
@@ -222,100 +225,79 @@ func (b *Generator) GenerateRnd(seed *big.Int, salt string, max_val uint64) uint
 	return result % max_val
 }
 
-func (b *Generator) GenerateName(playerId *big.Int, generation uint8, iso2 string, purity uint) (string, error) {
+func (b *Generator) GenerateName(playerId *big.Int, generation uint8, iso2 string, purity uint) (string, string, error) {
 	dice := b.GenerateRnd(playerId, "aa", 100)
 	if uint(dice) > purity {
 		newPick := b.GenerateRnd(playerId, "bb", uint64(len(b.nonEmptyCountries)))
 		iso2 = b.nonEmptyCountries[newPick]
 	}
-	namePick := b.GenerateRnd(playerId, "cc", uint64(b.nNamesPerCountry[iso2]))
-	rows, err := b.db.Query(`SELECT name FROM countries WHERE (iso2 = $1) ORDER BY name OFFSET $2 LIMIT 1`, iso2, namePick)
+	// Make sure we chose different rnds for each generation
+	salt := "cc" + strconv.FormatUint(uint64(generation), 10)
+	rowRandom := b.GenerateRnd(playerId, salt, uint64(b.nNamesPerCountry[iso2]))
+	// LIMIT m OFFSET n will skip the first n entries and return the next m entries
+	// Since rowRandom = [0,..., nEntries-1], the upper limit should work
+	rows, err := b.db.Query(`SELECT name FROM names WHERE (iso2 = $1) ORDER BY name ASC LIMIT 1 OFFSET $2`, iso2, rowRandom)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer rows.Close()
-	rows.Next()
 	var name string
+	if !rows.Next() {
+		return "", "", fmt.Errorf("Name: Rnd choice failed: iso2 = %v, rowRandom = %v; input params: playerId = %v, generation = %v, iso2 = %v, purity = %v",
+			iso2,
+			rowRandom,
+			playerId,
+			generation,
+			iso2,
+			purity,
+		)
+	}
 	err = rows.Scan(&name)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return name, nil
+	return name, iso2, nil
 }
 
-// // area can be either a country (for names) or a region (for surnames)
-// func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, area string, purity int) (string, error) {
-// 	// toni
-// 	dice := b.GenerateRnd(playerId, "aa", 100)
-// 	if int(dice) > purity {
-
-// 	}
-
-// 	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
-// 	isAcademyPlayer := generation > 31
-// 	if isAcademyPlayer {
-// 		generation = generation - 32
-// 	}
-// 	salt := "a"
-// 	tableName := "names"
-// 	colName := "name"
-// 	filterBy := "iso2"
-// 	codes := b.countriesISO2
-// 	final_country_code := country_code
-// 	// ensure that names are always different for all generations
-// 	seedTemp := b.GenerateRnd(playerId, "aa", 0) + uint64(generation)
-// 	if isSurname {
-// 		salt = "b"
-// 		tableName = "surnames"
-// 		colName = "surname"
-// 		filterBy = "region"
-// 		codes = b.regionNames
-// 		seedTemp = b.GenerateRnd(playerId, "bb", 0) + uint64(generation)
-// 		isActualSon := generation > 0 && !isAcademyPlayer
-// 		if isActualSon {
-// 			seedTemp -= 1
-// 		}
-// 	}
-// 	seed := big.NewInt(int64(seedTemp))
-// 	dice := b.GenerateRnd(seed, salt+"cc", 100)
-// 	if int(dice) > purity {
-// 		// pick a different country
-// 		var nCountryCodes = len(codes)
-// 		var rnd_idx int = int(b.GenerateRnd(seed, salt+"dd", uint64(nCountryCodes)))
-// 		if country_code == codes[rnd_idx] {
-// 			final_country_code = codes[(rnd_idx+1)%nCountryCodes]
-// 		} else {
-// 			final_country_code = codes[rnd_idx]
-// 		}
-// 	}
-// 	var nEntriesIn uint = b.nEntriesIn[final_country_code]
-
-// 	// idxInCountry ranges from 0 to numNamesInCountry-1
-// 	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(nEntriesIn-1))
-
-// 	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (`+filterBy+` = $1)`, area)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	defer rows.Close()
-// 	if !rows.Next() {
-// 		return "", fmt.Errorf("Rnd choice failed: final_country_code = %v, idxInCountry = %v, tableName = %v, colName = %v, in function with input params: isSurname = %v, playerId = %v, generation = %v, country_code = %v, purity = %v",
-// 			final_country_code,
-// 			idxInCountry,
-// 			tableName,
-// 			colName,
-// 			isSurname,
-// 			playerId,
-// 			generation,
-// 			country_code,
-// 			purity,
-// 		)
-// 	}
-
-// 	var name string
-// 	rows.Scan(&name)
-// 	return name, nil
-// }
+func (b *Generator) GenerateSurname(playerId *big.Int, generation uint8, region string, purity uint) (string, string, error) {
+	dice := b.GenerateRnd(playerId, "dd", 100)
+	if uint(dice) > purity {
+		newPick := b.GenerateRnd(playerId, "ee", uint64(len(b.nonEmptyCountries)))
+		region = b.nonEmptyCountries[newPick]
+	}
+	// If player is a son, then no matter which generation, it will have the same surname
+	// as the primary father (gen=0). Otherwise, random.
+	// So, "son" means descendant of the primary father, not descendant of the previous player.
+	salt := "ff"
+	isSon := generation > 0 && generation < 32
+	if !isSon {
+		salt += strconv.FormatUint(uint64(generation), 10)
+	}
+	rowRandom := b.GenerateRnd(playerId, salt, uint64(b.nSurnamesPerRegion[region]))
+	// LIMIT m OFFSET n will skip the first n entries and return the next m entries
+	// Since rowRandom = [0,..., nEntries-1], the upper limit should work
+	rows, err := b.db.Query(`SELECT surname FROM surnames WHERE (region = $1) ORDER BY surname ASC LIMIT 1 OFFSET $2`, region, rowRandom)
+	if err != nil {
+		return "", "", err
+	}
+	defer rows.Close()
+	var surname string
+	if !rows.Next() {
+		return "", "", fmt.Errorf("Surname: Rnd choice failed: region = %v, rowRandom = %v; input params: playerId = %v, generation = %v, region = %v, purity = %v",
+			region,
+			rowRandom,
+			playerId,
+			generation,
+			region,
+			purity,
+		)
+	}
+	err = rows.Scan(&surname)
+	if err != nil {
+		return "", "", err
+	}
+	return surname, region, nil
+}
 
 func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, tz uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
@@ -330,7 +312,7 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 		// Spain is the default country if you query for one that is not specified
 		specs = b.deployedCountriesSpecs[serializeTZandCountryIdx(19, 0)]
 	}
-	name, err := b.GenerateName(playerId, generation, specs.iso2, specs.namePurity)
+	name, _, err := b.GenerateName(playerId, generation, specs.iso2, specs.namePurity)
 	if err != nil {
 		return "", err
 	}
