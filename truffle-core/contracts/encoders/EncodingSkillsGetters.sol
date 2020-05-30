@@ -70,4 +70,8 @@ contract EncodingSkillsGetters {
     function getGeneration(uint256 encodedSkills) public pure returns (uint256) {
         return (encodedSkills >> 205) & 255;
     }
+
+    function getOutOfGameFirstHalf(uint256 encodedSkills) public pure returns (bool) {
+        return uint256(encodedSkills >> 213 & 1) == 1; 
+    }
 }
