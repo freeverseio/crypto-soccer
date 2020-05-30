@@ -518,7 +518,13 @@ spec:
         - -ipfs
         - /dns4/ipfsnode/tcp/5001
         - -private_key
-        - $(relay_private_key)
+        - $(RELAY_PRIVATE_KEY)
+        env:
+        - name: RELAY_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: relay
+              name: blockchain-accounts
         envFrom:
         - configMapRef:
             name: freeverse-configmap
