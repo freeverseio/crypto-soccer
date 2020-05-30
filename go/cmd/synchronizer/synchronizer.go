@@ -14,7 +14,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/staker"
-	"github.com/freeverseio/crypto-soccer/go/useractions/ipfscluster"
+	"github.com/freeverseio/crypto-soccer/go/useractions/ipfs"
 )
 
 func main() {
@@ -82,7 +82,7 @@ func main() {
 		}
 		defer namesdb.Close()
 
-		useractionsPublishService := ipfscluster.NewUserActionsPublishService(*ipfsURL)
+		useractionsPublishService := ipfs.NewUserActionsPublishService(*ipfsURL)
 		processor := process.NewEventProcessor(
 			client,
 			*proxyContractAddress,
