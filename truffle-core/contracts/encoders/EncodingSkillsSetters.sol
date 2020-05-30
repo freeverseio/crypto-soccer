@@ -55,5 +55,10 @@ contract EncodingSkillsSetters {
         if (val) return (encodedSkills & ~(uint256(1) << 213)) | (uint256(1) << 213);
         else return (encodedSkills & ~(uint256(1) << 213));
     }
+    
+    function setYellowCardFirstHalf(uint256 encodedSkills, bool val) public pure returns (uint256) {
+        if (val) return (encodedSkills & ~(uint256(1) << 214)) | (uint256(1) << 214);
+        else return (encodedSkills & ~(uint256(1) << 214));
+    }
 
 }

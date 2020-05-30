@@ -73,5 +73,9 @@ contract EncodingSkillsGetters {
 
     function getOutOfGameFirstHalf(uint256 encodedSkills) public pure returns (bool) {
         return uint256(encodedSkills >> 213 & 1) == 1; 
+    }    
+    
+    function getYellowCardFirstHalf(uint256 encodedSkills) public pure returns (bool) {
+        return uint256(encodedSkills >> 214 & 1) == 1; 
     }
 }
