@@ -17,17 +17,18 @@ func TestUserActionsPublishService(t *testing.T, service useractions.UserActions
 		tactic := storage.Tactic{}
 		tactic.TeamID = "ciao"
 		ua.Tactics = append(ua.Tactics, tactic)
-		cif, err := service.Publish(ua)
+		id, err := service.Publish(ua)
 		assert.NilError(t, err)
-		assert.Equal(t, cif, "QmXCYKHSNDCHqzv6W7WDHyW1Zp2YLgt87gmt8tzZYTQtx7")
+		// assert.Equal(t, id, "QmXCYKHSNDCHqzv6W7WDHyW1Zp2YLgt87gmt8tzZYTQtx7")
 		training := storage.Training{}
 		training.TeamID = "pippo"
 		ua.Trainings = append(ua.Trainings, training)
-		cif, err = service.Publish(ua)
+		id, err = service.Publish(ua)
 		assert.NilError(t, err)
-		assert.Equal(t, cif, "QmbUVhwjGJQzPQQjs5QvJjRZLYuW2jKMKf1RcRiNP71qf2")
-		ua2, err := service.Retrive(cif)
+		// assert.Equal(t, id, "QmbUVhwjGJQzPQQjs5QvJjRZLYuW2jKMKf1RcRiNP71qf2")
+		ua2, err := service.Retrive(id)
 		assert.NilError(t, err)
+		assert.Assert(t, ua2 != nil)
 		assert.Assert(t, ua2.Equal(&ua))
 	})
 }
