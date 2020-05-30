@@ -32,8 +32,9 @@ import "../storage/Constants.sol";
  injuryWeeksLeft           = 3b  (offset: 177)
  substitutedFirstHalf      = 1b (bool) (offset: 180)
  sumSkills                 = 23b (must equal sum(skills), of if each is 20b, this can be at most 5x20b => use 23b) (offset 181)
- isSpecialPlayer           = 1b (set at the left-most bit, 255) (offset: 204)
+ isSpecialPlayer           = 1b (offset: 204)
  generation                = 8b. From [0,...,31] => not-a-child, from [32,..63] => a child (offset: 205)
+ outOfGameFirstHalf        = 1b (offset: 213)
 */
 
 contract EncodingSkills is Constants {

@@ -48,6 +48,7 @@ contract EncodingSkillsSetters {
     }
 
     function addIsSpecial(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills | (uint256(1) << 255));
+        return (encodedSkills | (uint256(1) << 204));
     }
+   
 }

@@ -64,7 +64,7 @@ contract EncodingSkillsGetters {
     }
     
     function getIsSpecial(uint256 encodedSkills) public pure returns (bool) {
-        return uint256(encodedSkills >> 255 & 1) == 1; 
+        return uint256(encodedSkills >> 204 & 1) == 1; 
     }
      
     function getGeneration(uint256 encodedSkills) public pure returns (uint256) {
