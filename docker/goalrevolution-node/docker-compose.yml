@@ -25,7 +25,10 @@ services:
       CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
       CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
       CLUSTER_IPFSPROXY_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
-    command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
+    ports:
+      - "127.0.0.1:9094:9094"
+      - "127.0.0.1:9095:9095"
+      - "127.0.0.1:9096:9096"
     depends_on: 
       - ipfs.node
   universe.db:

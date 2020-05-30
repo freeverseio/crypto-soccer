@@ -19,7 +19,14 @@ services:
     restart: always
     entrypoint: ["ipfs-cluster-follow"]
     environment: 
-      - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns/ipfs.node/tcp/5001
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
+      CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
+    ports:
+      - "127.0.0.1:9094:9094"
+      - "127.0.0.1:9095:9095"
+      - "127.0.0.1:9096:9096"
     command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
     depends_on: 
       - ipfs.node
@@ -35,7 +42,7 @@ services:
     restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
-      -ipfs ipfs.node:5001
+      -ipfs /dns4/ipfs.node/tcp/5001
       -ethereum http://ethereum:8545
       -proxy_address "${PROXY_CONTRACT_ADDRESS}"
       -staker "${STAKER_PVC}"
