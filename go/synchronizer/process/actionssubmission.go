@@ -9,6 +9,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/staker"
 	"github.com/freeverseio/crypto-soccer/go/universe"
+	"github.com/freeverseio/crypto-soccer/go/useractions"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -16,13 +17,13 @@ import (
 func ConsumeActionsSubmission(
 	tx *sql.Tx,
 	contracts *contracts.Contracts,
-	ipfsURL string,
+	useractionsPublisher useractions.UserActionsPublishService,
 	staker *staker.Staker,
 	v updates.UpdatesActionsSubmission,
 ) error {
 	log.Infof("[processor|consume] ActionsSubmission verse: %v, tz: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.IpfsCid)
 
-	leagueProcessor := NewLeagueProcessor(contracts, ipfsURL)
+	leagueProcessor := NewLeagueProcessor(contracts, useractionsPublisher)
 	if err := leagueProcessor.Process(tx, v); err != nil {
 		return err
 	}

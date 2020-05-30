@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/useractions/ipfscluster"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -29,6 +30,7 @@ func main() {
 	flag.Parse()
 
 	log.Infof("[PARAM] proxy_address              : %v", *proxyAddress)
+	log.Infof("[PARAM] ipfs url                   : %v", *ipfsURL)
 
 	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
 	if err != nil {
@@ -74,7 +76,7 @@ func main() {
 		auth,
 		bc.Updates,
 		bc.Assets,
-		*ipfsURL,
+		ipfscluster.NewUserActionsPublishService(*ipfsURL),
 		db,
 	).Start()
 }
