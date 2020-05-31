@@ -35,7 +35,7 @@ import "../storage/Constants.sol";
  isSpecialPlayer           = 1b (offset: 204)
  generation                = 8b. From [0,...,31] => not-a-child, from [32,..63] => a child (offset: 205)
  outOfGameFirstHalf        = 1b (offset: 213)
- yeloowCardFirstHalf       = 1b (offset: 214)
+ yellowCardFirstHalf       = 1b (offset: 214)
 */
 
 contract EncodingSkills is Constants {

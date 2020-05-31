@@ -379,25 +379,6 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)+ getNMidfielders(playersPerZone)) return 2;
         else return 3;
     }
-    
-    function wasPlayerAlignedEndOfLastHalf(uint8 shirtNum, uint256 tactics, uint256 matchLog) public pure returns (bool) {
-        (uint8[3] memory  substitutions,,uint8[14] memory lineup,,) = decodeTactics(tactics);
-        /// First check if it was in the starting eleven, and was not substituted
-        for (uint8 p = 0; p < 11; p++) {
-            if (shirtNum == lineup[p]) {
-                for (uint8 s = 0; s < 3; s++) {
-                    if ((shirtNum == substitutions[s]) && (getInGameSubsHappened(matchLog, s, false) == CHG_HAPPENED)) return false;
-                }
-                return true;
-            }
-        }
-        /// Next check if it was in the planned substitutions and it did actually happen.
-        for (uint8 s = 0; s < 3; s++) {
-            if ((shirtNum == lineup[11 + s]) && (getInGameSubsHappened(matchLog, s, false) == CHG_HAPPENED)) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 }
 

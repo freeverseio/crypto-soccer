@@ -52,14 +52,6 @@ contract EncodingMatchLogBase1 is EncodingMatchLogBase4{
         uint8 offset = (is2ndHalf ? 165 : 145) + posInHaf * 4;
         return uint8((log >> offset) & 15);
     }
-
-    function setYellowedDidNotFinished1stHalf(uint256 log, uint8 posInHaf)  public pure returns (uint256) {
-        return log | (ONE256 << (153 + posInHaf));
-    }
-
-    function getYellowedDidNotFinished1stHalf(uint256 log, uint8 posInHaf)  public pure returns (bool) {
-        return ((log >> (153 + posInHaf)) & 1) == 1;
-    }
     
     /// recall that 0 means no subs, and we store here lineUp[p]+1 (where lineUp[p] = player shirt in the 25 that was substituted)
     function addHalfTimeSubs(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {

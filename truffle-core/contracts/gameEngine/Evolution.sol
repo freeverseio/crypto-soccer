@@ -45,17 +45,34 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         ///      - decrease by one unless it happens in 1st or 2nd half
         if (!is2ndHalf) {
             writeOutOfGameInSkills(skills, tactics, matchLog, false);
+            writeYellowCardsFirstHalf(skills, tactics, matchLog);
             writeFirstHalfLineUp(skills, tactics, matchLog);
         }
         else {
+            // In the 2nd half, first, decrease injuryDays, and set redCardLastGame = false
+            // ...unless that outOfGame happened in 1st half; so don't overwrite what we wrote in 1st half
             decreaseOutOfGames(skills);
-            writeOutOfGameInSkills(skills, tactics, matchLog, false);
+            // Then, add the particular outOfGame from this half
             writeOutOfGameInSkills(skills, tactics, matchLog, true);
-            updateGamesNonStopping2ndHalf(skills, tactics, matchLog); //TODO: rename to "update"
-            updatePlayerAtEndOfMatch(skills);
+            updateGamesNonStopping2ndHalf(skills, tactics, matchLog); // only touches gamesNonStopping
+            resetFirstHalfDataInSkills(skills); // sets to false all FistHalf quantities
         }
         return skills;
     }
+
+    function writeYellowCardsFirstHalf(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog) private pure {
+        (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
+        /// check if there was an out of player event:
+        for (uint8 posInHalf = 0; posInHalf < 2; posInHalf++) {
+            uint8 yellowCarded = getYellowCard(matchLog, posInHalf, false); // returns 0...13
+            if (yellowCarded < NO_OUT_OF_GAME_PLAYER) {
+                yellowCarded = lineUp[yellowCarded];
+                require(yellowCarded != NO_LINEUP, "internal problem: out of game player is non-zero but points to noone");
+                skills[yellowCarded] = setYellowCardFirstHalf(skills[yellowCarded], true);
+            }
+        }
+    }
+    
 
     function updateGamesNonStopping2ndHalf(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
@@ -106,11 +123,13 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         );
     }
 
-    function updatePlayerAtEndOfMatch(uint256[PLAYERS_PER_TEAM_MAX] memory skills) private pure {
+    function resetFirstHalfDataInSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills) private pure {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if (skills[p] != 0) {
                 skills[p] = setAlignedEndOfFirstHalf(skills[p], false);
                 skills[p] = setSubstitutedFirstHalf(skills[p], false);
+                skills[p] = setOutOfGameFirstHalf(skills[p], false);
+                skills[p] = setYellowCardFirstHalf(skills[p], false);
             }
         }
     }
@@ -125,6 +144,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     {
         (uint8[3] memory  substitutions,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
         /// NO_LINEUP = 25, NO_SUBS = 11
+        /// First set the starting 11 to Aligned = yes, substituted = false
         for (uint8 p = 0; p < 11; p++) {
             uint8 linedUp = lineUp[p];
             if ((linedUp < NO_LINEUP) && (skills[linedUp] != 0)) {
@@ -132,6 +152,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
                 skills[linedUp] = setSubstitutedFirstHalf(skills[linedUp], false);
             }
         }
+        /// Then modify only those involved in substitutions
         for (uint8 posInHalf = 0; posInHalf < 3; posInHalf++) {
             if (getInGameSubsHappened(matchLog, posInHalf, false) == CHG_HAPPENED) {
                 uint8 leavingFieldPlayer    = lineUp[substitutions[posInHalf]];
@@ -162,8 +183,8 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         if (outOfGamePlayer == NO_OUT_OF_GAME_PLAYER) return;
         /// convert outOfGamePlayer [0...13] to the index that points to the skills in the team [0,..24]
         outOfGamePlayer = lineUp[outOfGamePlayer];
-        if (outOfGamePlayer == NO_LINEUP) return;
-        if (skills[outOfGamePlayer] == 0) return;
+        require(outOfGamePlayer != NO_LINEUP, "internal problem: out of game player is non-zero but points to noone");
+        require(skills[outOfGamePlayer] != 0, "internal problem: out of game player is non-zero but points to null skills");
         uint256 outOfGameType = getOutOfGameType(matchLog, is2ndHalf);
         if (outOfGameType == RED_CARD) {
             skills[outOfGamePlayer] = setRedCardLastGame(skills[outOfGamePlayer], true);
@@ -174,13 +195,17 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         else if (outOfGameType == SOFT_INJURY) {
             skills[outOfGamePlayer] = setInjuryWeeksLeft(skills[outOfGamePlayer], WEEKS_SOFT_INJ);
         }
+        if (!is2ndHalf) {
+            skills[outOfGamePlayer] = setOutOfGameFirstHalf(skills[outOfGamePlayer], true);
+        }
     }
         
-    /// at the end of a match, decrease the weeks left from injury, and set redcards = false.
-    /// the function called right after this one will add the redcards of this particular game where appropriate
+    /// at the end of a match, decrease the weeks left from injury and set redRardsLastGame = false...
+    /// ...only if this outOfgame did not happen first half
+    /// the function called right after this one will add the outOfGames of this particular half where appropriate
     function decreaseOutOfGames(uint256[PLAYERS_PER_TEAM_MAX] memory skills) public pure {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (skills[p] != 0) {
+            if (skills[p] != 0 && !getOutOfGameFirstHalf(skills[p])) {
                 skills[p] = setRedCardLastGame(skills[p], false);
                 if (getInjuryWeeksLeft(skills[p]) != 0) {
                     skills[p] = setInjuryWeeksLeft(skills[p], getInjuryWeeksLeft(skills[p])-1);
