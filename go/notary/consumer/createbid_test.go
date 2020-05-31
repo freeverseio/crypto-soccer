@@ -6,6 +6,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"github.com/graph-gophers/graphql-go"
 	"gotest.tools/assert"
 )
@@ -24,9 +25,11 @@ func TestCreateBid(t *testing.T) {
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
+	service := postgres.NewAuctionService(tx)
+
 	auction := storage.NewAuction()
 	auction.ID = "3"
-	assert.NilError(t, auction.Insert(tx))
+	assert.NilError(t, service.Insert(*auction))
 
 	in := input.CreateBidInput{}
 	in.AuctionId = graphql.ID(auction.ID)

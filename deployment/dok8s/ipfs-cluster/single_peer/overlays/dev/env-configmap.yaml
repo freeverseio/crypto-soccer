@@ -7,3 +7,6 @@ data:
   peer-id: 12D3KooWF1hZAzDXFJpmmMi6Fh3uAECuUpqv1jPr9TvaV2rV3T3k
   trusted-peer-id-1: 12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ
   trusted-peer-id-2: 12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs
+
+  IPFS_ADDRESS_ANNOUNCE: '["/dns4/ipfs.gorengine.com/tcp/4001","/dns4/ipfs.gorengine.com/udp/4002"]'
+

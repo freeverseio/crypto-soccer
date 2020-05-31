@@ -15,7 +15,13 @@ spec:
     spec:
       initContainers:
         - name: configure-ipfs
-          image: "ipfs/go-ipfs:latest"
+          image: "ipfs/go-ipfs:v0.4.23"
+          env:
+            - name: IPFS_ADDRESS_ANNOUNCE
+              valueFrom:
+                configMapKeyRef:
+                  key: IPFS_ADDRESS_ANNOUNCE
+                  name: env-config
           command: ["sh", "/custom/configure-ipfs.sh"]
           volumeMounts:
             - name: ipfs-storage
@@ -24,7 +30,7 @@ spec:
               mountPath: /custom
       containers:
         - name: ipfs
-          image: "ipfs/go-ipfs:latest"
+          image: "ipfs/go-ipfs:v0.4.23"
           imagePullPolicy: IfNotPresent
           env:
             - name: IPFS_FD_MAX
@@ -59,12 +65,16 @@ spec:
           resources:
             {}
         - name: ipfs-cluster
-          image: "ipfs/ipfs-cluster:latest"
+          image: "ipfs/ipfs-cluster:v0.12.1"
           command: ["sh", "/custom/cluster-entrypoint.sh"]
           envFrom:
             - configMapRef:
                 name: env-config
           env:
+            - name: CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS
+              value: "/ip4/0.0.0.0/tcp/9094"
+            - name: CLUSTER_IPFSPROXY_LISTENMULTIADDRESS
+              value: "/ip4/0.0.0.0/tcp/9095"
             - name: PEER_PRIV_KEY
               valueFrom:
                 secretKeyRef:

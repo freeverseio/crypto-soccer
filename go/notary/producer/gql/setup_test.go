@@ -8,18 +8,24 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 var bc *testutils.BlockchainNode
+var namesdb *names.Generator
+var googleCredentials []byte
 
 func TestMain(m *testing.M) {
 	var err error
-	bc, err = testutils.NewBlockchainNode()
+	namesdb, err = names.New("../../../names/sql/names.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc.DeployContracts(bc.Owner)
+	bc, err = testutils.NewBlockchain()
+	if err != nil {
+		log.Fatal(err)
+	}
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	bc.Contracts.Assets.TransferFirstBotToAddr(

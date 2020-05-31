@@ -4,6 +4,10 @@ version: 2.1
 orbs:
   kube-orb: circleci/kubernetes@0.11.0
 
+environment:
+  PATH: >-
+    /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/local/go/bin:/go/bin
+
 executors:
   freeverse:
     docker:
@@ -15,14 +19,14 @@ executors:
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
-      - image: postgres:11.6-alpine
+      - image: postgres:alpine
         environment:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
           - POSTGRES_DB=cryptosoccer
-      - image: ipfs/go-ipfs:v0.4.23
+      - image: ipfs/go-ipfs:v0.5.0
         environment:
-          - IPFS_PROFILE=server
+          - IPFS_PROFILE=test
   freeverse_market:
     docker:
       - image: freeverseio/circleci
@@ -30,7 +34,7 @@ executors:
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
-      - image: postgres:11.6-alpine
+      - image: postgres:alpine
         environment:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
@@ -57,25 +61,54 @@ commands:
       - run: rm ./kustomize_v3.5.4_linux_amd64.tar.gz
       - run: chmod +x ./kustomize
       - run: sudo mv ./kustomize /usr/local/bin
+  install_ipfs_cluster:
+    steps:
+      - run:
+            name: "compiling ipfs-cluster"
+            command: |
+              set -x
+              wget https://github.com/ipfs/ipfs-cluster/archive/v0.12.0.tar.gz
+              tar -zxvf v0.12.0.tar.gz
+              cd ipfs-cluster-0.12.0/cmd/ipfs-cluster-service
+              export GO111MODULE=on
+              go build -a -ldflags '-w -extldflags "-static"'
+              mv ipfs-cluster-service /usr/local/bin
+              ipfs-cluster-service init
 
 jobs:
   truffle_core:
     executor: freeverse
+    parallelism: 20
     steps:
       - checkout
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
-      - run: cd truffle-core && ./node_modules/.bin/truffle test
+      - run:
+          command: |
+            cd truffle-core
+            circleci tests glob "test/*.js" | circleci tests split --split-by=timings > /tmp/tests-to-run
+            cat /tmp/tests-to-run
+            ./node_modules/.bin/truffle test $(cat /tmp/tests-to-run)
+      # - store_test_results:
+      #     path: ~/reports
   synchronizer:
     executor: freeverse_ethereum
     steps:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
+      - install_ipfs_cluster
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
-      - run: cd go/synchronizer/process && go test ./... -v
-      - run: cd go/synchronizer/utils && go test ./... -v
+      - run: 
+          command: |
+            set -e
+            set -x
+            ipfs-cluster-service daemon& 
+            cd go/synchronizer/process
+            go test ./... -v
+      - run: cd go/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
+      - run: cd go/synchronizer/staker && go test ./... 
       - run: cd go/synchronizer/matchevents && go test ./... -v
   go1:
     executor: freeverse_ethereum
@@ -83,13 +116,21 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      # - run: cd go/contracts && go test ./...
-      - run: cd go/useractions && go test ./...
+      - install_ipfs_cluster
+      - run: 
+          command: |
+            set -e
+            set -x
+            ipfs-cluster-service daemon& 
+            cd go/useractions
+            go test ./...
+      - run: cd go/contracts && go test ./... -p 1
       - run: cd go/marketpay/v1 && go test ./...
       - run: cd go/storage && go test ./...
       - run: cd go/authproxy && go test ./...
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
+      - run: cd go/universe && go test ./...
   deployment-test:
     docker:
       - image: cimg/base:2020.01
@@ -140,27 +181,29 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - generate_contracts_code
-      - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
-      - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
-      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd dashboard && docker build -t freeverseio/dashboard:dev --build-arg REACT_APP_API="https://dashboard.gorengine.com/api" .
-      - run: cd market.db && docker build -t freeverseio/market.db:dev .
-      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
-      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
-      - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:dev .
-      - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
+      # create the latest images
+      - run: cd market.trader && docker build -t freeverseio/market.trader:dev -t freeverseio/market.trader:${CIRCLE_SHA1} .
+      - run: cd universe.db && docker build -t freeverseio/universe.db:dev -t freeverseio/universe.db:${CIRCLE_SHA1} .
+      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev -t freeverseio/relay.actions:${CIRCLE_SHA1} .
+      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev -t freeverseio/horizon:${CIRCLE_SHA1} .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:dev -t freeverseio/dashboard:${CIRCLE_SHA1} --build-arg REACT_APP_API="https://dashboard.gorengine.com/api" .
+      - run: cd market.db && docker build -t freeverseio/market.db:dev -t freeverseio/market.db:${CIRCLE_SHA1} .
+      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev -t freeverseio/synchronizer:${CIRCLE_SHA1} .
+      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev -t freeverseio/market.notary:${CIRCLE_SHA1} .
+      - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:dev -t freeverseio/authproxy:${CIRCLE_SHA1} .
+      - run: cd universe.api && docker build -t freeverseio/universe.api:dev -t freeverseio/universe.api:${CIRCLE_SHA1} .
+      # push images
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/synchronizer:dev
-      - run: docker push freeverseio/horizon:dev
-      - run: docker push freeverseio/universe.db:dev
-      - run: docker push freeverseio/market.db:dev
-      - run: docker push freeverseio/market.trader:dev
-      - run: docker push freeverseio/market.notary:dev
-      - run: docker push freeverseio/universe.api:dev
-      - run: docker push freeverseio/relay.actions:dev
-      - run: docker push freeverseio/authproxy:dev
-      - run: docker push freeverseio/dashboard:dev
+      - run: docker push freeverseio/synchronizer
+      - run: docker push freeverseio/horizon
+      - run: docker push freeverseio/universe.db
+      - run: docker push freeverseio/market.db
+      - run: docker push freeverseio/market.trader
+      - run: docker push freeverseio/market.notary
+      - run: docker push freeverseio/universe.api
+      - run: docker push freeverseio/relay.actions
+      - run: docker push freeverseio/authproxy
+      - run: docker push freeverseio/dashboard
   dockerization-production:
     executor: freeverse
     resource_class: xlarge
@@ -200,8 +243,18 @@ jobs:
           kubeconfig: KUBECONFIG_DATA
       - install_kustomize
       - run: | 
-          kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse delete -f -
-          kustomize build deployment/dok8s/overlays/dev | kubectl -n freeverse apply -f -
+          cd deployment/dok8s/overlays/dev
+          kustomize edit set image freeverseio/authproxy:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/dashboard:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/horizon:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/market.db:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/market.notary:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/market.trader:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/relay.actions:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/synchronizer:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/universe.api:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/universe.db:${CIRCLE_SHA1}
+          kustomize build . | kubectl -n freeverse apply -f -
 workflows:
   version: 2
   build_and_test:

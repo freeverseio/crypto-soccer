@@ -98,6 +98,8 @@ CREATE TABLE players (
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
     tiredness INT NOT NULL,
+    country_of_birth TEXT NOT NULL,
+    race TEXT NOT NULL,
     PRIMARY KEY(player_id)
 );
 comment on table players is E'@omit create,update,delete';
@@ -120,6 +122,8 @@ CREATE TABLE players_histories (
     red_card BOOL NOT NULL DEFAULT FALSE,
     injury_matches_left INT NOT NULL DEFAULT 0,
     tiredness INT NOT NULL,
+    country_of_birth TEXT NOT NULL,
+    race TEXT NOT NULL,
     PRIMARY KEY(block_number, player_id)
 );
 comment on table players_histories is E'@omit create,update,delete';
@@ -136,6 +140,8 @@ CREATE TABLE matches (
     seed TEXT NOT NULL DEFAULT '',
     home_goals INT NOT NULL DEFAULT 0,
     visitor_goals INT NOT NULL DEFAULT 0,
+    home_teamsumskills INT NOT NULL DEFAULT 0,
+    visitor_teamsumskills INT NOT NULL DEFAULT 0,
     state match_state NOT NULL,
     state_extra TEXT NOT NULL DEFAULT '',
     start_epoch BIGINT NOT NULL,
@@ -156,6 +162,8 @@ CREATE TABLE matches_histories (
     seed TEXT NOT NULL,
     home_goals INT NOT NULL,
     visitor_goals INT NOT NULL,
+    home_teamsumskills INT NOT NULL,
+    visitor_teamsumskills INT NOT NULL,
     state match_state NOT NULL,
     state_extra TEXT NOT NULL,
     start_epoch BIGINT NOT NULL,
@@ -181,6 +189,13 @@ CREATE TABLE match_events (
     FOREIGN KEY (timezone_idx, country_idx, league_idx, match_day_idx, match_idx) REFERENCES matches(timezone_idx, country_idx, league_idx, match_day_idx, match_idx)
 );
 comment on table match_events is E'@omit create,update,delete';
+
+CREATE TABLE verses (
+    verse_number BIGINT NOT NULL,
+    root TEXT NOT NULL,
+    PRIMARY KEY (verse_number)
+);
+comment on table verses is E'@omit create,update,delete';
 
 
 

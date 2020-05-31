@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in EncodingMatchLog.sol and contracts inherited by it
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -77,7 +80,7 @@ contract('EncodingMatchLog', (accounts) => {
             ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
             0, 0, 0
         ]
-        debug.compareArrays(result, expected, toNum = true, verbose = false);
+        debug.compareArrays(result, expected, toNum = true);
 
         // HALF 2
         result = await utils.fullDecodeMatchLog(log, is2ndHalf = true).should.be.fulfilled;
@@ -91,6 +94,6 @@ contract('EncodingMatchLog', (accounts) => {
             ingameSubs2[0], ingameSubs2[1], ingameSubs2[2],
             halfTimeSubstitutions[0], halfTimeSubstitutions[1], halfTimeSubstitutions[2]
         ]
-        debug.compareArrays(result, expected, toNum = true, verbose = false);
+        debug.compareArrays(result, expected, toNum = true);
     });
 });

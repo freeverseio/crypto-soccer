@@ -29,3 +29,9 @@ Get the tocken of cicd
 ```bash
 kubectl -n freeverse get secrets | grep cicd
 ```
+
+# Secrets
+market, staker, relay needs credentials to sign transactions. Let's create a secret where to store them
+```bash
+kubectl -n freeverse create secret generic blockchain-accounts --from-literal=relay=<private_key> --from-literal=market=<private_key> --from-literal=staker=<private_key>
+```

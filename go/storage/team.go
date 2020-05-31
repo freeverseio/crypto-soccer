@@ -37,11 +37,12 @@ func NewTeam() *Team {
 	team.TeamID = "0"
 	team.Tactic = "340596594427581673436941882753025"
 	team.MatchLog = "0"
+	team.Owner = BotOwner
 	return &team
 }
 
-func IsBotTeam(team Team) bool {
-	return team.Owner == BotOwner
+func (b Team) IsBot() bool {
+	return b.Owner == BotOwner
 }
 
 func (b *Team) Insert(tx *sql.Tx) error {

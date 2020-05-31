@@ -18,15 +18,20 @@ spec:
       - name: relayactions
         image: freeverseio/relay.actions:dev
         imagePullPolicy: Always
+        env:
+          - name: RELAY_PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: blockchain-accounts
+                key: relay
         envFrom:
           - configMapRef:
               name: freeverse-configmap
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
                -ethereum, http://xdai:8545,
-               -updatesContractAddress, "$(UPDATES_CONTRACT_ADDRESS)",
-               -assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
-               -ipfs, ipfsnode:5001,
-               -private_key, "$(relay_private_key)"]
+               -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
+               -ipfs, "/dns4/ipfsnode/tcp/5001",
+               -private_key, "$(RELAY_PRIVATE_KEY)"]
         ports:
         - containerPort: 4000
       imagePullSecrets:

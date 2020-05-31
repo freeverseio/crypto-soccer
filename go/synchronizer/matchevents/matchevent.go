@@ -2,8 +2,11 @@ package matchevents
 
 import (
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"math/big"
+
+	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
 type MatchEvent struct {
@@ -27,6 +30,25 @@ const (
 	EVNT_HARD   int16 = 4
 	EVNT_SUBST  int16 = 5
 )
+
+func MarchEventTypeByMatchEvent(event int16) (storage.MatchEventType, error) {
+	switch event {
+	case EVNT_ATTACK:
+		return storage.Attack, nil
+	case EVNT_YELLOW:
+		return storage.YellowCard, nil
+	case EVNT_RED:
+		return storage.RedCard, nil
+	case EVNT_SOFT:
+		return storage.InjurySoft, nil
+	case EVNT_HARD:
+		return storage.InjuryHard, nil
+	case EVNT_SUBST:
+		return storage.Substitution, nil
+	default:
+		return "", fmt.Errorf("Unknown match event %v", event)
+	}
+}
 
 func int_hash(s string) uint64 {
 	h := fnv.New64a()

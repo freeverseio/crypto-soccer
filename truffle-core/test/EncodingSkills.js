@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in EncodingSkills.sol and contracts inherited by it
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -8,12 +11,13 @@ const debug = require('../utils/debugUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Encoding = artifacts.require('EncodingSkills');
-const EncodingTact = artifacts.require('EncodingTacticsPart1');
+const EncodingTact = artifacts.require('EncodingTactics');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
 
-contract('Encoding', (accounts) => {
+
+contract('EncodingSkills', (accounts) => {
 
     const it2 = async(text, f) => {};
 
@@ -25,6 +29,7 @@ contract('Encoding', (accounts) => {
         encodingGet = await EncodingGet.new().should.be.fulfilled;
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
+
 
     it('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
@@ -89,7 +94,7 @@ contract('Encoding', (accounts) => {
             sumSkills
         ).should.be.fulfilled;
 
-        skills.should.be.bignumber.equal('40439920000726868070503716865792521545121682176182486071370780491777');
+        skills.should.be.bignumber.equal('155218556145067301836481091220056594090096264824095737423904769');
 
         N_SKILLS = 5;
         resultSkills = [];
@@ -97,7 +102,7 @@ contract('Encoding', (accounts) => {
             result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
             resultSkills.push(result);
         }
-        debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
+        debug.compareArrays(resultSkills, sk, toNum = true);
 
         result = await encodingGet.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
@@ -147,7 +152,7 @@ contract('Encoding', (accounts) => {
         
         result =  await encodingGet.getIsSpecial(skills).should.be.fulfilled;
         result.should.be.equal(false);
-        skills2 = await encodingGet.addIsSpecial(skills).should.be.fulfilled;
+        skills2 = await encodingSet.addIsSpecial(skills).should.be.fulfilled;
         result =  await encodingGet.getIsSpecial(skills2).should.be.fulfilled;
         result.should.be.equal(true);
         
@@ -161,7 +166,7 @@ contract('Encoding', (accounts) => {
             result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
             resultSkills.push(result);
         }
-        debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
+        debug.compareArrays(resultSkills, sk, toNum = true);
 
         alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
         skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
@@ -197,13 +202,6 @@ contract('Encoding', (accounts) => {
         result = await encodingGet.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         
-        result = await encodingGet.getTargetTeamId(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(0);
-        
-        skills = await encodingGet.setTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
-        result = await encodingGet.getTargetTeamId(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(targetTeamId);
-
         generation += 2;
         skills = await encodingSet.setGeneration(skills, generation).should.be.fulfilled;
         result = await encodingGet.getGeneration(skills).should.be.fulfilled;
@@ -213,13 +211,13 @@ contract('Encoding', (accounts) => {
         const {0: _skills, 1: _day, 2: _traits, 3: _playerId, 4: _alignedSubstRed, 5: _genNonstopInj} = await utils.fullDecodeSkills(skills).should.be.fulfilled     
         _day.toNumber().should.be.equal(dayOfBirth);
         _playerId.toNumber().should.be.equal(playerId);
-        debug.compareArrays(_skills, sk, toNum = true, verbose = false);
+        debug.compareArrays(_skills, sk, toNum = true);
         expectedTraits = [potential, forwardness, leftishness, aggressiveness];
-        debug.compareArrays(_traits, expectedTraits, toNum = true, verbose = false);
+        debug.compareArrays(_traits, expectedTraits, toNum = true);
         expectedBools = [alignedEndOfFirstHalf, substitutedFirstHalf, redCardLastGame];
-        debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false, verbose = false);
+        debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false);
         expectedGenGameInj = [generation, gamesNonStopping, injuryWeeksLeft];
-        debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true, verbose = false);
+        debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true);
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {

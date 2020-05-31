@@ -25,6 +25,8 @@ type Player struct {
 	RedCard           bool
 	InjuryMatchesLeft uint8
 	Tiredness         int
+	CountryOfBirth    string
+	Race              string
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -43,7 +45,9 @@ func (b *Player) Equal(player Player) bool {
 		b.RedCard == player.RedCard &&
 		b.InjuryMatchesLeft == player.InjuryMatchesLeft &&
 		b.Name == player.Name &&
-		b.DayOfBirth == player.DayOfBirth
+		b.DayOfBirth == player.DayOfBirth &&
+		b.CountryOfBirth == player.CountryOfBirth &&
+		b.Race == player.Race
 }
 
 func PlayerCount(tx *sql.Tx) (uint64, error) {
@@ -63,8 +67,8 @@ func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 	if _, err := tx.Exec(`INSERT INTO players 
 		(name, player_id, team_id, defence, speed,
 		pass, shoot, endurance, shirt_number, preferred_position, 
-		encoded_skills, encoded_state, potential, day_of_birth, tiredness) 
-		VALUES ($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`,
+		encoded_skills, encoded_state, potential, day_of_birth, tiredness, country_of_birth, race) 
+		VALUES ($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17);`,
 		b.Name,
 		b.PlayerId.String(),
 		b.TeamId,
@@ -80,6 +84,8 @@ func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 		b.Potential,
 		b.DayOfBirth,
 		b.Tiredness,
+		b.CountryOfBirth,
+		b.Race,
 	); err != nil {
 		return err
 	}
@@ -104,8 +110,10 @@ func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	red_card=$9,
 	injury_matches_left=$10,
 	name=$11,
-	tiredness=$12
-	WHERE player_id=$13;`,
+	tiredness=$12,
+	country_of_birth=$13,
+	race=$14
+	WHERE player_id=$15;`,
 		b.TeamId,
 		b.Defence,
 		b.Speed,
@@ -118,6 +126,8 @@ func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 		b.InjuryMatchesLeft,
 		b.Name,
 		b.Tiredness,
+		b.CountryOfBirth,
+		b.Race,
 		b.PlayerId.String(),
 	); err != nil {
 		return err
@@ -146,7 +156,9 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	day_of_birth, 
 	red_card,
 	injury_matches_left,
-	tiredness
+	tiredness,
+	country_of_birth,
+	race
 	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
 		return nil, err
@@ -177,6 +189,8 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 		&player.RedCard,
 		&player.InjuryMatchesLeft,
 		&player.Tiredness,
+		&player.CountryOfBirth,
+		&player.Race,
 	)
 	player.PlayerId = playerID
 	player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
@@ -201,7 +215,9 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	day_of_birth, 
 	red_card,
 	injury_matches_left,
-	tiredness
+	tiredness,
+	country_of_birth,
+	race
 	FROM players WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return nil, err
@@ -231,6 +247,8 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 			&player.RedCard,
 			&player.InjuryMatchesLeft,
 			&player.Tiredness,
+			&player.CountryOfBirth,
+			&player.Race,
 		)
 		player.TeamId = teamID
 		player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Table } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import Config from '../Config';
 
 const GET_TEAMS_BY_RANKING = gql`
 query {

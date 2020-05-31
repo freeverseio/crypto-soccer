@@ -11,21 +11,11 @@ import (
 )
 
 type Calendar struct {
-	contracts   *contracts.Contracts
-	MatchDays   uint8
-	MatchPerDay uint8
+	contracts *contracts.Contracts
 }
 
-func NewCalendar(contracts *contracts.Contracts) (*Calendar, error) {
-	matchDays, err := contracts.Leagues.MATCHDAYS(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	matchPerDay, err := contracts.Leagues.MATCHESPERDAY(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
-	return &Calendar{contracts, matchDays, matchPerDay}, nil
+func NewCalendar(contracts *contracts.Contracts) *Calendar {
+	return &Calendar{contracts}
 }
 
 func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
@@ -37,8 +27,8 @@ func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 		return errors.New("Unexistent league")
 	}
 
-	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
-		for match := uint8(0); match < b.MatchPerDay; match++ {
+	for matchDay := uint8(0); matchDay < contracts.MatchDays; matchDay++ {
+		for match := uint8(0); match < contracts.MatchesPerDay; match++ {
 			m := storage.NewMatch()
 			m.TimezoneIdx = timezoneIdx
 			m.CountryIdx = countryIdx
@@ -68,8 +58,8 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 		return err
 	}
 
-	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
-		for match := uint8(0); match < b.MatchPerDay; match++ {
+	for matchDay := uint8(0); matchDay < contracts.MatchDays; matchDay++ {
+		for match := uint8(0); match < contracts.MatchesPerDay; match++ {
 			teams, err := b.contracts.Leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
 			if err != nil {
 				return nil
@@ -100,8 +90,8 @@ func (b *Calendar) Reset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagu
 		return errors.New("Unexistent league")
 	}
 
-	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
-		for match := uint8(0); match < b.MatchPerDay; match++ {
+	for matchDay := uint8(0); matchDay < contracts.MatchDays; matchDay++ {
+		for match := uint8(0); match < contracts.MatchesPerDay; match++ {
 			err = storage.MatchReset(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match)
 			if err != nil {
 				return err

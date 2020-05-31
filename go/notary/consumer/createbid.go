@@ -4,12 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 func CreateBid(tx *sql.Tx, in input.CreateBidInput) error {
-	auction, err := storage.AuctionByID(tx, string(in.AuctionId))
+	service := postgres.NewAuctionService(tx)
+	auction, err := service.Auction(string(in.AuctionId))
 	if err != nil {
 		return err
 	}
@@ -30,5 +33,5 @@ func CreateBid(tx *sql.Tx, in input.CreateBidInput) error {
 	bid.PaymentURL = ""
 	bid.PaymentDeadline = 0
 
-	return bid.Insert(tx)
+	return service.Bid().Insert(*bid)
 }

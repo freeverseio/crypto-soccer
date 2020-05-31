@@ -6,13 +6,15 @@ import (
 	"os"
 	"time"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/staker"
+	"github.com/freeverseio/crypto-soccer/go/useractions/ipfs"
 )
 
 func main() {
@@ -20,18 +22,8 @@ func main() {
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
-	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
-	assetsContractAddress := flag.String("assetsContractAddress", "", "")
-	evolutionContractAddress := flag.String("evolutionContractAddress", "", "")
-	engineContractAddress := flag.String("engineContractAddress", "", "")
-	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
-	updatesContractAddress := flag.String("updatesContractAddress", "", "")
-	marketContractAddress := flag.String("marketContractAddress", "", "")
-	utilsContractAddress := flag.String("utilsContractAddress", "", "")
-	playandevolveContractAddress := flag.String("playandevolveContractAddress", "", "")
-	shopContractAddress := flag.String("shopContractAddress", "", "")
-	trainingpointsContractAddress := flag.String("trainingpointsContractAddress", "", "")
-	constantsgettersContractAddress := flag.String("constantsgettersContractAddress", "", "")
+	proxyContractAddress := flag.String("proxy_address", "", "")
+	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	delta := flag.Int("delta", 10, "number of block to process at maximum")
 	flag.Parse()
@@ -42,44 +34,12 @@ func main() {
 		}
 	}
 
-	if *leaguesContractAddress == "" {
-		log.Fatal("no league contract address")
-	}
-	if *assetsContractAddress == "" {
-		log.Fatal("no assets contract address")
-	}
-	if *evolutionContractAddress == "" {
-		log.Fatal("no evolution contract address")
-	}
-	if *marketContractAddress == "" {
-		log.Fatal("no market contract address")
-	}
-	if *updatesContractAddress == "" {
-		log.Fatal("no updates contract address")
-	}
-	if *engineContractAddress == "" {
-		log.Fatal("no engine contract address")
-	}
-	if *enginePreCompContractAddress == "" {
-		log.Fatal("no enginePreComp contract address")
-	}
-	if *utilsContractAddress == "" {
-		log.Fatal("no utils contract address")
-	}
-	if *playandevolveContractAddress == "" {
-		log.Fatal("no playandevolve contract address")
-	}
-	if *shopContractAddress == "" {
-		log.Fatal("no shop contract address")
-	}
-	if *trainingpointsContractAddress == "" {
-		log.Fatal("no trainingpoints contract address")
-	}
-	if *constantsgettersContractAddress == "" {
-		log.Fatal("no constantsgetters contract address")
+	if *proxyContractAddress == "" {
+		log.Fatal("no proxy contract address")
 	}
 
-	log.Infof("ipfs URL: %v", *ipfsURL)
+	log.Infof("[PARAM] proxy contract address       : %v", *proxyContractAddress)
+	log.Infof("[PARAM] ipfs URL                     : %v", *ipfsURL)
 
 	if *debug {
 		log.SetLevel(log.DebugLevel)
@@ -95,23 +55,18 @@ func main() {
 		}
 		defer client.Close()
 
-		contracts, err := contracts.New(
-			client,
-			*leaguesContractAddress,
-			*assetsContractAddress,
-			*evolutionContractAddress,
-			*engineContractAddress,
-			*enginePreCompContractAddress,
-			*updatesContractAddress,
-			*marketContractAddress,
-			*utilsContractAddress,
-			*playandevolveContractAddress,
-			*shopContractAddress,
-			*trainingpointsContractAddress,
-			*constantsgettersContractAddress,
-		)
-		if err != nil {
-			return err
+		var stkr *staker.Staker
+		if *stakerPrivateKey != "" {
+			log.Info("WARNING: STAKER address set")
+			privateKey, err := crypto.HexToECDSA(*stakerPrivateKey)
+			if err != nil {
+				return err
+			}
+			stkr, err = staker.New(privateKey)
+			if err != nil {
+				return err
+			}
+
 		}
 
 		log.Info("Connecting to universe DBMS: ", *postgresURL)
@@ -127,10 +82,15 @@ func main() {
 		}
 		defer namesdb.Close()
 
-		processor, err := process.NewEventProcessor(contracts, namesdb, *ipfsURL)
-		if err != nil {
-			return err
-		}
+		useractionsPublishService := ipfs.NewUserActionsPublishService(*ipfsURL)
+		processor := process.NewEventProcessor(
+			client,
+			*proxyContractAddress,
+			namesdb,
+			useractionsPublishService,
+			stkr,
+		)
+
 		log.Info("On Going ...")
 
 		for {
@@ -142,6 +102,7 @@ func main() {
 			if err != nil {
 				log.Error(err)
 				tx.Rollback()
+				time.Sleep(2 * time.Second)
 				continue
 			}
 			if err := tx.Commit(); err != nil {

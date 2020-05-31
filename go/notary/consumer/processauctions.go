@@ -4,6 +4,8 @@ import (
 	"crypto/ecdsa"
 	"database/sql"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
@@ -17,7 +19,8 @@ func ProcessAuctions(
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 ) error {
-	auctions, err := storage.PendingAuctions(tx)
+	service := postgres.NewAuctionHistoryService(tx)
+	auctions, err := service.PendingAuctions()
 	if err != nil {
 		return err
 	}
@@ -43,7 +46,8 @@ func processAuction(
 	pvc *ecdsa.PrivateKey,
 	contracts contracts.Contracts,
 ) error {
-	bids, err := storage.BidsByAuctionID(tx, auction.ID)
+	service := postgres.NewAuctionHistoryService(tx)
+	bids, err := service.Bid().Bids(auction.ID)
 	if err != nil {
 		return err
 	}
@@ -54,11 +58,11 @@ func processAuction(
 	if err := am.Process(market); err != nil {
 		return err
 	}
-	if err := am.Auction().Update(tx); err != nil {
+	if err := service.Update(am.Auction()); err != nil {
 		return err
 	}
 	for _, bid := range am.Bids() {
-		if err := bid.Update(tx); err != nil {
+		if err := service.Bid().Update(bid); err != nil {
 			return err
 		}
 	}

@@ -1,28 +1,11 @@
 apiVersion: v1
 data:
-  ASSETS_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
   BLOCKS_PER_STEP: "10000"
-  CONSTANTSGETTERS_CONTRACT_ADDRESS: 0x35853912cA614c985d351BE34aB567D5bA7f569e
-  ENGINE_CONTRACT_ADDRESS: 0x2fbDE7e96Eef793261ce3E13B26887a8e41Dc24c
-  ENGINEAPPLYBOOSTERS_CONTRACT_ADDRESS: 0x53B1FD95C8a7F036c4a57C8b49c4E54EeF175601
-  ENGINEPRECOMP_CONTRACT_ADDRESS: 0x4740a875759207ce9d4cF9900D2c247659eFdbD1
-  EVOLUTION_CONTRACT_ADDRESS: 0xC8226Da516b08bc0DAe9Faa7F8B3AF2fBA080Eb4
-  FRIENDLIES_CONTRACT_ADDRESS: 0xe32B07607E3aAAeAeFb00E65b056912A9499B5CA
-  LEAGUES_CONTRACT_ADDRESS: 0x78688f28fdB0342613Ed252241A930214A3e0bfF
-  MARKET_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
-  PLAYANDEVOLVE_CONTRACT_ADDRESS: 0xEe597EADF452411548842ca5236B1B7C908e2842
-  PRIVILEGED_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
-  PROXY_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
-  SHOP_CONTRACT_ADDRESS: 0x05E43062013fC33FAF573DB743Bd58634827b4d7
-  SHOP_CONTRACT_CONTRACT_ADDRESS: 0x5E27f5cF2906B69b4025932Eb8e11046C7d3D505
-  TRAININGPOINTS_CONTRACT_ADDRESS: 0x2BBBC76DD68dECbCD0C2C40785bb9efD4d240474
-  UPDATES_CONTRACT_ADDRESS: 0xCbd1b48a00E88b34646E16F327B5a7db776600F2
-  UTILS_CONTRACT_ADDRESS: 0x41c93069922583B6bFA4BebDed2a2E6F074060FD
+  PROXY_CONTRACT_ADDRESS: 0x26d8d2Da4E28BAD84BcECDc1368Fb7a328fBf0eB
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: ""
-  notary_private_key: 363bd383b24285cba965d524f54413c3369d8fb244b57359767a0da31ce6e7d3
-  relay_private_key: 0eec2a97925bcb1c636e63bc1db8b80f02dc8840e6a77b760b1c640b5f607f00
+  notary_extra_args: -iap_test
 kind: ConfigMap
 metadata:
   labels:
@@ -422,13 +405,20 @@ spec:
         - -ethereum
         - http://xdai:8545
         - -private_key
-        - $(notary_private_key)
-        - -market_address
-        - $(MARKET_CONTRACT_ADDRESS)
-        - -constantsgetters_address
-        - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        - $(MARKET_PRIVATE_KEY)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -market_id
         - $(market_id)
+        - -google_key
+        - /var/secrets/google/key.json
+        - $(notary_extra_args)
+        env:
+        - name: MARKET_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: market
+              name: blockchain-accounts
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -437,8 +427,15 @@ spec:
         name: notary
         ports:
         - containerPort: 4000
+        volumeMounts:
+        - mountPath: /var/secrets/google
+          name: google-cloud-key
       imagePullSecrets:
       - name: docker-secret
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: google-iap-key
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -519,14 +516,18 @@ spec:
         - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
         - -ethereum
         - http://xdai:8545
-        - -updatesContractAddress
-        - $(UPDATES_CONTRACT_ADDRESS)
-        - -assetsContractAddress
-        - $(ASSETS_CONTRACT_ADDRESS)
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
         - -ipfs
-        - ipfsnode:5001
+        - /dns4/ipfsnode/tcp/5001
         - -private_key
-        - $(relay_private_key)
+        - $(RELAY_PRIVATE_KEY)
+        env:
+        - name: RELAY_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: relay
+              name: blockchain-accounts
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -570,33 +571,19 @@ spec:
         - -ethereum
         - http://xdai:8545
         - -ipfs
-        - ipfsnode:5001
-        - -leaguesContractAddress
-        - $(LEAGUES_CONTRACT_ADDRESS)
-        - -engineContractAddress
-        - $(ENGINE_CONTRACT_ADDRESS)
-        - -enginePreCompContractAddress
-        - $(ENGINEPRECOMP_CONTRACT_ADDRESS)
-        - -marketContractAddress
-        - $(MARKET_CONTRACT_ADDRESS)
-        - -updatesContractAddress
-        - $(UPDATES_CONTRACT_ADDRESS)
-        - -assetsContractAddress
-        - $(ASSETS_CONTRACT_ADDRESS)
-        - -evolutionContractAddress
-        - $(EVOLUTION_CONTRACT_ADDRESS)
-        - -playandevolveContractAddress
-        - $(PLAYANDEVOLVE_CONTRACT_ADDRESS)
-        - -trainingpointsContractAddress
-        - $(TRAININGPOINTS_CONTRACT_ADDRESS)
-        - -shopContractAddress
-        - $(SHOP_CONTRACT_ADDRESS)
-        - -utilsContractAddress
-        - $(UTILS_CONTRACT_ADDRESS)
-        - -constantsgettersContractAddress
-        - $(CONSTANTSGETTERS_CONTRACT_ADDRESS)
+        - /dns4/ipfsnode/tcp/5001
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
+        - -staker
+        - $(STAKER_PRIVATE_KEY)
         - -delta
         - $(BLOCKS_PER_STEP)
+        env:
+        - name: STAKER_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: staker
+              name: blockchain-accounts
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -712,13 +699,23 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/universe.db:dev
+      - env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: freeverseio/universe.db:dev
         imagePullPolicy: Always
         name: universedb
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
+      volumes:
+      - name: universedb-storage
+        persistentVolumeClaim:
+          claimName: universedb-pvc
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -807,3 +804,37 @@ spec:
   - hosts:
     - dashboard.gorengine.com
     secretName: cryptosoccer-dashboard-tls
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/app: marketdb
+    app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: marketdb-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: do-block-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/app: universedb
+    app.kubernetes.io/component: universedb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: universedb-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: do-block-storage
