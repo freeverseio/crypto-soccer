@@ -79,22 +79,22 @@ contract('EncodingSkills', (accounts) => {
 
         skills = await encoding.encodePlayerSkills(
             sk,
-            dayOfBirth = 4*365, 
-            generation = 3,
-            playerId = 143,
-            [potential = 5,
-            forwardness = 3,
-            leftishness = 4,
-            aggressiveness = 1],
+            dayOfBirth = 2**16-1, 
+            generation = 2**8-1,
+            playerId = 2**43-1,
+            [potential = 9,
+            forwardness = 5,
+            leftishness = 7,
+            aggressiveness = 7],
             alignedEndOfFirstHalf = true,
             redCardLastGame = true,
-            gamesNonStopping = 2,
+            gamesNonStopping = 6,
             injuryWeeksLeft = 6,
             substitutedFirstHalf = true,
             sumSkills
         ).should.be.fulfilled;
 
-        skills.should.be.bignumber.equal('155218556145067301836481091220056594090096264824095737423904769');
+        skills.should.be.bignumber.equal('13113566945151332165817391379934887555794724631714026444777635841');
 
         N_SKILLS = 5;
         resultSkills = [];
@@ -202,7 +202,7 @@ contract('EncodingSkills', (accounts) => {
         result = await encodingGet.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         
-        generation += 2;
+        generation -= 2;
         skills = await encodingSet.setGeneration(skills, generation).should.be.fulfilled;
         result = await encodingGet.getGeneration(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(generation);
