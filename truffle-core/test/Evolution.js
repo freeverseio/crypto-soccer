@@ -554,7 +554,7 @@ contract('Evolution', (accounts) => {
         }
         
         // now try the same with a red card:
-        newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
+        newLog = await evo.setOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedRedCarded = await evo.setRedCardLastGame(aligned, true).should.be.fulfilled
@@ -571,7 +571,7 @@ contract('Evolution', (accounts) => {
         HARD_INJURY = 2;
         WEEKS_SOFT_INJ = 2;
         WEEKS_HARD_INJ = 5;
-        newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = HARD_INJURY, is2nd = false).should.be.fulfilled;
+        newLog = await evo.setOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = HARD_INJURY, is2nd = false).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_HARD_INJ).should.be.fulfilled
@@ -583,7 +583,7 @@ contract('Evolution', (accounts) => {
             } 
         }
         // now try the same with a soft injury:
-        newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = SOFT_INJURY, is2nd = false).should.be.fulfilled;
+        newLog = await evo.setOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = SOFT_INJURY, is2nd = false).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_SOFT_INJ).should.be.fulfilled
@@ -617,8 +617,8 @@ contract('Evolution', (accounts) => {
         weeks.toNumber().should.be.equal(1);
         
         // now try the same with a red card in both halfs...
-        newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
-        newLog = await evo.addOutOfGame(newLog, player = 2, round = 2, typeOfOutOfGame = RED_CARD, is2nd = true).should.be.fulfilled;
+        newLog = await evo.setOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
+        newLog = await evo.setOutOfGame(newLog, player = 2, round = 2, typeOfOutOfGame = RED_CARD, is2nd = true).should.be.fulfilled;
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half2, newLog, tactics0, is2nd = true).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, isBigNumber = true);
         for (p = 0; p < 25; p++) {

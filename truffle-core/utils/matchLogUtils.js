@@ -1,7 +1,7 @@
 const UNDEF = undefined;
     
 async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
-    outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+    outOfGames, outOfGameRounds, typesOutOfGames, 
     isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
     halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
 ) {
@@ -15,12 +15,7 @@ async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterFor
     }
     is2ndHalfs = [false, true];
     for (p = 0; p <outOfGames.length; p++) {
-        log = await encoding.addOutOfGame(log, outOfGames[p], outOfGameRounds[p], typesOutOfGames[p], is2ndHalfs[p]).should.be.fulfilled;
-    }
-    for (p = 0; p <yellowCardedDidNotFinish1stHalf.length; p++) {
-        if ( yellowCardedDidNotFinish1stHalf[p]) {
-            log = await encoding.setYellowedDidNotFinished1stHalf(log, p).should.be.fulfilled;
-        }
+        log = await encoding.setOutOfGame(log, outOfGames[p], outOfGameRounds[p], typesOutOfGames[p], is2ndHalfs[p]).should.be.fulfilled;
     }
     log = await encoding.setIsHomeStadium(log, isHomeStadium).should.be.fulfilled;
     for (p = 0; p <ingameSubs1.length; p++) log = await encoding.setInGameSubsHappened(log, ingameSubs1[p], p, is2nd = false).should.be.fulfilled;
@@ -39,7 +34,7 @@ async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterFor
 }
 
 async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
-    outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+    outOfGames, outOfGameRounds, typesOutOfGames, 
     isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
     halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
 ) 
@@ -83,12 +78,6 @@ async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx
             typeOf.toNumber().should.be.equal(typesOutOfGames[p]);
         }
     }        
-    if (yellowCardedDidNotFinish1stHalf != UNDEF) {
-        for (p = 0; p <yellowCardedDidNotFinish1stHalf.length; p++) {
-            result = await encoding.getYellowedDidNotFinished1stHalf(log, p);
-            result.should.be.equal(yellowCardedDidNotFinish1stHalf[p]);
-        }
-    }
     if (isHomeStadium != UNDEF) {
         result = await encoding.getIsHomeStadium(log).should.be.fulfilled;
         result.should.be.equal(isHomeStadium);
