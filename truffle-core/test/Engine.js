@@ -220,7 +220,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-     it('wasPlayerAlignedEndOfLastHalf', async () => {
+    it('wasPlayerAlignedEndOfLastHalf', async () => {
         seedForRedCard = seed + 83;
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
@@ -233,10 +233,6 @@ contract('Engine', (accounts) => {
         expected[1] = false; 
         expected[12] = false; 
         
-        for (p = 0; p < 14; p++) {
-            result = await engine.wasPlayerAlignedEndOfLastHalf(p, tactics, newLog[0]).should.be.fulfilled;
-            result.should.be.equal(expected[p]);
-        }
         // reassuring that the red card was as described above:
         expectedOut = [9, 0];
         expectedOutRounds = [1, 0]; // note that this 1 would be 9 otherwise
@@ -245,7 +241,6 @@ contract('Engine', (accounts) => {
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [true, false];
 
         red0 = await encodingLog.getOutOfGamePlayer(newLog[0], false).should.be.fulfilled;
         red0.toNumber().should.be.equal(9)
@@ -257,7 +252,7 @@ contract('Engine', (accounts) => {
         red0.toNumber().should.be.equal(0)
 
         await logUtils.checkExpectedLog(encodingLog, newLog[0], nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt = UNDEF, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
@@ -309,9 +304,8 @@ contract('Engine', (accounts) => {
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
@@ -333,9 +327,8 @@ contract('Engine', (accounts) => {
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
@@ -356,9 +349,8 @@ contract('Engine', (accounts) => {
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
@@ -379,9 +371,8 @@ contract('Engine', (accounts) => {
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
@@ -403,9 +394,8 @@ contract('Engine', (accounts) => {
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, true];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
@@ -426,9 +416,8 @@ contract('Engine', (accounts) => {
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, true];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
            
@@ -462,9 +451,8 @@ contract('Engine', (accounts) => {
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [true, false];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
@@ -479,9 +467,8 @@ contract('Engine', (accounts) => {
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [true, false];
         await logUtils.checkExpectedLog(encodingLog, finalLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
@@ -504,9 +491,8 @@ contract('Engine', (accounts) => {
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
@@ -521,9 +507,8 @@ contract('Engine', (accounts) => {
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, finalLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });    
@@ -546,7 +531,6 @@ contract('Engine', (accounts) => {
         penalties  = Array.from(new Array(7), (x,i) => false);
         typesOutOfGames = [3, 0];
         outOfGameRounds = [7, 0];
-        yellowCardedDidNotFinish1stHalf = [false, false];
         ingameSubs1 = [0, 0, 0]
         ingameSubs2 = [0, 0, 0]
         outOfGames = [9, 14]
@@ -559,7 +543,7 @@ contract('Engine', (accounts) => {
         winner = 0; 
         
         log0 = await logUtils.encodeLog(encodingLog, nGoals = 3, assistersIdx, shootersIdx, shooterForwardPos, penalties,
-            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsDefault);
         
@@ -718,9 +702,8 @@ contract('Engine', (accounts) => {
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
         await logUtils.checkExpectedLog(encodingLog, log0[0], nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
-            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
         

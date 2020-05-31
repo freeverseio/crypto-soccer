@@ -25,40 +25,40 @@ contract EncodingMatchLogBase2  {
     }
     
     function getIsHomeStadium(uint256 log)  public pure returns (bool) {
-        return ((log >> 243) & 1) == 1;
+        return ((log >> 244) & 1) == 1;
     }
     
     /// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
     function getHalfTimeSubs(uint256 log, uint8 pos)  public pure returns (uint8) {
-        return uint8((log >> (178 + 5 * pos)) & 31);
+        return uint8((log >> (179 + 5 * pos)) & 31);
     }
 
     function getNDefs(uint256 log, bool is2ndHalf)  public pure returns (uint8) {
-        return uint8((log >> (193 + 4 * (is2ndHalf ? 1 : 0))) & 15);
+        return uint8((log >> (194 + 4 * (is2ndHalf ? 1 : 0))) & 15);
     }
 
     function addNTot2ndHalf(uint256 log, uint8 nTot)  public pure returns (uint256) {
-        return log | (uint256(nTot) << 201);
+        return log | (uint256(nTot) << 202);
     }
 
     function getNTot2ndHalf(uint256 log)  public pure returns (uint8) {
-        return uint8((log >> 201) & 15);
+        return uint8((log >> 202) & 15);
     }
 
     function getWinner(uint256 log) public pure returns (uint8) {
-        return uint8((log >> 205) & 3);
+        return uint8((log >> 206) & 3);
     }
     
     function getTeamSumSkills(uint256 log) public pure returns (uint256) {
-        return (log >> 207) & 16777215; /// 2^24 - 1
+        return (log >> 208) & 16777215; /// 2^24 - 1
     }
     
     function addTrainingPoints(uint256 log, uint256 points)  public pure returns (uint256) {
-        return log | (uint256(points) << 231);
+        return log | (uint256(points) << 232);
     }
 
     function getTrainingPoints(uint256 log)  public pure returns (uint16) {
-        return  uint16((log >> 231) & 4095); /// 2^12-1
+        return  uint16((log >> 232) & 4095); /// 2^12-1
     }
     
 }

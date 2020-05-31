@@ -34,19 +34,19 @@ import "../encoders/EncodingMatchLogBase3.sol";
     injuryLow:   2
     redCard:     3
 
- uint8[4] memory yellowCards, 4b each,  first 2 for first half, other for half 2, offset 158:151
- uint8[6] memory ingameSubsHappened,  2b each, offset 166
+ uint8[4] memory yellowCards, 4b each,  first 2 for first half, other for half 2, offset 159:151
+ uint8[6] memory ingameSubsHappened,  2b each, offset 167
     the first 3 for half 1, the other for half 2.
     0: no change required, 1: change happened, 2: change could not happen, cancelled.  
- uint8[3] memory halfTimeSubstitutions,  5b each, offset 178
+ uint8[3] memory halfTimeSubstitutions,  5b each, offset 179
     0 means no subs, and we store here lineUp[p]+1 (where lineUp[p] = player shirt in the 25 that was substituted)
 
- nDefsHalf[2], 4b each, offset 193
- NTot2ndHalf, 4b offset 201
- winner, 2b, winner: 0 = home, 1 = away, 2 = draw, offset 205      
- teamSumSkills: 24b  offset 207
- trainingPoints, 12b, offset 231
- bool isHomeStadium,  1b each, offset 243
+ nDefsHalf[2], 4b each, offset 194
+ NTot2ndHalf, 4b offset 202
+ winner, 2b, winner: 0 = home, 1 = away, 2 = draw, offset 206      
+ teamSumSkills: 24b  offset 208
+ trainingPoints, 12b, offset 232
+ bool isHomeStadium,  1b each, offset 244
 */
 
 contract EncodingMatchLog is EncodingMatchLogBase1, EncodingMatchLogBase2, EncodingMatchLogBase3 {
