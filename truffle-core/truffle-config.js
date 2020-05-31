@@ -26,6 +26,16 @@ module.exports = {
       ),
       network_id: 100,
       gasPrice: 1000000000,
+      singleTimezone: -1,
+      requiredStake: 1,
+      owners: {
+        company: "0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0",
+        superuser: "0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0",
+        COO: "0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0",
+        market: "0x833cf74EC5db0751Bf8F31321655A09f19805663",
+        relay: "0x8Aaef2250eA71Fc5Fde26373F8AEA7C9f600AF93",
+        trustedParties: ["0x886907C2D5231B590514b2B0a1651A104cAD1A43"]
+      },
     },
     xdaidev: { // 0xA9c0F76cA045163E28afDdFe035ec76a44f5C1F3
       provider: new HDWalletProvider(
@@ -35,6 +45,7 @@ module.exports = {
       network_id: 100,
       gasPrice: 1000000000,
       singleTimezone: -1,
+      requiredStake: 1,
       owners: {
         company: "0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0",
         superuser: "0x7c34471e39c4A4De223c05DF452e28F0c4BD9BF0",
@@ -43,7 +54,6 @@ module.exports = {
         relay: "0x83207C27D6B7926ded479d0FA25e12cC34BF5f43",
         trustedParties: ["0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79"]
       },
-      requiredStake: 1,
     },
     local: { // 0x83A909262608c650BD9b0ae06E29D90D0F67aC5e
       provider: new HDWalletProvider(
@@ -52,6 +62,7 @@ module.exports = {
       ),
       network_id: 63819,
       singleTimezone: 1,
+      requiredStake: 1,
       owners: {
         company: "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e",
         superuser: "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e",
@@ -60,7 +71,6 @@ module.exports = {
         relay: "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e",
         trustedParties: ["0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"]
       },
-      requiredStake: 1,
     },
   },
 
