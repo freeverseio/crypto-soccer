@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in EncodingTPAssignment.sol and contracts inherited by it
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -7,6 +10,8 @@ require('chai')
 const EncodingTPAssignment = artifacts.require('EncodingTPAssignment');
 
 contract('EncodingTPAssignment', (accounts) => {
+
+    const it2 = async(text, f) => {};
 
     beforeEach(async () => {
         encoding = await EncodingTPAssignment.new().should.be.fulfilled;
@@ -35,6 +40,52 @@ contract('EncodingTPAssignment', (accounts) => {
         result = await encoding.decodeTP(result).should.be.fulfilled;
         result = await encoding.encodeTP(TP = 0, TPperSkill, specialPlayer).should.be.rejected;
     })
+    
+    it('encode minimal TP and see that 60 percent restriction only operates at TP = 4', async () =>  {
+        specialPlayer = 21;
+        TP = 2;
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        for (bucket = 0; bucket < 5; bucket++) {
+            TPperSkill[5*bucket] = 2;
+        }
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        result = await encoding.decodeTP(result).should.be.fulfilled;
+
+        TP = 3;
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        for (bucket = 0; bucket < 5; bucket++) {
+            TPperSkill[5*bucket] = 3;
+        }
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        result = await encoding.decodeTP(result).should.be.fulfilled;
+
+        TP = 3;
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        for (bucket = 0; bucket < 5; bucket++) {
+            TPperSkill[5*bucket] = 2;
+            TPperSkill[5*bucket+1] = 1;
+        }
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        result = await encoding.decodeTP(result).should.be.fulfilled;
+
+        TP = 4;
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        for (bucket = 0; bucket < 5; bucket++) {
+            TPperSkill[5*bucket] = 4;
+        }
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.rejected;
+
+        TP = 4;
+        TPperSkill =  Array.from(new Array(25), (x,i) => 0);
+        for (bucket = 0; bucket < 5; bucket++) {
+            TPperSkill[5*bucket] = 3;
+            TPperSkill[5*bucket] = 1;
+        }
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        result = await encoding.decodeTP(result).should.be.fulfilled;
+    })
+    
+    
     
     it('encode fails if sum is not correct', async () =>  {
         specialPlayer = 21;

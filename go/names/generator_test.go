@@ -27,19 +27,19 @@ func TestGeneratePlayerName(t *testing.T) {
 	generation := uint8(0)
 	for i := 0; i < 10; i++ {
 		playerId := big.NewInt(int64(i))
-		timezone = 19
+		timezone = 10
 		countryIdxInTZ = 0
-		name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+		name, countryISO2, region, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 		if err != nil {
 			t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
 		}
-		fmt.Println(name)
+		fmt.Println(name + " (" + countryISO2 + ", " + region + ") ")
 		if len(name) == 0 {
 			t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 		}
-		result += name
+		result += name + " (" + countryISO2 + ", " + region + ") "
 	}
-	if int_hash(result) != uint64(5825377024423989689) {
+	if int_hash(result) != uint64(1263868360796760173) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -59,7 +59,7 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 		playerId := big.NewInt(int64(i))
 		timezone = uint8(1 + i)
 		countryIdxInTZ = uint64(3*i + 2)
-		name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+		name, countryISO2, region, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 		if err != nil {
 			t.Fatalf("error generating name for player: %s", playerId)
 		}
@@ -67,9 +67,9 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 		if len(name) == 0 {
 			t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 		}
-		result += name
+		result += name + " (" + countryISO2 + ", " + region + ") "
 	}
-	if int_hash(result) != uint64(5825377024423989689) {
+	if int_hash(result) != uint64(1263868360796760173) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -89,7 +89,7 @@ func TestGenerateChildName(t *testing.T) {
 	playerId := big.NewInt(int64(1))
 	timezone = 19
 	countryIdxInTZ = 0
-	name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+	name, _, _, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 	if err != nil {
 		t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
 	}
@@ -98,7 +98,7 @@ func TestGenerateChildName(t *testing.T) {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
 	generation = uint8(1)
-	name2, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+	name2, _, _, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 	if err != nil {
 		t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
 	}
@@ -107,7 +107,7 @@ func TestGenerateChildName(t *testing.T) {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
 	name = name + " " + name2
-	if name != "Marjanas Buford Alessandro Buford Jr." {
+	if name != "Batur Kebede Bülbül Kebede Jr." {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
@@ -128,7 +128,7 @@ func TestGenerateAcademyName(t *testing.T) {
 	playerId := big.NewInt(int64(1))
 	timezone = 19
 	countryIdxInTZ = 0
-	name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+	name, _, _, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 	if err != nil {
 		t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
 	}
@@ -136,7 +136,7 @@ func TestGenerateAcademyName(t *testing.T) {
 	if len(name) == 0 {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
-	if name != "Alessandro Jagdeo" {
+	if name != "Reşit Mccornell" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
@@ -186,7 +186,7 @@ func TestGeneratePlayerNameForWrongInputs(t *testing.T) {
 	playerId := big.NewInt(int64(41234523))
 	countryIdxInTZ = 0
 	for tz := uint8(0); tz < 30; tz++ {
-		_, err := generator.GeneratePlayerFullName(playerId, generation, tz, countryIdxInTZ)
+		_, _, _, err := generator.GeneratePlayerFullName(playerId, generation, tz, countryIdxInTZ)
 		shouldFail := !(tz > 0 && tz < 25)
 		if shouldFail && err == nil {
 			t.Fatalf("test should fail, but it did not, for tz %v: %s", tz, err)
@@ -197,7 +197,7 @@ func TestGeneratePlayerNameForWrongInputs(t *testing.T) {
 	}
 	tz := uint8(1)
 	for g := uint8(0); g < 70; g++ {
-		_, err := generator.GeneratePlayerFullName(playerId, g, tz, countryIdxInTZ)
+		_, _, _, err := generator.GeneratePlayerFullName(playerId, g, tz, countryIdxInTZ)
 		shouldFail := !(g < 64)
 		if shouldFail && err == nil {
 			t.Fatalf("test should fail, but it did not, for generation %v: %s", g, err)

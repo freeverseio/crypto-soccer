@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in Shop.sol
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -5,8 +8,13 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
+const deployUtils = require('../utils/deployUtils.js');
 
-const Shop = artifacts.require('Shop');
+const Proxy = artifacts.require('Proxy');
+const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
+const Updates = artifacts.require('Updates');
+const Challenges = artifacts.require('Challenges');const Shop = artifacts.require('Shop');
 const EncodingTactics = artifacts.require('EncodingTactics');
 // in test mode, we place a test item in contruction (with itemId = 1)
 // (recall that itemId = 0 is NULL)
@@ -21,7 +29,13 @@ contract('Shop', (accounts) => {
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
-        shop = await Shop.new().should.be.fulfilled;
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        [proxy, assets, market, updates] = depl;
+        await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
+
+        shop = await Shop.new(assets.address).should.be.fulfilled;
         encTactics = await EncodingTactics.new().should.be.fulfilled;
     });
 
@@ -30,7 +44,7 @@ contract('Shop', (accounts) => {
         boosts = [62,60,19,1,23,2];
         encoded = await shop.encodeBoosts(boosts).should.be.fulfilled;
         decoded = await shop.decodeBoosts(encoded).should.be.fulfilled;
-        debug.compareArrays(decoded, boosts, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(decoded, boosts, toNum = true, isBigNumber = false);
     });
     
     it('offer item', async () => {
@@ -42,7 +56,8 @@ contract('Shop', (accounts) => {
             itemsRemaining = 5432,
             matchesDuration = 7,
             onlyTopInChampioniship = 3,
-            uri =  "https://www.freeverse.io"
+            uri =  "https://www.freeverse.io",
+            {from: owners.COO}
         ).should.be.rejected;
 
         tx = await shop.offerItem(
@@ -53,7 +68,20 @@ contract('Shop', (accounts) => {
             itemsRemaining = 5432,
             matchesDuration = 7,
             onlyTopInChampioniship = 3,
-            uri =  "https://www.freeverse.io"
+            uri =  "https://www.freeverse.io",
+            {from: owners.superuser}
+        ).should.be.rejected;
+
+        tx = await shop.offerItem(
+            boosts = [32,30,19,1,23,1],
+            countriesRoot = 0,
+            championshipsRoot = 0,
+            teamsRoot = 0,
+            itemsRemaining = 5432,
+            matchesDuration = 7,
+            onlyTopInChampioniship = 3,
+            uri =  "https://www.freeverse.io",
+            {from: owners.COO}
         ).should.be.fulfilled;
 
         encodedBoost = await shop.encodeBoosts(boosts).should.be.fulfilled;
@@ -70,7 +98,8 @@ contract('Shop', (accounts) => {
                 event.uri === uri;
         }, "correct");
         
-        await shop.reduceItemsRemaining(itemId = expectedNewItemId, itemsRemaining - 3).should.be.fulfilled;
+        await shop.reduceItemsRemaining(itemId = expectedNewItemId, itemsRemaining - 3, {from: owners.superuser}).should.be.rejected;
+        await shop.reduceItemsRemaining(itemId = expectedNewItemId, itemsRemaining - 3, {from: owners.COO}).should.be.fulfilled;
         result = await shop.getItemsRemaining(itemId).should.be.fulfilled;
         result.toNumber().should.be.equal(itemsRemaining - 3);
     });
@@ -84,7 +113,8 @@ contract('Shop', (accounts) => {
             itemsRemaining = 5432,
             matchesDuration = 7,
             onlyTopInChampioniship = 3,
-            uri =  "https://www.freeverse.io"
+            uri =  "https://www.freeverse.io",
+            {from: owners.COO}
         ).should.be.fulfilled;
         encodedBoost = await shop.encodeBoosts(boosts).should.be.fulfilled;
         
@@ -100,7 +130,7 @@ contract('Shop', (accounts) => {
         // shop items:
         tactics2 = await shop.addItemsToTactics(tactics, itemId = expectedNewItemId, staminas).should.be.fulfilled;
         const {0: stamina, 1: id, 2: boost} = await shop.getItemsData(tactics2).should.be.fulfilled;
-        debug.compareArrays(stamina, staminas, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(stamina, staminas, toNum = true, isBigNumber = false);
         id.toNumber().should.be.equal(itemId);
         boost.should.be.bignumber.equal(encodedBoost);
         

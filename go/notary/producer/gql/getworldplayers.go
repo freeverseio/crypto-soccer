@@ -24,10 +24,6 @@ const nAttackers = 9
 func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput }) ([]*WorldPlayer, error) {
 	log.Debugf("GetWorldPlayers %v", args)
 
-	if b.ch == nil {
-		return nil, errors.New("internal error: no channel")
-	}
-
 	hash, err := args.Input.Hash()
 	if err != nil {
 		return nil, err
@@ -45,18 +41,22 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 		return nil, errors.New("Invalid signature")
 	}
 
-	sender, err := input.AddressFromSignature(hash, sign)
+	isOwner, err := args.Input.IsSignerOwner(b.contracts)
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("TODO check sender is %v", sender.Hex())
+	if !isOwner {
+		return nil, errors.New("not owner of the team")
+	}
 
-	value := int64(1000) // TODO
+	value := int64(1000)     // TODO
+	maxPotential := uint8(9) // TODO
 
 	return CreateWorldPlayerBatch(
 		b.contracts,
 		b.namesdb,
 		value,
+		maxPotential,
 		string(args.Input.TeamId),
 		time.Now().Unix(),
 	)
@@ -66,24 +66,30 @@ func CreateWorldPlayerBatch(
 	contr contracts.Contracts,
 	namesdb *names.Generator,
 	value int64,
+	maxPotential uint8,
 	teamId string,
 	epoch int64,
 ) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
+
 	epochDays := epoch / (3600 * 24)
 	epochWeeks := epochDays / 7
-	seed, _ := new(big.Int).SetString(teamId, 10)
-	if seed == nil {
+	id, _ := new(big.Int).SetString(teamId, 10)
+	if id == nil {
 		return nil, errors.New("invalid teamId")
 	}
 
+	timezone, countryIdxInTZ, _, err := contr.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, id)
+	if err != nil {
+		return nil, err
+	}
+
 	playerValue := big.NewInt(value)
-	timezone := uint8(1)
-	countryIdxInTZ := int64(0)
 	worldPlayers, err := contr.Privileged.CreateBuyNowPlayerIdBatch(
 		&bind.CallOpts{},
 		playerValue,
-		seed,
+		maxPotential,
+		id,
 		[4]uint8{
 			nGoalKeepers,
 			nDefenders,
@@ -92,18 +98,26 @@ func CreateWorldPlayerBatch(
 		},
 		big.NewInt(epochDays),
 		timezone,
-		big.NewInt(countryIdxInTZ),
+		countryIdxInTZ,
 	)
 	if err != nil {
 		return result, err
 	}
 
 	for i := range worldPlayers.PlayerIdArray {
+		isSellable, err := isSellable(contr, worldPlayers.PlayerIdArray[i])
+		if err != nil {
+			return nil, err
+		}
+		if !isSellable {
+			continue
+		}
+
+		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
 		leftishness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsLeftishnessIdx]
 		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
-		playerId := graphql.ID(worldPlayers.PlayerIdArray[i].String())
 		generation := uint8(0)
-		name, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, uint64(countryIdxInTZ))
+		name, countryOfBirth, race, err := namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
 		if err != nil {
 			return nil, err
 		}
@@ -131,9 +145,22 @@ func CreateWorldPlayerBatch(
 			endurance,
 			potential,
 			validUntil,
+			countryOfBirth,
+			race,
 		)
 		result = append(result, worldPlayer)
 	}
 
 	return result, nil
+}
+
+func isSellable(contr contracts.Contracts, playerId *big.Int) (bool, error) {
+	teamId, err := contr.Market.GetCurrentTeamIdFromPlayerId(
+		&bind.CallOpts{},
+		playerId,
+	)
+	if err != nil {
+		return false, err
+	}
+	return teamId.Cmp(big.NewInt(contracts.AccademyTeamId)) == 0, nil
 }

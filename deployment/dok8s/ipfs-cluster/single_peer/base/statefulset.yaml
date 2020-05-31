@@ -71,6 +71,10 @@ spec:
             - configMapRef:
                 name: env-config
           env:
+            - name: CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS
+              value: "/ip4/0.0.0.0/tcp/9094"
+            - name: CLUSTER_IPFSPROXY_LISTENMULTIADDRESS
+              value: "/ip4/0.0.0.0/tcp/9095"
             - name: PEER_PRIV_KEY
               valueFrom:
                 secretKeyRef:

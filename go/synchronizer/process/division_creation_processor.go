@@ -33,21 +33,18 @@ type DivisionCreationProcessor struct {
 func NewDivisionCreationProcessor(
 	contracts *contracts.Contracts,
 	namesdb *names.Generator,
-) (*DivisionCreationProcessor, error) {
-	calendarProcessor, err := NewCalendar(contracts)
-	if err != nil {
-		return nil, err
-	}
-
+) *DivisionCreationProcessor {
+	calendarProcessor := NewCalendar(contracts)
 	return &DivisionCreationProcessor{
 		contracts,
 		calendarProcessor,
 		namesdb,
-	}, nil
+	}
 }
 
 func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivisionCreation) error {
-	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
+	log.Infof("[processor|consume] LeaguesDivisionCreation tz %v, country %v, division %v", event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry)
+
 	if event.CountryIdxInTZ.Uint64() == 0 && event.DivisionIdxInCountry.Uint64() == 0 {
 		timezone := storage.Timezone{event.Timezone}
 		if err := timezone.Insert(tx); err != nil {
@@ -159,7 +156,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 		if err != nil {
 			log.Warning(err)
 		}
-		name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64())
+		name, countryOfBirth, race, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64())
 		if err != nil {
 			return fmt.Errorf("%s playerId: %v, generation: %v, timezone: %v, countryIdx %v", err.Error(), playerId, generation, timezone, countryIdx.Uint64())
 		}
@@ -179,6 +176,8 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
 			Tiredness:         int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1]),
+			CountryOfBirth:    countryOfBirth,
+			Race:              race,
 		}
 		if err := player.Insert(tx, blockNumber); err != nil {
 			return err

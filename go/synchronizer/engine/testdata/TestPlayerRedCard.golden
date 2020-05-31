@@ -2,20 +2,22 @@
 	Player: (storage.Player) {
 		PlayerId: (*big.Int)(<nil>),
 		PreferredPosition: (string) "",
-		Potential: (uint64) 5,
+		Potential: (uint64) 0,
 		DayOfBirth: (uint64) 0,
 		TeamId: (string) "",
 		Name: (string) "",
-		Defence: (uint64) 65480,
-		Speed: (uint64) 65523,
-		Pass: (uint64) 65532,
-		Shoot: (uint64) 49153,
-		Endurance: (uint64) 65080,
+		Defence: (uint64) 1041295,
+		Speed: (uint64) 1036287,
+		Pass: (uint64) 1034495,
+		Shoot: (uint64) 245761,
+		Endurance: (uint64) 984500,
 		ShirtNumber: (uint8) 0,
 		EncodedSkills: (*big.Int)(40439920000726868070503716865792521545121682176182486071370780491777),
 		EncodedState: (*big.Int)(<nil>),
 		RedCard: (bool) true,
-		InjuryMatchesLeft: (uint8) 6,
-		Tiredness: (int) 2
+		InjuryMatchesLeft: (uint8) 4,
+		Tiredness: (int) 5,
+		CountryOfBirth: (string) "",
+		Race: (string) ""
 	}
 })

@@ -18,24 +18,20 @@ spec:
       - name: synchronizer
         image: freeverseio/synchronizer:dev
         imagePullPolicy: Always
+        env:
+          - name: STAKER_PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: blockchain-accounts
+                key: staker
         envFrom:
           - configMapRef:
               name: freeverse-configmap
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
                -ethereum, http://xdai:8545,
-               -ipfs, ipfsnode:5001,
-               -leaguesContractAddress, "$(LEAGUES_CONTRACT_ADDRESS)",
-               -engineContractAddress, "$(ENGINE_CONTRACT_ADDRESS)",
-               -enginePreCompContractAddress, "$(ENGINEPRECOMP_CONTRACT_ADDRESS)",
-               -marketContractAddress, "$(MARKET_CONTRACT_ADDRESS)",
-               -updatesContractAddress, "$(UPDATES_CONTRACT_ADDRESS)",
-               -assetsContractAddress, "$(ASSETS_CONTRACT_ADDRESS)",
-               -evolutionContractAddress, "$(EVOLUTION_CONTRACT_ADDRESS)",
-               -playandevolveContractAddress, "$(PLAYANDEVOLVE_CONTRACT_ADDRESS)",
-               -trainingpointsContractAddress, "$(TRAININGPOINTS_CONTRACT_ADDRESS)",
-               -shopContractAddress, "$(SHOP_CONTRACT_ADDRESS)",
-               -utilsContractAddress, "$(UTILS_CONTRACT_ADDRESS)",
-               -constantsgettersContractAddress, "$(CONSTANTSGETTERS_CONTRACT_ADDRESS)",
+               -ipfs, "/dns4/ipfsnode/tcp/5001",
+               -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
+               -staker, "$(STAKER_PRIVATE_KEY)",
                -delta, "$(BLOCKS_PER_STEP)"]
 
       imagePullSecrets:

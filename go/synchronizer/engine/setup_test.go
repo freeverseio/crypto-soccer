@@ -24,11 +24,10 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc, err = testutils.NewBlockchainNode()
+	bc, err = testutils.NewBlockchain()
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc.DeployContracts(bc.Owner)
 	dump = spew.ConfigState{DisablePointerAddresses: true, Indent: "\t"}
 	os.Exit(m.Run())
 }

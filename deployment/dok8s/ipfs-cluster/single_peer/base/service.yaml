@@ -9,6 +9,9 @@ spec:
   - name: api
     targetPort: api
     port: 5001
+  - name: proxy-http
+    targetPort: proxy-http
+    port: 9095
   selector:
     app: ipfs-cluster
 

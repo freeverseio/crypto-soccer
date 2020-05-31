@@ -14,6 +14,7 @@ import (
 
 var bc *testutils.BlockchainNode
 var namesdb *names.Generator
+var googleCredentials []byte
 
 func TestMain(m *testing.M) {
 	var err error
@@ -21,11 +22,10 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc, err = testutils.NewBlockchainNode()
+	bc, err = testutils.NewBlockchain()
 	if err != nil {
 		log.Fatal(err)
 	}
-	bc.DeployContracts(bc.Owner)
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	bc.Contracts.Assets.TransferFirstBotToAddr(

@@ -14,10 +14,11 @@ func NewServer(
 	ch chan interface{},
 	contracts contracts.Contracts,
 	namesdb *names.Generator,
+	googleCredentials []byte,
 ) error {
 	log.Info("New GraphQL server staring ...")
 
-	resolver := NewResolver(ch, contracts, namesdb)
+	resolver := NewResolver(ch, contracts, namesdb, googleCredentials)
 	schema := graphql.MustParseSchema(Schema, resolver)
 
 	handler := relay.Handler{Schema: schema}

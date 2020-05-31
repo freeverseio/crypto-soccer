@@ -1,53 +1,42 @@
-Descrizione:- ERC721 team + ERC721 player ?
-# [Webpage](freeverse.io)
+# Contracts Organization
 
-* migrate to google hosting
- 
-TODO web secciones:
-* what is cryptosoccer
-* crear RoadMap
-* presentar team
-* Whitepaper
+## Folder contracts/storage
 
-[example webpage chintai.io](https://www.chintai.io/)
+Contains the three critical contracts that manage storage: Proxy, Stakers, MarketCrypto
 
-# Presentation of the web infrastructure design.
-ERC721Metadata::tokenURI(uint256 tokenId) returns a JSON schema:
+* Proxy (cannot hold money)
+  * Mission: asset creation, market in FIAT (operated by Freeverse), user actions relays, updates and challenges.
+  * The contract is so big that it had to use a delegate call pattern. It delegates to 4 contracts. The names are not really 1-to-1 with the functions they perform, but almost:
+    * Assets
+    * Market
+    * Updates
+    * Challenges 
+  * The basic inheritance that is critical to manage the storage is:
+    * ProxyStorage -> Proxy
+    * ProxyStorage -> Storage -> UniverseInfo -> Assets
+    * ProxyStorage -> Storage -> UniverseInfo -> Market
+    * ProxyStorage -> Storage -> UniverseInfo -> Updates
+    * ProxyStorage -> Storage -> UniverseInfo -> Challenges
+  * The agreed permissioning of each function is documented [here](https://github.com/freeverseio/lioneldoc/blob/master/authorizations.md)
 
-```
-{
-   “title”: “Asset Metadata”,
-   “type”: “object”,
-   “properties”: {
-       “name”: {
-           “type”: “string”,
-           “description”: “Identifies the asset to which this NFT represents”,
-       },
-       “description”: {
-           “type”: “string”,
-           “description”: “Describes the asset to which this NFT represents”,
-       },
-       “image”: {
-           “type”: “string”,
-           “description”: “A URI pointing to a resource with mime type image/* representing the asset to which this NFT represents. Consider making any images at a width between 320 and 1080 pixels and aspect ratio between 1.91:1 and 4:5 inclusive.“,
-       }
-   }
-}
-```
+* Stakers (holds money)
+  * Mission: accepts stakers, manages their stake, offers rewards. It is slaved to receving calls from Proxy, whwere all the update-challenge logic resides.
+  * Stakers finite state machine is in slide 13 of [this GoogleSlides](https://docs.google.com/presentation/d/1LuqDhVnwTKULu8zJCxuKNc9sArvv0ITCG4r0_hrODFU/edit?usp=sharing)
+  
+* MarketCrypto (holds money)
+  * Mission: to operate the same auctions logic as the market in fiat, but in crypto, without anyone's permission.
 
-## Players web:
-URI: https://freeverse.io/players/?state=<player_state>
-* The player image is calculated on the fly in front of his state.
-* Player_state contains team_id => it can be used to add a second layer of customization: team t-shirt.
+## Folder contracts/gameEngine
 
-## Teams web:
-URI: https://freeverse.io/teams/<team_is>
+Libraries with the logic about playing matches, calendars, evolutions, etc.
+* **All functions are Pure**, except for several, which are basically pure too... but they had to be turned into View because they were so large that they needed to call among themselves. They keep their addresses in storage. We may turn these into Pure in the future by passing the addresses as calldata.
+  
+## Folder contracts/encoders
 
-# Action point:
-* crear mockup de la web del player 
-* crear mockup de la web del team 
-* mapping del status del player
+Pure functions for serializing/deserializing small pieces of data into uint256
 
-# Decoupling engine from tokens ?
-* how much cost a remote contract call vs local call?
+## Folder contracts/interfaces
+
+View/pure functions for backend clients.
+
 

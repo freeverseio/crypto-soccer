@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in EncodingSkills.sol and contracts inherited by it
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -8,154 +11,26 @@ const debug = require('../utils/debugUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Encoding = artifacts.require('EncodingSkills');
-const EncodingTact = artifacts.require('EncodingTacticsPart1');
+const EncodingTact = artifacts.require('EncodingTactics');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
-const Privileged = artifacts.require('Privileged');
-
-function secsToDays(secs) {
-    return secs/ (24 * 3600);
-}
 
 
-function dayOfBirthToAgeYears(dayOfBirth){ 
-    const now = Math.floor(new Date()/1000);
-    ageYears = (secsToDays(now) - dayOfBirth)*7/365;
-    return ageYears;
-}
+contract('EncodingSkills', (accounts) => {
 
-contract('Encoding', (accounts) => {
-
-    const epochInDays = 18387; // May 5th 2020
-    const tz = 1;
-    const countryIdxInTz = 1;
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
         constants = await ConstantsGetters.new().should.be.fulfilled;
         encoding = await Encoding.new().should.be.fulfilled;
         utils = await Utils.new().should.be.fulfilled;
-        privileged = await Privileged.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
         encodingGet = await EncodingGet.new().should.be.fulfilled;
         encodingTact = await EncodingTact.new().should.be.fulfilled;
     });
 
-    it('creating buyNow players: ageModifier', async () =>  {
-        mods = [];
-        for (age = 16; age < 38; age += 3) {
-            mod = await privileged.ageModifier(age).should.be.fulfilled;
-            mods.push(mod);
-        }
-        expectedMods = [ 11500, 11110, 10720, 10330, 9940, 9550, 8050, 6550 ];
-        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
-    });
-    
-    it('creating buyNow players: potentialModifier', async () =>  {
-        mods = [];
-        for (pot = 0; pot < 10; pot++) {
-            mod = await privileged.potentialModifier(pot).should.be.fulfilled;
-            mods.push(mod);
-        }
-        expectedMods = [ 8500, 8833, 9166, 9500, 9833, 10166, 10500, 10833, 11166, 11500 ];
-        debug.compareArrays(mods, expectedMods, toNum = true, verbose = false);
-    });
-    
-    it('creating one buyNow player', async () =>  {
-        expectedSkills = [ 1474, 1033, 829, 1039, 1612 ];
-        expectedTraits = [0, 3, 6, 1];
-        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
-        // compare actual values
-        debug.compareArrays(skills, expectedSkills, toNum = true, verbose = false);
-        ageYears.toNumber().should.be.equal(29);
-        debug.compareArrays(traits, expectedTraits, toNum = true, verbose = false);
-        internalId.should.be.bignumber.equal("275260863937");
-        // check that the average skill is as expected:
-        expectedAvgSkill = await privileged.computeAvgSkills(playerValue, ageYears, traits[0]).should.be.fulfilled;
-        sumSkills = expectedSkills.reduce((a, b) => a + b, 0);
-        (Math.abs(expectedAvgSkill.toNumber() - sumSkills/5) < 20).should.be.equal(true);
-        
-        // test that you get the same via the non-pure function:
-        var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerId(playerValue = 1000, seed, forwardPos = 3, epochInDays, tz, countryIdxInTz).should.be.fulfilled;
-        debug.compareArrays(skills2, expectedSkills, toNum = true, verbose = false);
-        debug.compareArrays(traits2, expectedTraits, toNum = true, verbose = false);
-        internalId2.should.be.bignumber.equal(internalId);
-        const now = Math.floor(new Date()/1000);
-        expectedDayOfBirth = Math.floor(secsToDays(now) - ageYears*365/7);
-        (Math.abs(dayOfBirth.toNumber() - expectedDayOfBirth) < 10).should.be.equal(true);
-        
-    });
 
-    it('creating buyNow players scales linearly with value, while other data remains the same', async () =>  {
-        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
-        var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPure(playerValue = 2000, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
-        for (s = 0; s < skills.length; s++) {
-            (Math.abs(skills2[s].toNumber() - 2*skills[s].toNumber()) < 20).should.be.equal(true);
-        }
-        for (t = 0; t < traits.length; t++) {
-            traits2[t].toNumber().should.be.equal(traits[t].toNumber());
-        }
-        internalId2.should.be.bignumber.equal(internalId);
-        ageYears.should.be.bignumber.equal(ageYears2);
-    });
-
-    it('creating a batch of buyNow players', async () =>  {
-        expectedSkills = [ 982, 852, 1187, 591, 1289 ];
-        expectedTraits = [ 3, 3, 3, 0 ];
-        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-        const nPlayersPerForwardPos = [0,0,0,2];
-        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1000, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
-        ).should.be.fulfilled;
-
-        // compare actual values
-        debug.compareArrays(skillsArray[0], expectedSkills, toNum = true, verbose = false);
-        debug.compareArrays(traitsArray[0], expectedTraits, toNum = true, verbose = false);
-        internalIdArray[0].should.be.bignumber.equal("275195391431");
-        internalIdArray[1].should.not.be.bignumber.equal("275195391431");
-      
-        // testing that they are created with the expected country and tz:
-        var {0: tz2, 1: countryIdxInTz2} = await privileged.getTZandCountryIdxFromPlayerId(playerIdArray[0]).should.be.fulfilled;
-        tz2.toNumber().should.be.equal(tz);
-        countryIdxInTz2.toNumber().should.be.equal(countryIdxInTz);
-    });
-    
-    it('creating a batch of buyNow players and displaying', async () =>  {
-        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-        const nPlayersPerForwardPos = [10,10,10,10];
-        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1000, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
-        ).should.be.fulfilled;
-        h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
-        assert.equal(h, '0x8dd8593751125e20d0b52891c6210f8d5502bd53dc557c1a32b2831f12a73f7b', "createBuyNowPlayerIdBatch not as expected");
-
-        if (false) {
-            // traits: shoot, speed, pass, defence, endurance
-            labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
-            st = "";
-            st2 = "";
-            counter = 0;
-            for (pos = 0; pos < nPlayersPerForwardPos.length; pos++) {
-                st += labels[pos];
-                for (p = 0; p < nPlayersPerForwardPos[pos]; p++) {
-                    st += "\nPot: " + traitsArray[counter][0];
-                    st += " | Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter]));
-                    st += " | Shoot: " + skillsArray[counter][0];
-                    st += " | Speed: " + skillsArray[counter][1];
-                    st += " | Pass: " + skillsArray[counter][2];
-                    st += " | Defence: " + skillsArray[counter][3];
-                    st += " | Endurance: " + skillsArray[counter][4];
-                    counter++;
-                }
-                st += "\n"
-            }
-            console.log(st);
-        }
-    });
-    
     it('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
@@ -219,7 +94,7 @@ contract('Encoding', (accounts) => {
             sumSkills
         ).should.be.fulfilled;
 
-        skills.should.be.bignumber.equal('40439920000726868070503716865792521545121682176182486071370780491777');
+        skills.should.be.bignumber.equal('155218556145067301836481091220056594090096264824095737423904769');
 
         N_SKILLS = 5;
         resultSkills = [];
@@ -227,7 +102,7 @@ contract('Encoding', (accounts) => {
             result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
             resultSkills.push(result);
         }
-        debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
+        debug.compareArrays(resultSkills, sk, toNum = true);
 
         result = await encodingGet.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
@@ -277,7 +152,7 @@ contract('Encoding', (accounts) => {
         
         result =  await encodingGet.getIsSpecial(skills).should.be.fulfilled;
         result.should.be.equal(false);
-        skills2 = await encodingGet.addIsSpecial(skills).should.be.fulfilled;
+        skills2 = await encodingSet.addIsSpecial(skills).should.be.fulfilled;
         result =  await encodingGet.getIsSpecial(skills2).should.be.fulfilled;
         result.should.be.equal(true);
         
@@ -291,7 +166,7 @@ contract('Encoding', (accounts) => {
             result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
             resultSkills.push(result);
         }
-        debug.compareArrays(resultSkills, sk, toNum = true, verbose = false);
+        debug.compareArrays(resultSkills, sk, toNum = true);
 
         alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
         skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
@@ -336,13 +211,13 @@ contract('Encoding', (accounts) => {
         const {0: _skills, 1: _day, 2: _traits, 3: _playerId, 4: _alignedSubstRed, 5: _genNonstopInj} = await utils.fullDecodeSkills(skills).should.be.fulfilled     
         _day.toNumber().should.be.equal(dayOfBirth);
         _playerId.toNumber().should.be.equal(playerId);
-        debug.compareArrays(_skills, sk, toNum = true, verbose = false);
+        debug.compareArrays(_skills, sk, toNum = true);
         expectedTraits = [potential, forwardness, leftishness, aggressiveness];
-        debug.compareArrays(_traits, expectedTraits, toNum = true, verbose = false);
+        debug.compareArrays(_traits, expectedTraits, toNum = true);
         expectedBools = [alignedEndOfFirstHalf, substitutedFirstHalf, redCardLastGame];
-        debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false, verbose = false);
+        debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false);
         expectedGenGameInj = [generation, gamesNonStopping, injuryWeeksLeft];
-        debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true, verbose = false);
+        debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true);
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {
