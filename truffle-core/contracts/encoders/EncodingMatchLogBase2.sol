@@ -21,44 +21,44 @@ contract EncodingMatchLogBase2  {
     }
     
     function getPenalty(uint256 log, uint8 pos)  public pure returns (bool) {
-        return ((log >> (128 + pos)) & 1) == 1;
+        return ((log >> (124 + pos)) & 1) == 1;
     }
     
     function getIsHomeStadium(uint256 log)  public pure returns (bool) {
-        return ((log >> 250) & 1) == 1;
+        return ((log >> 243) & 1) == 1;
     }
     
     /// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
     function getHalfTimeSubs(uint256 log, uint8 pos)  public pure returns (uint8) {
-        return uint8((log >> (185 + 5 * pos)) & 31);
+        return uint8((log >> (178 + 5 * pos)) & 31);
     }
 
     function getNDefs(uint256 log, bool is2ndHalf)  public pure returns (uint8) {
-        return uint8((log >> (200 + 4 * (is2ndHalf ? 1 : 0))) & 15);
+        return uint8((log >> (193 + 4 * (is2ndHalf ? 1 : 0))) & 15);
     }
 
     function addNTot2ndHalf(uint256 log, uint8 nTot)  public pure returns (uint256) {
-        return log | (uint256(nTot) << 208);
+        return log | (uint256(nTot) << 201);
     }
 
     function getNTot2ndHalf(uint256 log)  public pure returns (uint8) {
-        return uint8((log >> 208) & 15);
+        return uint8((log >> 201) & 15);
     }
 
     function getWinner(uint256 log) public pure returns (uint8) {
-        return uint8((log >> 212) & 3);
+        return uint8((log >> 205) & 3);
     }
     
     function getTeamSumSkills(uint256 log) public pure returns (uint256) {
-        return (log >> 214) & 16777215; /// 2^24 - 1
+        return (log >> 207) & 16777215; /// 2^24 - 1
     }
     
     function addTrainingPoints(uint256 log, uint256 points)  public pure returns (uint256) {
-        return log | (uint256(points) << 238);
+        return log | (uint256(points) << 231);
     }
 
     function getTrainingPoints(uint256 log)  public pure returns (uint16) {
-        return  uint16((log >> 238) & 4095); /// 2^12-1
+        return  uint16((log >> 231) & 4095); /// 2^12-1
     }
     
 }

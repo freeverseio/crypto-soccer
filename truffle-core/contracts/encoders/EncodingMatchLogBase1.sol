@@ -16,59 +16,59 @@ contract EncodingMatchLogBase1 is EncodingMatchLogBase4{
     }
     
     function addScoredPenalty(uint256 log, uint8 pos)  public pure returns (uint256) {
-        return log | (ONE256 << (128 + pos));
+        return log | (ONE256 << (124 + pos));
     }
 
     function getOutOfGamePlayer(uint256 log, bool is2ndHalf)  public pure returns (uint256) {
-        uint8 offset = is2ndHalf ? 155 : 135;
+        uint8 offset = is2ndHalf ? 141 : 131;
         return ((uint256(log) >> offset) & 15);
     }
 
     function getOutOfGameType(uint256 log, bool is2ndHalf)  public pure returns (uint256) {
-        uint8 offset = is2ndHalf ? 163 : 143;
-        return ((uint256(log) >> offset) & 3);
+        uint8 offset = is2ndHalf ? 141 : 131;
+        return ((uint256(log) >> (offset + 4)) & 3);
     }
 
     function getOutOfGameRound(uint256 log, bool is2ndHalf)  public pure returns (uint256) {
-        uint8 offset = is2ndHalf ? 155 : 135;
-        return ((uint256(log) >> offset +4 ) & 15);
+        uint8 offset = is2ndHalf ? 141 : 131;
+        return ((uint256(log) >> (offset + 6)) & 15);
     }
 
-    function addOutOfGame(uint256 log, uint8 player, uint8 round, uint8 typeOfOutOfGame, bool is2ndHalf)  public pure returns (uint256) {
-        uint8 offset = is2ndHalf ? 155 : 135;
+    function setOutOfGame(uint256 log, uint8 player, uint8 round, uint8 typeOfOutOfGame, bool is2ndHalf)  public pure returns (uint256) {
+        uint8 offset = is2ndHalf ? 141 : 131;
         /// in total, we will write 4b + 4b + 2b = 10b
         log &= ~(uint256(1023) << offset); /// note: 2**10-1 = 1023
         log |= (uint256(player) << offset);
-        log |= (uint256(round) << offset+4);
-        return log | (uint256(typeOfOutOfGame) << offset+8);
+        log |= (uint256(typeOfOutOfGame) << (offset + 8));
+        return log | (uint256(round) << (offset + 6));
     }
 
     function addYellowCard(uint256 log, uint8 player, uint8 posInHaf, bool is2ndHalf)  public pure returns (uint256) {
-        uint8 offset = (is2ndHalf ? 165 : 145) + posInHaf * 4;
+        uint8 offset = (is2ndHalf ? 158 : 151) + posInHaf * 4;
         return log | (uint256(player) << offset);
     }
     
     function getYellowCard(uint256 log, uint8 posInHaf, bool is2ndHalf)  public pure returns (uint8) {
-        uint8 offset = (is2ndHalf ? 165 : 145) + posInHaf * 4;
+        uint8 offset = (is2ndHalf ? 158 : 151) + posInHaf * 4;
         return uint8((log >> offset) & 15);
     }
     
-    /// recall that 0 means no subs, and we store here lineUp[p]+1 (where lineUp[p] = player shirt in the 25 that was substituted)
-    function addHalfTimeSubs(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(player) << (185 + 5 * pos));
-    }
-
     function setInGameSubsHappened(uint256 log, uint8 happenedType, uint8 posInHalf, bool is2ndHalf) public pure returns (uint256) {
-        uint8 offset = 173 + 2 * (posInHalf + (is2ndHalf ? 3 : 0));
+        uint8 offset = 166 + 2 * (posInHalf + (is2ndHalf ? 3 : 0));
         return (log & ~(uint256(3) << offset)) | (uint256(happenedType) << offset);
     }
 
+    /// recall that 0 means no subs, and we store here lineUp[p]+1 (where lineUp[p] = player shirt in the 25 that was substituted)
+    function addHalfTimeSubs(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
+        return log | (uint256(player) << (178 + 5 * pos));
+    }
+
     function addWinner(uint256 log, uint8 winner)  public pure returns (uint256) {
-        return log | (uint256(winner) << 212);
+        return log | (uint256(winner) << 205);
     }
 
     function addTeamSumSkills(uint256 log, uint256 extraSumSkills)  public pure returns (uint256) {
-        return log | (uint256(extraSumSkills) << 214);
+        return log | (uint256(extraSumSkills) << 207);
     }
 
 }

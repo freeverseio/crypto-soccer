@@ -183,7 +183,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         pure 
         returns(uint256) 
     {
-        if (outOfGamePlayer == NO_OUT_OF_GAME_PLAYER) return addOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
+        if (outOfGamePlayer == NO_OUT_OF_GAME_PLAYER) return setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
 
         uint8 minRound = 0;
         uint8 maxRound = ROUNDS_PER_MATCH-1;
@@ -196,8 +196,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         /// note that in-game events end up in round = ROUNDS_PER_MATCH - 1, so we leave endOfGame for round = ROUNDS_PER_MATCH
         if (getOutOfGameForGK(outOfGamePlayer, substitutions) >= 30) {
             return (!is2ndHalf || typeOfEvent == RED_CARD) ? 
-                addOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf) :
-                addOutOfGame(matchLog, outOfGamePlayer-30, ROUNDS_PER_MATCH, typeOfEvent, is2ndHalf);
+                setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf) :
+                setOutOfGame(matchLog, outOfGamePlayer-30, ROUNDS_PER_MATCH, typeOfEvent, is2ndHalf);
         }
 
         /// if the selected player was one of the guys joining during this half (outGame = 11, 12, or 13),
@@ -220,7 +220,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
                 } 
             }
         }
-        return addOutOfGame(matchLog, outOfGamePlayer, computeRound(rnds[0]+1, minRound, maxRound), typeOfEvent, is2ndHalf);
+        return setOutOfGame(matchLog, outOfGamePlayer, computeRound(rnds[0]+1, minRound, maxRound), typeOfEvent, is2ndHalf);
     }
 
     function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) public pure returns (uint8 round) {
