@@ -39,7 +39,7 @@ contract EncodingMatchLogBase1 is EncodingMatchLogBase4{
         /// in total, we will write 4b + 4b + 2b = 10b
         log &= ~(uint256(1023) << offset); /// note: 2**10-1 = 1023
         log |= (uint256(player) << offset);
-        log |= (uint256(typeOfOutOfGame) << (offset + 8));
+        log |= (uint256(typeOfOutOfGame) << (offset + 4));
         return log | (uint256(round) << (offset + 6));
     }
 
