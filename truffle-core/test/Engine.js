@@ -457,13 +457,15 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
         // second half
+        // note that since we have not replaced player 9, and the seed is the same, we get the very same results! 
+        // except for the different substis used
         tactics = await engine.encodeTactics(substis = [0,0,0], rounds = [0,0,0], lineupConsecutive, extraAttackNull, tacticsId = 0);
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 12]; 
+        expectedOut = [9, 9]; 
         expectedOutRounds = [1, 1]; // note that this 1 would be 9 otherwise
         expectedYellows1 = [1, 12]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
-        expectedYellows2 = [1, 14]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
+        expectedYellows2 = [1, 12]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -500,10 +502,10 @@ contract('Engine', (accounts) => {
         tactics = await engine.encodeTactics(substis = [0,0,0], rounds = [0,0,0], lineupConsecutive, extraAttackNull, tacticsId = 0);
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 1]; // note that the red card comes from two yellows.
+        expectedOut = [9, 9]; // note that the red card comes from two yellows.
         expectedOutRounds = [1, 1]; 
         expectedYellows1 = [1, 12]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
-        expectedYellows2 = [14, 14]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
+        expectedYellows2 = [1, 12]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
