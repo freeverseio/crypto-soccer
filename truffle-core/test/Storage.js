@@ -204,6 +204,8 @@ contract('Proxy', (accounts) => {
         // proxyV0 will be th newly deployed Proxy, which we will here be updating.
         const nContractsToProxy = 4;
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
+        result = await proxy.countSelectorsInContract(0).should.be.fulfilled;
+        result.toNumber().should.be.equal(17);
         const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
         assert.equal(await proxyV0.countContracts(), '5', "wrong V0 number of contracts in proxy");
