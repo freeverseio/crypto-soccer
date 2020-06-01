@@ -13,7 +13,6 @@ contract Proxy is ProxyStorage {
 
     address constant private NULL_ADDR  = address(0);
     address constant private PROXY_DUMMY_ADDR = address(1);
-    uint256 constant private FWD_GAS_LIMIT = 10000;  /// TODO: is this future-proof? shall we have it re-settable?
 
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
     event ContractsActivated(uint256[] contractIds, uint256 time);
@@ -49,9 +48,9 @@ contract Proxy is ProxyStorage {
     * @param _calldata Calldata for the delegatecall
     */
     function _delegate(address _target, bytes memory _calldata) private {
-        uint256 fwdGasLimit = FWD_GAS_LIMIT;
         assembly {
-            let result := delegatecall(sub(gas(), fwdGasLimit), _target, add(_calldata, 0x20), mload(_calldata), 0, 0)
+            // let result := delegatecall(sub(gas(), fwdGasLimit), _target, add(_calldata, 0x20), mload(_calldata), 0, 0)
+            let result := delegatecall(gas(), _target, add(_calldata, 0x20), mload(_calldata), 0, 0)
             let size := returndatasize()
             let ptr := mload(0x40)
             returndatacopy(ptr, 0, size)
@@ -209,7 +208,7 @@ contract Proxy is ProxyStorage {
     * @dev  Standard getters
     */
     function countContracts() external view returns(uint256) { return _contractsInfo.length; }
-    function countAddressesInContract(uint256 contractId) external view returns(uint256) { 
+    function countSelectorsInContract(uint256 contractId) external view returns(uint256) { 
         return _contractsInfo[contractId].selectors.length; 
     }
     function getContractAddressForSelector(bytes4 selector) external view returns(address) { 
