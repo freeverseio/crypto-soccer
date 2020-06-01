@@ -83,8 +83,8 @@ contract('Evolution', (accounts) => {
     const yellowCards1 = [14, 14]
     const yellowCards2 = [14, 14]
     const halfTimeSubstitutions = [14, 14, 14]
-    const nGKAndDefs1 = 4; 
-    const nGKAndDefs2 = 4; 
+    const nGKAndDefs1 = 5; 
+    const nGKAndDefs2 = 5; 
     const nTot = 11; 
     const winner = 2; // DRAW = 2
     const isHomeSt = false;
@@ -1326,14 +1326,15 @@ contract('Evolution', (accounts) => {
         yellows2 = [0, 0]
         defs1 = 4; 
         defs2 = 0; 
-        numTot = 10; 
+        numTot1 = 10; 
+        numTot2 = 10; 
         win = 0; 
         isHome = true;
         
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 3, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outGames, outRounds, typeOut, 
             isHome, ingameSubs1, ingameSubs2, yellows1, yellows2, 
-            halfTimeSubstitutions, defs1, defs2, numTot, win, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, defs1, defs2, numTot1, numTot2,  win, teamSumSkillsDefault, trainingPointsInit);
 
         logFinal = await training.computeTrainingPoints(log0, log0)
         expected = [36, 25];
@@ -1350,25 +1351,24 @@ contract('Evolution', (accounts) => {
         outGames = [9, 14]
         yellows1 = [2, 4]
         yellows2 = [3, 5]
-        defs1 = 4; 
-        defs2 = 4; 
-        numTot = 10; 
+        numTot1 = 10; 
+        numTot2 = 10; 
         win = 0; 
         isHome = true;
         
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outGames, outRounds, typeOut, 
             isHome, ingameSubs1, ingameSubs2, yellows1, yellows2, 
-            halfTimeSubstitutions, defs1, defs2, numTot, win, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, numTot1, numTot2,  win, teamSumSkillsDefault, trainingPointsInit);
 
         log1 = await logUtils.encodeLog(encodeLog, nGoals = 12, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outGames, outRounds, typeOut, 
             isHome, ingameSubs1, ingameSubs2, yellows1, yellows2, 
-            halfTimeSubstitutions, defs1, defs2, numTot, win, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, numTot1, numTot2,  win, teamSumSkillsDefault, trainingPointsInit);
     
         logFinal = await training.computeTrainingPoints(log0, log1)
         POINTS_FOR_HAVING_PLAYED = 10 
-        expected = [POINTS_FOR_HAVING_PLAYED, 139];
+        expected = [POINTS_FOR_HAVING_PLAYED, 138];
         points = [];
         for (team = 0; team < 2; team++) {
             point = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
@@ -1382,7 +1382,7 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(24+8) = 42
@@ -1402,7 +1402,7 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(5)  
@@ -1422,7 +1422,7 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_MIDS(5 * 5) - GOALS_OPPONENT(5)  
@@ -1442,7 +1442,7 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_DEFS(4 * 5) + ASSISTS(3*5) - GOALS_OPPONENT(5)  
@@ -1464,7 +1464,7 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHome, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, win, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, win, teamSumSkillsDefault, trainingPointsInit);
 
         goals = 4;
         ass     = Array.from(new Array(goals), (x,i) => 10);
@@ -1473,7 +1473,7 @@ contract('Evolution', (accounts) => {
         log1 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHome, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, win, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, win, teamSumSkillsDefault, trainingPointsInit);
             
         logFinal = await training.computeTrainingPoints(log0, log1)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + WIN_AT_HOME(11) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(4)  
@@ -1496,7 +1496,7 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHome, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, win, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, win, teamSumSkillsDefault, trainingPointsInit);
 
         goals = 6;
         ass     = Array.from(new Array(goals), (x,i) => 10);
@@ -1505,7 +1505,7 @@ contract('Evolution', (accounts) => {
         log1 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHome, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, win, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, win, teamSumSkillsDefault, trainingPointsInit);
             
         logFinal = await training.computeTrainingPoints(log0, log1)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(6)  
@@ -1526,11 +1526,11 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outGames, outOfGameRounds, types, 
             isHomeSt, ingameSubs1, ingameSubs2, yellows1, yellows2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(23+8) - REDS(3*2) - YELLOWS(4) 
-        expected = [31, 31];
+        expected = [32, 32];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);
@@ -1547,7 +1547,7 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await training.computeTrainingPoints(log0, log0)
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(5)  
@@ -1562,12 +1562,12 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkills, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkills, trainingPointsInit);
         teamSumSkills = 2000;
         log1 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkills, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkills, trainingPointsInit);
             
         logFinal = await training.computeTrainingPoints(log0, log1)
         expected = [50, 12];
@@ -1580,12 +1580,12 @@ contract('Evolution', (accounts) => {
         log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkills, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkills, trainingPointsInit);
         teamSumSkills = 1000;
         log1 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, winner, teamSumSkills, trainingPointsInit);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot, nTot, winner, teamSumSkills, trainingPointsInit);
             
         logFinal = await training.computeTrainingPoints(log0, log1)
         expected = [12, 50];
