@@ -1,14 +1,11 @@
 apiVersion: v1
 data:
   BLOCKS_PER_STEP: "10000"
-  PROXY_CONTRACT_ADDRESS: 0x6CCa0E9Bb1340A42222e48597578aD6E4A9fb84A
+  PROXY_CONTRACT_ADDRESS: 0x26d8d2Da4E28BAD84BcECDc1368Fb7a328fBf0eB
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: ""
   notary_extra_args: -iap_test
-  notary_private_key: 363bd383b24285cba965d524f54413c3369d8fb244b57359767a0da31ce6e7d3
-  relay_private_key: 0eec2a97925bcb1c636e63bc1db8b80f02dc8840e6a77b760b1c640b5f607f00
-  staker_private_key: 250898e6a7d0b04a1a39821a78fac0d1a2c9d63ed1399e05179a8a98b9997cef
 kind: ConfigMap
 metadata:
   labels:
@@ -408,7 +405,7 @@ spec:
         - -ethereum
         - http://xdai:8545
         - -private_key
-        - $(notary_private_key)
+        - $(MARKET_PRIVATE_KEY)
         - -proxy_address
         - $(PROXY_CONTRACT_ADDRESS)
         - -market_id
@@ -416,6 +413,12 @@ spec:
         - -google_key
         - /var/secrets/google/key.json
         - $(notary_extra_args)
+        env:
+        - name: MARKET_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: market
+              name: blockchain-accounts
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -518,7 +521,13 @@ spec:
         - -ipfs
         - /dns4/ipfsnode/tcp/5001
         - -private_key
-        - $(relay_private_key)
+        - $(RELAY_PRIVATE_KEY)
+        env:
+        - name: RELAY_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: relay
+              name: blockchain-accounts
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -566,9 +575,15 @@ spec:
         - -proxy_address
         - $(PROXY_CONTRACT_ADDRESS)
         - -staker
-        - $(staker_private_key)
+        - $(STAKER_PRIVATE_KEY)
         - -delta
         - $(BLOCKS_PER_STEP)
+        env:
+        - name: STAKER_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: staker
+              name: blockchain-accounts
         envFrom:
         - configMapRef:
             name: freeverse-configmap

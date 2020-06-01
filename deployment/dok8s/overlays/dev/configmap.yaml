@@ -6,16 +6,9 @@ data:
   freeverse_username: freeverse
   freeverse_password: freeverse
 
-  # address: 0x83207C27D6B7926ded479d0FA25e12cC34BF5f43 
-  relay_private_key: 0eec2a97925bcb1c636e63bc1db8b80f02dc8840e6a77b760b1c640b5f607f00
-  # address: 0x448e4B85C041333eEd6C25c5dD4E3353536CDE17
-  notary_private_key: 363bd383b24285cba965d524f54413c3369d8fb244b57359767a0da31ce6e7d3
-  # address: 0xDea2aa21c384D8cb79eB72eD76A214bb9f44cb79
-  staker_private_key: 250898e6a7d0b04a1a39821a78fac0d1a2c9d63ed1399e05179a8a98b9997cef
-
   market_id : ""
   notary_extra_args: "-iap_test"
 
-  PROXY_CONTRACT_ADDRESS: 0x6CCa0E9Bb1340A42222e48597578aD6E4A9fb84A
+  PROXY_CONTRACT_ADDRESS: 0x26d8d2Da4E28BAD84BcECDc1368Fb7a328fBf0eB
 
   BLOCKS_PER_STEP: "10000"

@@ -5,17 +5,13 @@ services:
     command: --min-peers 10 --max-peers 30
     volumes:
       - ethereum-data:/home/parity/.local/share/io.parity.ethereum
-        #    ports:
-        #      - "8545:8545"
   ipfs.node:
-    image: freeverseio/go-ipfs:v0.5.0
+    image: ipfs/go-ipfs:v0.5.0
     restart: always
     environment:
       - IPFS_PATH=/data
       # - IPFS_FD_MAX=4096
-      - IPFS_PROFILE=randomports
-    volumes:
-      - ipfs.node-data:/data
+      # - IPFS_PROFILE=test
   ipfs.cluster:
     image: ipfs/ipfs-cluster:v0.12.1
     restart: always
