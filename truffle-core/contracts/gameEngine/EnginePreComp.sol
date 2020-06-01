@@ -536,13 +536,14 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         (uint8[3] memory  substitutions,,uint8[14] memory lineup,, uint8 tacticsId) = decodeTactics(tactics);
         uint8 changes;
         uint256 teamSkills;
+        uint8 fieldPlayers;
         
         /// Count changes during half-time, as well as not-aligned players
-        /// ...note: substitutions = 11 means NO_SUBS
         for (uint8 p = 0; p < 11; p++) {
             if (lineup[p] != NO_LINEUP) {   
                 linedUpSkills[p] = verifyCanPlay(lineup[p], skills[lineup[p]], is2ndHalf, false);
                 if (linedUpSkills[p] != 0) {
+                    fieldPlayers++;
                     if (is2ndHalf && !getAlignedEndOfFirstHalf(linedUpSkills[p])) {
                         matchLog = addHalfTimeSubs(matchLog, lineup[p]+1, changes); /// for halftime subs, 0 = NO_SUBS
                         changes++;
@@ -552,33 +553,37 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
             }
         }
         
-        /// Count changes ingame during 1st half
-        /// matchLog >> 189, 190, 191 contain ingameSubsCancelled
+        /// If we are in 2nd half, count ingame changes that took place during 1st half
         if (is2ndHalf) {
             for (uint8 p = 0; p < 3; p++) {
                 if (getInGameSubsHappened(matchLog, p, false) == CHG_HAPPENED) changes++;
             }        
-            if (getOutOfGameType(matchLog, true) == RED_CARD) changes++;
         }
 
-        if ((substitutions[0] != NO_SUBST) && (lineup[11] != NO_LINEUP)) {
-            changes++;
-            linedUpSkills[11] = verifyCanPlay(lineup[11], skills[lineup[11]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(linedUpSkills[11]); 
-        }
-        if ((substitutions[1] != NO_SUBST) && (lineup[12] != NO_LINEUP)) {
-            changes++;
-            require(substitutions[0] != substitutions[1], "changelist incorrect");
-            linedUpSkills[12] = verifyCanPlay(lineup[12], skills[lineup[12]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(linedUpSkills[12]); 
-        }
-        if ((substitutions[2] != NO_SUBST) && (lineup[13] != NO_LINEUP)) {
-            changes++;
-            require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
-            linedUpSkills[13] = verifyCanPlay(lineup[13], skills[lineup[13]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(linedUpSkills[13]); 
+        /// Count subtitutions planned for the half to be played now:
+        for (uint8 p = 0; p < 3; p++) {
+            if ((substitutions[p] != NO_SUBST) && (lineup[11+p] != NO_LINEUP)) {
+                linedUpSkills[11+p] = verifyCanPlay(lineup[11+p], skills[lineup[11+p]], is2ndHalf, true);
+                if (linedUpSkills[11+p]>0) {
+                    changes++;
+                    teamSkills += getSumOfSkills(linedUpSkills[11+p]); 
+                    /// if the player to be substituted was an empty slot, then add 1 to fieldPlayers
+                    /// this prevents, e.g., having a red-carded from 1st half not starting the 2nd half (so that the
+                    /// system would allow a 10 players lineup), to be immediately substituted by another player, hence
+                    /// having 11 players again in the field.
+                    if (
+                        (lineup[substitutions[p]] == NO_LINEUP) || 
+                        (verifyCanPlay(lineup[substitutions[p]], skills[lineup[substitutions[p]]], is2ndHalf, false) == 0)
+                    ) {
+                        fieldPlayers++;
+                    }
+                }
+            }
         }
         require(changes < 4, "max allowed changes in a game is 3");
+        require(fieldPlayers < (getOutOfGameType(matchLog, false) == RED_CARD ? 11 : 12), "more players aligned than allowed by red cards");
+
+        /// Check that the same player does not appear twice in the lineup
         lineup = sort14(lineup);
         for (uint8 p = 1; p < 11; p++) require((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1], "player appears twice in lineup!");  
         /// Note that teamSumSkills is the sum of, at most, 14 skills of, at most, 20b each. 
