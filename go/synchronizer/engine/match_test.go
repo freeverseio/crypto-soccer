@@ -231,7 +231,7 @@ func TestMatchRedCards(t *testing.T) {
 	player := m.HomeTeam.Players[10]
 	assert.Equal(t, player.Skills().String(), "41189051263162475633439470877683173079621711484548237131060872184")
 	assert.Assert(t, player.RedCard)
-	assert.Assert(t, !player.YellowCard1stHalf)
+	assert.Assert(t, player.YellowCard1stHalf)
 }
 
 func TestMatchHardInjury(t *testing.T) {
@@ -321,7 +321,7 @@ func TestMatchJson(t *testing.T) {
 func TestMatchHash(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
-	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "313cc8b62f5a3dd84903050f69c6dc30ed7b5d39d50a9286414f29fb76c92faf")
+	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "aa2022209515af9fa7050bef0f4d113e0b017b6d8129e30da6ef099e6c10036b")
 }
 
 func TestMatchError2ndHalf(t *testing.T) {

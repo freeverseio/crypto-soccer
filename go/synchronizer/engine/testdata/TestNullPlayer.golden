@@ -18,6 +18,7 @@
 		InjuryMatchesLeft: (uint8) 0,
 		Tiredness: (int) 0,
 		CountryOfBirth: (string) "",
-		Race: (string) ""
+		Race: (string) "",
+		YellowCard1stHalf: (bool) false
 	}
 })
