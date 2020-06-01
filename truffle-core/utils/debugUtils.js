@@ -1,4 +1,4 @@
-function compareArraysInternal(result, expected, toNum, verbose, isBigNumber) {
+function compareArraysInternal(result, expected, toNum, isBigNumber, verbose) {
   verb = [];
   for (i = 0; i < expected.length; i++) {
       if (toNum) verb.push(result[i].toNumber());
@@ -16,10 +16,10 @@ function compareArraysInternal(result, expected, toNum, verbose, isBigNumber) {
 
 function compareArrays(result, expected, toNum = true, isBigNumber = false) {
   try {
-    compareArraysInternal(result, expected, toNum, isBigNumber)
+    compareArraysInternal(result, expected, toNum, isBigNumber, verbose = false)
   } 
   catch(e) {
-    compareArraysInternal(result, expected, toNum, verbose = true, isBigNumber)
+    compareArraysInternal(result, expected, toNum, isBigNumber, verbose = true)
     throw e
   }  
 }
