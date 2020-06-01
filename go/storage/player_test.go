@@ -52,6 +52,7 @@ func TestPlayerUpdate(t *testing.T) {
 	player.PlayerId = big.NewInt(33)
 	player.TeamId = teamID
 	player.EncodedSkills = big.NewInt(4)
+	player.YellowCard1stHalf = true
 	blockNumber := uint64(3)
 	assert.NilError(t, player.Insert(tx, blockNumber))
 	player2, err := storage.PlayerByPlayerId(tx, player.PlayerId)

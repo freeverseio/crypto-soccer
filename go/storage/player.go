@@ -115,7 +115,7 @@ func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	tiredness=$12,
 	country_of_birth=$13,
 	race=$14,
-	yellow_card_1st_half=$5
+	yellow_card_1st_half=$15
 	WHERE player_id=$16;`,
 		b.TeamId,
 		b.Defence,
