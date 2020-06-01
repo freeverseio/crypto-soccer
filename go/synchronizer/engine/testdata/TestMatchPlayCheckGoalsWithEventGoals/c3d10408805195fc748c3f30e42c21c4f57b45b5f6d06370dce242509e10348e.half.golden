@@ -39,7 +39,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1809252842100639265214872417005514992555248732079271354962196249352681291937"
+			MatchLog: (string) (len=75) "452313210525228663555551825528067050472651944852332658570032182482679365793"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -171,7 +171,7 @@
 					Shoot: (uint64) 1146,
 					Endurance: (uint64) 1187,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(205703391561554643132782037206476722915557254607305571195421818),
+					EncodedSkills: (*big.Int)(26533776308700851317612288958124084802639331104744583384773166202),
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
@@ -309,7 +309,7 @@
 					Shoot: (uint64) 1146,
 					Endurance: (uint64) 1187,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(205703391561554643132782037206476722915557254607305571195421818),
+					EncodedSkills: (*big.Int)(26533776308700851317612288958124084802639331104744583384773166202),
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
@@ -679,7 +679,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1809252842100639265214872417008726299863837143079303098621705029304755159169"
+			MatchLog: (string) (len=75) "452313210525228663555551825733590718222310168992376438399006898017007566977"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -765,7 +765,7 @@
 					Shoot: (uint64) 1146,
 					Endurance: (uint64) 1187,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(205703391561554643132782037206476722915557254607305571195421818),
+					EncodedSkills: (*big.Int)(26533776308700851317612288958124084802639331104744583384773166202),
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
@@ -926,7 +926,7 @@
 					Shoot: (uint64) 1146,
 					Endurance: (uint64) 1187,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(205703391561554643132782037206476722915557254607305571195421818),
+					EncodedSkills: (*big.Int)(26533776308700851317612288958124084802639331104744583384773166202),
 					EncodedState: (*big.Int)(<nil>),
 					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
