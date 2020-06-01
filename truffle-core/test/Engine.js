@@ -430,7 +430,7 @@ contract('Engine', (accounts) => {
             nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = false);
             nDefs.toNumber().should.be.equal(0); // 0 because we did not playHalfMatch in 1st half
             nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = true);
-            nDefs.toNumber().should.be.equal(3); // 3 because it's 1 less than in a 442 tactics
+            nDefs.toNumber().should.be.equal(4); // 4 = 1 GK + 3 def, because it's 1 less than in a 442 tactics
         }   
     });
     
@@ -688,9 +688,9 @@ contract('Engine', (accounts) => {
             winner = await encodingLog.getWinner(log12[team]);
             winner.toNumber().should.be.equal(WINNER_AWAY);
             nDefs = await encodingLog.getNGKAndDefs(log12[team], is2nd = false);
-            nDefs.toNumber().should.be.equal(4);
+            nDefs.toNumber().should.be.equal(5);
             nDefs = await encodingLog.getNGKAndDefs(log12[team], is2nd = true);
-            nDefs.toNumber().should.be.equal(4);
+            nDefs.toNumber().should.be.equal(5);
         }
         debug.compareArrays(goals, expected, toNum = true);
     });
@@ -720,9 +720,9 @@ contract('Engine', (accounts) => {
         log2 = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         for (team = 0; team < 2; team++) {
             nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = false);
-            nDefs.toNumber().should.be.equal(4);
+            nDefs.toNumber().should.be.equal(5);
             nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = true);
-            nDefs.toNumber().should.be.equal(4);
+            nDefs.toNumber().should.be.equal(5);
             teamSkills = await encodingLog.getTeamSumSkills(log2[team]).should.be.fulfilled;
             teamSkills.toNumber().should.be.equal(2814);
         }
