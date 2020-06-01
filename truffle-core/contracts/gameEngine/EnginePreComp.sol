@@ -582,6 +582,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         }
         require(changes < 4, "max allowed changes in a game is 3");
         require(fieldPlayers < (getOutOfGameType(matchLog, false) == RED_CARD ? 11 : 12), "more players aligned than allowed by red cards");
+        matchLog = addNTot(matchLog, fieldPlayers, is2ndHalf);
 
         /// Check that the same player does not appear twice in the lineup
         lineup = sort14(lineup);

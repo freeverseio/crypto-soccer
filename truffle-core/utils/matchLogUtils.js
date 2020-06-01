@@ -3,7 +3,7 @@ const UNDEF = undefined;
 async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
     outOfGames, outOfGameRounds, typesOutOfGames, 
     isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-    halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
+    halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
 ) {
     log = 0;
     log = await encoding.addNGoals(log, nGoals).should.be.fulfilled;
@@ -24,9 +24,10 @@ async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterFor
     for (p = 0; p <yellowCards2.length; p++) log = await encoding.addYellowCard(log, yellowCards2[p], p, is2nd = true).should.be.fulfilled;
     for (p = 0; p <halfTimeSubstitutions.length; p++) log = await encoding.addHalfTimeSubs(log, halfTimeSubstitutions[p], p).should.be.fulfilled;
     
-    log = await encoding.addNDefs(log, nDefs1, is2nd = false).should.be.fulfilled;
-    log = await encoding.addNDefs(log, nDefs2, is2nd = true).should.be.fulfilled;
-    log = await encoding.addNTot2ndHalf(log, nTot).should.be.fulfilled;
+    log = await encoding.addNGKAndDefs(log, nGKAndDefs1, is2nd = false).should.be.fulfilled;
+    log = await encoding.addNGKAndDefs(log, nGKAndDefs2, is2nd = true).should.be.fulfilled;
+    log = await encoding.addNTot(log, nTot1, is2nd = false).should.be.fulfilled;
+    log = await encoding.addNTot(log, nTot2, is2nd = true).should.be.fulfilled;
     log = await encoding.addWinner(log, winner).should.be.fulfilled;
     log = await encoding.addTeamSumSkills(log, teamSumSkills).should.be.fulfilled;
     log = await encoding.addTrainingPoints(log, trainingPoints).should.be.fulfilled;
@@ -36,7 +37,7 @@ async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterFor
 async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
     outOfGames, outOfGameRounds, typesOutOfGames, 
     isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-    halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
+    halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
 ) 
 {
     if (nGoals != UNDEF) {
@@ -112,17 +113,21 @@ async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx
             result.toNumber().should.be.equal(halfTimeSubstitutions[p]);
         }
     }        
-    if (nDefs1 != UNDEF) {
-        result = await encoding.getNDefs(log, is2nd = false).should.be.fulfilled;
-        result.toNumber().should.be.equal(nDefs1);
+    if (nGKAndDefs1 != UNDEF) {
+        result = await encoding.getNGKAndDefs(log, is2nd = false).should.be.fulfilled;
+        result.toNumber().should.be.equal(nGKAndDefs1);
     }        
-    if (nDefs2 != UNDEF) {
-        result = await encoding.getNDefs(log, is2nd = true).should.be.fulfilled;
-        result.toNumber().should.be.equal(nDefs2);
+    if (nGKAndDefs2 != UNDEF) {
+        result = await encoding.getNGKAndDefs(log, is2nd = true).should.be.fulfilled;
+        result.toNumber().should.be.equal(nGKAndDefs2);
     }        
-    if (nTot != UNDEF) {
-        result = await encoding.getNTot2ndHalf(log).should.be.fulfilled;
-        result.toNumber().should.be.equal(nTot);
+    if (nTot1 != UNDEF) {
+        result = await encoding.getNTot(log, is2nd = false).should.be.fulfilled;
+        result.toNumber().should.be.equal(nTot1);
+    }        
+    if (nTot2 != UNDEF) {
+        result = await encoding.getNTot(log, is2nd = true).should.be.fulfilled;
+        result.toNumber().should.be.equal(nTot2);
     }        
     if (winner != UNDEF) {
         result = await encoding.getWinner(log).should.be.fulfilled;

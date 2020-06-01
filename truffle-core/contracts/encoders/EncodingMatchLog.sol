@@ -41,12 +41,12 @@ import "../encoders/EncodingMatchLogBase3.sol";
  uint8[3] memory halfTimeSubstitutions,  5b each, offset 179
     0 means no subs, and we store here lineUp[p]+1 (where lineUp[p] = player shirt in the 25 that was substituted)
 
- nDefsHalf[2], 4b each, offset 194
- NTot2ndHalf, 4b offset 202
- winner, 2b, winner: 0 = home, 1 = away, 2 = draw, offset 206      
- teamSumSkills: 24b  offset 208
- trainingPoints, 12b, offset 232
- bool isHomeStadium,  1b each, offset 244
+ nDefs[2], 4b each, offset 194
+ NTotHalf[2], 4b offset 202
+ winner, 2b, winner: 0 = home, 1 = away, 2 = draw, offset 210      
+ teamSumSkills: 24b  offset 212
+ trainingPoints, 12b, offset 236
+ bool isHomeStadium,  1b each, offset 248
 */
 
 contract EncodingMatchLog is EncodingMatchLogBase1, EncodingMatchLogBase2, EncodingMatchLogBase3 {

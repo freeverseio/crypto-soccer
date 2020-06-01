@@ -254,7 +254,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog[0], nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt = UNDEF, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF, nTot2 = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
         // check that the 2nd team does not have an identical set of injuries+redcards
         utils = await Utils.new().should.be.fulfilled;
@@ -307,7 +307,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF, nTot2 = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
 
     
@@ -330,7 +330,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
 
      it('computeExceptionalEvents clashing with redcards after changing player', async () => {
@@ -352,7 +352,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
 
     it('computeExceptionalEvents clashing with redcards after changing player forcing last minute', async () => {
@@ -374,7 +374,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
 
     it('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
@@ -397,7 +397,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
     
     it('check that nDefs is reduced by one when a defender misses in the 2nd half', async () => {
@@ -419,7 +419,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
            
         // the player with shirt = 1 was substituted by player 13, who was red-carded
         // in the 2nd half there is a defender less than usual
@@ -427,9 +427,9 @@ contract('Engine', (accounts) => {
         seedDraw = 12;
         log2 = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], [newLog, newLog], [is2nd = true, isHomeStadium,  playoff = false]).should.be.fulfilled;
         for (team = 0; team < 2; team++){
-            nDefs = await encodingLog.getNDefs(log2[team], is2nd = false);
+            nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = false);
             nDefs.toNumber().should.be.equal(0); // 0 because we did not playHalfMatch in 1st half
-            nDefs = await encodingLog.getNDefs(log2[team], is2nd = true);
+            nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = true);
             nDefs.toNumber().should.be.equal(3); // 3 because it's 1 less than in a 442 tactics
         }   
     });
@@ -454,7 +454,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
         // second half
         // note that since we have not replaced player 9, and the seed is the same, we get the very same results! 
@@ -472,7 +472,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, finalLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
     });
     
@@ -496,7 +496,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
         // second half
         tactics = await engine.encodeTactics(substis = [0,0,0], rounds = [0,0,0], lineupConsecutive, extraAttackNull, tacticsId = 0);
@@ -512,7 +512,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, finalLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });    
 
     it('play a match with a special playerId that made it fail before fixing a bug', async () => {
@@ -539,15 +539,16 @@ contract('Engine', (accounts) => {
         yellowCards1 = [14, 0]
         yellowCards2 = [0, 0]
         halfTimeSubstitutions = [14, 14, 14]
-        nDefs1 = 4; 
-        nDefs2 = 0; 
-        nTot = 10; 
+        nGKAndDefs1 = 4; 
+        nGKAndDefs2 = 0; 
+        nTot1 = 10; 
+        nTot2 = 10; 
         winner = 0; 
         
         log0 = await logUtils.encodeLog(encodingLog, nGoals = 3, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsDefault);
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkillsDefault, trainingPointsDefault);
         
         seedDraw= seed;
         teamStateAll50Half2[9] = 0;
@@ -573,10 +574,12 @@ contract('Engine', (accounts) => {
         for (team = 0; team < 2; team++){
             win = await encodingLog.getWinner(log2[team]).should.be.fulfilled;
             win.toNumber().should.be.equal(1);
-            nDefs = await encodingLog.getNDefs(log2[team], is2nd = false);
+            // in first half we hardcoded 4
+            nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = false);
             nDefs.toNumber().should.be.equal(4);
-            nDefs = await encodingLog.getNDefs(log2[team], is2nd = true);
-            nDefs.toNumber().should.be.equal(4);
+            // in 2nd half he computed it, and since its 442 => nGK+nDef = 5
+            nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = true);
+            nDefs.toNumber().should.be.equal(5);
         }   
     });
     
@@ -684,9 +687,9 @@ contract('Engine', (accounts) => {
             // nGoals.toNumber().should.be.equal(expected[team]);
             winner = await encodingLog.getWinner(log12[team]);
             winner.toNumber().should.be.equal(WINNER_AWAY);
-            nDefs = await encodingLog.getNDefs(log12[team], is2nd = false);
+            nDefs = await encodingLog.getNGKAndDefs(log12[team], is2nd = false);
             nDefs.toNumber().should.be.equal(4);
-            nDefs = await encodingLog.getNDefs(log12[team], is2nd = true);
+            nDefs = await encodingLog.getNGKAndDefs(log12[team], is2nd = true);
             nDefs.toNumber().should.be.equal(4);
         }
         debug.compareArrays(goals, expected, toNum = true);
@@ -707,7 +710,7 @@ contract('Engine', (accounts) => {
         await logUtils.checkExpectedLog(encodingLog, log0[0], nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
-            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF, nTot2 = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
         
         teamStateAll50Half2[9] = await encodingSet.setRedCardLastGame(teamStateAll50Half2[9], true);    
         result = await precomp.verifyCanPlay(linedUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
@@ -716,9 +719,9 @@ contract('Engine', (accounts) => {
         // so, since player 9 was red carded, he's still in the field, they are basically playing with 10 players.
         log2 = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         for (team = 0; team < 2; team++) {
-            nDefs = await encodingLog.getNDefs(log2[team], is2nd = false);
+            nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = false);
             nDefs.toNumber().should.be.equal(4);
-            nDefs = await encodingLog.getNDefs(log2[team], is2nd = true);
+            nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = true);
             nDefs.toNumber().should.be.equal(4);
             teamSkills = await encodingLog.getTeamSumSkills(log2[team]).should.be.fulfilled;
             teamSkills.toNumber().should.be.equal(2814);

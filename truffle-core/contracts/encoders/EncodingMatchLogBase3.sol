@@ -26,16 +26,16 @@ contract EncodingMatchLogBase3 is EncodingMatchLogBase4 {
     }
 
     function addWinnerToBothLogs(uint256[2] memory logs, uint8 winner)  public pure returns (uint256[2] memory) {
-        logs[0] |= (uint256(winner) << 206);
-        logs[1] |= (uint256(winner) << 206);
+        logs[0] |= (uint256(winner) << 210);
+        logs[1] |= (uint256(winner) << 210);
         return logs;
     }
 
-    function addNDefs(uint256 log, uint8 nDefs, bool is2ndHalf)  public pure returns (uint256) {
+    function addNGKAndDefs(uint256 log, uint8 nDefs, bool is2ndHalf)  public pure returns (uint256) {
         return log | (uint256(nDefs) << (194 + 4 * (is2ndHalf ? 1 : 0)));
     }
 
     function setIsHomeStadium(uint256 log, bool val)  public pure returns (uint256) {
-        return (log & ~(uint256(1) << 244)) | (uint256(val ? 1: 0) << 244);
+        return (log & ~(uint256(1) << 248)) | (uint256(val ? 1: 0) << 248);
     }
 }

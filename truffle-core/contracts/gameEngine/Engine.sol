@@ -133,8 +133,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         (matchLogs[0], skills[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
         (matchLogs[1], skills[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
 
-        matchLogs[0] = writeNDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
-        matchLogs[1] = writeNDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
         globSkills[0] = _precomp.getTeamGlobSkills(skills[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = _precomp.getTeamGlobSkills(skills[1], playersPerZone[1], extraAttack[1]);
@@ -213,8 +213,9 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return (matchLog, linedUpSkills, getPlayersPerZone(tacticsId));
     }
     
-    /// adds to the matchLog the number of defenders actually linedUp (some skills could be empty slots)
-    function writeNDefs(
+    /// adds to the matchLog the number of defenders and GKs actually linedUp (some skills could be empty slots)
+    /// ...at least, linedUp at the start of the current half
+    function computeNGKAndDefs(
         uint256 matchLog, 
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint8 nDefsInTactics, 
@@ -224,11 +225,11 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         pure 
         returns (uint256) 
     {
-        uint8 nDefs = nDefsInTactics;
-        for (uint8 p = 1; p < 1 + nDefsInTactics; p++) {
-            if (skills[p] == 0) nDefs--;
+        uint8 n;
+        for (uint8 p = 0; p < 1 + nDefsInTactics; p++) {
+            if (skills[p] != 0) n++;
         }
-        return addNDefs(matchLog, nDefs, is2ndHalf);
+        return addNGKAndDefs(matchLog, n, is2ndHalf);
     }
 
     //// @dev Rescales global skills of both teams according to their endurance

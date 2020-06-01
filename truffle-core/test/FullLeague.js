@@ -90,8 +90,8 @@ contract('FullLeague', (accounts) => {
     const yellowCards1 = [14, 14]
     const yellowCards2 = [14, 14]
     const halfTimeSubstitutions = [14, 14, 14]
-    const nDefs1 = 4; 
-    const nDefs2 = 4; 
+    const nGKAndDefs1 = 4; 
+    const nGKAndDefs2 = 4; 
     const nTot = 11; 
     const winner = 2; // DRAW = 2
     const isHomeSt = false;

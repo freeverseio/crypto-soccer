@@ -63,12 +63,16 @@ contract EncodingMatchLogBase1 is EncodingMatchLogBase4{
         return log | (uint256(player) << (179 + 5 * pos));
     }
 
+    function addNTot(uint256 log, uint8 nTot, bool is2ndHalf)  public pure returns (uint256) {
+        return log | (uint256(nTot) << (202 + (is2ndHalf ? 4 : 0)));
+    }
+
     function addWinner(uint256 log, uint8 winner)  public pure returns (uint256) {
-        return log | (uint256(winner) << 206);
+        return log | (uint256(winner) << 210);
     }
 
     function addTeamSumSkills(uint256 log, uint256 extraSumSkills)  public pure returns (uint256) {
-        return log | (uint256(extraSumSkills) << 208);
+        return log | (uint256(extraSumSkills) << 212);
     }
 
 }

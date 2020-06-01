@@ -37,9 +37,10 @@ contract('EncodingMatchLog', (accounts) => {
         yellowCards1 = [14, 15];
         yellowCards2 = [15, 14];
         halfTimeSubstitutions = [31, 30, 31];
-        nDefs1 = 14;
-        nDefs2 = 15;
-        nTot = 15;
+        nGKAndDefs1 = 14;
+        nGKAndDefs2 = 15;
+        nTot1 = 15;
+        nTot2 = 14;
         winner = 3;
         teamSumSkills = (2**24)-1;
         trainingPoints = (2**12)-1;
@@ -47,13 +48,13 @@ contract('EncodingMatchLog', (accounts) => {
         log = await logUtils.encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
         );
 
         await logUtils.checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
         );
             
         // mini test that once showed a bug:
