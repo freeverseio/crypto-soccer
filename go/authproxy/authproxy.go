@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -34,7 +35,7 @@ func VerifyToken(token string, grace time.Duration) (common.Address, time.Time, 
 	// token have: unix_time:signature
 	tokenfields := strings.Split(token, ":")
 	if len(tokenfields) != 2 {
-		return common.Address{}, time.Time{}, errors.New("malformed token")
+		return common.Address{}, time.Time{}, errors.New("malformed token:" + token)
 	}
 	// check date
 	tsunix, err := strconv.Atoi(tokenfields[0])
@@ -57,4 +58,9 @@ func VerifyToken(token string, grace time.Duration) (common.Address, time.Time, 
 	}
 	addr := crypto.PubkeyToAddress(*pbk)
 	return addr, ts, nil
+}
+
+func MatchTransferFirstBotMutation(data string) (bool, error) {
+	ex := `mutation(\s*).*(\s*){(\s*)transferFirstBotToAddr(\s*)\((\s*)timezone(\s*):(\s*)\d{1,2}(\s*),(\s*)countryIdxInTimezone(\s*):(\s*)[0-9]+(\s*),(\s*)address(\s*):(\s*)"[a-zA-Z0-9]+"(\s*)\)(\s*)}`
+	return regexp.MatchString(ex, data)
 }
