@@ -18,6 +18,12 @@ spec:
       - name: synchronizer
         image: freeverseio/synchronizer:dev
         imagePullPolicy: Always
+        env:
+          - name: STAKER_PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: blockchain-accounts
+                key: staker
         envFrom:
           - configMapRef:
               name: freeverse-configmap
@@ -25,7 +31,7 @@ spec:
                -ethereum, http://xdai:8545,
                -ipfs, "/dns4/ipfsnode/tcp/5001",
                -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
-               -staker, "$(staker_private_key)",
+               -staker, "$(STAKER_PRIVATE_KEY)",
                -delta, "$(BLOCKS_PER_STEP)"]
 
       imagePullSecrets:
