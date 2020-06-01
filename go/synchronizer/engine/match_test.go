@@ -231,6 +231,7 @@ func TestMatchRedCards(t *testing.T) {
 	player := m.HomeTeam.Players[10]
 	assert.Equal(t, player.Skills().String(), "41189051263162475633439470877683173079621711484548237131060872184")
 	assert.Assert(t, player.RedCard)
+	assert.Assert(t, !player.YellowCard1stHalf)
 }
 
 func TestMatchHardInjury(t *testing.T) {

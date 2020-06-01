@@ -17,5 +17,6 @@ RedCard: (bool) false,
 InjuryMatchesLeft: (uint8) 0,
 Tiredness: (int) 0,
 CountryOfBirth: (string) (len=2) "DK",
-Race: (string) (len=7) "Spanish"
+Race: (string) (len=7) "Spanish",
+YellowCard1stHalf: (bool) false
 })

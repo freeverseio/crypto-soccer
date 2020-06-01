@@ -59,11 +59,13 @@ func TestPlayerUpdate(t *testing.T) {
 	assert.Equal(t, player2.EncodedSkills.String(), player.EncodedSkills.String())
 	player2.EncodedSkills = big.NewInt(3)
 	player2.RedCard = true
+	player2.YellowCard1stHalf = true
 	player2.InjuryMatchesLeft = 3
 	assert.NilError(t, player2.Update(tx, blockNumber+1))
 	player3, err := storage.PlayerByPlayerId(tx, player.PlayerId)
 	assert.NilError(t, err)
 	assert.Equal(t, player2.RedCard, player3.RedCard)
+	assert.Equal(t, player2.YellowCard1stHalf, player3.YellowCard1stHalf)
 	assert.Equal(t, player2.InjuryMatchesLeft, player3.InjuryMatchesLeft)
 	assert.Equal(t, player2.EncodedSkills.String(), player3.EncodedSkills.String())
 }
