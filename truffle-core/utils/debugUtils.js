@@ -19,7 +19,6 @@ function compareArrays(result, expected, toNum = true, isBigNumber = false) {
     compareArraysInternal(result, expected, toNum, isBigNumber)
   } 
   catch(e) {
-    console.log(e)
     compareArraysInternal(result, expected, toNum, verbose = true, isBigNumber)
     throw e
   }  
