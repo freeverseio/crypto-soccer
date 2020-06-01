@@ -507,11 +507,21 @@ contract('Evolution', (accounts) => {
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_HARD_INJ).should.be.fulfilled
+        alignedInjured = await evo.setAlignedEndOfFirstHalf(alignedInjured, true).should.be.fulfilled
+        alignedInjured = await evo.setOutOfGameFirstHalf(alignedInjured, true).should.be.fulfilled
         newSkills[1].should.be.bignumber.equal(alignedInjured);
         for (p = 0; p < 14; p++) {
             if (p != 1) {
-                if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
-                else {newSkills[p].should.be.bignumber.equal(substituted);}
+                result0 = await evo.getAlignedEndOfFirstHalf(newSkills[p]).should.be.fulfilled;
+                result1 = await evo.getSubstitutedFirstHalf(newSkills[p]).should.be.fulfilled;
+                if (!substitutions.includes(p)) {
+                    result0.should.be.equal(true);
+                    result1.should.be.equal(false);
+                }
+                else {
+                    result0.should.be.equal(false);
+                    result1.should.be.equal(true);
+                }
             } 
         }
         // now try the same with a soft injury:
@@ -519,11 +529,21 @@ contract('Evolution', (accounts) => {
         newSkills = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_SOFT_INJ).should.be.fulfilled
+        alignedInjured = await evo.setAlignedEndOfFirstHalf(alignedInjured, true).should.be.fulfilled
+        alignedInjured = await evo.setOutOfGameFirstHalf(alignedInjured, true).should.be.fulfilled        
         newSkills[1].should.be.bignumber.equal(alignedInjured);
         for (p = 0; p < 14; p++) {
             if (p != 1) {
-                if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
-                else {newSkills[p].should.be.bignumber.equal(substituted);}
+                result0 = await evo.getAlignedEndOfFirstHalf(newSkills[p]).should.be.fulfilled;
+                result1 = await evo.getSubstitutedFirstHalf(newSkills[p]).should.be.fulfilled;
+                if (!substitutions.includes(p)) {
+                    result0.should.be.equal(true);
+                    result1.should.be.equal(false);
+                }
+                else {
+                    result0.should.be.equal(false);
+                    result1.should.be.equal(true);
+                }
             } 
         }
     });
@@ -1281,16 +1301,6 @@ contract('Evolution', (accounts) => {
             verseSeed, now, skills0, teamIds, [tacticsNew, tacticsNew], matchLogsAndEvents0.slice(0,2), 
             [is2nd = true, isHomeStadium, isPlayoff]
         ).should.be.fulfilled;
-
-        // for (p=0; p<25; p++){ 
-        //     result1 = await engine.getAlignedEndOfFirstHalf(skills[0][p]).should.be.fulfilled;
-        //     result2 = await engine.getSubstitutedFirstHalf(skills[0][p]).should.be.fulfilled;
-        //     console.log("getAlignedEndOfFirstHalf, getSubstitutedFirstHalf: ", p, result1, result2);
-        // }
-        // for (p=0; p<3; p++){ 
-        //     result1 = await evo.getHalfTimeSubs(matchLogsAndEvents[0], p).should.be.fulfilled;
-        //     console.log("getHalfTimeSubs, ", p, result1.toNumber());
-        // }
 
         expectedGamesNonStopping = Array.from(new Array(25), (x,i) => 0);
         for (p=0; p < 11; p++) expectedGamesNonStopping[p] = 1;
