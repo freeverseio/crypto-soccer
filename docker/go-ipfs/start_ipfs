@@ -27,8 +27,7 @@ else
   ipfs config --json Swarm.EnableAutoRelay true
   ipfs config --json Swarm.EnableRelayHop false
   ipfs config Swarm.ConnMgr.Type basic
-  ipfs config --json Swarm.ConnMgr.LowWater 30
-  ipfs config --json Swarm.ConnMgr.HighWater 60
+  ipfs config --json Swarm.ConnMgr.HighWater 30
   ipfs config Swarm.ConnMgr.GracePeriod 30s
 
   # ipfs bootstrap rm --all
