@@ -11,7 +11,6 @@ import "./ProxyStorage.sol";
 
 contract Proxy is ProxyStorage {
 
-    address constant private ZERO_ADDR  = address(0x0);
     address constant private PROXY_DUMMY_ADDR = address(1);
 
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
@@ -32,9 +31,9 @@ contract Proxy is ProxyStorage {
     /**
     * @dev execute a delegate call via fallback function
     */
-    fallback() external {
+    fallback() external payable {
         address contractAddr = _selectorToContractAddr[msg.sig];
-        require(contractAddr != ZERO_ADDR, "function selector is not assigned to a valid contract");
+        require(contractAddr != address(0x0), "function selector is not assigned to a valid contract");
         // address companyGuard = _company; 
         _delegate(contractAddr, msg.data);
         // assert(_company == companyGuard);
