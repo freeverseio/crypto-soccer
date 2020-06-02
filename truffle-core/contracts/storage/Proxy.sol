@@ -11,9 +11,7 @@ import "./ProxyStorage.sol";
 
 contract Proxy is ProxyStorage {
 
-    address constant private NULL_ADDR  = address(0);
     address constant private PROXY_DUMMY_ADDR = address(1);
-    uint256 constant private FWD_GAS_LIMIT = 10000;  /// TODO: is this future-proof? shall we have it re-settable?
 
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
     event ContractsActivated(uint256[] contractIds, uint256 time);
@@ -25,9 +23,7 @@ contract Proxy is ProxyStorage {
     * @dev Stores proxy selectors in _contractsInfo[0], pointing to PROXY_DUMMY_ADDR
     */
     constructor(address companyOwner, address superUser, bytes4[] memory proxySelectors) public {
-        _superUser = msg.sender;
         _contractsInfo.push(ContractInfo(PROXY_DUMMY_ADDR, proxySelectors, "Proxy", false));
-        activateContracts(new uint256[](1)); 
         _company = companyOwner;
         _superUser = superUser;
     }
@@ -35,10 +31,12 @@ contract Proxy is ProxyStorage {
     /**
     * @dev execute a delegate call via fallback function
     */
-    fallback () external {
+    fallback() external payable {
         address contractAddr = _selectorToContractAddr[msg.sig];
-        require(contractAddr != NULL_ADDR, "function selector is not assigned to a valid contract");
+        require(contractAddr != address(0x0), "function selector is not assigned to a valid contract");
+        address companyGuard = _company; 
         _delegate(contractAddr, msg.data);
+        assert(companyGuard == _company);
     } 
     
     /**
@@ -49,9 +47,9 @@ contract Proxy is ProxyStorage {
     * @param _calldata Calldata for the delegatecall
     */
     function _delegate(address _target, bytes memory _calldata) private {
-        uint256 fwdGasLimit = FWD_GAS_LIMIT;
         assembly {
-            let result := delegatecall(sub(gas(), fwdGasLimit), _target, add(_calldata, 0x20), mload(_calldata), 0, 0)
+            // let result := delegatecall(sub(gas(), fwdGasLimit), _target, add(_calldata, 0x20), mload(_calldata), 0, 0)
+            let result := delegatecall(gas(), _target, add(_calldata, 0x20), mload(_calldata), 0, 0)
             let size := returndatasize()
             let ptr := mload(0x40)
             returndatacopy(ptr, 0, size)
