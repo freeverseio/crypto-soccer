@@ -82,8 +82,10 @@ contract PlayAndEvolve is ErrorCodes {
             matchBools
         );
 
-        skills[0] = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false);
-        skills[1] = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false);
+        (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
+        (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
 
         return (skills, matchLogsAndEvents, 0);
     }
@@ -107,7 +109,8 @@ contract PlayAndEvolve is ErrorCodes {
         view 
         returns(
             uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
-            uint256[2+5*ROUNDS_PER_MATCH] memory
+            uint256[2+5*ROUNDS_PER_MATCH] memory,
+            uint8 err
         )
     {
         require(matchBools[IDX_IS_2ND_HALF], "play2ndHalfAndEvolve was called with the wrong is2ndHalf boolean!");
@@ -120,12 +123,12 @@ contract PlayAndEvolve is ErrorCodes {
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
             engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, matchLogs, matchBools);
 
-        skills[0] = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true);
-        skills[1] = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true);
+        (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true);
+        (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true);
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
 
-        return (skills, matchLogsAndEvents);
+        return (skills, matchLogsAndEvents, 0);
     }
     
 

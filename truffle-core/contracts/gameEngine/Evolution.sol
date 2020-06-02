@@ -31,7 +31,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     ) 
         public
         pure
-        returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory, uint8 err)
     {
         /// after 1st Half, update:
         ///  - subtDuringFirstHalf, alignedEndOfFirstHalf => properly update
@@ -45,7 +45,8 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         ///      - decrease by one unless it happens in 1st or 2nd half
         if (!is2ndHalf) {
             writeOutOfGameInSkills(skills, tactics, matchLog, false);
-            writeYellowCardsFirstHalf(skills, tactics, matchLog);
+            err = writeYellowCardsFirstHalf(skills, tactics, matchLog);
+            if (err > 0) return (skills, err);
             writeFirstHalfLineUp(skills, tactics, matchLog);
         }
         else {
@@ -57,20 +58,21 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
             updateGamesNonStopping2ndHalf(skills, tactics, matchLog); // only touches gamesNonStopping
             resetFirstHalfDataInSkills(skills); // sets to false all FistHalf quantities
         }
-        return skills;
+        return (skills, 0);
     }
 
-    function writeYellowCardsFirstHalf(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog) public pure {
+    function writeYellowCardsFirstHalf(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog) public pure returns(uint8) {
         (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
         /// check if there was an out of player event:
         for (uint8 posInHalf = 0; posInHalf < 2; posInHalf++) {
             uint8 yellowCarded = getYellowCard(matchLog, posInHalf, false); // returns 0...13
             if (yellowCarded < NO_OUT_OF_GAME_PLAYER) {
                 yellowCarded = lineUp[yellowCarded];
-                require(yellowCarded != NO_LINEUP, "internal problem: out of game player is non-zero but points to noone");
+                if (yellowCarded == NO_LINEUP) return ERR_UPDATEAFTER_YELLOW; // internal problem: out of game player is non-zero but points to noone
                 skills[yellowCarded] = setYellowCardFirstHalf(skills[yellowCarded], true);
             }
         }
+        return 0;
     }
     
 
