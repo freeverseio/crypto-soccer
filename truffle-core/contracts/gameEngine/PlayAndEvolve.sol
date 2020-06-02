@@ -17,6 +17,15 @@ contract PlayAndEvolve {
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 private constant IDX_IS_2ND_HALF = 0; 
     uint8 public constant ROUNDS_PER_MATCH = 12;   /// Number of relevant actions that happen during a game (12 equals one per 3.7 min)
+    
+    uint8 private constant ERR_IS2NDHALF = 1;
+    uint8 private constant ERR_APPLYTRAINING = 2;
+    uint8 private constant ERR_COMPUTETRAINING = 3;
+    uint8 private constant ERR_PLAYHALF = 4;
+    uint8 private constant ERR_EVOLVE = 5;
+    uint8 private constant ERR_UPDATEAFTER = 6;
+    uint8 private constant ERR_SHOP = 7;
+
 
     TrainingPoints public training;
     Evolution public evo;
@@ -53,10 +62,20 @@ contract PlayAndEvolve {
         view 
         returns (
             uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
-            uint256[2+5*ROUNDS_PER_MATCH] memory
+            uint256[2+5*ROUNDS_PER_MATCH] memory,
+            uint16
         )
     {
-        require(!matchBools[IDX_IS_2ND_HALF], "play1stHalfAndEvolve was called with the wrong is2ndHalf boolean!");
+        // uint8 private constant ERR_IS2NDHALF = 1;
+        // uint8 private constant ERR_APPLYTRAINING = 2;
+        // uint8 private constant ERR_COMPUTETRAINING = 3;
+        // uint8 private constant ERR_PLAYHALF = 4;
+        // uint8 private constant ERR_EVOLVE = 5;
+        // uint8 private constant ERR_UPDATEAFTER = 6;
+        // uint8 private constant ERR_SHOP = 7;
+        uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents;
+
+        if (matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
 
         skills[0] = training.applyTrainingPoints(skills[0], assignedTPs[0], tactics[0], matchStartTime, evo.getTrainingPoints(matchLogs[0]));
         skills[1] = training.applyTrainingPoints(skills[1], assignedTPs[1], tactics[1], matchStartTime, evo.getTrainingPoints(matchLogs[1]));
@@ -68,13 +87,12 @@ contract PlayAndEvolve {
         shop.validateItemsInTactics(tactics[0]);
         shop.validateItemsInTactics(tactics[1]);
         
-        uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
-            engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, nullLogs, matchBools);
+        matchLogsAndEvents = engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, nullLogs, matchBools);
 
         skills[0] = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false);
         skills[1] = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false);
 
-        return (skills, matchLogsAndEvents);
+        return (skills, matchLogsAndEvents, 0);
     }
     
     
