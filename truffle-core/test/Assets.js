@@ -99,7 +99,20 @@ contract('Assets', (accounts) => {
             return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '1';
         });
         
-
+        result = await assets.countCountries(tz).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNDivisionsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2);
+        result = await assets.getNLeaguesInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2*16);
+        result = await assets.getNTeamsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2*16*8);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 0).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 1).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
     });
     
     return;
