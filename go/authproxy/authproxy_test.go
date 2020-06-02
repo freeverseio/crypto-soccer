@@ -135,4 +135,15 @@ func TestCheckAuthorizationGodToken(t *testing.T) {
 	)
 	assert.Nil(t, err)
 	assert.Equal(t, s, authproxy.GodToken)
+
+	backdoor = false
+	_, err = authproxy.CheckAuthorization(
+		context.Background(),
+		req,
+		backdoor,
+		nil,
+		gracetime,
+		gqlurl,
+	)
+	assert.EqualError(t, err, "nil body")
 }
