@@ -1,0 +1,63 @@
+version: '3'
+services:
+  ethereum: 
+    image: freeverseio/parity:v2.7.2-posdao-stable
+    command: --min-peers 10 --max-peers 30
+    volumes:
+      - ethereum-data:/home/parity/.local/share/io.parity.ethereum
+  ipfs.node:
+    image: ipfs/go-ipfs:v0.5.0
+    restart: always
+    environment:
+      - IPFS_PATH=/data
+      # - IPFS_FD_MAX=4096
+      # - IPFS_PROFILE=test
+  ipfs.cluster:
+    image: ipfs/ipfs-cluster:v0.12.1
+    restart: always
+    entrypoint: ["ipfs-cluster-follow"]
+    environment: 
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
+      CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
+    command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
+    depends_on: 
+      - ipfs.node
+  universe.db:
+    build: ../../universe.db/
+    restart: always
+    # volumes:
+    #   - universe.db-data:/var/lib/postgresql/data
+  synchronizer:
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.synchronizer
+    restart: always
+    command: > 
+      -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
+      -ipfs /dns4/ipfs.node/tcp/5001
+      -ethereum http://ethereum:8545
+      -proxy_address "${PROXY_CONTRACT_ADDRESS}"
+      -staker "${STAKER_PVC}"
+      -delta "${BLOCKS_PER_STEP}"
+    depends_on:
+      - universe.db
+      - ethereum
+      - ipfs.node
+      - ipfs.cluster
+  universe.api:
+    build: ../../universe.api
+    ports:
+      - "4000:4000"
+    depends_on:
+      - ethereum
+    command: >
+      -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
+      --enableCors true
+
+volumes:
+  ethereum-data:
+  ipfs.node-data:
+  universe.db-data:
+
