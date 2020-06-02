@@ -19,7 +19,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	gocache "github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
-	"github.com/prometheus/common/log"
 )
 
 const (
@@ -77,6 +76,9 @@ func MatchTransferFirstBotMutation(data string) (bool, error) {
 }
 
 func matchTransferFirstBotMutation(r *http.Request) (bool, error) {
+	if r.Body == nil {
+		return false, errors.New("nil body")
+	}
 	var query struct {
 		Data string `json:"query"`
 	}
@@ -115,9 +117,8 @@ func CheckAuthorization(
 		// Always ALLOW this query
 		return GodToken, nil
 	}
-
 	if err != nil {
-		log.Error("regex error:", err)
+		return "", err
 	}
 
 	// check if token is cached
