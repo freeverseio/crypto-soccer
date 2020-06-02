@@ -209,7 +209,7 @@ contract Proxy is ProxyStorage {
     * @dev  Standard getters
     */
     function countContracts() external view returns(uint256) { return _contractsInfo.length; }
-    function countAddressesInContract(uint256 contractId) external view returns(uint256) { 
+    function countSelectorsInContract(uint256 contractId) external view returns(uint256) { 
         return _contractsInfo[contractId].selectors.length; 
     }
     function getContractAddressForSelector(bytes4 selector) external view returns(address) { 

@@ -40,7 +40,7 @@ contract Utils is EncodingMatchLog, AssetsView{
         uint16 dayOfBirth,
         uint8[4] memory birthTraits,
         uint256 playerId, 
-        bool[3] memory aligned1stSubst1stRedCardLastGame,
+        bool[5] memory aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st,
         uint8[3] memory generationGamesNonStopInjuryWeeks
     ) {
         for (uint8 sk = 0; sk < N_SKILLS; sk++) skills[sk] = uint32(getSkill(encodedSkills, sk));
@@ -54,9 +54,11 @@ contract Utils is EncodingMatchLog, AssetsView{
         
         playerId = getPlayerIdFromSkills(encodedSkills);
         
-        aligned1stSubst1stRedCardLastGame[0] = getAlignedEndOfFirstHalf(encodedSkills);
-        aligned1stSubst1stRedCardLastGame[1] = getSubstitutedFirstHalf(encodedSkills);
-        aligned1stSubst1stRedCardLastGame[2] = getRedCardLastGame(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[0] = getAlignedEndOfFirstHalf(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[1] = getSubstitutedFirstHalf(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[2] = getRedCardLastGame(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[3] = getOutOfGameFirstHalf(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[4] = getYellowCardFirstHalf(encodedSkills);
         
         generationGamesNonStopInjuryWeeks[0] = uint8(getGeneration(encodedSkills));
         generationGamesNonStopInjuryWeeks[1] = getGamesNonStopping(encodedSkills);

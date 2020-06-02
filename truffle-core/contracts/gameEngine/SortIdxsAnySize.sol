@@ -12,7 +12,7 @@ contract SortIdxsAnySize {
        return idxs;
     }
     
-    function quickSort(uint256[] memory arr, uint8[] memory idxs, int left, int right) internal pure {
+    function quickSort(uint256[] memory arr, uint8[] memory idxs, int left, int right) public pure {
         int i = left;
         int j = right;
         if(i==j) return;

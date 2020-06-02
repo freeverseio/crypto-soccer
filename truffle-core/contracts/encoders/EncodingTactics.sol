@@ -10,7 +10,7 @@ import "../encoders/EncodingTacticsBase2.sol";
 */
  
 /**
- Spec: Tactics serializes a total of 157 bits.
+ Spec: Tactics serializes a total of 3*4+3*4+14*5+10+6+25*2+13+32 = 205 bits.
 
  substitutions[3]    = 4 bit each = [3 different nums from 0 to 10], with 11 = no subs
  subsRounds[3]       = 4 bit each = [3 different nums from 0 to 11], round at which subs are to happen

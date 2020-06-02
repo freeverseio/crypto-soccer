@@ -7,7 +7,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"gotest.tools/assert"
@@ -56,8 +55,8 @@ func TestPlay1stHalfConsumeTheTrainingPoints(t *testing.T) {
 	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(0))
 	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(0))
 	assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
-	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(34))
-	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(34))
+	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(10))
+	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(10))
 	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
 	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(0))
 	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(0))
@@ -72,8 +71,8 @@ func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
 	assert.Equal(t, engine.VisitorGoals, uint8(0))
 	assert.Equal(t, engine.HomeTeamSumSkills, uint32(0))
 	assert.Equal(t, engine.VisitorTeamSumSkills, uint32(0))
-	assert.Equal(t, engine.HomeTeam.MatchLog, "1823386170864456664588543800539808540283317251593298733231417759322490273792")
-	assert.Equal(t, engine.VisitorTeam.MatchLog, "1823386170864456664588543800539808540283317251593298733231417759322490273792")
+	assert.Equal(t, engine.HomeTeam.MatchLog, "453417128002043887693956307131195271170887450874663967603880824822023847936")
+	assert.Equal(t, engine.VisitorTeam.MatchLog, "453417128002043887693956307131195271170887450874663967603880824822023847936")
 }
 
 func TestPlayGame(t *testing.T) {
@@ -124,13 +123,13 @@ func TestPlay2ndHalf(t *testing.T) {
 	assert.Equal(t, m.VisitorGoals, uint8(0))
 	assert.Equal(t, m.HomeTeamSumSkills, uint32(310768))
 	assert.Equal(t, m.VisitorTeamSumSkills, uint32(0))
-	assert.Equal(t, m.HomeTeam.MatchLog, "1854314176407607222731365934996113197647416408691401809684068772276829647276")
-	assert.Equal(t, m.VisitorTeam.MatchLog, "1813668511995011514317266015948482734985807286120620942036680286308591992832")
+	assert.Equal(t, m.HomeTeam.MatchLog, "462032552921219029596981944393129624646434793112298743861365934788691849644")
+	assert.Equal(t, m.VisitorTeam.MatchLog, "453417127998752878579313895046885332805772749864698495872613665095326629888")
 	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "0")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "155218553469186416027682967445911512183820227384804656612901864")
 	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "0")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "4600807814280360774460723191042511563333025959642222")
-	assert.Equal(t, m.HomeTeam.TrainingPoints, uint16(102))
+	assert.Equal(t, m.HomeTeam.TrainingPoints, uint16(88))
 	assert.Equal(t, m.VisitorTeam.TrainingPoints, uint16(10))
 }
 
@@ -230,8 +229,9 @@ func TestMatchRedCards(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(10))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[10]
-	assert.Equal(t, player.Skills().String(), "1696941887453530621720210496306760960036050709342320410694255608")
+	assert.Equal(t, player.Skills().String(), "41189051263162475633439470877683173079621711484548237131060872184")
 	assert.Assert(t, player.RedCard)
+	assert.Assert(t, player.YellowCard1stHalf)
 }
 
 func TestMatchHardInjury(t *testing.T) {
@@ -254,7 +254,7 @@ func TestMatchHardInjury(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(10))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[10]
-	assert.Equal(t, player.Skills().String(), "1696941888399367713348376276074803265855382158607010962666947576")
+	assert.Equal(t, player.Skills().String(), "41189051264108312725067636657451215385441042933812927683033564152")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(5))
 }
 
@@ -278,7 +278,7 @@ func TestMatchSoftInjury(t *testing.T) {
 	assert.Equal(t, event.PrimaryPlayer, int16(12))
 	assert.Equal(t, event.Team, int16(0))
 	player := m.HomeTeam.Players[12]
-	assert.Equal(t, player.Skills().String(), "1696941887824681885523667954190423130674016214749983791848096760")
+	assert.Equal(t, player.Skills().String(), "14860978346394330222763421414649227170535903139818622698636968952")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(2))
 }
 
@@ -321,38 +321,7 @@ func TestMatchJson(t *testing.T) {
 func TestMatchHash(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
-	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "313cc8b62f5a3dd84903050f69c6dc30ed7b5d39d50a9286414f29fb76c92faf")
-}
-
-func TestMatchError1stHalf(t *testing.T) {
-	t.Parallel()
-	cases := []struct {
-		File   string
-		Output string
-	}{
-		{"3859fc1422bc9d7e58621e77466eb42c7db8cc2305687bfe41b23bc137e14d70.1st.error.json", "failed calculating visitor assignedTP: VM execution error."},
-		// {"530796ade7bacc9b7d2e83246cc6fd46da9fb205d0fab24d80d6c8946a58b294.1st.error.json", "failed calculating home assignedTP: VM execution error."},
-		{"9a78b84120c90d40da0fce05cbab1bf539bb3a68cb835886e01af6ddaaf4aca9.1st.error.json", "failed calculating visitor assignedTP: VM execution error."},
-		{"9cf953e0438bdd61de9b78b713c04384d67d15feb6e809de10f616ee1f812c65.1st.error.json", "failed calculating home assignedTP: VM execution error."},
-	}
-	for _, tc := range cases {
-		t.Run(tc.File, func(t *testing.T) {
-			input := golden.Get(t, t.Name())
-			match, err := engine.NewMatchFromJson(input)
-			assert.NilError(t, err)
-			matchLog, _ := new(big.Int).SetString(match.HomeTeam.MatchLog, 10)
-			decodedHomeMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, matchLog, true)
-			assert.NilError(t, err)
-			assert.Equal(t, uint32(match.HomeTeam.TrainingPoints), decodedHomeMatchLog[3])
-			matchLog, _ = new(big.Int).SetString(match.VisitorTeam.MatchLog, 10)
-			decodedVisitorMatchLog, err := bc.Contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, matchLog, true)
-			assert.NilError(t, err)
-			assert.Equal(t, uint32(match.VisitorTeam.TrainingPoints), decodedVisitorMatchLog[3])
-			err = match.Play1stHalf(*bc.Contracts)
-			assert.Assert(t, err != nil)
-			assert.Equal(t, err.Error(), tc.Output)
-		})
-	}
+	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "aa2022209515af9fa7050bef0f4d113e0b017b6d8129e30da6ef099e6c10036b")
 }
 
 func TestMatchError2ndHalf(t *testing.T) {
@@ -401,12 +370,13 @@ func TestMatchEventsGeneration(t *testing.T) {
 
 func TestFromTheField(t *testing.T) {
 	t.Parallel()
-	t.Run("b65d48b5a6a4075098e6a996bece8f5aeec8b2ac73c6d62a8de8a18bc28a5230.1st.error.json", func(t *testing.T) {
-		input := golden.Get(t, t.Name())
-		match, err := engine.NewMatchFromJson(input)
-		assert.NilError(t, err)
-		assert.NilError(t, match.Play1stHalf(*bc.Contracts))
-	})
+	// test remove because with new matchLog, this does not make sense:
+	// t.Run("b65d48b5a6a4075098e6a996bece8f5aeec8b2ac73c6d62a8de8a18bc28a5230.1st.error.json", func(t *testing.T) {
+	// 	input := golden.Get(t, t.Name())
+	// 	match, err := engine.NewMatchFromJson(input)
+	// 	assert.NilError(t, err)
+	// 	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
+	// })
 	// the following should fail because user saw 45 TPs when he actually had only 44 available:
 	t.Run("0498232f79495530fa199c6d51fa51b2bfb22989b01e5f390eced6e729b04102.1st.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
@@ -425,7 +395,7 @@ func TestFromTheField(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
 		assert.NilError(t, err)
-		// assert.Error(t, match.Play2ndHalf(*bc.Contracts), "failed play2ndHalfAndEvolve: VM execution error.")
-		assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
+		assert.Error(t, match.Play2ndHalf(*bc.Contracts), "failed play2ndHalfAndEvolve: VM execution error.")
+		// assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
 	})
 }

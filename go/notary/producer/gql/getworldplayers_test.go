@@ -126,10 +126,10 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097753834105341711219696665672355672463412409406165342727704324")
+	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157481453821747928514686071527706372")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
-	assert.Equal(t, players[0].Name(), "Auguste Esteve")
-	assert.Equal(t, players[0].CountryOfBirth(), "CH")
+	assert.Equal(t, players[0].Name(), "Bogdan Gimenez")
+	assert.Equal(t, players[0].CountryOfBirth(), "AM")
 	assert.Equal(t, players[0].Race(), "Spanish")
 	assert.Equal(t, players[0].Speed(), int32(3402))
 
@@ -143,7 +143,7 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097753834105341711219696665672355672463412409406165342727704324")
+	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157481453821747928514686071527706372")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
 
 	players, err = gql.CreateWorldPlayerBatch(
@@ -156,7 +156,7 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097753834105341711219696665672356940114012637635566839430909700")
+	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157482721472348156744087568230911748")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 
 	players, err = gql.CreateWorldPlayerBatch(
@@ -169,6 +169,6 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "57896044618658097753834105341711219696665672356940114012637635566839430909700")
+	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157482721472348156744087568230911748")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 }

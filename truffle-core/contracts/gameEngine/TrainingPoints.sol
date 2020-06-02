@@ -100,12 +100,11 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     /// if clean-sheet (opponent did not score):
     /// +2 per half played by GK/D, +1 per half played for Mids and Atts
     function pointsPerCleanSheet(uint256 matchLog) public pure returns (uint256) {
-        /// formula: (note that for a given half: 1 + nDef + nMid + nAtt = nTot)
-        ///      pointsPerHalf   = 2 (for GK) + 2 * nDef + nMid + nAtt 
-        ///                      = 2 + 2 * nDef + nTot - nDef - 1 = nTot + 1 + nDef
-        ///      note also that by constraint, nTot = 11 in the first half
-        ///      pointsPerMatch  = 2 + nTot1 + nTot2 + nDef1 + nDef2 = 13 + nTot2 + nDef1 + nDef2 
-        return 13 + (getOutOfGameType(matchLog, false) == RED_CARD ? 10 : 11) +  getNDefs(matchLog, false) + getNDefs(matchLog, true);
+        /// formula: (note that for a given half: nGK + nDef + nMid + nAtt = nTot)
+        ///      pointsPerHalf   = 2 (nGK + nDef) + nMid + nAtt 
+        ///                      = 2 (nGK + nDef) + nTot - nDef - nGK = 
+        ///                      = nTot + nGk + nDef
+        return getNTot(matchLog, false) + getNTot(matchLog, true) + getNGKAndDefs(matchLog, false) + getNGKAndDefs(matchLog, true) ;
     }
     
     function computeTeamQuality(uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills) public pure returns (uint256 quality) {
@@ -220,7 +219,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         return setGamesNonStopping(skills, gamesNonStopping - 2 * stamina);
     }
 
-    function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) private pure returns (uint256) {
+    function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) public pure returns (uint256) {
         uint256 term1 = (uint256(TPthisSkill)*numerator) / denominator;
         if (term1 <= TPthisSkill) { term1 = uint256(TPthisSkill); }
         if ((oldSkill + term1) > deltaNeg) return oldSkill + term1 - deltaNeg;

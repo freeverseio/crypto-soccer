@@ -122,7 +122,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[2] memory matchLogs,
         bool[3] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
     )
-        private
+        public
         view
         returns (uint256[2] memory, uint256, uint256)
     {
@@ -133,8 +133,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         (matchLogs[0], skills[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
         (matchLogs[1], skills[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
 
-        matchLogs[0] = writeNDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
-        matchLogs[1] = writeNDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
         globSkills[0] = _precomp.getTeamGlobSkills(skills[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = _precomp.getTeamGlobSkills(skills[1], playersPerZone[1], extraAttack[1]);
@@ -155,7 +155,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[5][2] memory globSkills, 
         bool is2ndHalf
     ) 
-        private
+        public
         pure
     {
         uint64[] memory rnds = getNRandsFromSeed(seedAndStartTimeAndEvents[IDX_SEED], ROUNDS_PER_MATCH*5);
@@ -213,22 +213,23 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return (matchLog, linedUpSkills, getPlayersPerZone(tacticsId));
     }
     
-    /// adds to the matchLog the number of defenders actually linedUp (some skills could be empty slots)
-    function writeNDefs(
+    /// adds to the matchLog the number of defenders and GKs actually linedUp (some skills could be empty slots)
+    /// ...at least, linedUp at the start of the current half
+    function computeNGKAndDefs(
         uint256 matchLog, 
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint8 nDefsInTactics, 
         bool is2ndHalf
     ) 
-        private 
+        public 
         pure 
         returns (uint256) 
     {
-        uint8 nDefs = nDefsInTactics;
-        for (uint8 p = 1; p < 1 + nDefsInTactics; p++) {
-            if (skills[p] == 0) nDefs--;
+        uint8 n;
+        for (uint8 p = 0; p < 1 + nDefsInTactics; p++) {
+            if (skills[p] != 0) n++;
         }
-        return addNDefs(matchLog, nDefs, is2ndHalf);
+        return addNGKAndDefs(matchLog, n, is2ndHalf);
     }
 
     //// @dev Rescales global skills of both teams according to their endurance
@@ -373,31 +374,12 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return scoreData;
     }
     
-    function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) private pure returns (uint8) {
+    function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) public pure returns (uint8) {
         if (posInLineUp == 0) return 0;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)) return 1;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)+ getNMidfielders(playersPerZone)) return 2;
         else return 3;
     }
-    
-    function wasPlayerAlignedEndOfLastHalf(uint8 shirtNum, uint256 tactics, uint256 matchLog) public pure returns (bool) {
-        (uint8[3] memory  substitutions,,uint8[14] memory lineup,,) = decodeTactics(tactics);
-        /// First check if it was in the starting eleven, and was not substituted
-        for (uint8 p = 0; p < 11; p++) {
-            if (shirtNum == lineup[p]) {
-                for (uint8 s = 0; s < 3; s++) {
-                    if ((shirtNum == substitutions[s]) && (getInGameSubsHappened(matchLog, s, false) == CHG_HAPPENED)) return false;
-                }
-                return true;
-            }
-        }
-        /// Next check if it was in the planned substitutions and it did actually happen.
-        for (uint8 s = 0; s < 3; s++) {
-            if ((shirtNum == lineup[11 + s]) && (getInGameSubsHappened(matchLog, s, false) == CHG_HAPPENED)) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 }
 

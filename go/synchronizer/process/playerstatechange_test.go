@@ -10,10 +10,14 @@ import (
 )
 
 func TestPlayerStateChangeGeneratePlayer(t *testing.T) {
-	playerId, _ := new(big.Int).SetString("57896044618658097728977029352596290682772831803419867568648239153975217095645", 10)
-	state, _ := new(big.Int).SetString("24519655528918455736691326674010135", 10)
+	playerId, _ := new(big.Int).SetString("274877906962", 10)
+	state, _ := new(big.Int).SetString("274877906945", 10)
 	player, err := process.GeneratePlayerByPlayerIdAndState(bc.Contracts, namesdb, playerId, state)
 	assert.NilError(t, err)
+	// The following 2 properties are time-depedendent, because DayOfBirth depends on deploy time,
+	// and EncodedSkills encodes DayOfBirth. So we set it to nill to be able to compare.
+	player.DayOfBirth = 0
+	player.EncodedSkills, _ = new(big.Int).SetString("0", 10)
 	golden.Assert(t, dump.Sdump(player), t.Name()+".golden")
 }
 

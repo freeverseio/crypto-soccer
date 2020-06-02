@@ -27,6 +27,7 @@ type Player struct {
 	Tiredness         int
 	CountryOfBirth    string
 	Race              string
+	YellowCard1stHalf bool
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -47,7 +48,8 @@ func (b *Player) Equal(player Player) bool {
 		b.Name == player.Name &&
 		b.DayOfBirth == player.DayOfBirth &&
 		b.CountryOfBirth == player.CountryOfBirth &&
-		b.Race == player.Race
+		b.Race == player.Race &&
+		b.YellowCard1stHalf == player.YellowCard1stHalf
 }
 
 func PlayerCount(tx *sql.Tx) (uint64, error) {
@@ -112,8 +114,9 @@ func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	name=$11,
 	tiredness=$12,
 	country_of_birth=$13,
-	race=$14
-	WHERE player_id=$15;`,
+	race=$14,
+	yellow_card_1st_half=$15
+	WHERE player_id=$16;`,
 		b.TeamId,
 		b.Defence,
 		b.Speed,
@@ -128,6 +131,7 @@ func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 		b.Tiredness,
 		b.CountryOfBirth,
 		b.Race,
+		b.YellowCard1stHalf,
 		b.PlayerId.String(),
 	); err != nil {
 		return err
@@ -158,7 +162,8 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	injury_matches_left,
 	tiredness,
 	country_of_birth,
-	race
+	race,
+    yellow_card_1st_half
 	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
 		return nil, err
@@ -191,6 +196,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 		&player.Tiredness,
 		&player.CountryOfBirth,
 		&player.Race,
+		&player.YellowCard1stHalf,
 	)
 	player.PlayerId = playerID
 	player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
@@ -217,7 +223,8 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	injury_matches_left,
 	tiredness,
 	country_of_birth,
-	race
+	race,
+	yellow_card_1st_half
 	FROM players WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return nil, err
@@ -249,6 +256,7 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 			&player.Tiredness,
 			&player.CountryOfBirth,
 			&player.Race,
+			&player.YellowCard1stHalf,
 		)
 		player.TeamId = teamID
 		player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)

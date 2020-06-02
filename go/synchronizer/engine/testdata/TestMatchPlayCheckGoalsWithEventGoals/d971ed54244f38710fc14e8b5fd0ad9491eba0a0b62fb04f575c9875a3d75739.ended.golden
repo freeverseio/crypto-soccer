@@ -39,7 +39,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 40,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1826921312735387627095687634847299258899139852469532276525304413654530620022"
+			MatchLog: (string) (len=75) "456730328185017310055092548926548818285065108765489536216226187176353167990"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -62,7 +62,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -85,7 +86,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -108,7 +110,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -131,7 +134,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -154,7 +158,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -177,7 +182,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -200,7 +206,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -223,7 +230,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -246,7 +254,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -269,7 +278,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -292,7 +302,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -315,7 +326,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -338,7 +350,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -361,7 +374,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -384,7 +398,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -407,7 +422,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -430,7 +446,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -453,7 +470,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -476,7 +494,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -499,7 +518,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -522,7 +542,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -545,7 +566,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -568,7 +590,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -591,7 +614,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -614,7 +638,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			})
 		},
@@ -677,9 +702,9 @@
 			GoalsAgainst: (uint32) 6,
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
-			TrainingPoints: (uint16) 24,
+			TrainingPoints: (uint16) 27,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=76) "1819853924476274089777354441015423438719309553994563711893967087167385200996"
+			MatchLog: (string) (len=75) "455294764944884872787306119457318134634565908901630588837748451234307205476"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -702,7 +727,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -725,7 +751,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -748,30 +775,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
-				}
-			}),
-			(*engine.Player)({
-				Player: (storage.Player) {
-					PlayerId: (*big.Int)(21342314523),
-					PreferredPosition: (string) "",
-					Potential: (uint64) 6,
-					DayOfBirth: (uint64) 0,
-					TeamId: (string) "",
-					Name: (string) "",
-					Defence: (uint64) 723,
-					Speed: (uint64) 1081,
-					Pass: (uint64) 862,
-					Shoot: (uint64) 1146,
-					Endurance: (uint64) 1187,
-					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(205703391591486196665318928971288188289586730849859069675570298),
-					EncodedState: (*big.Int)(<nil>),
-					RedCard: (bool) true,
-					InjuryMatchesLeft: (uint8) 0,
-					Tiredness: (int) 1,
-					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -794,7 +799,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -817,7 +823,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -840,7 +847,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -863,7 +871,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -886,7 +895,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -909,7 +919,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -932,7 +943,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -955,7 +967,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -978,7 +991,32 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
+				}
+			}),
+			(*engine.Player)({
+				Player: (storage.Player) {
+					PlayerId: (*big.Int)(21342314523),
+					PreferredPosition: (string) "",
+					Potential: (uint64) 6,
+					DayOfBirth: (uint64) 0,
+					TeamId: (string) "",
+					Name: (string) "",
+					Defence: (uint64) 723,
+					Speed: (uint64) 1081,
+					Pass: (uint64) 862,
+					Shoot: (uint64) 1146,
+					Endurance: (uint64) 1187,
+					ShirtNumber: (uint8) 0,
+					EncodedSkills: (*big.Int)(205703391579513575252304172265363602139974940352837670283510906),
+					EncodedState: (*big.Int)(<nil>),
+					RedCard: (bool) false,
+					InjuryMatchesLeft: (uint8) 0,
+					Tiredness: (int) 1,
+					CountryOfBirth: (string) "",
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1001,7 +1039,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1024,7 +1063,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1047,7 +1087,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1070,7 +1111,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1093,7 +1135,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1116,7 +1159,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1139,7 +1183,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1162,7 +1207,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1185,7 +1231,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1208,7 +1255,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1231,7 +1279,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			}),
 			(*engine.Player)({
@@ -1254,7 +1303,8 @@
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 0,
 					CountryOfBirth: (string) "",
-					Race: (string) ""
+					Race: (string) "",
+					YellowCard1stHalf: (bool) false
 				}
 			})
 		},
@@ -1300,7 +1350,7 @@
 			}
 		}
 	},
-	Events: (matchevents.MatchEvents) (len=29 cap=32) {
+	Events: (matchevents.MatchEvents) (len=28 cap=32) {
 		(matchevents.MatchEvent) {
 			Minute: (int16) 2,
 			Type: (int16) 0,
@@ -1605,17 +1655,6 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 7,
-			SecondaryPlayer: (int16) -1,
-			PrimaryPlayerID: (string) (len=11) "21342314523",
-			SecondaryPlayerID: (string) ""
-		},
-		(matchevents.MatchEvent) {
-			Minute: (int16) 60,
-			Type: (int16) 2,
-			Team: (int16) 1,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 3,
 			SecondaryPlayer: (int16) -1,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
 			SecondaryPlayerID: (string) ""
