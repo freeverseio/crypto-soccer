@@ -82,4 +82,5 @@ contract Constants {
     uint16 constant internal VERSES_PER_ROUND = 672; /// 96 * 7days
     uint8 constant internal NULL_TIMEZONE = 0;
     uint8 constant internal MAX_CHALLENGE_LEVELS = 6;
+    
 }
