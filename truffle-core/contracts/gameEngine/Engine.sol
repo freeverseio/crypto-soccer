@@ -122,7 +122,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[2] memory matchLogs,
         bool[3] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
     )
-        private
+        public
         view
         returns (uint256[2] memory, uint256, uint256)
     {
@@ -155,7 +155,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[5][2] memory globSkills, 
         bool is2ndHalf
     ) 
-        private
+        public
         pure
     {
         uint64[] memory rnds = getNRandsFromSeed(seedAndStartTimeAndEvents[IDX_SEED], ROUNDS_PER_MATCH*5);
@@ -221,7 +221,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint8 nDefsInTactics, 
         bool is2ndHalf
     ) 
-        private 
+        public 
         pure 
         returns (uint256) 
     {
@@ -374,7 +374,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return scoreData;
     }
     
-    function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) private pure returns (uint8) {
+    function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) public pure returns (uint8) {
         if (posInLineUp == 0) return 0;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)) return 1;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)+ getNMidfielders(playersPerZone)) return 2;

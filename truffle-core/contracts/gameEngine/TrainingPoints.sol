@@ -219,7 +219,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         return setGamesNonStopping(skills, gamesNonStopping - 2 * stamina);
     }
 
-    function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) private pure returns (uint256) {
+    function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) public pure returns (uint256) {
         uint256 term1 = (uint256(TPthisSkill)*numerator) / denominator;
         if (term1 <= TPthisSkill) { term1 = uint256(TPthisSkill); }
         if ((oldSkill + term1) > deltaNeg) return oldSkill + term1 - deltaNeg;

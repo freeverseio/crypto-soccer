@@ -60,7 +60,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         return skills;
     }
 
-    function writeYellowCardsFirstHalf(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog) private pure {
+    function writeYellowCardsFirstHalf(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog) public pure {
         (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
         /// check if there was an out of player event:
         for (uint8 posInHalf = 0; posInHalf < 2; posInHalf++) {
@@ -79,7 +79,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         uint256 tactics, 
         uint256 matchLog 
     ) 
-        private 
+        public 
         pure 
     {
         uint8[3] memory joinedAt2ndHalf;
@@ -123,7 +123,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         );
     }
 
-    function resetFirstHalfDataInSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills) private pure {
+    function resetFirstHalfDataInSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills) public pure {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if (skills[p] != 0) {
                 skills[p] = setAlignedEndOfFirstHalf(skills[p], false);
@@ -139,7 +139,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         uint256 tactics, 
         uint256 matchLog 
     ) 
-        private 
+        public 
         pure 
     {
         (uint8[3] memory  substitutions,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
@@ -176,7 +176,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         else return skills;
     }
 
-    function writeOutOfGameInSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog, bool is2ndHalf) private pure {
+    function writeOutOfGameInSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills, uint256 tactics, uint256 matchLog, bool is2ndHalf) public pure {
         (,,uint8[14] memory lineUp,,) = decodeTactics(tactics);
         /// check if there was an out of player event:
         uint8 outOfGamePlayer = uint8(getOutOfGamePlayer(matchLog, is2ndHalf));

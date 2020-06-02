@@ -10,21 +10,21 @@ import "./SortIdxsAnySize.sol";
 
 contract Friendlies is SortIdxsAnySize {
 
-    function getLeagueMatchDays(uint8 nTeams) private pure returns (uint8) { return 2 * (nTeams-1); }
-    function getLeagueMatchesPerDay(uint8 nTeams) private pure returns (uint8) { return nTeams/2; }
-    function getLeagueMatchesPerLeague(uint8 nTeams) private pure returns (uint8) { return nTeams * (nTeams-1); }
+    function getLeagueMatchDays(uint8 nTeams) public pure returns (uint8) { return 2 * (nTeams-1); }
+    function getLeagueMatchesPerDay(uint8 nTeams) public pure returns (uint8) { return nTeams/2; }
+    function getLeagueMatchesPerLeague(uint8 nTeams) public pure returns (uint8) { return nTeams * (nTeams-1); }
     
     function getTeamsInLeagueMatch(uint8 matchday, uint8 matchIdxInDay, uint8 nTeams) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
     {
         require(matchday < getLeagueMatchDays(nTeams), "wrong match day");
         require(matchIdxInDay < getLeagueMatchesPerDay(nTeams), "wrong match");
         if (matchday < (nTeams - 1))
-            (homeIdx, visitorIdx) = _getTeamsInMatchFirstHalf(matchday, matchIdxInDay, nTeams);
+            (homeIdx, visitorIdx) = getTeamsInMatchFirstHalf(matchday, matchIdxInDay, nTeams);
         else
-            (visitorIdx, homeIdx) = _getTeamsInMatchFirstHalf(matchday - (nTeams - 1), matchIdxInDay, nTeams);
+            (visitorIdx, homeIdx) = getTeamsInMatchFirstHalf(matchday - (nTeams - 1), matchIdxInDay, nTeams);
     }
 
-    function _shiftBack(uint8 t, uint8 nTeams) private pure returns (uint8)
+    function shiftBack(uint8 t, uint8 nTeams) public pure returns (uint8)
     {
         if (t < nTeams)
             return t;
@@ -32,13 +32,13 @@ contract Friendlies is SortIdxsAnySize {
             return t-(nTeams-1);
     }
 
-    function _getTeamsInMatchFirstHalf(uint8 matchday, uint8 matchIdxInDay, uint8 nTeams) private pure returns (uint8, uint8) 
+    function getTeamsInMatchFirstHalf(uint8 matchday, uint8 matchIdxInDay, uint8 nTeams) public pure returns (uint8, uint8) 
     {
         uint8 team1 = 0;
         if (matchIdxInDay > 0)
-            team1 = _shiftBack(nTeams - matchIdxInDay+matchday, nTeams);
+            team1 = shiftBack(nTeams - matchIdxInDay+matchday, nTeams);
 
-        uint8 team2 = _shiftBack(matchIdxInDay+1+matchday, nTeams);
+        uint8 team2 = shiftBack(matchIdxInDay+1+matchday, nTeams);
         if ( (matchday % 2) == 0)
             return (team1, team2);
         else
