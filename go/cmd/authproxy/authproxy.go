@@ -3,13 +3,11 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"sync/atomic"
 	"time"
 
@@ -17,7 +15,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/authproxy"
 	gocache "github.com/patrickmn/go-cache"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -61,116 +58,6 @@ var gracetime *int
 
 var opid uint64
 
-func checkPermissions(ctx context.Context, addr common.Address) (bool, error) {
-
-	// create request
-	gqlQuery := `{allTeams (condition: {owner: "` + addr.Hex() + `"}){totalCount}}`
-	query, err := json.Marshal(map[string]string{"query": gqlQuery})
-	if err != nil {
-		return false, errors.Wrap(err, "failed bulding auth query")
-	}
-	req, err := http.NewRequest(http.MethodPost, *gqlurl, bytes.NewReader(query))
-	if err != nil {
-		return false, errors.Wrap(err, "failed bulding auth request")
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	// send request
-	client := &http.Client{}
-	resp, err := client.Do(req.WithContext(ctx))
-	if err != nil {
-		return false, errors.Wrap(err, "failed sending auth request")
-	}
-
-	// check http response is ok
-	if resp.StatusCode != 200 {
-		errstr := "unknown"
-		if resp.Body != nil {
-			errbody, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				errstr = string(errbody)
-			}
-		}
-		return false, fmt.Errorf("failed sending auth request, errcode=%v, err=%s", resp.StatusCode, errstr)
-	}
-
-	// parse qgl response, and return
-	var response struct {
-		Data struct {
-			AllTeams struct {
-				TotalCount int
-			}
-		}
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return false, errors.Wrap(err, "failed decoding auth response")
-	}
-
-	ok := response.Data.AllTeams.TotalCount > 0
-	return ok, nil
-}
-
-func matchTransferFirstBotMutation(r *http.Request) (bool, error) {
-	var query struct {
-		Data string `json:"query"`
-	}
-	err := json.NewDecoder(r.Body).Decode(&query)
-	if err != nil {
-		return false, err
-	}
-	return authproxy.MatchTransferFirstBotMutation(query.Data)
-}
-
-func checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
-	// check if token is well formed
-	auth := strings.TrimSpace(r.Header.Get("Authorization"))
-	if !strings.HasPrefix(auth, "Bearer") {
-		return "", errors.New("No authorization bearer")
-	}
-	token := strings.TrimSpace(auth[len("Bearer"):])
-
-	match, err := matchTransferFirstBotMutation(r)
-	if match {
-		// Always ALLOW this query
-		return godtoken, nil
-	}
-
-	if err != nil {
-		log.Error("regex error:", err)
-	}
-
-	// if backdoor is activated, check if is the godmode token
-	if *backdoor && token == godtoken {
-		return godtoken, nil
-	}
-
-	// check if token is cached
-	if addrHex, ok := cache.Get(token); ok {
-		metricsCacheHits.Inc()
-		return addrHex.(string), nil
-	}
-
-	// verify token
-	addr, _, err := authproxy.VerifyToken(token, time.Duration(*gracetime)*time.Second)
-	if err != nil {
-		return "", err
-	}
-
-	ok, err := checkPermissions(ctx, addr)
-	if err != nil {
-		return "", err
-	}
-	if !ok {
-		return "", errors.New("User does not has pesmissions")
-	}
-
-	// add to cache & return
-	metricsCacheMisses.Inc()
-	cache.Set(token, addr.Hex(), gocache.DefaultExpiration)
-	return addr.Hex(), nil
-}
-
 func gqlproxy(w http.ResponseWriter, r *http.Request) {
 
 	// auto increment op number
@@ -188,7 +75,14 @@ func gqlproxy(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// check if this request can be done
-	addr, err := checkAuthorization(ctx, r)
+	addr, err := authproxy.CheckAuthorization(
+		ctx,
+		r,
+		*backdoor,
+		cache,
+		*gracetime,
+		*gqlurl,
+	)
 	if err != nil {
 		metricsOpsFailed.Inc()
 		log.Error("[", op, "]", err)
@@ -263,7 +157,11 @@ func assert(err error) {
 func startProxyServer(serviceport int, ratelimit int) {
 
 	// check gql server
-	_, err := checkPermissions(context.Background(), common.HexToAddress("0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"))
+	_, err := authproxy.CheckPermissions(
+		context.Background(),
+		common.HexToAddress("0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"),
+		*gqlurl,
+	)
 	if err != nil {
 		log.Warnf("Caution, cannot access to gql service at %s: %w", gqlurl, err)
 	}

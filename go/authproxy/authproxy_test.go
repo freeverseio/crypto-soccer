@@ -1,6 +1,8 @@
 package authproxy_test
 
 import (
+	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -114,4 +116,23 @@ func TestMatchTransferFirstBotMutation(t *testing.T) {
 	m = "bar {transferFirstBotToAddr(timezone: 10, countryIdxInTimezone: 1000, address: \"0x02\")}"
 	match, _ = authproxy.MatchTransferFirstBotMutation(m)
 	assert.False(t, match)
+}
+
+func TestCheckAuthorizationGodToken(t *testing.T) {
+	backdoor := true
+	gracetime := 10
+	gqlurl := ""
+	req, err := http.NewRequest("GET", "http://example.com", nil)
+	assert.Nil(t, err)
+	req.Header.Add("Authorization", "Bearer "+authproxy.GodToken)
+	s, err := authproxy.CheckAuthorization(
+		context.Background(),
+		req,
+		backdoor,
+		nil,
+		gracetime,
+		gqlurl,
+	)
+	assert.Nil(t, err)
+	assert.Equal(t, s, authproxy.GodToken)
 }
