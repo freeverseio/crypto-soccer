@@ -148,7 +148,8 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         /// even if assignedTPs = 0, players can get older, and use stamina pills to reduce nGamesNonStopping
         if (assignedTPs != 0) {
             (TPperSkill, specialPlayer, TP, err) = decodeTP(assignedTPs);
-            require(earnedTPs == TP, "assignedTPs used an amount of TP that does not match the earned TPs in previous match");
+            if (err > 0) return (teamSkills, err);
+            if (earnedTPs != TP) return (teamSkills, ERR_TRAINING_PREVMATCH); // assignedTPs used an amount of TP that does not match the earned TPs in previous match
         } else {
             specialPlayer = NO_PLAYER;
         }
@@ -161,7 +162,10 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             uint256 thisSkills = teamSkills[p];
             if (thisSkills == 0) continue; 
-            if (staminas[p] > 0) thisSkills = reduceGamesNonStopping(thisSkills, staminas[p]);
+            if (staminas[p] > 0) {
+                (thisSkills, err) = reduceGamesNonStopping(thisSkills, staminas[p]);
+                if (err > 0) return (teamSkills, err);
+            }
             for (uint8 s = 0; s < 5; s++) singleTPperSkill[s] = TPperSkill[getOffset(p, specialPlayer, getForwardness(thisSkills)) + s];
             teamSkills[p] = evolvePlayer(thisSkills, singleTPperSkill, matchStartTime);
         }    
@@ -213,12 +217,12 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     /// stamina = 1 => reduce 2 games
     /// stamina = 2 => reduce 4 games
     /// stamina = 3 => full recovery
-    function reduceGamesNonStopping(uint256 skills, uint8 stamina) public pure returns (uint256) {
-        require(stamina < 4, "stamina value too large");
+    function reduceGamesNonStopping(uint256 skills, uint8 stamina) public pure returns (uint256, uint8) {
+        if (stamina >= 4) return (0, ERR_TRAINING_STAMINA); // stamina value too large;
         uint8 gamesNonStopping = getGamesNonStopping(skills);
-        if (gamesNonStopping == 0) return skills;
-        if ((stamina == 3) || (gamesNonStopping <= 2 * stamina)) return setGamesNonStopping(skills, 0);
-        return setGamesNonStopping(skills, gamesNonStopping - 2 * stamina);
+        if (gamesNonStopping == 0) return (skills, 0);
+        if ((stamina == 3) || (gamesNonStopping <= 2 * stamina)) return (setGamesNonStopping(skills, 0), 0);
+        return (setGamesNonStopping(skills, gamesNonStopping - 2 * stamina), 0);
     }
 
     function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) public pure returns (uint256) {

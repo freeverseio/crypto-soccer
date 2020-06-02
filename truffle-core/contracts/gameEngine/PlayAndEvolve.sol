@@ -61,13 +61,17 @@ contract PlayAndEvolve is ErrorCodes {
         if (matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
 
         (skills[0], err) = training.applyTrainingPoints(skills[0], assignedTPs[0], tactics[0], matchStartTime, evo.getTrainingPoints(matchLogs[0]));
+        if (err > 0) return (skills, matchLogsAndEvents, err);
         (skills[1], err) = training.applyTrainingPoints(skills[1], assignedTPs[1], tactics[1], matchStartTime, evo.getTrainingPoints(matchLogs[1]));
-        
+        if (err > 0) return (skills, matchLogsAndEvents, err);
+    
         /// Note that the following call does not change de values of "skills" because it calls a separate contract.
         /// It would do so if playHalfMatch was part of this contract code.
 
-        shop.validateItemsInTactics(tactics[0]);
-        shop.validateItemsInTactics(tactics[1]);
+        err = shop.validateItemsInTactics(tactics[0]);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
+        err = shop.validateItemsInTactics(tactics[1]);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
         
         matchLogsAndEvents = engine.playHalfMatch(
             generateMatchSeed(verseSeed, teamIds), 

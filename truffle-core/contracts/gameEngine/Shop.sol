@@ -3,13 +3,14 @@ pragma solidity >= 0.6.3;
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingTacticsBase2.sol";
 import "../storage/Assets.sol";
+import "../gameEngine/ErrorCodes.sol";
 
 /**
  @title Manages items in shop
  @author Freeverse.io, www.freeverse.io
 */
 
-contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
+contract Shop is EncodingSkillsSetters, EncodingTacticsBase2, ErrorCodes{
 
     event ItemOffered(
         uint16 itemId,
@@ -131,11 +132,12 @@ contract Shop is EncodingSkillsSetters, EncodingTacticsBase2{
         return tactics;
     }
     
-    function validateItemsInTactics(uint256 tactics) public view {
+    function validateItemsInTactics(uint256 tactics) public view returns(uint8) {
         ( , uint16 itemId, uint32 boost) = getItemsData(tactics);
-        if (itemId == 0) return;
-        require(itemId < _shopItems.length, "item not found in shop");
-        require(_shopItems[itemId].encodedBoost == boost, "tactics refer to an item with mismatching boost properties");
+        if (itemId == 0) return 0;
+        if (itemId >= _shopItems.length) return ERR_SHOP; // item not found in shop
+        if (_shopItems[itemId].encodedBoost != boost) return ERR_SHOP; // tactics refer to an item with mismatching boost properties
+        return 0;
     }
     
     function getEncodedBoost(uint16 itemId) public view returns (uint32) { return _shopItems[itemId].encodedBoost; }
