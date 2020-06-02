@@ -140,10 +140,10 @@ func checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
 		log.Error("regex error:", err)
 	}
 
-	//// if backdoor is activated, check if is the godmode token
-	//if *backdoor && token == godtoken {
-	//	return godtoken, nil
-	//}
+	// if backdoor is activated, check if is the godmode token
+	if *backdoor && token == godtoken {
+		return godtoken, nil
+	}
 
 	// check if token is cached
 	if addrHex, ok := cache.Get(token); ok {
