@@ -30,7 +30,7 @@ const deployUtils = require('../utils/deployUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    if (network != "test") {
+    if (network != "test") {    
       const { singleTimezone, owners, requiredStake } = deployUtils.getExplicitOrDefaultSetup(deployer.networks[network], accounts);
       const account0Owners = deployUtils.getAccount0Owner(accounts[0]);
       console.log("Deploying proxy related contracts");
