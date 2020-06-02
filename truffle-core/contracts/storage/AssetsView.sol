@@ -147,9 +147,10 @@ contract AssetsView is UniverseInfo, EncodingSkills, EncodingState {
         return dayz * 86400; /// 86400 = 3600 * 24 * 365
     }
 
-    /// TODO: remove from this contract, expose as interface for users
     function getPlayerAgeInDays(uint256 playerId) public view returns (uint256) {
         return secsToDays(INGAMETIME_VS_REALTIME * (now - daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId)))));
     }
+    
+    function divisionIdToRound(uint256 divisionId) public view returns(uint256) { return _divisionIdToRound[divisionId]; }
     
 }

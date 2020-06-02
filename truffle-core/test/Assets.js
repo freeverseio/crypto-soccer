@@ -77,8 +77,33 @@ contract('Assets', (accounts) => {
         N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
+    
+    it('addDivisions', async () => {
+        result = await assets.countCountries(tz).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNDivisionsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNLeaguesInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(16);
+        result = await assets.getNTeamsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(16*8);
+        result = await assets.countryInTZExists(tz, countryIdx = 0).should.be.fulfilled;
+        result.should.be.equal(true);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 0).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
         
-   it('create special players', async () => {
+        tx = await assets.addDivisionManually(tz, 0).should.be.rejected;
+        tx = await assets.addDivisionManually(tz, 0, {from: owners.COO}).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '1';
+        });
+        
+
+    });
+    
+    return;
+    it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
         specialPlayerId = await assets.encodePlayerSkills(
