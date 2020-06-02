@@ -530,10 +530,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     (
         uint256,
         uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills,
-        uint8
+        uint8 err
     ) 
     {
-        (uint8[3] memory  substitutions,,uint8[14] memory lineup,, uint8 tacticsId) = decodeTactics(tactics);
+        (uint8[3] memory  substitutions,,uint8[14] memory lineup,,) = decodeTactics(tactics);
         uint8 changes;
         uint256 teamSkills;
         uint8 fieldPlayers;
@@ -590,7 +590,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         /// Note that teamSumSkills is the sum of, at most, 14 skills of, at most, 20b each. 
         /// So the total cannot be larger that 24b, which is the limit reserved for teamSumSkills.
         matchLog = addTeamSumSkills(matchLog, teamSkills); 
-        return (matchLog, linedUpSkills, tacticsId);      
+        return (matchLog, linedUpSkills, err);      
     }
 
     function verifyCanPlay(uint8 lineup, uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {

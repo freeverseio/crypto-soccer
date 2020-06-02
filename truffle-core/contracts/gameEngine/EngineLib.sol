@@ -97,6 +97,5 @@ contract EngineLib is EncodingSkillsGetters {
         if (tacticsId == 2) return [1,2,1,1,1,1,1,1,1];  /// 0 = 433
         if (tacticsId == 3) return [1,2,1,1,3,1,0,1,0];  /// 0 = 451
     }
-
 }
 

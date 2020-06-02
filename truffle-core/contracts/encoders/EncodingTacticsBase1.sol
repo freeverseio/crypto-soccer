@@ -79,4 +79,5 @@ contract EncodingTacticsBase1 {
             /// require(subsRounds[p] < 12, "incorrect round entry");
         }          
     }
+    
 }

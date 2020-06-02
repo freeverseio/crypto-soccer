@@ -5,6 +5,7 @@ import "./EngineLib.sol";
 import "../encoders/EncodingMatchLogBase3.sol";
 import "../encoders/EncodingTactics.sol";
 import "./EngineApplyBoosters.sol";
+import "../encoders/EncodingTacticsBase3.sol";
 
 /**
  @title Library to compute matches
@@ -14,7 +15,7 @@ import "./EngineApplyBoosters.sol";
  @dev to the rest of the code (inheritance led to too-large-to-deploy)
 */
  
-contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
+contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics, EncodingTacticsBase3  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
     /// prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
@@ -129,9 +130,9 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[5][2] memory globSkills;
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
-
-        (matchLogs[0], skills[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
-        (matchLogs[1], skills[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
+        
+        (matchLogs[0], skills[0], playersPerZone[0], ) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[1], skills[1], playersPerZone[1], ) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
 
         matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
@@ -204,13 +205,18 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     ) 
         public 
         view 
-        returns (uint256, uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills, uint8[9] memory) 
+        returns 
+    (
+        uint256, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills, 
+        uint8[9] memory, 
+        uint8 err
+    ) 
     {
-        uint8 tacticsId;
-        (matchLog, linedUpSkills, tacticsId) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
+        (matchLog, linedUpSkills, err) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
         linedUpSkills = _applyBoosters.applyItemBoost(linedUpSkills, tactics);
         matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, seed); 
-        return (matchLog, linedUpSkills, getPlayersPerZone(tacticsId));
+        return (matchLog, linedUpSkills, getPlayersPerZone(getTacticsId(tactics)), err);
     }
     
     /// adds to the matchLog the number of defenders and GKs actually linedUp (some skills could be empty slots)
