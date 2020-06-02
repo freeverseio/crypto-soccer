@@ -168,6 +168,13 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified for upgrades
+// Step 1: deploy all contracts except for proxy (permisionless)
+//  - deploy all non-proxy, non-directory contracts
+//  - deploy directory pointing to these new-deployed contracts
+// Step 2: "proxy.addContracts" (superUser)
+//  - build input parameters, such as: "selectors"...
+// Step 3: "proxy.upgrade", (superUser)
+//  - atomic: deactivateOld + activateNew + setNewDirectoryAddress    
 const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges, Directory, namesAndAddresses) => {
     assert.notEqual(versionNumber, 0, "version number must be larger than 0 for upgrades");
     assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for upgrades");
@@ -194,7 +201,6 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Marke
         
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
-    
     // Adds new contracts to proxy in one single TX signed by owners.superuser
     const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
 
