@@ -1393,4 +1393,30 @@ contract('Engine', (accounts) => {
         debug.compareArrays(matchLog.slice(2), expected, toNum = true);
         debug.compareArrays(goals, expectedResult, toNum = false);
     });
+    
+    
+    it('extra attack influence', async () => {
+        const extraAttackFull =  Array.from(new Array(10), (x,i) => true);
+        tactics0Attack = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
+            extraAttackFull, tacticId442).should.be.fulfilled;
+        resultsNoExtra = [];
+        resultsExtra = [];
+        for (n = 0; n < 10; n++) {
+            sed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
+            matchLog = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            for (team = 0; team < 2; team++) {
+                nGoals = await encodingLog.getNGoals(matchLog[team]);
+                resultsNoExtra.push(nGoals.toNumber());
+            }
+            matchLog = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0Attack, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            for (team = 0; team < 2; team++) {
+                nGoals = await encodingLog.getNGoals(matchLog[team]);
+                resultsExtra.push(nGoals.toNumber());
+            }
+        }
+        expectedNoExtra = [ 2, 2, 3, 3, 0, 2, 0, 4, 0, 0, 2, 3, 3, 1, 3, 1, 0, 2, 2, 3 ];
+        expectedExtra = [ 3, 3, 3, 3, 0, 4, 0, 4, 2, 0, 2, 3, 3, 2, 3, 1, 1, 3, 3, 2 ];
+        debug.compareArrays(resultsNoExtra, expectedNoExtra, toNum = false);
+        debug.compareArrays(resultsExtra, expectedExtra, toNum = false);
+    });
 });

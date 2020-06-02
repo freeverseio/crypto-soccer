@@ -292,14 +292,15 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     /// globSkills[IDX_DEFEND_SHOOT] =    speed(defenders) + defence(defenders);
     /// blockShoot  =    shoot(keeper);
     function getTeamGlobSkills(
-        uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
-        uint8[9] memory playersPerZone, 
-        bool[10] memory extraAttack
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
+        uint256 tactics 
     )
         public
         pure
         returns(uint256[5] memory globSkills)
     {
+        uint8[9] memory playersPerZone = getPlayersPerZone(tactics);
+        
         /// for a keeper, the 'shoot skill' is interpreted as block skill
         /// if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 posCondModifier;
@@ -313,7 +314,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
             playerSkills = skills[p];
             if (playerSkills != 0) {
                 posCondModifier = computeModifierBadPositionAndCondition(p, playersPerZone, playerSkills);
-                fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
+                fwdModFactors = getExtraAttackFactors(getExtraAttack(tactics, p-1));
                 if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}
                 else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}
                 else {computeForwardsGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}       
