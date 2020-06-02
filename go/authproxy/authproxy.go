@@ -95,12 +95,20 @@ func CheckAuthorization(
 	gracetime int,
 	gqlurl string,
 ) (string, error) {
+	if r == nil {
+		return "", errors.New("r is nil")
+	}
 	// check if token is well formed
 	auth := strings.TrimSpace(r.Header.Get("Authorization"))
 	if !strings.HasPrefix(auth, "Bearer") {
 		return "", errors.New("No authorization bearer")
 	}
 	token := strings.TrimSpace(auth[len("Bearer"):])
+
+	// if backdoor is activated, check if is the godmode token
+	if backdoor && token == GodToken {
+		return GodToken, nil
+	}
 
 	match, err := matchTransferFirstBotMutation(r)
 	if match {
@@ -110,11 +118,6 @@ func CheckAuthorization(
 
 	if err != nil {
 		log.Error("regex error:", err)
-	}
-
-	// if backdoor is activated, check if is the godmode token
-	if backdoor && token == GodToken {
-		return GodToken, nil
 	}
 
 	// check if token is cached
