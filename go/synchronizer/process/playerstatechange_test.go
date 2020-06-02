@@ -14,6 +14,10 @@ func TestPlayerStateChangeGeneratePlayer(t *testing.T) {
 	state, _ := new(big.Int).SetString("274877906945", 10)
 	player, err := process.GeneratePlayerByPlayerIdAndState(bc.Contracts, namesdb, playerId, state)
 	assert.NilError(t, err)
+	// The following 2 properties are time-depedendent, because DayOfBirth depends on deploy time,
+	// and EncodedSkills encodes DayOfBirth. So we set it to nill to be able to compare.
+	player.DayOfBirth = 0
+	player.EncodedSkills, _ = new(big.Int).SetString("0", 10)
 	golden.Assert(t, dump.Sdump(player), t.Name()+".golden")
 }
 
