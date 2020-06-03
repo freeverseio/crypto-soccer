@@ -728,6 +728,29 @@ contract('Engine', (accounts) => {
         }
     });
     
+    
+    it('from the field: used to lead to player > 14 => bad encoding => round = 15', async () => {
+        // to see this test failing in the past, set:
+        //   weights[NO_OUT_OF_GAME_PLAYER] = 1;
+        //   weights[0] = 2000;
+        for (n = 0; n < 10; n++) {
+            RED = 3;
+            sed = web3.utils.toBN(web3.utils.keccak256(n.toString()));
+            log0 =  await engine.playHalfMatch(sed,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            player = await encodingLog.getOutOfGamePlayer(log0[0], is2nd).should.be.fulfilled;
+            typeOf = await encodingLog.getOutOfGameType(log0[0], is2nd).should.be.fulfilled;
+            round = await encodingLog.getOutOfGameRound(log0[0], is2nd).should.be.fulfilled;
+            console.log(round.toNumber(), player.toNumber(), typeOf.toNumber(), round.toNumber(), n);
+            (round.toNumber() < 13).should.be.equal(true);
+            if (player.toNumber() == 14) {
+                round.toNumber().should.be.equal(0);
+                typeOf.toNumber().should.be.equal(0);
+            } else {
+                (typeOf.toNumber() > 0).should.be.equal(true);
+            }
+        }
+    });
+    
     it('red cards cannot be changed and continue having 11 players', async () => {
         // choose a seed that gives a red card for player 9.
         RED = 3;

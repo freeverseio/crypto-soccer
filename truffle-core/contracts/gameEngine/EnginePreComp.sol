@@ -159,15 +159,22 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         }
         return matchLog;
     }
+
+    // returns true if the outOfGamePlayer is either the starting GK, or a substituted one
+    function isOutOfGameForGK(uint8 outOfGamePlayer, uint8[3] memory substitutions) public pure returns(bool) {
+        if (substitutions[0] == 0 && outOfGamePlayer == 11) return true;
+        if (substitutions[1] == 0 && outOfGamePlayer == 12) return true;
+        if (substitutions[2] == 0 && outOfGamePlayer == 13) return true;
+        if (outOfGamePlayer == 0) return true;
+        return false;
+    }
     
-    // if the outOfGame corresponds to a GK return 30 + posOfGKthatEndsThatHalf
-    // so if the return is less than 30, it is not a GK
+    // returns the pos of the outOfGamePlayer: either the starting GK, or a substituted one
     function getOutOfGameForGK(uint8 outOfGamePlayer, uint8[3] memory substitutions) public pure returns(uint8) {
-        if (substitutions[0] == 0 && outOfGamePlayer == 11) return 41;
-        if (substitutions[1] == 0 && outOfGamePlayer == 12) return 42;
-        if (substitutions[2] == 0 && outOfGamePlayer == 13) return 43;
-        if (outOfGamePlayer == 0) return 30;
-        return outOfGamePlayer;
+        if (substitutions[0] == 0 && outOfGamePlayer == 11) return 11;
+        if (substitutions[1] == 0 && outOfGamePlayer == 12) return 12;
+        if (substitutions[2] == 0 && outOfGamePlayer == 13) return 13;
+        return 0;
     }
     
     function logOutOfGame(
@@ -194,10 +201,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         /// for GKs, make sure they do not see a red card, and if they are injured, allow it at the end of 2nd half only.
         /// note that it a GK is substituted, the same applies to the entry GK.
         /// note that in-game events end up in round = ROUNDS_PER_MATCH - 1, so we leave endOfGame for round = ROUNDS_PER_MATCH
-        if (getOutOfGameForGK(outOfGamePlayer, substitutions) >= 30) {
+        if (isOutOfGameForGK(outOfGamePlayer, substitutions)) {
             return (!is2ndHalf || typeOfEvent == RED_CARD) ? 
                 setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf) :
-                setOutOfGame(matchLog, outOfGamePlayer-30, ROUNDS_PER_MATCH, typeOfEvent, is2ndHalf);
+                setOutOfGame(matchLog, getOutOfGameForGK(outOfGamePlayer, substitutions), ROUNDS_PER_MATCH, typeOfEvent, is2ndHalf);
         }
 
         /// if the selected player was one of the guys joining during this half (outGame = 11, 12, or 13),
