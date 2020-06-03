@@ -12,6 +12,8 @@ services:
       - IPFS_PATH=/data
       # - IPFS_FD_MAX=4096
       # - IPFS_PROFILE=test
+    volumes:
+      - ipfs.node-data:/data
   ipfs.cluster:
     image: ipfs/ipfs-cluster:v0.12.1
     restart: always
@@ -24,6 +26,8 @@ services:
     command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
     depends_on: 
       - ipfs.node
+    volumes:
+      - ipfs.cluster-data:/data
   universe.db:
     image: "freeverseio/universe.db:${TAG}"
     restart: always
@@ -31,6 +35,9 @@ services:
       - universe.db-data:/var/lib/postgresql/data
   synchronizer:
     image: "freeverseio/synchronizer:${TAG}"
+    # build: 
+    #   context: ../../go/
+    #   dockerfile: Dockerfile.synchronizer
     restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
@@ -39,6 +46,7 @@ services:
       -proxy_address "${PROXY_CONTRACT_ADDRESS}"
       -staker "${STAKER_PVC}"
       -delta "${BLOCKS_PER_STEP}"
+      # -debug
     depends_on:
       - universe.db
       - ethereum
@@ -57,5 +65,6 @@ services:
 volumes:
   ethereum-data:
   ipfs.node-data:
+  ipfs.cluster-data:
   universe.db-data:
 
