@@ -126,14 +126,12 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         returns (uint256[2] memory, uint256[2] memory)
     {
         uint256[5][2] memory globSkills;
-        uint8[9][2] memory playersPerZone;
-        bool[10][2] memory extraAttack;
         
-        (matchLogs[0], skills[0], playersPerZone[0], ) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
-        (matchLogs[1], skills[1], playersPerZone[1], ) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
+        (matchLogs[0], skills[0], , ) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[1], skills[1], , ) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
 
-        matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
-        matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefendersFromTactics(tactics[0]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefendersFromTactics(tactics[1]), matchBools[IDX_IS_2ND_HALF]);
 
         globSkills[0] = _precomp.getTeamGlobSkills(skills[0], tactics[0]);
         globSkills[1] = _precomp.getTeamGlobSkills(skills[1], tactics[1]);
@@ -141,7 +139,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(matchLogs, seedAndStartTimeAndEvents, skills, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        computeRounds(matchLogs, seedAndStartTimeAndEvents, skills, tactics, globSkills, matchBools[IDX_IS_2ND_HALF]);
         return (matchLogs, [globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]]);
     }
     
@@ -149,14 +147,16 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[2] memory matchLogs,
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills, 
-        uint8[9][2] memory playersPerZone, 
-        bool[10][2] memory extraAttack, 
+        uint256[2] memory tactics,
         uint256[5][2] memory globSkills, 
         bool is2ndHalf
     ) 
         public
         pure
     {
+        uint8[9][2] memory playersPerZone = [getPlayersPerZone(tactics[0]), getPlayersPerZone(tactics[1])];
+        bool[10][2] memory extraAttack;// = [getFullExtraAttack(tactics[0]), getFullExtraAttack(tactics[1])];
+
         uint64[] memory rnds = getNRandsFromSeed(seedAndStartTimeAndEvents[IDX_SEED], ROUNDS_PER_MATCH*5);
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){

@@ -74,6 +74,11 @@ contract EngineLib is EncodingSkillsGetters, EncodingTacticsBase3 {
         return rnds;
     }
 
+    function getNDefendersFromTactics(uint256 tactics) public pure returns (uint8) {
+        uint8[9] memory playersPerZone = getPlayersPerZone(tactics);
+        return 2 * playersPerZone[0] + playersPerZone[1];
+    }
+
     function getNDefenders(uint8[9] memory playersPerZone) public pure returns (uint8) {
         return 2 * playersPerZone[0] + playersPerZone[1];
     }
