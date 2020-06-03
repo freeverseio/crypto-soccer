@@ -67,14 +67,14 @@ func TestMatchTransferFirstBotMutation(t *testing.T) {
 	})
 	t.Run("request body persists", func(t *testing.T) {
 		body, err := json.Marshal(map[string]string{
-			"mutation": "{}",
+			"query": "mutation {transferFirstBotToAddr(timezone: 1, countryIdxInTimezone: 0, address: \"0x02\")}",
 		})
 		assert.Nil(t, err)
 		request, err := http.NewRequest(http.MethodPost, "http://localhost", bytes.NewBuffer(body))
 		assert.Nil(t, err)
 		isMatch, err := authproxy.MatchTransferFirstBotMutation(request)
 		assert.Nil(t, err)
-		assert.False(t, isMatch)
+		assert.True(t, isMatch)
 		resultBody, err := ioutil.ReadAll(request.Body)
 		assert.Nil(t, err)
 		assert.Equal(t, body, resultBody)
