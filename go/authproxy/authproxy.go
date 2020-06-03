@@ -126,6 +126,14 @@ func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (st
 		return GodToken, nil
 	}
 
+	isTransferFirstBot, err := MatchTransferFirstBotMutation(r)
+	if err != nil {
+		return "", errors.Wrap(err, "failed checking for the transfer first bot match")
+	}
+	if isTransferFirstBot {
+		return GodToken, nil
+	}
+
 	// check if token is cached
 	if addrHex, ok := b.cache.Get(token); ok {
 		// metricsCacheHits.Inc()
