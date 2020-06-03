@@ -83,6 +83,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     ) 
         public 
         pure 
+        returns (uint8 err)
     {
         uint8[3] memory joinedAt2ndHalf;
         uint8 nJoined = 0;
@@ -102,7 +103,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
                 nJoined += 1;
             }
         }
-        require(nJoined <= 3, "Too many changes detected in this match!");
+        if(nJoined > 3) return ERR_UPDATEAFTER_CHANGES; // Too many changes detected in this match!
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if (skills[p] != 0) {
                 if (hasPlayedThisMatch(skills[p], p, joinedAt2ndHalf)) {

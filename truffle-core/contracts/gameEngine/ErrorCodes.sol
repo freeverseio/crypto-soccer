@@ -19,5 +19,6 @@ contract ErrorCodes {
     uint8 internal constant ERR_EVOLVE = 9;
     uint8 internal constant ERR_UPDATEAFTER_YELLOW = 10;
     uint8 internal constant ERR_SHOP = 11;
+    uint8 internal constant ERR_UPDATEAFTER_CHANGES = 11;
 
 }

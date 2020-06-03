@@ -73,7 +73,7 @@ contract PlayAndEvolve is ErrorCodes {
         err = shop.validateItemsInTactics(tactics[1]);
         if (err > 0) return (skills, matchLogsAndEvents, err);
         
-        matchLogsAndEvents = engine.playHalfMatch(
+        (matchLogsAndEvents, err) = engine.playHalfMatch(
             generateMatchSeed(verseSeed, teamIds), 
             matchStartTime, 
             skills, 
@@ -109,22 +109,27 @@ contract PlayAndEvolve is ErrorCodes {
         view 
         returns(
             uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
-            uint256[2+5*ROUNDS_PER_MATCH] memory,
+            uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents,
             uint8 err
         )
     {
-        require(matchBools[IDX_IS_2ND_HALF], "play2ndHalfAndEvolve was called with the wrong is2ndHalf boolean!");
+        if (!matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
 
-        shop.validateItemsInTactics(tactics[0]);
-        shop.validateItemsInTactics(tactics[1]);
-
+        err = shop.validateItemsInTactics(tactics[0]);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
+        err = shop.validateItemsInTactics(tactics[1]);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
+        
         /// Note that the following call does not change de values of "skills" because it calls a separate contract.
         /// It would do so if playHalfMatch was part of this contract code.
-        uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
+        (matchLogsAndEvents, err) = 
             engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, matchLogs, matchBools);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
 
         (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
         (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true);
+        if (err > 0) return (skills, matchLogsAndEvents, err);
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
 
