@@ -382,7 +382,7 @@ func TestFromTheField(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
 		assert.NilError(t, err)
-		assert.Error(t, match.Play1stHalf(*bc.Contracts), "BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: 16")
+		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: VM execution error.")
 	})
 	t.Run("fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
