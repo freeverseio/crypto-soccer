@@ -84,13 +84,12 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         view
         returns (uint256[2+5*ROUNDS_PER_MATCH] memory)
     {
-        uint256 block0;
-        uint256 block1;
+        uint256[2] memory blockSkillGK;
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
         seedAndStartTimeAndEvents[0] = seed; 
         seedAndStartTimeAndEvents[1] = matchStartTime; 
         
-        (matchLogs, block0, block1) = playMatchWithoutPenalties(
+        (matchLogs, blockSkillGK) = playMatchWithoutPenalties(
             seedAndStartTimeAndEvents, 
             skills,
             tactics,
@@ -99,7 +98,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         );
 
         if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
-            matchLogs = _precomp.computePenalties(matchLogs, skills, block0, block1, uint64(seed));  /// TODO seed
+            matchLogs = _precomp.computePenalties(matchLogs, skills, blockSkillGK[0], blockSkillGK[1], uint64(seed));  /// TODO seed
         } else {
             /// note that WINNER_HOME = 0, so no need to write anything if home wins.
             if (getNGoals(matchLogs[0]) == getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_DRAW);
@@ -124,7 +123,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     )
         public
         view
-        returns (uint256[2] memory, uint256, uint256)
+        returns (uint256[2] memory, uint256[2] memory)
     {
         uint256[5][2] memory globSkills;
         uint8[9][2] memory playersPerZone;
@@ -143,7 +142,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
         computeRounds(matchLogs, seedAndStartTimeAndEvents, skills, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
-        return (matchLogs, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
+        return (matchLogs, [globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]]);
     }
     
     function computeRounds(
