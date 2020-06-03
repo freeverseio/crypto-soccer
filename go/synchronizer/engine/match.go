@@ -144,7 +144,8 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return errors.Wrap(err, "failed calculating visitor assignedTP")
 	}
-	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
+	var BCError uint8
+	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
 		b.StartTime,
@@ -157,6 +158,9 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed play1stHalfAndEvolve")
+	}
+	if BCError != 0 {
+		fmt.PrintLn("BLOCKCHAIN ERROR!!!! Play1stHalfAndEvolve: Blockchain returned error code: " + string(BCError))
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
@@ -208,7 +212,8 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	matchLogs := [2]*big.Int{}
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
-	newSkills, logsAndEvents, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
+	var BCError uint8
+	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
 		b.StartTime,
@@ -220,6 +225,9 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
+	}
+	if BCError != 0 {
+		fmt.PrintLn("BLOCKCHAIN ERROR!!!! Play2ndHalfAndEvolve: Blockchain returned error code: " + string(BCError))
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
