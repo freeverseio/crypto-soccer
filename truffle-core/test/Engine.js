@@ -734,14 +734,14 @@ contract('Engine', (accounts) => {
         // to see this test failing in the past, set:
         //   weights[NO_OUT_OF_GAME_PLAYER] = 1;
         //   weights[0] = 2000;
-        for (n = 0; n < 10; n++) {
+        for (n = 0; n < 3; n++) {
             RED = 3;
             sed = web3.utils.toBN(web3.utils.keccak256(n.toString()));
-            log0 =  await engine.playHalfMatch(sed,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            var {0: log0, 1: err} =  await engine.playHalfMatch(sed,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
             player = await encodingLog.getOutOfGamePlayer(log0[0], is2nd).should.be.fulfilled;
             typeOf = await encodingLog.getOutOfGameType(log0[0], is2nd).should.be.fulfilled;
             round = await encodingLog.getOutOfGameRound(log0[0], is2nd).should.be.fulfilled;
-            console.log(round.toNumber(), player.toNumber(), typeOf.toNumber(), round.toNumber(), n);
+            // console.log(round.toNumber(), player.toNumber(), typeOf.toNumber(), round.toNumber(), n);
             (round.toNumber() < 13).should.be.equal(true);
             if (player.toNumber() == 14) {
                 round.toNumber().should.be.equal(0);
