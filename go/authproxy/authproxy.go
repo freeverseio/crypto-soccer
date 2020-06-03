@@ -31,28 +31,33 @@ const (
 type AuthProxy struct {
 	timeout   int
 	gqlurl    string
-	debug     bool
 	backdoor  bool
 	cache     *gocache.Cache
 	gracetime int
+	debug     bool
 }
 
 func New(
-	timeout int,
 	gqlurl string,
-	debug bool,
-	backdoor bool,
+	timeout int,
 	gracetime int,
 ) *AuthProxy {
 	return &AuthProxy{
 		timeout:   timeout,
 		gqlurl:    gqlurl,
-		backdoor:  backdoor,
 		gracetime: gracetime,
 		// create authentication cache
 		// default expiration time of 5 minutes, and purges expired items every 2 minute
 		cache: gocache.New(5*time.Minute, 2*time.Minute),
 	}
+}
+
+func (b *AuthProxy) SetDebug(active bool) {
+	b.debug = active
+}
+
+func (b *AuthProxy) SetBackdoor(active bool) {
+	b.backdoor = active
 }
 
 var opid uint64
