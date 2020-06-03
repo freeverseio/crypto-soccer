@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMatchTransferFirstBotMutation(t *testing.T) {
+func TestIsTransferFirstBotMutation(t *testing.T) {
 	m := "mutation {transferFirstBotToAddr(timezone: 10, countryIdxInTimezone: 1000, address: \"0x02\")}"
 	match, _ := authproxy.IsTransferFirstBotMutation(m)
 	assert.True(t, match)
