@@ -126,8 +126,14 @@ func Generate(
 	// - cards & injuries
 	// - substitutions
 	events, rounds2mins := addEventsInRound(seed0, blockchainEvents, lineup0, lineup1, NULL, NOONE)
-	events = addCardsAndInjuries(0, events, seed1, matchLog0, rounds2mins, lineup0, NULL, NOONE)
-	events = addCardsAndInjuries(1, events, seed2, matchLog1, rounds2mins, lineup1, NULL, NOONE)
+	events, err = addCardsAndInjuries(0, events, seed1, matchLog0, rounds2mins, lineup0, NULL, NOONE)
+	if err != nil {
+		return events, err
+	}
+	events, err = addCardsAndInjuries(1, events, seed2, matchLog1, rounds2mins, lineup1, NULL, NOONE)
+	if err != nil {
+		return events, err
+	}
 	events = addSubstitutions(0, events, matchLog0, rounds2mins, lineup0, substitutions0, subsRounds0, NULL, NOONE)
 	events = addSubstitutions(1, events, matchLog1, rounds2mins, lineup1, substitutions1, subsRounds1, NULL, NOONE)
 
@@ -140,16 +146,27 @@ func Generate(
 	return events, nil
 }
 
-func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, lineUp [14]uint8, NULL int16, NOONE int16) []MatchEvent {
+func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, lineUp [14]uint8, NULL int16, NOONE int16) ([]MatchEvent, error) {
+
 	// matchLog[4,5,6] = outOfGamePlayer, outOfGameType, outOfGameRound
 	// note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
 	// eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
+	if matchLog[5] > 3 {
+		return events, errors.New("typeOfEvent larger than 3")
+	}
+	if matchLog[6] >= uint32(len(rounds2mins)) {
+		return events, errors.New("outOfGameRound larger than allowed")
+	}
+
 	outOfGamePlayer := int16(matchLog[4])
 	// convert player in the lineUp to shirtNum before storing it as match event:
 	primaryPlayer := toShirtNum(uint8(outOfGamePlayer), lineUp, NULL, NOONE)
 	thereWasAnOutOfGame := primaryPlayer != NULL
 	outOfGameMinute := int16(0)
 	if thereWasAnOutOfGame {
+		if matchLog[5] == 0 {
+			return events, errors.New("typeOfEvent = 0 is not allowed if thereWasAnOutOfGame")
+		}
 		var typeOfEvent int16
 		if matchLog[5] == 1 {
 			typeOfEvent = EVNT_SOFT
@@ -199,7 +216,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 				minute := outOfGameMinute
 				thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 				events = append(events, thisEvent)
-				return events
+				return events, nil
 			} else {
 				maxMinute = outOfGamePlayer
 			}
@@ -210,7 +227,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
 		events = append(events, thisEvent)
 	}
-	return events
+	return events, nil
 }
 
 // output event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
