@@ -27,3 +27,6 @@ docker-compose up -d
 docker-compose down
 ```
 
+docker ps
+docker-compose logs -f synchronizer
+docker-compose down

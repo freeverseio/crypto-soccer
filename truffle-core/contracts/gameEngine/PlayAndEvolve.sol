@@ -19,10 +19,10 @@ contract PlayAndEvolve is ErrorCodes {
     uint8 private constant IDX_IS_2ND_HALF = 0; 
     uint8 public constant ROUNDS_PER_MATCH = 12;   /// Number of relevant actions that happen during a game (12 equals one per 3.7 min)
 
-    TrainingPoints public training;
-    Evolution public evo;
-    Engine public engine;
-    Shop public shop;
+    TrainingPoints private training;
+    Evolution private evo;
+    Engine private engine;
+    Shop private shop;
 
     constructor(address trainingAddr, address evolutionAddr, address engineAddr, address shopAddr) public {
         training = TrainingPoints(trainingAddr);
