@@ -19,6 +19,12 @@ contract ErrorCodes {
     uint8 internal constant ERR_EVOLVE = 9;
     uint8 internal constant ERR_UPDATEAFTER_YELLOW = 10;
     uint8 internal constant ERR_SHOP = 11;
-    uint8 internal constant ERR_UPDATEAFTER_CHANGES = 11;
+    uint8 internal constant ERR_UPDATEAFTER_CHANGES = 12;
+    uint8 internal constant ERR_UPDATEAFTER_OUTOFGAME1 = 13;
+    uint8 internal constant ERR_UPDATEAFTER_OUTOFGAME2 = 14;
 
+    uint8 internal constant ERR_PLAYHALF_TOO_MANY_LINEDUP = 15;
+    uint8 internal constant ERR_PLAYHALF_HALFCHANGES = 16;
+    uint8 internal constant ERR_PLAYHALF_PLAYER_TWICE = 17;
+    
 }

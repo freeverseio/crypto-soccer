@@ -4,13 +4,14 @@ import "../encoders/EncodingTacticsBase1.sol";
 import "./EngineLib.sol";
 import "./SortValues.sol";
 import "../encoders/EncodingMatchLogBase1.sol";
+import "../gameEngine/ErrorCodes.sol";
 
 /**
  @title Library or pure functions, part of Engine
  @author Freeverse.io, www.freeverse.io
 */
 
-contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1, SortValues {
+contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1, SortValues, ErrorCodes{
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     /// Skills: shoot, speed, pass, defence, endurance
     uint8 constant public SK_SHO = 0;
@@ -224,7 +225,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     }
 
     function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) public pure returns (uint8 round) {
-        require(maxRound > minRound, "max and min rounds are not correct");
+        if (!(maxRound > minRound)) return minRound; // this should never happen, but it is here for safety
         return minRound + uint8(seed % (maxRound - minRound + 1));
     }
 
@@ -350,7 +351,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         pure
         returns (uint256) 
     {
-        require(lineupPos < NO_SUBST, "wrong arg in computeModifierBadPositionAndCondition");
+        /// by construction, we should always have lineupPos < NO_SUBST
         uint256 penalty;
         uint256 forwardness = getForwardness(playerSkills);
         uint256 leftishness = getLeftishness(playerSkills);
@@ -581,13 +582,17 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
                 }
             }
         }
-        require(changes < 4, "max allowed changes in a game is 3");
-        require(fieldPlayers < (getOutOfGameType(matchLog, false) == RED_CARD ? 11 : 12), "more players aligned than allowed by red cards");
+        if (changes > 3) return (matchLog, linedUpSkills, ERR_PLAYHALF_HALFCHANGES);
+        if (fieldPlayers >= (getOutOfGameType(matchLog, false) == RED_CARD ? 11 : 12)) return (matchLog, linedUpSkills, ERR_PLAYHALF_TOO_MANY_LINEDUP);
+
         matchLog = addNTot(matchLog, fieldPlayers, is2ndHalf);
 
         /// Check that the same player does not appear twice in the lineup
         lineup = sort14(lineup);
-        for (uint8 p = 1; p < 11; p++) require((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1], "player appears twice in lineup!");  
+        for (uint8 p = 1; p < 11; p++) {
+            /// check that player does not appear twice in lineUp
+            if (!((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1])) return (matchLog, linedUpSkills, ERR_PLAYHALF_PLAYER_TWICE);
+        }  
         /// Note that teamSumSkills is the sum of, at most, 14 skills of, at most, 20b each. 
         /// So the total cannot be larger that 24b, which is the limit reserved for teamSumSkills.
         matchLog = addTeamSumSkills(matchLog, teamSkills); 
