@@ -16,6 +16,13 @@ const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');const Shop = artifacts.require('Shop');
 const EncodingTactics = artifacts.require('EncodingTactics');
+
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
+
 // in test mode, we place a test item in contruction (with itemId = 1)
 // (recall that itemId = 0 is NULL)
 // so a new item will be assigned itemId = 2
@@ -31,7 +38,7 @@ contract('Shop', (accounts) => {
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
 

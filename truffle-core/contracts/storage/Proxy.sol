@@ -130,7 +130,7 @@ contract Proxy is ProxyStorage {
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             address addr = _contractsInfo[contractId].addr;
             for (uint256 s = 0; s < selectors.length; s++) {
-                require(_selectorToContractAddr[selectors[s]] != PROXY_DUMMY_ADDR, "Found a collision with a function in the Proxy contract");
+                require(_selectorToContractAddr[selectors[s]] == address(0x0), "Found a collision");
                 _selectorToContractAddr[selectors[s]] = addr;
             }
             _contractsInfo[contractId].isActive = true;

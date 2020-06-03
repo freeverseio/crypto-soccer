@@ -24,7 +24,14 @@ const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
 const TrainingPoints = artifacts.require('TrainingPoints');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
+
 async function createSpecialPlayerId(rnd = 144321433) {
+  const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
   sk = [16383, 13, 4, 56, 456];
   traits = [potential = 5, forwardness = 3, leftishness = 4, aggressiveness = 1]
   secsInYear = 365*24*3600
@@ -52,7 +59,7 @@ contract("Market", accounts => {
   beforeEach(async () => {
     defaultSetup = deployUtils.getDefaultSetup(accounts);
     owners = defaultSetup.owners;
-    depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+    depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
     [proxy, assets, market, updates] = depl;
     await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
 
