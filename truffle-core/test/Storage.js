@@ -49,6 +49,23 @@ contract('Proxy', (accounts) => {
         nSelPerContract = [selectors.length];
     });
 
+    it('collisions with proxy should fail', async () => {
+        // contract[0] is the NULL contract
+        // proxy.address is the Proxy deployed at beforeEach, which we will leave with just the null contract
+        // proxyV0 will be th newly deployed Proxy, which we will here be updating.
+        const nContractsToProxy = 4;
+        assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
+        result = await proxy.countSelectorsInContract(0).should.be.fulfilled;
+        result.toNumber().should.be.equal(17);
+        selectorsProxy = deployUtils.extractSelectorsFromAbi(Proxy.abi);
+        selectorsBad = [...selectors]
+        selectorsBad[6] = selectorsProxy[6];
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors.length], selectorsBad, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors.length], selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+    });
+    return
+    
+    
     it('fails when adding a contract to an address without contract', async () => {
         await proxy.addContracts(contractIds = [1], ['0x0'], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
         await proxy.addContracts(contractIds = [1], ['0x32132'], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
