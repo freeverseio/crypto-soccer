@@ -343,11 +343,12 @@ contract('Evolution', (accounts) => {
         for (player of m.VisitorTeam.Players){ 
             skills1.push(player.EncodedSkills);
         }
-        var {0: skills, 1: matchLogsAndEvents} =  await play.play2ndHalfAndEvolve(
+        var {0: skills, 1: matchLogsAndEvents, 2: err} =  await play.play2ndHalfAndEvolve(
             m.Seed, m.StartTime, [skills0, skills1], [m.HomeTeam.TeamID, m.VisitorTeam.TeamID], 
             [m.HomeTeam.Tactic, m.VisitorTeam.Tactic], [m.HomeTeam.MatchLog, m.VisitorTeam.MatchLog],
             [is2nd = true, isHom = true, isPlay = false]
-        ).should.be.rejected;
+        ).should.be.fulfilled;
+        err.toNumber().should.be.equal(Err.ERR_PLAYHALF_HALFCHANGES);
     });
 
     it('test that used to fail because yellow cards remained 0 when turned into a red -serious', async () => {
@@ -451,7 +452,7 @@ contract('Evolution', (accounts) => {
     it('updateSkillsAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
-        matchLog = await engine.playHalfMatch(
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(
             123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [0, 0], 
             [is2nd = false, isHome = true, playoff = false]
         ).should.be.fulfilled;
@@ -551,7 +552,7 @@ contract('Evolution', (accounts) => {
     it('updateSkillsAfterPlayHalf: half 2', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
-        matchLog = await engine.playHalfMatch(
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
             [is2nd = true, isHome = true, playoff = false]
         ).should.be.fulfilled;
