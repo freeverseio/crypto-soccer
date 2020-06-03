@@ -57,6 +57,7 @@ contract("Market", accounts => {
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     defaultSetup = deployUtils.getDefaultSetup(accounts);
     owners = defaultSetup.owners;
     depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);

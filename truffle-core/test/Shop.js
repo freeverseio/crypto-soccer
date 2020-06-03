@@ -29,6 +29,7 @@ const UpdatesBase = artifacts.require('UpdatesBase');
 const expectedNewItemId = 2;
 
 contract('Shop', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const ALICE = accounts[1];
     const BOB = accounts[2];
     const CAROL = accounts[3];
