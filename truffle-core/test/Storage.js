@@ -60,11 +60,11 @@ contract('Proxy', (accounts) => {
         selectorsProxy = deployUtils.extractSelectorsFromAbi(Proxy.abi);
         selectorsBad = [...selectors]
         selectorsBad[6] = selectorsProxy[6];
-        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors.length], selectorsBad, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
-        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors.length], selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors.length], selectorsBad, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors.length], selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx1 = await proxy.activateContracts([1], {from: superuser}).should.be.rejected;
+        tx1 = await proxy.activateContracts([2], {from: superuser}).should.be.fulfilled;
     });
-    return
-    
     
     it('fails when adding a contract to an address without contract', async () => {
         await proxy.addContracts(contractIds = [1], ['0x0'], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
