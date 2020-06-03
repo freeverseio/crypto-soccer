@@ -1262,7 +1262,7 @@ contract('Engine', (accounts) => {
         nMid = 4;
         nAtt = 2;
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442,  tactics442).should.be.fulfilled;
         expectedGlob =[ 
             4 * nDef + 7 * nMid + nAtt, 
             2 * nAtt, 
@@ -1274,7 +1274,7 @@ contract('Engine', (accounts) => {
 
         // // show that GKs contribute 1/3 extra to move2attack and defendShoot, only when int division by 3 is not zero :-)
         teamState442 = await createTeamState442(engine, forceSkills= [3,3,3,3,3]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442).should.be.fulfilled;
         expectedGlob =[ 
             3 * (4 * nDef + 7 * nMid + nAtt) + 1, // adding 3/3 from GK 
             3 * (2 * nAtt) + 4,   // adding (3*2*nMids)/5
@@ -1285,17 +1285,17 @@ contract('Engine', (accounts) => {
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000-1]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442).should.be.fulfilled;
         expectedGlob = [46, 4, 8, 1, 65];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442).should.be.fulfilled;
         expectedGlob = [46, 4, 8, 1, 65];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,20000-1]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442).should.be.fulfilled;
         expectedGlob = [46, 4, 8, 1, 100];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
