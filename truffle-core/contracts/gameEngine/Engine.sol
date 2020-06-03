@@ -96,6 +96,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             matchLogs,
             matchBools
         );
+        if (err > 0) return (seedAndStartTimeAndEvents, err);
 
         if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
             matchLogs = _precomp.computePenalties(matchLogs, skills, blockSkillGK[0], blockSkillGK[1], uint64(seed));  /// TODO seed
@@ -128,7 +129,9 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[5][2] memory globSkills;
         
         (matchLogs[0], skills[0], err) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
+        if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
         (matchLogs[1], skills[1], err) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
+        if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
 
         matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefendersFromTactics(tactics[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefendersFromTactics(tactics[1]), matchBools[IDX_IS_2ND_HALF]);
