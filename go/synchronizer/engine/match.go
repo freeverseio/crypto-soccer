@@ -161,7 +161,9 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		return errors.Wrap(err, "failed play1stHalfAndEvolve")
 	}
 	if BCError != 0 {
-		fmt.Println("BLOCKCHAIN ERROR!!!! Play1stHalfAndEvolve: Blockchain returned error code: " + string(BCError))
+		errMsg := fmt.Sprintf("BLOCKCHAIN ERROR!!!! Play1stHalfAndEvolve: Blockchain returned error code: %v", BCError)
+		fmt.Println(errMsg)
+		return errors.New(errMsg)
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
@@ -228,7 +230,9 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
 	}
 	if BCError != 0 {
-		fmt.Println("BLOCKCHAIN ERROR!!!! Play2ndHalfAndEvolve: Blockchain returned error code: " + string(BCError))
+		errMsg := fmt.Sprintf("BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: %v", BCError)
+		fmt.Println(errMsg)
+		return errors.New(errMsg)
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
