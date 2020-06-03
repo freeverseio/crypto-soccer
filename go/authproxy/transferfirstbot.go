@@ -1,9 +1,13 @@
 package authproxy
 
 import (
+	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"regexp"
+
+	"github.com/pkg/errors"
 )
 
 func IsTransferFirstBotMutation(data string) (bool, error) {
@@ -11,11 +15,22 @@ func IsTransferFirstBotMutation(data string) (bool, error) {
 	return regexp.MatchString(ex, data)
 }
 
-func matchTransferFirstBotMutation(r *http.Request) (bool, error) {
+func MatchTransferFirstBotMutation(r *http.Request) (bool, error) {
+	if r == nil {
+		return false, errors.New("nil request")
+	}
+	if r.Body == http.NoBody {
+		return false, nil
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return false, errors.Wrap(err, "failed reading the body")
+	}
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 	var query struct {
 		Data string `json:"query"`
 	}
-	err := json.NewDecoder(r.Body).Decode(&query)
+	err = json.Unmarshal(body, &query)
 	if err != nil {
 		return false, err
 	}

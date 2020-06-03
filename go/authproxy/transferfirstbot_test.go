@@ -1,6 +1,10 @@
 package authproxy_test
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/authproxy"
@@ -36,4 +40,43 @@ func TestIsTransferFirstBotMutation(t *testing.T) {
 	m = "bar {transferFirstBotToAddr(timezone: 10, countryIdxInTimezone: 1000, address: \"0x02\")}"
 	match, _ = authproxy.IsTransferFirstBotMutation(m)
 	assert.False(t, match)
+}
+
+func TestMatchTransferFirstBotMutation(t *testing.T) {
+	t.Run("nil request", func(t *testing.T) {
+		_, err := authproxy.MatchTransferFirstBotMutation(nil)
+		assert.EqualError(t, err, "nil request")
+	})
+	t.Run("request without a body", func(t *testing.T) {
+		request, err := http.NewRequest(http.MethodPost, "http://localhost", http.NoBody)
+		assert.Nil(t, err)
+		result, err := authproxy.MatchTransferFirstBotMutation(request)
+		assert.Nil(t, err)
+		assert.False(t, result)
+	})
+	t.Run("body of request is not nil after read", func(t *testing.T) {
+		body := []byte{0x2}
+		request, err := http.NewRequest(http.MethodPost, "http://localhost", bytes.NewBuffer(body))
+		assert.Nil(t, err)
+		resultBody, err := ioutil.ReadAll(request.Body)
+		assert.Nil(t, err)
+		assert.Equal(t, body, resultBody)
+		resultBody, err = ioutil.ReadAll(request.Body)
+		assert.Nil(t, err)
+		assert.Equal(t, resultBody, []byte{})
+	})
+	t.Run("request body persists", func(t *testing.T) {
+		body, err := json.Marshal(map[string]string{
+			"mutation": "{}",
+		})
+		assert.Nil(t, err)
+		request, err := http.NewRequest(http.MethodPost, "http://localhost", bytes.NewBuffer(body))
+		assert.Nil(t, err)
+		isMatch, err := authproxy.MatchTransferFirstBotMutation(request)
+		assert.Nil(t, err)
+		assert.False(t, isMatch)
+		resultBody, err := ioutil.ReadAll(request.Body)
+		assert.Nil(t, err)
+		assert.Equal(t, body, resultBody)
+	})
 }
