@@ -2,8 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"net/http"
 
 	"github.com/freeverseio/crypto-soccer/go/authproxy"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -55,8 +58,33 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	go authproxy.StartMetricsServer(*metricsport)
-	authproxy.StartProxyServer(*serviceport, *ratelimit)
+	ap := authproxy.New(
+		*timeout,
+		*gqlurl,
+		*debug,
+		*backdoor,
+		*gracetime,
+	)
+
+	// go startMetricsServer(*metricsport)
+	ap.StartProxyServer(*serviceport, *ratelimit)
+}
+
+func startMetricsServer(metricsport int) {
+
+	bind := fmt.Sprintf(":%v", metricsport)
+	log.Infof("Starting metrics server at %v/metrics", bind)
+
+	metricsserver := http.NewServeMux()
+	metricsserver.Handle("/metrics", promhttp.Handler())
+
+	server := &http.Server{
+		Handler: metricsserver,
+		Addr:    bind,
+	}
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal("cannot start metrics server", err)
+	}
 }
 
 /*

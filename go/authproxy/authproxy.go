@@ -21,7 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	gocache "github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 )
 
@@ -38,8 +37,18 @@ type AuthProxy struct {
 	gracetime int
 }
 
-func New() *AuthProxy {
+func New(
+	timeout int,
+	gqlurl string,
+	debug bool,
+	backdoor bool,
+	gracetime int,
+) *AuthProxy {
 	return &AuthProxy{
+		timeout:   timeout,
+		gqlurl:    gqlurl,
+		backdoor:  backdoor,
+		gracetime: gracetime,
 		// create authentication cache
 		// default expiration time of 5 minutes, and purges expired items every 2 minute
 		cache: gocache.New(5*time.Minute, 2*time.Minute),
@@ -247,23 +256,6 @@ func (b *AuthProxy) StartProxyServer(serviceport int, ratelimit int) {
 	}
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("cannot start http server", err)
-	}
-}
-
-func startMetricsServer(metricsport int) {
-
-	bind := fmt.Sprintf(":%v", metricsport)
-	log.Infof("Starting metrics server at %v/metrics", bind)
-
-	metricsserver := http.NewServeMux()
-	metricsserver.Handle("/metrics", promhttp.Handler())
-
-	server := &http.Server{
-		Handler: metricsserver,
-		Addr:    bind,
-	}
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal("cannot start metrics server", err)
 	}
 }
 
