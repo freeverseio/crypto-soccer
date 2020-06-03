@@ -59,12 +59,12 @@ func main() {
 	}
 
 	ap := authproxy.New(
-		*timeout,
 		*gqlurl,
-		*debug,
-		*backdoor,
+		*timeout,
 		*gracetime,
 	)
+	ap.SetDebug(*debug)
+	ap.SetBackdoor(*backdoor)
 
 	// go startMetricsServer(*metricsport)
 	ap.StartProxyServer(*serviceport, *ratelimit)
