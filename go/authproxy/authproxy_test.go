@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/authproxy"
+	gocache "github.com/patrickmn/go-cache"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -119,6 +120,7 @@ func TestMatchTransferFirstBotMutation(t *testing.T) {
 }
 
 func TestCheckAuthorizationGodToken(t *testing.T) {
+	cache := gocache.New(5*time.Minute, 2*time.Minute)
 	backdoor := true
 	gracetime := 10
 	gqlurl := ""
@@ -129,7 +131,7 @@ func TestCheckAuthorizationGodToken(t *testing.T) {
 		context.Background(),
 		req,
 		backdoor,
-		nil,
+		cache,
 		gracetime,
 		gqlurl,
 	)
@@ -141,9 +143,9 @@ func TestCheckAuthorizationGodToken(t *testing.T) {
 		context.Background(),
 		req,
 		backdoor,
-		nil,
+		cache,
 		gracetime,
 		gqlurl,
 	)
-	assert.EqualError(t, err, "nil body")
+	assert.EqualError(t, err, "malformed token:joshua")
 }

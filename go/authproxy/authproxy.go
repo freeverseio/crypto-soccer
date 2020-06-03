@@ -19,6 +19,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	gocache "github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -77,7 +78,8 @@ func MatchTransferFirstBotMutation(data string) (bool, error) {
 
 func matchTransferFirstBotMutation(r *http.Request) (bool, error) {
 	if r.Body == nil {
-		return false, errors.New("nil body")
+		log.Warningf("Nil body: Header: %v", r.Header)
+		return false, nil
 	}
 	var query struct {
 		Data string `json:"query"`
