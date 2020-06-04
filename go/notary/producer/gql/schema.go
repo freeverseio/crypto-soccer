@@ -40,14 +40,16 @@ const Schema = `
 		playerId: ID!
 		name: String!
 		dayOfBirth: Int! 
-    	preferredPosition: String!
+		preferredPosition: String!
 		defence: Int!
-    	speed: Int!
-    	pass: Int!
-    	shoot: Int!
-    	endurance: Int!
-    	potential: Int! 
-  		validUntil: String!
+		speed: Int!
+		pass: Int!
+		shoot: Int!
+		endurance: Int!
+		potential: Int! 
+		validUntil: String!
+		countryOfBirth: String!
+		race: String!
 	}
 
 	type Query {
