@@ -15,11 +15,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	gocache "github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
-	"github.com/prometheus/common/log"
 )
 
 const (
@@ -91,7 +92,7 @@ func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (st
 	if err != nil {
 		return "", err
 	}
-
+	log.Info("here")
 	isTransferFirstBot, err := MatchTransferFirstBotMutation(r)
 	if err != nil {
 		return "", errors.Wrap(err, "failed checking for the transfer first bot match")
