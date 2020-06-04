@@ -130,9 +130,9 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     {
         uint256[5][2] memory globSkills;
         
-        (matchLogs[0], skills[0], err) = getLinedUpSkills(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[0], skills[0], err) = getLinedUpSkills(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED], matchBools[IDX_IS_BOT_HOME]);
         if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
-        (matchLogs[1], skills[1], err) = getLinedUpSkills(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
+        (matchLogs[1], skills[1], err) = getLinedUpSkills(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256, matchBools[IDX_IS_BOT_AWAY]);
         if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
 
         matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefendersFromTactics(tactics[0]), matchBools[IDX_IS_2ND_HALF]);
@@ -204,7 +204,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256 tactics,
         bool is2ndHalf,
         uint256 matchLog,
-        uint256 seed
+        uint256 seed,
+        bool isBot
     ) 
         public 
         view 
@@ -217,7 +218,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     {
         (matchLog, linedUpSkills, err) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
         linedUpSkills = _applyBoosters.applyItemBoost(linedUpSkills, tactics);
-        matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, seed); 
+        if (!isBot) matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, seed); 
         return (matchLog, linedUpSkills, err);
     }
     

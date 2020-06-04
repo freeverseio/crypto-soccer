@@ -18,7 +18,9 @@ contract PlayAndEvolve is ErrorCodes {
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 private constant IDX_IS_2ND_HALF = 0; 
     uint8 public constant ROUNDS_PER_MATCH = 12;   /// Number of relevant actions that happen during a game (12 equals one per 3.7 min)
-
+    uint8 private constant IDX_IS_BOT_HOME      = 3; 
+    uint8 private constant IDX_IS_BOT_AWAY      = 4; 
+    
     TrainingPoints private training;
     Evolution private evo;
     Engine private engine;
@@ -60,19 +62,21 @@ contract PlayAndEvolve is ErrorCodes {
     {
         if (matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
 
-        (skills[0], err) = training.applyTrainingPoints(skills[0], assignedTPs[0], tactics[0], matchStartTime, evo.getTrainingPoints(matchLogs[0]));
-        if (err > 0) return (skills, matchLogsAndEvents, err);
-        (skills[1], err) = training.applyTrainingPoints(skills[1], assignedTPs[1], tactics[1], matchStartTime, evo.getTrainingPoints(matchLogs[1]));
-        if (err > 0) return (skills, matchLogsAndEvents, err);
-    
+        if (!matchBools[IDX_IS_BOT_HOME]) {
+            (skills[0], err) = training.applyTrainingPoints(skills[0], assignedTPs[0], tactics[0], matchStartTime, evo.getTrainingPoints(matchLogs[0]));
+            if (err > 0) return (skills, matchLogsAndEvents, err);
+            err = shop.validateItemsInTactics(tactics[0]);
+            if (err > 0) return (skills, matchLogsAndEvents, err);
+        }
+        if (!matchBools[IDX_IS_BOT_AWAY]) {
+            (skills[1], err) = training.applyTrainingPoints(skills[1], assignedTPs[1], tactics[1], matchStartTime, evo.getTrainingPoints(matchLogs[1]));
+            if (err > 0) return (skills, matchLogsAndEvents, err);
+            err = shop.validateItemsInTactics(tactics[1]);
+            if (err > 0) return (skills, matchLogsAndEvents, err);
+        }
+            
         /// Note that the following call does not change de values of "skills" because it calls a separate contract.
         /// It would do so if playHalfMatch was part of this contract code.
-
-        err = shop.validateItemsInTactics(tactics[0]);
-        if (err > 0) return (skills, matchLogsAndEvents, err);
-        err = shop.validateItemsInTactics(tactics[1]);
-        if (err > 0) return (skills, matchLogsAndEvents, err);
-        
         (matchLogsAndEvents, err) = engine.playHalfMatch(
             generateMatchSeed(verseSeed, teamIds), 
             matchStartTime, 
@@ -82,9 +86,9 @@ contract PlayAndEvolve is ErrorCodes {
             matchBools
         );
 
-        (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false);
+        (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false, matchBools[IDX_IS_BOT_HOME]);
         if (err > 0) return (skills, matchLogsAndEvents, err);
-        (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false);
+        (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false, matchBools[IDX_IS_BOT_AWAY]);
         if (err > 0) return (skills, matchLogsAndEvents, err);
 
         return (skills, matchLogsAndEvents, 0);
@@ -115,20 +119,29 @@ contract PlayAndEvolve is ErrorCodes {
     {
         if (!matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
 
-        err = shop.validateItemsInTactics(tactics[0]);
-        if (err > 0) return (skills, matchLogsAndEvents, err);
-        err = shop.validateItemsInTactics(tactics[1]);
-        if (err > 0) return (skills, matchLogsAndEvents, err);
-        
+        if (!matchBools[IDX_IS_BOT_HOME]) {
+            err = shop.validateItemsInTactics(tactics[0]);
+            if (err > 0) return (skills, matchLogsAndEvents, err);
+        }
+        if (!matchBools[IDX_IS_BOT_AWAY]) {
+            err = shop.validateItemsInTactics(tactics[1]);
+            if (err > 0) return (skills, matchLogsAndEvents, err);
+        }        
         /// Note that the following call does not change de values of "skills" because it calls a separate contract.
         /// It would do so if playHalfMatch was part of this contract code.
-        (matchLogsAndEvents, err) = 
-            engine.playHalfMatch(generateMatchSeed(verseSeed, teamIds), matchStartTime, skills, tactics, matchLogs, matchBools);
+        (matchLogsAndEvents, err) = engine.playHalfMatch(
+            generateMatchSeed(verseSeed, teamIds), 
+            matchStartTime, 
+            skills, 
+            tactics, 
+            matchLogs, 
+            matchBools
+        );
         if (err > 0) return (skills, matchLogsAndEvents, err);
 
-        (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true);
+        (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true, matchBools[IDX_IS_BOT_HOME]);
         if (err > 0) return (skills, matchLogsAndEvents, err);
-        (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true);
+        (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true, matchBools[IDX_IS_BOT_AWAY]);
         if (err > 0) return (skills, matchLogsAndEvents, err);
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);

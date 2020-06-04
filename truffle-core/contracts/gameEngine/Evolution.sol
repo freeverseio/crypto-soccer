@@ -23,11 +23,13 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     uint8 public constant WEEKS_SOFT_INJ = 2;  /// weeks a player is out when suffered a soft injury
     uint8 private constant CHG_HAPPENED = uint8(1); 
 
+    
     function updateSkillsAfterPlayHalf(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint256 matchLog,
         uint256 tactics,
-        bool is2ndHalf
+        bool is2ndHalf,
+        bool isBot
     ) 
         public
         pure
@@ -43,6 +45,9 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         ///      - set all to false unless it happens in 1st or 2nd half
         ///  -  injury => 
         ///      - decrease by one unless it happens in 1st or 2nd half
+        /// BOT teams need to be ready after a game. First half works as a human team.
+        /// but at the end of 2ns half, players don't increment gamesNonStop, and see 
+        /// all cards and injuries set to 0. 
         if (!is2ndHalf) {
             err = writeOutOfGameInSkills(skills, tactics, matchLog, false);
             if (err > 0) return (skills, err);
@@ -57,8 +62,10 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
             // Then, add the particular outOfGame from this half
             err = writeOutOfGameInSkills(skills, tactics, matchLog, true);
             if (err > 0) return (skills, err);
-            err = updateGamesNonStopping2ndHalf(skills, tactics, matchLog); // only touches gamesNonStopping
-            if (err > 0) return (skills, err);
+            if (!isBot) {
+                err = updateGamesNonStopping2ndHalf(skills, tactics, matchLog); // only touches gamesNonStopping
+                if (err > 0) return (skills, err);
+            }
             resetFirstHalfDataInSkills(skills); // sets to false all FistHalf quantities
         }
         return (skills, 0);
