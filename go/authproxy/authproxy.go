@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -16,7 +15,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/didip/tollbooth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	gocache "github.com/patrickmn/go-cache"
@@ -29,26 +27,27 @@ const (
 )
 
 type AuthProxy struct {
-	timeout   int
-	gqlurl    string
-	backdoor  bool
-	cache     *gocache.Cache
-	gracetime int
-	debug     bool
+	timeout       int
+	backdoor      bool
+	cache         *gocache.Cache
+	gracetime     int
+	debug         bool
+	serverService ServerService
 }
 
 func New(
-	gqlurl string,
 	timeout int,
 	gracetime int,
+	serverService ServerService,
+
 ) *AuthProxy {
 	return &AuthProxy{
 		timeout:   timeout,
-		gqlurl:    gqlurl,
 		gracetime: gracetime,
 		// create authentication cache
 		// default expiration time of 5 minutes, and purges expired items every 2 minute
-		cache: gocache.New(5*time.Minute, 2*time.Minute),
+		cache:         gocache.New(5*time.Minute, 2*time.Minute),
+		serverService: serverService,
 	}
 }
 
@@ -61,56 +60,6 @@ func (b *AuthProxy) SetBackdoor(active bool) {
 }
 
 var opid uint64
-
-func (b *AuthProxy) checkPermissions(ctx context.Context, addr common.Address) (bool, error) {
-
-	// create request
-	gqlQuery := `{allTeams (condition: {owner: "` + addr.Hex() + `"}){totalCount}}`
-	query, err := json.Marshal(map[string]string{"query": gqlQuery})
-	if err != nil {
-		return false, errors.Wrap(err, "failed bulding auth query")
-	}
-	req, err := http.NewRequest(http.MethodPost, b.gqlurl, bytes.NewReader(query))
-	if err != nil {
-		return false, errors.Wrap(err, "failed bulding auth request")
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	// send request
-	client := &http.Client{}
-	resp, err := client.Do(req.WithContext(ctx))
-	if err != nil {
-		return false, errors.Wrap(err, "failed sending auth request")
-	}
-
-	// check http response is ok
-	if resp.StatusCode != 200 {
-		errstr := "unknown"
-		if resp.Body != nil {
-			errbody, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				errstr = string(errbody)
-			}
-		}
-		return false, fmt.Errorf("failed sending auth request, errcode=%v, err=%s", resp.StatusCode, errstr)
-	}
-
-	// parse qgl response, and return
-	var response struct {
-		Data struct {
-			AllTeams struct {
-				TotalCount int
-			}
-		}
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return false, errors.Wrap(err, "failed decoding auth response")
-	}
-
-	ok := response.Data.AllTeams.TotalCount > 0
-	return ok, nil
-}
 
 func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
 
@@ -126,14 +75,6 @@ func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (st
 		return GodToken, nil
 	}
 
-	isTransferFirstBot, err := MatchTransferFirstBotMutation(r)
-	if err != nil {
-		return "", errors.Wrap(err, "failed checking for the transfer first bot match")
-	}
-	if isTransferFirstBot {
-		return GodToken, nil
-	}
-
 	// check if token is cached
 	if addrHex, ok := b.cache.Get(token); ok {
 		// metricsCacheHits.Inc()
@@ -146,11 +87,23 @@ func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (st
 		return "", err
 	}
 
-	ok, err := b.checkPermissions(ctx, addr)
+	countTeams, err := b.serverService.CountTeams(ctx, addr)
 	if err != nil {
 		return "", err
 	}
-	if !ok {
+
+	isTransferFirstBot, err := MatchTransferFirstBotMutation(r)
+	if err != nil {
+		return "", errors.Wrap(err, "failed checking for the transfer first bot match")
+	}
+	if isTransferFirstBot {
+		if countTeams != 0 {
+			return "", errors.New("Already owner of a team")
+		}
+		return GodToken, nil
+	}
+
+	if countTeams < 1 {
 		return "", errors.New("User does not has pesmissions")
 	}
 
@@ -160,7 +113,7 @@ func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (st
 	return addr.Hex(), nil
 }
 
-func (b *AuthProxy) gqlproxy(w http.ResponseWriter, r *http.Request) {
+func (b *AuthProxy) Gqlproxy(w http.ResponseWriter, r *http.Request) {
 
 	// auto increment op number
 	op := atomic.AddUint64(&opid, 1)
@@ -200,7 +153,7 @@ func (b *AuthProxy) gqlproxy(w http.ResponseWriter, r *http.Request) {
 		request = r.Body
 	}
 
-	req, err := http.NewRequest("POST", b.gqlurl, request)
+	req, err := b.serverService.NewRequest("POST", request)
 	if err != nil {
 		fail(err)
 		return
@@ -241,35 +194,6 @@ func (b *AuthProxy) gqlproxy(w http.ResponseWriter, r *http.Request) {
 
 	// update successfull ops metric
 	// metricsOpsSuccess.Inc()
-}
-
-func (b *AuthProxy) StartProxyServer(serviceport int, ratelimit int) {
-
-	// check gql server
-	_, err := b.checkPermissions(context.Background(), common.HexToAddress("0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"))
-	if err != nil {
-		log.Warnf("Caution, cannot access to gql service at %s: %w", b.gqlurl, err)
-	}
-
-	// create server handing requests with reqest limits
-	proxyserver := http.NewServeMux()
-
-	lmt := tollbooth.NewLimiter(float64(ratelimit), nil)
-	lmt.SetOnLimitReached(func(w http.ResponseWriter, r *http.Request) {
-		// metricsOpsDropped.Inc()
-	})
-	lmtHandler := tollbooth.LimitFuncHandler(lmt, b.gqlproxy)
-	proxyserver.Handle("/", lmtHandler)
-
-	bind := fmt.Sprintf(":%v", serviceport)
-	log.Infof("Starting proxy server at %v/", bind)
-	server := &http.Server{
-		Handler: proxyserver,
-		Addr:    bind,
-	}
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal("cannot start http server", err)
-	}
 }
 
 func hashPrefixedMessage(data []byte) []byte {
