@@ -44,8 +44,8 @@ func TestGetWorldPlayersDeterministicResult(t *testing.T) {
 	for i := range players0 {
 		assert.Equal(t, *players0[i], *players1[i])
 	}
-	assert.Equal(t, players0[0].Race(), "Spanish")
-	assert.Equal(t, players0[0].CountryOfBirth(), "ES")
+	assert.Equal(t, players0[0].Race() == "", false)
+	assert.Equal(t, players0[0].CountryOfBirth() == "", false)
 }
 
 func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
@@ -75,8 +75,8 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, players[0].Race(), "Spanish")
-	assert.Equal(t, players[0].CountryOfBirth(), "ES")
+	assert.Equal(t, players[0].Race() == "", false)
+	assert.Equal(t, players[0].CountryOfBirth() == "", false)
 
 	player0Id, _ := new(big.Int).SetString(string(players[0].PlayerId()), 10)
 	targetTeamId, _ := new(big.Int).SetString(teamId, 10)
@@ -99,8 +99,9 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 29)
-	assert.Equal(t, players[0].Race(), "Spanish")
-	assert.Equal(t, players[0].CountryOfBirth(), "EE")
+	assert.Equal(t, players[0].Race() == "", false)
+	assert.Equal(t, players[0].CountryOfBirth() == "", false)
+
 }
 
 func TestGetWorldPlayers(t *testing.T) {
@@ -114,8 +115,8 @@ func TestGetWorldPlayers(t *testing.T) {
 	players, err := r.GetWorldPlayers(struct{ Input input.GetWorldPlayersInput }{in})
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, players[0].Race(), "TwoOrMoreRegions")
-	assert.Equal(t, players[0].CountryOfBirth(), "ES")
+	assert.Equal(t, players[0].Race() == "", false)
+	assert.Equal(t, players[0].CountryOfBirth() == "", false)
 }
 
 func TestCreateWorldPlayerBatch(t *testing.T) {
@@ -137,8 +138,8 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157481453821747928514686071527706372")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
 	assert.Equal(t, players[0].Name(), "Bogdan Gimenez")
-	assert.Equal(t, players[0].CountryOfBirth(), "AM")
-	assert.Equal(t, players[0].Race(), "Spanish")
+	assert.Equal(t, players[0].Race() == "", false)
+	assert.Equal(t, players[0].CountryOfBirth() == "", false)
 	assert.Equal(t, players[0].Speed(), int32(3402))
 
 	players, err = gql.CreateWorldPlayerBatch(
@@ -153,8 +154,8 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	assert.Equal(t, len(players), 30)
 	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157481453821747928514686071527706372")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
-	assert.Equal(t, players[0].Race(), "Spanish")
-	assert.Equal(t, players[0].CountryOfBirth(), "AM")
+	assert.Equal(t, players[0].Race() == "", false)
+	assert.Equal(t, players[0].CountryOfBirth() == "", false)
 
 	players, err = gql.CreateWorldPlayerBatch(
 		*bc.Contracts,
