@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/didip/tollbooth"
 	"github.com/freeverseio/crypto-soccer/go/authproxy"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -58,16 +59,36 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
+	serverService := authproxy.NewGraphQLServerService(*gqlurl)
 	ap := authproxy.New(
-		*gqlurl,
 		*timeout,
 		*gracetime,
+		serverService,
 	)
 	ap.SetDebug(*debug)
 	ap.SetBackdoor(*backdoor)
 
 	// go startMetricsServer(*metricsport)
-	ap.StartProxyServer(*serviceport, *ratelimit)
+
+	// create server handing requests with reqest limits
+	proxyserver := http.NewServeMux()
+
+	lmt := tollbooth.NewLimiter(float64(*ratelimit), nil)
+	lmt.SetOnLimitReached(func(w http.ResponseWriter, r *http.Request) {
+		// metricsOpsDropped.Inc()
+	})
+	lmtHandler := tollbooth.LimitFuncHandler(lmt, ap.Gqlproxy)
+	proxyserver.Handle("/", lmtHandler)
+
+	bind := fmt.Sprintf(":%v", *serviceport)
+	log.Infof("Starting proxy server at %v/", bind)
+	server := &http.Server{
+		Handler: proxyserver,
+		Addr:    bind,
+	}
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal("cannot start http server", err)
+	}
 }
 
 func startMetricsServer(metricsport int) {
