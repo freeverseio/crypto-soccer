@@ -301,7 +301,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     /// blockShoot  =    shoot(keeper);
     function getTeamGlobSkills(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
-        uint256 tactics 
+        uint256 tactics,
+        bool isBot
     )
         public
         pure
@@ -314,14 +315,14 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         uint256 posCondModifier;
         uint256 playerSkills = skills[0];
         if (playerSkills != 0) {
-            posCondModifier = computeModifierBadPositionAndCondition(0, playersPerZone, playerSkills);
+            posCondModifier = computeModifierBadPositionAndCondition(0, playersPerZone, playerSkills, isBot);
             computeGKGlobSkills(globSkills, playerSkills, posCondModifier);
         }
         uint256[2] memory fwdModFactors;
         for (uint8 p = 1; p < 11; p++){
             playerSkills = skills[p];
             if (playerSkills != 0) {
-                posCondModifier = computeModifierBadPositionAndCondition(p, playersPerZone, playerSkills);
+                posCondModifier = computeModifierBadPositionAndCondition(p, playersPerZone, playerSkills, isBot);
                 fwdModFactors = getExtraAttackFactors(getExtraAttack(tactics, p-1));
                 if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}
                 else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}
@@ -352,7 +353,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     function computeModifierBadPositionAndCondition(
         uint8 lineupPos, 
         uint8[9] memory playersPerZone, 
-        uint256 playerSkills
+        uint256 playerSkills,
+        bool isBot
     ) 
         public
         pure
@@ -404,7 +406,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         }
         /// In no case can penalty be larger than 4000 since it is 
         /// the sum of 2 penalties, and each is at most 2000.
-        uint8 gamesNonStop = getGamesNonStopping(playerSkills);
+        uint8 gamesNonStop = isBot ? 5 : getGamesNonStopping(playerSkills);
         if (gamesNonStop > 5) {
             return 5000 - penalty;
         } else {

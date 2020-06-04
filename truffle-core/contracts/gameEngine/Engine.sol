@@ -44,6 +44,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
     uint8 private constant IDX_IS_HOME_STADIUM  = 1; 
     uint8 private constant IDX_IS_PLAYOFF       = 2; 
+    uint8 private constant IDX_IS_BOT_HOME      = 3; 
+    uint8 private constant IDX_IS_BOT_AWAY      = 4; 
     //
     uint8 private constant IDX_SEED         = 0; 
     uint8 private constant IDX_ST_TIME      = 1; 
@@ -78,7 +80,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools 
+        bool[5] memory matchBools 
     )
         public
         view
@@ -120,7 +122,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
+        bool[5] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
         view
@@ -136,8 +138,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefendersFromTactics(tactics[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefendersFromTactics(tactics[1]), matchBools[IDX_IS_2ND_HALF]);
 
-        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], tactics[0]);
-        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], tactics[1]);
+        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], tactics[0], matchBools[IDX_IS_BOT_HOME]);
+        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], tactics[1], matchBools[IDX_IS_BOT_AWAY]);
 
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;

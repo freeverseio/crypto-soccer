@@ -47,7 +47,7 @@ contract PlayAndEvolve is ErrorCodes {
         uint256[2] memory teamIds,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools, /// [is2ndHalf, isHomeStadium, isPlayoff]
+        bool[5] memory matchBools, /// [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]
         uint256[2] memory assignedTPs
     )
         public 
@@ -103,7 +103,7 @@ contract PlayAndEvolve is ErrorCodes {
         uint256[2] memory teamIds,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
+        bool[5] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public 
         view 
