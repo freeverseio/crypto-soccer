@@ -50,6 +50,7 @@ const Schema = `
 		validUntil: String!
 		countryOfBirth: String!
 		race: String!
+		productId: String!
 	}
 
 	type Query {
