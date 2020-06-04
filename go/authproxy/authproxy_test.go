@@ -1,6 +1,7 @@
 package authproxy_test
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -88,16 +89,21 @@ func TestPhoenixAuthIsValid(t *testing.T) {
 }
 
 func TestA(t *testing.T) {
-	serverService := authproxy.MockServerService{}
 	timeout := 10
 	gracetime := 10
-	ap := authproxy.New(timeout, gracetime, serverService)
 
-	req, err := http.NewRequest("GET", "/health-check", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr := httptest.NewRecorder()
-	// handler := http.HandlerFunc(HealthCheckHandler)
-	ap.Gqlproxy(rr, req)
+	t.Run("wrong request", func(t *testing.T) {
+		serverService := authproxy.MockServerService{}
+		ap := authproxy.New(timeout, gracetime, serverService)
+
+		req, err := http.NewRequest("GET", "/health-check", nil)
+		assert.Nil(t, err)
+		rr := httptest.NewRecorder()
+		ap.Gqlproxy(rr, req)
+		assert.Equal(t, 401, rr.Code)
+		msg, err := ioutil.ReadAll(rr.Body)
+		assert.Nil(t, err)
+		assert.Equal(t, "Invalid authorization token [1]\n", string(msg))
+	})
+
 }
