@@ -1435,14 +1435,14 @@ contract('Engine', (accounts) => {
         resultsExtra = [];
         for (n = 0; n < 10; n++) {
             sed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
-            var {0: matchLog, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            var {0: matchLogNoExtra, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
             for (team = 0; team < 2; team++) {
-                nGoals = await encodingLog.getNGoals(matchLog[team]);
+                nGoals = await encodingLog.getNGoals(matchLogNoExtra[team]);
                 resultsNoExtra.push(nGoals.toNumber());
             }
-            var {0: matchLog, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0Attack, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            var {0: matchLogExtra, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0Attack, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
             for (team = 0; team < 2; team++) {
-                nGoals = await encodingLog.getNGoals(matchLog[team]);
+                nGoals = await encodingLog.getNGoals(matchLogExtra[team]);
                 resultsExtra.push(nGoals.toNumber());
             }
         }
@@ -1450,5 +1450,11 @@ contract('Engine', (accounts) => {
         expectedExtra = [ 3, 3, 3, 3, 0, 4, 0, 4, 2, 0, 2, 3, 3, 2, 3, 1, 1, 3, 3, 2 ];
         debug.compareArrays(resultsNoExtra, expectedNoExtra, toNum = false);
         debug.compareArrays(resultsExtra, expectedExtra, toNum = false);
+        
+        // note that these two are different:
+        expectedExtra   = [ 1, 0, 0, 0, 0, 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 7, 1, 10, 0, 0, 0, 0, 0, 1, 1, 8, 1, 8, 0, 1, 9, 1, 2, 0, 1, 8, 1, 5 ];
+        expectedNoExtra = [ 1, 0, 0, 0, 0, 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 7, 1, 10, 0, 0, 0, 0, 0, 1, 1, 8, 1, 8, 0, 1, 10, 1, 5, 1, 1, 9, 1, 8 ];   
+        debug.compareArrays(matchLogExtra.slice(2), expectedExtra, toNum = true);
+        debug.compareArrays(matchLogNoExtra.slice(2), expectedExtra, toNum = true);
     });
 });
