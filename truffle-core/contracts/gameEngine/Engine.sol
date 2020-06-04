@@ -158,7 +158,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         pure
     {
         uint8[9][2] memory playersPerZone = [getPlayersPerZone(tactics[0]), getPlayersPerZone(tactics[1])];
-        bool[10][2] memory extraAttack;// = [getFullExtraAttack(tactics[0]), getFullExtraAttack(tactics[1])];
+        bool[10][2] memory extraAttack = [getFullExtraAttack(tactics[0]), getFullExtraAttack(tactics[1])];
 
         uint64[] memory rnds = getNRandsFromSeed(seedAndStartTimeAndEvents[IDX_SEED], ROUNDS_PER_MATCH*5);
         uint8 teamThatAttacks;
