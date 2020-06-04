@@ -406,7 +406,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         }
         /// In no case can penalty be larger than 4000 since it is 
         /// the sum of 2 penalties, and each is at most 2000.
-        uint8 gamesNonStop = isBot ? 5 : getGamesNonStopping(playerSkills);
+        uint8 gamesNonStop = isBot ? 3 : getGamesNonStopping(playerSkills);
         if (gamesNonStop > 5) {
             return 5000 - penalty;
         } else {

@@ -1388,6 +1388,69 @@ contract('Engine', (accounts) => {
             nGoals.toNumber().should.be.equal(expectedResult[team]);
         }
     });
+    
+    it('effect of isBot on results', async () => {
+        // bots typically play 541
+        teamStateAll1000Half1 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
+        tactics541 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
+            extraAttackNull, tact = 1).should.be.fulfilled;
+
+        totalGoals = [0,0];
+        expectedTotal = [10,5];
+        for (p = 0; p < 5; p++) {
+            sed = web3.utils.toBN(web3.utils.keccak256("32123" + p));
+            var {0: matchLog, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll1000Half1, teamStateAll1000Half1], [tactics0, tactics541], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, false, true]).should.be.fulfilled;
+            for (team = 0; team < 2; team++) {
+                nGoals = await encodingLog.getNGoals(matchLog[team]);
+                totalGoals[team] += nGoals;
+            }
+        }
+        debug.compareArrays(totalGoals, expectedTotal, toNum = true);
+    });
+    
+    it('if both teams are bots, or humans, results are the same; if they are different, results change', async () => {
+        // both humans
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, false, false]).should.be.fulfilled;
+        expectedResult = [2, 2];
+        result = [];
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodingLog.getNGoals(matchLog[team]);
+            result.push(nGoals);
+        }
+        debug.compareArrays(result, expectedResult, toNum = true);
+
+        // both bots
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, true, true]).should.be.fulfilled;
+        expectedResult = [2, 2];
+        result = [];
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodingLog.getNGoals(matchLog[team]);
+            result.push(nGoals);
+        }
+        debug.compareArrays(result, expectedResult, toNum = true);
+
+        // bot vs human
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, true, false]).should.be.fulfilled;
+        expectedResult = [1, 2];
+        result = [];
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodingLog.getNGoals(matchLog[team]);
+            result.push(nGoals);
+        }
+        debug.compareArrays(result, expectedResult, toNum = true);
+
+        // human vs bot
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, false, true]).should.be.fulfilled;
+        expectedResult = [3, 1];
+        result = [];
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodingLog.getNGoals(matchLog[team]);
+            result.push(nGoals);
+        }
+        debug.compareArrays(result, expectedResult, toNum = true);
+        
+
+    });
 
     it('different seeds => different result', async () => {
         var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
