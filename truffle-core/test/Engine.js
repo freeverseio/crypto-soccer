@@ -48,7 +48,7 @@ contract('Engine', (accounts) => {
     const is2ndHalf = false;
     const isHomeStadium = false;
     const isPlayoff = false;
-    const matchBools = [is2ndHalf, isHomeStadium, isPlayoff]
+    const matchBools = [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]
     const IDX_R = 1;
     const IDX_C = 2;
     const IDX_CR = 3;
@@ -428,7 +428,7 @@ contract('Engine', (accounts) => {
         // in the 2nd half there is a defender less than usual
         teamStateAll50Half2[1] = 0;
         seedDraw = 12;
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], [newLog, newLog], [is2nd = true, isHomeStadium,  playoff = false]).should.be.fulfilled;
+        var {0: log2, 1: err} = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], [newLog, newLog], [is2nd = true, isHomeStadium,  playoff = false, isBotHome, isBotAway).should.be.fulfilled;
         for (team = 0; team < 2; team++){
             nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = false);
             nDefs.toNumber().should.be.equal(0); // 0 because we did not playHalfMatch in 1st half
@@ -555,7 +555,7 @@ contract('Engine', (accounts) => {
         
         seedDraw= seed;
         teamStateAll50Half2[9] = 0;
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], [log0, log0], [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
+        var {0: log2, 1: err} = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], [log0, log0], [is2nd = true, isHomeStadium,  playoff = true, isBotHome, isBotAway]).should.be.fulfilled;
         nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
         nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
         nGoals0.toNumber().should.be.equal(nGoals1.toNumber());
@@ -1336,7 +1336,7 @@ contract('Engine', (accounts) => {
 
     it('getLinedUpSkills', async () => {
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        result = await engine.getLinedUpSkills(teamState442, tactics1, is2ndHalf, log = [0,0], seed).should.be.fulfilled;
+        result = await engine.getLinedUpSkills(teamState442, tactics1, is2ndHalf, log = [0,0], seed, isBotHome).should.be.fulfilled;
         let {0: matchLog, 1: states} = result;
         for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[lineupConsecutive[p]]);
     });
@@ -1402,10 +1402,10 @@ contract('Engine', (accounts) => {
             var {0: matchLog, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll1000Half1, teamStateAll1000Half1], [tactics0, tactics541], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, false, true]).should.be.fulfilled;
             for (team = 0; team < 2; team++) {
                 nGoals = await encodingLog.getNGoals(matchLog[team]);
-                totalGoals[team] += nGoals;
+                totalGoals[team] += nGoals.toNumber();
             }
         }
-        debug.compareArrays(totalGoals, expectedTotal, toNum = true);
+        debug.compareArrays(totalGoals, expectedTotal, toNum = false);
     });
     
     it('if both teams are bots, or humans, results are the same; if they are different, results change', async () => {
