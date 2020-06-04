@@ -1455,6 +1455,6 @@ contract('Engine', (accounts) => {
         expectedExtra   = [ 1, 0, 0, 0, 0, 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 7, 1, 10, 0, 0, 0, 0, 0, 1, 1, 8, 1, 8, 0, 1, 9, 1, 2, 0, 1, 8, 1, 5 ];
         expectedNoExtra = [ 1, 0, 0, 0, 0, 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 7, 1, 10, 0, 0, 0, 0, 0, 1, 1, 8, 1, 8, 0, 1, 10, 1, 5, 1, 1, 9, 1, 8 ];   
         debug.compareArrays(matchLogExtra.slice(2), expectedExtra, toNum = true);
-        debug.compareArrays(matchLogNoExtra.slice(2), expectedExtra, toNum = true);
+        debug.compareArrays(matchLogNoExtra.slice(2), expectedNoExtra, toNum = true);
     });
 });
