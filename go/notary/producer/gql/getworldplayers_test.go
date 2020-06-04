@@ -153,7 +153,7 @@ func TestCreateWorldPlayerBatch(t *testing.T) {
 	assert.Equal(t, len(players), 30)
 	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157481453821747928514686071527706372")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
-	assert.Equal(t, players[0].Race(), "TwoOrMoreRegions")
+	assert.Equal(t, players[0].Race(), "Spanish")
 	assert.Equal(t, players[0].CountryOfBirth(), "ES")
 
 	players, err = gql.CreateWorldPlayerBatch(
