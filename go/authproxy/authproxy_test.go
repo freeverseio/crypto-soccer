@@ -92,7 +92,7 @@ func TestA(t *testing.T) {
 	timeout := 10
 	gracetime := 10
 
-	t.Run("wrong request", func(t *testing.T) {
+	t.Run("no authorization", func(t *testing.T) {
 		serverService := authproxy.MockServerService{}
 		ap := authproxy.New(timeout, gracetime, serverService)
 
@@ -106,4 +106,53 @@ func TestA(t *testing.T) {
 		assert.Equal(t, "Invalid authorization token [1]\n", string(msg))
 	})
 
+	t.Run("malformed token", func(t *testing.T) {
+		serverService := authproxy.MockServerService{}
+		ap := authproxy.New(timeout, gracetime, serverService)
+
+		req, err := http.NewRequest("GET", "/health-check", nil)
+		assert.Nil(t, err)
+		req.Header.Set("Authorization", "Bearer abc123")
+		rr := httptest.NewRecorder()
+		ap.Gqlproxy(rr, req)
+		assert.Equal(t, 401, rr.Code)
+		msg, err := ioutil.ReadAll(rr.Body)
+		assert.Nil(t, err)
+		assert.Equal(t, "Invalid authorization token [2]\n", string(msg))
+	})
+
+	t.Run("no backdoor and godtoken token", func(t *testing.T) {
+		serverService := authproxy.MockServerService{}
+		ap := authproxy.New(timeout, gracetime, serverService)
+
+		req, err := http.NewRequest("GET", "/health-check", nil)
+		assert.Nil(t, err)
+		req.Header.Set("Authorization", "Bearer "+authproxy.GodToken)
+		rr := httptest.NewRecorder()
+		ap.Gqlproxy(rr, req)
+		assert.Equal(t, 401, rr.Code)
+		msg, err := ioutil.ReadAll(rr.Body)
+		assert.Nil(t, err)
+		assert.Equal(t, "Invalid authorization token [3]\n", string(msg))
+	})
+
+	t.Run("backdoor and godtoken token", func(t *testing.T) {
+		serverService := authproxy.MockServerService{}
+		serverService.CountTeamFn = func() (int, error) { return 0, nil }
+		serverService.NewRequestFn = func() (*http.Request, error) {
+			return httptest.NewRequest(http.MethodGet, "/health-check", http.NoBody), nil
+		}
+		ap := authproxy.New(timeout, gracetime, serverService)
+		ap.SetBackdoor(true)
+
+		req, err := http.NewRequest("GET", "/health-check", nil)
+		assert.Nil(t, err)
+		req.Header.Set("Authorization", "Bearer "+authproxy.GodToken)
+		rr := httptest.NewRecorder()
+		ap.Gqlproxy(rr, req)
+		assert.Equal(t, 500, rr.Code)
+		msg, err := ioutil.ReadAll(rr.Body)
+		assert.Nil(t, err)
+		assert.Equal(t, "Internal error traceid:4\n", string(msg))
+	})
 }
