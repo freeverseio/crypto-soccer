@@ -71,6 +71,8 @@ contract('Engine', (accounts) => {
     const MAX_GOALS_IN_HALF = 12;
     const it2 = async(text, f) => {};
     const trainingPointsDefault = 12;
+    const isBotHome = false;
+    const isBotAway = false;
     
     function setNoSubstInLineUp(lineup, substitutions) {
         modifiedLineup = [...lineup];
@@ -645,7 +647,7 @@ contract('Engine', (accounts) => {
         subs = [11,11,11];
         tactics442WithNoChanges = await engine.encodeTactics(subs, subsRounds, setNoSubstInLineUp(lineupConsecutive, subs), 
             extraAttackNull, tacticId442).should.be.fulfilled;
-        var {0: log0, 1: err} =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442TwoChanges, tactics442WithNoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log0, 1: err} =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442TwoChanges, tactics442WithNoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expected = [3250, 2750];
         for (team = 0; team < 2; team++) {
             teamSkills = await encodingLog.getTeamSumSkills(log0[team]).should.be.fulfilled;
@@ -654,7 +656,7 @@ contract('Engine', (accounts) => {
         subs = [3,11,11];
         tactics442OneChange = await engine.encodeTactics(subs, subsRounds, setNoSubstInLineUp(lineupConsecutive, subs), 
             extraAttackNull, tacticId442).should.be.fulfilled;
-        var {0: log12, 1: err}  = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442OneChange, tactics442WithNoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log12, 1: err}  = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442OneChange, tactics442WithNoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expected = [3322, 2750];
         for (team = 0; team < 2; team++) {
             teamSkills = await encodingLog.getTeamSumSkills(log12[team]).should.be.fulfilled;
@@ -664,9 +666,9 @@ contract('Engine', (accounts) => {
 
     it('find goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 13;
-        var {0: log0, 1: err} =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        var {0: log1, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        var {0: log12, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log0, 1: err} =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        var {0: log1, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        var {0: log12, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expected1 = [1, 3];
         expected2 = [0, 1];
         goals1 = [];
@@ -699,7 +701,7 @@ contract('Engine', (accounts) => {
     it('red cards in first half force lineups of 10 players in 2nd half', async () => {
         // choose a seed that gives a red card for player 9.
         seedForRedCard = seed + 83;
-        var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 0];
         expectedOutRounds = [1, 0]; 
@@ -718,7 +720,7 @@ contract('Engine', (accounts) => {
         result.should.be.bignumber.equal('0');
         // tactics442 and tactics1 are based on "substitutions" = [6, 10, 0]
         // so, since player 9 was red carded, he's still in the field, they are basically playing with 10 players.
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         for (team = 0; team < 2; team++) {
             nDefs = await encodingLog.getNGKAndDefs(log2[team], is2nd = false);
             nDefs.toNumber().should.be.equal(5);
@@ -737,7 +739,7 @@ contract('Engine', (accounts) => {
         for (n = 0; n < 3; n++) {
             RED = 3;
             sed = web3.utils.toBN(web3.utils.keccak256(n.toString()));
-            var {0: log0, 1: err} =  await engine.playHalfMatch(sed,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            var {0: log0, 1: err} =  await engine.playHalfMatch(sed,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
             player = await encodingLog.getOutOfGamePlayer(log0[0], is2nd).should.be.fulfilled;
             typeOf = await encodingLog.getOutOfGameType(log0[0], is2nd).should.be.fulfilled;
             round = await encodingLog.getOutOfGameRound(log0[0], is2nd).should.be.fulfilled;
@@ -756,28 +758,28 @@ contract('Engine', (accounts) => {
         // choose a seed that gives a red card for player 9.
         RED = 3;
         seedForRedCard = seed + 83;
-        var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         player = await encodingLog.getOutOfGamePlayer(log0[0], is2nd = false).should.be.fulfilled;
         typeOf = await encodingLog.getOutOfGameType(log0[0], is2nd = false).should.be.fulfilled;
         player.toNumber().should.be.equal(9);
         typeOf.toNumber().should.be.equal(RED);
 
         // play with the same players as in 1st half, including the red carded, and without having set redcard = true => fails as it believes there are 11 players playing
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_TOO_MANY_LINEDUP);
         
         // if we correctly set the redcard flag => it understands there are only 10 players playing.
         teamStateAll50Half2[9] = await encodingSet.setRedCardLastGame(teamStateAll50Half2[9], true);    
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         // play with the same players as in 1st half, substituting the red carded => fails
         teamStateAll50Half2[9] = teamStateAll50Half1[9];
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_TOO_MANY_LINEDUP);
         
         // play with the same players as in 1st half, substituting any player => fails
         teamStateAll50Half2[9] = teamStateAll50Half2[10];
         teamStateAll50Half2[2] = teamStateAll50Half1[9];
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_TOO_MANY_LINEDUP);
     });
         
@@ -787,11 +789,11 @@ contract('Engine', (accounts) => {
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills = 250).should.be.fulfilled;            
         for (p = 0; p < 3; p++) teamStateAll50Half2[p] = messi; 
-        var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442NoChanges, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442NoChanges, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         // create a 2nd half using 4 players that already played in the 1st half... should fail
         half2states = [...teamStateAll50Half2]    
         half2states[5] = messi; 
-        var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [half2states, teamStateAll1Half2], [tactics442NoChanges, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [half2states, teamStateAll1Half2], [tactics442NoChanges, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_HALFCHANGES);
         
         // try to lie by including it in a new lineup
@@ -799,7 +801,7 @@ contract('Engine', (accounts) => {
         lineUp1change[6] = 16;
         tactics4421change = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineUp1change, noSubstitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
-        var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics4421change, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics4421change, tactics442NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_HALFCHANGES);
     });
 
@@ -813,19 +815,19 @@ contract('Engine', (accounts) => {
         tactics442TwoChanges = await engine.encodeTactics(subst, subsRounds, setNoSubstInLineUp(lineupConsecutive, subst),
             extraAttackNull, tacticId442).should.be.fulfilled;
         var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442TwoChanges, tactics442NoChanges], firstHalfLog, 
-            [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         // create a 2nd half using 1 players that already played in the 1st half, and 3 changes... should fail
         subst = [3,1,5];
         tactics442ThreeChanges = await engine.encodeTactics(subst, subsRounds, setNoSubstInLineUp(lineupConsecutive, subst),
             extraAttackNull, tacticId442).should.be.fulfilled;
         var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442ThreeChanges, tactics442NoChanges], firstHalfLog, 
-            [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_HALFCHANGES);
     });
 
     it('play with an injured / red carded / free-slot player', async () => {
         // legit works:
-        var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         // red card fails:
         teamStateAll50Half2[5] = await assets.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedEndOfLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, 
@@ -857,7 +859,7 @@ contract('Engine', (accounts) => {
         expected = [ 10000, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500 ];
         pen = [];
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills, isBotHome).should.be.fulfilled;
             pen.push(penalty);
             // penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
@@ -882,9 +884,9 @@ contract('Engine', (accounts) => {
             2000, 3000, 4000
         ];
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills, isBotHome).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone433, playerSkills, isBotHome).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
@@ -907,7 +909,7 @@ contract('Engine', (accounts) => {
                 redCardLastGame = false, games, injuryWeeksLeft = 0, subLastHalf, sumSkills = 5
             ).should.be.fulfilled;            
             for (p=0; p < 11; p+=3) {
-                penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+                penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills, isBotHome).should.be.fulfilled;
                 if (expected442[p] == MAX_PENALTY-500) {
                     penalty.toNumber().should.be.equal(500);
                 } else {
@@ -931,9 +933,9 @@ contract('Engine', (accounts) => {
         ];
         expected433 = expected442;
         for (p=0; p < 11; p++) {
-            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone442, playerSkills, isBotHome).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computeModifierBadPositionAndCondition(p, playersPerZone433, playerSkills, isBotHome).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
@@ -954,13 +956,13 @@ contract('Engine', (accounts) => {
     
     it('play a match in home stadium, check that max goals is applied', async () => {
         // note: the home team is much better than the away team
-        var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2nd = false, isHome = true, isPlayoff]).should.be.fulfilled;
+        var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2nd = false, isHome = true, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expected = [11, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
         }
-        var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics0, tactics1], extractMatchLogs(log), [is2nd = false, isHome = true, isPlayoff]).should.be.fulfilled;
+        var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics0, tactics1], extractMatchLogs(log), [is2nd = false, isHome = true, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expected = [MAX_GOALS_IN_MATCH, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
@@ -969,7 +971,7 @@ contract('Engine', (accounts) => {
     });
     
     it('play a match', async () => {
-        var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expected = [11, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
@@ -1293,7 +1295,7 @@ contract('Engine', (accounts) => {
         nMid = 4;
         nAtt = 2;
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442,  tactics442).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442,  tactics442, isBotHome).should.be.fulfilled;
         expectedGlob =[ 
             4 * nDef + 7 * nMid + nAtt, 
             2 * nAtt, 
@@ -1305,7 +1307,7 @@ contract('Engine', (accounts) => {
 
         // // show that GKs contribute 1/3 extra to move2attack and defendShoot, only when int division by 3 is not zero :-)
         teamState442 = await createTeamState442(engine, forceSkills= [3,3,3,3,3]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442, isBotHome).should.be.fulfilled;
         expectedGlob =[ 
             3 * (4 * nDef + 7 * nMid + nAtt) + 1, // adding 3/3 from GK 
             3 * (2 * nAtt) + 4,   // adding (3*2*nMids)/5
@@ -1316,17 +1318,17 @@ contract('Engine', (accounts) => {
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000-1]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442, isBotHome).should.be.fulfilled;
         expectedGlob = [46, 4, 8, 1, 65];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1000]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442, isBotHome).should.be.fulfilled;
         expectedGlob = [46, 4, 8, 1, 65];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,20000-1]).should.be.fulfilled;
-        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, tactics442, isBotHome).should.be.fulfilled;
         expectedGlob = [46, 4, 8, 1, 100];
         debug.compareArrays(globSkills, expectedGlob, toNum = true);
 
@@ -1341,15 +1343,15 @@ contract('Engine', (accounts) => {
 
     it('play match with wrong tactic', async () => {
         tacticsWrong = await engine.encodeTactics(substitutions, subsRounds, lineup1, extraAttackNull, tacticIdTooLarge = 6);
-        await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_PLAYER_TWICE);
     });
 
     it('play match with no players at all in one team', async () => {
         // when a team has no players it should lose by the max amount possible (= 12 ROUNDS)
         states = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => 0); 
-        var {0: matchLog, 1: err} = await engine.playHalfMatch(seed, now, [states, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(seed, now, [states, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expectedResult = [0, 12];
         result = []
         for (team = 0; team < 2; team++) {
@@ -1358,7 +1360,7 @@ contract('Engine', (accounts) => {
         }
         // and viceversa:
         debug.compareArrays(result, expectedResult, toNum = true);
-        var {0: matchLog, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, states], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, states], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expectedResult = [12, 0];
         result = []
         for (team = 0; team < 2; team++) {
@@ -1370,7 +1372,7 @@ contract('Engine', (accounts) => {
 
 
     it('different team state => different result', async () => {
-        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expectedResult = [2, 2];
         result = [];
         for (team = 0; team < 2; team++) {
@@ -1379,7 +1381,7 @@ contract('Engine', (accounts) => {
         }
         debug.compareArrays(result, expectedResult, toNum = true);
 
-        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expectedResult = [12, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
@@ -1388,7 +1390,7 @@ contract('Engine', (accounts) => {
     });
 
     it('different seeds => different result', async () => {
-        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expectedResult = [2, 2];
         result = [];
         for (team = 0; team < 2; team++) {
@@ -1397,7 +1399,7 @@ contract('Engine', (accounts) => {
         }
         debug.compareArrays(result, expectedResult, toNum = true);
 
-        var {0: matchLog, 1: err} = await engine.playHalfMatch(654322, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        var {0: matchLog, 1: err} = await engine.playHalfMatch(654322, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expectedResult = [2, 3];
         result = []
         for (team = 0; team < 2; team++) {
@@ -1435,12 +1437,12 @@ contract('Engine', (accounts) => {
         resultsExtra = [];
         for (n = 0; n < 10; n++) {
             sed = web3.utils.toBN(web3.utils.keccak256("32123" + n));
-            var {0: matchLogNoExtra, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            var {0: matchLogNoExtra, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
             for (team = 0; team < 2; team++) {
                 nGoals = await encodingLog.getNGoals(matchLogNoExtra[team]);
                 resultsNoExtra.push(nGoals.toNumber());
             }
-            var {0: matchLogExtra, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0Attack, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            var {0: matchLogExtra, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0Attack, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
             for (team = 0; team < 2; team++) {
                 nGoals = await encodingLog.getNGoals(matchLogExtra[team]);
                 resultsExtra.push(nGoals.toNumber());

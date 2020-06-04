@@ -456,7 +456,7 @@ contract('Evolution', (accounts) => {
         // note: lineup is consecutive
         var {0: matchLog, 1: err} = await engine.playHalfMatch(
             123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [0, 0], 
-            [is2nd = false, isHome = true, playoff = false]
+            [is2nd = false, isHome = true, playoff = false, isBotHome, isBotAway]
         ).should.be.fulfilled;
         var {0: newSkills, 1: err} = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false).should.be.fulfilled;
         // players not aligned did not change state: 
@@ -556,7 +556,7 @@ contract('Evolution', (accounts) => {
         // note: lineup is consecutive
         var {0: matchLog, 1: err} = await engine.playHalfMatch(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
-            [is2nd = true, isHome = true, playoff = false]
+            [is2nd = true, isHome = true, playoff = false, isBotHome, isBotAway]
         ).should.be.fulfilled;
         teamStateAll50Half2[1] = await evo.setInjuryWeeksLeft(teamStateAll50Half2[1], 2);
         var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half2, matchLog[0], tactics0, is2nd = true).should.be.fulfilled;
