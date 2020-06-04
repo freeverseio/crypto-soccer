@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"regexp"
 
 	"github.com/pkg/errors"
 )
 
 func IsTransferFirstBotMutation(data string) (bool, error) {
-	return strings.Contains(data, "transferFirstBotToAddr"), nil
+	// return strings.Contains(data, "transferFirstBotToAddr"), nil
+	ex := `{(\s*)\\"query\\":(\s*)\\"mutation TransferTeamToPlayer\(\$timezoneIdx:(\s*)Int!,(\s*)\$countryIdx:(\s*)ID!,(\s*)\$address:(\s*)String!\)(\s*){(\s*)transferFirstBotToAddr\((\s*)timezone:(\s*)\$timezoneIdx(\s*)countryIdxInTimezone:(\s*)\$countryIdx(\s*)address:(\s*)\$address(\s*)\)(\s*)}\\",(\s*)\\"variables\\":(\s*){\\"timezoneIdx\\":10,\\"countryIdx\\":[0-9]*,\\"address\\":\\"0x[0-9,a-f,A-F]*\\"}(\s*)}`
 	// ex := `mutation(\s*).*(\s*){(\s*)transferFirstBotToAddr(\s*)\((\s*)timezone(\s*):(\s*)\d{1,2}(\s*),(\s*)countryIdxInTimezone(\s*):(\s*)[0-9]+(\s*),(\s*)address(\s*):(\s*)"[a-zA-Z0-9]+"(\s*)\)(\s*)}`
-	// return regexp.MatchString(ex, data)
+	return regexp.MatchString(ex, data)
 }
 
 func MatchTransferFirstBotMutation(r *http.Request) (bool, error) {
