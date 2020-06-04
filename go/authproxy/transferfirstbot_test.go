@@ -44,7 +44,7 @@ func TestIsTransferFirstBotMutation(t *testing.T) {
 }
 
 func TestQueryFromPhoenix(t *testing.T) {
-	m := `{\"query\": \"mutation TransferTeamToPlayer($timezoneIdx: Int!, $countryIdx: ID!, $address: String!) {  transferFirstBotToAddr(  timezone: $timezoneIdx  countryIdxInTimezone: $countryIdx  address: $address  )  }\", \"variables\": {\"timezoneIdx\":10,\"countryIdx\":0,\"address\":\"0x9fA38988a53d1935e71c12Bd89d48A7DACFE9Ccc\"} }`
+	m := `mutation TransferTeamToPlayer($timezoneIdx: Int!, $countryIdx: ID!, $address: String!) {  transferFirstBotToAddr(  timezone: $timezoneIdx  countryIdxInTimezone: $countryIdx  address: $address  )  }`
 	match, _ := authproxy.IsTransferFirstBotMutation(m)
 	assert.True(t, match)
 }
