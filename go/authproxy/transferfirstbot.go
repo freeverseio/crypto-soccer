@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"regexp"
+	"strings"
 
 	"github.com/pkg/errors"
 )
 
 func IsTransferFirstBotMutation(data string) (bool, error) {
-	ex := `mutation(\s*).*(\s*){(\s*)transferFirstBotToAddr(\s*)\((\s*)timezone(\s*):(\s*)\d{1,2}(\s*),(\s*)countryIdxInTimezone(\s*):(\s*)[0-9]+(\s*),(\s*)address(\s*):(\s*)"[a-zA-Z0-9]+"(\s*)\)(\s*)}`
-	return regexp.MatchString(ex, data)
+	return strings.Contains(data, "transferFirstBotToAddr"), nil
+	// ex := `mutation(\s*).*(\s*){(\s*)transferFirstBotToAddr(\s*)\((\s*)timezone(\s*):(\s*)\d{1,2}(\s*),(\s*)countryIdxInTimezone(\s*):(\s*)[0-9]+(\s*),(\s*)address(\s*):(\s*)"[a-zA-Z0-9]+"(\s*)\)(\s*)}`
+	// return regexp.MatchString(ex, data)
 }
 
 func MatchTransferFirstBotMutation(r *http.Request) (bool, error) {
@@ -27,6 +28,7 @@ func MatchTransferFirstBotMutation(r *http.Request) (bool, error) {
 		return false, errors.Wrap(err, "failed reading the body")
 	}
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	// log.Infof("matching query: %v", string(body))
 	var query struct {
 		Data string `json:"query"`
 	}
