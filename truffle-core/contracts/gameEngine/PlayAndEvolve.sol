@@ -5,6 +5,8 @@ import "./Evolution.sol";
 import "./Engine.sol";
 import "./Shop.sol";
 import "../gameEngine/ErrorCodes.sol";
+import "../encoders/EncodingTacticsBase1.sol";
+
 
 /**
  @title Main entry point for backend. Plays 1st and 2nd half and evolves players.
@@ -13,7 +15,7 @@ import "../gameEngine/ErrorCodes.sol";
  @dev because they use a storage pointer to other contracts.
 */
 
-contract PlayAndEvolve is ErrorCodes {
+contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1 {
 
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 private constant IDX_IS_2ND_HALF = 0; 
@@ -62,17 +64,15 @@ contract PlayAndEvolve is ErrorCodes {
     {
         if (matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
 
-        if (!matchBools[IDX_IS_BOT_HOME]) {
-            (skills[0], err) = training.applyTrainingPoints(skills[0], assignedTPs[0], tactics[0], matchStartTime, evo.getTrainingPoints(matchLogs[0]));
-            if (err > 0) return (skills, matchLogsAndEvents, err);
-            err = shop.validateItemsInTactics(tactics[0]);
-            if (err > 0) return (skills, matchLogsAndEvents, err);
-        }
-        if (!matchBools[IDX_IS_BOT_AWAY]) {
-            (skills[1], err) = training.applyTrainingPoints(skills[1], assignedTPs[1], tactics[1], matchStartTime, evo.getTrainingPoints(matchLogs[1]));
-            if (err > 0) return (skills, matchLogsAndEvents, err);
-            err = shop.validateItemsInTactics(tactics[1]);
-            if (err > 0) return (skills, matchLogsAndEvents, err);
+        for (uint8 team = 0; team < 2; team++) {
+            if (matchBools[IDX_IS_BOT_HOME + team]) {
+                tactics[team] = getBotTactics();
+            } else {
+                (skills[team], err) = training.applyTrainingPoints(skills[team], assignedTPs[team], tactics[team], matchStartTime, evo.getTrainingPoints(matchLogs[team]));
+                if (err > 0) return (skills, matchLogsAndEvents, err);
+                err = shop.validateItemsInTactics(tactics[team]);
+                if (err > 0) return (skills, matchLogsAndEvents, err);
+            }
         }
             
         /// Note that the following call does not change de values of "skills" because it calls a separate contract.
@@ -86,10 +86,10 @@ contract PlayAndEvolve is ErrorCodes {
             matchBools
         );
 
-        (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], false, matchBools[IDX_IS_BOT_HOME]);
-        if (err > 0) return (skills, matchLogsAndEvents, err);
-        (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], false, matchBools[IDX_IS_BOT_AWAY]);
-        if (err > 0) return (skills, matchLogsAndEvents, err);
+        for (uint8 team = 0; team < 2; team++) {
+            (skills[team], err) = evo.updateSkillsAfterPlayHalf(skills[team], matchLogsAndEvents[team], tactics[team], false, matchBools[IDX_IS_BOT_HOME + team]);
+            if (err > 0) return (skills, matchLogsAndEvents, err);
+        }
 
         return (skills, matchLogsAndEvents, 0);
     }
@@ -119,14 +119,15 @@ contract PlayAndEvolve is ErrorCodes {
     {
         if (!matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
 
-        if (!matchBools[IDX_IS_BOT_HOME]) {
-            err = shop.validateItemsInTactics(tactics[0]);
-            if (err > 0) return (skills, matchLogsAndEvents, err);
+        for (uint8 team = 0; team < 2; team++) {
+            if (matchBools[IDX_IS_BOT_HOME + team]) {
+                tactics[team] = getBotTactics();
+            } else {
+                err = shop.validateItemsInTactics(tactics[team]);
+                if (err > 0) return (skills, matchLogsAndEvents, err);
+            }
         }
-        if (!matchBools[IDX_IS_BOT_AWAY]) {
-            err = shop.validateItemsInTactics(tactics[1]);
-            if (err > 0) return (skills, matchLogsAndEvents, err);
-        }        
+
         /// Note that the following call does not change de values of "skills" because it calls a separate contract.
         /// It would do so if playHalfMatch was part of this contract code.
         (matchLogsAndEvents, err) = engine.playHalfMatch(
@@ -139,10 +140,10 @@ contract PlayAndEvolve is ErrorCodes {
         );
         if (err > 0) return (skills, matchLogsAndEvents, err);
 
-        (skills[0], err) = evo.updateSkillsAfterPlayHalf(skills[0], matchLogsAndEvents[0], tactics[0], true, matchBools[IDX_IS_BOT_HOME]);
-        if (err > 0) return (skills, matchLogsAndEvents, err);
-        (skills[1], err) = evo.updateSkillsAfterPlayHalf(skills[1], matchLogsAndEvents[1], tactics[1], true, matchBools[IDX_IS_BOT_AWAY]);
-        if (err > 0) return (skills, matchLogsAndEvents, err);
+        for (uint8 team = 0; team < 2; team++) {
+            (skills[team], err) = evo.updateSkillsAfterPlayHalf(skills[team], matchLogsAndEvents[team], tactics[team], true, matchBools[IDX_IS_BOT_HOME + team]);
+            if (err > 0) return (skills, matchLogsAndEvents, err);
+        }
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
 
@@ -150,5 +151,14 @@ contract PlayAndEvolve is ErrorCodes {
     }
     
 
+    function getBotTactics() public pure returns(uint256) { 
+        return encodeTactics(
+            [NO_SUBST, NO_SUBST, NO_SUBST], // no substitutions
+            [0, 0, 0], // subRounds don't matter
+            [0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25], // consecutive lineup, with one single GK 
+            [false, false, false, false, false, false, false, false, false, false], // no extra attack
+            1 // tacticsId = 1 = 5-4-1
+        );
+    }
 }
 

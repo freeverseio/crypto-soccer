@@ -183,7 +183,7 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
 
-    it2('create 442 team', async () => {
+    it('create 442 team', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         var result = JSON.stringify(teamState);
         var fs = require('fs');
@@ -207,7 +207,7 @@ contract('Engine', (accounts) => {
         });
     });
     
-    it2('test apply boosters', async () => {
+    it('test apply boosters', async () => {
         tact = await applyBoosters.setItemId(tacticId442, itemId = 1).should.be.fulfilled;
         encodedBoost = await applyBoosters.encodeBoosts(boost = [10,15,20,25,30,1]).should.be.fulfilled;
         tact = await applyBoosters.setItemBoost(tact, encodedBoost).should.be.fulfilled;
@@ -223,7 +223,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it2('wasPlayerAlignedEndOfLastHalf', async () => {
+    it('wasPlayerAlignedEndOfLastHalf', async () => {
         seedForRedCard = seed + 83;
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
@@ -303,7 +303,7 @@ contract('Engine', (accounts) => {
     });
 
 
-    it2('computeExceptionalEvents no clashes with redcards', async () => {
+    it('computeExceptionalEvents no clashes with redcards', async () => {
         // there is a red card with this seed, to player 9, but he's not involved in any change
         seedForRedCard = seed + 83;
         substis = [2, 6, 1];
@@ -325,7 +325,7 @@ contract('Engine', (accounts) => {
     });
 
     
-    it2('computeExceptionalEvents clashing with redcards before changing player', async () => {
+    it('computeExceptionalEvents clashing with redcards before changing player', async () => {
         // there is a red card with this seed, to player 9. Since he's involved in a change, 
         // the round for which he saw the card should be before the proposed change round (2) 
         seedForRedCard = seed + 83;
@@ -347,7 +347,7 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
 
-     it2('computeExceptionalEvents clashing with redcards after changing player', async () => {
+     it('computeExceptionalEvents clashing with redcards after changing player', async () => {
         // there is a red card with this seed, to player 13, which is by definition one of the players to join during the game. 
         // the round for which he saw the card (6) should be after the proposed change round (6 too) 
         seedForRedCardInSubstitutes = seed + 357;
@@ -369,7 +369,7 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
 
-    it2('computeExceptionalEvents clashing with redcards after changing player forcing last minute', async () => {
+    it('computeExceptionalEvents clashing with redcards after changing player forcing last minute', async () => {
         // note that in the first half, player 13 joined, and saw a red card 
         // same as previous but pushing it to the limit, so that the round is 10
         seedForRedCardInSubstitutes = seed + 357;
@@ -391,7 +391,7 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
 
-    it2('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
+    it('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
         // first half version of the previous
         // note that in the first half, player 13 joined, and saw both a yellow and a red card (!!)
         // same as previous but pushing it to the limit, so that the round is 10
@@ -414,7 +414,7 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
     
-    it2('check that nDefs is reduced by one when a defender misses in the 2nd half', async () => {
+    it('check that nDefs is reduced by one when a defender misses in the 2nd half', async () => {
         // note that in the first half, player 13 joined, and saw both a red card
         // same as previous but pushing it to the limit, so that the round is 10
         seedForRedCardInSubstitutes = seed + 357;
@@ -448,7 +448,7 @@ contract('Engine', (accounts) => {
         }   
     });
     
-    it2('computeExceptionalEvents clashing 2nd against 1st', async () => {
+    it('computeExceptionalEvents clashing 2nd against 1st', async () => {
         // first half:
         //      - there is a red card with this seed, to player 9 at round 2. 
         //      - there are two yellow cards, for player 1, and for subtituted 12.
@@ -490,7 +490,7 @@ contract('Engine', (accounts) => {
 
     });
     
-    it2('computeExceptionalEvents clashing 2nd against 1st, with no substitution in the middle', async () => {
+    it('computeExceptionalEvents clashing 2nd against 1st, with no substitution in the middle', async () => {
         // first half:
         //      - there is a red card with this seed, to player 9 at round 2. 
         //      - there are two yellow cards, for player 1, and for subtituted 12.
@@ -529,7 +529,7 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });    
 
-    it2('play a match with a special playerId that made it fail before fixing a bug', async () => {
+    it('play a match with a special playerId that made it fail before fixing a bug', async () => {
         playerId = 274877907169;
         skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
         for (i = 0; i< PLAYERS_PER_TEAM_MAX; i++) teamStateAll50Half1[i] = skills;
@@ -537,7 +537,7 @@ contract('Engine', (accounts) => {
     });
 
 
-    it2('check that penalties are played in playoff games and excluding redcarded players', async () => {
+    it('check that penalties are played in playoff games and excluding redcarded players', async () => {
         // cook data so that the first half ended up in a way that:
         //  - there are red cards
         //  - there are the right goals to, then, in 2nd half, end up in draw.
@@ -597,7 +597,7 @@ contract('Engine', (accounts) => {
         }   
     });
     
-    it2('computePenalties', async () => {
+    it('computePenalties', async () => {
         // one team much better than the other:
         log = await precomp.computePenalties(log = [0,0], [teamStateAll50Half2, teamStateAll1Half2], 50, 1, seed);
         expected = [true, true, true, true, true, false, false]
@@ -650,7 +650,7 @@ contract('Engine', (accounts) => {
         }   
     });
 
-    it2('teamSkills are added from 1st to 2nd half', async () => {
+    it('teamSkills are added from 1st to 2nd half', async () => {
         seedDraw = 12;
         subs = [3,1,11];
         tactics442TwoChanges = await engine.encodeTactics(subs, subsRounds, setNoSubstInLineUp(lineupConsecutive, subs), 
@@ -675,7 +675,7 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it2('find goals from 1st half are added in the 2nd half', async () => {
+    it('find goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 13;
         var {0: log0, 1: err} =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         var {0: log1, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
@@ -709,7 +709,7 @@ contract('Engine', (accounts) => {
         debug.compareArrays(goals, expected, toNum = true);
     });
 
-    it2('red cards in first half force lineups of 10 players in 2nd half', async () => {
+    it('red cards in first half force lineups of 10 players in 2nd half', async () => {
         // choose a seed that gives a red card for player 9.
         seedForRedCard = seed + 83;
         var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
@@ -743,7 +743,7 @@ contract('Engine', (accounts) => {
     });
     
     
-    it2('from the field: used to lead to player > 14 => bad encoding => round = 15', async () => {
+    it('from the field: used to lead to player > 14 => bad encoding => round = 15', async () => {
         // to see this test failing in the past, set:
         //   weights[NO_OUT_OF_GAME_PLAYER] = 1;
         //   weights[0] = 2000;
@@ -765,7 +765,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it2('red cards cannot be changed and continue having 11 players', async () => {
+    it('red cards cannot be changed and continue having 11 players', async () => {
         // choose a seed that gives a red card for player 9.
         RED = 3;
         seedForRedCard = seed + 83;
@@ -794,7 +794,7 @@ contract('Engine', (accounts) => {
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_TOO_MANY_LINEDUP);
     });
         
-    it2('play 2nd half with 3 changes is OK, but more than 3 is rejected, by lying in the team-states', async () => {
+    it('play 2nd half with 3 changes is OK, but more than 3 is rejected, by lying in the team-states', async () => {
         // create a 2nd half using 3 players that already played in the 1st half... should work
         messi = await assets.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
@@ -816,7 +816,7 @@ contract('Engine', (accounts) => {
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_HALFCHANGES);
     });
 
-    it2('play 2nd half with 3 changes is OK, but more than 3 is rejected, by lying in the substitutions', async () => {
+    it('play 2nd half with 3 changes is OK, but more than 3 is rejected, by lying in the substitutions', async () => {
         // create a 2nd half using 1 players that already played in the 1st half, and 2 changes only... should work
         messi = await assets.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
@@ -836,7 +836,7 @@ contract('Engine', (accounts) => {
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_HALFCHANGES);
     });
 
-    it2('play with an injured / red carded / free-slot player', async () => {
+    it('play with an injured / red carded / free-slot player', async () => {
         // legit works:
         var {0: result, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         // red card fails:
@@ -860,7 +860,7 @@ contract('Engine', (accounts) => {
         result.should.be.bignumber.equal('0');
         });
 
-    it2('computeModifierBadPositionAndCondition for GK ', async () => {
+    it('computeModifierBadPositionAndCondition for GK ', async () => {
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 232131, [potential = 1,
             forwardness = 0, leftishness = 0, aggr = 0], 
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
@@ -877,7 +877,7 @@ contract('Engine', (accounts) => {
         debug.compareArrays(pen, expected, toNum = true);
     });
 
-    it2('computeModifierBadPositionAndCondition for DL ', async () => {
+    it('computeModifierBadPositionAndCondition for DL ', async () => {
             // for a DL:
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 312321, [potential = 1,
             forwardness = 1, leftishness = 4, aggr = 0], alignedEndOfLastHalf = false, 
@@ -902,7 +902,7 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it2('computeModifierBadPositionAndCondition for DL with gamesNonStopping', async () => {
+    it('computeModifierBadPositionAndCondition for DL with gamesNonStopping', async () => {
         // for a DL:
         expected442 = [MAX_PENALTY-500, 
             0, 1000, 1000, 2000, 
@@ -931,7 +931,7 @@ contract('Engine', (accounts) => {
     });
 
 
-    it2('computeModifierBadPositionAndCondition for MFLCR ', async () => {
+    it('computeModifierBadPositionAndCondition for MFLCR ', async () => {
         // for a DL:
         playerSkills= await assets.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0, gen = 0,  playerId = 312321, [potential = 1,
             forwardness = 5, leftishness = 7, aggr = 0], alignedEndOfLastHalf = false, 
@@ -951,7 +951,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it2('teams get tired', async () => {
+    it('teams get tired', async () => {
         const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
         result[0][0].toNumber().should.be.equal(10);
         result[0][1].toNumber().should.be.equal(20);
@@ -965,7 +965,7 @@ contract('Engine', (accounts) => {
         result[1][4].toNumber().should.be.equal(50);
     });
     
-    it2('play a match in home stadium, check that max goals is applied', async () => {
+    it('play a match in home stadium, check that max goals is applied', async () => {
         // note: the home team is much better than the away team
         var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2nd = false, isHome = true, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expected = [11, 0];
@@ -981,7 +981,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it2('play a match', async () => {
+    it('play a match', async () => {
         var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expected = [11, 0];
         for (team = 0; team < 2; team++) {
@@ -990,7 +990,7 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it2('manages to score with a really old player vs a young one', async () => {
+    it('manages to score with a really old player vs a young one', async () => {
         // a Young Messi manages to score:
         teamState = await createTeamState442(engine, forceSkills= [20,20,20,20,20]).should.be.fulfilled;
         messi = await assets.encodePlayerSkills([100,100,100,100,100], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
@@ -1030,7 +1030,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it2('manages to score with select shooter without modifiers', async () => {
+    it('manages to score with select shooter without modifiers', async () => {
         // lets put a Messi and check that it surely scores:
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         messi = await assets.encodePlayerSkills([100,100,100,100,100], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
@@ -1098,7 +1098,7 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it2('select shooter with modifiers', async () => {
+    it('select shooter with modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         extraAttack = [
             true, false, false, true,
@@ -1123,7 +1123,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it2('select assister with modifiers', async () => {
+    it('select assister with modifiers', async () => {
         console.log("warning: This test takes a few secs...")
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         extraAttack = [
@@ -1157,7 +1157,7 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it2('select assister with modifiers and one Messi', async () => {
+    it('select assister with modifiers and one Messi', async () => {
         console.log("warning: This test takes a few secs...")
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         messi = await assets.encodePlayerSkills([2,2,2,2,2], dayOfBirth21, gen = 0, id = 1323121, [pot = 3, fwd = 3, left = 7, aggr = 0],
@@ -1196,7 +1196,7 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it2('throws dice array11 fine grained testing', async () => {
+    it('throws dice array11 fine grained testing', async () => {
         // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
         weights = Array.from(new Array(11), (x,i) => 100);
         r0 = 0;
@@ -1214,7 +1214,7 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it2('throws dice array11 fine grained testing for null weights', async () => {
+    it('throws dice array11 fine grained testing for null weights', async () => {
         // when all weights are null, we expect random results
         weightsNull = Array.from(new Array(11), (x,i) => 0);
         nThrows = 10;
@@ -1228,7 +1228,7 @@ contract('Engine', (accounts) => {
         debug.compareArrays(results, expected, toNum = true);
     });
 
-    it2('throws dice array11', async () => {
+    it('throws dice array11', async () => {
         // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
         weights = Array.from(new Array(11), (x,i) => 1);
         weights[8] = 1000;
@@ -1244,7 +1244,7 @@ contract('Engine', (accounts) => {
         result.toNumber().should.be.equal(10);
     });
     
-    it2('manages to shoot', async () => {
+    it('manages to shoot', async () => {
         // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
         let  = 8000; // the max allowed random number is 16383, so this is about half of it
         let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
@@ -1259,7 +1259,7 @@ contract('Engine', (accounts) => {
         result.should.be.equal(true);
     });
 
-    it2('throws dice', async () => {
+    it('throws dice', async () => {
         // interface: throwDice(uint weight1, uint weight2, uint rndNum)
         let result = await engine.throwDice(1,10,kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
@@ -1272,7 +1272,7 @@ contract('Engine', (accounts) => {
     });
 
 
-    it2('gets n rands from a seed', async () => {
+    it('gets n rands from a seed', async () => {
         ROUNDS_PER_MATCH = await engine.ROUNDS_PER_MATCH().should.be.fulfilled
         const result = await engine.getNRandsFromSeed(seed, 4*ROUNDS_PER_MATCH).should.be.fulfilled;
         expectLen = 4*ROUNDS_PER_MATCH.toNumber();
@@ -1289,7 +1289,7 @@ contract('Engine', (accounts) => {
         result[expectLen-1].should.be.bignumber.equal("62760289461");
     });
 
-    it2('computes team global skills by aggregating across all players in team', async () => {
+    it('computes team global skills by aggregating across all players in team', async () => {
         // If all skills where 1 for all players, and tactics = 442 =>
         // 0. move2attack =    defence(defenders + 2*midfields + attackers) +
         //                      speed(defenders + 2*midfields) +
@@ -1345,21 +1345,21 @@ contract('Engine', (accounts) => {
 
     });
 
-    it2('getLinedUpSkills', async () => {
+    it('getLinedUpSkills', async () => {
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         result = await engine.getLinedUpSkills(teamState442, tactics1, is2ndHalf, log = [0,0], seed, isBotHome).should.be.fulfilled;
         let {0: matchLog, 1: states} = result;
         for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[lineupConsecutive[p]]);
     });
 
-    it2('play match with wrong tactic', async () => {
+    it('play match with wrong tactic', async () => {
         tacticsWrong = await engine.encodeTactics(substitutions, subsRounds, lineup1, extraAttackNull, tacticIdTooLarge = 6);
         await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_PLAYER_TWICE);
     });
 
-    it2('play match with no players at all in one team', async () => {
+    it('play match with no players at all in one team', async () => {
         // when a team has no players it should lose by the max amount possible (= 12 ROUNDS)
         states = Array.from(new Array(PLAYERS_PER_TEAM_MAX), (x,i) => 0); 
         var {0: matchLog, 1: err} = await engine.playHalfMatch(seed, now, [states, teamStateAll50Half1], [tactics1, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
@@ -1382,7 +1382,7 @@ contract('Engine', (accounts) => {
     });
 
 
-    it2('different team state => different result', async () => {
+    it('different team state => different result', async () => {
         var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expectedResult = [2, 2];
         result = [];
@@ -1400,7 +1400,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it2('effect of isBot on results', async () => {
+    it('effect of isBot on results', async () => {
         // bots typically play 541
         teamStateAll1000Half1 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
         tactics541 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
@@ -1419,7 +1419,7 @@ contract('Engine', (accounts) => {
         debug.compareArrays(totalGoals, expectedTotal, toNum = false);
     });
     
-    it2('if both teams are bots, or humans, results are the same; if they are different, results change', async () => {
+    it('if both teams are bots, or humans, results are the same; if they are different, results change', async () => {
         // both humans
         var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, false, false]).should.be.fulfilled;
         expectedResult = [2, 2];
@@ -1463,7 +1463,7 @@ contract('Engine', (accounts) => {
 
     });
 
-    it2('different seeds => different result', async () => {
+    it('different seeds => different result', async () => {
         var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         expectedResult = [2, 2];
         result = [];
@@ -1503,7 +1503,7 @@ contract('Engine', (accounts) => {
     });
     
     
-    it2('extra attack influence', async () => {
+    it('extra attack influence', async () => {
         const extraAttackFull =  Array.from(new Array(10), (x,i) => true);
         tactics0Attack = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackFull, tacticId442).should.be.fulfilled;

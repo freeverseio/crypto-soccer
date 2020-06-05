@@ -1021,6 +1021,54 @@ contract('Evolution', (accounts) => {
             [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway], [assignment, assignment]
         ).should.be.fulfilled;
     });
+
+    it('test that bots do not evolve, and have the correct half-time, end-of-match values', async () => {
+        const [TP, TPperSkill] = getDefaultTPs();
+        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the assignedTPs:
+        prev2ndHalfLog = 0;
+        teamIds = [1,2]
+        verseSeed = '0x234ab3'
+        
+        truLineUpForBots = [0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25];
+        // even if we use weird lineups and subst, we'll see that for bots, only truLineUpForBots matters
+        lineUpNew = [...lineupConsecutive];
+        lineUpNew[0] = 16;
+        subst = [6, 10, 0] // this will be disregarded
+        tacticsNew = await engine.encodeTactics(subst, subsRounds, setNoSubstInLineUp(lineUpNew, subst), 
+        extraAttackNull, tacticId433).should.be.fulfilled;
+        
+        prev2ndHalfLog = await evo.addTrainingPoints(0, TP).should.be.fulfilled;
+        var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play1stHalfAndEvolve(
+            verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tacticsNew, tacticsNew], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff, isBotH = true, isBotA = true], [assignment, assignment]
+        ).should.be.fulfilled;
+
+        // show that after applying, the bots have not evolved
+        sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half1[0]).should.be.fulfilled;
+        sumBeforeEvolving.toNumber().should.be.equal(250);
+        expectedSums = Array.from(new Array(25), (x,i) => 250);
+        sumSkills0 = []  // sum of skills of each player for team 0
+        sumSkills1 = []  // sum of skills of each player for team 1
+        for (p = 0; p < 25; p++) {
+            sum = await evo.getSumOfSkills(skills[0][p]).should.be.fulfilled;
+            sumSkills0.push(sum)
+            sum = await evo.getSumOfSkills(skills[1][p]).should.be.fulfilled;
+            sumSkills1.push(sum)
+        }
+        debug.compareArrays(sumSkills0, expectedSums, toNum = true, isBigNumber = false);
+        debug.compareArrays(sumSkills1, expectedSums, toNum = true, isBigNumber = false);
+
+        for (team = 0; team < 2; team++) {
+            for (p = 0; p < 25; p++) {
+                endedHalf = await evo.getAlignedEndOfFirstHalf(skills[team][p]).should.be.fulfilled;
+                wasSubst = await evo.getSubstitutedFirstHalf(skills[team][p]).should.be.fulfilled;
+                wasSubst.should.be.equal(false);
+                wasInLineUp = truLineUpForBots.includes(p);
+                endedHalf.should.be.equal(wasInLineUp);
+            }
+        }
+    });
     
     it('test that we can a 1st half and include apply training points too', async () => {
         const [TP, TPperSkill] = getDefaultTPs();
@@ -1048,9 +1096,6 @@ contract('Evolution', (accounts) => {
             verseSeed, now, [teamStateAll50Half1, teamStateAll50Half1], teamIds, [tacticsNew, tacticsNew], [prev2ndHalfLog, prev2ndHalfLog],
             [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway], [assignment, assignment]
         ).should.be.fulfilled;
-
-        // matchLogsAndEvents[0].should.be.bignumber.equal('1809251596697222440607644166008099735659887273687611206471872191446072164449');
-        // matchLogsAndEvents[1].should.be.bignumber.equal('1809251596697222440607644166008099735659887286364117208754702134768761309058');
 
         // show that after applying the training points (before the match), the teams evolved from 250 per player to 549
         sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half1[0]).should.be.fulfilled;
