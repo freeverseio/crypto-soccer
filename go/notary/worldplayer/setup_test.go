@@ -18,7 +18,7 @@ var googleCredentials []byte
 
 func TestMain(m *testing.M) {
 	var err error
-	namesdb, err = names.New("../../../names/sql/names.db")
+	namesdb, err = names.New("../../names/sql/names.db")
 	if err != nil {
 		log.Fatal(err)
 	}
