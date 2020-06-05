@@ -34,6 +34,7 @@ const EncodingState = artifacts.require('EncodingState');
 const UpdatesBase = artifacts.require('UpdatesBase');
 
 contract('Engine', (accounts) => {
+    const UNDEF = undefined;
     const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
     const substitutions = [6, 10, 0];
@@ -150,6 +151,7 @@ contract('Engine', (accounts) => {
     };
 
     beforeEach(async () => {
+        const Err = debug.getErrorCodes();
         encodingSet = await EncodingSkillsSetters.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
