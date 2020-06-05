@@ -1,6 +1,9 @@
 # Goal Revolution Dev Node
 
 Goal Revolution Dev client that will expose a GraphQL endpoint to access the Goal Revolution dev universe
+```
+http://localhost:4000/graphiql
+```
 
 #### Download the last version
 As this is a development version of node you'll need to manually sync with the latest releases
