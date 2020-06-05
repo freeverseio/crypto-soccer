@@ -53,5 +53,5 @@ func TestActionsSubmissionFirstHalfEvents(t *testing.T) {
 	assert.NilError(t, process.ConsumeActionsSubmission(tx, bc.Contracts, useractionsPublishService, nil, event))
 	count, err = storage.MatchEventCount(tx)
 	assert.NilError(t, err)
-	assert.Equal(t, count, uint64(969))
+	assert.Equal(t, count, uint64(768))
 }

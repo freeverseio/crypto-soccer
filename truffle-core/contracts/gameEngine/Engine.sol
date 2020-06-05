@@ -44,6 +44,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
     uint8 private constant IDX_IS_HOME_STADIUM  = 1; 
     uint8 private constant IDX_IS_PLAYOFF       = 2; 
+    uint8 private constant IDX_IS_BOT_HOME      = 3; 
+    uint8 private constant IDX_IS_BOT_AWAY      = 4; 
     //
     uint8 private constant IDX_SEED         = 0; 
     uint8 private constant IDX_ST_TIME      = 1; 
@@ -78,7 +80,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools 
+        bool[5] memory matchBools 
     )
         public
         view
@@ -120,7 +122,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
+        bool[5] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
         view
@@ -128,16 +130,16 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     {
         uint256[5][2] memory globSkills;
         
-        (matchLogs[0], skills[0], err) = getLinedUpSkills(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLogs[0], skills[0], err) = getLinedUpSkillsAndOutOfGames(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED], matchBools[IDX_IS_BOT_HOME]);
         if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
-        (matchLogs[1], skills[1], err) = getLinedUpSkills(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
+        (matchLogs[1], skills[1], err) = getLinedUpSkillsAndOutOfGames(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256, matchBools[IDX_IS_BOT_AWAY]);
         if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
 
         matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefendersFromTactics(tactics[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefendersFromTactics(tactics[1]), matchBools[IDX_IS_2ND_HALF]);
 
-        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], tactics[0]);
-        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], tactics[1]);
+        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], tactics[0], matchBools[IDX_IS_BOT_HOME]);
+        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], tactics[1], matchBools[IDX_IS_BOT_AWAY]);
 
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
@@ -187,7 +189,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         }
     }
     
-    /// getLinedUpSkills:
+    /// getLinedUpSkillsAndOutOfGames:
     ///      1. Unpacks the tactics and lineUp, verifies validity 
     ///      2. Rewrites skills[25] so that the first [14] entries correspond to players that will actually play
     ///      3. Compute the yellow cards, red cards, injuries, and adds them to matchLog
@@ -197,12 +199,13 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     ///      players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
     ///  - note that we impose left-right symmetry: DR = DL, MR = ML, FR = FL,
     ///      so we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getLinedUpSkills(
+    function getLinedUpSkillsAndOutOfGames(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics,
         bool is2ndHalf,
         uint256 matchLog,
-        uint256 seed
+        uint256 seed,
+        bool isBot
     ) 
         public 
         view 
@@ -215,7 +218,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     {
         (matchLog, linedUpSkills, err) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
         linedUpSkills = _applyBoosters.applyItemBoost(linedUpSkills, tactics);
-        matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, seed); 
+        matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, isBot, seed); 
         return (matchLog, linedUpSkills, err);
     }
     

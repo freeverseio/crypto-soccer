@@ -154,7 +154,7 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	if err != nil {
@@ -224,7 +224,7 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
