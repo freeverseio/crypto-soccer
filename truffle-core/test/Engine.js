@@ -36,6 +36,7 @@ const UpdatesBase = artifacts.require('UpdatesBase');
 contract('Engine', (accounts) => {
     const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+    const substitutions = [6, 10, 0];
     const subsRounds = [3, 7, 1];
     const noSubstitutions = [11, 11, 11];
     const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16, 7, 13, 17];
