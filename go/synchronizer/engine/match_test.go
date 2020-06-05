@@ -308,6 +308,15 @@ func TestMatchHardInjuryAmongBots(t *testing.T) {
 		assert.Equal(t, m.HomeTeam.Players[i].InjuryMatchesLeft, uint8(0))
 		assert.Equal(t, m.HomeTeam.Players[i].Defence, uint64(1000))
 	}
+	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
+	golden.Assert(t, dump.Sdump(m), t.Name()+".end.golden")
+	for i := 0; i < 25; i++ {
+		assert.Equal(t, m.HomeTeam.Players[i].RedCard, false)
+		assert.Equal(t, m.HomeTeam.Players[i].YellowCard1stHalf, false)
+		assert.Equal(t, m.HomeTeam.Players[i].Tiredness, 0)
+		assert.Equal(t, m.HomeTeam.Players[i].InjuryMatchesLeft, uint8(0))
+		assert.Equal(t, m.HomeTeam.Players[i].Defence, uint64(1000))
+	}
 }
 
 func TestMatchSoftInjury(t *testing.T) {
