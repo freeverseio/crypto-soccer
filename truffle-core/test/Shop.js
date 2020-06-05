@@ -16,6 +16,7 @@ const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');const Shop = artifacts.require('Shop');
 const EncodingTactics = artifacts.require('EncodingTactics');
+const Utils = artifacts.require('Utils');
 
 const UniverseInfo = artifacts.require('UniverseInfo');
 const EncodingSkills = artifacts.require('EncodingSkills');
@@ -45,6 +46,8 @@ contract('Shop', (accounts) => {
 
         shop = await Shop.new(assets.address).should.be.fulfilled;
         encTactics = await EncodingTactics.new().should.be.fulfilled;
+        utils = await Utils.new().should.be.fulfilled;
+        
     });
 
     
@@ -143,7 +146,7 @@ contract('Shop', (accounts) => {
         boost.should.be.bignumber.equal(encodedBoost);
         
         // check that previous tactics remain as expected
-        decoded = await encTactics.decodeTactics(tactics2).should.be.fulfilled;
+        decoded = await utils.decodeTactics(tactics2).should.be.fulfilled;
 
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
