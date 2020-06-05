@@ -28,4 +28,13 @@ contract EncodingTacticsBase3 {
         return uint8(tactics >> (98 + 4 * p) & 15); /// 2^4 - 1
     }
 
+    function getLinedUp(uint256 tactics, uint8 p) public pure returns(uint8) {
+        return uint8((tactics >> (16 + 5 * p)) & 31); /// 2^5 - 1
+    }
+    
+    function getFullLineUp(uint256 tactics) public pure returns(uint8[14] memory lineup) {
+        for (uint8 p = 0; p < 10; p++) {
+            lineup[p] = uint8((tactics >> (16 + 5 * p)) & 31); /// 2^5 - 1
+        }
+    }
 }

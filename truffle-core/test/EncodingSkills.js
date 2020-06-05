@@ -51,7 +51,7 @@ contract('EncodingSkills', (accounts) => {
         subsRounds = [3,7,1];
         extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
-        decoded = await encodingTact.decodeTactics(encoded).should.be.fulfilled;
+        decoded = await utils.decodeTactics(encoded).should.be.fulfilled;
 
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);

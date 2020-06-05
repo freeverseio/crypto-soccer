@@ -100,7 +100,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
             return setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
         }
         
-        // (uint8[3] memory  substitutions, uint8[3] memory subsRounds, , ,) = decodeTactics(tactics);
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
 
@@ -551,7 +550,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         uint8 err
     ) 
     {
-        (uint8[3] memory  substitutions,,uint8[14] memory lineup,,) = decodeTactics(tactics);
+        uint8[14] memory lineup = getFullLineUp(tactics);
         uint8 changes;
         uint256 teamSkills;
         uint8 fieldPlayers;
@@ -580,7 +579,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
 
         /// Count subtitutions planned for the half to be played now:
         for (uint8 p = 0; p < 3; p++) {
-            if ((substitutions[p] != NO_SUBST) && (lineup[11+p] != NO_LINEUP)) {
+            if ((getSubstitution(tactics, p) != NO_SUBST) && (lineup[11+p] != NO_LINEUP)) {
                 linedUpSkills[11+p] = verifyCanPlay(lineup[11+p], skills[lineup[11+p]], is2ndHalf, true);
                 if (linedUpSkills[11+p]>0) {
                     changes++;
@@ -590,8 +589,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
                     /// system would allow a 10 players lineup), to be immediately substituted by another player, hence
                     /// having 11 players again in the field.
                     if (
-                        (lineup[substitutions[p]] == NO_LINEUP) || 
-                        (verifyCanPlay(lineup[substitutions[p]], skills[lineup[substitutions[p]]], is2ndHalf, false) == 0)
+                        (lineup[getSubstitution(tactics, p)] == NO_LINEUP) || 
+                        (verifyCanPlay(lineup[getSubstitution(tactics, p)], skills[lineup[getSubstitution(tactics, p)]], is2ndHalf, false) == 0)
                     ) {
                         fieldPlayers++;
                     }

@@ -135,7 +135,7 @@ contract('Shop', (accounts) => {
         boost.should.be.bignumber.equal(encodedBoost);
         
         // check that previous tactics remain as expected
-        decoded = await encTactics.decodeTactics(tactics2).should.be.fulfilled;
+        decoded = await utils.decodeTactics(tactics2).should.be.fulfilled;
 
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
