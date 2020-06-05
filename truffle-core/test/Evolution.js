@@ -458,7 +458,7 @@ contract('Evolution', (accounts) => {
             123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [0, 0], 
             [is2nd = false, isHome = true, playoff = false, isBotHome, isBotAway]
         ).should.be.fulfilled;
-        var {0: newSkills, 1: err} = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false).should.be.fulfilled;
+        var {0: newSkills, 1: err} = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false, isBotHome).should.be.fulfilled;
         // players not aligned did not change state: 
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         // those that were aligned either finished the 1st half, or were substituted:
@@ -480,7 +480,7 @@ contract('Evolution', (accounts) => {
         // now try the same with a red card:
         // note that a red carded has not been sustituted, so he'll appear as "alignedEndOfFirstHalf"
         newLog = await evo.setOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
-        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
+        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false, isBotHome).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedRedCarded = await evo.setRedCardLastGame(aligned, true).should.be.fulfilled
         alignedRedCarded = await evo.setAlignedEndOfFirstHalf(alignedRedCarded, true).should.be.fulfilled
@@ -507,7 +507,7 @@ contract('Evolution', (accounts) => {
         WEEKS_SOFT_INJ = 2;
         WEEKS_HARD_INJ = 5;
         newLog = await evo.setOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = HARD_INJURY, is2nd = false).should.be.fulfilled;
-        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
+        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false, isBotHome).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_HARD_INJ).should.be.fulfilled
         alignedInjured = await evo.setAlignedEndOfFirstHalf(alignedInjured, true).should.be.fulfilled
@@ -529,7 +529,7 @@ contract('Evolution', (accounts) => {
         }
         // now try the same with a soft injury:
         newLog = await evo.setOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = SOFT_INJURY, is2nd = false).should.be.fulfilled;
-        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
+        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false, isBotHome).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half1.slice(14,25), toNum = false, isBigNumber = true);
         alignedInjured = await evo.setInjuryWeeksLeft(aligned, WEEKS_SOFT_INJ).should.be.fulfilled
         alignedInjured = await evo.setAlignedEndOfFirstHalf(alignedInjured, true).should.be.fulfilled
@@ -559,7 +559,7 @@ contract('Evolution', (accounts) => {
             [is2nd = true, isHome = true, playoff = false, isBotHome, isBotAway]
         ).should.be.fulfilled;
         teamStateAll50Half2[1] = await evo.setInjuryWeeksLeft(teamStateAll50Half2[1], 2);
-        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half2, matchLog[0], tactics0, is2nd = true).should.be.fulfilled;
+        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half2, matchLog[0], tactics0, is2nd = true, isBotHome).should.be.fulfilled;
         // players not aligned did not change state: 
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, isBigNumber = true);
         for (p = 0; p < 25; p++) {
@@ -574,7 +574,7 @@ contract('Evolution', (accounts) => {
         // now try the same with a red card in both halfs...
         newLog = await evo.setOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
         newLog = await evo.setOutOfGame(newLog, player = 2, round = 2, typeOfOutOfGame = RED_CARD, is2nd = true).should.be.fulfilled;
-        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half2, newLog, tactics0, is2nd = true).should.be.fulfilled;
+        var {0: newSkills, 1: err}  = await evo.updateSkillsAfterPlayHalf(teamStateAll50Half2, newLog, tactics0, is2nd = true, isBotHome).should.be.fulfilled;
         debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, isBigNumber = true);
         // since we only updatedSkills in 1st half, player 1 does not show as redCarded
         for (p = 0; p < 25; p++) {
