@@ -27,11 +27,15 @@ const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 
+
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const UpdatesBase = artifacts.require('UpdatesBase');
+
 contract('Engine', (accounts) => {
-    const Err = debug.getErrorCodes();
-    const UNDEF = undefined;
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-    const substitutions = [6, 10, 0];
     const subsRounds = [3, 7, 1];
     const noSubstitutions = [11, 11, 11];
     const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16, 7, 13, 17];
@@ -152,7 +156,7 @@ contract('Engine', (accounts) => {
         
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         await assets.initTZs({from: owners.COO}).should.be.fulfilled;

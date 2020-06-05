@@ -20,6 +20,12 @@ const Directory = artifacts.require('Directory');
 const MarketCrypto = artifacts.require('MarketCrypto');
 const Stakers = artifacts.require('Stakers');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
+
 require('chai')
     .use(require('chai-as-promised'))
     .should();
@@ -34,8 +40,9 @@ module.exports = function (deployer, network, accounts) {
       const { singleTimezone, owners, requiredStake } = deployUtils.getExplicitOrDefaultSetup(deployer.networks[network], accounts);
       const account0Owners = deployUtils.getAccount0Owner(accounts[0]);
       console.log("Deploying proxy related contracts");
+      const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
       const {0: proxy, 1: assets, 2: market, 3: updates, 4: challenges} = 
-        await deployUtils.deploy(account0Owners, Proxy, Assets, Market, Updates, Challenges).should.be.fulfilled;
+        await deployUtils.deploy(account0Owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts).should.be.fulfilled;
 
 
       // Only input required at this stage: proxy.address

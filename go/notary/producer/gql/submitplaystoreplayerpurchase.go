@@ -8,6 +8,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -102,14 +103,8 @@ func (b Resolver) IsValidPlayer(
 	teamId string,
 	epoch int64,
 ) (bool, error) {
-	players, err := CreateWorldPlayerBatch(
-		b.contracts,
-		b.namesdb,
-		value,
-		maxPotential,
-		teamId,
-		epoch,
-	)
+	worldPlayerService := worldplayer.NewWorldPlayerService(b.contracts, b.namesdb)
+	players, err := worldPlayerService.CreateBatch(teamId, epoch)
 	if err != nil {
 		return false, err
 	}

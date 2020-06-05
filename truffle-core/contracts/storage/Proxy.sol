@@ -11,6 +11,10 @@ import "./ProxyStorage.sol";
 
 contract Proxy is ProxyStorage {
 
+    using Bytes32AddressLib for bytes32;
+
+    // COMPANY_SLOT = keccak256("freeverse.private.addresses.company")
+    bytes32 constant private COMPANY_SLOT = 0x233d36e267af25e9763c5ca9ee4b9df85d8450ad52191618b089fa4a1a46bfc5;
     address constant private PROXY_DUMMY_ADDR = address(1);
 
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
@@ -18,13 +22,20 @@ contract Proxy is ProxyStorage {
     event ContractsDeactivated(uint256[] contractIds, uint256 time);
     event NewDirectory(address addr);
 
+    modifier onlyCompany() {
+        require(msg.sender == company(), "Only company is authorized.");
+        _;
+    }
+    
     /**
     * @dev Sets CompanyOwner and SuperUser
     * @dev Stores proxy selectors in _contractsInfo[0], pointing to PROXY_DUMMY_ADDR
     */
     constructor(address companyOwner, address superUser, bytes4[] memory proxySelectors) public {
+        _superUser = msg.sender;
         _contractsInfo.push(ContractInfo(PROXY_DUMMY_ADDR, proxySelectors, "Proxy", false));
-        _company = companyOwner;
+        activateContracts(new uint256[](1));
+        COMPANY_SLOT.setStorageAddress(companyOwner);
         _superUser = superUser;
     }
     
@@ -34,9 +45,7 @@ contract Proxy is ProxyStorage {
     fallback() external payable {
         address contractAddr = _selectorToContractAddr[msg.sig];
         require(contractAddr != address(0x0), "function selector is not assigned to a valid contract");
-        address companyGuard = _company; 
         _delegate(contractAddr, msg.data);
-        assert(companyGuard == _company);
     } 
     
     /**
@@ -73,7 +82,7 @@ contract Proxy is ProxyStorage {
     */
     function acceptCompany() external  {
         require(msg.sender == _proposedCompany, "only proposed owner can become owner");
-        _company = _proposedCompany;
+        COMPANY_SLOT.setStorageAddress(_proposedCompany);
         _proposedCompany = address(0);
     }
 
@@ -128,7 +137,7 @@ contract Proxy is ProxyStorage {
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             address addr = _contractsInfo[contractId].addr;
             for (uint256 s = 0; s < selectors.length; s++) {
-                require(_selectorToContractAddr[selectors[s]] != PROXY_DUMMY_ADDR, "Found a collision with a function in the Proxy contract");
+                require(_selectorToContractAddr[selectors[s]] == address(0x0), "Found a collision");
                 _selectorToContractAddr[selectors[s]] = addr;
             }
             _contractsInfo[contractId].isActive = true;
@@ -145,7 +154,7 @@ contract Proxy is ProxyStorage {
         for (uint256 c = 0; c < contractIds.length; c++) {
             uint256 contractId = contractIds[c];
             require(contractId != 0, "cannot deactivate the proxy contract, with id = 0");
-            require(_contractsInfo[contractId].isActive, "cannot deactivate a contract that is Active");
+            require(_contractsInfo[contractId].isActive, "cannot deactivate a contract that is not active");
             bytes4[] memory selectors = _contractsInfo[contractId].selectors;
             for (uint256 s = 0; s < selectors.length; s++) {
                 delete _selectorToContractAddr[selectors[s]];
@@ -222,7 +231,7 @@ contract Proxy is ProxyStorage {
         );
     }
 
-    function company() public view returns (address) { return _company; }
+    function company() public view returns (address) { return COMPANY_SLOT.getStorageAddress(); }
     function proposedCompany() public view returns (address) { return _proposedCompany; }
     function superUser() public view returns (address) { return _superUser; }
     function directory() public view returns (address) { return _directory; }

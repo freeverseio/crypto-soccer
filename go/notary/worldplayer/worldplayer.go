@@ -1,6 +1,8 @@
-package gql
+package worldplayer
 
-import "github.com/graph-gophers/graphql-go"
+import (
+	"github.com/graph-gophers/graphql-go"
+)
 
 type WorldPlayer struct {
 	playerId          graphql.ID
