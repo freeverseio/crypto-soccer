@@ -130,9 +130,9 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     {
         uint256[5][2] memory globSkills;
         
-        (matchLogs[0], skills[0], err) = getLinedUpSkills(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED], matchBools[IDX_IS_BOT_HOME]);
+        (matchLogs[0], skills[0], err) = getLinedUpSkillsAndOutOfGames(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED], matchBools[IDX_IS_BOT_HOME]);
         if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
-        (matchLogs[1], skills[1], err) = getLinedUpSkills(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256, matchBools[IDX_IS_BOT_AWAY]);
+        (matchLogs[1], skills[1], err) = getLinedUpSkillsAndOutOfGames(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256, matchBools[IDX_IS_BOT_AWAY]);
         if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
 
         matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefendersFromTactics(tactics[0]), matchBools[IDX_IS_2ND_HALF]);
@@ -189,7 +189,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         }
     }
     
-    /// getLinedUpSkills:
+    /// getLinedUpSkillsAndOutOfGames:
     ///      1. Unpacks the tactics and lineUp, verifies validity 
     ///      2. Rewrites skills[25] so that the first [14] entries correspond to players that will actually play
     ///      3. Compute the yellow cards, red cards, injuries, and adds them to matchLog
@@ -199,7 +199,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     ///      players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
     ///  - note that we impose left-right symmetry: DR = DL, MR = ML, FR = FL,
     ///      so we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getLinedUpSkills(
+    function getLinedUpSkillsAndOutOfGames(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics,
         bool is2ndHalf,

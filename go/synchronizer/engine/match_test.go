@@ -31,6 +31,8 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	match.StartTime = big.NewInt(1570147200)
 	match.HomeTeam.TeamID = "1"
 	match.VisitorTeam.TeamID = "2"
+	match.HomeTeam.Owner = "0x433"
+	match.VisitorTeam.Owner = "0x433"
 	for i := 0; i < 25; i++ {
 		match.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 		match.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
@@ -51,6 +53,8 @@ func TestPlay1stHalfConsumeTheTrainingPoints(t *testing.T) {
 	match.StartTime = big.NewInt(1570147200)
 	match.HomeTeam.TeamID = "1"
 	match.VisitorTeam.TeamID = "2"
+	match.HomeTeam.Owner = "0x433"
+	match.VisitorTeam.Owner = "0x433"
 	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
 	assert.Equal(t, match.HomeTeam.TrainingPoints, uint16(0))
 	assert.Equal(t, match.VisitorTeam.TrainingPoints, uint16(0))
@@ -82,6 +86,8 @@ func TestPlayGame(t *testing.T) {
 	m.StartTime = big.NewInt(1570147200)
 	m.HomeTeam.TeamID = "1"
 	m.VisitorTeam.TeamID = "2"
+	m.HomeTeam.Owner = "0x433"
+	m.VisitorTeam.Owner = "0x433"
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -105,6 +111,8 @@ func TestPlay2ndHalf(t *testing.T) {
 	m.StartTime = big.NewInt(1570147200)
 	m.HomeTeam.TeamID = "1"
 	m.VisitorTeam.TeamID = "2"
+	m.HomeTeam.Owner = "0x433"
+	m.VisitorTeam.Owner = "0x433"
 
 	playerAligned1stHalf := SkillsFromString(t, "155218553451227483908160832387024632959402541639272557524812776")
 	playerNotAligned1stHalf := SkillsFromString(t, "155218553445241173201653454034062339884596646390761857828783080")
@@ -149,6 +157,8 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 			m.StartTime = big.NewInt(1570147200)
 			m.HomeTeam.TeamID = "1"
 			m.VisitorTeam.TeamID = "2"
+			m.HomeTeam.Owner = "0x433"
+			m.VisitorTeam.Owner = "0x433"
 			for i := 0; i < 25; i++ {
 				m.HomeTeam.Players[i].SetSkills(*bc.Contracts, playerNotAligned1stHalf)
 				m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, playerNotAligned1stHalf)
@@ -175,6 +185,8 @@ func TestMatchPlayerEvolution(t *testing.T) {
 	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
+	m.HomeTeam.Owner = "0x433"
+	m.VisitorTeam.Owner = "0x433"
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -196,6 +208,8 @@ func TestMatchTeamSkillsEvolution(t *testing.T) {
 	m.Seed = sha256.Sum256([]byte("18"))
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
+	m.HomeTeam.Owner = "0x433"
+	m.VisitorTeam.Owner = "0x433"
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -216,6 +230,8 @@ func TestMatchRedCards(t *testing.T) {
 	m.Seed = sha256.Sum256([]byte(string(4)))
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
+	m.HomeTeam.Owner = "0x433"
+	m.VisitorTeam.Owner = "0x433"
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -235,20 +251,25 @@ func TestMatchRedCards(t *testing.T) {
 }
 
 func TestMatchHardInjury(t *testing.T) {
+	// note: the strings used in this test are a bit crazy, and players are superold
+	// note: that is why after evolving, they become normal players (children)
 	t.Parallel()
 	m := engine.NewMatch()
 	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 	m.Seed = sha256.Sum256([]byte("10"))
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
+	m.HomeTeam.Owner = "0x433"
+	m.VisitorTeam.Owner = "0x433"
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
-		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "15324955408660339766675662613581148386300673993530595607528"))
 		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
+	golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
-	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
+	golden.Assert(t, dump.Sdump(m), t.Name()+".half.golden")
 	event := m.Events[12]
 	assert.Equal(t, event.Type, matchevents.EVNT_HARD)
 	assert.Equal(t, event.PrimaryPlayer, int16(10))
@@ -258,6 +279,37 @@ func TestMatchHardInjury(t *testing.T) {
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(5))
 }
 
+func TestMatchHardInjuryAmongBots(t *testing.T) {
+	// note: the strings used in this test correcpond to all players = 1000, but superold
+	// note: since the teams are bots, they dont evolve, and remain at 1000
+	t.Parallel()
+	m := engine.NewMatch()
+	m.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
+	m.Seed = sha256.Sum256([]byte("10"))
+	m.HomeTeam.TeamID = "274877906944"
+	m.VisitorTeam.TeamID = "274877906945"
+	// m.HomeTeam.Owner = "0x433"
+	// m.VisitorTeam.Owner = "0x433"
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "15324955408660339766675662613581148386300673993530595607528"))
+		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "15324955408660339766675662613581148386300673993530595607528"))
+		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
+	}
+	// check that skills are 1000 before and after
+	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(1000))
+	golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
+	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
+	golden.Assert(t, dump.Sdump(m), t.Name()+".half.golden")
+	for i := 0; i < 25; i++ {
+		assert.Equal(t, m.HomeTeam.Players[i].RedCard, false)
+		assert.Equal(t, m.HomeTeam.Players[i].YellowCard1stHalf, false)
+		assert.Equal(t, m.HomeTeam.Players[i].Tiredness, 0)
+		assert.Equal(t, m.HomeTeam.Players[i].InjuryMatchesLeft, uint8(0))
+		assert.Equal(t, m.HomeTeam.Players[i].Defence, uint64(1000))
+	}
+}
+
 func TestMatchSoftInjury(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
@@ -265,6 +317,8 @@ func TestMatchSoftInjury(t *testing.T) {
 	m.Seed = sha256.Sum256([]byte("161"))
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
+	m.HomeTeam.Owner = "0x433"
+	m.VisitorTeam.Owner = "0x433"
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -289,6 +343,8 @@ func TestMatchEvents(t *testing.T) {
 	m.Seed = sha256.Sum256([]byte(string(4)))
 	m.HomeTeam.TeamID = "274877906944"
 	m.VisitorTeam.TeamID = "274877906945"
+	m.HomeTeam.Owner = "0x433"
+	m.VisitorTeam.Owner = "0x433"
 	for i := 0; i < 25; i++ {
 		m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 		m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -355,6 +411,8 @@ func TestMatchEventsGeneration(t *testing.T) {
 			m.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", j)))
 			m.HomeTeam.TeamID = "274877906944"
 			m.VisitorTeam.TeamID = "274877906945"
+			m.HomeTeam.Owner = "0x433"
+			m.VisitorTeam.Owner = "0x433"
 			for i := 0; i < 24; i++ {
 				m.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "14606248079918261338806855269144928920528183545627247"))
 				m.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -381,12 +439,16 @@ func TestFromTheField(t *testing.T) {
 	t.Run("0498232f79495530fa199c6d51fa51b2bfb22989b01e5f390eced6e729b04102.1st.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		match.HomeTeam.Owner = "0x433"
+		match.VisitorTeam.Owner = "0x433"
 		assert.NilError(t, err)
 		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: VM execution error.")
 	})
 	t.Run("fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		match.HomeTeam.Owner = "0x433"
+		match.VisitorTeam.Owner = "0x433"
 		assert.NilError(t, err)
 		assert.Error(t, match.Play2ndHalf(*bc.Contracts), "BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: 16")
 		// assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
@@ -394,6 +456,8 @@ func TestFromTheField(t *testing.T) {
 	t.Run("a102d90303aafcdae29c09bc6b338a50048b9cd4d8fa1942cf315bb7e3736aac.2nd.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		match.HomeTeam.Owner = "0x433"
+		match.VisitorTeam.Owner = "0x433"
 		assert.NilError(t, err)
 		assert.Error(t, match.Play2ndHalf(*bc.Contracts), "BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: 13")
 		// assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
