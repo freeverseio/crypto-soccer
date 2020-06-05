@@ -33,7 +33,7 @@ contract EncodingTacticsBase3 {
     }
     
     function getFullLineUp(uint256 tactics) public pure returns(uint8[14] memory lineup) {
-        for (uint8 p = 0; p < 10; p++) {
+        for (uint8 p = 0; p < 14; p++) {
             lineup[p] = uint8((tactics >> (16 + 5 * p)) & 31); /// 2^5 - 1
         }
     }
