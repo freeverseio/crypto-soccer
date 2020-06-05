@@ -36,7 +36,7 @@ const UpdatesBase = artifacts.require('UpdatesBase');
 contract('Engine', (accounts) => {
     const Err = debug.getErrorCodes();
     const isBotHome = false;
-    const isBotAway = false;    const UNDEF = undefined;
+    const isBotAway = false;
     const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const UNDEF = undefined;
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
