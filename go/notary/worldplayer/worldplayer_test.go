@@ -10,6 +10,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 	"gotest.tools/assert"
+	"gotest.tools/golden"
 )
 
 func TestGetWorldPlayersDeterministicResult(t *testing.T) {
@@ -27,8 +28,8 @@ func TestGetWorldPlayersDeterministicResult(t *testing.T) {
 	for i := range players0 {
 		assert.Equal(t, *players0[i], *players1[i])
 	}
-	assert.Equal(t, players0[0].Race() == "", false)
-	assert.Equal(t, players0[0].CountryOfBirth() == "", false)
+
+	golden.Assert(t, dump.Sdump(players0), t.Name()+".golden")
 }
 
 func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
@@ -50,8 +51,6 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 	players, err := service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, players[0].Race() == "", false)
-	assert.Equal(t, players[0].CountryOfBirth() == "", false)
 
 	player0Id, _ := new(big.Int).SetString(string(players[0].PlayerId()), 10)
 	targetTeamId, _ := new(big.Int).SetString(teamId, 10)
@@ -67,8 +66,6 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 	players, err = service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 29)
-	assert.Equal(t, players[0].Race() == "", false)
-	assert.Equal(t, players[0].CountryOfBirth() == "", false)
 }
 
 func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {

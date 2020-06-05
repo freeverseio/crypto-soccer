@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/names"
@@ -14,9 +15,10 @@ import (
 
 var bc *testutils.BlockchainNode
 var namesdb *names.Generator
-var googleCredentials []byte
+var dump spew.ConfigState
 
 func TestMain(m *testing.M) {
+	dump = spew.ConfigState{DisablePointerAddresses: true, Indent: "\t"}
 	var err error
 	namesdb, err = names.New("../../names/sql/names.db")
 	if err != nil {
