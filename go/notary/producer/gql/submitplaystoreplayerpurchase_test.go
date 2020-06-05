@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
+	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
 	"gotest.tools/assert"
 )
 
@@ -33,7 +34,7 @@ func TestSubmitPlaystorePlayerPurchaseValidPlayer(t *testing.T) {
 	teamId := "1099511627778"
 	epoch := int64(1589456942)
 
-	players, err := gql.CreateWorldPlayerBatch(
+	players, err := worldplayer.CreateWorldPlayerBatch(
 		*bc.Contracts,
 		namesdb,
 		value,
