@@ -21,7 +21,14 @@ const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
+
 contract('Leagues', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
     const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
     const subLastHalf = false;
@@ -73,7 +80,7 @@ contract('Leagues', (accounts) => {
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         await assets.initSingleTZ(INIT_TZ, {from: owners.COO}).should.be.fulfilled;
