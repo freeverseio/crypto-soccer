@@ -103,14 +103,8 @@ func (b Resolver) IsValidPlayer(
 	teamId string,
 	epoch int64,
 ) (bool, error) {
-	players, err := worldplayer.CreateWorldPlayerBatch(
-		b.contracts,
-		b.namesdb,
-		value,
-		maxPotential,
-		teamId,
-		epoch,
-	)
+	worldPlayerService := worldplayer.NewWorldPlayerService(b.contracts, b.namesdb)
+	players, err := worldPlayerService.CreateBatch(teamId, epoch)
 	if err != nil {
 		return false, err
 	}

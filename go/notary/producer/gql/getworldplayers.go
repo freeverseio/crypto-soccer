@@ -38,15 +38,6 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 		return nil, errors.New("not owner of the team")
 	}
 
-	value := int64(1000)     // TODO
-	maxPotential := uint8(9) // TODO
-
-	return worldplayer.CreateWorldPlayerBatch(
-		b.contracts,
-		b.namesdb,
-		value,
-		maxPotential,
-		string(args.Input.TeamId),
-		time.Now().Unix(),
-	)
+	worldPlayerService := worldplayer.NewWorldPlayerService(b.contracts, b.namesdb)
+	return worldPlayerService.CreateBatch(string(args.Input.TeamId), time.Now().Unix())
 }
