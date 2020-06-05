@@ -16,6 +16,8 @@ const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');const Shop = artifacts.require('Shop');
 const EncodingTactics = artifacts.require('EncodingTactics');
+const Utils = artifacts.require('Utils');
+
 // in test mode, we place a test item in contruction (with itemId = 1)
 // (recall that itemId = 0 is NULL)
 // so a new item will be assigned itemId = 2
@@ -37,6 +39,8 @@ contract('Shop', (accounts) => {
 
         shop = await Shop.new(assets.address).should.be.fulfilled;
         encTactics = await EncodingTactics.new().should.be.fulfilled;
+        utils = await Utils.new().should.be.fulfilled;
+        
     });
 
     
