@@ -133,6 +133,7 @@ func CreateWorldPlayerBatch(
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
 		validUntil := strconv.FormatInt((epochWeeks+1)*24*3600*7, 10) // valid 1 week
+		productId := "not implemented"
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
@@ -147,6 +148,7 @@ func CreateWorldPlayerBatch(
 			validUntil,
 			countryOfBirth,
 			race,
+			productId,
 		)
 		result = append(result, worldPlayer)
 	}
