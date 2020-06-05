@@ -250,7 +250,6 @@ spec:
     spec:
       containers:
       - args:
-        - -backdoor=true
         - -timeout=30
         - -gqlurl
         - http://horizon:4000
