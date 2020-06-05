@@ -11,6 +11,10 @@ import "./ProxyStorage.sol";
 
 contract Proxy is ProxyStorage {
 
+    using Bytes32AddressLib for bytes32;
+
+    // COMPANY_SLOT = keccak256("freeverse.private.addresses.company")
+    bytes32 constant private COMPANY_SLOT = 0x233d36e267af25e9763c5ca9ee4b9df85d8450ad52191618b089fa4a1a46bfc5;
     address constant private PROXY_DUMMY_ADDR = address(1);
 
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
@@ -18,6 +22,11 @@ contract Proxy is ProxyStorage {
     event ContractsDeactivated(uint256[] contractIds, uint256 time);
     event NewDirectory(address addr);
 
+    modifier onlyCompany() {
+        require(msg.sender == company(), "Only company is authorized.");
+        _;
+    }
+    
     /**
     * @dev Sets CompanyOwner and SuperUser
     * @dev Stores proxy selectors in _contractsInfo[0], pointing to PROXY_DUMMY_ADDR
@@ -26,7 +35,7 @@ contract Proxy is ProxyStorage {
         _superUser = msg.sender;
         _contractsInfo.push(ContractInfo(PROXY_DUMMY_ADDR, proxySelectors, "Proxy", false));
         activateContracts(new uint256[](1));
-        _company = companyOwner;
+        COMPANY_SLOT.setStorageAddress(companyOwner);
         _superUser = superUser;
     }
     
@@ -73,7 +82,7 @@ contract Proxy is ProxyStorage {
     */
     function acceptCompany() external  {
         require(msg.sender == _proposedCompany, "only proposed owner can become owner");
-        _company = _proposedCompany;
+        COMPANY_SLOT.setStorageAddress(_proposedCompany);
         _proposedCompany = address(0);
     }
 
@@ -222,7 +231,7 @@ contract Proxy is ProxyStorage {
         );
     }
 
-    function company() public view returns (address) { return _company; }
+    function company() public view returns (address) { return COMPANY_SLOT.getStorageAddress(); }
     function proposedCompany() public view returns (address) { return _proposedCompany; }
     function superUser() public view returns (address) { return _superUser; }
     function directory() public view returns (address) { return _directory; }
