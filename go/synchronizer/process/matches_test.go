@@ -38,6 +38,8 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		match := engine.NewMatch()
 		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
+		match.HomeTeam.Owner = "0x433"
+		match.VisitorTeam.Owner = "0x433"
 		for i := 0; i < 25; i++ {
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
 			match.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -61,6 +63,8 @@ func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 		match := engine.NewMatch()
 		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
+		match.HomeTeam.Owner = "0x433"
+		match.VisitorTeam.Owner = "0x433"
 		for i := 0; i < 25; i++ {
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))
 			match.VisitorTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309340654302060354425351701614"))
@@ -83,6 +87,8 @@ func TestMatchesPlaySequentialAndPlayParallalSpecialPlayers(t *testing.T) {
 		match := engine.NewMatch()
 		match.StartTime = big.NewInt(1570147200 + 3600*24*365*7)
 		match.Seed = sha256.Sum256([]byte(fmt.Sprintf("%d", i)))
+		match.HomeTeam.Owner = "0x433"
+		match.VisitorTeam.Owner = "0x433"
 		for i := 0; i < 25; i++ {
 			// ... same as previous test, but now, we chose hardcoded values that lead to standard home players, while visitors are "special players"
 			match.HomeTeam.Players[i].SetSkills(*bc.Contracts, SkillsFromString(t, "16573429227295117480385309339445376240739796176995438"))

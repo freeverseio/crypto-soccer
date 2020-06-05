@@ -1345,9 +1345,9 @@ contract('Engine', (accounts) => {
 
     });
 
-    it('getLinedUpSkills', async () => {
+    it('getLinedUpSkillsAndOutOfGames', async () => {
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        result = await engine.getLinedUpSkills(teamState442, tactics1, is2ndHalf, log = [0,0], seed, isBotHome).should.be.fulfilled;
+        result = await engine.getLinedUpSkillsAndOutOfGames(teamState442, tactics1, is2ndHalf, log = [0,0], seed, isBotHome).should.be.fulfilled;
         let {0: matchLog, 1: states} = result;
         for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[lineupConsecutive[p]]);
     });
