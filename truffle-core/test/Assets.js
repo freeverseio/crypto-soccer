@@ -19,9 +19,14 @@ const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 
-
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 
 contract('Assets', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const ALICE_ACC = web3.eth.accounts.create("alice");
     const BOB_ACC   = web3.eth.accounts.create("bob");
     const CAROL_ACC = web3.eth.accounts.create("carol");
@@ -51,7 +56,7 @@ contract('Assets', (accounts) => {
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
@@ -176,7 +181,7 @@ contract('Assets', (accounts) => {
     it('check DivisionCreation event on initSingleTz', async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         defaultSetup.singleTimezone = 4;
-        depl2 = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl2 = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         assets2 = depl2[1];
         await assets2.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
         tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone, {from: owners.COO}).should.be.fulfilled;
