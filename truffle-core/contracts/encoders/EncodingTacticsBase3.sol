@@ -19,5 +19,13 @@ contract EncodingTacticsBase3 {
             extraAttack[p] = (((tactics >> (6 + p)) & 1) == 1 ? true : false); /// 2^1 - 1
         }
     }
+
+    function getSubstitution(uint256 tactics, uint8 p) public pure returns(uint8) {
+        return uint8((tactics >> (86 + 4 * p)) & 15); /// 2^4 - 1
+    }
     
+    function getSubsRound(uint256 tactics, uint8 p) public pure returns(uint8) {
+        return uint8(tactics >> (98 + 4 * p) & 15); /// 2^4 - 1
+    }
+
 }

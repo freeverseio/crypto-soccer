@@ -218,7 +218,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     {
         (matchLog, linedUpSkills, err) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
         linedUpSkills = _applyBoosters.applyItemBoost(linedUpSkills, tactics);
-        if (!isBot) matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, seed); 
+        matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, isBot, seed); 
         return (matchLog, linedUpSkills, err);
     }
     
