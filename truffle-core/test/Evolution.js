@@ -33,9 +33,15 @@ const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const Shop = artifacts.require('Shop');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 
 contract('Evolution', (accounts) => {
     const Err = debug.getErrorCodes();
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const substitutions = [6, 10, 0];
     const subsRounds = [3, 7, 1];
     const noSubstitutions = [11, 11, 11];
@@ -304,7 +310,7 @@ contract('Evolution', (accounts) => {
 
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         await assets.initTZs({from: owners.COO}).should.be.fulfilled;

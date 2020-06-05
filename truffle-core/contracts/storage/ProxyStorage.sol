@@ -5,8 +5,18 @@ pragma solidity >= 0.6.3;
  @author Freeverse.io, www.freeverse.io
 */
 
-contract ProxyStorage {
+library Bytes32AddressLib {
+    function getStorageAddress(bytes32 position) internal view returns (address addr) {
+        assembly { addr := sload(position) }
+    }
 
+    function setStorageAddress(bytes32 position, address addr) internal {
+        assembly { sstore(position, addr) }
+    }
+}
+
+
+contract ProxyStorage {
     /// Proxy delegates to various contracts
     /// Contracts are first added, then activated/deactivated
     struct ContractInfo {
@@ -19,16 +29,10 @@ contract ProxyStorage {
     mapping (bytes4 => address) internal _selectorToContractAddr;
 
     /// Roles
-    address internal _company; 
     address internal _proposedCompany;
     address internal _superUser; 
     address internal _directory; 
 
-    modifier onlyCompany() {
-        require(msg.sender == _company, "Only company is authorized.");
-        _;
-    }
-    
     modifier onlySuperUser() {
         require(msg.sender == _superUser, "Only superuser is authorized.");
         _;
