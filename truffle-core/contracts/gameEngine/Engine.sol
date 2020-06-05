@@ -44,6 +44,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
     uint8 private constant IDX_IS_HOME_STADIUM  = 1; 
     uint8 private constant IDX_IS_PLAYOFF       = 2; 
+    uint8 private constant IDX_IS_BOT_HOME      = 3; 
+    uint8 private constant IDX_IS_BOT_AWAY      = 4; 
     //
     uint8 private constant IDX_SEED         = 0; 
     uint8 private constant IDX_ST_TIME      = 1; 
@@ -78,28 +80,28 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools 
+        bool[5] memory matchBools 
     )
         public
         view
-        returns (uint256[2+5*ROUNDS_PER_MATCH] memory)
+        returns (uint256[2+5*ROUNDS_PER_MATCH] memory, uint8 err)
     {
-        uint256 block0;
-        uint256 block1;
+        uint256[2] memory blockSkillGK;
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
         seedAndStartTimeAndEvents[0] = seed; 
         seedAndStartTimeAndEvents[1] = matchStartTime; 
         
-        (matchLogs, block0, block1) = playMatchWithoutPenalties(
+        (matchLogs, blockSkillGK, err) = playMatchWithoutPenalties(
             seedAndStartTimeAndEvents, 
             skills,
             tactics,
             matchLogs,
             matchBools
         );
+        if (err > 0) return (seedAndStartTimeAndEvents, err);
 
         if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
-            matchLogs = _precomp.computePenalties(matchLogs, skills, block0, block1, uint64(seed));  /// TODO seed
+            matchLogs = _precomp.computePenalties(matchLogs, skills, blockSkillGK[0], blockSkillGK[1], uint64(seed));  /// TODO seed
         } else {
             /// note that WINNER_HOME = 0, so no need to write anything if home wins.
             if (getNGoals(matchLogs[0]) == getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_DRAW);
@@ -108,7 +110,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         /// convert seedAndStartTimeAndEvents --> matchLogsAndEvents
         seedAndStartTimeAndEvents[0] = setIsHomeStadium(matchLogs[0], matchBools[IDX_IS_HOME_STADIUM]);
         seedAndStartTimeAndEvents[1] = setIsHomeStadium(matchLogs[1], matchBools[IDX_IS_HOME_STADIUM]);
-        return seedAndStartTimeAndEvents;
+        return (seedAndStartTimeAndEvents, 0);
     }
     
     /**
@@ -120,44 +122,46 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills,
         uint256[2] memory tactics,
         uint256[2] memory matchLogs,
-        bool[3] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
+        bool[5] memory matchBools /// [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
         view
-        returns (uint256[2] memory, uint256, uint256)
+        returns (uint256[2] memory, uint256[2] memory, uint8 err)
     {
         uint256[5][2] memory globSkills;
-        uint8[9][2] memory playersPerZone;
-        bool[10][2] memory extraAttack;
+        
+        (matchLogs[0], skills[0], err) = getLinedUpSkillsAndOutOfGames(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED], matchBools[IDX_IS_BOT_HOME]);
+        if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
+        (matchLogs[1], skills[1], err) = getLinedUpSkillsAndOutOfGames(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256, matchBools[IDX_IS_BOT_AWAY]);
+        if (err > 0) return (matchLogs, [uint256(0), uint256(0)], err);
 
-        (matchLogs[0], skills[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(skills[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLogs[0], seedAndStartTimeAndEvents[IDX_SEED]);
-        (matchLogs[1], skills[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(skills[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLogs[1], seedAndStartTimeAndEvents[IDX_SEED]+256);
+        matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefendersFromTactics(tactics[0]), matchBools[IDX_IS_2ND_HALF]);
+        matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefendersFromTactics(tactics[1]), matchBools[IDX_IS_2ND_HALF]);
 
-        matchLogs[0] = computeNGKAndDefs(matchLogs[0], skills[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
-        matchLogs[1] = computeNGKAndDefs(matchLogs[1], skills[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
-
-        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], playersPerZone[0], extraAttack[0]);
-        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], playersPerZone[1], extraAttack[1]);
+        globSkills[0] = _precomp.getTeamGlobSkills(skills[0], tactics[0], matchBools[IDX_IS_BOT_HOME]);
+        globSkills[1] = _precomp.getTeamGlobSkills(skills[1], tactics[1], matchBools[IDX_IS_BOT_AWAY]);
 
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(matchLogs, seedAndStartTimeAndEvents, skills, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
-        return (matchLogs, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
+        computeRounds(matchLogs, seedAndStartTimeAndEvents, skills, tactics, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        return (matchLogs, [globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]], err);
     }
     
     function computeRounds(
         uint256[2] memory matchLogs,
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills, 
-        uint8[9][2] memory playersPerZone, 
-        bool[10][2] memory extraAttack, 
+        uint256[2] memory tactics,
         uint256[5][2] memory globSkills, 
         bool is2ndHalf
     ) 
         public
         pure
     {
+        uint8[9][2] memory playersPerZone = [getPlayersPerZone(tactics[0]), getPlayersPerZone(tactics[1])];
+        bool[10][2] memory extraAttack = [getFullExtraAttack(tactics[0]), getFullExtraAttack(tactics[1])];
+
         uint64[] memory rnds = getNRandsFromSeed(seedAndStartTimeAndEvents[IDX_SEED], ROUNDS_PER_MATCH*5);
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
@@ -185,7 +189,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         }
     }
     
-    /// getLineUpAndPlayerPerZone:
+    /// getLinedUpSkillsAndOutOfGames:
     ///      1. Unpacks the tactics and lineUp, verifies validity 
     ///      2. Rewrites skills[25] so that the first [14] entries correspond to players that will actually play
     ///      3. Compute the yellow cards, red cards, injuries, and adds them to matchLog
@@ -195,22 +199,27 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     ///      players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
     ///  - note that we impose left-right symmetry: DR = DL, MR = ML, FR = FL,
     ///      so we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getLineUpAndPlayerPerZone(
+    function getLinedUpSkillsAndOutOfGames(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
         uint256 tactics,
         bool is2ndHalf,
         uint256 matchLog,
-        uint256 seed
+        uint256 seed,
+        bool isBot
     ) 
         public 
         view 
-        returns (uint256, uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills, uint8[9] memory) 
+        returns 
+    (
+        uint256, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills, 
+        uint8 err
+    ) 
     {
-        uint8 tacticsId;
-        (matchLog, linedUpSkills, tacticsId) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
+        (matchLog, linedUpSkills, err) = _precomp.getLinedUpSkills(matchLog, tactics, skills, is2ndHalf);
         linedUpSkills = _applyBoosters.applyItemBoost(linedUpSkills, tactics);
-        matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, seed); 
-        return (matchLog, linedUpSkills, getPlayersPerZone(tacticsId));
+        matchLog = _precomp.computeExceptionalEvents(matchLog, linedUpSkills, tactics, is2ndHalf, isBot, seed); 
+        return (matchLog, linedUpSkills, err);
     }
     
     /// adds to the matchLog the number of defenders and GKs actually linedUp (some skills could be empty slots)

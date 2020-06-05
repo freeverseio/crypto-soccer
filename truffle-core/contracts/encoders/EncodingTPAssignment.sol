@@ -1,5 +1,7 @@
 pragma solidity >= 0.6.3;
 
+import "../gameEngine/ErrorCodes.sol";
+
 /**
  @title Library to serialize/deserialize assignment of Traning points by users
  @author Freeverse.io, www.freeverse.io
@@ -22,7 +24,7 @@ pragma solidity >= 0.6.3;
  specialPlayer: no specialPlayer if == 25
 */
 
-contract EncodingTPAssignment {
+contract EncodingTPAssignment is ErrorCodes {
 
     uint16 public constant MAX_PERCENT = 60; 
     uint8 private constant PLAYERS_PER_TEAM_MAX  = 25;
@@ -52,11 +54,11 @@ contract EncodingTPAssignment {
         }
     } 
 
-    function decodeTP(uint256 encoded) public pure returns(uint16[25] memory TPperSkill, uint8 specialPlayer, uint16 TP) {
+    function decodeTP(uint256 encoded) public pure returns(uint16[25] memory TPperSkill, uint8 specialPlayer, uint16 TP, uint8) {
         TP = uint16((encoded >> 225) & 511);
         uint16 TPtemp = TP;
         specialPlayer = uint8((encoded >> 234) & 31);
-        require(specialPlayer <= PLAYERS_PER_TEAM_MAX, "specialPlayer value too large");
+        if (specialPlayer > PLAYERS_PER_TEAM_MAX) return (TPperSkill, specialPlayer, TP, ERR_TRAINING_SPLAYER); // specialPlayer value too large
         uint16 maxRHS = (TP < 4) ? 100 * TPtemp : MAX_PERCENT * TPtemp;
         for (uint8 bucket = 0; bucket < 5; bucket++) {
             if (bucket == 4) {
@@ -66,11 +68,11 @@ contract EncodingTPAssignment {
             uint256 sum = 0;
             for (uint8 sk = 5 * bucket; sk < 5* (bucket+1); sk++) {
                 uint16 skill = uint16((encoded >> 9 * sk) & 511);
-                require(100*skill <= maxRHS, "one of the assigned TPs is too large or too small");
+                if (100*skill > maxRHS) return (TPperSkill, specialPlayer, TP, ERR_TRAINING_SINGLESKILL); // one of the assigned TPs is too large or too small
                 TPperSkill[sk] = skill;
                 sum += skill;
             }
-            require(sum <= TPtemp, "sum of Traning Points is too large");
+            if (sum > TPtemp) return (TPperSkill, specialPlayer, TP, ERR_TRAINING_SUMSKILLS); // sum of Traning Points is too large"
         }
     } 
 }

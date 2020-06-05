@@ -1,13 +1,14 @@
 pragma solidity >= 0.6.3;
 
 import "../encoders/EncodingSkillsGetters.sol";
+import "../encoders/EncodingTacticsBase3.sol";
 
 /**
  @title Library or pure functions, part of Engine
  @author Freeverse.io, www.freeverse.io
 */
 
-contract EngineLib is EncodingSkillsGetters {
+contract EngineLib is EncodingSkillsGetters, EncodingTacticsBase3 {
     uint8 private constant BITS_PER_RND     = 36;   /// Number of bits allowed for random numbers inside match decisisons
     uint256 public constant MAX_RND         = 68719476735; /// Max random number allowed inside match decisions: 2^36-1
     /// /// Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
@@ -73,6 +74,11 @@ contract EngineLib is EncodingSkillsGetters {
         return rnds;
     }
 
+    function getNDefendersFromTactics(uint256 tactics) public pure returns (uint8) {
+        uint8[9] memory playersPerZone = getPlayersPerZone(tactics);
+        return 2 * playersPerZone[0] + playersPerZone[1];
+    }
+
     function getNDefenders(uint8[9] memory playersPerZone) public pure returns (uint8) {
         return 2 * playersPerZone[0] + playersPerZone[1];
     }
@@ -90,13 +96,12 @@ contract EngineLib is EncodingSkillsGetters {
     /// players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
     /// We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
     /// So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getPlayersPerZone(uint8 tacticsId) public pure returns (uint8[9] memory) {
-        require(tacticsId < 4, "we currently support only 4 different tactics");
+    function getPlayersPerZone(uint256 tactics) public pure returns (uint8[9] memory) {
+        uint8 tacticsId = getTacticsId(tactics);
         if (tacticsId == 0) return [1,2,1,1,2,1,0,2,0];  /// 0 = 442
         if (tacticsId == 1) return [1,3,1,1,2,1,0,1,0];  /// 0 = 541
         if (tacticsId == 2) return [1,2,1,1,1,1,1,1,1];  /// 0 = 433
         if (tacticsId == 3) return [1,2,1,1,3,1,0,1,0];  /// 0 = 451
     }
-
 }
 

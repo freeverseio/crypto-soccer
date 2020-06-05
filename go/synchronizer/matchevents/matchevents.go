@@ -30,11 +30,11 @@ func NewMatchEvents(
 	if len(logsAndEvents) < 2 {
 		return nil, errors.New("logAndEvents len < 2")
 	}
-	decodedTactic0, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, homeTactic)
+	decodedTactic0, err := contracts.Utils.DecodeTactics(&bind.CallOpts{}, homeTactic)
 	if err != nil {
 		return nil, err
 	}
-	decodedTactic1, err := contracts.Engine.DecodeTactics(&bind.CallOpts{}, visitorTactic)
+	decodedTactic1, err := contracts.Utils.DecodeTactics(&bind.CallOpts{}, visitorTactic)
 	if err != nil {
 		return nil, err
 	}
