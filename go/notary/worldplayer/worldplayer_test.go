@@ -13,30 +13,15 @@ import (
 )
 
 func TestGetWorldPlayersDeterministicResult(t *testing.T) {
-	value := int64(1000)
-	maxPotential := uint8(9)
 	now := int64(1554940800) // first second of a week
 	teamId := "274877906944"
 
-	players0, err := worldplayer.CreateWorldPlayerBatch(
-		*bc.Contracts,
-		namesdb,
-		value,
-		maxPotential,
-		teamId,
-		now,
-	)
+	service := worldplayer.NewWorldPlayerService(*bc.Contracts, namesdb)
+	players0, err := service.CreateBatch(teamId, now)
+	assert.NilError(t, err)
+	players1, err := service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 
-	players1, err := worldplayer.CreateWorldPlayerBatch(
-		*bc.Contracts,
-		namesdb,
-		value,
-		maxPotential,
-		teamId,
-		now,
-	)
-	assert.NilError(t, err)
 	assert.Equal(t, len(players0), 30)
 	assert.Equal(t, len(players0), len(players1))
 	for i := range players0 {
@@ -58,19 +43,11 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 		crypto.PubkeyToAddress(bc.Owner.PublicKey),
 	)
 
-	value := int64(1000)
-	maxPotential := uint8(9)
 	now := int64(1554940801) // first second of a week
 	teamId := "274877906944"
 
-	players, err := worldplayer.CreateWorldPlayerBatch(
-		*bc.Contracts,
-		namesdb,
-		value,
-		maxPotential,
-		teamId,
-		now,
-	)
+	service := worldplayer.NewWorldPlayerService(*bc.Contracts, namesdb)
+	players, err := service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
 	assert.Equal(t, players[0].Race() == "", false)
@@ -87,81 +64,39 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 	_, err = helper.WaitReceipt(bc.Client, tx, 60)
 	assert.NilError(t, err)
 
-	players, err = worldplayer.CreateWorldPlayerBatch(
-		*bc.Contracts,
-		namesdb,
-		value,
-		maxPotential,
-		teamId,
-		now,
-	)
+	players, err = service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 29)
 	assert.Equal(t, players[0].Race() == "", false)
 	assert.Equal(t, players[0].CountryOfBirth() == "", false)
 }
 
-func TestCreateWorldPlayerBatch(t *testing.T) {
-	value := int64(3000)
-	maxPotential := uint8(9)
+func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {
 	now := int64(1554940800) // first second of a week
 	teamId := "274877906944"
 
-	players, err := worldplayer.CreateWorldPlayerBatch(
-		*bc.Contracts,
-		namesdb,
-		value,
-		maxPotential,
-		teamId,
-		now-2,
-	)
+	service := worldplayer.NewWorldPlayerService(*bc.Contracts, namesdb)
+	players, err := service.CreateBatch(teamId, now-2)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157481453821747928514686071527706372")
+	assert.Equal(t, string(players[0].PlayerId()), "25725015717574447640111183123578655469576475906857003090183425")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
-	assert.Equal(t, players[0].Name(), "Bogdan Gimenez")
-	assert.Equal(t, players[0].Race() == "", false)
-	assert.Equal(t, players[0].CountryOfBirth() == "", false)
-	assert.Equal(t, players[0].Speed(), int32(3402))
 
-	players, err = worldplayer.CreateWorldPlayerBatch(
-		*bc.Contracts,
-		namesdb,
-		value,
-		maxPotential,
-		teamId,
-		now-1,
-	)
+	players, err = service.CreateBatch(teamId, now-1)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157481453821747928514686071527706372")
+	assert.Equal(t, string(players[0].PlayerId()), "25725015717574447640111183123578655469576475906857003090183425")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
-	assert.Equal(t, players[0].Race() == "", false)
-	assert.Equal(t, players[0].CountryOfBirth() == "", false)
 
-	players, err = worldplayer.CreateWorldPlayerBatch(
-		*bc.Contracts,
-		namesdb,
-		value,
-		maxPotential,
-		teamId,
-		now,
-	)
+	players, err = service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157482721472348156744087568230911748")
+	assert.Equal(t, string(players[0].PlayerId()), "25725015717574447640111183123579923120176704136258499793388801")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 
-	players, err = worldplayer.CreateWorldPlayerBatch(
-		*bc.Contracts,
-		namesdb,
-		value,
-		maxPotential,
-		teamId,
-		now+1,
-	)
+	players, err = service.CreateBatch(teamId, now+1)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 30)
-	assert.Equal(t, string(players[0].PlayerId()), "25753057320981211674441424157482721472348156744087568230911748")
+	assert.Equal(t, string(players[0].PlayerId()), "25725015717574447640111183123579923120176704136258499793388801")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 }
