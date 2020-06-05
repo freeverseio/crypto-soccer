@@ -36,9 +36,7 @@ contract Proxy is ProxyStorage {
     fallback() external payable {
         address contractAddr = _selectorToContractAddr[msg.sig];
         require(contractAddr != address(0x0), "function selector is not assigned to a valid contract");
-        address companyGuard = _company; 
         _delegate(contractAddr, msg.data);
-        assert(companyGuard == _company);
     } 
     
     /**
