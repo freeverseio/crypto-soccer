@@ -12,13 +12,6 @@ import (
 	"github.com/graph-gophers/graphql-go"
 )
 
-// const nGoalKeepers = 3
-// const nDefenders = 9
-// const nMidfielders = 9
-// const nAttackers = 9
-// const value = int64(1000)
-// const maxPotential = uint8(9)
-
 type WorldPlayerService struct {
 	contracts    contracts.Contracts
 	namesdb      *names.Generator
