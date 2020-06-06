@@ -12,26 +12,41 @@ import (
 	"github.com/graph-gophers/graphql-go"
 )
 
-const nGoalKeepers = 3
-const nDefenders = 9
-const nMidfielders = 9
-const nAttackers = 9
-const value = int64(1000)
-const maxPotential = uint8(9)
-
 type WorldPlayerService struct {
-	contracts contracts.Contracts
-	namesdb   *names.Generator
+	contracts    contracts.Contracts
+	namesdb      *names.Generator
+	distribution []WorldPlayersTier
 }
 
 func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generator) *WorldPlayerService {
 	return &WorldPlayerService{
-		contracts: contracts,
-		namesdb:   namesdb,
+		contracts:    contracts,
+		namesdb:      namesdb,
+		distribution: GenerateBatchDistribution(),
 	}
 }
 
 func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPlayer, error) {
+	batch := []*WorldPlayer{}
+	for _, tier := range b.distribution {
+		batchByTier, err := b.createBatchByTier(
+			teamId,
+			epoch,
+			tier,
+		)
+		if err != nil {
+			return nil, err
+		}
+		batch = append(batch, batchByTier...)
+	}
+	return batch, nil
+}
+
+func (b WorldPlayerService) createBatchByTier(
+	teamId string,
+	epoch int64,
+	tier WorldPlayersTier,
+) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
 
 	epochDays := epoch / (3600 * 24)
@@ -46,17 +61,16 @@ func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPla
 		return nil, err
 	}
 
-	playerValue := big.NewInt(value)
 	worldPlayers, err := b.contracts.Privileged.CreateBuyNowPlayerIdBatch(
 		&bind.CallOpts{},
-		playerValue,
-		maxPotential,
+		big.NewInt(tier.Value),
+		tier.MaxPotential,
 		id,
 		[4]uint8{
-			nGoalKeepers,
-			nDefenders,
-			nMidfielders,
-			nAttackers,
+			tier.GoalKeepersCount,
+			tier.DefendersCount,
+			tier.MidfieldersCount,
+			tier.AttackersCount,
 		},
 		big.NewInt(epochDays),
 		timezone,
@@ -95,7 +109,6 @@ func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPla
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
 		validUntil := strconv.FormatInt((epochWeeks+1)*24*3600*7, 10) // valid 1 week
-		productId := "player_tier_0"
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
@@ -110,7 +123,7 @@ func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPla
 			validUntil,
 			countryOfBirth,
 			race,
-			productId,
+			tier.ProductId,
 		)
 		result = append(result, worldPlayer)
 	}
