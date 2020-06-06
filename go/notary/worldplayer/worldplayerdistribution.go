@@ -4,10 +4,10 @@ type WorldPlayersTier struct {
 	Value            int64
 	MaxPotential     uint8
 	ProductId        string
-	GoalKeepersCount int
-	DefendersCount   int
-	MidfieldersCount int
-	AttackersCount   int
+	GoalKeepersCount uint8
+	DefendersCount   uint8
+	MidfieldersCount uint8
+	AttackersCount   uint8
 }
 
 func GenerateBatchDistribution() []WorldPlayersTier {
