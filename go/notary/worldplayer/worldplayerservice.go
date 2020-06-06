@@ -20,14 +20,16 @@ const value = int64(1000)
 const maxPotential = uint8(9)
 
 type WorldPlayerService struct {
-	contracts contracts.Contracts
-	namesdb   *names.Generator
+	contracts    contracts.Contracts
+	namesdb      *names.Generator
+	distribution []WorldPlayersTier
 }
 
 func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generator) *WorldPlayerService {
 	return &WorldPlayerService{
-		contracts: contracts,
-		namesdb:   namesdb,
+		contracts:    contracts,
+		namesdb:      namesdb,
+		distribution: GenerateBatchDistribution(),
 	}
 }
 

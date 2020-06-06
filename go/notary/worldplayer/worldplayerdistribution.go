@@ -10,7 +10,7 @@ type WorldPlayersTier struct {
 	AttackersCount   int
 }
 
-func WorldPlayersTiers() []WorldPlayersTier {
+func GenerateBatchDistribution() []WorldPlayersTier {
 	return []WorldPlayersTier{
 		WorldPlayersTier{
 			Value:            1000,
