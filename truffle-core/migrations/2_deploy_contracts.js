@@ -36,7 +36,7 @@ const deployUtils = require('../utils/deployUtils.js');
 
 module.exports = function (deployer, network, accounts) {
   deployer.then(async () => {
-    if (network != "test") {    
+    if ((network == "xdaidev") || (network == "xdai")) {    
       const { singleTimezone, owners, requiredStake } = deployUtils.getExplicitOrDefaultSetup(deployer.networks[network], accounts);
       const account0Owners = deployUtils.getAccount0Owner(accounts[0]);
       console.log("Deploying proxy related contracts");
@@ -127,15 +127,84 @@ module.exports = function (deployer, network, accounts) {
       } else {
         console.log("You need to perform the final ownership stage with your HD wallets");
       }
-
-
-
       // Print Summary to Console
       console.log("");
       console.log("🚀  Deployed on:", deployer.network)
       console.log("-----------AddressesStart-----------");
       console.log("PROXY" + "=" + proxy.address),
       console.log("-----------AddressesEnd-----------");
+    }
+    /////// /////// /////// /////// /////// /////// /////// /////// /////// /////// /////// ///////
+    if (network == "upgradexdaidev") {    
+      // we only need 2 external inputs:
+      const versionNumber = 1;
+      const proxyAddr = "0x5fDDFE441EC3Fc9a4Bd99081bE075C7F984Eed3c";
+
+      console.log("Upgrading " + network + " to version number " + versionNumber);
+      console.log("superuser will be temporarily: " + accounts[0]);
+      const proxy = await Proxy.at(proxyAddr);
+      const directoryAddr = await proxy.directory();
+      const directory = await Directory.at(directoryAddr);
+      const dirInfo = await directory.getDirectory();
+      
+      // reading addresses of contracts that do not need to be re-deployed
+      const stakersAddr = deployUtils.getAddrFromDirectory("STAKERS", dirInfo);
+      const marketCryptoAddr = await deployUtils.getAddrFromDirectory("MARKETCRYPTO", dirInfo);
+      
+      // // deploying new contracts
+      const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
+      const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
+      const engine = await deployer.deploy(Engine, enginePreComp.address, engineApplyBoosters.address).should.be.fulfilled;
+      const trainingPoints= await deployer.deploy(TrainingPoints, proxy.address).should.be.fulfilled;
+      const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
+      const leagues = await deployer.deploy(Leagues, proxy.address).should.be.fulfilled;
+      const shop = await deployer.deploy(Shop, proxy.address).should.be.fulfilled;
+      const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
+      const utils = await deployer.deploy(Utils).should.be.fulfilled;
+      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address, shop.address).should.be.fulfilled;
+      const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
+      const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
+
+      namesAndAddresses = [
+        ["ASSETS", proxy.address],
+        ["MARKET", proxy.address],
+        ["ENGINE", engine.address],
+        ["ENGINEPRECOMP", enginePreComp.address],
+        ["ENGINEAPPLYBOOSTERS", engineApplyBoosters.address],
+        ["LEAGUES", leagues.address],
+        ["UPDATES", proxy.address],
+        ["TRAININGPOINTS", trainingPoints.address],
+        ["EVOLUTION", evolution.address],
+        ["SHOP", shop.address],
+        ["PRIVILEGED", privileged.address],
+        ["UTILS", utils.address],
+        ["PLAYANDEVOLVE", playAndEvolve.address],
+        ["MERKLE", merkle.address],
+        ["CONSTANTSGETTERS", constantsGetters.address],
+        ["CHALLENGES", proxy.address],
+        ["MARKETCRYPTO", marketCryptoAddr],
+        ["STAKERS", stakersAddr]
+      ]
+      
+      const { singleTimezone, owners, requiredStake } = deployUtils.getExplicitOrDefaultSetup(deployer.networks[network], accounts);
+      const account0Owners = deployUtils.getAccount0Owner(accounts[0]);
+      const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
+      
+      // REDEPLOY
+      owners.superuser = accounts[0];
+      const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.upgrade(
+        versionNumber,
+        owners, 
+        Proxy, 
+        proxy.address,
+        Assets, 
+        Market, 
+        Updates, 
+        Challenges,
+        Directory,
+        namesAndAddresses,
+        inheritedArtfcts
+      ).should.be.fulfilled;
     }
   });
 };
