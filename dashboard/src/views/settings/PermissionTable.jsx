@@ -6,6 +6,7 @@ import RelayCard from './RelayCard';
 import CryptoMarketCard from './CryptoMarketCard';
 import SuperUserCard from './SuperUserCard';
 import CompanyCard from './CompanyCard';
+import ActivateCard from './ActivateCard';
 
 const proxyJSON = require("../../contracts/Proxy.json");
 const assetsJSON = require("../../contracts/Assets.json");
@@ -44,6 +45,8 @@ return (
                 {assetsContract && <RelayCard account={account} assetsContract={assetsContract} />}
                 {assetsContract && <MarketCard account={account} assetsContract={assetsContract} />}
                 {marketContract && <CryptoMarketCard account={account} marketContract={marketContract} />}
+                {proxyContract && <ActivateCard account={account} proxyContract={proxyContract} />}
+                
             </Table.Body>
         </Table>
     )

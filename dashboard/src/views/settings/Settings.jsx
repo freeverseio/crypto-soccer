@@ -14,12 +14,13 @@ const GET_PROXY_ADDRESS = gql`
 `;
 
 const Settings = ({ web3, account }) => {
-    const { loading, error, data } = useQuery(GET_PROXY_ADDRESS);
+    // const { loading, error, data } = useQuery(GET_PROXY_ADDRESS);
 
-    if (loading) return 'Loading...';
-    if (error) return `Error! ${error.message}`;
+    // if (loading) return 'Loading...';
+    // if (error) return `Error! ${error.message}`;
 
-    const proxyAddress = data.paramByName.value;
+    // const proxyAddress = data.paramByName.value;
+    const proxyAddress = '0x5fDDFE441EC3Fc9a4Bd99081bE075C7F984Eed3c';
 
     return (
         <Container>
