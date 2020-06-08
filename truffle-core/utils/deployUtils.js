@@ -234,16 +234,38 @@ const upgrade = async (versionNumber, superuser, Proxy, proxyAddress, Assets, Ma
     const {0: newContractIds, 1: nSelectorsPerContract, 2: concatSelectors} = getInputsToAddContracts(purgedSelectors, firstNewContractId);
     
     // -- SUPER USER RESTRICTED STAGE --
+    console.log(" - ");
     console.log(" - Calling addContracts...");
+    console.log(" - ");
+    console.log(" + proxy.addContracts(newContractIds, addresses, nSelectorsPerContract, concatSelectors, versionedNames)");
+    console.log(" +   newContractIds        = ", newContractIds);
+    console.log(" +   addresses             = ", toPrintable(addresses));
+    console.log(" +   nSelectorsPerContract = ", nSelectorsPerContract);
+    console.log(" +   concatSelectors       = ", toPrintable(concatSelectors));
     tx0 = await proxy.addContracts(newContractIds, addresses, nSelectorsPerContract, concatSelectors, versionedNames, {from: owners.superuser}).should.be.fulfilled;
 
 
+    console.log(" - ");
     console.log(" - DeActivating, activating, and pointing to the new Directory address...");
+    console.log(" - ");
+    console.log(" + proxy.upgrade(deactivateContractIds, newContractIds, directoryAddress)");
+    console.log(" +   deactivateContractIds = ", deactivateContractIds);
+    console.log(" +   newContractIds        = ", newContractIds);
+    console.log(" +   directoryAddress      = ", directory.address);
     await proxy.upgrade(deactivateContractIds, newContractIds, directory.address, {from: superuser}).should.be.fulfilled;
 
+    console.log(" - ");
     console.log(" - DeActivating, activating, and pointing to the new Directory address...DONE");
     console.log(" - Upgrade done. Returning.");
     return [proxy, assets, market, updates, challenges];
+}
+
+function toPrintable(arr) {
+    str = "[" + arr[0];
+    for (i = 1; i < arr.length; i++) {    
+        str += "," + arr[i];
+    }
+    return str + "]";
 }
 
 function splitNamesAndAdresses(namesAndAddresses) {    
