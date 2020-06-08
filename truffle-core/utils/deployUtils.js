@@ -39,9 +39,9 @@ const deployContractsToDelegateTo = async (proxyAddress, Assets, Market, Updates
     return [assets, market, updates, challenges, addresses, allSelectors, names];
 }
 
-const addContracts = async (superuser, proxy, addresses, allSelectors, names, firstNewContractId) => {
+function getInputsToAddContracts(allSelectors, firstNewContractId) {
     // Add all contracts to ids = [firstNewContractId, firstNewContractId+1,...]
-    nContracts = namesStr.length;
+    nContracts = allSelectors.length;
     newContractIds = [];
     concatSelectors = [];
     nSelectorsPerContract = [];
@@ -52,9 +52,10 @@ const addContracts = async (superuser, proxy, addresses, allSelectors, names, fi
         nSelectorsPerContract.push(allSelectors[c].length);
         concatSelectors = concatSelectors.concat(allSelectors[c]);
     }
-    tx0 = await proxy.addContracts(newContractIds, addresses, nSelectorsPerContract, concatSelectors, names, {from: superuser}).should.be.fulfilled;
-    return newContractIds;
+    return [newContractIds, nSelectorsPerContract, concatSelectors];
 }
+
+
 
 const assertActiveStatusIs = async (contractIds, status, proxy) => {
     for (c = 0; c < contractIds.length; c++) {
@@ -105,7 +106,6 @@ function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges)
     duplicates = findDuplicates(proxySelectors.concat(extractSelectorsFromAbi(Challenges.abi)));
     assert.equal(duplicates.length, 0, "duplicates found proxy-Challenges!!!");
 
-    // console.log("No collisions were found with the proxy.")
 }
 
 function appendVersionNumberToNames(names, versionNumber) {
@@ -157,7 +157,6 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges, inheri
 
     // Check that the number of contracts already declared in Proxy is as expected.
     //  - contactId = 0 is null, so the first available contract on a clean deploy is 1, and every version adds 3 contracts
-    const nContractsToProxy = 4;
     const firstNewContractId = 1
     const nContractsNum = await proxy.countContracts().should.be.fulfilled;
     assert.equal(firstNewContractId, nContractsNum.toNumber(), "mismatch between firstNewContractId and nContractsNum");
@@ -174,7 +173,8 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges, inheri
     const versionedNames = appendVersionNumberToNames(names, versionNumber = 0);
 
     // Adds new contracts to proxy
-    const newContractIds = await addContracts(owners.superuser, proxy, addresses, purgedSelectors, versionedNames, firstNewContractId);
+    const {0: newContractIds, 1: nSelectorsPerContract, 2: concatSelectors} = getInputsToAddContracts(purgedSelectors, firstNewContractId);
+    tx0 = await proxy.addContracts(newContractIds, addresses, nSelectorsPerContract, concatSelectors, versionedNames, {from: owners.superuser}).should.be.fulfilled;
 
     // await assertActiveStatusIs(deactivateContractIds, true, proxy);
     // Deactivate and Activate all contracts atomically
@@ -194,59 +194,55 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges, inheri
 //  - build input parameters, such as: "selectors"...
 // Step 3: "proxy.upgrade", (superUser)
 //  - atomic: deactivateOld + activateNew + setNewDirectoryAddress    
-const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges, Directory, namesAndAddressesForDirectory, inheritedArtfcts) => {
-    // initial checks
+const upgrade = async (versionNumber, superuser, Proxy, proxyAddress, Assets, Market, Updates, Challenges, Directory, namesAndAddressesForDirectory, inheritedArtfcts) => {
+    console.log(" - Checking absence of collisions between proxy and functions to be delegated to.")
     assert.notEqual(versionNumber, 0, "version number must be larger than 0 for upgrades");
     assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for upgrades");
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
 
-    console.log("Deploying new Directory contract");
+    console.log(" - Deploying new Directory contract");
     const {0: dummy, 1: nonProxyNames, 2: nonProxyAddresses} = splitNamesAndAdresses(namesAndAddressesForDirectory);
-    console.log(nonProxyNames)
-    console.log(nonProxyAddresses)
     directory = await Directory.new(nonProxyNames, nonProxyAddresses).should.be.fulfilled;
     
-    // get the interface to already-deployed proxy
+    console.log(" - Getting the interface to deployed proxy");
     const proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
 
+    console.log(" - Deploy proxy-related contracts");
+    const {0: assets, 1: market, 2: updates, 3: challenges, 4: addresses, 5: allSelectors, 6: names} = 
+        await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates, Challenges);
+    const versionedNames = appendVersionNumberToNames(names, versionNumber);
+
+    console.log(" - Checking absence of collisions among functions to be delegated to.")
+    const inheritedSelectors = getAllSelectors(inheritedArtfcts);
+    const purgedSelectors = removeDuplicates(allSelectors, inheritedSelectors);
+
+    console.log(" - Building ids for contracts to deactivate and to activate, as a function of version number");
     // Check that the number of contracts already declared in Proxy is as expected.
     //  - contactId = 0 is null, so the first available contract on a clean deploy is 1, and every version adds 3 contracts
-    // const nContractsToProxy = 4;
-    // const firstNewContractId = 1 + versionNumber * nContractsToProxy;
-    // const nContractsNum = await proxy.countContracts().should.be.fulfilled;
-    // assert.equal(firstNewContractId, nContractsNum.toNumber(), "mismatch between firstNewContractId and nContractsNum");
-
-    // // The following line does:
-    // //  - deploy new contracts (not proxy) to delegate to, and return their addresses
-    // //  - build interfaces to those contracts which point to the proxy address
-    // const {0: assets, 1: market, 2: updates, 3: challenges, 4: addresses, 5: allSelectors, 6: names} = 
-    //     await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates, Challenges);
-        
-    // const versionedNames = appendVersionNumberToNames(names, versionNumber);
-
-    // // checks potential clashes between names of functions, and builds unique set of selectors.
-    // const inheritedSelectors = getAllSelectors(inheritedArtfcts);
-    // const purgedSelectors = removeDuplicates(allSelectors, inheritedSelectors);
-
-    // // Adds new contracts to proxy in one single TX signed by owners.superuser
-    // console.log("before addContract");
-    // const newContractIds = await addContracts(owners.superuser, proxy, addresses, purgedSelectors, versionedNames, firstNewContractId);
-
-
+    const nContractsToProxy = 4;
+    const firstNewContractId = 1 + versionNumber * nContractsToProxy;
+    const nContractsNum = await proxy.countContracts().should.be.fulfilled;
+    assert.equal(firstNewContractId, nContractsNum.toNumber(), "mismatch between firstNewContractId and nContractsNum");
     // Build list of contracts to deactivate
     //  - example: when deploying v1, we have activated already [0,1,2,3]
     //  - so newId = 4, and we need to deactivate [1,2,3]
-    // const deactivateContractIds = Array.from(new Array(nContractsToProxy), (x,i) => firstNewContractId - nContractsToProxy + i);
+    const deactivateContractIds = Array.from(new Array(nContractsToProxy), (x,i) => firstNewContractId - nContractsToProxy + i);
+    await assertActiveStatusIs(deactivateContractIds, true, proxy);
 
-    // await assertActiveStatusIs(deactivateContractIds, true, proxy);
-    // Deactivate and Activate all contracts atomically
-    // And point to the new directory
-    console.log("DeActivating, activating, and setting Directory address...");
-    newContractIds = [5,6,7,8];
-    deactivateContractIds = [1,2,3,4];
-    await proxy.upgrade(deactivateContractIds, newContractIds, directory.address, {from: owners.superuser}).should.be.fulfilled;
-    console.log("DeActivating, activating, and setting Directory address...DONE");
+    // Adds new contracts to proxy in one single TX signed by superuser
+    console.log(" - Calling getInputsToAddContracts...");
+    const {0: newContractIds, 1: nSelectorsPerContract, 2: concatSelectors} = getInputsToAddContracts(purgedSelectors, firstNewContractId);
+    
+    // -- SUPER USER RESTRICTED STAGE --
+    console.log(" - Calling addContracts...");
+    tx0 = await proxy.addContracts(newContractIds, addresses, nSelectorsPerContract, concatSelectors, versionedNames, {from: owners.superuser}).should.be.fulfilled;
 
+
+    console.log(" - DeActivating, activating, and pointing to the new Directory address...");
+    await proxy.upgrade(deactivateContractIds, newContractIds, directory.address, {from: superuser}).should.be.fulfilled;
+
+    console.log(" - DeActivating, activating, and pointing to the new Directory address...DONE");
+    console.log(" - Upgrade done. Returning.");
     return [proxy, assets, market, updates, challenges];
 }
 

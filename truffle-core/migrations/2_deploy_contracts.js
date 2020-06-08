@@ -139,19 +139,19 @@ module.exports = function (deployer, network, accounts) {
       // we only need 2 external inputs:
       const versionNumber = 1;
       const proxyAddr = "0x5fDDFE441EC3Fc9a4Bd99081bE075C7F984Eed3c";
-
       console.log("Upgrading " + network + " to version number " + versionNumber);
-      console.log("superuser will be temporarily: " + accounts[0]);
+      
+      console.log("Reading the directory info referred to by the proxy contract")
       const proxy = await Proxy.at(proxyAddr);
       const directoryAddr = await proxy.directory();
       const directory = await Directory.at(directoryAddr);
       const dirInfo = await directory.getDirectory();
       
-      // reading addresses of contracts that do not need to be re-deployed
+      console.log("Reading addresses of contracts that do not need to be re-deployed");
       const stakersAddr = deployUtils.getAddrFromDirectory("STAKERS", dirInfo);
       const marketCryptoAddr = await deployUtils.getAddrFromDirectory("MARKETCRYPTO", dirInfo);
       
-      // // deploying new contracts
+      console.log("Deploying new non-proxy-related contracts");
       const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
       const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
       const engine = await deployer.deploy(Engine, enginePreComp.address, engineApplyBoosters.address).should.be.fulfilled;
@@ -165,7 +165,7 @@ module.exports = function (deployer, network, accounts) {
       const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
       const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
 
-      namesAndAddresses = [
+      const namesAndAddresses = [
         ["ASSETS", proxy.address],
         ["MARKET", proxy.address],
         ["ENGINE", engine.address],
@@ -186,15 +186,11 @@ module.exports = function (deployer, network, accounts) {
         ["STAKERS", stakersAddr]
       ]
       
-      const { singleTimezone, owners, requiredStake } = deployUtils.getExplicitOrDefaultSetup(deployer.networks[network], accounts);
-      const account0Owners = deployUtils.getAccount0Owner(accounts[0]);
-      const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
-      
       // REDEPLOY
-      owners.superuser = accounts[0];
+      const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
       const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.upgrade(
         versionNumber,
-        owners, 
+        superuser = accounts[0], 
         Proxy, 
         proxy.address,
         Assets, 
