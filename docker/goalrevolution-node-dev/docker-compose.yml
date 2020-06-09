@@ -64,15 +64,6 @@ services:
   market.trader:
     image: freeverseio/market.trader:$TAG
     command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
-  market.notary:
-    image: freeverseio/market.notary:$TAG
-    depends_on:
-      - ethereum
-    command: >
-      -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable  
-      -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
-      -ethereum http://ethereum:8545 
-      -market_address "${MARKET_CONTRACT_ADDRESS}" 
   horizon:
     image: freeverseio/horizon:$TAG
     # build: 
