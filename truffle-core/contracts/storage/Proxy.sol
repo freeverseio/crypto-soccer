@@ -16,6 +16,7 @@ contract Proxy is ProxyStorage {
     // COMPANY_SLOT = keccak256("freeverse.private.addresses.company")
     bytes32 constant private COMPANY_SLOT = 0x233d36e267af25e9763c5ca9ee4b9df85d8450ad52191618b089fa4a1a46bfc5;
     address constant private PROXY_DUMMY_ADDR = address(1);
+    bytes32 constant private EMPTY_CONTRACT_HASH = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
 
     event ContractAdded(uint256 contractId, bytes32 name, bytes4[] selectors);
     event ContractsActivated(uint256[] contractIds, uint256 time);
@@ -205,10 +206,9 @@ contract Proxy is ProxyStorage {
     *      This check is important to avoid delegateCall returning OK when delegating to nowhere
     */
     function assertPointsToContract(address contractAddress) public view {
-        bytes32 emptyContractHash = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
         bytes32 codeHashAtContractAddress;
         assembly { codeHashAtContractAddress := extcodehash(contractAddress) }
-        require(codeHashAtContractAddress != emptyContractHash && codeHashAtContractAddress != 0x0, "pointer to a non Contract found!");
+        require(codeHashAtContractAddress != EMPTY_CONTRACT_HASH && codeHashAtContractAddress != 0x0, "pointer to a non Contract found!");
     }
 
 
