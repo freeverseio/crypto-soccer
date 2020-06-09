@@ -20,14 +20,14 @@ const IntArrayCard = ({ onChange }) => {
         <Input fluid
             size='mini'
             error={!validIntArray}
-            icon='ethereum'
+            // icon='ethereum'
             iconPosition='left'
             placeholder='Comma-separated uints...'
             value={intArray}
             onChange={event => setIntArray(event.target.value)}
-            action={
-                <Button size='mini' color='red' onClick={() => onChange(intArray)} disabled={!validIntArray}>Set</Button>
-            }
+            // action={
+            //     <Button size='mini' color='red' onClick={() => onChange(intArray)} disabled={!validIntArray}>Set</Button>
+            // }
         />
     )
 }

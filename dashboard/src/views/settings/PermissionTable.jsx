@@ -12,7 +12,7 @@ const proxyJSON = require("../../contracts/Proxy.json");
 const assetsJSON = require("../../contracts/Assets.json");
 const marketJSON = require("../../contracts/Market.json");
 
-const PermissionTable = ({ web3, account, proxyAddress }) => {
+const PermissionTable = ({ web3, account, proxyAddress,directoryAddr }) => {
     const [seconds, setSeconds] = useState(0);
     const proxyContract = new web3.eth.Contract(proxyJSON.abi, proxyAddress);
     const assetsContract = new web3.eth.Contract(assetsJSON.abi, proxyAddress);
@@ -46,6 +46,10 @@ return (
                 {assetsContract && <MarketCard account={account} assetsContract={assetsContract} />}
                 {marketContract && <CryptoMarketCard account={account} marketContract={marketContract} />}
                 {proxyContract && <ActivateCard account={account} proxyContract={proxyContract} />}
+                <Table.Row>
+                    <Table.Cell>Proxy Address</Table.Cell>
+                    <Table.Cell>{directoryAddr}</Table.Cell>
+                </Table.Row>
                 
             </Table.Body>
         </Table>
