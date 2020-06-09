@@ -74,9 +74,9 @@ services:
       -ethereum http://ethereum:8545 
       -market_address "${MARKET_CONTRACT_ADDRESS}" 
   horizon:
-    # image: freeverseio/horizon:$TAG
-    build: 
-      context: ../../nodejs-horizon/
+    image: freeverseio/horizon:$TAG
+    # build: 
+    #   context: ../../nodejs-horizon/
     depends_on:
       - universe.api
       - market.trader
