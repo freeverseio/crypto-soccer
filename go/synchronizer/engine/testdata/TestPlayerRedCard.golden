@@ -16,6 +16,9 @@
 		EncodedState: (*big.Int)(<nil>),
 		RedCard: (bool) true,
 		InjuryMatchesLeft: (uint8) 4,
-		Tiredness: (int) 5
+		Tiredness: (int) 5,
+		CountryOfBirth: (string) "",
+		Race: (string) "",
+		YellowCard1stHalf: (bool) false
 	}
 })

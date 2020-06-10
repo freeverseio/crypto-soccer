@@ -1,3 +1,9 @@
+/*
+ Tests for all functions in
+    Updates.sol
+    Challenges.sol
+    and how Updates relates to Stakers.sol
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -17,10 +23,17 @@ const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');
 const Merkle = artifacts.require('Merkle');
 const Stakers = artifacts.require("Stakers")
+const Utils = artifacts.require('Utils');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 
 
 contract('Updates', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
     const nLevelsInOneChallenge = 11;
     const nNonNullLeafsInLeague = 640;
@@ -33,7 +46,7 @@ contract('Updates', (accounts) => {
     }
 
     const moveToNextVerse = async (updates, extraSecs = 0) => {
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         await timeTravel.advanceTime(nextTime - now + extraSecs);
         await timeTravel.advanceBlock().should.be.fulfilled;
@@ -55,38 +68,43 @@ contract('Updates', (accounts) => {
         return y;
     }
 
-    async function deployAndConfigureStakers(Stakers, owner, parties, updates) {
-        stakers  = await Stakers.new(1000000000000000, {from:owner});
-        await stakers.setGameOwner(updates.address, {from:owner}).should.be.fulfilled;
-        stake = await stakers.requiredStake();
-        await deployUtils.addTrustedParties(stakers, owner, parties);
-        await deployUtils.enroll(stakers, stake, parties);
-        await updates.setStakersAddress(stakers.address).should.be.fulfilled;
+    async function deployAndConfigureStakers(Stakers, updates, setup) {
+        const { singleTimezone, owners, requiredStake } = setup;
+        const stakers  = await Stakers.new(updates.address, requiredStake).should.be.fulfilled;
+
+        for (trustedParty of owners.trustedParties) {
+            await stakers.addTrustedParty(trustedParty, {from: owners.COO}).should.be.fulfilled;
+        }
+        for (trustedParty of owners.trustedParties) {
+            await stakers.enrol({from:trustedParty, value: requiredStake}).should.be.fulfilled;
+        }
         return stakers;
     }
     
 
     beforeEach(async () => {
-        depl =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
-        proxy  = depl[0];
-        assets = depl[1];
-        market = depl[2];
-        updates = depl[3];
-        challenges = depl[4];
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
+        [proxy, assets, market, updates, challenges] = depl;
+        await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         // // done with delegate calls
-        await updates.setChallengeTime(60).should.be.fulfilled;
+        await updates.setChallengeTime(60, {from: owners.COO}).should.be.fulfilled;
+        stakers = await deployAndConfigureStakers(Stakers, updates, defaultSetup);
+        await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
+        await stakers.setGameOwner(updates.address, {from:owners.COO}).should.be.fulfilled;
         
+        utils = await Utils.new().should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
-        await updates.initUpdates().should.be.fulfilled;
-        await updates.setChallengeLevels(nLevelsInOneChallenge, nNonNullLeafsInLeague, nLevelsInLastChallenge).should.be.fulfilled;
+        await updates.initUpdates({from: owners.COO}).should.be.fulfilled;
+        await updates.setChallengeLevels(nLevelsInOneChallenge, nNonNullLeafsInLeague, nLevelsInLastChallenge, {from: owners.relay}).should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
         snapshotId = snapShot['result'];
         VERSES_PER_DAY = await constants.get_VERSES_PER_DAY().should.be.fulfilled;
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
-
     });
     
     it('test getAllMatchdaysUTCInRound', async () =>  {
@@ -179,14 +197,14 @@ contract('Updates', (accounts) => {
 
     
     it('test that cannot initialize updates twice', async () =>  {
-        await updates.initUpdates().should.be.rejected;
+        await updates.initUpdates({from: owners.COO}).should.be.rejected;
     });
     
     it('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
-            var {0: tz, 1: matchday, 2: turn} = await updates._timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
+            var {0: tz, 1: matchday, 2: turn} = await updates.timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
             day = Math.floor(0.25 * verse / 24);
             thisResult = " | verse = " + verse + 
                 ", tz = " + tz.toNumber() + 
@@ -199,7 +217,7 @@ contract('Updates', (accounts) => {
     });
     
     it('require that BC and local time are less than 15 sec out of sync', async () =>  {
-        blockChainTimeSec = await updates.getNow().should.be.fulfilled;
+        blockChainTimeSec = await utils.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
         // the substraction is in miliseconds:
         // require less than 3 hours
@@ -239,17 +257,17 @@ contract('Updates', (accounts) => {
     });
     
     it('wait some minutes', async () =>  {
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
         extraTime = 3*60
         await timeTravel.advanceTime(extraTime).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
-        newNow = await updates.getNow().should.be.fulfilled;
+        newNow = await utils.getNow().should.be.fulfilled;
         newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
         newBlock.should.be.equal(block+1);
         await isCloseEnough(newNow.toNumber(), now.toNumber() + extraTime).should.be.equal(true);
         await timeTravel.revertToSnapShot(snapshotId);
-        newNow = await updates.getNow().should.be.fulfilled;
+        newNow = await utils.getNow().should.be.fulfilled;
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
@@ -261,32 +279,34 @@ contract('Updates', (accounts) => {
         await timeTravel.advanceTime(20);
         await timeTravel.advanceBlock().should.be.fulfilled;
         const cif = "ciao";
-        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verse = await updates.getCurrentVerse().should.be.fulfilled;
         verse.toNumber().should.be.equal(verseBefore.toNumber() + 1); 
         timeZoneToUpdate[0].toNumber().should.be.equal(timeZoneToUpdateBefore[0].toNumber()); // tz to update does not change during the first 4 verses
         seed1 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         seed1.should.not.be.equal(seed0);
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "ActionsSubmission", (event) => {
             return event.seed == seed1 && isCloseEnough(event.submissionTime.toNumber(), now.toNumber());
         });
     });
 
     it('update Timezone once', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
 
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = -10);
         await timeTravel.advanceTime(20);
         const cif = "ciao2";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
         submissionTime = await updates.getLastActionsSubmissionTime(timeZoneToUpdateBefore[0].toNumber()).should.be.fulfilled;
         timeZoneToUpdateAfter = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -295,10 +315,11 @@ contract('Updates', (accounts) => {
     });
     
     it('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
-
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
+        
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = -10);
@@ -309,9 +330,9 @@ contract('Updates', (accounts) => {
         await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.rejected;
 
         const cif = "ciao2";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         isTime = await updates.isTimeToUpdate(verse = 1).should.be.fulfilled;
         isTime.should.be.equal(true);
         await updates.updateTZ(verse = 1, root =  web3.utils.keccak256("hiboyz"), {from:erin}).should.be.fulfilled;
@@ -319,11 +340,11 @@ contract('Updates', (accounts) => {
 
 
     it('moveToNextVerse', async () =>  {
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
         await moveToNextVerse(updates, extraSecs = 0);
-        now = await updates.getNow().should.be.fulfilled;
+        now = await utils.getNow().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(false)
         
     });
@@ -335,20 +356,21 @@ contract('Updates', (accounts) => {
         result.toNumber().should.be.equal(0);
         await moveToNextVerse(updates, extraSecs = 10);
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = 10);
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
     });
     
     it('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
         const cif = "ciao2";
         for (i = 0; i < 110; i++) {
             await moveToNextVerse(updates, extraSecs = 10);
-            await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
 
             isTime = await updates.isTimeToUpdate(verse = i + 1).should.be.fulfilled;
             if (isTime == true) {
@@ -357,11 +379,11 @@ contract('Updates', (accounts) => {
         }
         // after these few cycles, we now do a cycle which tells us to update, but we don't... and so, we fail to do another submitActions
         await moveToNextVerse(updates, extraSecs = 10);
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
 
         isTime = await updates.isTimeToUpdate(verse = 1).should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = 10);
-        await updates.submitActionsRoot(verse = 1, actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
     
     });
     
@@ -369,7 +391,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         var {0: tzAfter, 1: dayAfter, 2: turnInDayAfter} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         tzAfter.toNumber().should.be.equal(tzBefore.toNumber());
         dayAfter.toNumber().should.be.equal(dayBefore.toNumber());
@@ -381,9 +403,12 @@ contract('Updates', (accounts) => {
     // level 2: 640 leafs for each
     
     it('challenging a tz', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
+
+        await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
@@ -393,7 +418,7 @@ contract('Updates', (accounts) => {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         tzZeroBased = 2;
 
         // create leafs by building them from an orgmap:
@@ -406,7 +431,7 @@ contract('Updates', (accounts) => {
         // set the levelVerifiableByBC to adjust to as many leagues as you have
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
-        await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
+        await updates.setLevelVerifiableByBC(levelVerifiableByBC, {from: owners.relay}).should.be.fulfilled;
 
         // build merkle structs for 2 different days
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
@@ -511,8 +536,8 @@ contract('Updates', (accounts) => {
         //      we're not in the next verse yet
         //      the previous verse is not settled yet
         // In this case, it fails because of the first reason. TODO: add test for 2nd.
-        await updates.submitActionsRoot(verse = 2, actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.rejected;
-        await updates.setLevelVerifiableByBC(3).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
+        await updates.setLevelVerifiableByBC(3, {from: owners.relay}).should.be.fulfilled;
 
         await updates.updateTZ(verse = 2, root = merkleStructA[lev = 0][pos = 0], {from: erin}).should.be.rejected;
         
@@ -718,9 +743,10 @@ contract('Updates', (accounts) => {
     // C = incorrect day and incorrect half
     // 0: A, 1: B, 2: A => so the leafs provided by A are the correct ones and everyone fails to challenge A.
     it('vefiable challenge', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank]
-        stakes = await deployAndConfigureStakers(Stakers, owner, parties, updates);
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
 
         // level 0 can only challenge leaf 0, as there is only 1 root
         challengePos = [0];
@@ -734,7 +760,7 @@ contract('Updates', (accounts) => {
         half    = half.toNumber();
         differentDay = (day == 7) ? 8 : 7;
         const cif = "ciao3";
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif).should.be.fulfilled;
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         tzZeroBased = tz-1;
         // create leafs by building them from an orgmap:
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
@@ -748,7 +774,7 @@ contract('Updates', (accounts) => {
         // set the levelVerifiableByBC to adjust to as many leagues as you have
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
-        await updates.setLevelVerifiableByBC(levelVerifiableByBC).should.be.fulfilled;
+        await updates.setLevelVerifiableByBC(levelVerifiableByBC, {from: owners.relay}).should.be.fulfilled;
 
         // build merkle structs for 2 different days
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
@@ -764,6 +790,9 @@ contract('Updates', (accounts) => {
         await updates.updateTZ(verse = 1, root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
 
         // Level1: B
+        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.rejected;
+        await updates.setAllowChallenges(true, {from: owners.COO}).should.be.rejected;
+        await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.fulfilled;
 
         var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 

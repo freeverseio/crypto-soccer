@@ -488,3 +488,131 @@ func TestMatchEventsWithInjuredGKEndOfMatch(t *testing.T) {
 		t.Fatal("result of generating matchevents not as expected")
 	}
 }
+
+func TestMatchEventsBadOutOfGame(t *testing.T) {
+	// this tests the range of the entires 4-5-6 of matchLog:
+	// matchLog[4,5,6] = outOfGamePlayer, outOfGameType, outOfGameRound
+	// First, make a choice that works OK, as in the other tests.
+	verseSeed := [32]byte{0x2, 0x1}
+	teamId0 := "1"
+	teamId1 := "2"
+	matchLog := [15]uint32{
+		0,       //teamSumSkills,
+		0,       //winner,
+		0,       //nGoals,
+		0,       //trainingPoints1stHalf = 0,
+		3, 3, 5, //outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
+		3, 3, //yellowCards1[0], yellowCards1[1],
+		1, 1, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
+		0, 0, 0} // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+	var events []*big.Int
+	events64 := []int64{
+		0,              // log0 (not used by the algorithm)
+		0,              // log1 (not used by the algorithm)
+		0, 1, 10, 1, 2, // teamThatAttacks, managesToShoot, shooter, isGoal, assister
+		1, 0, 0, 0, 0, // teamThatAttacks, managesToShoot, shooter, isGoal, assister
+		1, 1, 8, 0, 0, // teamThatAttacks, managesToShoot, shooter, isGoal, assister
+	}
+	var NROUNDS = 12
+	for i := 0; i < 5*(NROUNDS-3); i++ {
+		events64 = append(events64, 0)
+	}
+	for i := 0; i < len(events64); i++ {
+		events = append(events, big.NewInt(events64[i]))
+	}
+
+	NO_SUBS := uint8(11)
+	lineup0 := [14]uint8{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21}
+	lineup1 := [14]uint8{3, 4, 5, 6, 0, 1, 2, 14, 8, 0, 10, 17, 18, 19}
+	substitutions := [3]uint8{5, 1, NO_SUBS}
+	subsRounds := [3]uint8{4, 6, 7}
+
+	is2ndHalf := false
+
+	_, err := matchevents.Generate(
+		verseSeed,
+		teamId0,
+		teamId1,
+		matchLog,
+		matchLog,
+		events,
+		lineup0,
+		lineup1,
+		substitutions,
+		substitutions,
+		subsRounds,
+		subsRounds,
+		is2ndHalf,
+	)
+	if err != nil {
+		t.Fatalf("error: %s", err)
+	}
+
+	// Show that typeOfOutOfGame must be 0,1,2, or 3. Fails otherwise
+	badLog := matchLog
+	badLog[5] = 4
+	_, err = matchevents.Generate(
+		verseSeed,
+		teamId0,
+		teamId1,
+		badLog,
+		matchLog,
+		events,
+		lineup0,
+		lineup1,
+		substitutions,
+		substitutions,
+		subsRounds,
+		subsRounds,
+		is2ndHalf,
+	)
+	if err == nil {
+		t.Fatalf("error: this command should have failed, but it didnt")
+	}
+
+	// Show that typeOfOutOfRound must be, at most, 12.
+	badLog2 := matchLog
+	badLog2[6] = 13
+	_, err = matchevents.Generate(
+		verseSeed,
+		teamId0,
+		teamId1,
+		badLog2,
+		matchLog,
+		events,
+		lineup0,
+		lineup1,
+		substitutions,
+		substitutions,
+		subsRounds,
+		subsRounds,
+		is2ndHalf,
+	)
+	if err == nil {
+		t.Fatalf("error: this command should have failed, but it didnt")
+	}
+
+	// Show that if there is an outOfGame (for which outOfGamePlayer < 14)
+	// Then the type cannot be 0.
+	badLog4 := matchLog
+	badLog4[4] = 5
+	badLog4[5] = 0
+	_, err = matchevents.Generate(
+		verseSeed,
+		teamId0,
+		teamId1,
+		badLog4,
+		matchLog,
+		events,
+		lineup0,
+		lineup1,
+		substitutions,
+		substitutions,
+		subsRounds,
+		subsRounds,
+		is2ndHalf,
+	)
+	if err == nil {
+		t.Fatalf("error: this command should have failed, but it didnt")
+	}
+}

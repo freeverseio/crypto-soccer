@@ -107,9 +107,8 @@ func TestAuctionStartedGoFrozen(t *testing.T) {
 }
 
 func TestAuctionMachineAllWorkflow(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
+	bc, err := testutils.NewBlockchain()
 	assert.NilError(t, err)
-	bc.DeployContracts(bc.Owner)
 
 	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	bob, _ := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")

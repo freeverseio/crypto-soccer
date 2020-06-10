@@ -6,11 +6,12 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
@@ -47,7 +48,9 @@ func TestCreateAuction(t *testing.T) {
 	assert.NilError(t, consumer.CreateAuction(tx, in))
 	id, err := in.ID()
 	assert.NilError(t, err)
-	auction, err := storage.AuctionByID(tx, string(id))
+
+	service := postgres.NewAuctionService(tx)
+	auction, err := service.Auction(string(id))
 	assert.NilError(t, err)
 	assert.Assert(t, auction != nil)
 	assert.Equal(t, auction.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")

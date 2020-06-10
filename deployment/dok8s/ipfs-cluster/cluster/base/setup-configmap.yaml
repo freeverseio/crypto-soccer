@@ -33,7 +33,7 @@ data:
 
     if [ ! -f /data/ipfs-cluster/service.json ]; then
       # add a list of trusted peers otherwise to trust everyone run ipfs-cluster-service init
-      ipfs-cluster-service init --peers "/dns4/${SVC_NAME}-1.${SVC_NAME}/tcp/9096/ipfs/${PEER_ID_1}, /dns4/${SVC_NAME}-2.${SVC_NAME}/tcp/9096/ipfs/${PEER_ID_2}, /dns4/${TRUSTED_PEER_DNS}/tcp/9096/p2p/${TRUSTED_PEER_ID}"
+      ipfs-cluster-service init --peers "/dns4/${SVC_NAME}-1.${SVC_NAME}/tcp/9096/ipfs/${PEER_ID_1}, /dns4/${SVC_NAME}-2.${SVC_NAME}/tcp/9096/ipfs/${PEER_ID_2}, /dns4/${TRUSTED_PEER_DNS_1}/tcp/9096/p2p/${TRUSTED_PEER_ID_1}, /dns4/${TRUSTED_PEER_DNS_2}/tcp/9096/p2p/${TRUSTED_PEER_ID_2}"
     fi
 
     PEER_HOSTNAME=`cat /proc/sys/kernel/hostname`

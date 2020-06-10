@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in Friendlies.sol   
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))

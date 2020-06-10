@@ -1,18 +1,11 @@
 package useractions
 
 import (
-	"archive/tar"
-	"bytes"
-	"context"
 	"crypto/sha256"
-	"database/sql"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
-
-	shell "github.com/ipfs/go-ipfs-api"
 )
 
 type UserActions struct {
@@ -20,68 +13,15 @@ type UserActions struct {
 	Trainings []storage.Training `json:"trainings"`
 }
 
-func (b *UserActions) Equal(actions *UserActions) bool {
-	if len(b.Tactics) != len(actions.Tactics) {
-		return false
-	}
-	if len(b.Trainings) != len(actions.Trainings) {
-		return false
-	}
-	for i := range b.Tactics {
-		if b.Tactics[i] != actions.Tactics[i] {
-			return false
-		}
-	}
-	for i := range b.Trainings {
-		if b.Trainings[i] != actions.Trainings[i] {
-			return false
-		}
-	}
-	return true
+type UserActionsPublishService interface {
+	Publish(actions UserActions) (string, error)
+	Retrive(cid string) (*UserActions, error)
 }
 
-func New() *UserActions {
-	return &UserActions{}
-}
-
-func NewFromIpfs(url string, cid string) (*UserActions, error) {
-	var ua UserActions
-	sh := shell.NewShell(url)
-	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Close()
-
-	if resp.Error != nil {
-		return nil, resp.Error
-	}
-
-	tr := tar.NewReader(resp.Output)
-	_, err = tr.Next()
-	if err != nil {
-		return nil, err
-	}
-	buf, err := ioutil.ReadAll(tr)
-	if err != nil {
-		return nil, err
-	}
-	if err = ua.Unmarshal(buf); err != nil {
-		return nil, err
-	}
-	return &ua, nil
-}
-
-func NewFromStorage(tx *sql.Tx, timezone int) (*UserActions, error) {
-	var err error
-	var ua UserActions
-	if ua.Tactics, err = storage.TacticsByTimezone(tx, timezone); err != nil {
-		return nil, err
-	}
-	if ua.Trainings, err = storage.TrainingsByTimezone(tx, timezone); err != nil {
-		return nil, err
-	}
-	return &ua, nil
+type UserActionsStorageService interface {
+	UserActionsByTimezone(timezone int) (*UserActions, error)
+	Insert(actions UserActions) error
+	InsertHistory(blockNumber uint64, actions UserActions) error
 }
 
 func (b *UserActions) Hash() ([32]byte, error) {
@@ -118,11 +58,22 @@ func (b *UserActions) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, &b)
 }
 
-func (b *UserActions) ToIpfs(url string) (string, error) {
-	sh := shell.NewShell(url)
-	buf, err := b.Marshal()
-	if err != nil {
-		return "", err
+func (b *UserActions) Equal(actions *UserActions) bool {
+	if len(b.Tactics) != len(actions.Tactics) {
+		return false
 	}
-	return sh.Add(bytes.NewReader(buf), shell.Pin(true))
+	if len(b.Trainings) != len(actions.Trainings) {
+		return false
+	}
+	for i := range b.Tactics {
+		if b.Tactics[i] != actions.Tactics[i] {
+			return false
+		}
+	}
+	for i := range b.Trainings {
+		if b.Trainings[i] != actions.Trainings[i] {
+			return false
+		}
+	}
+	return true
 }

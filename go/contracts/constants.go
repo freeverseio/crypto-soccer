@@ -12,3 +12,7 @@ const BirthTraitsLeftishnessIdx = 2
 const BirthTraitsAggressivenessIdx = 3
 
 const AccademyTeamId = 1
+const InTransitTeam = 2
+
+const MatchDays = 14
+const MatchesPerDay = 4

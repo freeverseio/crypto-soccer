@@ -6,6 +6,8 @@ import Teams from './teams/Teams';
 import Players from './players/Players';
 import Academy from './academy/Academy';
 import Shop from './shop/Shop';
+import Settings from './settings/Settings';
+import Iap from './iap/Iap';
 
 const Main = (props) => (
     <main>
@@ -15,6 +17,8 @@ const Main = (props) => (
             <Route exact path='/shop' render={() => <Shop {...props}/>} />
             <Route exact path='/teams' render={() => <Teams {...props}/>} />
             <Route exact path='/players' render={() => <Players {...props}/>} />
+            <Route exact path='/settings' render={() => <Settings {...props}/>} />
+            <Route exact path='/iap' render={() => <Iap {...props}/>} />
             {/* <Route exact path='/specialplayers' render={() => <SpecialPlayer {...props} />} /> */}
         </Switch>
     </main>

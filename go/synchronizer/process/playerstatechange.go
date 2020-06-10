@@ -33,7 +33,7 @@ func ConsumePlayerStateChange(
 		return err
 	}
 	if player == nil {
-		if player, err = GeneratePlayerByPlayerIdAndState(contracts, namesdb, event.Raw.BlockNumber, playerID, teamID, state); err != nil {
+		if player, err = GeneratePlayerByPlayerIdAndState(contracts, namesdb, playerID, state); err != nil {
 			return err
 		}
 		log.Infof("[processor|consume] %v is born", player.Name)
@@ -49,29 +49,35 @@ func ConsumePlayerStateChange(
 }
 
 func GeneratePlayerByPlayerIdAndState(
-	contracts *contracts.Contracts,
+	contr *contracts.Contracts,
 	namesdb *names.Generator,
-	blockNumber uint64,
 	playerId *big.Int,
-	teamId *big.Int,
 	encodedState *big.Int,
 ) (*storage.Player, error) {
 	opts := &bind.CallOpts{}
-	timezone, countryIdxInTZ, _, err := contracts.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, teamId)
+	teamId, err := contr.Assets.GetCurrentTeamIdFromPlayerState(&bind.CallOpts{}, encodedState)
 	if err != nil {
 		return nil, err
 	}
-	if encodedSkills, err := contracts.Assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
+	targetTeamId := teamId
+	if targetTeamId.Int64() == int64(contracts.InTransitTeam) {
+		targetTeamId, err = contr.Market.GetTargetTeamIdForTransitPlayer(&bind.CallOpts{}, playerId)
+	}
+	timezone, countryIdxInTZ, _, err := contr.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, targetTeamId)
+	if err != nil {
 		return nil, err
-	} else if generation, err := contracts.Assets.GetGeneration(opts, encodedSkills); err != nil {
+	}
+	if encodedSkills, err := contr.Assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
 		return nil, err
-	} else if decodedSkills, err := contracts.Utils.FullDecodeSkills(opts, encodedSkills); err != nil {
+	} else if generation, err := contr.Assets.GetGeneration(opts, encodedSkills); err != nil {
 		return nil, err
-	} else if preferredPosition, err := GetPlayerPreferredPosition(contracts, encodedSkills); err != nil {
+	} else if decodedSkills, err := contr.Utils.FullDecodeSkills(opts, encodedSkills); err != nil {
 		return nil, err
-	} else if shirtNumber, err := contracts.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
+	} else if preferredPosition, err := GetPlayerPreferredPosition(contr, encodedSkills); err != nil {
 		return nil, err
-	} else if name, err := namesdb.GeneratePlayerFullName(playerId, uint8(generation.Int64()), timezone, countryIdxInTZ.Uint64()); err != nil {
+	} else if shirtNumber, err := contr.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
+		return nil, err
+	} else if name, countryOfBirth, race, err := namesdb.GeneratePlayerFullName(playerId, uint8(generation.Int64()), timezone, countryIdxInTZ.Uint64()); err != nil {
 		return nil, err
 	} else {
 		player := storage.Player{
@@ -90,6 +96,8 @@ func GeneratePlayerByPlayerIdAndState(
 			EncodedSkills:     encodedSkills,
 			EncodedState:      encodedState,
 			Tiredness:         int(decodedSkills.GenerationGamesNonStopInjuryWeeks[1]),
+			CountryOfBirth:    countryOfBirth,
+			Race:              race,
 		}
 		return &player, nil
 	}

@@ -17,10 +17,7 @@ func TestAssetsInitProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	process, err := process.NewAssetsInitProcessor(bc.Contracts)
-	if err != nil {
-		t.Fatal(err)
-	}
+	process := process.NewAssetsInitProcessor(bc.Contracts)
 
 	creator := common.HexToAddress("123")
 

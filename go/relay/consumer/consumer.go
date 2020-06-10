@@ -10,17 +10,18 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/submitactions"
+	"github.com/freeverseio/crypto-soccer/go/useractions"
 	log "github.com/sirupsen/logrus"
 )
 
 type Consumer struct {
-	ch              chan interface{}
-	client          *ethclient.Client
-	auth            *bind.TransactOpts
-	updatesContract *updates.Updates
-	assetsContract  *assets.Assets
-	ipfsURL         string
-	db              *sql.DB
+	ch                        chan interface{}
+	client                    *ethclient.Client
+	auth                      *bind.TransactOpts
+	updatesContract           *updates.Updates
+	assetsContract            *assets.Assets
+	useractionsPublishService useractions.UserActionsPublishService
+	db                        *sql.DB
 }
 
 func NewConsumer(
@@ -29,7 +30,7 @@ func NewConsumer(
 	auth *bind.TransactOpts,
 	updatesContract *updates.Updates,
 	assetsContract *assets.Assets,
-	ipfsURL string,
+	useractionsPublishService useractions.UserActionsPublishService,
 	db *sql.DB,
 ) *Consumer {
 	return &Consumer{
@@ -38,14 +39,14 @@ func NewConsumer(
 		auth,
 		updatesContract,
 		assetsContract,
-		ipfsURL,
+		useractionsPublishService,
 		db,
 	}
 }
 
 func (b *Consumer) Start() {
 	firstBotTransfer := NewFirstBotTransfer(b.client, b.auth, b.assetsContract)
-	actionsSubmitter := NewActionsSubmitter(b.client, b.auth, b.updatesContract, b.ipfsURL)
+	actionsSubmitter := NewActionsSubmitter(b.client, b.auth, b.updatesContract, b.useractionsPublishService)
 	for {
 		event := <-b.ch
 		switch ev := event.(type) {

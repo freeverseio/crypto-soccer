@@ -2,23 +2,25 @@ version: '3'
 services:
   ethereum: 
     image: freeverseio/parity:v2.7.2-posdao-stable
+    command: --min-peers 10 --max-peers 30
     volumes:
       - ethereum-data:/home/parity/.local/share/io.parity.ethereum
   ipfs.node:
-    image: freeverseio/go-ipfs:v0.5.0
+    image: ipfs/go-ipfs:v0.5.0
     restart: always
     environment:
       - IPFS_PATH=/data
       # - IPFS_FD_MAX=4096
-      - IPFS_PROFILE=randomports
-    volumes:
-      - ipfs.node-data:/data
+      # - IPFS_PROFILE=test
   ipfs.cluster:
     image: ipfs/ipfs-cluster:v0.12.1
     restart: always
     entrypoint: ["ipfs-cluster-follow"]
     environment: 
-      - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns/ipfs.node/tcp/5001
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
+      CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
     command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
     depends_on: 
       - ipfs.node
@@ -32,21 +34,9 @@ services:
     restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
-      -ipfs ipfs.node:5001
+      -ipfs /dns4/ipfs.node/tcp/5001
       -ethereum http://ethereum:8545
-      -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
-      -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
-      -enginePreCompContractAddress "${ENGINEPRECOMP_CONTRACT_ADDRESS}"
-      -marketContractAddress "${MARKET_CONTRACT_ADDRESS}"
-      -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
-      -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
-      -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
-      -utilsContractAddress "${UTILS_CONTRACT_ADDRESS}"
-      -playandevolveContractAddress "${PLAYANDEVOLVE_CONTRACT_ADDRESS}"
-      -shopContractAddress "${SHOP_CONTRACT_CONTRACT_ADDRESS}"
-      -trainingpointsContractAddress "${TRAININGPOINTS_CONTRACT_ADDRESS}"
-      -constantsgettersContractAddress "${CONSTANTSGETTERS_CONTRACT_ADDRESS}"
-      -stakersContractAddress "${STAKERS_CONTRACT_ADDRESS}"
+      -proxy_address "${PROXY_CONTRACT_ADDRESS}"
       -staker "${STAKER_PVC}"
       -delta "${BLOCKS_PER_STEP}"
     depends_on:
@@ -62,6 +52,7 @@ services:
       - ethereum
     command: >
       -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
+      --enableCors true
 
 volumes:
   ethereum-data:

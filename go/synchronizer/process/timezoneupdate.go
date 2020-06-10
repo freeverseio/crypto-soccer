@@ -23,7 +23,7 @@ func ConsumeTimezoneUpdate(tx *sql.Tx, event updates.UpdatesTimeZoneUpdate) erro
 	}
 
 	if verse.Root != hex.EncodeToString(event.Root[:]) {
-		log.Errorf("******* CRITIC verse %v hash mistmatch: bc %v, local %v ********", event.Verse, root, verse.Root)
+		return fmt.Errorf("******* CRITIC verse %v hash mistmatch: bc %v, local %v ********", event.Verse, root, verse.Root)
 	}
 	return nil
 }

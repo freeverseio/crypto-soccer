@@ -1,0 +1,22 @@
+(*storage.Player)({
+PlayerId: (*big.Int)(274877906962),
+PreferredPosition: (string) (len=2) "GK",
+Potential: (uint64) 4,
+DayOfBirth: (uint64) 0,
+TeamId: (string) (len=12) "274877906945",
+Name: (string) (len=12) "Ricky Aleman",
+Defence: (uint64) 1013,
+Speed: (uint64) 887,
+Pass: (uint64) 927,
+Shoot: (uint64) 1225,
+Endurance: (uint64) 944,
+ShirtNumber: (uint8) 0,
+EncodedSkills: (*big.Int)(0),
+EncodedState: (*big.Int)(274877906945),
+RedCard: (bool) false,
+InjuryMatchesLeft: (uint8) 0,
+Tiredness: (int) 0,
+CountryOfBirth: (string) (len=2) "DK",
+Race: (string) (len=7) "Spanish",
+YellowCard1stHalf: (bool) false
+})

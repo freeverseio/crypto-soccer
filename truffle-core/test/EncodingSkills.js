@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in EncodingSkills.sol and contracts inherited by it
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -8,7 +11,7 @@ const debug = require('../utils/debugUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Encoding = artifacts.require('EncodingSkills');
-const EncodingTact = artifacts.require('EncodingTacticsPart1');
+const EncodingTact = artifacts.require('EncodingTactics');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
@@ -48,7 +51,7 @@ contract('EncodingSkills', (accounts) => {
         subsRounds = [3,7,1];
         extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
-        decoded = await encodingTact.decodeTactics(encoded).should.be.fulfilled;
+        decoded = await utils.decodeTactics(encoded).should.be.fulfilled;
 
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
@@ -76,22 +79,22 @@ contract('EncodingSkills', (accounts) => {
 
         skills = await encoding.encodePlayerSkills(
             sk,
-            dayOfBirth = 4*365, 
-            generation = 3,
-            playerId = 143,
-            [potential = 5,
-            forwardness = 3,
-            leftishness = 4,
-            aggressiveness = 1],
+            dayOfBirth = 2**16-1, 
+            generation = 2**8-1,
+            playerId = 2**43-1,
+            [potential = 9,
+            forwardness = 5,
+            leftishness = 7,
+            aggressiveness = 7],
             alignedEndOfFirstHalf = true,
             redCardLastGame = true,
-            gamesNonStopping = 2,
+            gamesNonStopping = 6,
             injuryWeeksLeft = 6,
             substitutedFirstHalf = true,
             sumSkills
         ).should.be.fulfilled;
 
-        skills.should.be.bignumber.equal('155218556145067301836481091220056594090096264824095737423904769');
+        skills.should.be.bignumber.equal('13113566945151332165817391379934887555794724631714026444777635841');
 
         N_SKILLS = 5;
         resultSkills = [];
@@ -149,7 +152,7 @@ contract('EncodingSkills', (accounts) => {
         
         result =  await encodingGet.getIsSpecial(skills).should.be.fulfilled;
         result.should.be.equal(false);
-        skills2 = await encodingGet.addIsSpecial(skills).should.be.fulfilled;
+        skills2 = await encodingSet.addIsSpecial(skills).should.be.fulfilled;
         result =  await encodingGet.getIsSpecial(skills2).should.be.fulfilled;
         result.should.be.equal(true);
         
@@ -199,11 +202,34 @@ contract('EncodingSkills', (accounts) => {
         result = await encodingGet.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         
-        generation += 2;
+        generation -= 2;
         skills = await encodingSet.setGeneration(skills, generation).should.be.fulfilled;
         result = await encodingGet.getGeneration(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(generation);
+
+        result = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
+        result.should.be.equal(false);
+        skills = await encodingSet.setOutOfGameFirstHalf(skills, true).should.be.fulfilled;
+        result = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
+        result.should.be.equal(true);
+        skills = await encodingSet.setOutOfGameFirstHalf(skills, false).should.be.fulfilled;
+        result = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
+        result.should.be.equal(false);
+        outOfGameFirstHalf = true;
+        skills = await encodingSet.setOutOfGameFirstHalf(skills, outOfGameFirstHalf).should.be.fulfilled;
         
+        result = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
+        result.should.be.equal(false);
+        skills = await encodingSet.setYellowCardFirstHalf(skills, true).should.be.fulfilled;
+        result = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
+        result.should.be.equal(true);
+        skills = await encodingSet.setYellowCardFirstHalf(skills, false).should.be.fulfilled;
+        result = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
+        result.should.be.equal(false);
+        yellowCardFistHalf = true;
+        skills = await encodingSet.setYellowCardFirstHalf(skills, yellowCardFistHalf).should.be.fulfilled;
+        
+                
         // testing full decode
         const {0: _skills, 1: _day, 2: _traits, 3: _playerId, 4: _alignedSubstRed, 5: _genNonstopInj} = await utils.fullDecodeSkills(skills).should.be.fulfilled     
         _day.toNumber().should.be.equal(dayOfBirth);
@@ -211,7 +237,7 @@ contract('EncodingSkills', (accounts) => {
         debug.compareArrays(_skills, sk, toNum = true);
         expectedTraits = [potential, forwardness, leftishness, aggressiveness];
         debug.compareArrays(_traits, expectedTraits, toNum = true);
-        expectedBools = [alignedEndOfFirstHalf, substitutedFirstHalf, redCardLastGame];
+        expectedBools = [alignedEndOfFirstHalf, substitutedFirstHalf, redCardLastGame, outOfGameFirstHalf, yellowCardFistHalf];
         debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false);
         expectedGenGameInj = [generation, gamesNonStopping, injuryWeeksLeft];
         debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true);

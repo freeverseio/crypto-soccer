@@ -9,10 +9,31 @@ services:
     build: ../../universe.db/
     ports:
       - "5432:5432"
-  ipfs:
-    image: ipfs/go-ipfs:v0.5.0-rc4
+  ipfs.node:
+    image: ipfs/go-ipfs:v0.5.0
+    restart: always
+    environment:
+      - IPFS_PATH=/data
+      # - IPFS_FD_MAX=4096
+      - IPFS_PROFILE=test
     ports:
-      - "4001:4001"
+      - "127.0.0.1:4001:4001"
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"
       - "127.0.0.1:5001:5001"
+  ipfs.cluster:
+    image: ipfs/ipfs-cluster:v0.12.1
+    restart: always
+    # entrypoint: ["ipfs-cluster-follow"]
+    environment: 
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
+      CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
+    # command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
+    ports:
+      - "127.0.0.1:9094:9094"
+      - "127.0.0.1:9095:9095"
+      - "127.0.0.1:9096:9096"
+    depends_on: 
+      - ipfs.node

@@ -1,3 +1,6 @@
+/*
+ Tests for all functions in Assets.sol and contracts inherited by it
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -14,10 +17,16 @@ const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');
+const EncodingSet = artifacts.require('EncodingSkillsSetters');
 
-
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 
 contract('Assets', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const ALICE_ACC = web3.eth.accounts.create("alice");
     const BOB_ACC   = web3.eth.accounts.create("bob");
     const CAROL_ACC = web3.eth.accounts.create("carol");
@@ -45,13 +54,17 @@ contract('Assets', (accounts) => {
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
 
     beforeEach(async () => {
-        depl = await deployUtils.deploy(versionNumber = 0, Proxy, proxyAddress = '0x0', Assets, Market, Updates, Challenges);
-        proxy = depl[0]
-        assets = depl[1]
-        market = depl[2]
-        
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
+        [proxy, assets, market, updates] = depl;
+        await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        initTx = await assets.init().should.be.fulfilled;
+        initTx = await assets.initTZs({from: owners.COO}).should.be.fulfilled;
+        
+        sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
+        buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+        
         PLAYERS_PER_TEAM_INIT = await constants.get_PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await constants.get_LEAGUES_PER_DIV().should.be.fulfilled;
@@ -69,8 +82,66 @@ contract('Assets', (accounts) => {
         N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
+    
+    it('addDivisions and addCountries', async () => {
+        result = await assets.countCountries(tz).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNDivisionsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNLeaguesInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(16);
+        result = await assets.getNTeamsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(16*8);
+        result = await assets.countryInTZExists(tz, countryIdx = 0).should.be.fulfilled;
+        result.should.be.equal(true);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 0).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
         
-   it('create special players', async () => {
+        tx = await assets.addDivisionManually(tz, 0).should.be.rejected;
+        tx = await assets.addDivisionManually(tz, 0, {from: owners.COO}).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '1';
+        });
+        
+        result = await assets.countCountries(tz).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNDivisionsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2);
+        result = await assets.getNLeaguesInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2*16);
+        result = await assets.getNTeamsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2*16*8);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 0).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 1).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        
+        tx = await assets.addCountryManually(tz).should.be.rejected;
+        tx = await assets.addCountryManually(tz, {from: owners.COO}).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '1' && event.divisionIdxInCountry.toString() === '0';
+        });
+
+        result = await assets.countCountries(tz).should.be.fulfilled;
+        result.toNumber().should.be.equal(2);
+        result = await assets.getNDivisionsInCountry(tz, countryIdx = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNLeaguesInCountry(tz, countryIdx = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(16);
+        result = await assets.getNTeamsInCountry(tz, countryIdx = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(16*8);
+        divId = await assets.encodeTZCountryAndVal(tz, 1, 0).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        divId = await assets.encodeTZCountryAndVal(tz, 1, 1).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+    });
+    
+    it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
         specialPlayerId = await assets.encodePlayerSkills(
@@ -91,13 +162,15 @@ contract('Assets', (accounts) => {
         ).should.be.fulfilled;
         result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
-        specialPlayerId = await assets.addIsSpecial(specialPlayerId).should.be.fulfilled;
+        
+        encodingSet = await EncodingSet.new().should.be.fulfilled;
+        specialPlayerId = await encodingSet.addIsSpecial(specialPlayerId).should.be.fulfilled;
         skills = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
         result = await assets.getSkill(skills, SK_SHO).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
 
-   it('check DivisionCreation event on init', async () => {
+   it('check DivisionCreation event on initTZs', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
             timezone++;
@@ -106,22 +179,25 @@ contract('Assets', (accounts) => {
     });
 
     it('check DivisionCreation event on initSingleTz', async () => {
-        const {0: proxy2, 1: assets2, 2: markV0, 3: updV0, 4: chll} =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
-        tx = await assets2.initSingleTZ(tz = 4).should.be.fulfilled;
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        defaultSetup.singleTimezone = 4;
+        depl2 = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
+        assets2 = depl2[1];
+        await assets2.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
+        tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone, {from: owners.COO}).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
             return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
         });
     });
     
     
-   it('check cannot initialize contract twice', async () => {
-        await assets.init().should.be.rejected;
+    it('check cannot initialize contract twice', async () => {
+        await assets.initTZs().should.be.rejected;
     });
 
-   it('emit event upon creation', async () => {
-        truffleAssert.eventEmitted(initTx, "AssetsInit", (event) => {
-            return event.creatorAddr.should.be.equal(accounts[0]);
-        });
+    it('emit event upon initTZs of the Assets contract', async () => {
+        past = await assets.getPastEvents( 'AssetsInit', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+        past[0].args.creatorAddr.should.be.equal(owners.superuser);
     });
 
    it('check initial and max number of players per team', async () =>  {
@@ -152,7 +228,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START - 1;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(true);            
@@ -164,7 +240,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 0;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(false);            
@@ -176,7 +252,7 @@ contract('Assets', (accounts) => {
         countryIdxInTZ = 1;
         teamIdxInCountry = N_TEAMS_AT_START;
         for (tz = 1; tz<25; tz++) {
-            wasTeamCreatedVirtually = await assets._teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
+            wasTeamCreatedVirtually = await assets.teamExistsInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
             wasTeamCreatedVirtually.should.be.equal(false);
             teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry);
             teamExists2 = await market.wasTeamCreatedVirtually(teamId).should.be.fulfilled;
@@ -209,7 +285,7 @@ contract('Assets', (accounts) => {
    it('transfer first bot to address', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
-        const tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        const tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
             return event.teamId.should.be.bignumber.equal('274877906944') && event.to.should.be.equal(ALICE);
         });
@@ -220,9 +296,9 @@ contract('Assets', (accounts) => {
         const countryIdxInTZ = 0;
         nTeamsPerDiv = 128
         for (user = 0; user < (nTeamsPerDiv - 1); user++) {
-            await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+            await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
         }
-        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
             return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === countryIdxInTZ.toString() && event.divisionIdxInCountry.toString() === '1';
         });
@@ -233,8 +309,8 @@ contract('Assets', (accounts) => {
    it('transfer 2 bots to address to estimate cost', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, BOB).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, BOB, {from: owners.relay}).should.be.fulfilled;
     });
 
 
@@ -248,7 +324,8 @@ contract('Assets', (accounts) => {
         teamId2 = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
         addresses = [ALICE, BOB];
         teamIds = [teamId1, teamId2];
-        tx = await assets.transferFirstBotsToAddresses([tz, tz], [countryIdxInTZ, countryIdxInTZ], addresses).should.be.fulfilled;
+        await assets.setRelay(owners.relay, {from: owners.superuser}).should.be.fulfilled;
+        tx = await assets.transferFirstBotsToAddresses([tz, tz], [countryIdxInTZ, countryIdxInTZ], addresses, {from: owners.relay}).should.be.fulfilled;
         let count = -1;
         truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
             count++;
@@ -387,9 +464,9 @@ contract('Assets', (accounts) => {
         shirt = await assets.getCurrentShirtNum(state).should.be.fulfilled;
         shirt.toNumber().should.be.equal(playerIdxInCountry1);        
 
-        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, BOB).should.be.fulfilled;
-        await marketUtils.transferPlayerViaAuction(market, playerId, teamId2, ALICE_ACC, BOB_ACC).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE, {from: owners.relay}).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, BOB, {from: owners.relay}).should.be.fulfilled;
+        await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, teamId2, ALICE_ACC, BOB_ACC).should.be.fulfilled;
 
         // state of player after selling:
         state = await market.getPlayerState(playerId).should.be.fulfilled;
@@ -421,17 +498,17 @@ contract('Assets', (accounts) => {
         owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
         owner.should.be.equal(NULL_ADDR);
         // state after acquiring bot:
-        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE, {from: owners.relay}).should.be.fulfilled;
         owner = await market.getOwnerPlayer(playerId).should.be.fulfilled
         owner.should.be.equal(ALICE);
         // state after selling player:
-        await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, BOB).should.be.fulfilled;
-        await marketUtils.transferPlayerViaAuction(market, playerId, teamId2, ALICE_ACC, BOB_ACC).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, BOB, {from: owners.relay}).should.be.fulfilled;
+        await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, teamId2, ALICE_ACC, BOB_ACC).should.be.fulfilled;
         
         owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
         owner.should.be.equal(BOB);
         // state after selling team:
-        await market.transferTeam(teamId2, CAROL).should.be.fulfilled;
+        await marketUtils.transferTeamViaAuction(owners.market, market, teamId2, BOB_ACC, CAROL_ACC); 
         owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
         owner.should.be.equal(CAROL);
     });
@@ -445,26 +522,26 @@ contract('Assets', (accounts) => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
-        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, ALICE).should.be.fulfilled;
-        await marketUtils.transferPlayerViaAuction(market, playerId, teamId2, ALICE_ACC, ALICE_ACC).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE, {from: owners.relay}).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, ALICE, {from: owners.relay}).should.be.fulfilled;
+        await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, teamId2, ALICE_ACC, ALICE_ACC).should.be.fulfilled;
     });
 
    it('transferPlayer same team fails', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
-        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
-        await marketUtils.transferPlayerViaAuction(market, playerId, teamId1, ALICE_ACC, ALICE_ACC).should.be.rejected;
+        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE, {from: owners.relay}).should.be.fulfilled;
+        await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, teamId1, ALICE_ACC, ALICE_ACC).should.be.rejected;
     });
 
    it('transferPlayer to already full team', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz2, countryIdxInTZ2, teamIdxInCountry = 0).should.be.fulfilled; 
         for (playerIdxInCountry = 0; playerId < PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT; playerId++) {
             playerId   = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry).should.be.fulfilled; 
-            await marketUtils.transferPlayerViaAuction(market, playerId, teamId, ALICE_ACC, ALICE_ACC).should.be.fulfilled;
+            await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, teamId, ALICE_ACC, ALICE_ACC).should.be.fulfilled;
         }
         playerId   = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry+1).should.be.fulfilled; 
-        await marketUtils.transferPlayerViaAuction(market, playerId, teamId, ALICE_ACC, ALICE_ACC).should.be.rejected;
+        await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, teamId, ALICE_ACC, ALICE_ACC).should.be.rejected;
     });
 
    it('team exists', async () => {
@@ -503,11 +580,11 @@ contract('Assets', (accounts) => {
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
         owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
         owner.should.be.equal(NULL_ADDR); // NULL, since AcademyAddr is not yet set
-        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, ALICE).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE, {from: owners.relay}).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, ALICE, {from: owners.relay}).should.be.fulfilled;
         owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
         owner.should.be.equal(ALICE); 
-        await marketUtils.transferPlayerViaAuction(market, playerId, teamId2, ALICE_ACC, ALICE_ACC).should.be.fulfilled;
+        await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, teamId2, ALICE_ACC, ALICE_ACC).should.be.fulfilled;
         owner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
         owner.should.be.equal(ALICE);
     });
@@ -613,10 +690,11 @@ contract('Assets', (accounts) => {
 
    it('transfer team', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE); 
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}); 
         currentOwner = await market.getOwnerTeam(teamId).should.be.fulfilled;
         currentOwner.should.be.equal(ALICE);
-        tx = await market.transferTeam(teamId, BOB).should.be.fulfilled;
+        tx = await marketUtils.transferTeamViaAuction(owners.market, market, teamId, ALICE_ACC, BOB_ACC); 
+
         newOwner = await market.getOwnerTeam(teamId).should.be.fulfilled;
         newOwner.should.be.equal(BOB);
         truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
@@ -625,26 +703,29 @@ contract('Assets', (accounts) => {
     });
 
    it('transfer invalid team 0', async () => {
-        await market.transferTeam(teamId = 0, BOB).should.be.rejected;
+        await marketUtils.transferTeamViaAuction(owners.market, market, teamId = 0, ALICE_ACC, BOB_ACC).should.be.rejected; 
     });
 
    it('transfer bot from a not-initialized tz', async () => {
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled; 
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled; 
         teamId = await assets.encodeTZCountryAndVal(tz = 26, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.rejected; 
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.rejected; 
     });
 
    it('transfer fails when team is a bot', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
-        await market.transferTeam(teamId, BOB).should.be.rejected;
-        await assets.transferFirstBotToAddr(tz,countryIdxInTZ, ALICE); 
-        await market.transferTeam(teamId, BOB).should.be.fulfilled;
+        await assets.setMarket(ALICE, {from: owners.superuser}).should.be.fulfilled;
+        await marketUtils.transferTeamViaAuction(ALICE, market, teamId, ALICE_ACC, BOB_ACC).should.be.rejected; 
+        // Alice is the new market owner, so she should sign the next TX:
+        // Cannot test this until we can sign and operate with same account
+        // await assets.transferFirstBotToAddr(tz,countryIdxInTZ, ALICE, {from: ALICE}); 
+        // await marketUtils.transferTeamViaAuction(ALICE, market, teamId, ALICE_ACC, BOB_ACC).should.be.fulfilled; 
     });
 
-   it('transfer team accross same owner', async () => {
+   it('transfer team accross same owner should fail', async () => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
-        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE); 
-        await market.transferTeam(teamId, ALICE).should.be.rejected;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}); 
+        await marketUtils.transferTeamViaAuction(owners.market, market, teamId, ALICE_ACC, ALICE_ACC).should.be.rejected; 
     });
 });

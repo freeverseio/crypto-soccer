@@ -101,15 +101,39 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err = tx.Commit(); err != nil {
 			return err
 		}
-	case input.SubmitPlayStorePlayerPurchaseInput:
-		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
-		if err := SubmitPlayStorePlayerPurchase(
+	case producer.PlaystoreOrderEvent:
+		log.Debug("Received PlaystoreOrderEvent")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := ProcessPlaystoreOrders(
+			tx,
 			b.contracts,
 			b.pvc,
 			b.googleCredentials,
-			in,
 			b.iapTestOn,
 		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case input.SubmitPlayStorePlayerPurchaseInput:
+		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := SubmitPlayStorePlayerPurchase(
+			tx,
+			in,
+		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
 			return err
 		}
 	default:

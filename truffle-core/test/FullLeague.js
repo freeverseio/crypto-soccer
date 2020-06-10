@@ -1,3 +1,7 @@
+/*
+ Tests for the update/challenge part of the Updates.sol and Challenges.sol contracts
+ It also tests a javascript library: challengeUtils
+*/
 const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
@@ -25,10 +29,16 @@ const EnginePreComp = artifacts.require('EnginePreComp');
 const EngineApplyBoosters = artifacts.require('EngineApplyBoosters');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const Shop = artifacts.require('Shop');
-const Championships = artifacts.require('Championships');
+const Leagues = artifacts.require('Leagues');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 
 contract('FullLeague', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const JUST_CHECK_AGAINST_EXPECTED_RESULTS = 0;
     const WRITE_NEW_EXPECTED_RESULTS = 1;
     const nNonNullLeafsInLeague = 640;
@@ -86,8 +96,8 @@ contract('FullLeague', (accounts) => {
     const yellowCards1 = [14, 14]
     const yellowCards2 = [14, 14]
     const halfTimeSubstitutions = [14, 14, 14]
-    const nDefs1 = 4; 
-    const nDefs2 = 4; 
+    const nGKAndDefs1 = 4; 
+    const nGKAndDefs2 = 4; 
     const nTot = 11; 
     const winner = 2; // DRAW = 2
     const isHomeSt = false;
@@ -282,25 +292,22 @@ contract('FullLeague', (accounts) => {
     }
 
     beforeEach(async () => {
-        training = await TrainingPoints.new().should.be.fulfilled;
         evo = await Evolution.new().should.be.fulfilled;
-        play = await PlayAndEvolve.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
-        assets = await Assets.new().should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
-        market = await Market.new().should.be.fulfilled;
-        shop = await Shop.new().should.be.fulfilled;
-        encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
-        await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
-        await engine.setApplyBoostersAddr(applyBoosters.address).should.be.fulfilled;
-        await training.setAssetsAddress(assets.address).should.be.fulfilled;
-        await training.setMarketAddress(market.address).should.be.fulfilled;
-        await play.setEngineAddress(engine.address).should.be.fulfilled;
-        await play.setTrainingAddress(training.address).should.be.fulfilled;
-        await play.setEvolutionAddress(evo.address).should.be.fulfilled;
-        await play.setShopAddress(shop.address).should.be.fulfilled;
+        engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
+
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        owners = defaultSetup.owners;
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
+        [proxy, assets, market, updates, challenges] = depl;
+        await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
+        await assets.initTZs({from: owners.COO}).should.be.fulfilled;
+        
+        training= await TrainingPoints.new(assets.address).should.be.fulfilled;
+        shop = await Shop.new(assets.address).should.be.fulfilled;
+        encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
+        play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
@@ -331,10 +338,10 @@ contract('FullLeague', (accounts) => {
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
 
-        champs = await Championships.new().should.be.fulfilled;
+        leagues = await Leagues.new(assets.address).should.be.fulfilled;
         teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
-        leagueData = await chllUtils.createLeagueData(champs, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
+        leagueData = await chllUtils.createLeagueData(leagues, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
         
         if (mode == WRITE_NEW_EXPECTED_RESULTS) {
             fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
@@ -474,7 +481,8 @@ contract('FullLeague', (accounts) => {
     });
     
     it('challenge unexpected zero values', async () => {
-        depl =  await deployUtils.deploy(versionNumber = 0, Proxy, '0x0', Assets, Market, Updates, Challenges);
+        defaultSetup = deployUtils.getDefaultSetup(accounts);
+        depl = await deployUtils.deploy(defaultSetup.owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         proxy  = depl[0];
         updates = depl[3];
         challenges = depl[4];

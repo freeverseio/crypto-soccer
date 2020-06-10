@@ -1,6 +1,7 @@
 package process
 
 import (
+	"errors"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -83,6 +84,9 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 	if err := s.scanTimeZoneUpdate(opts); err != nil {
 		return err
 	}
+	if err := s.scanNewDirectory(opts); err != nil {
+		return err
+	}
 
 	log.Debug("scanner got: ", len(s.Events), " Abstract Events")
 
@@ -108,6 +112,9 @@ func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface
 }
 
 func (s *EventScanner) scanAssetsInit(opts *bind.FilterOpts) error {
+	if s.contracts.Assets == nil {
+		return nil
+	}
 	iter, err := s.contracts.Assets.FilterAssetsInit(opts)
 	if err != nil {
 		return err
@@ -121,6 +128,9 @@ func (s *EventScanner) scanAssetsInit(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
+	if s.contracts.Assets == nil {
+		return nil
+	}
 	iter, err := s.contracts.Assets.FilterDivisionCreation(opts)
 	if err != nil {
 		return err
@@ -134,6 +144,9 @@ func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
+	if s.contracts.Market == nil {
+		return nil
+	}
 	iter, err := s.contracts.Market.FilterPlayerStateChange(opts)
 	if err != nil {
 		return err
@@ -147,6 +160,9 @@ func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
+	if s.contracts.Assets == nil {
+		return nil
+	}
 	iter, err := s.contracts.Assets.FilterTeamTransfer(opts)
 	if err != nil {
 		return err
@@ -169,6 +185,9 @@ func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
 //}
 
 func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
+	if s.contracts.Market == nil {
+		return nil
+	}
 	iter, err := s.contracts.Market.FilterPlayerFreeze(opts)
 	if err != nil {
 		return err
@@ -182,6 +201,9 @@ func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
+	if s.contracts.Updates == nil {
+		return nil
+	}
 	iter, err := s.contracts.Updates.FilterActionsSubmission(opts)
 	if err != nil {
 		return err
@@ -195,6 +217,9 @@ func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanTimeZoneUpdate(opts *bind.FilterOpts) error {
+	if s.contracts.Updates == nil {
+		return nil
+	}
 	iter, err := s.contracts.Updates.FilterTimeZoneUpdate(opts)
 	if err != nil {
 		return err
@@ -203,6 +228,23 @@ func (s *EventScanner) scanTimeZoneUpdate(opts *bind.FilterOpts) error {
 		e := *(iter.Event)
 		log.Debugf("[scanner] scanTimeZoneUpdate")
 		s.addEvent(e.Raw, "UpdatesTimeZoneUpdate", e)
+	}
+	return nil
+}
+
+func (s *EventScanner) scanNewDirectory(opts *bind.FilterOpts) error {
+	if s.contracts.Directory == nil {
+		return errors.New("contract Directory is nil")
+	}
+
+	iter, err := s.contracts.Proxy.FilterNewDirectory(opts)
+	if err != nil {
+		return err
+	}
+	for iter.Next() {
+		e := *(iter.Event)
+		log.Debugf("[scanner] scanDeployedDirectory")
+		s.addEvent(e.Raw, "ProxyNewDirectory", e)
 	}
 	return nil
 }
