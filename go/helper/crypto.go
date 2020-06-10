@@ -1,4 +1,4 @@
-package input
+package helper
 
 import (
 	"crypto/ecdsa"
