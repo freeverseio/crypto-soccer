@@ -8,6 +8,12 @@ const Schema = `
 		name: String!
 	}
 
+	input SetTeamManagerNameInput {
+		signature: String!
+		teamId: ID!
+		name: String!
+	}
+
 	type Mutation {
         transferFirstBotToAddr(
           	timezone: Int!,
@@ -15,6 +21,7 @@ const Schema = `
           	address: String!
 		): Boolean!
 		setTeamName (input: SetTeamNameInput!): ID!
+		setTeamManagerName(input: SetTeamManagerNameInput!): ID!
 	}
 
 	type Query {

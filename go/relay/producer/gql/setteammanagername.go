@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Resolver) SetTeamName(args struct{ Input input.SetTeamNameInput }) (graphql.ID, error) {
+func (b *Resolver) SetTeamManagerName(args struct{ Input input.SetTeamManagerNameInput }) (graphql.ID, error) {
 	result := graphql.ID("")
 
 	if b.ch == nil {
