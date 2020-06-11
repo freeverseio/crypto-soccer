@@ -54,3 +54,16 @@ func (b SetTeamNameInput) IsValidSignature() (bool, error) {
 	}
 	return helper.VerifySignature(hash, sign)
 }
+
+func (b SetTeamNameInput) SignerAddress() (common.Address, error) {
+	hash, err := b.Hash()
+	if err != nil {
+		return common.Address{}, err
+	}
+	hash = helper.PrefixedHash(hash)
+	sign, err := hex.DecodeString(b.Signature)
+	if err != nil {
+		return common.Address{}, err
+	}
+	return helper.AddressFromSignature(hash, sign)
+}
