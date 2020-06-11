@@ -4,6 +4,7 @@ import "../encoders/EncodingTacticsBase1.sol";
 import "./EngineLib.sol";
 import "./SortValues.sol";
 import "../encoders/EncodingMatchLogBase1.sol";
+import "../encoders/EncodingMatchLogBase3.sol";
 import "../gameEngine/ErrorCodes.sol";
 
 /**
@@ -11,7 +12,7 @@ import "../gameEngine/ErrorCodes.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
-contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1, SortValues, ErrorCodes{
+contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, EncodingTacticsBase1, SortValues, ErrorCodes{
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     /// Skills: shoot, speed, pass, defence, endurance
     uint8 constant public SK_SHO = 0;
@@ -60,7 +61,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     uint8 public constant HARD_INJURY  = 2;   /// type of event
     uint8 public constant RED_CARD  = 3;   /// type of event
     /// uint8 public constant NO_LINEUP = 25; /// No player chosen in that position
-
+    uint8 private constant WINNER_AWAY = 1;
+    uint8 private constant WINNER_DRAW = 2;
 
     /// Over a game, we would like:
     ///      - injuryHard = 1 per 100 games => 0.01 per game per player => 0.02 per game
@@ -280,19 +282,14 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
             if (round > 3) {
                 /// note: winner = 0: home, 1: away, 2: draw (so if home wins, no need to write anything)
                 if (totalGoals[0] > totalGoals[1]) return matchLogs;
-                if (totalGoals[0] < totalGoals[1]) {
-                    matchLogs[0] = addWinner(matchLogs[0], 1);
-                    matchLogs[1] = addWinner(matchLogs[1], 1);
-                    return matchLogs;
-                }
+                if (totalGoals[0] < totalGoals[1]) { return addWinnerToBothLogs(matchLogs, WINNER_AWAY); }
             }
         }
         if (throwDice(block0 + getSkill(skills[0][4], SK_SHO), block1 + getSkill(skills[1][4], SK_SHO), rnds[13]) == 0) {
             matchLogs[0] = addScoredPenalty(matchLogs[0], 6); 
         } else {
             matchLogs[1] = addScoredPenalty(matchLogs[1], 6); 
-            matchLogs[0] = addWinner(matchLogs[0], 1);
-            matchLogs[1] = addWinner(matchLogs[1], 1);
+            matchLogs = addWinnerToBothLogs(matchLogs, WINNER_AWAY);
         }
         return matchLogs;
     }
