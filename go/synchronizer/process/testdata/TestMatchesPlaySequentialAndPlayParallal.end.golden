@@ -40,7 +40,7 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 10,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "453417489726287751542688287007405877845812549951956481902945664862385078272"
+MatchLog: (string) (len=75) "453417489722996742428045874923095939480697848941991010171678505135687860224"
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -703,9 +703,9 @@ GoalsForward: (uint32) 1,
 GoalsAgainst: (uint32) 0,
 PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
-TrainingPoints: (uint16) 42,
+TrainingPoints: (uint16) 64,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "456951184000648921246121013436639220853637840494450721819049613154874032289"
+MatchLog: (string) (len=75) "459380598711428190584655635415850795447785929842689226155199661954954166433"
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
