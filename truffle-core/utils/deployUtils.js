@@ -242,7 +242,7 @@ const upgrade = async (versionNumber, superuser, Proxy, proxyAddress, Assets, Ma
     console.log(" +   addresses             = ", toPrintable(addresses));
     console.log(" +   nSelectorsPerContract = ", nSelectorsPerContract);
     console.log(" +   concatSelectors       = ", toPrintable(concatSelectors));
-    tx0 = await proxy.addContracts(newContractIds, addresses, nSelectorsPerContract, concatSelectors, versionedNames, {from: owners.superuser}).should.be.fulfilled;
+    tx0 = await proxy.addContracts(newContractIds, addresses, nSelectorsPerContract, concatSelectors, versionedNames, {from: superuser}).should.be.fulfilled;
 
 
     console.log(" - ");
