@@ -1199,6 +1199,12 @@ contract("Market", accounts => {
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId, {from: owners.market}).should.be.fulfilled;
   });
   
+  it("transferBuyNow field issue: this transfer failed because player sum skills was larger than allowed", async () => {
+    playerId = '25774653249826802746817168298702153927337350437920121584357232';
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId, {from: owners.market}).should.be.rejected;
+  });
+  
   it("dismissPlayers fails when already sold, not owner any more", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
