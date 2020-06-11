@@ -42,6 +42,23 @@ func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPla
 	return batch, nil
 }
 
+func (b WorldPlayerService) GetWorldPlayer(
+	playerId string,
+	teamId string,
+	epoch int64,
+) (*WorldPlayer, error) {
+	players, err := b.CreateBatch(teamId, epoch)
+	if err != nil {
+		return nil, err
+	}
+	for _, player := range players {
+		if string(player.PlayerId()) == playerId {
+			return player, nil
+		}
+	}
+	return nil, nil
+}
+
 func (b WorldPlayerService) createBatchByTier(
 	teamId string,
 	epoch int64,

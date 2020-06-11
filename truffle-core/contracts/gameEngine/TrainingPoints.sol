@@ -63,7 +63,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         pointsNeg[0] = nGoals1;
         pointsNeg[1] = nGoals0;
         /// -3 for redCards, -1 for yellows
-        for (uint8 team = 0; team <2; team++) {
+        for (uint8 team = 0; team < 2; team++) {
             uint256 thisLog = (team == 0 ? matchLog0 : matchLog1);
             pointsNeg[team] += 
                     (getOutOfGameType(thisLog, false) == RED_CARD ? 3 : 0)
@@ -86,8 +86,10 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             points[0] = (points[0] * teamSumSkills1) / (teamSumSkills0);
             points[1] = (points[1] * teamSumSkills0) / (teamSumSkills1);
         }
+        
         if (points[0] < POINTS_FOR_HAVING_PLAYED) points[0] = POINTS_FOR_HAVING_PLAYED;
         if (points[1] < POINTS_FOR_HAVING_PLAYED) points[1] = POINTS_FOR_HAVING_PLAYED;
+
         matchLog0 = addTrainingPoints(matchLog0, points[0]);
         matchLog1 = addTrainingPoints(matchLog1, points[1]);
         return (matchLog0, matchLog1);

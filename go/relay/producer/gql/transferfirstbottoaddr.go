@@ -13,9 +13,9 @@ type TransferFirstBotToAddrInput struct {
 }
 
 func (b *Resolver) TransferFirstBotToAddr(input TransferFirstBotToAddrInput) (bool, error) {
-	if b.c != nil {
+	if b.ch != nil {
 		select {
-		case b.c <- input:
+		case b.ch <- input:
 		default:
 			log.Warning("TransferFirstBotToAddr: channel is full, discarding value")
 			return false, errors.New("channel is full, discarding value")

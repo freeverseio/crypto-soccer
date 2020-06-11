@@ -2,7 +2,8 @@ package input
 
 import (
 	"encoding/hex"
-	"fmt"
+	"errors"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -11,35 +12,38 @@ import (
 	"github.com/graph-gophers/graphql-go"
 )
 
-type CancelAuctionInput struct {
+type SetTeamNameInput struct {
 	Signature string
-	AuctionId graphql.ID
+	TeamId    graphql.ID
+	Name      string
 }
 
-func (b CancelAuctionInput) Hash() (common.Hash, error) {
-	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
+func (b SetTeamNameInput) Hash() (common.Hash, error) {
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	stringTy, _ := abi.NewType("string", "string", nil)
+
 	arguments := abi.Arguments{
-		{
-			Type: bytes32Ty,
-		},
+		{Type: uint256Ty},
+		{Type: stringTy},
 	}
-	idArray := [32]byte{}
-	auctionHex, err := hex.DecodeString(string(b.AuctionId))
+
+	teamId, _ := new(big.Int).SetString(string(b.TeamId), 10)
+	if teamId == nil {
+		return common.Hash{}, errors.New("Invalid TeamId")
+	}
+
+	bytes, err := arguments.Pack(
+		teamId,
+		b.Name,
+	)
 	if err != nil {
 		return common.Hash{}, err
 	}
-	copy(idArray[:], auctionHex)
-	bytes, err := arguments.Pack(idArray)
-	if err != nil {
-		return common.Hash{}, err
-	}
-	hash := [32]byte{}
-	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
-	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
-	return crypto.Keccak256Hash([]byte(ss)), nil
+	return crypto.Keccak256Hash(bytes), nil
+	return common.Hash{}, nil
 }
 
-func (b CancelAuctionInput) VerifySignature() (bool, error) {
+func (b SetTeamNameInput) IsValidSignature() (bool, error) {
 	hash, err := b.Hash()
 	if err != nil {
 		return false, err
@@ -51,11 +55,12 @@ func (b CancelAuctionInput) VerifySignature() (bool, error) {
 	return helper.VerifySignature(hash, sign)
 }
 
-func (b CancelAuctionInput) SignerAddress() (common.Address, error) {
+func (b SetTeamNameInput) SignerAddress() (common.Address, error) {
 	hash, err := b.Hash()
 	if err != nil {
 		return common.Address{}, err
 	}
+	hash = helper.PrefixedHash(hash)
 	sign, err := hex.DecodeString(b.Signature)
 	if err != nil {
 		return common.Address{}, err

@@ -102,6 +102,11 @@ contract EngineLib is EncodingSkillsGetters, EncodingTacticsBase3 {
         if (tacticsId == 1) return [1,3,1,1,2,1,0,1,0];  /// 0 = 541
         if (tacticsId == 2) return [1,2,1,1,1,1,1,1,1];  /// 0 = 433
         if (tacticsId == 3) return [1,2,1,1,3,1,0,1,0];  /// 0 = 451
+        if (tacticsId == 4) return [1,1,1,1,2,1,1,1,1];  /// 0 = 343
+        if (tacticsId == 5) return [1,1,1,1,3,1,0,2,0];  /// 0 = 352
+        if (tacticsId == 6) return [1,1,1,1,1,1,1,2,1];  /// 0 = 334
+        if (tacticsId == 7) return [1,2,1,0,2,0,1,2,1];  /// 0 = 424
+        if (tacticsId == 8) return [0,2,0,1,3,1,1,1,1];  /// 0 = 253
     }
 }
 
