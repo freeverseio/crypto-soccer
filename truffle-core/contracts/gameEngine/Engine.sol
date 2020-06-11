@@ -100,12 +100,14 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         );
         if (err > 0) return (seedAndStartTimeAndEvents, err);
 
-        if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
-            matchLogs = _precomp.computePenalties(matchLogs, skills, blockSkillGK[0], blockSkillGK[1], uint64(seed));  /// TODO seed
-        } else {
-            /// note that WINNER_HOME = 0, so no need to write anything if home wins.
-            if (getNGoals(matchLogs[0]) == getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_DRAW);
-            else if (getNGoals(matchLogs[0]) < getNGoals(matchLogs[1])) addWinnerToBothLogs(matchLogs, WINNER_AWAY);
+        if (matchBools[IDX_IS_2ND_HALF]) {
+            if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLogs[0]) == getNGoals(matchLogs[1]))) {
+                matchLogs = _precomp.computePenalties(matchLogs, skills, blockSkillGK[0], blockSkillGK[1], uint64(seed));  /// TODO seed
+            } else {
+                /// note that WINNER_HOME = 0, so no need to write anything if home wins.
+                if (getNGoals(matchLogs[0]) == getNGoals(matchLogs[1])) matchLogs = addWinnerToBothLogs(matchLogs, WINNER_DRAW);
+                else if (getNGoals(matchLogs[0]) < getNGoals(matchLogs[1])) matchLogs = addWinnerToBothLogs(matchLogs, WINNER_AWAY);
+            }
         }
         /// convert seedAndStartTimeAndEvents --> matchLogsAndEvents
         seedAndStartTimeAndEvents[0] = setIsHomeStadium(matchLogs[0], matchBools[IDX_IS_HOME_STADIUM]);
@@ -375,7 +377,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             assister = selectAssister(skills, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog = addAssister(matchLog, assister, currentGoals);
             matchLog = addShooter(matchLog, shooter, currentGoals);
-            matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);
+            matchLog = addForwardPos(matchLog, getForwardPosFromPlayersPerZone(shooter, playersPerZone), currentGoals);
             matchLog++; /// adds 1 goal because nGoals is the right-most number serialized
             scoreData[0] = matchLog;
             scoreData[3] = uint256(assister);
@@ -383,7 +385,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         return scoreData;
     }
     
-    function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) public pure returns (uint8) {
+    function getForwardPosFromPlayersPerZone(uint8 posInLineUp, uint8[9] memory playersPerZone) public pure returns (uint8) {
         if (posInLineUp == 0) return 0;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)) return 1;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)+ getNMidfielders(playersPerZone)) return 2;
