@@ -80,7 +80,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
-	if (day == 12) && (turnInDay == 0) {
+	if (day == 2) && (turnInDay == 0) {
 		var timezoneToReshuffle uint8
 		if timezoneIdx < 24 {
 			timezoneToReshuffle = timezoneIdx + 1
