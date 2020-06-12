@@ -13,9 +13,9 @@ contract Updates is UpdatesBase {
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint256 verse, uint8 timeZone, bytes32 root, uint256 submissionTime);
     event ChallengeAccepted(uint8 tz, uint8 newLevel, bytes32 root, bytes32[] providedRoots);
-    event Inform(uint256 id, bytes32 content);
+    event Inform(uint256 id, string content);
     
-    function inform(uint256 id, bytes32 content) external onlyRelay { emit Inform(id, content); }
+    function inform(uint256 id, string calldata content) external onlyRelay { emit Inform(id, content); }
 
     function setStakersAddress(address payable addr) external onlySuperUser { _stakers = Stakers(addr); }
 
