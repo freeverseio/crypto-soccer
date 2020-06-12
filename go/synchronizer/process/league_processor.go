@@ -171,7 +171,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			if !team.IsBot() {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
 				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
-				fmt.Println("Computing points for teamId %v, pos %v, prev %v", teamID, position, team.PrevPerfPoints)
+				fmt.Println("Computing points for teamId " + team.TeamID + ", pos " + position + " prev " + team.PrevPerfPoints)
 				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
@@ -182,7 +182,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 				if err != nil {
 					return err
 				}
-				fmt.Println("Computied: ranking, prev = %v, %v", team.RankingPoints, team.PrevPerfPoints)
+				fmt.Println("Computied: ranking " + team.RankingPoints + ", prev " + team.PrevPerfPoints)
 			}
 			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
 			if err := orgMap.Append(team); err != nil {
