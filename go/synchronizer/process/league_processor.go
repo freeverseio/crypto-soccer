@@ -85,7 +85,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
-	if (day == 0) && (turnInDay == 0) {
+	if (day == 0) && (turnInDay == 1) {
 		var timezoneToReshuffle uint8
 		if timezoneIdx < 24 {
 			timezoneToReshuffle = timezoneIdx + 1
@@ -161,31 +161,25 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Shuffling timezone %v, country %v \n", timezoneIdx, countryIdx)
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-		fmt.Printf("in leagueIdx %v, in tz %v and countr %v \n", leagueIdx, timezoneIdx, countryIdx)
 		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("teams received \n")
 
 		// ordening by points
 		sort.Slice(teams[:], func(i, j int) bool {
 			return teams[i].Points > teams[j].Points
 		})
-		fmt.Printf("sort done \n")
 		for position, team := range teams {
-			fmt.Printf("in pos \n")
 			teamState, err := b.GetTeamState(tx, team.TeamID)
 			if err != nil {
 				return err
 			}
-			fmt.Printf("before isBot \n")
 			if !team.IsBot() {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
 				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
-				fmt.Printf("Computing points for teamId %v, %v, %v", team.TeamID, position, team.PrevPerfPoints)
+				fmt.Printf("Computing points for teamId %v, %v, %v \n", team.TeamID, position, team.PrevPerfPoints)
 				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
@@ -196,7 +190,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 				if err != nil {
 					return err
 				}
-				fmt.Printf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
+				fmt.Printf("New ranking team %v points %v ranking %v \n", team.TeamID, team.Points, team.RankingPoints)
 			}
 			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
 			if err := orgMap.Append(team); err != nil {
@@ -214,6 +208,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		team.TeamIdxInLeague = uint32(i % 8)
 		// calculate the real Ranking points
 		team.RankingPoints = team.RankingPoints / uint64(48318382080000)
+		fmt.Printf("Setting teamId %v to TeamIdxInLeague %v with final rankingpoints %v in LeagueIdx %v \n", team.TeamID, team.TeamIdxInLeague, team.RankingPoints, team.TeamIdxInLeague)
 		if err := team.Update(tx); err != nil {
 			return err
 		}
