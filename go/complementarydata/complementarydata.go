@@ -2,6 +2,7 @@ package complementarydata
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql/input"
 )
@@ -13,26 +14,27 @@ type event struct {
 
 type ComplementaryData []event
 
-func (b *ComplementaryData) PushSetTeamNameInput(in input.SetTeamNameInput) error {
-	ev := event{}
-	ev.Name = "SetTeamNameInput"
-	var err error
-	ev.Data, err = json.Marshal(in)
-	if err != nil {
-		return err
-	}
-	*b = append(*b, ev)
-	return nil
+type ComplementaryDataPublishService interface {
+	Publish(data ComplementaryData) (string, error)
+	Retrive(id string) (*ComplementaryData, error)
 }
 
-func (b *ComplementaryData) PushSetTeamManagerNameInput(in input.SetTeamManagerNameInput) error {
-	ev := event{}
-	ev.Name = "SetTeamManagerNameInput"
+func (b *ComplementaryData) Push(i interface{}) error {
+	e := event{}
+	switch v := i.(type) {
+	case input.SetTeamNameInput:
+		e.Name = "SetTeamNameInput"
+	case input.SetTeamManagerNameInput:
+		e.Name = "SetTeamManagerNameInput"
+	default:
+		return fmt.Errorf("unknown type %T", v)
+	}
+
 	var err error
-	ev.Data, err = json.Marshal(in)
+	e.Data, err = json.Marshal(i)
 	if err != nil {
 		return err
 	}
-	*b = append(*b, ev)
+	*b = append(*b, e)
 	return nil
 }

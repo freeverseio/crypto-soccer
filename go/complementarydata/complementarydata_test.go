@@ -15,12 +15,12 @@ func TestComplementaryDataMarshall(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, `[]`, string(result))
 
-	assert.NilError(t, data.PushSetTeamNameInput(input.SetTeamNameInput{}))
+	assert.NilError(t, data.Push(input.SetTeamNameInput{}))
 	result, err = json.Marshal(data)
 	assert.NilError(t, err)
 	assert.Equal(t, `[{"Name":"SetTeamNameInput","Data":{"Signature":"","TeamId":"","Name":""}}]`, string(result))
 
-	assert.NilError(t, data.PushSetTeamManagerNameInput(input.SetTeamManagerNameInput{}))
+	assert.NilError(t, data.Push(input.SetTeamManagerNameInput{}))
 	result, err = json.Marshal(data)
 	assert.NilError(t, err)
 	assert.Equal(t, `[{"Name":"SetTeamNameInput","Data":{"Signature":"","TeamId":"","Name":""}},{"Name":"SetTeamManagerNameInput","Data":{"Signature":"","TeamId":"","Name":""}}]`, string(result))

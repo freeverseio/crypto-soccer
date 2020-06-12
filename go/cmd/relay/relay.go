@@ -14,8 +14,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/relay/consumer"
+	"github.com/freeverseio/crypto-soccer/go/relay/producer"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql"
-	"github.com/freeverseio/crypto-soccer/go/relay/producer/submitactions"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 )
 
@@ -68,7 +68,7 @@ func main() {
 	ch := make(chan interface{}, *bufferSize)
 
 	go gql.NewServer(ch)
-	go submitactions.NewSubmitTimer(ch, 5*time.Second)
+	go producer.NewSubmitTimer(ch, 5*time.Second)
 
 	consumer.NewConsumer(
 		ch,
