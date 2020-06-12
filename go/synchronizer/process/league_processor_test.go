@@ -135,12 +135,16 @@ func TestEntireLeagueEvolution(t *testing.T) {
 	testLeagueIdx := uint32(0)
 
 	for humanTeam := 0; humanTeam < 16; humanTeam++ {
-		bc.Contracts.Assets.TransferFirstBotToAddr(
+		t.Log(humanTeam)
+		_, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 			bind.NewKeyedTransactor(bc.Owner),
 			testTimezone,
-			countryIdx,
+			big.NewInt(int64(testCountryIdx)),
 			crypto.PubkeyToAddress(bc.Owner.PublicKey),
 		)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, testTimezone, testCountryIdx, testLeagueIdx)
