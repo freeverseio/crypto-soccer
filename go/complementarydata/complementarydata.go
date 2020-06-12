@@ -1,7 +1,8 @@
 package complementarydata
 
-type ComplementaryData []interface{}
+import "github.com/freeverseio/crypto-soccer/go/relay/producer/gql/input"
 
-func (b *ComplementaryData) Push(el interface{}) {
-	*b = append(*b, el)
+type ComplementaryData struct {
+	SetTeamNameEvents        []input.SetTeamNameInput
+	SetTeamManagerNameEvents []input.SetTeamManagerNameInput
 }
