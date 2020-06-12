@@ -46,7 +46,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
 	fmt.Printf("restting")
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 		// if a new league is starting shuffle the teams
-		fmt.Printf("rreshuffling tz, country %v, %v \t", timezoneIdx, countryIdx)
+		fmt.Printf("rreshuffling tz, country %v, %v \n", timezoneIdx, countryIdx)
 		err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
 		if err != nil {
 			return err
@@ -56,7 +56,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
 			return err
 		}
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-			fmt.Printf("restting league %v \t", leagueIdx)
+			fmt.Printf("restting league %v \n", leagueIdx)
 			if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx); err != nil {
 				return err
 			}
@@ -92,7 +92,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		} else {
 			timezoneToReshuffle = 1
 		}
-		fmt.Printf("resetting tz: %v \t", timezoneToReshuffle)
+		fmt.Printf("resetting tz: %v \n", timezoneToReshuffle)
 		if err := b.resetTimezone(tx, timezoneToReshuffle); err != nil {
 			return err
 		}
@@ -155,28 +155,33 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
-	fmt.Printf("Shuffling timezone %v, country %v \t", timezoneIdx, countryIdx)
+	fmt.Printf("Shuffling timezone %v, country %v \n", timezoneIdx, countryIdx)
 	var orgMap OrgMap
 	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Shuffling timezone %v, country %v \t", timezoneIdx, countryIdx)
+	fmt.Printf("Shuffling timezone %v, country %v \n", timezoneIdx, countryIdx)
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-		fmt.Printf("in leagueIdx %v, in tz %v and countr %v \t", leagueIdx, timezoneIdx, countryIdx)
+		fmt.Printf("in leagueIdx %v, in tz %v and countr %v \n", leagueIdx, timezoneIdx, countryIdx)
 		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
 		}
+		fmt.Printf("teams received \n")
+
 		// ordening by points
 		sort.Slice(teams[:], func(i, j int) bool {
 			return teams[i].Points > teams[j].Points
 		})
+		fmt.Printf("sort done \n")
 		for position, team := range teams {
+			fmt.Printf("in pos \n")
 			teamState, err := b.GetTeamState(tx, team.TeamID)
 			if err != nil {
 				return err
 			}
+			fmt.Printf("before isBot \n")
 			if !team.IsBot() {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
 				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
