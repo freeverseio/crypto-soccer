@@ -74,9 +74,9 @@ func (b *Consumer) Start() {
 				log.Error(err)
 			}
 		case input.SetTeamNameInput:
-			b.complementaryData.SetTeamNameEvents = append(b.complementaryData.SetTeamNameEvents, ev)
+			b.complementaryData.PushSetTeamNameInput(ev)
 		case input.SetTeamManagerNameInput:
-			b.complementaryData.SetTeamManagerNameEvents = append(b.complementaryData.SetTeamManagerNameEvents, ev)
+			b.complementaryData.PushSetTeamManagerNameInput(ev)
 		default:
 			log.Errorf("unknown event: %v", event)
 		}
