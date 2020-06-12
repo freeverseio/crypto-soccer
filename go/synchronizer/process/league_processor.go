@@ -37,12 +37,16 @@ func NewLeagueProcessor(
 }
 
 func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
+	fmt.Printf("restting a")
 	countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
+	fmt.Printf("restting b")
 	if err != nil {
 		return err
 	}
+	fmt.Printf("restting")
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 		// if a new league is starting shuffle the teams
+		fmt.Printf("rreshuffling tz, country %v, %v \t", timezoneIdx, countryIdx)
 		err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
 		if err != nil {
 			return err
@@ -52,6 +56,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
 			return err
 		}
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+			fmt.Printf("restting league %v \t", leagueIdx)
 			if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx); err != nil {
 				return err
 			}
@@ -80,13 +85,14 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
-	if (day == 1) && (turnInDay == 0) {
+	if (day == 0) && (turnInDay == 0) {
 		var timezoneToReshuffle uint8
 		if timezoneIdx < 24 {
 			timezoneToReshuffle = timezoneIdx + 1
 		} else {
 			timezoneToReshuffle = 1
 		}
+		fmt.Printf("resetting tz: %v \t", timezoneToReshuffle)
 		if err := b.resetTimezone(tx, timezoneToReshuffle); err != nil {
 			return err
 		}
@@ -149,12 +155,15 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
+	fmt.Printf("Shuffling timezone %v, country %v \t", timezoneIdx, countryIdx)
 	var orgMap OrgMap
 	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Shuffling timezone %v, country %v \t", timezoneIdx, countryIdx)
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+		fmt.Printf("in leagueIdx %v, in tz %v and countr %v \t", leagueIdx, timezoneIdx, countryIdx)
 		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
