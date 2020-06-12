@@ -80,7 +80,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
-	if (day == 1) && (turnInDay == 0) {
+	if (day == 2) && (turnInDay == 0) {
 		var timezoneToReshuffle uint8
 		if timezoneIdx < 24 {
 			timezoneToReshuffle = timezoneIdx + 1
@@ -171,6 +171,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			if !team.IsBot() {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
 				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
+				fmt.Println("Computing points for teamId %v, pos %v, prev %v", teamID, position, team.PrevPerfPoints)
 				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
@@ -181,6 +182,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 				if err != nil {
 					return err
 				}
+				fmt.Println("Computied: ranking, prev = %v, %v", team.RankingPoints, team.PrevPerfPoints)
 			}
 			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
 			if err := orgMap.Append(team); err != nil {
