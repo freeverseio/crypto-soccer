@@ -112,7 +112,11 @@ func TestEntireLeagueEvolution(t *testing.T) {
 	divisionIdx := big.NewInt(0)
 
 	divisionCreationProcessor := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
-	for tz := uint8(1); tz < 25; tz++ {
+	// for tz := uint8(1); tz < 25; tz++ {
+	// 	assert.NilError(t, divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{tz, countryIdx, divisionIdx, types.Log{}}))
+	// }
+	tzs := []uint8{1, 23, 24}
+	for _, tz := range tzs {
 		assert.NilError(t, divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{tz, countryIdx, divisionIdx, types.Log{}}))
 	}
 	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
@@ -143,7 +147,7 @@ func TestEntireLeagueEvolution(t *testing.T) {
 		for turnInDay := uint8(0); turnInDay < 2; turnInDay++ {
 			block++
 			verse++
-			for tz := uint8(1); tz < 25; tz++ {
+			for _, tz := range tzs {
 				t.Log("day: ", day, " | actualDay", actualDay, " | turnInDay", turnInDay, " | tz", tz)
 				err = processor.Process(tx, updates.UpdatesActionsSubmission{
 					big.NewInt(verse),
@@ -158,8 +162,6 @@ func TestEntireLeagueEvolution(t *testing.T) {
 				})
 				assert.NilError(t, err)
 				t.Log("fetching teams...")
-				teams, err = storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, testTimezone, testCountryIdx, testLeagueIdx)
-				assert.NilError(t, err)
 				if len(teams) > 0 {
 					assert.Equal(t, teams[0].TeamIdxInLeague, uint32(0))
 				}
