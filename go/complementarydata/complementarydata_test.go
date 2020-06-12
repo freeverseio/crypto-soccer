@@ -9,18 +9,18 @@ import (
 )
 
 func TestStackMarshall(t *testing.T) {
-	stack := complementarydata.ComplementaryData{}
-	result, err := json.Marshal(stack)
+	data := complementarydata.ComplementaryData{}
+	result, err := json.Marshal(data)
 	assert.NilError(t, err)
 	assert.Equal(t, "[]", string(result))
 
-	stack.Push(3)
-	result, err = json.Marshal(stack)
+	data.Push(3)
+	result, err = json.Marshal(data)
 	assert.NilError(t, err)
 	assert.Equal(t, "[3]", string(result))
 
-	stack.Push(struct{ Ciao int }{5})
-	result, err = json.Marshal(stack)
+	data.Push(struct{ Ciao int }{5})
+	result, err = json.Marshal(data)
 	assert.NilError(t, err)
 	assert.Equal(t, `[3,{"Ciao":5}]`, string(result))
 }
