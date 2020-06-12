@@ -161,10 +161,9 @@ func TestEntireLeagueEvolution(t *testing.T) {
 					types.Log{BlockNumber: block},
 				})
 				assert.NilError(t, err)
-				t.Log("fetching teams...")
-				if len(teams) > 0 {
-					assert.Equal(t, teams[0].TeamIdxInLeague, uint32(0))
-				}
+				teams, err = storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, testTimezone, testCountryIdx, testLeagueIdx)
+				assert.NilError(t, err)
+				assert.Equal(t, teams[0].TeamIdxInLeague, uint32(0))
 			}
 		}
 	}
