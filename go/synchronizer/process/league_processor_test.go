@@ -147,11 +147,13 @@ func TestEntireLeagueEvolution(t *testing.T) {
 		}
 	}
 
-	var teamIds [16]string
+	var teamIds []string
+
 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, testTimezone, testCountryIdx, testLeagueIdx)
-	for idx := 0; idx < 16; idx++ {
-		teamIds[idx] = teams[idx].TeamID
+	for idx := 0; idx < 8; idx++ {
+		teamIds = append(teamIds, teams[idx].TeamID)
 	}
+	t.Log("done setting ids")
 	for idx, teamId := range teamIds {
 		testTeam, err := storage.TeamByTeamId(tx, teamId)
 		assert.NilError(t, err)
