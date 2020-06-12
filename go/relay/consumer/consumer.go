@@ -11,6 +11,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/submitactions"
+	"github.com/freeverseio/crypto-soccer/go/storage/postgres"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
 	log "github.com/sirupsen/logrus"
 )
@@ -79,7 +80,8 @@ func (b *Consumer) Start() {
 				log.Error(err)
 				break
 			}
-			if err := SetTeamName(tx, ev); err != nil {
+			teamStorageService := postgres.NewTeamStorageService(tx)
+			if err := SetTeamName(teamStorageService, ev); err != nil {
 				tx.Rollback()
 				log.Error(err)
 				break
