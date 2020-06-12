@@ -112,10 +112,6 @@ func TestEntireLeagueEvolution(t *testing.T) {
 	divisionIdx := big.NewInt(0)
 
 	divisionCreationProcessor := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
-	// for tz := uint8(1); tz < 25; tz++ {
-	// 	assert.NilError(t, divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{tz, countryIdx, divisionIdx, types.Log{}}))
-	// }
-	// tzs := []uint8{1, 23, 24}
 	tzs := []uint8{1, 24}
 	for _, tz := range tzs {
 		assert.NilError(t, divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{tz, countryIdx, divisionIdx, types.Log{}}))
@@ -137,9 +133,11 @@ func TestEntireLeagueEvolution(t *testing.T) {
 	testCountryIdx := uint32(0)
 	testLeagueIdx := uint32(0)
 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, testTimezone, testCountryIdx, testLeagueIdx)
-	testTeam := teams[0]
+	teamId := teams[0].TeamID
+	testTeam, err := storage.TeamByTeamId(tx, teamId)
 	assert.NilError(t, err)
 	assert.Equal(t, testTeam.TeamIdxInLeague, uint32(0))
+	t.Log(testTeam.RankingPoints)
 
 	for day := uint8(0); day < 16; day++ {
 		actualDay := day
@@ -163,14 +161,18 @@ func TestEntireLeagueEvolution(t *testing.T) {
 					types.Log{BlockNumber: block},
 				})
 				assert.NilError(t, err)
+				testTeam, err := storage.TeamByTeamId(tx, teamId)
+				assert.NilError(t, err)
 				assert.Equal(t, testTeam.TeamIdxInLeague, uint32(0))
+				t.Log(testTeam.RankingPoints)
 			}
 		}
 	}
 	assert.NilError(t, err)
-	teams, err = storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, testTimezone, testCountryIdx, testLeagueIdx)
+	testTeam, err = storage.TeamByTeamId(tx, teamId)
 	assert.NilError(t, err)
 	assert.Equal(t, testTeam.TeamIdxInLeague, uint32(0))
+	t.Log(testTeam.RankingPoints)
 }
 
 // func TestLeagueShuffling(t *testing.T) {
