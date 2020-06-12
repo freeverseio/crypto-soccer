@@ -32,6 +32,12 @@ type Team struct {
 	MatchLog        string
 }
 
+type TeamStorageService interface {
+	Team(teamId string) (*Team, error)
+	Insert(team Team) error
+	UpdateName(teamId string, name string) error
+}
+
 func NewTeam() *Team {
 	var team Team
 	team.TeamID = "0"
@@ -215,7 +221,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return team, errors.New("Unexistent team")
+		return team, errors.New("unexistent team")
 	}
 	team.TeamID = teamID
 	err = rows.Scan(

@@ -74,6 +74,19 @@ func (b *Consumer) Start() {
 				log.Error(err)
 			}
 		case input.SetTeamNameInput:
+			tx, err := b.db.Begin()
+			if err != nil {
+				log.Error(err)
+				break
+			}
+			if err := SetTeamName(tx, ev); err != nil {
+				tx.Rollback()
+				log.Error(err)
+				break
+			}
+			if err := tx.Commit(); err != nil {
+				log.Error(err)
+			}
 			b.complementaryData.PushSetTeamNameInput(ev)
 		case input.SetTeamManagerNameInput:
 			b.complementaryData.PushSetTeamManagerNameInput(ev)
