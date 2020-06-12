@@ -107,6 +107,14 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
     });
     
+    it('Inform event', async () =>  {
+        tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys")).should.be.rejected;
+        tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys"), {from: owners.relay}).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "Inform", (event) => {
+            return event.id == id && event.content == content;
+        });
+    });
+
     it('test getAllMatchdaysUTCInRound', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         nextVerseTimestamp = nextVerseTimestamp.toNumber();
