@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"gotest.tools/assert"
 
@@ -138,6 +139,13 @@ func TestEntireLeagueEvolution(t *testing.T) {
 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, testTimezone, testCountryIdx, testLeagueIdx)
 	assert.NilError(t, err)
 	for idx := 0; idx < 8; idx++ {
+		_, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+			bind.NewKeyedTransactor(bc.Owner),
+			testTimezone,
+			big.NewInt(0),
+			common.HexToAddress("0x8724aC60ac290837a1fe2d441279413d5B058E5F"),
+		)
+		assert.NilError(t, err)
 		teamIds = append(teamIds, teams[idx].TeamID)
 		t.Log(idx, "-", teams[idx].TeamID)
 	}
