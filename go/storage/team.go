@@ -221,7 +221,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	training_points,
 	tactic,
 	match_log,
-	manager_name,
+	manager_name
 	FROM teams WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return team, err
