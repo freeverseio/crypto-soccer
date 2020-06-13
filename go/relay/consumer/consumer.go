@@ -75,10 +75,6 @@ func (b *Consumer) Start() {
 				log.Error(err)
 			}
 		case input.SetTeamNameInput:
-			if err := b.complementaryData.Push(ev); err != nil {
-				log.Error(err)
-				break
-			}
 			tx, err := b.db.Begin()
 			if err != nil {
 				log.Error(err)
@@ -95,9 +91,19 @@ func (b *Consumer) Start() {
 			}
 
 		case input.SetTeamManagerNameInput:
-			if err := b.complementaryData.Push(ev); err != nil {
+			tx, err := b.db.Begin()
+			if err != nil {
 				log.Error(err)
 				break
+			}
+			teamStorageService := postgres.NewTeamStorageService(tx)
+			if err := SetTeamManagerName(teamStorageService, ev); err != nil {
+				tx.Rollback()
+				log.Error(err)
+				break
+			}
+			if err := tx.Commit(); err != nil {
+				log.Error(err)
 			}
 		default:
 			log.Errorf("unknown event: %v", event)

@@ -16,6 +16,7 @@ type Team struct {
 	TimezoneIdx     uint8
 	CountryIdx      uint32
 	Name            string
+	ManagerName     string
 	Owner           string
 	LeagueIdx       uint32
 	TeamIdxInLeague uint32
@@ -36,6 +37,7 @@ type TeamStorageService interface {
 	Team(teamId string) (*Team, error)
 	Insert(team Team) error
 	UpdateName(teamId string, name string) error
+	UpdateManagerName(teamId string, name string) error
 }
 
 func NewTeam() *Team {
@@ -64,8 +66,9 @@ func (b *Team) Insert(tx *sql.Tx) error {
 			name,
 			ranking_points,
 			tactic,
-			match_log
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
+			match_log,
+			manager_name
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`,
 		b.TeamID,
 		b.TimezoneIdx,
 		b.CountryIdx,
@@ -76,6 +79,7 @@ func (b *Team) Insert(tx *sql.Tx) error {
 		strconv.FormatUint(b.RankingPoints, 10),
 		b.Tactic,
 		b.MatchLog,
+		b.ManagerName,
 	)
 	if err != nil {
 		return err
@@ -116,8 +120,9 @@ func (b *Team) Update(tx *sql.Tx) error {
 						training_points=$12,
 						name=$13,
 						tactic=$14,
-						match_log=$15
-						WHERE team_id=$16`,
+						match_log=$15,
+						manager_name=$16
+						WHERE team_id=$17`,
 		b.Owner,
 		b.LeagueIdx,
 		b.TeamIdxInLeague,
@@ -133,6 +138,7 @@ func (b *Team) Update(tx *sql.Tx) error {
 		b.Name,
 		b.Tactic,
 		b.MatchLog,
+		b.ManagerName,
 		b.TeamID,
 	)
 	return err
@@ -214,7 +220,8 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	name,
 	training_points,
 	tactic,
-	match_log
+	match_log,
+	manager_name,
 	FROM teams WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return team, err
@@ -242,6 +249,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 		&team.TrainingPoints,
 		&team.Tactic,
 		&team.MatchLog,
+		&team.ManagerName,
 	)
 	if err != nil {
 		return team, err

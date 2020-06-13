@@ -35,3 +35,13 @@ func (b TeamStorageService) UpdateName(teamId string, name string) error {
 	b.teams[teamId] = team
 	return nil
 }
+
+func (b TeamStorageService) UpdateManagerName(teamId string, name string) error {
+	team, ok := b.teams[teamId]
+	if !ok {
+		return errors.New("unexistent team")
+	}
+	team.ManagerName = name
+	b.teams[teamId] = team
+	return nil
+}

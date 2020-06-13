@@ -8,7 +8,7 @@ import (
 
 type SubmitActionsEvent struct{}
 
-func NewSubmitTimer(c chan interface{}, duration time.Duration) {
+func NewSubmitUserActionsTimer(c chan interface{}, duration time.Duration) {
 	for {
 		time.Sleep(duration)
 		if c != nil {

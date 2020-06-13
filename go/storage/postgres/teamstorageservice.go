@@ -33,3 +33,12 @@ func (b TeamStorageService) UpdateName(teamId string, name string) error {
 	team.Name = name
 	return team.Update(b.tx)
 }
+
+func (b TeamStorageService) UpdateManagerName(teamId string, name string) error {
+	team, err := storage.TeamByTeamId(b.tx, teamId)
+	if err != nil {
+		return err
+	}
+	team.ManagerName = name
+	return team.Update(b.tx)
+}
