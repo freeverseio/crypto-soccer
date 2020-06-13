@@ -32,6 +32,7 @@ comment on table leagues is E'@omit create,update,delete';
 CREATE TABLE teams (
     team_id TEXT NOT NULL,
     name TEXT NOT NULL,
+    manager_name TEXT NOT NULL DEFAULT '',
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     owner TEXT NOT NULL,
