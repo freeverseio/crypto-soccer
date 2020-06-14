@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   BLOCKS_PER_STEP: "1000"
-  PROXY_CONTRACT_ADDRESS: 0xC6df16E77055Cfd2E5657a1682F7E9629DD30945
+  PROXY_CONTRACT_ADDRESS: 0x935Ebba2B383317Cb96bD7576a245b15AbaE6351
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: sk_production_AjWbpOPwS3HNi821Ma9mIgA2
