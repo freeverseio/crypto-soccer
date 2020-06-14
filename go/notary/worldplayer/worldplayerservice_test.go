@@ -21,7 +21,7 @@ func TestWorldPlayerService(t *testing.T) {
 
 	batch, err := service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
-	assert.Equal(t, len(batch), 25)
+	assert.Equal(t, len(batch), 33)
 
 	playerId = string(batch[1].PlayerId())
 	wp, err = service.GetWorldPlayer(playerId, teamId, now)
