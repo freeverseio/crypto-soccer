@@ -17,10 +17,10 @@ const createRemoteSchema = async uri => {
 
 program
   .version(version)
-  .option("-u, --universeUrl <url>", "graphql universe url", "http://localhost:4001/graphql")
-  .option("-m, --marketUrl <url>", "graphql market url", "http://localhost:4002/graphql")
-  .option("-r, --relayUrl <url>", "graphql relay url", "http://localhost:4003/graphql")
-  .option("-n, --notaryUrl <url>", "graphql notary url", "http://localhost:4004/graphql")
+  .option("-u, --universeUrl <url>", "graphql universe url", "")
+  .option("-m, --marketUrl <url>", "graphql market url", "")
+  .option("-r, --relayUrl <url>", "graphql relay url", "")
+  .option("-n, --notaryUrl <url>", "graphql notary url", "")
   .parse(process.argv);
 
 const { universeUrl, marketUrl, relayUrl, notaryUrl } = program;
@@ -35,8 +35,8 @@ console.log("--------------------------------------------------------");
 const main = async () => {
   const universeRemoteSchema = await createRemoteSchema(universeUrl);
   const marketRemoteSchema = await createRemoteSchema(marketUrl);
-  const relayRemoteSchema = await createRemoteSchema(relayUrl);
-  const notaryRemoteSchema = await createRemoteSchema(notaryUrl);
+  const relayRemoteSchema = (relayUrl !== "") ? await createRemoteSchema(relayUrl) : null;
+  const notaryRemoteSchema = (notaryUrl !== "") ? await createRemoteSchema(notaryUrl) : null;
 
   const linkTypeDefs = `
     extend type Player {
@@ -116,14 +116,15 @@ const main = async () => {
     },
   };
 
+  let schemas = [];
+  universeRemoteSchema && schemas.push(universeRemoteSchema);
+  marketRemoteSchema && schemas.push(marketRemoteSchema);
+  relayRemoteSchema && schemas.push(relayRemoteSchema);
+  notaryRemoteSchema && schemas.push(notaryRemoteSchema);
+  schemas.push(linkTypeDefs);
+
   const schema = mergeSchemas({
-    schemas: [
-      universeRemoteSchema,
-      marketRemoteSchema,
-      relayRemoteSchema,
-      notaryRemoteSchema,
-      linkTypeDefs
-    ],
+    schemas,
     resolvers
   });
 

@@ -22,7 +22,14 @@ const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
+
 contract('Proxy', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const [company, superuser, COO, market, relay, trustedParty] = accounts;
     
     const it2 = async(text, f) => {};
@@ -49,6 +56,23 @@ contract('Proxy', (accounts) => {
         nSelPerContract = [selectors.length];
     });
 
+    it('collisions with proxy should fail', async () => {
+        // contract[0] is the NULL contract
+        // proxy.address is the Proxy deployed at beforeEach, which we will leave with just the null contract
+        // proxyV0 will be th newly deployed Proxy, which we will here be updating.
+        const nContractsToProxy = 4;
+        assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
+        result = await proxy.countSelectorsInContract(0).should.be.fulfilled;
+        result.toNumber().should.be.equal(17);
+        selectorsProxy = deployUtils.extractSelectorsFromAbi(Proxy.abi);
+        selectorsBad = [...selectors]
+        selectorsBad[6] = selectorsProxy[6];
+        tx0 = await proxy.addContracts(contractIds = [1], [assetsAsLib.address], [selectors.length], selectorsBad, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx0 = await proxy.addContracts(contractIds = [2], [assetsAsLib.address], [selectors.length], selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
+        tx1 = await proxy.activateContracts([1], {from: superuser}).should.be.rejected;
+        tx1 = await proxy.activateContracts([2], {from: superuser}).should.be.fulfilled;
+    });
+    
     it('fails when adding a contract to an address without contract', async () => {
         await proxy.addContracts(contractIds = [1], ['0x0'], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
         await proxy.addContracts(contractIds = [1], ['0x32132'], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.rejected;
@@ -79,11 +103,11 @@ contract('Proxy', (accounts) => {
     });
     
     it('full deploy should work', async () => {
-        const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        const {0: prox, 1: ass, 2: mkt, 3: updt, 4: chll} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
     });
     
     it('Assets permissions check on full deploy', async () => {
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges,inheritedArtfcts);
         assets = depl[1]
         await assets.initTZs().should.be.rejected;
         await assets.initTZs({from: COO}).should.be.rejected;
@@ -204,7 +228,9 @@ contract('Proxy', (accounts) => {
         // proxyV0 will be th newly deployed Proxy, which we will here be updating.
         const nContractsToProxy = 4;
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
-        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        result = await proxy.countSelectorsInContract(0).should.be.fulfilled;
+        result.toNumber().should.be.equal(17);
+        const {0: proxyV0, 1: assV0, 2: markV0, 3: updV0, 4: chllV0} = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         assert.equal(await proxy.countContracts(), '1', "wrong init number of contracts in proxy");
         assert.equal(await proxyV0.countContracts(), '5', "wrong V0 number of contracts in proxy");
 
@@ -231,7 +257,8 @@ contract('Proxy', (accounts) => {
             Updates, 
             Challenges,
             Directory,
-            namesAndAddresses
+            namesAndAddresses,
+            inheritedArtfcts
         ).should.be.fulfilled;
         
         assert.equal(await proxyV1.address, proxyV0.address);

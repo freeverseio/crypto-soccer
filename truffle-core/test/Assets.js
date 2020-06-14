@@ -19,9 +19,14 @@ const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 
-
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 
 contract('Assets', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const ALICE_ACC = web3.eth.accounts.create("alice");
     const BOB_ACC   = web3.eth.accounts.create("bob");
     const CAROL_ACC = web3.eth.accounts.create("carol");
@@ -51,7 +56,7 @@ contract('Assets', (accounts) => {
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
@@ -77,8 +82,66 @@ contract('Assets', (accounts) => {
         N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
+    
+    it('addDivisions and addCountries', async () => {
+        result = await assets.countCountries(tz).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNDivisionsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNLeaguesInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(16);
+        result = await assets.getNTeamsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(16*8);
+        result = await assets.countryInTZExists(tz, countryIdx = 0).should.be.fulfilled;
+        result.should.be.equal(true);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 0).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
         
-   it('create special players', async () => {
+        tx = await assets.addDivisionManually(tz, 0).should.be.rejected;
+        tx = await assets.addDivisionManually(tz, 0, {from: owners.COO}).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '1';
+        });
+        
+        result = await assets.countCountries(tz).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNDivisionsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2);
+        result = await assets.getNLeaguesInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2*16);
+        result = await assets.getNTeamsInCountry(tz, countryIdx = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(2*16*8);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 0).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        divId = await assets.encodeTZCountryAndVal(tz, 0, 1).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        
+        tx = await assets.addCountryManually(tz).should.be.rejected;
+        tx = await assets.addCountryManually(tz, {from: owners.COO}).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
+            return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '1' && event.divisionIdxInCountry.toString() === '0';
+        });
+
+        result = await assets.countCountries(tz).should.be.fulfilled;
+        result.toNumber().should.be.equal(2);
+        result = await assets.getNDivisionsInCountry(tz, countryIdx = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await assets.getNLeaguesInCountry(tz, countryIdx = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(16);
+        result = await assets.getNTeamsInCountry(tz, countryIdx = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(16*8);
+        divId = await assets.encodeTZCountryAndVal(tz, 1, 0).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        divId = await assets.encodeTZCountryAndVal(tz, 1, 1).should.be.fulfilled;
+        result = await assets.divisionIdToRound(divId).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+    });
+    
+    it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
         specialPlayerId = await assets.encodePlayerSkills(
@@ -118,7 +181,7 @@ contract('Assets', (accounts) => {
     it('check DivisionCreation event on initSingleTz', async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         defaultSetup.singleTimezone = 4;
-        depl2 = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl2 = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         assets2 = depl2[1];
         await assets2.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
         tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone, {from: owners.COO}).should.be.fulfilled;

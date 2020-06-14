@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/graph-gophers/graphql-go"
 )
@@ -57,5 +58,5 @@ func (b CreateBidInput) VerifySignature(contracts contracts.Contracts) (bool, er
 	if err != nil {
 		return false, err
 	}
-	return VerifySignature(hash, sign)
+	return helper.VerifySignature(hash, sign)
 }

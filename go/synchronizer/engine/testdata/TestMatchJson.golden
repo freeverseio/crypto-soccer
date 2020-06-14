@@ -53,6 +53,7 @@
 		"TimezoneIdx": 0,
 		"CountryIdx": 0,
 		"Name": "",
+		"ManagerName": "",
 		"Owner": "0x0000000000000000000000000000000000000000",
 		"LeagueIdx": 0,
 		"TeamIdxInLeague": 0,
@@ -87,7 +88,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -108,7 +110,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -129,7 +132,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -150,7 +154,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -171,7 +176,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -192,7 +198,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -213,7 +220,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -234,7 +242,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -255,7 +264,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -276,7 +286,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -297,7 +308,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -318,7 +330,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -339,7 +352,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -360,7 +374,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -381,7 +396,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -402,7 +418,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -423,7 +440,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -444,7 +462,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -465,7 +484,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -486,7 +506,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -507,7 +528,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -528,7 +550,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -549,7 +572,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -570,7 +594,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -591,7 +616,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			}
 		],
 		"Training": {
@@ -639,6 +665,7 @@
 		"TimezoneIdx": 0,
 		"CountryIdx": 0,
 		"Name": "",
+		"ManagerName": "",
 		"Owner": "0x0000000000000000000000000000000000000000",
 		"LeagueIdx": 0,
 		"TeamIdxInLeague": 0,
@@ -673,7 +700,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -694,7 +722,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -715,7 +744,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -736,7 +766,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -757,7 +788,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -778,7 +810,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -799,7 +832,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -820,7 +854,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -841,7 +876,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -862,7 +898,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -883,7 +920,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -904,7 +942,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -925,7 +964,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -946,7 +986,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -967,7 +1008,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -988,7 +1030,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1009,7 +1052,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1030,7 +1074,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1051,7 +1096,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1072,7 +1118,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1093,7 +1140,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1114,7 +1162,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1135,7 +1184,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1156,7 +1206,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			},
 			{
 				"PlayerId": null,
@@ -1177,7 +1228,8 @@
 				"InjuryMatchesLeft": 0,
 				"Tiredness": 0,
 				"CountryOfBirth": "",
-				"Race": ""
+				"Race": "",
+				"YellowCard1stHalf": false
 			}
 		],
 		"Training": {

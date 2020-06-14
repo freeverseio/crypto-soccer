@@ -25,9 +25,15 @@ const Merkle = artifacts.require('Merkle');
 const Stakers = artifacts.require("Stakers")
 const Utils = artifacts.require('Utils');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 
 
 contract('Updates', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
     const nLevelsInOneChallenge = 11;
     const nNonNullLeafsInLeague = 640;
@@ -79,7 +85,7 @@ contract('Updates', (accounts) => {
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         // // done with delegate calls
@@ -101,6 +107,14 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
     });
     
+    it('Inform event', async () =>  {
+        tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys")).should.be.rejected;
+        tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys"), {from: owners.relay}).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "Inform", (event) => {
+            return event.id == id && event.content == content;
+        });
+    });
+
     it('test getAllMatchdaysUTCInRound', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         nextVerseTimestamp = nextVerseTimestamp.toNumber();

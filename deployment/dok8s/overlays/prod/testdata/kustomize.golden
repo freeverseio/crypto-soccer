@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   BLOCKS_PER_STEP: "1000"
-  PROXY_CONTRACT_ADDRESS: 0x8B424e29A86050799421B7C1a7e40B273a58b37d
+  PROXY_CONTRACT_ADDRESS: 0x935Ebba2B383317Cb96bD7576a245b15AbaE6351
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: sk_production_AjWbpOPwS3HNi821Ma9mIgA2
@@ -249,14 +249,13 @@ spec:
     spec:
       containers:
       - args:
-        - -backdoor=true
         - -timeout=30
         - -gqlurl
         - http://horizon:4000
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/authproxy:0.20.0
+        image: freeverseio/authproxy:0.21.0
         imagePullPolicy: Always
         name: authproxy
       imagePullSecrets:
@@ -288,7 +287,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/dashboard:0.20.0
+      - image: freeverseio/dashboard:0.21.0
         imagePullPolicy: Always
         name: dashboard
       imagePullSecrets:
@@ -332,7 +331,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/horizon:0.20.0
+        image: freeverseio/horizon:0.21.0
         imagePullPolicy: Always
         name: horizon
       imagePullSecrets:
@@ -364,7 +363,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/market.db:0.20.0
+      - image: freeverseio/market.db:0.21.0
         imagePullPolicy: Always
         name: marketdb
         ports:
@@ -421,7 +420,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.notary:0.20.0
+        image: freeverseio/market.notary:0.21.0
         imagePullPolicy: Always
         name: notary
         ports:
@@ -530,7 +529,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/relay.actions:0.20.0
+        image: freeverseio/relay.actions:0.21.0
         imagePullPolicy: Always
         name: relayactions
         ports:
@@ -586,7 +585,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/synchronizer:0.20.0
+        image: freeverseio/synchronizer:0.21.0
         imagePullPolicy: Always
         name: synchronizer
       imagePullSecrets:
@@ -626,7 +625,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.trader:0.20.0
+        image: freeverseio/market.trader:0.21.0
         imagePullPolicy: Always
         name: trader
       imagePullSecrets:
@@ -664,7 +663,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/universe.api:0.20.0
+        image: freeverseio/universe.api:0.21.0
         imagePullPolicy: Always
         name: universeapi
         ports:
@@ -701,7 +700,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/universe.db:0.20.0
+        image: freeverseio/universe.db:0.21.0
         imagePullPolicy: Always
         name: universedb
         ports:

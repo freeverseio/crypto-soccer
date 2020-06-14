@@ -32,6 +32,7 @@ comment on table leagues is E'@omit create,update,delete';
 CREATE TABLE teams (
     team_id TEXT NOT NULL,
     name TEXT NOT NULL,
+    manager_name TEXT NOT NULL DEFAULT '',
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     owner TEXT NOT NULL,
@@ -100,6 +101,7 @@ CREATE TABLE players (
     tiredness INT NOT NULL,
     country_of_birth TEXT NOT NULL,
     race TEXT NOT NULL,
+    yellow_card_1st_half BOOL NOT NULL DEFAULT FALSE,
     PRIMARY KEY(player_id)
 );
 comment on table players is E'@omit create,update,delete';
@@ -124,6 +126,7 @@ CREATE TABLE players_histories (
     tiredness INT NOT NULL,
     country_of_birth TEXT NOT NULL,
     race TEXT NOT NULL,
+    yellow_card_1st_half BOOL NOT NULL DEFAULT FALSE,
     PRIMARY KEY(block_number, player_id)
 );
 comment on table players_histories is E'@omit create,update,delete';

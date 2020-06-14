@@ -1,6 +1,8 @@
-package gql
+package worldplayer
 
-import "github.com/graph-gophers/graphql-go"
+import (
+	"github.com/graph-gophers/graphql-go"
+)
 
 type WorldPlayer struct {
 	playerId          graphql.ID
@@ -16,6 +18,7 @@ type WorldPlayer struct {
 	validUntil        string
 	countryOfBirth    string
 	race              string
+	productId         string
 }
 
 func NewWorldPlayer(
@@ -32,6 +35,7 @@ func NewWorldPlayer(
 	validUntil string,
 	countryOfBirth string,
 	race string,
+	productId string,
 ) *WorldPlayer {
 	player := WorldPlayer{}
 	player.playerId = playerId
@@ -47,6 +51,7 @@ func NewWorldPlayer(
 	player.validUntil = validUntil
 	player.countryOfBirth = countryOfBirth
 	player.race = race
+	player.productId = productId
 	return &player
 }
 
@@ -100,4 +105,8 @@ func (b WorldPlayer) Endurance() int32 {
 
 func (b WorldPlayer) Potential() int32 {
 	return b.potential
+}
+
+func (b WorldPlayer) ProductId() string {
+	return b.productId
 }

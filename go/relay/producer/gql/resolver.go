@@ -1,11 +1,11 @@
 package gql
 
 type Resolver struct {
-	c chan interface{}
+	ch chan interface{}
 }
 
-func NewResolver(c chan interface{}) *Resolver {
-	return &Resolver{c}
+func NewResolver(ch chan interface{}) *Resolver {
+	return &Resolver{ch}
 }
 
 func (b *Resolver) Ping() bool {

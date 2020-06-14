@@ -34,4 +34,6 @@ kubectl -n freeverse get secrets | grep cicd
 market, staker, relay needs credentials to sign transactions. Let's create a secret where to store them
 ```bash
 kubectl -n freeverse create secret generic blockchain-accounts --from-literal=relay=<private_key> --from-literal=market=<private_key> --from-literal=staker=<private_key>
+
+kubectl -n freeverse create secret generic google-iap-key --from-file=./key.json
 ```

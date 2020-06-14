@@ -99,6 +99,107 @@ func TestLeagueProcessMatch(t *testing.T) {
 	assert.NilError(t, err)
 }
 
+// Enable this huge test, with go test -timeout 99999s to check that the ranking changes on day=13 for tz = 24
+// func TestEntireLeagueEvolution(t *testing.T) {
+// 	t.Parallel()
+// 	tx, err := universedb.Begin()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer tx.Rollback()
+
+// 	countryIdx := big.NewInt(0)
+// 	divisionIdx := big.NewInt(0)
+
+// 	divisionCreationProcessor := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
+// 	tzs := []uint8{1, 24}
+// 	for _, tz := range tzs {
+// 		assert.NilError(t, divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{tz, countryIdx, divisionIdx, types.Log{}}))
+// 	}
+// 	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
+// 	seed := [32]byte{0x2}
+// 	gameDeployDay, err := bc.Contracts.Assets.GameDeployDay(&bind.CallOpts{})
+// 	assert.NilError(t, err)
+// 	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
+// 	ua := useractions.UserActions{}
+// 	cid, err := useractionsPublishService.Publish(ua)
+// 	assert.NilError(t, err)
+// 	root, err := ua.Root()
+// 	assert.NilError(t, err)
+// 	block := uint64(1000)
+// 	verse := int64(0)
+
+// 	testTimezone := uint8(1)
+// 	testCountryIdx := uint32(0)
+// 	testLeagueIdx := uint32(0)
+
+// 	var teamIds []string
+
+// 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, testTimezone, testCountryIdx, testLeagueIdx)
+// 	assert.NilError(t, err)
+// 	for idx := 0; idx < 8; idx++ {
+// 		_, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+// 			bind.NewKeyedTransactor(bc.Owner),
+// 			testTimezone,
+// 			big.NewInt(0),
+// 			common.HexToAddress("0x8724aC60ac290837a1fe2d441279413d5B058E5F"),
+// 		)
+// 		assert.NilError(t, err)
+// 		teamIds = append(teamIds, teams[idx].TeamID)
+// 		// t.Log(idx, "-", teams[idx].TeamID)
+// 	}
+// 	for idx, teamId := range teamIds {
+// 		testTeam, err := storage.TeamByTeamId(tx, teamId)
+// 		assert.NilError(t, err)
+// 		testTeam.Owner = "0x433"
+// 		assert.NilError(t, testTeam.Update(tx))
+// 		// t.Log(testTeam.RankingPoints, testTeam.TeamIdxInLeague)
+// 		assert.Equal(t, testTeam.TeamIdxInLeague, uint32(idx))
+// 	}
+
+// 	for day := uint8(0); day < 16; day++ {
+// 		actualDay := day
+// 		if day == 14 {
+// 			actualDay = uint8(0)
+// 		}
+// 		for turnInDay := uint8(0); turnInDay < 2; turnInDay++ {
+// 			block++
+// 			verse++
+// 			for _, tz := range tzs {
+// 				t.Log("day: ", day, " | actualDay", actualDay, " | turnInDay", turnInDay, " | tz", tz)
+// 				err = processor.Process(tx, updates.UpdatesActionsSubmission{
+// 					big.NewInt(verse),
+// 					tz,
+// 					actualDay,
+// 					turnInDay,
+// 					seed,
+// 					big.NewInt(actionsSubmissionTime),
+// 					root,
+// 					cid,
+// 					types.Log{BlockNumber: block},
+// 				})
+// 				assert.NilError(t, err)
+// 				for idx, teamId := range teamIds {
+// 					testTeam, err := storage.TeamByTeamId(tx, teamId)
+// 					assert.NilError(t, err)
+// 					// t.Log(testTeam.RankingPoints, testTeam.TeamIdxInLeague)
+// 					// t.Log(idx, "-", teams[idx].TeamID)
+// 					assert.Equal(t, testTeam.TeamIdxInLeague, uint32(idx))
+// 				}
+
+// 			}
+// 		}
+// 	}
+// 	assert.NilError(t, err)
+// 	for idx, teamId := range teamIds {
+// 		testTeam, err := storage.TeamByTeamId(tx, teamId)
+// 		assert.NilError(t, err)
+// 		t.Log(testTeam.RankingPoints)
+// 		assert.Equal(t, testTeam.TeamIdxInLeague, uint32(idx))
+// 	}
+
+// }
+
 // func TestLeagueShuffling(t *testing.T) {
 // 	tx, err := universedb.Begin()
 // 	if err != nil {

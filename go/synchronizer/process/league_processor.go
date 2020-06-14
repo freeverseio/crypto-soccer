@@ -80,8 +80,20 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
-	if (day == 0) && (turnInDay == 0) {
-		if err := b.resetTimezone(tx, timezoneIdx); err != nil {
+	// Reshuffle happens 1 hour before the start of a league
+	// So for each timezone, on day 0, we reset timezone + 1.
+	// Except for the first timezone (tz=1), of course, which is reset the day before (day = 13)
+	// during the match played by the last timezone (tz=24)
+	timezoneToReshuffle := uint8(0)
+	if (timezoneIdx == 24) && (day == 13) && (turnInDay == 0) {
+		timezoneToReshuffle = 1
+	}
+	if (timezoneIdx < 24) && (day == 0) && (turnInDay == 0) {
+		timezoneToReshuffle = timezoneIdx + 1
+	}
+	if timezoneToReshuffle != 0 {
+		log.Debugf("Reset of tz: %v \n", timezoneToReshuffle)
+		if err := b.resetTimezone(tx, timezoneToReshuffle); err != nil {
 			return err
 		}
 	}

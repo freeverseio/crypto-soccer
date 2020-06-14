@@ -8,6 +8,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -68,21 +69,20 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, errors.New("already acknowledged order")
 	}
 
-	value := int64(1000)     // TODO: value is forced to be 1000
-	maxPotential := uint8(9) // TODO: value is forced to be 9
-
-	isValidPlayer, err := b.IsValidPlayer(
+	worldPlayerService := worldplayer.NewWorldPlayerService(b.contracts, b.namesdb)
+	worldPlayer, err := worldPlayerService.GetWorldPlayer(
 		string(args.Input.PlayerId),
-		value,
-		maxPotential,
 		string(args.Input.TeamId),
 		time.Now().Unix(),
 	)
 	if err != nil {
 		return result, err
 	}
-	if !isValidPlayer {
+	if worldPlayer == nil {
 		return result, fmt.Errorf("orderId %v has an invalid playerId %v", data.OrderId, args.Input.PlayerId)
+	}
+	if worldPlayer.ProductId() != data.ProductId {
+		return result, fmt.Errorf("orderId %v has an productId mismatch %v != %v", data.OrderId, worldPlayer.ProductId(), data.ProductId)
 	}
 
 	select {
@@ -93,32 +93,4 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	}
 
 	return args.Input.PlayerId, nil
-}
-
-func (b Resolver) IsValidPlayer(
-	playerId string,
-	value int64,
-	maxPotential uint8,
-	teamId string,
-	epoch int64,
-) (bool, error) {
-	players, err := CreateWorldPlayerBatch(
-		b.contracts,
-		b.namesdb,
-		value,
-		maxPotential,
-		teamId,
-		epoch,
-	)
-	if err != nil {
-		return false, err
-	}
-
-	for _, player := range players {
-		if string(player.PlayerId()) == playerId {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }

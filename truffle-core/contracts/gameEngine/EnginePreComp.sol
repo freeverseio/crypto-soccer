@@ -4,13 +4,15 @@ import "../encoders/EncodingTacticsBase1.sol";
 import "./EngineLib.sol";
 import "./SortValues.sol";
 import "../encoders/EncodingMatchLogBase1.sol";
+import "../encoders/EncodingMatchLogBase3.sol";
+import "../gameEngine/ErrorCodes.sol";
 
 /**
  @title Library or pure functions, part of Engine
  @author Freeverse.io, www.freeverse.io
 */
 
-contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1, SortValues {
+contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, EncodingTacticsBase1, SortValues, ErrorCodes{
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     /// Skills: shoot, speed, pass, defence, endurance
     uint8 constant public SK_SHO = 0;
@@ -59,7 +61,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     uint8 public constant HARD_INJURY  = 2;   /// type of event
     uint8 public constant RED_CARD  = 3;   /// type of event
     /// uint8 public constant NO_LINEUP = 25; /// No player chosen in that position
-
+    uint8 private constant WINNER_AWAY = 1;
+    uint8 private constant WINNER_DRAW = 2;
 
     /// Over a game, we would like:
     ///      - injuryHard = 1 per 100 games => 0.01 per game per player => 0.02 per game
@@ -85,29 +88,33 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint256 tactics,
         bool is2ndHalf,
+        bool isBot,
         uint256 seed
     ) 
         public 
         pure 
-        returns 
-    (
-        uint256
-    ) 
+        returns (uint256) 
     {
-        (uint8[3] memory  substitutions, uint8[3] memory subsRounds, , ,) = decodeTactics(tactics);
+        // for bots: set everything to NO_OUT_OF_GAME_PLAYER and return
+        if (isBot) {
+            matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 0, is2ndHalf);
+            matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 1, is2ndHalf);
+            return setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
+        }
+        
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
 
         /// Start by logging that all substitutions are possible. It will be re-written 
-        /// by the red-card computation below, if needed.
+        /// only by the function logOutOfGame, in case an outOfGame event prevents the subst
         for (uint8 p = 0; p < 3; p++) {
-            if (substitutions[p] != NO_SUBST) {
+            if (getSubstitution(tactics,p) != NO_SUBST) {
                 matchLog = setInGameSubsHappened(matchLog, CHG_HAPPENED, p, is2ndHalf);
             } 
         }
 
         /// Build weights for players, based on their aggressiveness.
-        /// Legit players have > 0, but those already out in first half (teams with 10 players) have 0.
+        /// If no change was planned (in pos = 11,12,13) => skills[pos] = 0 => weight = 0
         for (uint8 p = 0; p < NO_OUT_OF_GAME_PLAYER; p++) {
             if (skills[p] != 0) weights[p] = 1 + getAggressiveness(skills[p]); /// weights must be > 0 to ever be selected
         }
@@ -121,31 +128,29 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         
         yellowCardeds[0] = throwDiceArray(weights, rnds[2]);
         yellowCardeds[1] = throwDiceArray(weights, rnds[3]);
-    
-        /// Important: there is no need to check if a red card had been given in the 1st half, because that player, simply
-        /// would never be able to have been lined-up, and never made it up to here.
-    
-        /// However, it is important to check if a player who saw a yellow card is not linedup anymore
-    
-        /// if both yellows are for the same player => force red card, and leave. Enough punishment.
+
+        /// Policiy: if a redcard is given (even if as a result of 2 yellows), log it and leave. Enough punishment.
+        /// In 2nd half, first check against yellows in 1st half:
+        if (is2ndHalf) {
+            if (getYellowCardFirstHalf(skills[yellowCardeds[0]])) {
+                matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 0, is2ndHalf);
+                matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 1, is2ndHalf);
+                return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, tactics, [rnds[0], rnds[1]]);
+            }
+            if (getYellowCardFirstHalf(skills[yellowCardeds[1]])) {
+                matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 0, is2ndHalf);
+                matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 1, is2ndHalf);
+                return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, tactics, [rnds[0], rnds[1]]); 
+            }
+        }
+
+        /// If we made it here, it's either 1st half, or the 2 yellows do not match any yellow in 1st half. 
+        /// So just check if both yellows are for the same player. If so, log one yellow only, and one red card. 
+        /// Note that if it is 1st half, we need to log
         if (yellowCardeds[0] == yellowCardeds[1] && yellowCardeds[0] != NO_OUT_OF_GAME_PLAYER) {
             matchLog = addYellowCard(matchLog, yellowCardeds[0], 0, is2ndHalf);
             matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 1, is2ndHalf);
-            return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
-        }
-        /// if we are in the 2nd half (and the 2 yellows are for different players):
-        /// - if any such player had alread received one in the 1st half => force red, record the other yellow card, leave. 
-        if (is2ndHalf) {
-            if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[0])) {
-                matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
-                yellowCardeds[0] = NO_OUT_OF_GAME_PLAYER;
-            }
-            if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[1])) {
-                if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
-                    matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
-                }
-                yellowCardeds[1] = NO_OUT_OF_GAME_PLAYER;
-            }
+            return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, tactics, [rnds[0], rnds[1]]);
         }
         
         /// if we get here: both yellows are to different players, who can continue playing. Record them.
@@ -159,53 +164,42 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         /// total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
             weights[NO_OUT_OF_GAME_PLAYER] = 758;
-            uint8 selectedPlayer = throwDiceArray(weights, rnds[0]);
-            matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
-        }
-        /// If 1st half, log the yellowCarded guys who managed to end lined-up
-        if (!is2ndHalf) {
-            if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[0], substitutions)) matchLog = setYellowedDidNotFinished1stHalf(matchLog, 0);
-            if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[1], substitutions)) matchLog = setYellowedDidNotFinished1stHalf(matchLog, 1);
+            uint8 outOfGamePlayer = throwDiceArray(weights, rnds[0]);
+            matchLog = logOutOfGame(is2ndHalf, false, outOfGamePlayer, matchLog, tactics, [rnds[0], rnds[1]]);
         }
         return matchLog;
     }
-    
-    function didPlayerFinish1stHalf(uint256 matchLog, uint256 player, uint8[3] memory substitutions) private pure returns(bool) {
-        /// check if it was outOfGamed in 1st half: ((matchLog >> 151) & 15) = redCardeds in 1st Half
-        /// ...note: no need to check type of outOfGame, he cannot be linedup in 2nd half
-        if (getOutOfGamePlayer(matchLog, false) == player) return false; 
-        /// check if it was substituted:
-        /// ...note: if substitution did not happen because he was redCarded, he'd have falled in previous check.
-        for (uint p = 0; p < 3; p++) {
-            if (player == substitutions[p]) return false;
-        }
-        return true;
+
+    // returns true if the outOfGamePlayer is either the starting GK, or a substituted one
+    function isOutOfGameForGK(uint8 outOfGamePlayer, uint256 tactics) public pure returns(bool) {
+        if (getSubstitution(tactics, 0) == 0 && outOfGamePlayer == 11) return true;
+        if (getSubstitution(tactics, 1) == 0 && outOfGamePlayer == 12) return true;
+        if (getSubstitution(tactics, 2) == 0 && outOfGamePlayer == 13) return true;
+        if (outOfGamePlayer == 0) return true;
+        return false;
     }
     
-    function hadReceivedYellowIn1stHalf(uint256 matchLog, uint256 newYellowCarded) private pure returns(bool) {
-        return
-            /// ((matchLog >> 161) & 15) = 1st half yellow card [0]
-            /// ((log >> 169) & 1) = yellowCardedCouldNotFinish1stHalf[0]
-            ((newYellowCarded == getYellowCard(matchLog, 0, false)) && (!getYellowedDidNotFinished1stHalf(matchLog, 0))) ||
-            /// ((matchLog >> 165) & 15) = 1st half yellow card [1]
-            /// ((log >> 170) & 1) = yellowCardedCouldNotFinish1stHalf[1]
-            ((newYellowCarded == getYellowCard(matchLog, 1, false)) && (!getYellowedDidNotFinished1stHalf(matchLog, 1)));
+    // returns the pos of the outOfGamePlayer: either the starting GK, or a substituted one
+    function getOutOfGameForGK(uint8 outOfGamePlayer, uint256 tactics) public pure returns(uint8) {
+        if (getSubstitution(tactics, 0) == 0 && outOfGamePlayer == 11) return 11;
+        if (getSubstitution(tactics, 1) == 0 && outOfGamePlayer == 12) return 12;
+        if (getSubstitution(tactics, 2) == 0 && outOfGamePlayer == 13) return 13;
+        return 0;
     }
     
     function logOutOfGame(
         bool is2ndHalf,
         bool forceRedCard,
-        uint8 selectedPlayer, 
+        uint8 outOfGamePlayer, 
         uint256 matchLog,
-        uint8[3] memory substitutions,
-        uint8[3] memory subsRounds,
+        uint256 tactics,
         uint64[2] memory rnds
     ) 
-        private 
+        public 
         pure 
         returns(uint256) 
     {
-        if (selectedPlayer == NO_OUT_OF_GAME_PLAYER) return addOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
+        if (outOfGamePlayer == NO_OUT_OF_GAME_PLAYER) return setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
 
         uint8 minRound = 0;
         uint8 maxRound = ROUNDS_PER_MATCH-1;
@@ -213,26 +207,28 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         /// first compute the type of event        
         uint8 typeOfEvent = forceRedCard ? RED_CARD : computeTypeOfEvent(rnds[1]);
 
-        /// for goal keepers, make sure they do not see a red card, and if they are injured, at the end of the half.
+        /// for GKs, make sure they do not see a red card, and if they are injured, allow it at the end of 2nd half only.
+        /// note that it a GK is substituted, the same applies to the entry GK.
         /// note that in-game events end up in round = ROUNDS_PER_MATCH - 1, so we leave endOfGame for round = ROUNDS_PER_MATCH
-        if (selectedPlayer == 0) {
-            if (!is2ndHalf || typeOfEvent == RED_CARD) return addOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
-            else { return addOutOfGame(matchLog, selectedPlayer, ROUNDS_PER_MATCH, typeOfEvent, is2ndHalf); }
+        if (isOutOfGameForGK(outOfGamePlayer, tactics)) {
+            return (!is2ndHalf || typeOfEvent == RED_CARD) ? 
+                setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf) :
+                setOutOfGame(matchLog, getOutOfGameForGK(outOfGamePlayer, tactics), ROUNDS_PER_MATCH, typeOfEvent, is2ndHalf);
         }
 
         /// if the selected player was one of the guys joining during this half (outGame = 11, 12, or 13),
         /// make sure that the round selected for this event is after joining. 
-        if (selectedPlayer < 14 && selectedPlayer > 10) {
-            minRound = subsRounds[selectedPlayer - 11];
+        if (outOfGamePlayer > 10) {
+            minRound = getSubsRound(tactics, outOfGamePlayer - 11);
         }
         /// if the selected player was one of the guys to be changed during this half (outGame = 0,...10),
         /// make sure that the round selected for this event is before the change.
         /// (note that substitution[p] == 11 => NO_SUBS, cannot happen 
-        /// in the next else-if (since selectedPlayer <= 10 in that branch)
+        /// in the next else-if (since outOfGamePlayer <= 10 in that branch)
         else {
             for (uint8 p = 0; p < 3; p++) {
-                if (selectedPlayer == substitutions[p]) {
-                    maxRound = subsRounds[p];
+                if (outOfGamePlayer == getSubstitution(tactics, p)) {
+                    maxRound = getSubsRound(tactics, p);
                     /// log that this substitution was unable to take place
                     if (typeOfEvent == RED_CARD) {
                         matchLog = setInGameSubsHappened(matchLog, CHG_CANCELLED, p, is2ndHalf);
@@ -240,11 +236,11 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
                 } 
             }
         }
-        return addOutOfGame(matchLog, selectedPlayer, computeRound(rnds[0]+1, minRound, maxRound), typeOfEvent, is2ndHalf);
+        return setOutOfGame(matchLog, outOfGamePlayer, computeRound(rnds[0]+1, minRound, maxRound), typeOfEvent, is2ndHalf);
     }
 
-    function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) private pure returns (uint8 round) {
-        require(maxRound > minRound, "max and min rounds are not correct");
+    function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) public pure returns (uint8 round) {
+        if (!(maxRound > minRound)) return minRound; // this should never happen, but it is here for safety
         return minRound + uint8(seed % (maxRound - minRound + 1));
     }
 
@@ -252,7 +248,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     /// injuryHard:  1
     /// injuryLow:   2
     /// redCard:     3
-    function computeTypeOfEvent(uint256 rnd) private pure returns (uint8) {
+    function computeTypeOfEvent(uint256 rnd) public pure returns (uint8) {
         uint256[] memory weights = new uint256[](3);
         weights[0] = 1; /// injuryHard   
         weights[1] = 2; /// injuryLow
@@ -286,19 +282,14 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
             if (round > 3) {
                 /// note: winner = 0: home, 1: away, 2: draw (so if home wins, no need to write anything)
                 if (totalGoals[0] > totalGoals[1]) return matchLogs;
-                if (totalGoals[0] < totalGoals[1]) {
-                    matchLogs[0] = addWinner(matchLogs[0], 1);
-                    matchLogs[1] = addWinner(matchLogs[1], 1);
-                    return matchLogs;
-                }
+                if (totalGoals[0] < totalGoals[1]) { return addWinnerToBothLogs(matchLogs, WINNER_AWAY); }
             }
         }
         if (throwDice(block0 + getSkill(skills[0][4], SK_SHO), block1 + getSkill(skills[1][4], SK_SHO), rnds[13]) == 0) {
             matchLogs[0] = addScoredPenalty(matchLogs[0], 6); 
         } else {
             matchLogs[1] = addScoredPenalty(matchLogs[1], 6); 
-            matchLogs[0] = addWinner(matchLogs[0], 1);
-            matchLogs[1] = addWinner(matchLogs[1], 1);
+            matchLogs = addWinnerToBothLogs(matchLogs, WINNER_AWAY);
         }
         return matchLogs;
     }
@@ -312,31 +303,30 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     /// globSkills[IDX_DEFEND_SHOOT] =    speed(defenders) + defence(defenders);
     /// blockShoot  =    shoot(keeper);
     function getTeamGlobSkills(
-        uint256[PLAYERS_PER_TEAM_MAX] memory skills, 
-        uint8[9] memory playersPerZone, 
-        bool[10] memory extraAttack
+        uint256[PLAYERS_PER_TEAM_MAX] memory skills,
+        uint256 tactics,
+        bool isBot
     )
         public
         pure
-        returns 
-    (
-        uint256[5] memory globSkills
-    )
+        returns(uint256[5] memory globSkills)
     {
+        uint8[9] memory playersPerZone = getPlayersPerZone(tactics);
+        
         /// for a keeper, the 'shoot skill' is interpreted as block skill
         /// if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 posCondModifier;
         uint256 playerSkills = skills[0];
         if (playerSkills != 0) {
-            posCondModifier = computeModifierBadPositionAndCondition(0, playersPerZone, playerSkills);
+            posCondModifier = computeModifierBadPositionAndCondition(0, playersPerZone, playerSkills, isBot);
             computeGKGlobSkills(globSkills, playerSkills, posCondModifier);
         }
         uint256[2] memory fwdModFactors;
         for (uint8 p = 1; p < 11; p++){
             playerSkills = skills[p];
             if (playerSkills != 0) {
-                posCondModifier = computeModifierBadPositionAndCondition(p, playersPerZone, playerSkills);
-                fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
+                posCondModifier = computeModifierBadPositionAndCondition(p, playersPerZone, playerSkills, isBot);
+                fwdModFactors = getExtraAttackFactors(getExtraAttack(tactics, p-1));
                 if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}
                 else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}
                 else {computeForwardsGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}       
@@ -366,13 +356,14 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     function computeModifierBadPositionAndCondition(
         uint8 lineupPos, 
         uint8[9] memory playersPerZone, 
-        uint256 playerSkills
+        uint256 playerSkills,
+        bool isBot
     ) 
         public
         pure
         returns (uint256) 
     {
-        require(lineupPos < NO_SUBST, "wrong arg in computeModifierBadPositionAndCondition");
+        /// by construction, we should always have lineupPos < NO_SUBST
         uint256 penalty;
         uint256 forwardness = getForwardness(playerSkills);
         uint256 leftishness = getLeftishness(playerSkills);
@@ -418,7 +409,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         }
         /// In no case can penalty be larger than 4000 since it is 
         /// the sum of 2 penalties, and each is at most 2000.
-        uint8 gamesNonStop = getGamesNonStopping(playerSkills);
+        uint8 gamesNonStop = isBot ? 3 : getGamesNonStopping(playerSkills);
         if (gamesNonStop > 5) {
             return 5000 - penalty;
         } else {
@@ -438,7 +429,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         uint256 playerSkills, 
         uint256 posCondModifier
     ) 
-        private 
+        public 
         pure
     {
         /// extraAttack for defenders: 
@@ -457,7 +448,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         uint256 posCondModifier, 
         uint256[2] memory fwdModFactors
     ) 
-        private 
+        public 
         pure
     {
         /// extraAttack for defenders: 
@@ -476,7 +467,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         uint256 posCondModifier, 
         uint256[2] memory fwdModFactors
     ) 
-        private 
+        public 
         pure
     {
         /// extraAttack for midfielders: 
@@ -495,7 +486,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         uint256 posCondModifier, 
         uint256[2] memory fwdModFactors
     ) 
-        private 
+        public 
         pure
     {
         /// extraAttack for forwards: 
@@ -506,37 +497,37 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
         globSkills[IDX_ENDURANCE] += ((getSkill(playerSkills, SK_END)) * posCondModifier)/TEN_TO_4;
     }
 
-    function playersBelowZones(uint8[9] memory playersPerZone) private pure returns(uint8[9] memory  playersBelow) {
+    function playersBelowZones(uint8[9] memory playersPerZone) public pure returns(uint8[9] memory  playersBelow) {
         playersBelow[0] = playersPerZone[0];    
         for (uint8 z = 1; z < 9; z++) {
             playersBelow[z] = playersBelow[z-1] + playersPerZone[z];
         }
     }
 
-    function penaltyForLefts(uint256 leftishness) private pure returns(uint16) {
+    function penaltyForLefts(uint256 leftishness) public pure returns(uint16) {
         if (leftishness == IDX_C || leftishness == IDX_CR) {return 1000;} 
         else if (leftishness == IDX_R) {return 2000;}
     }
 
-    function penaltyForCenters(uint256 leftishness) private pure returns(uint16) {
+    function penaltyForCenters(uint256 leftishness) public pure returns(uint16) {
         if (leftishness == IDX_L || leftishness == IDX_R) {return 1000;} 
     }
 
-    function penaltyForRights(uint256 leftishness) private pure returns(uint16) {
+    function penaltyForRights(uint256 leftishness) public pure returns(uint16) {
         if (leftishness == IDX_C || leftishness == IDX_LC) {return 1000;} 
         else if (leftishness == IDX_L) {return 2000;}
     }
     
-    function penaltyForDefenders(uint256 forwardness) private pure returns(uint16) {
+    function penaltyForDefenders(uint256 forwardness) public pure returns(uint16) {
         if (forwardness == IDX_M || forwardness == IDX_MF) {return 1000;}
         else if (forwardness == IDX_F) {return 2000;}
     }
 
-    function penaltyForMids(uint256 forwardness) private pure returns(uint16) {
+    function penaltyForMids(uint256 forwardness) public pure returns(uint16) {
         if (forwardness == IDX_D || forwardness == IDX_F) {return 1000;}
     }
 
-    function penaltyForAttackers(uint256 forwardness) private pure returns(uint16) {
+    function penaltyForAttackers(uint256 forwardness) public pure returns(uint16) {
         if (forwardness == IDX_M || forwardness == IDX_MD) {return 1000;}
         else if (forwardness == IDX_D) {return 2000;}
     }
@@ -553,19 +544,20 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
     (
         uint256,
         uint256[PLAYERS_PER_TEAM_MAX] memory linedUpSkills,
-        uint8
+        uint8 err
     ) 
     {
-        (uint8[3] memory  substitutions,,uint8[14] memory lineup,, uint8 tacticsId) = decodeTactics(tactics);
+        uint8[14] memory lineup = getFullLineUp(tactics);
         uint8 changes;
         uint256 teamSkills;
+        uint8 fieldPlayers;
         
         /// Count changes during half-time, as well as not-aligned players
-        /// ...note: substitutions = 11 means NO_SUBS
         for (uint8 p = 0; p < 11; p++) {
             if (lineup[p] != NO_LINEUP) {   
                 linedUpSkills[p] = verifyCanPlay(lineup[p], skills[lineup[p]], is2ndHalf, false);
                 if (linedUpSkills[p] != 0) {
+                    fieldPlayers++;
                     if (is2ndHalf && !getAlignedEndOfFirstHalf(linedUpSkills[p])) {
                         matchLog = addHalfTimeSubs(matchLog, lineup[p]+1, changes); /// for halftime subs, 0 = NO_SUBS
                         changes++;
@@ -575,38 +567,48 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingTacticsBase1
             }
         }
         
-        /// Count changes ingame during 1st half
-        /// matchLog >> 189, 190, 191 contain ingameSubsCancelled
+        /// If we are in 2nd half, count ingame changes that took place during 1st half
         if (is2ndHalf) {
             for (uint8 p = 0; p < 3; p++) {
                 if (getInGameSubsHappened(matchLog, p, false) == CHG_HAPPENED) changes++;
             }        
         }
 
-        if ((substitutions[0] != NO_SUBST) && (lineup[11] != NO_LINEUP)) {
-            changes++;
-            linedUpSkills[11] = verifyCanPlay(lineup[11], skills[lineup[11]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(linedUpSkills[11]); 
+        /// Count subtitutions planned for the half to be played now:
+        for (uint8 p = 0; p < 3; p++) {
+            if ((getSubstitution(tactics, p) != NO_SUBST) && (lineup[11+p] != NO_LINEUP)) {
+                linedUpSkills[11+p] = verifyCanPlay(lineup[11+p], skills[lineup[11+p]], is2ndHalf, true);
+                if (linedUpSkills[11+p]>0) {
+                    changes++;
+                    teamSkills += getSumOfSkills(linedUpSkills[11+p]); 
+                    /// if the player to be substituted was an empty slot, then add 1 to fieldPlayers
+                    /// this prevents, e.g., having a red-carded from 1st half not starting the 2nd half (so that the
+                    /// system would allow a 10 players lineup), to be immediately substituted by another player, hence
+                    /// having 11 players again in the field.
+                    if (
+                        (lineup[getSubstitution(tactics, p)] == NO_LINEUP) || 
+                        (verifyCanPlay(lineup[getSubstitution(tactics, p)], skills[lineup[getSubstitution(tactics, p)]], is2ndHalf, false) == 0)
+                    ) {
+                        fieldPlayers++;
+                    }
+                }
+            }
         }
-        if ((substitutions[1] != NO_SUBST) && (lineup[12] != NO_LINEUP)) {
-            changes++;
-            require(substitutions[0] != substitutions[1], "changelist incorrect");
-            linedUpSkills[12] = verifyCanPlay(lineup[12], skills[lineup[12]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(linedUpSkills[12]); 
-        }
-        if ((substitutions[2] != NO_SUBST) && (lineup[13] != NO_LINEUP)) {
-            changes++;
-            require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
-            linedUpSkills[13] = verifyCanPlay(lineup[13], skills[lineup[13]], is2ndHalf, true);
-            teamSkills += getSumOfSkills(linedUpSkills[13]); 
-        }
-        require(changes < 4, "max allowed changes in a game is 3");
+        if (changes > 3) return (matchLog, linedUpSkills, ERR_PLAYHALF_HALFCHANGES);
+        if (fieldPlayers >= (getOutOfGameType(matchLog, false) == RED_CARD ? 11 : 12)) return (matchLog, linedUpSkills, ERR_PLAYHALF_TOO_MANY_LINEDUP);
+
+        matchLog = addNTot(matchLog, fieldPlayers, is2ndHalf);
+
+        /// Check that the same player does not appear twice in the lineup
         lineup = sort14(lineup);
-        for (uint8 p = 1; p < 11; p++) require((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1], "player appears twice in lineup!");  
+        for (uint8 p = 1; p < 11; p++) {
+            /// check that player does not appear twice in lineUp
+            if (!((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1])) return (matchLog, linedUpSkills, ERR_PLAYHALF_PLAYER_TWICE);
+        }  
         /// Note that teamSumSkills is the sum of, at most, 14 skills of, at most, 20b each. 
         /// So the total cannot be larger that 24b, which is the limit reserved for teamSumSkills.
         matchLog = addTeamSumSkills(matchLog, teamSkills); 
-        return (matchLog, linedUpSkills, tacticsId);      
+        return (matchLog, linedUpSkills, err);      
     }
 
     function verifyCanPlay(uint8 lineup, uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {

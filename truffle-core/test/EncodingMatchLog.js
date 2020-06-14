@@ -23,38 +23,38 @@ contract('EncodingMatchLog', (accounts) => {
     });
     
     it('encode and decode matchlog', async () =>  {
-        nGoals = 3;
-        assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => i);
-        shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 15-i);
+        nGoals = 15;
+        assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => 15-i%4);
+        shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 15-i%4);
         shooterForwardPos  = Array.from(new Array(MAX_GOALS), (x,i) => i % 4);
         penalties  = Array.from(new Array(7), (x,i) => (i % 2 == 0));
-        outOfGames = [10, 4];
-        outOfGameRounds = [7, 4];
-        typesOutOfGames = [1, 2];
-        yellowCardedDidNotFinish1stHalf = [false, true];
+        outOfGames = [14, 13];
+        outOfGameRounds = [14, 15];
+        typesOutOfGames = [2, 3];
         isHomeStadium = true;
-        ingameSubs1 = [0, 1, 2];
-        ingameSubs2 = [2, 1, 0];
-        yellowCards1 = [9, 6];
-        yellowCards2 = [3, 0];
-        halfTimeSubstitutions = [9, 7, 10];
-        nDefs1 = 4;
-        nDefs2 = 3;
-        nTot = 10;
-        winner = 1;
-        teamSumSkills = 1543;
-        trainingPoints = 2333;
+        ingameSubs1 = [3, 2, 3];
+        ingameSubs2 = [2, 3, 2];
+        yellowCards1 = [14, 15];
+        yellowCards2 = [15, 14];
+        halfTimeSubstitutions = [31, 30, 31];
+        nGKAndDefs1 = 14;
+        nGKAndDefs2 = 15;
+        nTot1 = 15;
+        nTot2 = 14;
+        winner = 3;
+        teamSumSkills = (2**24)-1;
+        trainingPoints = (2**12)-1;
         
         log = await logUtils.encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
-            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
         );
 
         await logUtils.checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
-            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
+            halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
         );
             
         // mini test that once showed a bug:

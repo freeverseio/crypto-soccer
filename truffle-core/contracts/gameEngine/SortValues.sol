@@ -12,7 +12,7 @@ contract SortValues {
        return data;
     }
     
-    function quickSort14(uint8[14] memory arr, int left, int right) internal pure {
+    function quickSort14(uint8[14] memory arr, int left, int right) public pure {
         int i = left;
         int j = right;
         if(i==j) return;

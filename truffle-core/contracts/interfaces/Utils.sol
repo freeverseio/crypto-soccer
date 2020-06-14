@@ -1,13 +1,14 @@
 pragma solidity >= 0.6.3;
 import "../encoders/EncodingMatchLog.sol";
 import "../storage/AssetsView.sol";
+import "../encoders/EncodingTacticsBase3.sol";
 
 /**
  @title Library of pure functions used by company to compute useful data
  @author Freeverse.io, www.freeverse.io
 */
 
-contract Utils is EncodingMatchLog, AssetsView{
+contract Utils is EncodingMatchLog, EncodingTacticsBase3, AssetsView {
 
     function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {
         decodedLog[0] = uint32(getTeamSumSkills(log));
@@ -40,7 +41,7 @@ contract Utils is EncodingMatchLog, AssetsView{
         uint16 dayOfBirth,
         uint8[4] memory birthTraits,
         uint256 playerId, 
-        bool[3] memory aligned1stSubst1stRedCardLastGame,
+        bool[5] memory aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st,
         uint8[3] memory generationGamesNonStopInjuryWeeks
     ) {
         for (uint8 sk = 0; sk < N_SKILLS; sk++) skills[sk] = uint32(getSkill(encodedSkills, sk));
@@ -54,9 +55,11 @@ contract Utils is EncodingMatchLog, AssetsView{
         
         playerId = getPlayerIdFromSkills(encodedSkills);
         
-        aligned1stSubst1stRedCardLastGame[0] = getAlignedEndOfFirstHalf(encodedSkills);
-        aligned1stSubst1stRedCardLastGame[1] = getSubstitutedFirstHalf(encodedSkills);
-        aligned1stSubst1stRedCardLastGame[2] = getRedCardLastGame(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[0] = getAlignedEndOfFirstHalf(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[1] = getSubstitutedFirstHalf(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[2] = getRedCardLastGame(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[3] = getOutOfGameFirstHalf(encodedSkills);
+        aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[4] = getYellowCardFirstHalf(encodedSkills);
         
         generationGamesNonStopInjuryWeeks[0] = uint8(getGeneration(encodedSkills));
         generationGamesNonStopInjuryWeeks[1] = getGamesNonStopping(encodedSkills);
@@ -65,5 +68,23 @@ contract Utils is EncodingMatchLog, AssetsView{
     
     function getNow() public view returns(uint256) {
         return now;
+    }
+    
+    function decodeTactics(uint256 tactics) public pure returns (
+        uint8[3] memory substitutions, 
+        uint8[3] memory subsRounds, 
+        uint8[14] memory lineup, 
+        bool[10] memory extraAttack, 
+        uint8 tacticsId
+    ) {
+        tacticsId = getTacticsId(tactics);
+        extraAttack = getFullExtraAttack(tactics);
+        for (uint8 p = 0; p < 3; p++) {
+            substitutions[p] = getSubstitution(tactics, p);
+        }          
+        lineup = getFullLineUp(tactics);
+        for (uint8 p = 0; p < 3; p++) {
+            subsRounds[p] = getSubsRound(tactics, p);
+        }          
     }
 }

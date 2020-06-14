@@ -11,9 +11,15 @@ const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Challenges = artifacts.require('Challenges');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 // TODO: add more tests that execute withdraw
 
 contract('Stakers', (accounts) => {
+  const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
   const [dummy, gameAddr, dummy2, bob, carol, dave, erin, frank, alice] = accounts
 
   let stakers
@@ -24,7 +30,7 @@ contract('Stakers', (accounts) => {
   beforeEach(async () => {
     defaultSetup = deployUtils.getDefaultSetup(accounts);
     owners = defaultSetup.owners;
-    depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+    depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
     [proxy, assets, market, updates] = depl;
     await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
     

@@ -31,8 +31,14 @@ const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 const Shop = artifacts.require('Shop');
 const Leagues = artifacts.require('Leagues');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
 
 contract('FullLeague', (accounts) => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const JUST_CHECK_AGAINST_EXPECTED_RESULTS = 0;
     const WRITE_NEW_EXPECTED_RESULTS = 1;
     const nNonNullLeafsInLeague = 640;
@@ -90,8 +96,8 @@ contract('FullLeague', (accounts) => {
     const yellowCards1 = [14, 14]
     const yellowCards2 = [14, 14]
     const halfTimeSubstitutions = [14, 14, 14]
-    const nDefs1 = 4; 
-    const nDefs2 = 4; 
+    const nGKAndDefs1 = 4; 
+    const nGKAndDefs2 = 4; 
     const nTot = 11; 
     const winner = 2; // DRAW = 2
     const isHomeSt = false;
@@ -293,7 +299,7 @@ contract('FullLeague', (accounts) => {
 
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
-        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         await assets.initTZs({from: owners.COO}).should.be.fulfilled;
@@ -476,7 +482,7 @@ contract('FullLeague', (accounts) => {
     
     it('challenge unexpected zero values', async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
-        depl = await deployUtils.deploy(defaultSetup.owners, Proxy, Assets, Market, Updates, Challenges);
+        depl = await deployUtils.deploy(defaultSetup.owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         proxy  = depl[0];
         updates = depl[3];
         challenges = depl[4];

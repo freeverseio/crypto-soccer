@@ -90,18 +90,6 @@ function findDuplicates(data) {
     return result;
 }
   
-function informNoCollisions(contractsArray) {
-    allSelectors = [];
-    for (contract of contractsArray){ 
-        allSelectors = allSelectors.concat(extractSelectorsFromAbi(contract.abi));
-    }
-    duplicates = findDuplicates(allSelectors);
-    if (duplicates.length != 0) {
-        console.log("There are collisions between the contracts to delegate. No panic. It is normal when they inherit common libs")
-        console.log("The important thing is that there are no collisions with the proxy.")
-    }
-}
-
 function assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges) {
     proxySelectors = extractSelectorsFromAbi(Proxy.abi);
 
@@ -128,13 +116,41 @@ function appendVersionNumberToNames(names, versionNumber) {
     return newNames;
 }
 
+function getAllSelectors(artfcts) {
+    all = [];
+    for (a = 0; a < artfcts.length; a++) {
+        all = all.concat(extractSelectorsFromAbi(artfcts[a].abi));
+    }
+    return all;
+}
+
+function removeDuplicates(allSelectors, inheritedSelectors) {
+    added = [];
+    purgedSelectors = [];
+    
+    nContracts = allSelectors.length;
+    for (c = 0; c < nContracts; c++) {
+        thisContractSels = allSelectors[c];
+        thisContractPurgedSels = [];
+        for (s = 0; s < thisContractSels.length; s++) {
+            thisSel = thisContractSels[s];
+            alreadyAdded = added.includes(thisSel);
+            if (alreadyAdded) {
+                assert(inheritedSelectors.includes(thisSel));
+            } else {
+                added.push(thisSel);
+                thisContractPurgedSels.push(thisSel);
+            }
+        }
+        purgedSelectors.push(thisContractPurgedSels);
+    }
+    return purgedSelectors;
+}
+
 // - versionNumber = 0 for first deploy
-const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
+const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts) => {
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
 
-    // Optionally inform about duplicates between the contracts themselves:
-    // informNoCollisions(Assets, Market, Updates, Challenges);
-    
     // Next: proxy is built either by deploy, or by assignement to already deployed address
     const proxySelectors = extractSelectorsFromAbi(Proxy.abi);
     const proxy = await Proxy.new(owners.company, owners.superuser, proxySelectors).should.be.fulfilled;
@@ -151,11 +167,14 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
     //  - build interfaces to those contracts which point to the proxy address
     const {0: assets, 1: market, 2: updates, 3: challenges, 4: addresses, 5: allSelectors, 6: names} = 
         await deployContractsToDelegateTo(proxy.address, Assets, Market, Updates, Challenges);
+
+    const inheritedSelectors = getAllSelectors(inheritedArtfcts);
+    const purgedSelectors = removeDuplicates(allSelectors, inheritedSelectors);
         
     const versionedNames = appendVersionNumberToNames(names, versionNumber = 0);
 
     // Adds new contracts to proxy
-    const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
+    const newContractIds = await addContracts(owners.superuser, proxy, addresses, purgedSelectors, versionedNames, firstNewContractId);
 
     // await assertActiveStatusIs(deactivateContractIds, true, proxy);
     // Deactivate and Activate all contracts atomically
@@ -168,15 +187,19 @@ const deploy = async (owners, Proxy, Assets, Market, Updates, Challenges) => {
 
 // - versionNumber = 0 for first deploy
 // - proxyAddress needs only be specified for upgrades
-const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges, Directory, namesAndAddresses) => {
+// Step 1: deploy all contracts except for proxy (permisionless)
+//  - deploy all non-proxy, non-directory contracts
+//  - deploy directory pointing to these new-deployed contracts
+// Step 2: "proxy.addContracts" (superUser)
+//  - build input parameters, such as: "selectors"...
+// Step 3: "proxy.upgrade", (superUser)
+//  - atomic: deactivateOld + activateNew + setNewDirectoryAddress    
+const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Market, Updates, Challenges, Directory, namesAndAddresses, inheritedArtfcts) => {
     assert.notEqual(versionNumber, 0, "version number must be larger than 0 for upgrades");
     assert.notEqual(proxyAddress, "0x0", "proxyAddress must different from 0x0 for upgrades");
     
     assertNoCollisionsWithProxy(Proxy, Assets, Market, Updates, Challenges);
 
-    // Optionally inform about duplicates between the contracts themselves
-    // informNoCollisions(Assets, Market, Updates, Challenges);
-    
     const proxy = await Proxy.at(proxyAddress).should.be.fulfilled;
 
     // Check that the number of contracts already declared in Proxy is as expected.
@@ -194,9 +217,11 @@ const upgrade = async (versionNumber, owners, Proxy, proxyAddress, Assets, Marke
         
     const versionedNames = appendVersionNumberToNames(names, versionNumber);
 
-    
+    const inheritedSelectors = getAllSelectors(inheritedArtfcts);
+    const purgedSelectors = removeDuplicates(allSelectors, inheritedSelectors);
+
     // Adds new contracts to proxy in one single TX signed by owners.superuser
-    const newContractIds = await addContracts(owners.superuser, proxy, addresses, allSelectors, versionedNames, firstNewContractId);
+    const newContractIds = await addContracts(owners.superuser, proxy, addresses, purgedSelectors, versionedNames, firstNewContractId);
 
     // Stores new addresses in Directory contract
     const {0: dummy, 1: nonProxyNames, 2: nonProxyAddresses} = splitNamesAndAdresses(namesAndAddresses);
@@ -302,7 +327,6 @@ async function setProxyContractOwners(proxy, assets, owners, prevCompany) {
 
 module.exports = {
     extractSelectorsFromAbi,
-    informNoCollisions,
     assertNoCollisionsWithProxy,
     deploy,
     addTrustedParties,

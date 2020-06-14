@@ -24,7 +24,14 @@ const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
 const TrainingPoints = artifacts.require('TrainingPoints');
 
+const UniverseInfo = artifacts.require('UniverseInfo');
+const EncodingSkills = artifacts.require('EncodingSkills');
+const EncodingState = artifacts.require('EncodingState');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
+const UpdatesBase = artifacts.require('UpdatesBase');
+
 async function createSpecialPlayerId(rnd = 144321433) {
+  const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
   sk = [16383, 13, 4, 56, 456];
   traits = [potential = 5, forwardness = 3, leftishness = 4, aggressiveness = 1]
   secsInYear = 365*24*3600
@@ -50,9 +57,10 @@ contract("Market", accounts => {
   const it2 = async(text, f) => {};
   
   beforeEach(async () => {
+    const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     defaultSetup = deployUtils.getDefaultSetup(accounts);
     owners = defaultSetup.owners;
-    depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges);
+    depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
     [proxy, assets, market, updates] = depl;
     await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
 
@@ -1189,6 +1197,12 @@ contract("Market", accounts => {
 
     targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId, {from: owners.market}).should.be.fulfilled;
+  });
+  
+  it("transferBuyNow field issue: this transfer failed because player sum skills was larger than allowed", async () => {
+    playerId = '25774653249826802746817168298702153927337350437920121584357232';
+    targetTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId, {from: owners.market}).should.be.rejected;
   });
   
   it("dismissPlayers fails when already sold, not owner any more", async () => {
