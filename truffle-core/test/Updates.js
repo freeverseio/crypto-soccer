@@ -261,7 +261,11 @@ contract('Updates', (accounts) => {
         nextVerse.getUTCHours().should.be.equal(expectedHour);
         nextVerse.getUTCMinutes().should.be.equal(30);
         nextVerse.getUTCSeconds().should.be.equal(0);
-        timeZoneForRound1.toNumber().should.be.equal(expectedHour);
+        if (expectedHour == 0) {
+            timeZoneForRound1.toNumber().should.be.equal(24);
+        } else {
+            timeZoneForRound1.toNumber().should.be.equal(expectedHour);
+        }
     });
     
     it('wait some minutes', async () =>  {
