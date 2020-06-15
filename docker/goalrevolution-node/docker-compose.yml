@@ -12,6 +12,8 @@ services:
       - IPFS_PATH=/data
       # - IPFS_FD_MAX=4096
       # - IPFS_PROFILE=test
+    volumes:
+      - ipfs.node-data:/data
   ipfs.cluster:
     image: ipfs/ipfs-cluster:v0.12.1
     restart: always
@@ -24,6 +26,8 @@ services:
     command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.io.gorengine.com
     depends_on: 
       - ipfs.node
+    volumes:
+      - ipfs.cluster-data:/data
   universe.db:
     image: "freeverseio/universe.db:${TAG}"
     restart: always
@@ -31,6 +35,9 @@ services:
       - universe.db-data:/var/lib/postgresql/data
   synchronizer:
     image: "freeverseio/synchronizer:${TAG}"
+    # build: 
+    #   context: ../../go/
+    #   dockerfile: Dockerfile.synchronizer
     restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
@@ -39,6 +46,7 @@ services:
       -proxy_address "${PROXY_CONTRACT_ADDRESS}"
       -staker "${STAKER_PVC}"
       -delta "${BLOCKS_PER_STEP}"
+      # -debug
     depends_on:
       - universe.db
       - ethereum
@@ -46,16 +54,32 @@ services:
       - ipfs.cluster
   universe.api:
     image: "freeverseio/universe.api:${TAG}"
-    ports:
-      - "4000:4000"
     depends_on:
       - ethereum
     command: >
       -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer 
       --enableCors true
+  market.db:
+    image: freeverseio/market.db:$TAG
+  market.trader:
+    image: freeverseio/market.trader:$TAG
+    command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
+  horizon:
+    image: freeverseio/horizon:$TAG
+    # build: 
+    #   context: ../../nodejs-horizon/
+    depends_on:
+      - universe.api
+      - market.trader
+    command: >
+      -u http://universe.api:4000/graphql 
+      -m http://market.trader:4000/graphql 
+    ports:
+      - "4000:4000"
 
 volumes:
   ethereum-data:
   ipfs.node-data:
+  ipfs.cluster-data:
   universe.db-data:
 
