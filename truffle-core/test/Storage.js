@@ -249,7 +249,7 @@ contract('Proxy', (accounts) => {
         // REDEPLOY
         const {0: proxyV1, 1: assV1, 2: markV1, 3: updV1, 4: chllV1} = await deployUtils.upgrade(
             versionNumber = 1,
-            owners, 
+            owners.superuser, 
             Proxy, 
             proxyV0.address,
             Assets, 
