@@ -58,9 +58,9 @@ const Schema = `
 	}
 
 	type Mutation {
-        createAuction(input: CreateAuctionInput!): ID!
-        cancelAuction(input: CancelAuctionInput!): ID!
+		createAuction(input: CreateAuctionInput!): ID!
+		cancelAuction(input: CancelAuctionInput!): ID!
 		createBid(input: CreateBidInput!): ID!
-		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): WorldPlayer
+		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 	}
 `
