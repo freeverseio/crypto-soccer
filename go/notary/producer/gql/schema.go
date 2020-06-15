@@ -61,6 +61,6 @@ const Schema = `
         createAuction(input: CreateAuctionInput!): ID!
         cancelAuction(input: CancelAuctionInput!): ID!
 		createBid(input: CreateBidInput!): ID!
-		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
+		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): WorldPlayer
 	}
 `

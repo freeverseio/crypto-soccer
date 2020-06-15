@@ -1,16 +1,16 @@
 (*worldplayer.WorldPlayer)({
-	playerId: (graphql.ID) (len=62) "25727381890689589641392593817592671995506991029314656406602650",
-	name: (string) (len=18) "Bartolomé Morales",
+	playerId: (graphql.ID) (len=62) "25727372695716344446059389169162682094648336396331264410387800",
+	name: (string) (len=15) "Ragnar Mosquera",
 	dayOfBirth: (int32) 17397,
-	preferredPosition: (string) (len=4) "D LR",
-	defence: (int32) 1574,
-	speed: (int32) 787,
-	pass: (int32) 1060,
-	shoot: (int32) 922,
-	endurance: (int32) 999,
+	preferredPosition: (string) (len=2) "GK",
+	defence: (int32) 1086,
+	speed: (int32) 1197,
+	pass: (int32) 538,
+	shoot: (int32) 1368,
+	endurance: (int32) 1150,
 	potential: (int32) 1,
 	validUntil: (string) (len=10) "1555545600",
-	countryOfBirth: (string) (len=2) "ES",
+	countryOfBirth: (string) (len=2) "EE",
 	race: (string) (len=7) "Spanish",
-	productId: (string) (len=13) "player_tier_0"
+	productId: (string) (len=13) "player_tier_1"
 })

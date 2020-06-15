@@ -107,6 +107,14 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
     });
     
+    it('Inform event', async () =>  {
+        tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys")).should.be.rejected;
+        tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys"), {from: owners.relay}).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "Inform", (event) => {
+            return event.id == id && event.content == content;
+        });
+    });
+
     it('test getAllMatchdaysUTCInRound', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         nextVerseTimestamp = nextVerseTimestamp.toNumber();
@@ -253,7 +261,11 @@ contract('Updates', (accounts) => {
         nextVerse.getUTCHours().should.be.equal(expectedHour);
         nextVerse.getUTCMinutes().should.be.equal(30);
         nextVerse.getUTCSeconds().should.be.equal(0);
-        timeZoneForRound1.toNumber().should.be.equal(expectedHour);
+        if (expectedHour == 0) {
+            timeZoneForRound1.toNumber().should.be.equal(24);
+        } else {
+            timeZoneForRound1.toNumber().should.be.equal(expectedHour);
+        }
     });
     
     it('wait some minutes', async () =>  {

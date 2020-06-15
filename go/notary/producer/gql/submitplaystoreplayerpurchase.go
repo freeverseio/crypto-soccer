@@ -9,46 +9,43 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
-	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
 func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	Input input.SubmitPlayStorePlayerPurchaseInput
-}) (graphql.ID, error) {
+}) (*worldplayer.WorldPlayer, error) {
 	log.Infof("SubmitPlayStorePlayerPurchase %v", args)
 
-	result := graphql.ID(args.Input.PlayerId)
-
 	if b.ch == nil {
-		return result, errors.New("internal error: no channel")
+		return nil, errors.New("internal error: no channel")
 	}
 
 	isValid, err := args.Input.IsValidSignature()
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	if !isValid {
-		return result, errors.New("Invalid signature")
+		return nil, errors.New("Invalid signature")
 	}
 
 	isOwner, err := args.Input.IsSignerOwner(b.contracts)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	if !isOwner {
-		return result, errors.New("Not team owner")
+		return nil, errors.New("Not team owner")
 	}
 
 	data, err := playstore.DataFromReceipt(args.Input.Receipt)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	ctx := context.Background()
 	client, err := playstore.NewGoogleClientService(b.googleCredentials)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	purchase, err := client.GetPurchase(
@@ -58,15 +55,15 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		data.PurchaseToken,
 	)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	validator := playstore.NewPurchaseValidator(*purchase)
 	if validator.IsCanceled() {
-		return result, errors.New("cancelled order")
+		return nil, errors.New("cancelled order")
 	}
 	if validator.IsAcknowledged() {
-		return result, errors.New("already acknowledged order")
+		return nil, errors.New("already acknowledged order")
 	}
 
 	worldPlayerService := worldplayer.NewWorldPlayerService(b.contracts, b.namesdb)
@@ -76,21 +73,21 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		time.Now().Unix(),
 	)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	if worldPlayer == nil {
-		return result, fmt.Errorf("orderId %v has an invalid playerId %v", data.OrderId, args.Input.PlayerId)
+		return nil, fmt.Errorf("orderId %v has an invalid playerId %v", data.OrderId, args.Input.PlayerId)
 	}
 	if worldPlayer.ProductId() != data.ProductId {
-		return result, fmt.Errorf("orderId %v has an productId mismatch %v != %v", data.OrderId, worldPlayer.ProductId(), data.ProductId)
+		return nil, fmt.Errorf("orderId %v has an productId mismatch %v != %v", data.OrderId, worldPlayer.ProductId(), data.ProductId)
 	}
 
 	select {
 	case b.ch <- args.Input:
 	default:
 		log.Warning("channel is full")
-		return result, errors.New("channel is full")
+		return nil, errors.New("channel is full")
 	}
 
-	return args.Input.PlayerId, nil
+	return worldPlayer, nil
 }
