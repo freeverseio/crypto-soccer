@@ -505,30 +505,35 @@ contract('FullLeague', (accounts) => {
         }
     });
     
+
+    // - **OrgMapHeaders** = [orgMapHeader(tz=1),..., orgMapHeader(tz=24)]
     // - **OrgMapHeader** = [nActiveUsersCountry0, nActiveUsersCountry1, ...]
     // - **OrgMap** = [tIdx0, ....tIdxNActive; ...]; max = 34 levels
     // - **UserActions** = [UA$_{tact,0}$, UA$_{train,0}$, ...]; max = 35 levels
     // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
     it('create orgmap', async () => {
         // all returns of this function are arrays as a function of TZ_0-based!!!
-        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        const {0: orgMapHeaders, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         h = web3.utils.keccak256(
-            JSON.stringify(orgMapHeader) + 
+            JSON.stringify(orgMapHeaders) + 
             JSON.stringify(orgMap) + 
             JSON.stringify(userActions) 
         );
         assert.equal(h, '0xaa5ce6abd5de9979adba0ff58246086f9cbd5c970670c834b8045986e19ac063', "orgmap not as expected");
     });
 
+
     // level 0: Root => emit Root
     // level 1: 2048 leagueRoots (only 24 TZs x 2 Countries = 48 are nonzero) => Emit 2048 leagueRoots, store new Root
     // level 2: 2048 x 640 leagueLeafs => emit one of these => only 640 leagueLeafs for one of those roots, store that leagueRoot
     // level 3: provide 640 leagueLeafs, and BC-challenge.
-    
     it('create struct given an orgmap based on repeated league', async () => {
-        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        const {0: orgMapHeaders, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6);
+        assert.equal(orgMap.length, 24, "leafsPerLeague.length not as expected");
+        assert.equal(orgMap[0].length, 8 * nCountriesPerTZ, "orgMap[0].length not as expected");
+        assert.equal(userActions[0].length, 8 * 2 * nCountriesPerTZ, "orgMap[0].length not as expected");
         tzZeroBased = 2;
-        const {0: leafsPerLeague, 1: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeader[tzZeroBased], nExplicitLeaves = nNonNullLeafsInLeague);
+        const {0: leafsPerLeague, 1: nLeaguesInTz} = chllUtils.createLeafsForOrgMap(day = 3, half = 1, orgMapHeaders[tzZeroBased], nExplicitLeaves = nNonNullLeafsInLeague);
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTz, nLeafsPerRoot = 2048);
         assert.equal(nLeaguesInTz, 2, "nLeagues not as expected");
         assert.equal(leafsPerLeague.length, nLeaguesInTz, "leafsPerLeague.length not as expected");

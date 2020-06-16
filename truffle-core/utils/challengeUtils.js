@@ -4,7 +4,6 @@ const merkleUtils = require('../utils/merkleUtils.js');
 const teamsUtils = require('../utils/teamsUtils.js');
 const fs = require('fs');
 
-const nLeafs = 1024;
 const nMatchdays = 14;
 const nMatchesPerDay = 4;
 const nTeamsInLeague = 8;
@@ -76,7 +75,7 @@ function zeroPadToLength(x, desiredLength) {
 //     tactics: [], // [2 * nMatchdays + 1][nTeamsInLeague]
 //     trainings: [] // [2 * nMatchdays + 1][nTeamsInLeague]
 // }
-// - Data[1024] = [League[512], Team$_{i, aft}$[32], Team$_{i, bef}$[32]]
+// - Data[nNonNullLeafs] = [League[512], Team$_{i, aft}$[32], Team$_{i, bef}$[32]]
 // League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
 // 
 // returns leafs AFTER having played the matches at matchday = day, half = half.
@@ -226,6 +225,8 @@ function readCreatedLeagueData() {
   return JSON.parse(fs.readFileSync('test/testdata/fullleague.json', 'utf8'));
 }
 
+// returns an array of 28 elements, one for each (matchday, turnInMatchday)
+// each containing an array of 640 elems
 function readCreatedLeagueLeafs() {
   return JSON.parse(fs.readFileSync('test/testdata/leafsPerHalf.json', 'utf8'));
 }
@@ -262,7 +263,7 @@ function areThereUnexpectedZeros(dayLeaf, day, half, expectedLength) {
   return false;
 }
 
-// all returns of this function are arrays as a function of TZ_0-based!!!
+// all returns of this function are arrays[24] as a function of TZ_0-based!!!
 async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
   orgMapHeader = [];
   orgMap = [];
