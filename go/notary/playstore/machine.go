@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -15,6 +16,7 @@ type Machine struct {
 	order     storage.PlaystoreOrder
 	contracts contracts.Contracts
 	pvc       *ecdsa.PrivateKey
+	namesdb   *names.Generator
 	iapTestOn bool
 }
 
@@ -23,6 +25,7 @@ func New(
 	order storage.PlaystoreOrder,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
+	namesdb *names.Generator,
 	iapTestOn bool,
 ) (*Machine, error) {
 	return &Machine{
@@ -31,6 +34,7 @@ func New(
 		contracts: contracts,
 		pvc:       pvc,
 		iapTestOn: iapTestOn,
+		namesdb:   namesdb,
 	}, nil
 }
 
@@ -43,10 +47,13 @@ func (b *Machine) Process() error {
 
 	switch b.order.State {
 	case storage.PlaystoreOrderOpen:
+		log.Infof("[playstore|process] orderId %v in Open state", b.order.OrderId)
 		return b.processOpenState(ctx)
 	case storage.PlaystoreOrderAcknowledged:
+		log.Infof("[playstore|process] orderId %v in Acknowledged state", b.order.OrderId)
 		return b.processAcknowledged(ctx)
 	case storage.PlaystoreOrderRefunding:
+		log.Infof("[playstore|process] orderId %v in Refunding state", b.order.OrderId)
 		return b.processRefundingState(ctx)
 	case storage.PlaystoreOrderFailed:
 		log.Warning("failed order ... skip")
