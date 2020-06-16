@@ -2,9 +2,13 @@ package playstore
 
 import (
 	"context"
+	"net/http"
+	"time"
 
-	"github.com/awa/go-iap/playstore"
-	"google.golang.org/api/androidpublisher/v3"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	androidpublisher "google.golang.org/api/androidpublisher/v3"
+	"google.golang.org/api/option"
 )
 
 type Client struct {
@@ -17,17 +21,30 @@ type ClientService interface {
 }
 
 type GoogleClientService struct {
-	client *playstore.Client
+	service *androidpublisher.Service
 }
 
 func NewGoogleClientService(credentials []byte) (*GoogleClientService, error) {
-	client, err := playstore.New(credentials)
+	c := &http.Client{Timeout: 10 * time.Second}
+	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, c)
+
+	conf, err := google.JWTConfigFromJSON(credentials, androidpublisher.AndroidpublisherScope)
 	if err != nil {
 		return nil, err
 	}
-	return &GoogleClientService{
-		client: client,
-	}, nil
+
+	val := conf.Client(ctx).Transport.(*oauth2.Transport)
+	_, err = val.Source.Token()
+	if err != nil {
+		return nil, err
+	}
+
+	service, err := androidpublisher.NewService(ctx, option.WithHTTPClient(conf.Client(ctx)))
+	if err != nil {
+		return nil, err
+	}
+
+	return &GoogleClientService{service}, nil
 }
 
 func (b GoogleClientService) Refund(
@@ -35,7 +52,8 @@ func (b GoogleClientService) Refund(
 	packageName string,
 	orderId string,
 ) error {
-	return nil
+	ps := androidpublisher.NewOrdersService(b.service)
+	return ps.Refund(packageName, orderId).Context(ctx).Do()
 }
 
 func (b GoogleClientService) GetPurchase(
@@ -44,12 +62,8 @@ func (b GoogleClientService) GetPurchase(
 	productId string,
 	purchaseToken string,
 ) (*androidpublisher.ProductPurchase, error) {
-	return b.client.VerifyProduct(
-		ctx,
-		packageName,
-		productId,
-		purchaseToken,
-	)
+	ps := androidpublisher.NewPurchasesProductsService(b.service)
+	return ps.Get(packageName, productId, purchaseToken).Context(ctx).Do()
 }
 
 func (b GoogleClientService) AcknowledgePurchase(
@@ -59,11 +73,8 @@ func (b GoogleClientService) AcknowledgePurchase(
 	purchaseToken string,
 	payload string,
 ) error {
-	return b.client.AcknowledgeProduct(
-		ctx,
-		packageName,
-		productId,
-		purchaseToken,
-		payload,
-	)
+	ps := androidpublisher.NewPurchasesProductsService(b.service)
+	acknowledgeRequest := &androidpublisher.ProductPurchasesAcknowledgeRequest{DeveloperPayload: payload}
+	err := ps.Acknowledge(packageName, productId, purchaseToken, acknowledgeRequest).Context(ctx).Do()
+	return err
 }
