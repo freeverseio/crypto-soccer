@@ -11,7 +11,7 @@ import (
 )
 
 func TestResolverTransferFirstBotToAddrResponse(t *testing.T) {
-	schema := graphql.MustParseSchema(gql.Schema, gql.NewResolver(nil))
+	schema := graphql.MustParseSchema(gql.Schema, gql.NewResolver(nil, *bc.Contracts))
 	query := `mutation {
 		transferFirstBotToAddr(timezone: 3, countryIdxInTimezone: "4", address: "0x0")
 	}`
