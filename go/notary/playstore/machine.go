@@ -53,7 +53,7 @@ func (b *Machine) Process() error {
 		log.Infof("[playstore|process] orderId %v in Acknowledged state", b.order.OrderId)
 		return b.processAcknowledged(ctx)
 	case storage.PlaystoreOrderRefunding:
-		log.Infof("[playstore|process] orderId %v in Refunding estate", b.order.OrderId)
+		log.Infof("[playstore|process] orderId %v in Refunding state", b.order.OrderId)
 		return b.processRefundingState(ctx)
 	case storage.PlaystoreOrderFailed:
 		log.Warning("failed order ... skip")
