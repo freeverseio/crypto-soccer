@@ -161,7 +161,7 @@ jobs:
       - generate_contracts_code
       - submit_universe_db_schema
       - run: cd go/cmd/relay && go build ./relay.go
-      - run: cd go/relay && go test ./...
+      - run: cd go/relay && go test ./... -p 1
   market-trader:
     executor: freeverse
     steps:
