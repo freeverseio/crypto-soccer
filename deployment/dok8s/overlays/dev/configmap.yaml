@@ -8,6 +8,7 @@ data:
 
   market_id : ""
   notary_extra_args: "-iap_test"
+  authproxy_extra_args: "-backdoor"
 
   PROXY_CONTRACT_ADDRESS: 0x8D6dE4e048eFD765a05D154E1E310637FF9AaaB2
 

@@ -55,12 +55,12 @@ func (b *Consumer) Start() {
 		event := <-b.ch
 		switch ev := event.(type) {
 		case gql.TransferFirstBotToAddrInput:
-			log.Debug("Received TransferFirstBotAddrInput")
+			log.Infof("[relay|consumer] Trasfer First Bot TX: %v Country: %v to %v", ev.Timezone, ev.CountryIdxInTimezone, ev.Address)
 			if err := firstBotTransfer.Process(ev); err != nil {
 				log.Error(err)
 			}
 		case producer.SubmitActionsEvent:
-			log.Debug("Relay sumbit action event")
+			log.Debug("[relay|consumer] Relay sumbit action event")
 			tx, err := b.db.Begin()
 			if err != nil {
 				log.Error(err)
@@ -75,6 +75,7 @@ func (b *Consumer) Start() {
 				log.Error(err)
 			}
 		case input.SetTeamNameInput:
+			log.Infof("[relay|consumer] Set Team %v Name %v", ev.TeamId, ev.Name)
 			tx, err := b.db.Begin()
 			if err != nil {
 				log.Error(err)
@@ -91,6 +92,7 @@ func (b *Consumer) Start() {
 			}
 
 		case input.SetTeamManagerNameInput:
+			log.Infof("[relay|consumer] Set Team %v Managet Name %v", ev.TeamId, ev.Name)
 			tx, err := b.db.Begin()
 			if err != nil {
 				log.Error(err)
