@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -15,6 +16,7 @@ type Machine struct {
 	order     storage.PlaystoreOrder
 	contracts contracts.Contracts
 	pvc       *ecdsa.PrivateKey
+	namesdb   *names.Generator
 	iapTestOn bool
 }
 
@@ -23,6 +25,7 @@ func New(
 	order storage.PlaystoreOrder,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
+	namesdb *names.Generator,
 	iapTestOn bool,
 ) (*Machine, error) {
 	return &Machine{
@@ -31,6 +34,7 @@ func New(
 		contracts: contracts,
 		pvc:       pvc,
 		iapTestOn: iapTestOn,
+		namesdb:   namesdb,
 	}, nil
 }
 

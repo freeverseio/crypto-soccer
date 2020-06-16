@@ -17,6 +17,7 @@ func TestMachineCreation(t *testing.T) {
 		*order,
 		*bc.Contracts,
 		bc.Owner,
+		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -32,6 +33,7 @@ func TestMachineCreationFailedState(t *testing.T) {
 		*order,
 		*bc.Contracts,
 		bc.Owner,
+		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -48,6 +50,7 @@ func TestMachineCreationRefundedState(t *testing.T) {
 		*order,
 		*bc.Contracts,
 		bc.Owner,
+		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -64,6 +67,7 @@ func TestMachineCreationCompleteState(t *testing.T) {
 		*order,
 		*bc.Contracts,
 		bc.Owner,
+		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
