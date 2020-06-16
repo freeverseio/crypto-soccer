@@ -7,6 +7,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	log "github.com/sirupsen/logrus"
@@ -19,6 +20,7 @@ type Consumer struct {
 	pvc               *ecdsa.PrivateKey
 	market            marketpay.IMarketPay
 	googleCredentials []byte
+	namesdb           *names.Generator
 	iapTestOn         bool
 }
 
@@ -29,6 +31,7 @@ func New(
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
+	namesdb *names.Generator,
 	iapTestOn bool,
 ) (*Consumer, error) {
 	consumer := Consumer{}
@@ -38,6 +41,7 @@ func New(
 	consumer.pvc = pvc
 	consumer.market = market
 	consumer.googleCredentials = googleCredentials
+	consumer.namesdb = namesdb
 	consumer.iapTestOn = iapTestOn
 	return &consumer, nil
 }
@@ -112,6 +116,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			b.contracts,
 			b.pvc,
 			b.googleCredentials,
+			b.namesdb,
 			b.iapTestOn,
 		); err != nil {
 			tx.Rollback()

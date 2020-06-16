@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"database/sql"
 
+	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -16,6 +17,7 @@ func ProcessPlaystoreOrders(
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
+	namesdb *names.Generator,
 	iapTestOn bool,
 ) error {
 	service := postgres.NewPlaystoreOrderHistoryService(tx)
@@ -36,6 +38,7 @@ func ProcessPlaystoreOrders(
 			order,
 			contracts,
 			pvc,
+			namesdb,
 			iapTestOn,
 		)
 		if err != nil {

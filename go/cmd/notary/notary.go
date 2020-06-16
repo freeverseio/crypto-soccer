@@ -117,6 +117,7 @@ func main() {
 			*contracts,
 			privateKey,
 			googleCredentials,
+			namesdb,
 			*iapTestOn,
 		)
 		if err != nil {
