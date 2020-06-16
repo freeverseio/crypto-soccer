@@ -14,6 +14,7 @@ const debug = require('../utils/debugUtils.js');
 const chllUtils = require('../utils/challengeUtils.js');
 const merkleUtils = require('../utils/merkleUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
+const assert = require('assert');
 
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');
@@ -333,32 +334,32 @@ contract('FullLeague', (accounts) => {
         almostNullTraning = await training.encodeTP(TP = 0, TPperSkill, specialPlayer = 21).should.be.fulfilled;
     });
   
-    it2('create real data for an entire league', async () => {
-        mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
-        // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
-        // => all assingments to 0, but with a special player chosen
+    // it2('create real data for an entire league', async () => {
+    //     mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
+    //     // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
+    //     // => all assingments to 0, but with a special player chosen
 
-        leagues = await Leagues.new(assets.address).should.be.fulfilled;
-        teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
-        teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
-        leagueData = await chllUtils.createLeagueData(leagues, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
+    //     leagues = await Leagues.new(assets.address).should.be.fulfilled;
+    //     teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
+    //     teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
+    //     leagueData = await chllUtils.createLeagueData(leagues, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
         
-        if (mode == WRITE_NEW_EXPECTED_RESULTS) {
-            fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
-                if (err) {
-                    console.log(err);
-                }
-            });
-        }
-        expectedData = fs.readFileSync('test/testdata/fullleague.json', 'utf8');
-        assert.equal(
-            web3.utils.keccak256(expectedData),
-            web3.utils.keccak256(JSON.stringify(leagueData)),
-            "leafs do not coincide with expected"
-        );
-    });
+    //     if (mode == WRITE_NEW_EXPECTED_RESULTS) {
+    //         fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
+    //             if (err) {
+    //                 console.log(err);
+    //             }
+    //         });
+    //     }
+    //     expectedData = fs.readFileSync('test/testdata/fullleague.json', 'utf8');
+    //     assert.equal(
+    //         web3.utils.keccak256(expectedData),
+    //         web3.utils.keccak256(JSON.stringify(leagueData)),
+    //         "leafs do not coincide with expected"
+    //     );
+    // });
 
-    it('read an entire league and organize data in the leaf format required', async () => {
+    it2('read an entire league and organize data in the leaf format required', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         leagueData = chllUtils.readCreatedLeagueData();
         var leafs = [];
@@ -383,7 +384,7 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it('test day 0, half 0', async () => {
+    it2('test day 0, half 0', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 0;
         assert.equal(leafs.length, nMatchdays * 2);
@@ -415,7 +416,7 @@ contract('FullLeague', (accounts) => {
     });
     
 
-    it('test all days after 2nd half (day = odd)', async () => {
+    it2('test all days after 2nd half (day = odd)', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 1;
         assert.equal(leafs.length, nMatchdays * 2);
@@ -480,7 +481,7 @@ contract('FullLeague', (accounts) => {
         }
     });
     
-    it('challenge unexpected zero values', async () => {
+    it2('challenge unexpected zero values', async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         depl = await deployUtils.deploy(defaultSetup.owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         proxy  = depl[0];
@@ -511,7 +512,7 @@ contract('FullLeague', (accounts) => {
     // - **OrgMap** = [tIdx0, ....tIdxNActive; ...]; max = 34 levels
     // - **UserActions** = [UA$_{tact,0}$, UA$_{train,0}$, ...]; max = 35 levels
     // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
-    it('create orgmap', async () => {
+    it2('create orgmap', async () => {
         // all returns of this function are arrays as a function of TZ_0-based!!!
         const {0: orgMapHeaders, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         h = web3.utils.keccak256(
@@ -527,7 +528,7 @@ contract('FullLeague', (accounts) => {
     // level 1: 2048 leagueRoots (only 24 TZs x 2 Countries = 48 are nonzero) => Emit 2048 leagueRoots, store new Root
     // level 2: 2048 x 640 leagueLeafs => emit one of these => only 640 leagueLeafs for one of those roots, store that leagueRoot
     // level 3: provide 640 leagueLeafs, and BC-challenge.
-    it('create struct given an orgmap based on repeated league', async () => {
+    it2('create struct given an orgmap based on repeated league', async () => {
         const {0: orgMapHeaders, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6);
         assert.equal(orgMap.length, 24, "leafsPerLeague.length not as expected");
         assert.equal(orgMap[0].length, 8 * nCountriesPerTZ, "orgMap[0].length not as expected");
@@ -541,6 +542,27 @@ contract('FullLeague', (accounts) => {
         assert.equal(levelVerifiableByBC, 3, "levelVerifiableByBC not as expected");
         h = web3.utils.keccak256(JSON.stringify(leafsPerLeague));
         assert.equal(h, '0x265c6fbcc77b18e6831221ff78f0044a4ded80eae9f2f651334b8f6fe808abf0', "leafs not as expected");
+    });
+    
+    it('prove that some UA are in R[Data]', async () => {
+        const nLevelsRootOfOneLeague = 10; // since 640 is closest to 1024 = 2**10
+        const nLevelsInOneChallenge = 4;
+        tzZeroBased = 1;
+        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        leafsA = chllUtils.leafsToBytes32(leafsADecimal);
+        nLeafsPerRoot = 2**nLevelsInOneChallenge;
+        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
+        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
+        assert.equal(merkleStructA.length, 2, "merkleStructA.length not as expected");
+        assert.equal(merkleStructA[0].length, 1, "merkleStructA.length not as expected");
+        assert.equal(merkleStructA[1].length, nLeafsPerRoot, "merkleStructA.length not as expected");
+        assert.equal(leafsA.length, 2, "we expect two leagues in this orgmap, 1 for each country");
+
+        root = merkleUtils.merkleRootZeroPad(leafsA[0], nLevelsRootOfOneLeague);
+        assert.equal(root, merkleStructA[lev = 1][pos = 0], "merkleStructA and root do not match");
+        proof = merkleUtils.buildProofZeroPad(leafPos = 128+25, leafsA[0], nLevelsRootOfOneLeague);
+        assert.equal(merkleUtils.verify(merkleStructA[lev = 1][pos = 0], proof, leafsA[0][leafPos], leafPos), true, "proof not working");
     });
     
     
