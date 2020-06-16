@@ -10,6 +10,7 @@ import (
 type MockClientService struct {
 	GetPurchaseFunc          func() (*androidpublisher.ProductPurchase, error)
 	AcknowledgedPurchaseFunc func() error
+	RefundFunc               func() error
 }
 
 func NewMockClientService() *MockClientService {
@@ -40,4 +41,8 @@ func (b MockClientService) AcknowledgePurchase(
 	payload string,
 ) error {
 	return b.AcknowledgedPurchaseFunc()
+}
+
+func (b MockClientService) Refund(ctx context.Context, packageName string, orderId string) error {
+	return b.RefundFunc()
 }

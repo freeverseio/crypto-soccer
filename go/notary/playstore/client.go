@@ -13,6 +13,7 @@ type Client struct {
 type ClientService interface {
 	GetPurchase(ctx context.Context, packageName string, productId string, purchaseToken string) (*androidpublisher.ProductPurchase, error)
 	AcknowledgePurchase(ctx context.Context, packageName string, productId string, purchaseToken string, payload string) error
+	Refund(ctx context.Context, packageName string, orderId string) error
 }
 
 type GoogleClientService struct {
@@ -27,6 +28,14 @@ func NewGoogleClientService(credentials []byte) (*GoogleClientService, error) {
 	return &GoogleClientService{
 		client: client,
 	}, nil
+}
+
+func (b GoogleClientService) Refund(
+	ctx context.Context,
+	packageName string,
+	orderId string,
+) error {
+	return nil
 }
 
 func (b GoogleClientService) GetPurchase(
