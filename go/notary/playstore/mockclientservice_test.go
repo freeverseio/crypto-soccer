@@ -32,7 +32,7 @@ func (b MockClientService) GetPurchase(
 	return b.GetPurchaseFunc()
 }
 
-func (b MockClientService) AcknowledgedPurchase(
+func (b MockClientService) AcknowledgePurchase(
 	ctx context.Context,
 	packageName string,
 	productId string,

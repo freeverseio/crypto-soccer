@@ -12,7 +12,7 @@ type Client struct {
 
 type ClientService interface {
 	GetPurchase(ctx context.Context, packageName string, productId string, purchaseToken string) (*androidpublisher.ProductPurchase, error)
-	AcknowledgedPurchase(ctx context.Context, packageName string, productId string, purchaseToken string, payload string) error
+	AcknowledgePurchase(ctx context.Context, packageName string, productId string, purchaseToken string, payload string) error
 }
 
 type GoogleClientService struct {
@@ -43,7 +43,7 @@ func (b GoogleClientService) GetPurchase(
 	)
 }
 
-func (b GoogleClientService) AcknowledgedPurchase(
+func (b GoogleClientService) AcknowledgePurchase(
 	ctx context.Context,
 	packageName string,
 	productId string,

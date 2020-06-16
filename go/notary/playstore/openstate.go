@@ -59,7 +59,7 @@ func (b *Machine) processOpenState(ctx context.Context) error {
 	}
 
 	payload := fmt.Sprintf("playerId: %v", b.order.PlayerId)
-	if err := b.client.AcknowledgedPurchase(
+	if err := b.client.AcknowledgePurchase(
 		ctx,
 		b.order.PackageName,
 		b.order.ProductId,
