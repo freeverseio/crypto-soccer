@@ -2,6 +2,7 @@ apiVersion: v1
 data:
   BLOCKS_PER_STEP: "10000"
   PROXY_CONTRACT_ADDRESS: 0x8D6dE4e048eFD765a05D154E1E310637FF9AaaB2
+  authproxy_extra_args: -backdoor
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: ""
@@ -253,6 +254,7 @@ spec:
         - -timeout=30
         - -gqlurl
         - http://horizon:4000
+        - $(authproxy_extra_args)
         envFrom:
         - configMapRef:
             name: freeverse-configmap

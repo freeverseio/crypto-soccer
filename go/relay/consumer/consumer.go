@@ -60,7 +60,7 @@ func (b *Consumer) Start() {
 				log.Error(err)
 			}
 		case producer.SubmitActionsEvent:
-			log.Debug("Relay sumbit action event")
+			log.Debug("[relay|consumer] Relay sumbit action event")
 			tx, err := b.db.Begin()
 			if err != nil {
 				log.Error(err)
