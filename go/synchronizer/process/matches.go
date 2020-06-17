@@ -62,6 +62,7 @@ func NewMatchesFromTimezoneIdxMatchdayIdx(
 }
 
 func (b *Matches) Play1stHalf(ctx context.Context, contracts contracts.Contracts) error {
+	log.Info("Using no paraller Play1stHalf")
 	for i := range *b {
 		if err := (*b)[i].Play1stHalf(contracts); err != nil {
 			return err
@@ -104,6 +105,7 @@ func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.C
 }
 
 func (b *Matches) Play2ndHalf(ctx context.Context, contracts contracts.Contracts) error {
+	log.Info("Using no paraller Play2ndHalf")
 	for i := range *b {
 		if err := (*b)[i].Play2ndHalf(contracts); err != nil {
 			return err
