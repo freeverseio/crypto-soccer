@@ -61,6 +61,15 @@ func NewMatchesFromTimezoneIdxMatchdayIdx(
 	return &matches, nil
 }
 
+func (b *Matches) Play1stHalf(ctx context.Context, contracts contracts.Contracts) error {
+	for _, match := range *b {
+		if err := match.Play1stHalf(contracts); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
 	numWorkers := runtime.NumCPU()
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100
@@ -92,6 +101,15 @@ func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.C
 	}
 	close(matchesChannel)
 	return g.Wait()
+}
+
+func (b *Matches) Play2ndHalf(ctx context.Context, contracts contracts.Contracts) error {
+	for _, match := range *b {
+		if err := match.Play2ndHalf(contracts); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.Contracts) error {

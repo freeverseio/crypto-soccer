@@ -130,12 +130,12 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		if err = storage.ResetTrainingsByTimezone(tx, timezoneIdx); err != nil {
 			return err
 		}
-		if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
+		if err = matches.Play1stHalf(context.TODO(), *b.contracts); err != nil {
 			return err
 		}
 	case 1:
 		log.Debugf("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
-		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
+		if err = matches.Play2ndHalf(context.TODO(), *b.contracts); err != nil {
 			return err
 		}
 	default:
