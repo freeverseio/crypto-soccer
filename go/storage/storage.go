@@ -29,4 +29,6 @@ type StorageService interface {
 	Insert(team Team) error
 	UpdateName(teamId string, name string) error
 	UpdateManagerName(teamId string, name string) error
+
+	Dump(fileName string) error
 }

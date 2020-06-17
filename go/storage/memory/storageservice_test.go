@@ -8,6 +8,6 @@ import (
 )
 
 func TestStorageServiceInterface(t *testing.T) {
-	service := memory.NewTeamStorageService()
+	service := memory.NewStorageService()
 	storagetest.TestStorageService(t, service)
 }
