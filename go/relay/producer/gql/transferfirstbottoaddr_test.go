@@ -11,7 +11,7 @@ import (
 func TestTransferFirstBot(t *testing.T) {
 	t.Parallel()
 	input := gql.TransferFirstBotToAddrInput{}
-	resolver := gql.NewResolver(nil)
+	resolver := gql.NewResolver(nil, *bc.Contracts)
 	result, err := resolver.TransferFirstBotToAddr(input)
 	assert.NilError(t, err)
 	assert.Equal(t, result, true)
@@ -20,7 +20,7 @@ func TestTransferFirstBot(t *testing.T) {
 func TestTransferFirstBotChannel(t *testing.T) {
 	t.Parallel()
 	c := make(chan interface{})
-	resolver := gql.NewResolver(c)
+	resolver := gql.NewResolver(c, *bc.Contracts)
 
 	input := gql.TransferFirstBotToAddrInput{}
 	input.Timezone = 23

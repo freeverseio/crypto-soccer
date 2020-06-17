@@ -19,6 +19,7 @@ func TestAckStateProcessErrorInCLient(t *testing.T) {
 		*order,
 		*bc.Contracts,
 		bc.Owner,
+		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -42,6 +43,7 @@ func TestAckStateProcessTestPurchaseWithTestOff(t *testing.T) {
 		*order,
 		*bc.Contracts,
 		bc.Owner,
+		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -65,6 +67,7 @@ func TestAckStateProcessTestPurchaseWithTestOn(t *testing.T) {
 		*order,
 		*bc.Contracts,
 		bc.Owner,
+		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -86,6 +89,7 @@ func TestAckStateProcess(t *testing.T) {
 		*order,
 		*bc.Contracts,
 		bc.Owner,
+		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)

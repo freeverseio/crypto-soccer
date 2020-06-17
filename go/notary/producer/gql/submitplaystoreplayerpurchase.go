@@ -3,12 +3,9 @@ package gql
 import (
 	"context"
 	"errors"
-	"fmt"
-	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
-	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -67,22 +64,6 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	}
 	if validator.IsAcknowledged() {
 		return result, errors.New("already acknowledged order")
-	}
-
-	worldPlayerService := worldplayer.NewWorldPlayerService(b.contracts, b.namesdb)
-	worldPlayer, err := worldPlayerService.GetWorldPlayer(
-		string(args.Input.PlayerId),
-		string(args.Input.TeamId),
-		time.Now().Unix(),
-	)
-	if err != nil {
-		return result, err
-	}
-	if worldPlayer == nil {
-		return result, fmt.Errorf("orderId %v has an invalid playerId %v", data.OrderId, args.Input.PlayerId)
-	}
-	if worldPlayer.ProductId() != data.ProductId {
-		return result, fmt.Errorf("orderId %v has an productId mismatch %v != %v", data.OrderId, worldPlayer.ProductId(), data.ProductId)
 	}
 
 	select {

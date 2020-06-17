@@ -252,6 +252,7 @@ spec:
         - -timeout=30
         - -gqlurl
         - http://horizon:4000
+        - $(authproxy_extra_args)
         envFrom:
         - configMapRef:
             name: freeverse-configmap

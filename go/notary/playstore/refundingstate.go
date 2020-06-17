@@ -3,10 +3,15 @@ package playstore
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 func (b *Machine) processRefundingState(ctx context.Context) error {
-	log.Warning("NOT IMPLEMENTED refunding")
+	err := b.client.Refund(ctx, b.order.PackageName, b.order.OrderId)
+	if err != nil {
+		b.setState(storage.PlaystoreOrderRefunding, err.Error())
+		return nil
+	}
+	b.setState(storage.PlaystoreOrderRefunded, "")
 	return nil
 }

@@ -13,22 +13,21 @@ import (
 )
 
 type WorldPlayerService struct {
-	contracts    contracts.Contracts
-	namesdb      *names.Generator
-	distribution []WorldPlayersTier
+	contracts contracts.Contracts
+	namesdb   *names.Generator
 }
 
 func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generator) *WorldPlayerService {
 	return &WorldPlayerService{
-		contracts:    contracts,
-		namesdb:      namesdb,
-		distribution: GenerateBatchDistribution(),
+		contracts: contracts,
+		namesdb:   namesdb,
 	}
 }
 
 func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPlayer, error) {
+	distribution := GenerateBatchDistribution()
 	batch := []*WorldPlayer{}
-	for _, tier := range b.distribution {
+	for _, tier := range distribution {
 		batchByTier, err := b.createBatchByTier(
 			teamId,
 			epoch,
