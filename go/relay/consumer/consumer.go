@@ -81,7 +81,7 @@ func (b *Consumer) Start() {
 				log.Error(err)
 				break
 			}
-			teamStorageService := postgres.NewTeamStorageService(tx)
+			teamStorageService := postgres.NewStorageService(tx)
 			if err := SetTeamName(teamStorageService, ev); err != nil {
 				tx.Rollback()
 				log.Error(err)
@@ -98,7 +98,7 @@ func (b *Consumer) Start() {
 				log.Error(err)
 				break
 			}
-			teamStorageService := postgres.NewTeamStorageService(tx)
+			teamStorageService := postgres.NewStorageService(tx)
 			if err := SetTeamManagerName(teamStorageService, ev); err != nil {
 				tx.Rollback()
 				log.Error(err)
