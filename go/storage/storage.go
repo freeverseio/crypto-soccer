@@ -23,3 +23,10 @@ func New(url string) (*sql.DB, error) {
 type StorageDumpService interface {
 	Dump(fileName string) error
 }
+
+type StorageService interface {
+	Team(teamId string) (*Team, error)
+	Insert(team Team) error
+	UpdateName(teamId string, name string) error
+	UpdateManagerName(teamId string, name string) error
+}

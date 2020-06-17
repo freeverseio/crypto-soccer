@@ -7,7 +7,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage/storagetest"
 )
 
-func TestTeamStorageServiceInterface(t *testing.T) {
+func TestStorageServiceInterface(t *testing.T) {
 	service := memory.NewTeamStorageService()
-	storagetest.TestTeamStorageService(t, service)
+	storagetest.TestStorageService(t, service)
 }

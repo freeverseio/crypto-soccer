@@ -8,13 +8,13 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestTeamStorageServiceInterface(t *testing.T) {
+func TestStorageServiceInterface(t *testing.T) {
 	tx, err := s.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
 	createMinimumUniverse(t, tx)
 
-	service := postgres.NewTeamStorageService(tx)
-	storagetest.TestTeamStorageService(t, service)
+	service := postgres.NewStorageService(tx)
+	storagetest.TestStorageService(t, service)
 }

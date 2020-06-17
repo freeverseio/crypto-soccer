@@ -7,7 +7,7 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestTeamStorageService(t *testing.T, service storage.TeamStorageService) {
+func TestStorageService(t *testing.T, service storage.StorageService) {
 	t.Run("insert a team", func(t *testing.T) {
 		team := storage.NewTeam()
 		team.TeamID = "2"

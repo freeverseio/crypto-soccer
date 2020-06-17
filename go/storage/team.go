@@ -33,13 +33,6 @@ type Team struct {
 	MatchLog        string
 }
 
-type TeamStorageService interface {
-	Team(teamId string) (*Team, error)
-	Insert(team Team) error
-	UpdateName(teamId string, name string) error
-	UpdateManagerName(teamId string, name string) error
-}
-
 func NewTeam() *Team {
 	var team Team
 	team.TeamID = "0"
