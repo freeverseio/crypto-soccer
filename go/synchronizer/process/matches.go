@@ -243,3 +243,8 @@ func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumbe
 	}
 	return nil
 }
+
+func (b *Matches) ComputeLeaderboards() error {
+	log.Warning("Matches::ComputeLeaderboards not implemented")
+	return nil
+}
