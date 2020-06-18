@@ -199,8 +199,10 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         else return 2;
     }
 
-    /// returns (ranking[8], points[8]), correspoding to the END of matchDay.
-    /// - ranking: 8 numbers, each between [0, 7], example: [3,1,0,6,...]  (best team so far is 3rd, next is 1st...)
+    /// the teams in each league are ordered, team = 0, 1, ... 7, according to the orgMap (which provides teamIdxInLeague)
+    /// this function returns (ranking[8], points[8]), correspoding to the END of matchDay.
+    /// - ranking: 8 numbers, each between [0, 7]
+    ///     - example: [3,1,0,6,...] => the best team so far is team = 3, the 2nd best is team = 1...
     /// - points: 8 numbers corresponding to the points of each team in the league so far, serialized. 
     ///         : if backend wants to get the real points in the league, just divide each entry by 1e13: points[t] = floor(points[t]/1e13)
     /// so if we receive matchDay = 0, it returns (ranking, points) after playing the 1st game.
