@@ -167,6 +167,11 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		}
 		// ordening by points
 		sort.Slice(teams[:], func(i, j int) bool {
+			if teams[i].Points == teams[j].Points {
+				teamID0, _ := new(big.Int).SetString(teams[i].TeamID, 10)
+				teamID1, _ := new(big.Int).SetString(teams[j].TeamID, 10)
+				return teamID0.Cmp(teamID1) == -1
+			}
 			return teams[i].Points > teams[j].Points
 		})
 		for position, team := range teams {
