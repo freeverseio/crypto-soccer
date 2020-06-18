@@ -167,7 +167,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		}
 		// ordening by points
 		sort.Slice(teams[:], func(i, j int) bool {
-			return teams[i].Points > teams[j].Points
+			return teams[i].LeaderboardPosition < teams[j].LeaderboardPosition
 		})
 		for position, team := range teams {
 			teamState, err := b.GetTeamState(tx, team.TeamID)
