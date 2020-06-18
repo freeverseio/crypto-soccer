@@ -16,6 +16,42 @@ import (
 	"gotest.tools/assert"
 )
 
+func TestProcessorPlayLeagueWithHumans(t *testing.T) {
+	tx, err := universedb.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	p := process.NewEventProcessor(
+		bc.Client,
+		bc.Contracts.ProxyAddress,
+		namesdb,
+		useractionsPublishService,
+		nil,
+	)
+	log.Info(bc.Contracts.ProxyAddress)
+	_, err = p.Process(tx, 0)
+	assert.NilError(t, err)
+
+	for count := uint64(1); count != 0; {
+		count, err = p.Process(tx, 0)
+		assert.NilError(t, err)
+	}
+
+	timezoneIdx := uint8(1)
+	countryIdxInTz := big.NewInt(0)
+
+	for i := 0; i < 10; i++ {
+		tr, err := bc.Contracts.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(bc.Owner), timezoneIdx, countryIdxInTz, crypto.PubkeyToAddress(bc.Owner.PublicKey))
+		_, err = helper.WaitReceipt(bc.Client, tr, 10)
+		assert.NilError(t, err)
+	}
+
+	for count := uint64(1); count != 0; {
+		count, err = p.Process(tx, 0)
+		assert.NilError(t, err)
+	}
+}
+
 func TestProcessorDispatchUpdatesTimezoneUpdate(t *testing.T) {
 	t.Parallel()
 	tx, err := universedb.Begin()
