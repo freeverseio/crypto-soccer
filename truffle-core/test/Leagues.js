@@ -153,7 +153,6 @@ contract('Leagues', (accounts) => {
         }
         debug.compareArrays(expectedPoints, [ 14, 24, 23, 12, 26, 21, 12, 15 ], toNum = false, isBN = false);
         expectedPointsSorted = expectedPoints.slice().sort((a,b)=>b-a);
-        console.log(expectedPoints);
 
         result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay).should.be.fulfilled;
         expectedPoints9Digits =  [ 26000000000, 24000000000, 23000000000, 21000000000, 15000000000, 14000000000, 12001081000, 12000075000 ];
@@ -168,10 +167,6 @@ contract('Leagues', (accounts) => {
             reportedPointsTeamIdPart.push(result.points[t].mod(TEN_TO_13).toNumber());
         }
         debug.compareArrays(reportedPoints2Digits, expectedPointsSorted, toNum = false);
-        // console.log(reportedPoints2Digits)
-        // console.log(result.ranking)
-        // console.log(reportedPoints9Digits)
-        console.log(reportedPointsTeamIdPart);
         reportedPointsTeamIdPart[6].should.be.equal(TEN_TO_13.toNumber()-teamIds[expectedRanking[6]].toNumber());
         reportedPointsTeamIdPart[7].should.be.equal(TEN_TO_13.toNumber()-teamIds[expectedRanking[7]].toNumber());
 
@@ -180,7 +175,7 @@ contract('Leagues', (accounts) => {
         debug.compareArrays(reportedPointsTeamIdPart, expectedPointsTeamIdPart, toNum = false, isBN = false);
     });
 
-    it('computeLeagueLeaderBoard at start', async () =>  {
+    it2('computeLeagueLeaderBoard at start', async () =>  {
         matchDay = 0;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [0,0]);
@@ -202,7 +197,6 @@ contract('Leagues', (accounts) => {
         }
         debug.compareArrays(expectedPoints, [ 1, 1, 1, 1, 1, 1, 1, 1 ], toNum = false, isBN = false);
         expectedPointsSorted = expectedPoints.slice().sort((a,b)=>b-a);
-        console.log(expectedPoints);
 
         result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay).should.be.fulfilled;
         expectedPoints9Digits =  [ 1000000000, 1000000000, 1000000000, 1000000000, 1000000000, 1000000000, 1000000000, 1000000000 ];
@@ -224,34 +218,98 @@ contract('Leagues', (accounts) => {
             reportedPointsTeamIdPart[t].should.be.equal(TEN_TO_13.toNumber()-teamIds[expectedRanking[t]].toNumber());
         }
     });
-return
-    it('computeLeagueLeaderBoard at end of league', async () =>  {
+
+    it2('computeLeagueLeaderBoard at end of league', async () =>  {
         matchDay = 13;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [5,5]);
-        result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay, seed).should.be.fulfilled;
-        expectedPoints =  [14000070802, 14000070754, 14000070610, 14000070441, 14000070423, 14000070402, 14000070389, 14000070110 ];
+        expectedPoints = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => 0);
+        for (m = 0; m < ((matchDay + 1) * 4); m++) {
+            teams = await leagues.getTeamsInLeagueMatch(Math.floor(m / 4), m % 4); 
+            if (results[m][0] == results[m][1]) {
+                expectedPoints[teams[0].toNumber()] += 1;
+                expectedPoints[teams[1].toNumber()] += 1;
+            } else if (results[m][0] > results[m][1]) {
+                expectedPoints[teams[0].toNumber()] += 3;
+            } else {
+                expectedPoints[teams[1].toNumber()] += 3;
+            }
+            // the next printout shows that team 6 won against team 3, the oponent with the same ranking points
+            // if ((teams[0].toNumber() == 6) || (teams[1].toNumber() == 6)) {
+            //     console.log(teams[0].toNumber(), teams[1].toNumber(), results[m][0], results[m][1]);
+            // }
+        }
+        debug.compareArrays(expectedPoints, [ 14, 14, 14, 14, 14, 14, 14, 14 ], toNum = false, isBN = false);
+        expectedPointsSorted = expectedPoints.slice().sort((a,b)=>b-a);
+
+        result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay).should.be.fulfilled;
+        expectedPoints9Digits =  [ 14000070000, 14000070000, 14000070000, 14000070000, 14000070000, 14000070000, 14000070000, 14000070000 ];
+        expectedPointsTeamIdPart = [ 9999731564562, 9999731564561, 9999731564560, 9999731564559, 9999731564558, 9999731564557, 9999731564556, 9999731564555 ];
+        expectedRanking = [ 7, 6, 5, 4, 3, 2, 1, 0 ];
+        reportedPoints2Digits = [];
+        reportedPoints9Digits = [];
+        reportedPointsTeamIdPart = [];
         for (t = 0; t < TEAMS_PER_LEAGUE.toNumber(); t++) {
-            expectedPoints[t] = web3.utils.toBN(expectedPoints[t] * 1e9).add(web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY)).add(teamIds[t].neg());
-        }        
-        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
-        debug.compareArrays(result.ranking, expectedRanking, toNum = true);
-        debug.compareArrays(result.points, expectedPoints, toNum = false, isBN = true);
+            reportedPoints2Digits.push(result.points[t].div(TEN_TO_13).div(web3.utils.toBN(10**9)).toNumber());
+            reportedPoints9Digits.push(result.points[t].div(TEN_TO_13).toNumber());
+            reportedPointsTeamIdPart.push(result.points[t].mod(TEN_TO_13).toNumber());
+        }
+        debug.compareArrays(reportedPoints2Digits, expectedPointsSorted, toNum = false);
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, isBN = false);
+        debug.compareArrays(reportedPoints9Digits, expectedPoints9Digits, toNum = false, isBN = false);
+        debug.compareArrays(reportedPointsTeamIdPart, expectedPointsTeamIdPart, toNum = false, isBN = false);
+        for (t = 0; t < TEAMS_PER_LEAGUE.toNumber(); t++) {
+            reportedPointsTeamIdPart[t].should.be.equal(TEN_TO_13.toNumber()-teamIds[expectedRanking[t]].toNumber());
+        }
     });
+
     
-    it('computeLeagueLeaderBoard many clashes', async () =>  {
+    it2('computeLeagueLeaderBoard many clashes', async () =>  {
         matchDay = 12;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
-        result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay, seed).should.be.fulfilled;
-        expectedPoints =  [27000000000, 22000052441, 22000051610, 18000000000, 16002047402, 16001047423, 16000049802, 15000000000];
-        for (t = 0; t < TEAMS_PER_LEAGUE.toNumber(); t++) {
-            expectedPoints[t] = web3.utils.toBN(expectedPoints[t] * 1e9).add(web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY)).add(teamIds[t].neg());
-        } 
+        expectedPoints = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => 0);
+        for (m = 0; m < ((matchDay + 1) * 4); m++) {
+            teams = await leagues.getTeamsInLeagueMatch(Math.floor(m / 4), m % 4); 
+            if (results[m][0] == results[m][1]) {
+                expectedPoints[teams[0].toNumber()] += 1;
+                expectedPoints[teams[1].toNumber()] += 1;
+            } else if (results[m][0] > results[m][1]) {
+                expectedPoints[teams[0].toNumber()] += 3;
+            } else {
+                expectedPoints[teams[1].toNumber()] += 3;
+            }
+            // the next printout shows that team 6 won against team 3, the oponent with the same ranking points
+            // if ((teams[0].toNumber() == 6) || (teams[1].toNumber() == 6)) {
+            //     console.log(teams[0].toNumber(), teams[1].toNumber(), results[m][0], results[m][1]);
+            // }
+        }
+        debug.compareArrays(expectedPoints, [ 16, 22, 22, 16, 16, 18, 15, 27 ], toNum = false, isBN = false);
+        expectedPointsSorted = expectedPoints.slice().sort((a,b)=>b-a);
+
+        result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay).should.be.fulfilled;
+        expectedPoints9Digits =  [ 27000000000, 22000052000, 22000051000, 18000000000, 16002047000, 16001047000, 16000049000, 15000000000 ];
+        expectedPointsTeamIdPart = [ 0, 9999731564557, 9999731564556, 0, 9999731564559, 9999731564558, 9999731564555, 0 ];
         expectedRanking = [ 7, 2, 1, 5, 4, 3, 0, 6 ];
-        debug.compareArrays(result.ranking, expectedRanking, toNum = true);
-        debug.compareArrays(result.points, expectedPoints, toNum = false, isBN = true);
+        reportedPoints2Digits = [];
+        reportedPoints9Digits = [];
+        reportedPointsTeamIdPart = [];
+        for (t = 0; t < TEAMS_PER_LEAGUE.toNumber(); t++) {
+            reportedPoints2Digits.push(result.points[t].div(TEN_TO_13).div(web3.utils.toBN(10**9)).toNumber());
+            reportedPoints9Digits.push(result.points[t].div(TEN_TO_13).toNumber());
+            reportedPointsTeamIdPart.push(result.points[t].mod(TEN_TO_13).toNumber());
+        }
+        debug.compareArrays(reportedPoints2Digits, expectedPointsSorted, toNum = false);
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, isBN = false);
+        debug.compareArrays(reportedPoints9Digits, expectedPoints9Digits, toNum = false, isBN = false);
+        debug.compareArrays(reportedPointsTeamIdPart, expectedPointsTeamIdPart, toNum = false, isBN = false);
+        for (t = 0; t < TEAMS_PER_LEAGUE.toNumber(); t++) {
+            if (expectedPointsTeamIdPart[t] != 0) {
+                reportedPointsTeamIdPart[t].should.be.equal(TEN_TO_13.toNumber()-teamIds[expectedRanking[t]].toNumber());
+            }
+        }
     });
+
 
     it('computeLeagueLeaderBoard all clashes', async () =>  {
         matchDay = 12;
@@ -266,6 +324,8 @@ return
         debug.compareArrays(result.ranking, expectedRanking, toNum = true);
         debug.compareArrays(result.points, expectedPoints, toNum = false, isBN = true);
     });
+
+return
 
     it2('check initial constants', async () =>  {
         MATCHDAYS.toNumber().should.be.equal(14);
