@@ -129,6 +129,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
             return (team2, team1);
     }
 
+    // returns (rankingPoints, prevPerfPoints)
     function computeTeamRankingPoints(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8 leagueRanking,
