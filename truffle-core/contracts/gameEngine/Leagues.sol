@@ -22,6 +22,8 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint64 constant private WEIGHT_SKILLS = 20;
     uint64 constant private SKILLS_AT_START = 18000; /// 18 players per team at start with 50 avg
     uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; /// 268435455 = 2**28 - 1 
+    uint256 constant private TEN_TO_60 = 1e60; // a power of 10 close than 2**200
+    uint256 constant private TEN_TO_9 = 1e9; // a power of 10 bigger than 2**28
 
     Assets private _assets;
 
@@ -129,15 +131,16 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8 leagueRanking,
         uint64 prevPerfPoints,
-        uint256 teamId
+        uint256 teamId,
+        bool isBot
     ) 
         public
-        view
+        pure
         returns (uint64 rankingPoints, uint64)
     {
         (rankingPoints, prevPerfPoints) = computeTeamRankingPointsPure(skills, leagueRanking, prevPerfPoints);
-        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        if (_assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry)) {
+        ( , , uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        if (isBot) {
             return (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry), uint64(0));
         }
         return ((rankingPoints << 28) + (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry)), prevPerfPoints);
@@ -196,7 +199,16 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     /// returns two sorted lists, [best teamIdxInLeague, points], ....
     /// corresponding to ranking and points AT THE END OF matchday
     /// so if we receive matchDay = 0, it is after playing the 1st game.
+    /// internally, it computes "points" which has:
+    /// the lowest last 1e60 part is a tie-breaker random number determined on matchSeed and teamId
+    /// the next larger few-thousands is the tie-breaker number determined from total goals of a team
+    /// the next larger few-milions is the tie-breaker number determined from face-to-face results against other tied-with teams
+    /// the next larger 1e9 is the points in the league
+    /// idx = matchDay*4 + matchIdxInDay
+    /// example, if matchDay = 1: =>  results = [ [2,4], [0,0], [1,2], [4,1], [0,0], [0,0]... [0,0] ] => ranking at matchDay = 1
+    /// example, if matchDay = 13: => results = [ [2,4], [0,0], [1,2], [4,1], [1,2], [3,0]... [1,1] ] => ranking at matchDay = 13
     function computeLeagueLeaderBoard(
+        uint256[TEAMS_PER_LEAGUE] memory teamIds,
         uint8[2][MATCHES_PER_LEAGUE] memory results, 
         uint8 matchDay,
         uint256 matchDaySeed
@@ -217,12 +229,12 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
             goals[team0] += results[m][0];
             goals[team1] += results[m][1];
             if (results[m][0] == results[m][1]) {
-                points[team0] += 1000000000;
-                points[team1] += 1000000000;
+                points[team0] += TEN_TO_9 * TEN_TO_60;
+                points[team1] += TEN_TO_9 * TEN_TO_60;
             } else if (results[m][0] > results[m][1]) {
-                points[team0] += 3000000000;
+                points[team0] += 3 * TEN_TO_9 * TEN_TO_60;
             } else {
-                points[team1] += 3000000000;
+                points[team1] += 3 * TEN_TO_9 * TEN_TO_60;
             }
         }
         /// note that both points and ranking are returned ordered: (but goals and goalsAverage remain with old idxs)
@@ -232,12 +244,12 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         for (uint8 r = 0; r < TEAMS_PER_LEAGUE-1; r++) {
             if (points[r+1] != points[r] && lastNonTied == r) lastNonTied = r+1;
             else if (points[r+1] != points[r]) {
-                computeSecondaryPoints(ranking, points, results, goals, lastNonTied, r, matchDaySeed);
+                computeSecondaryPoints(ranking, points, teamIds, results, goals, lastNonTied, r, matchDaySeed);
                 lastNonTied = r+1;
             }
         }
         if (points[TEAMS_PER_LEAGUE-1] == points[TEAMS_PER_LEAGUE-2]) {
-            computeSecondaryPoints(ranking, points, results, goals, lastNonTied, TEAMS_PER_LEAGUE-1, matchDaySeed);
+            computeSecondaryPoints(ranking, points, teamIds, results, goals, lastNonTied, TEAMS_PER_LEAGUE-1, matchDaySeed);
         }
         sortIdxs(points, ranking);
     }
@@ -246,6 +258,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     function computeSecondaryPoints(
         uint8[TEAMS_PER_LEAGUE] memory ranking,
         uint256[TEAMS_PER_LEAGUE] memory points,
+        uint256[TEAMS_PER_LEAGUE] memory teamIds,
         uint8[2][MATCHES_PER_LEAGUE] memory results,
         uint16[TEAMS_PER_LEAGUE]memory goals,
         uint8 firstTeamInRank,
@@ -256,11 +269,11 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         pure 
     {
         for (uint8 team0 = firstTeamInRank; team0 <= lastTeamInRank; team0++) {
-            points[team0] += uint256(goals[ranking[team0]])*1000 + (matchDaySeed >> team0 * 10) % 999;
+            points[team0] += uint256(goals[ranking[team0]]) * 1000 * TEN_TO_60 + (uint256(keccak256(abi.encode(matchDaySeed, teamIds[ranking[team0]]))) % TEN_TO_60);
             for (uint8 team1 = team0 + 1; team1 <= lastTeamInRank; team1++) {
                 uint8 bestTeam = computeDirect(results, ranking[team0], ranking[team1]);
-                if (bestTeam == 0) points[team0] += 1000000;
-                else if (bestTeam == 1) points[team1] += 1000000;
+                if (bestTeam == 0) points[team0] += 1000000 * TEN_TO_60;
+                else if (bestTeam == 1) points[team1] += 1000000 * TEN_TO_60;
             }        
         }
     }
