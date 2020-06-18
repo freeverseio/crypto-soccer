@@ -675,7 +675,7 @@ spec:
       - name: docker-secret
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   labels:
     app.kubernetes.io/app: universedb
@@ -691,6 +691,7 @@ spec:
       app.kubernetes.io/component: universedb
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
+  serviceName: universedb
   template:
     metadata:
       labels:
@@ -713,10 +714,22 @@ spec:
           name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
-      volumes:
-      - name: universedb-storage
-        persistentVolumeClaim:
-          claimName: universedb-pvc
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/app: universedb
+        app.kubernetes.io/component: universedb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+      name: universedb-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 200Gi
+      storageClassName: do-block-storage
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -815,23 +828,6 @@ metadata:
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   name: marketdb-pvc
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 200Gi
-  storageClassName: do-block-storage
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app.kubernetes.io/app: universedb
-    app.kubernetes.io/component: universedb
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
-  name: universedb-pvc
 spec:
   accessModes:
   - ReadWriteOnce
