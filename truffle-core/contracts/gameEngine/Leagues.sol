@@ -22,8 +22,10 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint64 constant private WEIGHT_SKILLS = 20;
     uint64 constant private SKILLS_AT_START = 18000; /// 18 players per team at start with 50 avg
     uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; /// 268435455 = 2**28 - 1 
-    uint256 constant private TEN_TO_60 = 1e60; // a power of 10 close than 2**200
-    uint256 constant private TEN_TO_9 = 1e9; // a power of 10 bigger than 2**28
+    uint256 constant private TEN_TO_13 = 1e13; // a power of 10 larger than MAX_TEAMID = 2**43
+    uint256 constant private TEN_TO_9 = 1e9; 
+    uint256 constant private TEN_TO_6 = 1e6; 
+    uint256 constant private TEN_TO_3 = 1e3; 
 
     Assets private _assets;
 
@@ -210,8 +212,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     function computeLeagueLeaderBoard(
         uint256[TEAMS_PER_LEAGUE] memory teamIds,
         uint8[2][MATCHES_PER_LEAGUE] memory results, 
-        uint8 matchDay,
-        uint256 matchDaySeed
+        uint8 matchDay
     ) 
         public 
         pure 
@@ -229,12 +230,12 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
             goals[team0] += results[m][0];
             goals[team1] += results[m][1];
             if (results[m][0] == results[m][1]) {
-                points[team0] += TEN_TO_9 * TEN_TO_60;
-                points[team1] += TEN_TO_9 * TEN_TO_60;
+                points[team0] += TEN_TO_9 * TEN_TO_13;
+                points[team1] += TEN_TO_9 * TEN_TO_13;
             } else if (results[m][0] > results[m][1]) {
-                points[team0] += 3 * TEN_TO_9 * TEN_TO_60;
+                points[team0] += 3 * TEN_TO_9 * TEN_TO_13;
             } else {
-                points[team1] += 3 * TEN_TO_9 * TEN_TO_60;
+                points[team1] += 3 * TEN_TO_9 * TEN_TO_13;
             }
         }
         /// note that both points and ranking are returned ordered: (but goals and goalsAverage remain with old idxs)
@@ -244,12 +245,12 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         for (uint8 r = 0; r < TEAMS_PER_LEAGUE-1; r++) {
             if (points[r+1] != points[r] && lastNonTied == r) lastNonTied = r+1;
             else if (points[r+1] != points[r]) {
-                computeSecondaryPoints(ranking, points, teamIds, results, goals, lastNonTied, r, matchDaySeed);
+                computeSecondaryPoints(ranking, points, teamIds, results, goals, lastNonTied, r);
                 lastNonTied = r+1;
             }
         }
         if (points[TEAMS_PER_LEAGUE-1] == points[TEAMS_PER_LEAGUE-2]) {
-            computeSecondaryPoints(ranking, points, teamIds, results, goals, lastNonTied, TEAMS_PER_LEAGUE-1, matchDaySeed);
+            computeSecondaryPoints(ranking, points, teamIds, results, goals, lastNonTied, TEAMS_PER_LEAGUE-1);
         }
         sortIdxs(points, ranking);
     }
@@ -262,18 +263,17 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         uint8[2][MATCHES_PER_LEAGUE] memory results,
         uint16[TEAMS_PER_LEAGUE]memory goals,
         uint8 firstTeamInRank,
-        uint8 lastTeamInRank,
-        uint256 matchDaySeed
+        uint8 lastTeamInRank
     ) 
         public 
         pure 
     {
         for (uint8 team0 = firstTeamInRank; team0 <= lastTeamInRank; team0++) {
-            points[team0] += uint256(goals[ranking[team0]]) * 1000 * TEN_TO_60 + (uint256(keccak256(abi.encode(matchDaySeed, teamIds[ranking[team0]]))) % TEN_TO_60);
+            points[team0] += uint256(goals[ranking[team0]]) * TEN_TO_3 * TEN_TO_13 + (TEN_TO_13 - teamIds[ranking[team0]]);
             for (uint8 team1 = team0 + 1; team1 <= lastTeamInRank; team1++) {
                 uint8 bestTeam = computeDirect(results, ranking[team0], ranking[team1]);
-                if (bestTeam == 0) points[team0] += 1000000 * TEN_TO_60;
-                else if (bestTeam == 1) points[team1] += 1000000 * TEN_TO_60;
+                if (bestTeam == 0) points[team0] += TEN_TO_6 * TEN_TO_13;
+                else if (bestTeam == 1) points[team1] += TEN_TO_6 * TEN_TO_13;
             }        
         }
     }
