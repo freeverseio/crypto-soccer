@@ -134,6 +134,7 @@ contract('Leagues', (accounts) => {
         matchDay = 12;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
+        for (r = 4 * (matchDay+1); r < MATCHES_PER_LEAGUE; r++) { results[r] = [0,0]}
         expectedPoints = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => 0);
         for (m = 0; m < ((matchDay + 1) * 4); m++) {
             teams = await leagues.getTeamsInLeagueMatch(Math.floor(m / 4), m % 4); 
@@ -178,6 +179,7 @@ contract('Leagues', (accounts) => {
         matchDay = 0;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [0,0]);
+        for (r = 4 * (matchDay+1); r < MATCHES_PER_LEAGUE; r++) { results[r] = [0,0]}
         expectedPoints = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => 0);
         for (m = 0; m < ((matchDay + 1) * 4); m++) {
             teams = await leagues.getTeamsInLeagueMatch(Math.floor(m / 4), m % 4); 
@@ -222,6 +224,7 @@ contract('Leagues', (accounts) => {
         matchDay = 13;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [5,5]);
+        for (r = 4 * (matchDay+1); r < MATCHES_PER_LEAGUE; r++) { results[r] = [0,0]}
         expectedPoints = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => 0);
         for (m = 0; m < ((matchDay + 1) * 4); m++) {
             teams = await leagues.getTeamsInLeagueMatch(Math.floor(m / 4), m % 4); 
@@ -267,6 +270,7 @@ contract('Leagues', (accounts) => {
         matchDay = 12;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
+        for (r = 4 * (matchDay+1); r < MATCHES_PER_LEAGUE; r++) { results[r] = [0,0]; }
         expectedPoints = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => 0);
         for (m = 0; m < ((matchDay + 1) * 4); m++) {
             teams = await leagues.getTeamsInLeagueMatch(Math.floor(m / 4), m % 4); 
@@ -288,8 +292,8 @@ contract('Leagues', (accounts) => {
 
         result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay).should.be.fulfilled;
         expectedPoints9Digits =  [ 27000000000, 22000052000, 22000051000, 18000000000, 16002047000, 16001047000, 16000049000, 15000000000 ];
-        expectedPointsTeamIdPart = [ 0, 9999731564557, 9999731564556, 0, 9999731564559, 9999731564558, 9999731564555, 0 ];
-        expectedRanking = [ 7, 2, 1, 5, 4, 3, 0, 6 ];
+        expectedPointsTeamIdPart = [ 0, 9999731564557, 9999731564556, 0, 9999731564558, 9999731564559, 9999731564555, 0 ];
+        expectedRanking = [ 7, 2, 1, 5, 3, 4, 0, 6 ];
         reportedPoints2Digits = [];
         reportedPoints9Digits = [];
         reportedPointsTeamIdPart = [];
@@ -309,7 +313,6 @@ contract('Leagues', (accounts) => {
         }
     });
 
-
     it('computeLeagueLeaderBoard all clashes', async () =>  {
         // all results in this league are [0,0]
         // since all results are [0, 0], there is no extra points due to goals, nor due to winning a team you played with
@@ -317,6 +320,7 @@ contract('Leagues', (accounts) => {
         matchDay = 12;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 1), getRand(2*i+3, 0, 1)]);
+        for (r = 4 * (matchDay+1); r < MATCHES_PER_LEAGUE; r++) { results[r] = [0,0]}
         expectedPoints = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => 0);
         for (m = 0; m < ((matchDay + 1) * 4); m++) {
             teams = await leagues.getTeamsInLeagueMatch(Math.floor(m / 4), m % 4); 

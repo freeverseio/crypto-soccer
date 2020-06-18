@@ -199,17 +199,27 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         else return 2;
     }
 
-    /// returns two sorted lists, [best teamIdxInLeague, points], ....
-    /// corresponding to ranking and points AT THE END OF matchday
-    /// so if we receive matchDay = 0, it is after playing the 1st game.
-    /// internally, it computes "points" which has:
-    /// the lowest last 1e60 part is a tie-breaker random number determined on matchSeed and teamId
-    /// the next larger few-thousands is the tie-breaker number determined from total goals of a team
-    /// the next larger few-milions is the tie-breaker number determined from face-to-face results against other tied-with teams
-    /// the next larger 1e9 is the points in the league
-    /// idx = matchDay*4 + matchIdxInDay
-    /// example, if matchDay = 1: =>  results = [ [2,4], [0,0], [1,2], [4,1], [0,0], [0,0]... [0,0] ] => ranking at matchDay = 1
-    /// example, if matchDay = 13: => results = [ [2,4], [0,0], [1,2], [4,1], [1,2], [3,0]... [1,1] ] => ranking at matchDay = 13
+    /// returns (ranking[8], points[8]), correspoding to the END of matchDay.
+    /// - ranking: 8 numbers, each between [0, 7], example: [3,1,0,6,...]  (best team so far is 3rd, next is 1st...)
+    /// - points: 8 numbers corresponding to the points of each team in the league so far, serialized. 
+    ///         : if backend wants to get the real points in the league, just divide each entry by 1e13: points[t] = floor(points[t]/1e13)
+    /// so if we receive matchDay = 0, it returns (ranking, points) after playing the 1st game.
+    /// so if at the end of the league, this function should be called with matchDay = 13.
+    ///
+    /// input: results[2][56], where 56 = MATHCHES_PER_LEAGUE, to be interpreted as:
+    /// - first idx is homeTeam/visitorTeam
+    /// - second idx = matchDay * 4 + matchIdxInDay = 0,...55
+    ///             : matchDay = 0,...13
+    ///             : matchIdxInDay = 0,...,3
+    /// - example, if matchDay = 1: =>  results = [ [2,4], [0,0], [1,2], [4,1], [0,0], [0,0]... ... [0,0] ] => ranking at matchDay = 1 (only 4 non-null entries)
+    /// - example, if matchDay = 2: =>  results = [ [2,4], [0,0], [1,2], [4,1], [1,2], ... [0,0]... [0,0] ] => ranking at matchDay = 2 (only 8 non-null entries)
+    /// - example, if matchDay = 13: => results = [ [2,4], [0,0], [1,2], [4,1], [1,2], ... [3,0]... [1,1] ] => ranking at matchDay = 13 (all entries are full)
+    ///
+    /// internally, the serialization of "points" is done to remove tied teams:
+    /// - the lowest last 1e60 part is a tie-breaker random number determined on matchSeed and teamId
+    /// - the next larger few-thousands is the tie-breaker number determined from total goals of a team
+    /// - the next larger few-milions is the tie-breaker number determined from face-to-face results against other tied-with teams
+    /// - the next larger 1e9 is the points in the league
     function computeLeagueLeaderBoard(
         uint256[TEAMS_PER_LEAGUE] memory teamIds,
         uint8[2][MATCHES_PER_LEAGUE] memory results, 
@@ -217,15 +227,19 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     ) 
         public 
         pure 
-        returns (
-            uint8[TEAMS_PER_LEAGUE] memory ranking, 
-            uint256[TEAMS_PER_LEAGUE] memory points
-        ) 
+        returns 
+    (
+        uint8[TEAMS_PER_LEAGUE] memory ranking, 
+        uint256[TEAMS_PER_LEAGUE] memory points
+    ) 
     {
         require(matchDay < MATCHDAYS, "wrong matchDay");
+        for (uint8 m = (matchDay + 1) * 4; m < MATCHES_PER_LEAGUE; m++) {
+            require (results[m][0] == 0 && results[m][0] == 0, "results beyond current matchDay should be 0-0");
+        }
         uint8 team0;
         uint8 team1;
-        uint16[TEAMS_PER_LEAGUE]memory goals;
+        uint16[TEAMS_PER_LEAGUE] memory goals;
         for(uint8 m = 0; m < (matchDay + 1) * 4; m++) {
             (team0, team1) = getTeamsInLeagueMatch(m / 4, m % 4); 
             goals[team0] += results[m][0];
