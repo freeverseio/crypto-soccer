@@ -38,6 +38,7 @@ type TeamStorageService interface {
 	Insert(team Team) error
 	UpdateName(teamId string, name string) error
 	UpdateManagerName(teamId string, name string) error
+	UpdateLeaderboardPosition(teamId string, position int) error
 }
 
 func NewTeam() *Team {
