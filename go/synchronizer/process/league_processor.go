@@ -183,6 +183,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 					uint8(position),
 					team.PrevPerfPoints,
 					teamID,
+					team.IsBot(),
 				)
 				if err != nil {
 					return err
