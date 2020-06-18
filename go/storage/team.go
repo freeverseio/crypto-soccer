@@ -12,25 +12,26 @@ import (
 const BotOwner = "0x0000000000000000000000000000000000000000"
 
 type Team struct {
-	TeamID          string
-	TimezoneIdx     uint8
-	CountryIdx      uint32
-	Name            string
-	ManagerName     string
-	Owner           string
-	LeagueIdx       uint32
-	TeamIdxInLeague uint32
-	Points          uint32
-	W               uint32
-	D               uint32
-	L               uint32
-	GoalsForward    uint32
-	GoalsAgainst    uint32
-	PrevPerfPoints  uint64
-	RankingPoints   uint64
-	TrainingPoints  uint16
-	Tactic          string
-	MatchLog        string
+	TeamID              string
+	TimezoneIdx         uint8
+	CountryIdx          uint32
+	Name                string
+	ManagerName         string
+	Owner               string
+	LeagueIdx           uint32
+	LeaderboardPosition int
+	TeamIdxInLeague     uint32
+	Points              uint32
+	W                   uint32
+	D                   uint32
+	L                   uint32
+	GoalsForward        uint32
+	GoalsAgainst        uint32
+	PrevPerfPoints      uint64
+	RankingPoints       uint64
+	TrainingPoints      uint16
+	Tactic              string
+	MatchLog            string
 }
 
 type TeamStorageService interface {
@@ -68,8 +69,9 @@ func (b *Team) Insert(tx *sql.Tx) error {
 			ranking_points,
 			tactic,
 			match_log,
-			manager_name
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`,
+			manager_name,
+			leaderboard_position
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
 		b.TeamID,
 		b.TimezoneIdx,
 		b.CountryIdx,
@@ -81,6 +83,7 @@ func (b *Team) Insert(tx *sql.Tx) error {
 		b.Tactic,
 		b.MatchLog,
 		b.ManagerName,
+		b.LeaderboardPosition,
 	)
 	if err != nil {
 		return err
@@ -122,8 +125,9 @@ func (b *Team) Update(tx *sql.Tx) error {
 						name=$13,
 						tactic=$14,
 						match_log=$15,
-						manager_name=$16
-						WHERE team_id=$17`,
+						manager_name=$16,
+						leaderboard_position=$17
+						WHERE team_id=$18`,
 		b.Owner,
 		b.LeagueIdx,
 		b.TeamIdxInLeague,
@@ -140,6 +144,7 @@ func (b *Team) Update(tx *sql.Tx) error {
 		b.Tactic,
 		b.MatchLog,
 		b.ManagerName,
+		b.LeaderboardPosition,
 		b.TeamID,
 	)
 	return err
@@ -222,7 +227,8 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	training_points,
 	tactic,
 	match_log,
-	manager_name
+	manager_name,
+	leaderboard_position
 	FROM teams WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return team, err
@@ -251,6 +257,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 		&team.Tactic,
 		&team.MatchLog,
 		&team.ManagerName,
+		&team.LeaderboardPosition,
 	)
 	if err != nil {
 		return team, err

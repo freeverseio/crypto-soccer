@@ -14,6 +14,7 @@ func TestTeamStorageService(t *testing.T, service storage.TeamStorageService) {
 		team.TimezoneIdx = 1
 		team.CountryIdx = 0
 		team.LeagueIdx = 0
+		team.LeaderboardPosition = 1
 		team.Name = "pippo"
 		team.ManagerName = "33"
 		assert.NilError(t, service.Insert(*team))
@@ -51,5 +52,21 @@ func TestTeamStorageService(t *testing.T, service storage.TeamStorageService) {
 		resultTeam, err := service.Team(team.TeamID)
 		assert.NilError(t, err)
 		assert.Equal(t, resultTeam.ManagerName, "pippo2")
+	})
+	t.Run("update leaderboard", func(t *testing.T) {
+		team := storage.NewTeam()
+		team.TeamID = "5"
+		team.TimezoneIdx = 1
+		team.CountryIdx = 0
+		team.LeagueIdx = 0
+		team.ManagerName = "pippo"
+		assert.NilError(t, service.Insert(*team))
+		team0, err := service.Team(team.TeamID)
+		assert.NilError(t, err)
+		assert.Equal(t, team0.LeaderboardPosition, 0)
+		assert.NilError(t, service.UpdateLeaderboardPosition(team0.TeamID, 4))
+		team1, err := service.Team(team.TeamID)
+		assert.NilError(t, err)
+		assert.Equal(t, team1.LeaderboardPosition, 4)
 	})
 }

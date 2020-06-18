@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
-	log "github.com/sirupsen/logrus"
 )
 
 type TeamStorageService struct {
@@ -45,6 +44,10 @@ func (b TeamStorageService) UpdateManagerName(teamId string, name string) error 
 }
 
 func (b TeamStorageService) UpdateLeaderboardPosition(teamId string, position int) error {
-	log.Warning("UpdateLeaderboardPosition not implemented")
-	return nil
+	team, err := storage.TeamByTeamId(b.tx, teamId)
+	if err != nil {
+		return err
+	}
+	team.LeaderboardPosition = position
+	return team.Update(b.tx)
 }
