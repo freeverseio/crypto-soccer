@@ -48,7 +48,7 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, err
 	}
 
-	purchase, err := client.GetPurchase(
+	_, err = client.GetPurchase(
 		ctx,
 		data.PackageName,
 		data.ProductId,
@@ -56,14 +56,6 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	)
 	if err != nil {
 		return result, err
-	}
-
-	validator := playstore.NewPurchaseValidator(*purchase)
-	if validator.IsCanceled() {
-		return result, errors.New("cancelled order")
-	}
-	if validator.IsAcknowledged() {
-		return result, errors.New("already acknowledged order")
 	}
 
 	select {
