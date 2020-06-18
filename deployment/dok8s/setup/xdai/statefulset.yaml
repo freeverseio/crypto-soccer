@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: xdai
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: xdai # has to match .spec.template.metadata.labels
+  serviceName: xdai
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: xdai # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: xdai
+        image: freeverseio/parity:v2.7.2-posdao-stable
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8545
+        volumeMounts:
+        - name: xdai-storage
+          mountPath: /home/parity/.local/share/io.parity.ethereum
+      initContainers:
+      - name: xdai-storage-permission-fix
+        image: busybox
+        command: ["/bin/chmod","-R","777", "/data"]
+        volumeMounts:
+        - name: xdai-storage
+          mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: xdai-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: do-block-storage
+      resources:
+        requests:
+          storage: 40Gi
