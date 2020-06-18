@@ -94,7 +94,7 @@ contract('Leagues', (accounts) => {
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
     });
 
-    it2('computeTeamRankingPoints with no previous points', async () =>  {
+    it('computeTeamRankingPoints with no previous points', async () =>  {
         // teamSkills = 5*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5 * 25 + 18*1000 *(6*20-100) = 43000
@@ -104,7 +104,7 @@ contract('Leagues', (accounts) => {
         result[1].toNumber().should.be.equal(12);
     });
 
-    it2('computeTeamRankingPoints with previous points', async () =>  {
+    it('computeTeamRankingPoints with previous points', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5*50 * 25 + 18*1000 *(4*10+ 6 * 2 -100) = 6206800
@@ -114,7 +114,7 @@ contract('Leagues', (accounts) => {
         result[1].toNumber().should.be.equal(5);
     });
 
-    it2('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
+    it('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 20 * 5*50 * 25 + 18*1000 *(4*10+ 6 * 2 -100) = 386000
@@ -131,7 +131,7 @@ contract('Leagues', (accounts) => {
         result[1].toNumber().should.be.equal(5);
     });
 
-    it2('computeLeagueLeaderBoard almost no clashes', async () =>  {
+    it('computeLeagueLeaderBoard almost no clashes', async () =>  {
         matchDay = 12;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
@@ -175,7 +175,7 @@ contract('Leagues', (accounts) => {
         debug.compareArrays(reportedPointsTeamIdPart, expectedPointsTeamIdPart, toNum = false, isBN = false);
     });
 
-    it2('computeLeagueLeaderBoard at start', async () =>  {
+    it('computeLeagueLeaderBoard at start', async () =>  {
         matchDay = 0;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [0,0]);
@@ -219,7 +219,7 @@ contract('Leagues', (accounts) => {
         }
     });
 
-    it2('computeLeagueLeaderBoard at end of league', async () =>  {
+    it('computeLeagueLeaderBoard at end of league', async () =>  {
         matchDay = 13;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [5,5]);
@@ -264,7 +264,7 @@ contract('Leagues', (accounts) => {
     });
 
     
-    it2('computeLeagueLeaderBoard many clashes', async () =>  {
+    it('computeLeagueLeaderBoard many clashes', async () =>  {
         matchDay = 12;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
@@ -312,28 +312,61 @@ contract('Leagues', (accounts) => {
 
 
     it('computeLeagueLeaderBoard all clashes', async () =>  {
+        // all results in this league are [0,0]
+        // since all results are [0, 0], there is no extra points due to goals, nor due to winning a team you played with
+        // so the only breaking number is teamId
         matchDay = 12;
         teamIds = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY - 10 - i));
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 1), getRand(2*i+3, 0, 1)]);
-        result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay, seed).should.be.fulfilled;
-        expectedPoints =  [ 13000000802, 13000000754, 13000000610, 13000000441, 13000000423, 13000000402, 13000000389, 13000000110 ];
+        expectedPoints = Array.from(new Array(TEAMS_PER_LEAGUE.toNumber()), (x,i) => 0);
+        for (m = 0; m < ((matchDay + 1) * 4); m++) {
+            teams = await leagues.getTeamsInLeagueMatch(Math.floor(m / 4), m % 4); 
+            if (results[m][0] == results[m][1]) {
+                expectedPoints[teams[0].toNumber()] += 1;
+                expectedPoints[teams[1].toNumber()] += 1;
+            } else if (results[m][0] > results[m][1]) {
+                expectedPoints[teams[0].toNumber()] += 3;
+            } else {
+                expectedPoints[teams[1].toNumber()] += 3;
+            }
+            // the next printout shows that team 6 won against team 3, the oponent with the same ranking points
+            // if ((teams[0].toNumber() == 6) || (teams[1].toNumber() == 6)) {
+                // console.log(teams[0].toNumber(), teams[1].toNumber(), results[m][0], results[m][1]);
+            // }
+        }
+        debug.compareArrays(expectedPoints, [ 13, 13, 13, 13, 13, 13, 13, 13 ], toNum = false, isBN = false);
+        expectedPointsSorted = expectedPoints.slice().sort((a,b)=>b-a);
+
+        result = await leagues.computeLeagueLeaderBoard(teamIds, results, matchDay).should.be.fulfilled;
+        expectedPoints9Digits =  [ 13000000000, 13000000000, 13000000000, 13000000000, 13000000000, 13000000000, 13000000000, 13000000000 ];
+        expectedPointsTeamIdPart = [ 9999731564562, 9999731564561, 9999731564560, 9999731564559, 9999731564558, 9999731564557, 9999731564556, 9999731564555 ];
+        expectedRanking = [ 7, 6, 5, 4, 3, 2, 1, 0 ];
+        reportedPoints2Digits = [];
+        reportedPoints9Digits = [];
+        reportedPointsTeamIdPart = [];
         for (t = 0; t < TEAMS_PER_LEAGUE.toNumber(); t++) {
-            expectedPoints[t] = web3.utils.toBN(expectedPoints[t] * 1e9).add(web3.utils.toBN(MAX_TEAMIDX_IN_COUNTRY)).add(teamIds[t].neg());
-        } 
-        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
-        debug.compareArrays(result.ranking, expectedRanking, toNum = true);
-        debug.compareArrays(result.points, expectedPoints, toNum = false, isBN = true);
+            reportedPoints2Digits.push(result.points[t].div(TEN_TO_13).div(web3.utils.toBN(10**9)).toNumber());
+            reportedPoints9Digits.push(result.points[t].div(TEN_TO_13).toNumber());
+            reportedPointsTeamIdPart.push(result.points[t].mod(TEN_TO_13).toNumber());
+        }
+        debug.compareArrays(reportedPoints2Digits, expectedPointsSorted, toNum = false);
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, isBN = false);
+        debug.compareArrays(reportedPoints9Digits, expectedPoints9Digits, toNum = false, isBN = false);
+        debug.compareArrays(reportedPointsTeamIdPart, expectedPointsTeamIdPart, toNum = false, isBN = false);
+        for (t = 0; t < TEAMS_PER_LEAGUE.toNumber(); t++) {
+            if (expectedPointsTeamIdPart[t] != 0) {
+                reportedPointsTeamIdPart[t].should.be.equal(TEN_TO_13.toNumber()-teamIds[expectedRanking[t]].toNumber());
+            }
+        }
     });
 
-return
-
-    it2('check initial constants', async () =>  {
+    it('check initial constants', async () =>  {
         MATCHDAYS.toNumber().should.be.equal(14);
         MATCHES_PER_DAY.toNumber().should.be.equal(4);
         TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
     });
 
-    it2('getTeamsInCupPlayoffMatch', async () => {
+    it('getTeamsInCupPlayoffMatch', async () => {
         teamsExpected = [0,7,9,14,4,11,13,18,8,15,17,22,12,19,21,26,16,23,25,30,20,27,29,34,24,31,33,38,28,35,37,42,32,39,41,46,36,43,45,50,40,47,49,54,44,51,53,58,48,55,57,62,52,59,61,2,56,63,1,6,60,3,5,10];
         for (t = 0; t < 32; t++) {
             team = await leagues.getTeamsInCupPlayoffMatch(matchIdxInDay = t).should.be.fulfilled;
@@ -347,7 +380,7 @@ return
         }
     });
     
-    it2('get all teams for groups', async () => {
+    it('get all teams for groups', async () => {
         teamsExpected = [ 0, 8, 16, 24, 32, 40, 48, 56 ]
         for (t = 0; t < teamsExpected.length; t++) {
             team = await leagues.getTeamIdxInCup(groupIdx = 0, posInGroup = t).should.be.fulfilled;
@@ -366,7 +399,7 @@ return
         }
     });
 
-    it2('get all teams for particular matches', async () => {
+    it('get all teams for particular matches', async () => {
         teams = await leagues.getTeamsInCupLeagueMatch(groupIdx = 0, day = 0, matchIdxInDay = 0).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(0);
         teams[1].toNumber().should.be.equal(8);
@@ -376,17 +409,17 @@ return
         teams[1].toNumber().should.be.equal(79);
     });
 
-    it2('get teams for match in wrong day', async () => {
+    it('get teams for match in wrong day', async () => {
         await leagues.getTeamsInLeagueMatch(day = MATCHDAYS-1, matchIdxInDay = 0).should.be.fulfilled;
         await leagues.getTeamsInLeagueMatch(day = MATCHDAYS, matchIdxInDay = 0).should.be.rejected;
     });
 
-    it2('get teams for match in wrong match in day', async () => {
+    it('get teams for match in wrong match in day', async () => {
         await leagues.getTeamsInLeagueMatch(day = 0, matchIdxInDay = MATCHES_PER_DAY-1).should.be.fulfilled;
         await leagues.getTeamsInLeagueMatch(day = 0, matchIdxInDay = MATCHES_PER_DAY).should.be.rejected;
     });
 
-    it2('get teams for match in league day', async () => {
+    it('get teams for match in league day', async () => {
         teams = await leagues.getTeamsInLeagueMatch(day = 0, matchIdxInDay = 0).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(0);
         teams[1].toNumber().should.be.equal(1);
