@@ -42,3 +42,12 @@ func (b TeamStorageService) UpdateManagerName(teamId string, name string) error 
 	team.ManagerName = name
 	return team.Update(b.tx)
 }
+
+func (b TeamStorageService) UpdateLeaderboardPosition(teamId string, position int) error {
+	team, err := storage.TeamByTeamId(b.tx, teamId)
+	if err != nil {
+		return err
+	}
+	team.LeaderboardPosition = position
+	return team.Update(b.tx)
+}
