@@ -146,14 +146,11 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if err := useractionsHistoryService.InsertHistory(event.Raw.BlockNumber, *userActions); err != nil {
 		return err
 	}
-	log.Debugf("Timezone %v update leaderboards", timezoneIdx)
-	if err := matches.ComputeLeaderboards(); err != nil {
-		return err
-	}
 	log.Debugf("Timezone %v save matches to storage", timezoneIdx)
 	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
 	}
+
 	return nil
 }
 
