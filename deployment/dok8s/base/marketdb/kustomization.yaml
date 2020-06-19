@@ -4,6 +4,5 @@ commonLabels:
   app.kubernetes.io/app: marketdb
   app.kubernetes.io/component: marketdb
 resources:
-- deployment.yaml
 - service.yaml
-- pvc.yaml
+- statefulset.yaml
