@@ -81,7 +81,7 @@ contract('Leagues', (accounts) => {
         await assets.initSingleTZ(INIT_TZ, {from: owners.COO}).should.be.fulfilled;
 
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        leagues = await Leagues.new(assets.address).should.be.fulfilled;
+        leagues = await Leagues.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         applyBoosters = await EngineApplyBoosters.new().should.be.fulfilled;
         engine = await Engine.new(precomp.address, applyBoosters.address).should.be.fulfilled;
