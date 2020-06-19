@@ -342,40 +342,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/app: marketdb
-    app.kubernetes.io/component: marketdb
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
-  name: marketdb
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/app: marketdb
-      app.kubernetes.io/component: marketdb
-      app.kubernetes.io/part-of: cryptosoccer
-      app.kubernetes.io/version: 1.0.0
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/app: marketdb
-        app.kubernetes.io/component: marketdb
-        app.kubernetes.io/part-of: cryptosoccer
-        app.kubernetes.io/version: 1.0.0
-    spec:
-      containers:
-      - image: freeverseio/market.db:0.21.0
-        imagePullPolicy: Always
-        name: marketdb
-        ports:
-        - containerPort: 5432
-      imagePullSecrets:
-      - name: docker-secret
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
     app.kubernetes.io/app: notary
     app.kubernetes.io/component: notary
     app.kubernetes.io/part-of: cryptosoccer
@@ -676,6 +642,63 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
+    app.kubernetes.io/app: marketdb
+    app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: marketdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: marketdb
+      app.kubernetes.io/component: marketdb
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  serviceName: marketdb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: marketdb
+        app.kubernetes.io/component: marketdb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: freeverseio/market.db:0.21.0
+        imagePullPolicy: Always
+        name: marketdb
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: marketdb-storage
+      imagePullSecrets:
+      - name: docker-secret
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/app: marketdb
+        app.kubernetes.io/component: marketdb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+      name: marketdb-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 200Gi
+      storageClassName: do-block-storage
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
     app.kubernetes.io/app: universedb
     app.kubernetes.io/component: universedb
     app.kubernetes.io/part-of: cryptosoccer
@@ -816,20 +839,3 @@ spec:
   - hosts:
     - dashboard.goalrevolution.live
     secretName: cryptosoccer-dashboard-tls
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app.kubernetes.io/app: marketdb
-    app.kubernetes.io/component: marketdb
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
-  name: marketdb-pvc
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 200Gi
-  storageClassName: do-block-storage
