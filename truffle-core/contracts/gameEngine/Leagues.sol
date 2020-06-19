@@ -27,12 +27,6 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint256 constant private TEN_TO_6 = 1e6; 
     uint256 constant private TEN_TO_3 = 1e3; 
 
-    Assets private _assets;
-
-    constructor(address assetsAddr) public {
-        _assets = Assets(assetsAddr);
-    }
-
     /// groupIdx = 0,...,15
     /// posInGroup = 0, ...7
     /// teamIdx  = 0,...,128
