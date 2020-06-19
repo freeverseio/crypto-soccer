@@ -11,25 +11,21 @@ import (
 )
 
 type LeaderboardService struct {
-	sto storage.Service
+	service *storage.StorageService
 }
 
-func NewLeaderboardService(
-	sto storage.Service,
-) *LeaderboardService {
+func NewLeaderboardService(service *storage.StorageService) *LeaderboardService {
 	return &LeaderboardService{
-		sto: sto,
+		service: service,
 	}
 }
 
 func (b LeaderboardService) Compute(
 	contracts contracts.Contracts,
 	timezone int,
-	country int,
-	league int,
 	matchDay int,
 ) (*Leaderboard, error) {
-	matches, err := b.sto.MatchesByTimezoneIdxCountryIdxLeagueIdx(b.tx, uint8(timezone), uint32(country), uint32(league))
+	matches, err := b.service.MatchService.MatchesByTimezone(uint8(timezone))
 	if err != nil {
 		return nil, err
 	}

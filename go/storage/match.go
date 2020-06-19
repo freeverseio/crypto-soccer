@@ -36,6 +36,11 @@ type Match struct {
 	StartEpoch           int64
 }
 
+type MatchStorageService interface {
+	Insert(match Match) error
+	MatchesByTimezone(timezone uint8) ([]Match, error)
+}
+
 func NewMatch() *Match {
 	return &Match{
 		HomeTeamID:    big.NewInt(0),

@@ -21,5 +21,6 @@ func New(url string) (*sql.DB, error) {
 }
 
 type StorageService struct {
-	TeamService TeamStorageService
+	TeamService  TeamStorageService
+	MatchService MatchStorageService
 }
