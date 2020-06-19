@@ -19,3 +19,7 @@ func New(url string) (*sql.DB, error) {
 	log.Info("[DBMS] ... connected")
 	return db, nil
 }
+
+type StorageService struct {
+	TeamService TeamStorageService
+}
