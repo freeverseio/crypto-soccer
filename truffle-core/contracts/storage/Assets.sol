@@ -15,6 +15,7 @@ contract Assets is AssetsView {
 
     event AssetsInit(address creatorAddr);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
+    event DivisionCreationFailed(uint8 timezone, uint256 countryIdxInTZ);
     
     //// Setter for main roles: COO, Market owner, Relay owner
     function setCOO(address addr) external onlySuperUser { _COO = addr; }
@@ -49,7 +50,9 @@ contract Assets is AssetsView {
         if (_market == NULL_ADDR) { emit AssetsInit(msg.sender); }
     }
 
-    function addDivisionManually(uint8 tz, uint256 countryIdxInTZ) external onlyCOO { _addDivision(tz, countryIdxInTZ); }
+    function addDivisionManually(uint8 tz, uint256 countryIdxInTZ) external onlyCOO { 
+        require(_addDivision(tz, countryIdxInTZ), "manual division creation failed"); 
+    }
 
     function addCountryManually(uint8 tz) external onlyCOO { _addCountry(tz); }
 
@@ -61,7 +64,15 @@ contract Assets is AssetsView {
         uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
         require(isBotTeam(teamId), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
-        if ((firstBotIdx % TEAMS_PER_DIVISION) == (TEAMS_PER_DIVISION-1)) { _addDivision(tz, countryIdxInTZ); }
+        // when we arrive to all teams created (minus 16), we start trying to create a new division
+        // which may only fail during the 15 minutes of half time of this timezone.
+        // we allow new assignments, even if division creation fails, until we reach the limit.
+        // For example, bot = 127 requires a new division to be created.
+        if ((firstBotIdx % TEAMS_PER_DIVISION) > (TEAMS_PER_DIVISION-16)) { 
+            if (!_addDivision(tz, countryIdxInTZ)) {
+                require((firstBotIdx % TEAMS_PER_DIVISION) != TEAMS_PER_DIVISION-1, "division creation was necessary to assign new bot, but it failed"); 
+            }
+        }
         _teamIdToOwner[teamId] = addr;
         _countryIdToNHumanTeams[countryId] = firstBotIdx + 1;
         emit TeamTransfer(teamId, addr);
@@ -92,12 +103,19 @@ contract Assets is AssetsView {
         }
     }
 
-    function _addDivision(uint8 tz, uint256 countryIdxInTZ) private {
+    function _addDivision(uint8 tz, uint256 countryIdxInTZ) private returns(bool) {
+        (uint8 tzToUpdate, , uint8 turnInDay) = nextTimeZoneToUpdate();
+        if((tz == tzToUpdate) && (turnInDay == 1)) {
+            // cannot create a division during half time of matches in that division
+            emit DivisionCreationFailed(tz, countryIdxInTZ);    
+            return false;
+        } 
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0);
         uint256 nDivs = _countryIdToNDivisions[countryId];
         uint256 divisionId = encodeTZCountryAndVal(tz, countryIdxInTZ, nDivs);
         _countryIdToNDivisions[countryId] = nDivs + 1;
         _divisionIdToRound[divisionId] = getCurrentRound(tz) + 1;
         emit DivisionCreation(tz, countryIdxInTZ, nDivs);
+        return true;
     }
 }

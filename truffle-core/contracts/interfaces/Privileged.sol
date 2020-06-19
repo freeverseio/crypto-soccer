@@ -77,7 +77,7 @@ contract Privileged is AssetsView, EncodingSkillsSetters {
         pure 
         returns(uint32[N_SKILLS] memory skillsVec, uint256 ageYears, uint8[4] memory birthTraits, uint256 internalPlayerId) 
     {
-        require(maxPotential < 10);
+        require(maxPotential < 10, "potential out of bouds");
         uint8 potential = uint8(seed % (maxPotential+1));
         seed /= 10;
         ageYears = 16 + (seed % 20);
