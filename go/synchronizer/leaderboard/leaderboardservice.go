@@ -20,18 +20,22 @@ func NewLeaderboardService(service *storage.StorageService) *LeaderboardService 
 	}
 }
 
-func (b LeaderboardService) Compute(
+func (b LeaderboardService) Update(
 	contracts contracts.Contracts,
 	timezone int,
 	matchDay int,
-) (*Leaderboard, error) {
+) error {
 	matches, err := b.service.MatchService.MatchesByTimezone(uint8(timezone))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if len(matches) != 56 {
-		return nil, errors.New("matches count not 56")
+	if len(matches) == 0 {
+		return nil
+	}
+
+	if len(matches)%56 != 0 {
+		return errors.New("matches count not multiple 56")
 	}
 
 	sort.Slice(matches, func(i, j int) bool {
@@ -51,7 +55,7 @@ func (b LeaderboardService) Compute(
 		uint8(matchDay),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	l := Leaderboard{}
@@ -61,5 +65,5 @@ func (b LeaderboardService) Compute(
 		l[i].Points = int(bcLeaderboard.Points[i].Int64())
 	}
 
-	return &l, nil
+	return nil
 }
