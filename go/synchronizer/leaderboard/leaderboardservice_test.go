@@ -3,16 +3,23 @@ package leaderboard_test
 import (
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/storage/memory"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"gotest.tools/assert"
 )
 
-func TestLeaderboardService(t *testing.T) {
-	sService := memory.NewStorageService()
-	lService := leaderboard.NewLeaderboardService(sService)
+func TestLeaderboardServiceNoMatches(t *testing.T) {
 	timezone := 10
-	matchDay := 3
-	_, err := lService.Compute(*bc.Contracts, timezone, matchDay)
-	assert.Error(t, err, "")
+	sto := memory.NewStorageService()
+	service := leaderboard.NewLeaderboardService(sto)
+	assert.NilError(t, service.Update(*bc.Contracts, timezone))
+}
+
+func TestLeaderboardService1Match(t *testing.T) {
+	timezone := 10
+	sto := memory.NewStorageService()
+	sto.MatchService.Insert(storage.Match{})
+	service := leaderboard.NewLeaderboardService(sto)
+	assert.Error(t, service.Update(*bc.Contracts, timezone), "odd number of teams")
 }

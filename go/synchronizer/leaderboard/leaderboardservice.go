@@ -20,11 +20,8 @@ func NewLeaderboardService(service *storage.StorageService) *LeaderboardService 
 	}
 }
 
-func (b LeaderboardService) Update(
-	contracts contracts.Contracts,
-	timezone int,
-	matchDay int,
-) error {
+func (b LeaderboardService) Update(contracts contracts.Contracts, timezone int) error {
+	matchDay := 0
 	matches, err := b.service.MatchService.MatchesByTimezone(uint8(timezone))
 	if err != nil {
 		return err
@@ -34,7 +31,7 @@ func (b LeaderboardService) Update(
 		return nil
 	}
 
-	if len(matches)%56 != 0 {
+	if len(matches)%2 != 0 {
 		return errors.New("matches count not multiple 56")
 	}
 
