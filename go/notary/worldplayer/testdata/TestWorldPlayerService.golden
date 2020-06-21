@@ -1,6 +1,6 @@
 (*worldplayer.WorldPlayer)({
 	playerId: (graphql.ID) (len=62) "25727372695716344446059389169162682094648336396331264410387800",
-	name: (string) (len=15) "Ragnar Mosquera",
+	name: (string) (len=14) "Rayan Mosquera",
 	dayOfBirth: (int32) 17397,
 	preferredPosition: (string) (len=2) "GK",
 	defence: (int32) 1086,
@@ -10,7 +10,7 @@
 	endurance: (int32) 1150,
 	potential: (int32) 1,
 	validUntil: (string) (len=10) "1555545600",
-	countryOfBirth: (string) (len=2) "EE",
+	countryOfBirth: (string) (len=2) "ES",
 	race: (string) (len=7) "Spanish",
 	productId: (string) (len=13) "player_tier_1"
 })

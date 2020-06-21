@@ -146,6 +146,10 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if err := useractionsHistoryService.InsertHistory(event.Raw.BlockNumber, *userActions); err != nil {
 		return err
 	}
+	log.Debugf("Timezone %v update leaderboards", timezoneIdx)
+	if err := matches.ComputeLeaderboards(); err != nil {
+		return err
+	}
 	log.Debugf("Timezone %v save matches to storage", timezoneIdx)
 	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
@@ -167,7 +171,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		}
 		// ordening by points
 		sort.Slice(teams[:], func(i, j int) bool {
-			return teams[i].Points > teams[j].Points
+			return teams[i].LeaderboardPosition < teams[j].LeaderboardPosition
 		})
 		for position, team := range teams {
 			teamState, err := b.GetTeamState(tx, team.TeamID)
@@ -183,6 +187,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 					uint8(position),
 					team.PrevPerfPoints,
 					teamID,
+					team.IsBot(),
 				)
 				if err != nil {
 					return err
