@@ -11,10 +11,10 @@ import (
 )
 
 type LeaderboardService struct {
-	service *storage.StorageService
+	service storage.StorageService
 }
 
-func NewLeaderboardService(service *storage.StorageService) *LeaderboardService {
+func NewLeaderboardService(service storage.StorageService) *LeaderboardService {
 	return &LeaderboardService{
 		service: service,
 	}
@@ -22,7 +22,7 @@ func NewLeaderboardService(service *storage.StorageService) *LeaderboardService 
 
 func (b LeaderboardService) Update(contracts contracts.Contracts, timezone int) error {
 	matchDay := 0
-	matches, err := b.service.MatchService.MatchesByTimezone(uint8(timezone))
+	matches, err := b.service.MatchService().MatchesByTimezone(uint8(timezone))
 	if err != nil {
 		return err
 	}

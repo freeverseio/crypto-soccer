@@ -37,7 +37,6 @@ type Match struct {
 }
 
 type MatchStorageService interface {
-	Insert(match Match) error
 	MatchesByTimezone(timezone uint8) ([]Match, error)
 }
 

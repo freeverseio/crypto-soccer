@@ -1,13 +1,20 @@
 package postgres
 
-import (
-	"database/sql"
+type StorageService struct {
+	TeamStorageService  TeamStorageService
+	MatchStorageService MatchStorageService
+}
 
-	"github.com/freeverseio/crypto-soccer/go/storage"
-)
-
-func NewStorageService(tx *sql.Tx) *storage.StorageService {
-	return &storage.StorageService{
-		TeamService: NewTeamStorageService(tx),
+func NewStorageService() *StorageService {
+	return &StorageService{
+		*NewTeamStorageService(),
+		*NewMatchStorageService(),
 	}
+}
+
+func (b StorageService) TeamService() TeamStorageService {
+	return b.TeamStorageService
+}
+func (b StorageService) MatchService() MatchStorageService {
+	return b.MatchStorageService
 }

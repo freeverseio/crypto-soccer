@@ -20,7 +20,7 @@ func New(url string) (*sql.DB, error) {
 	return db, nil
 }
 
-type StorageService struct {
-	TeamService  TeamStorageService
-	MatchService MatchStorageService
+type StorageService interface {
+	TeamService() TeamStorageService
+	MatchService() MatchStorageService
 }
