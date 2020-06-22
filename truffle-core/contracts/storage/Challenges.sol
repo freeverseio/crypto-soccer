@@ -31,26 +31,31 @@ contract Challenges is UpdatesBase {
         _completeSuccessfulVerifiableChallenge(intData);
     }
 
-    function BCVerifableChallengeUAs(
-        bytes32[] memory leagueLeafs, 
-        bytes32[] memory proof,
-        bytes32 UA, 
-        uint256 teamIdxInTZ, 
-        bool beforeHalf
-    ) 
-        public 
-    {
-        /// intData = [tz, level, levelVerifiable, idx]
-        uint8[4] memory intData = _cleanTimeAcceptedChallenges();
-        require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
+    // function BCVerifableChallengeUAs(
+    //     bytes32[] memory leagueLeafs, 
+    //     bytes32[] memory proof,
+    //     bytes32 UA, 
+    //     uint256 teamIdxInTZ, 
+    //     bool isTactics,
+    //     bool beforeHalf
+    // ) 
+    //     public 
+    // {
+    //     /// intData = [tz, level, levelVerifiable, idx]
+    //     uint8[4] memory intData = _cleanTimeAcceptedChallenges();
+    //     require(intData[1] == intData[2] - 1, "this function must only be called for non-verifiable-by-BC challenges"); 
 
-        (, uint8 day, uint8 half) = prevTimeZoneToUpdate();
-        require(areThereUnexpectedZeros(leagueLeafs, day, half), "challenge to unexpected zeros failed");
+    //     uint256 leagueIdxInCountry = teamIdxInTZ / 8;
+    //     uint256 leafPos = 128 + leagueIdxInCountry * 64 + 25 + (before ? 0 : 32) + (isTactics ? 0 : 1);
 
-        require(!verify(_actionsRoot, proof, UA, posInUAs), "  ");
-        _assertFormallyCorrectChallenge(intData, 0, 0, new bytes32[](0), leagueLeafs);
-        _completeSuccessfulVerifiableChallenge(intData);
-    }
+
+    //     (, uint8 day, uint8 half) = prevTimeZoneToUpdate();
+    //     require(areThereUnexpectedZeros(leagueLeafs, day, half), "challenge to unexpected zeros failed");
+
+    //     require(!verify(_actionsRoot, proof, UA, posInUAs), "  ");
+    //     _assertFormallyCorrectChallenge(intData, 0, 0, new bytes32[](0), leagueLeafs);
+    //     _completeSuccessfulVerifiableChallenge(intData);
+    // }
     
     /// check that leagueLeafs.length == 640 has been done before calling this function (to preserve it being pure)
     function areThereUnexpectedZeros(bytes32[] memory leagueLeafs, uint8 day, uint8 half) public pure returns(bool) {

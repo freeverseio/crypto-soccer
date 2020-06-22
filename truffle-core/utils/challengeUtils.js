@@ -350,6 +350,12 @@ function arrayToBytes32(x) {
   return y;
 }
 
+function getUALeafPos(leagueIdxInCountry, isBeforeHalf, isTactics) {
+  return [
+    128 + leagueIdxInCountry * 64 + 25 + (isBeforeHalf ? 0 : 32) + (isTactics ? 0 : 1),
+    teamIdxInTZ * 2 + (isTactics ? 0 : 1)
+  ];
+}
 
   module.exports = {
     createUniverse,
@@ -362,4 +368,5 @@ function arrayToBytes32(x) {
     createLeafsForOrgMap,
     leafsToHex,
     leafsToBytes32,
+    getUALeafPos
   }
