@@ -77,10 +77,10 @@ func serializeTZandCountryIdx(tz uint8, countryIdxInTZ uint64) uint64 {
 
 func (b *Generator) readDeployedCountriesSpecs() {
 	m := make(map[uint64]DeployedCountriesSpecs)
-	m[serializeTZandCountryIdx(uint8(10), uint64(0))] = DeployedCountriesSpecs{"ES", "Spanish", 55, 55}
-	m[serializeTZandCountryIdx(uint8(10), uint64(1))] = DeployedCountriesSpecs{"IT", "Spanish", 55, 55}
-	m[serializeTZandCountryIdx(uint8(7), uint64(0))] = DeployedCountriesSpecs{"CN", "Chinese", 55, 55}
-	m[serializeTZandCountryIdx(uint8(9), uint64(0))] = DeployedCountriesSpecs{"GB", "NonHispWhite", 55, 55}
+	m[serializeTZandCountryIdx(uint8(10), uint64(0))] = DeployedCountriesSpecs{"ES", "Spanish", 75, 60}
+	m[serializeTZandCountryIdx(uint8(10), uint64(1))] = DeployedCountriesSpecs{"IT", "Spanish", 75, 55}
+	m[serializeTZandCountryIdx(uint8(7), uint64(0))] = DeployedCountriesSpecs{"CN", "Chinese", 75, 70}
+	m[serializeTZandCountryIdx(uint8(9), uint64(0))] = DeployedCountriesSpecs{"GB", "NonHispWhite", 75, 60}
 	b.deployedCountriesSpecs = m
 }
 

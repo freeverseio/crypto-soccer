@@ -68,6 +68,10 @@ contract UniverseInfo is Storage, EncodingSkillsGetters, EncodingIDs {
     function getNTeamsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
         return getNLeaguesInCountry(timeZone, countryIdxInTZ) * TEAMS_PER_LEAGUE;
     }
+
+    function getNHumansInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
+        return _countryIdToNHumanTeams[encodeTZCountryAndVal(timeZone, countryIdxInTZ, 0)];
+    }
     
     function wasPlayerCreatedVirtually(uint256 playerId) public view returns(bool) {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
@@ -101,6 +105,55 @@ contract UniverseInfo is Storage, EncodingSkillsGetters, EncodingIDs {
         return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
     }
     
+    /// each day has 24 hours, each with 4 verses => 96 verses per day.
+    /// day = 0,..13
+    /// turnInDay = 0, 1, 2, 3
+    /// so for each TZ, we go from (day, turn) = (0, 0) ... (13,3) => a total of 14*4 = 56 turns per tz
+    /// from these, all map easily to timeZones
+    function nextTimeZoneToUpdate() public view returns (uint8 tz, uint8 day, uint8 turnInDay) {
+        return timeZoneToUpdatePure(_currentVerse, _timeZoneForRound1);
+    }
+
+    function prevTimeZoneToUpdate() public view returns (uint8 tz, uint8 day, uint8 turnInDay) {
+        if (_currentVerse == 0) {
+            return (NULL_TIMEZONE, 0, 0);
+        }
+        return timeZoneToUpdatePure(_currentVerse - 1, _timeZoneForRound1);
+    }
+
+    /// tz0  : v = 0, V_DAY, 2 * V_DAY...
+    /// tzN  : v = 4N + V_DAY * day,  day = 0,...6
+    /// tzN  : v = 4N + V_DAY * day,  day = 0,...6
+    ///  => tzN - tz0 = (v - V_DAY*day)
+    ///  => 4 tzN = 4 tz0 + v % VERSES_PER_DAY
+    /// last : v = V_DAY + DELTA + V_DAY * 6 
+    /// Imagine 2 tzs:
+    /// 0:00 - tz0; 0:30 - NUL; 1:00 - tz1; 1:30 - tz0; 0:00 - tz0; 0:30 - tz1;
+    /// So the last
+    function timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timezone, uint8 day, uint8 turnInDay) {
+        /// if _currentVerse = 0, we should be updating _timeZoneForRound1
+        /// recall that timeZones range from 1...24 (not from 0...24)
+        turnInDay = uint8(verse % 4);
+        uint256 delta = 9 * 4 + turnInDay;
+        uint256 tz;
+        uint256 dia;        
+        if (turnInDay >= 2 && verse < delta) return (NULL_TIMEZONE, 0, 0);
+        if (turnInDay < 2) {
+            tz = TZForRound1 + ((verse - turnInDay) % VERSES_PER_DAY)/4;
+            dia = 2 * uint8((verse - 4 * (tz - TZForRound1) - turnInDay)/VERSES_PER_DAY);
+        } else {
+            tz = TZForRound1 + ((verse - delta) % VERSES_PER_DAY)/4;
+            dia = 1 + 2 * uint8((verse - 4 * (tz - TZForRound1) - delta)/VERSES_PER_DAY);
+            turnInDay -= 2;
+        }
+        timezone = normalizeTZ(tz);
+        day = uint8(dia % MATCHDAYS_PER_ROUND);
+    }
+    
+    function normalizeTZ(uint256 tz) public pure returns (uint8) {
+        return uint8(1 + ((24 + tz - 1)% 24));
+    }
+
     function market() public view returns (address) { return _market; }
     function COO() public view returns (address) { return _COO; }
     function relay() public view returns (address) { return _relay; }

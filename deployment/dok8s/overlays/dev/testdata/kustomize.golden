@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   BLOCKS_PER_STEP: "10000"
-  PROXY_CONTRACT_ADDRESS: 0x8D6dE4e048eFD765a05D154E1E310637FF9AaaB2
+  PROXY_CONTRACT_ADDRESS: 0x25B7f1Ac6CC145A6930EdBC115821fB301032e9D
   authproxy_extra_args: -backdoor
   freeverse_password: freeverse
   freeverse_username: freeverse
@@ -344,40 +344,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/app: marketdb
-    app.kubernetes.io/component: marketdb
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
-  name: marketdb
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/app: marketdb
-      app.kubernetes.io/component: marketdb
-      app.kubernetes.io/part-of: cryptosoccer
-      app.kubernetes.io/version: 1.0.0
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/app: marketdb
-        app.kubernetes.io/component: marketdb
-        app.kubernetes.io/part-of: cryptosoccer
-        app.kubernetes.io/version: 1.0.0
-    spec:
-      containers:
-      - image: freeverseio/market.db:dev
-        imagePullPolicy: Always
-        name: marketdb
-        ports:
-        - containerPort: 5432
-      imagePullSecrets:
-      - name: docker-secret
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
     app.kubernetes.io/app: notary
     app.kubernetes.io/component: notary
     app.kubernetes.io/part-of: cryptosoccer
@@ -675,7 +641,64 @@ spec:
       - name: docker-secret
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/app: marketdb
+    app.kubernetes.io/component: marketdb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: marketdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: marketdb
+      app.kubernetes.io/component: marketdb
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  serviceName: marketdb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: marketdb
+        app.kubernetes.io/component: marketdb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: freeverseio/market.db:dev
+        imagePullPolicy: Always
+        name: marketdb
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: marketdb-storage
+      imagePullSecrets:
+      - name: docker-secret
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/app: marketdb
+        app.kubernetes.io/component: marketdb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+      name: marketdb-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 200Gi
+      storageClassName: do-block-storage
+---
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   labels:
     app.kubernetes.io/app: universedb
@@ -691,6 +714,7 @@ spec:
       app.kubernetes.io/component: universedb
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
+  serviceName: universedb
   template:
     metadata:
       labels:
@@ -713,10 +737,22 @@ spec:
           name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
-      volumes:
-      - name: universedb-storage
-        persistentVolumeClaim:
-          claimName: universedb-pvc
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/app: universedb
+        app.kubernetes.io/component: universedb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+      name: universedb-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 200Gi
+      storageClassName: do-block-storage
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -805,37 +841,3 @@ spec:
   - hosts:
     - dashboard.gorengine.com
     secretName: cryptosoccer-dashboard-tls
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app.kubernetes.io/app: marketdb
-    app.kubernetes.io/component: marketdb
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
-  name: marketdb-pvc
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 200Gi
-  storageClassName: do-block-storage
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app.kubernetes.io/app: universedb
-    app.kubernetes.io/component: universedb
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
-  name: universedb-pvc
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 200Gi
-  storageClassName: do-block-storage

@@ -38,6 +38,7 @@ CREATE TABLE teams (
     owner TEXT NOT NULL,
     league_idx INT NOT NULL,
     team_idx_in_league INT NOT NULL,
+    leaderboard_position INT NOT NULL DEFAULT 0,
     points INT NOT NULL DEFAULT 0,
     w INT NOT NULL DEFAULT 0,
     d INT NOT NULL DEFAULT 0,

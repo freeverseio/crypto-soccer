@@ -85,6 +85,7 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1 {
             [uint256(0),uint256(0)], 
             matchBools
         );
+        if (err > 0) return (skills, matchLogsAndEvents, err);
 
         for (uint8 team = 0; team < 2; team++) {
             (skills[team], err) = evo.updateSkillsAfterPlayHalf(skills[team], matchLogsAndEvents[team], tactics[team], false, matchBools[IDX_IS_BOT_HOME + team]);
