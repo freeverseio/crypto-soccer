@@ -1,6 +1,8 @@
 package leaderboard_test
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -66,18 +68,23 @@ func TestLeaderboardService1Match(t *testing.T) {
 
 func TestLeaderboardServiceLeague(t *testing.T) {
 	timezone := 10
-	matchDay := 0
+	matchDay := 15
 
 	teams := []storage.Team{}
 	for i := 0; i < 8; i++ {
-		teams = append(teams, storage.Team{})
+		team := storage.NewTeam()
+		team.TeamID = fmt.Sprintf("%d", i)
+		team.TeamIdxInLeague = uint32(i)
+		teams = append(teams, *team)
 	}
 
 	sto := mock.NewStorageService()
 	sto.MatchStorageService.MatchesByTimezoneFunc = func(timezone uint8) ([]storage.Match, error) {
 		matches := []storage.Match{}
 		for i := 0; i < 56; i++ {
-			matches = append(matches, storage.Match{})
+			match := storage.NewMatch()
+			match.HomeGoals = uint8(i / 10)
+			matches = append(matches, *match)
 		}
 		return matches, nil
 	}
@@ -85,9 +92,15 @@ func TestLeaderboardServiceLeague(t *testing.T) {
 		return teams, nil
 	}
 	sto.TeamStorageService.UpdateLeaderboardPositionFunc = func(teamId string, position int) error {
+		id, err := strconv.Atoi(teamId)
+		if err != nil {
+			return err
+		}
+		teams[id].LeaderboardPosition = position
 		return nil
 	}
 
 	service := leaderboard.NewLeaderboardService(sto)
 	assert.NilError(t, service.Update(*bc.Contracts, matchDay, timezone))
+
 }

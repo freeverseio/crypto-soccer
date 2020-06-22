@@ -17,28 +17,28 @@ type TeamStorageService struct {
 
 func (b TeamStorageService) Team(teamId string) (*storage.Team, error) {
 	if b.TeamFunc == nil {
-		return nil, errors.New("TeamStorageService::Team is nil")
+		return nil, errors.New("TeamStorageService::TeamFunc is nil")
 	}
 	return b.TeamFunc(teamId)
 }
 
 func (b TeamStorageService) Insert(team storage.Team) error {
 	if b.InsertFunc == nil {
-		return errors.New("TeamStorageService::Insert is nil")
+		return errors.New("TeamStorageService::InsertFunc is nil")
 	}
 	return b.InsertFunc(team)
 }
 
 func (b TeamStorageService) UpdateName(teamId string, name string) error {
 	if b.UpdateNameFunc == nil {
-		return errors.New("TeamStorageService::UpdateName is nil")
+		return errors.New("TeamStorageService::UpdateNameFunc is nil")
 	}
 	return b.UpdateNameFunc(teamId, name)
 }
 
 func (b TeamStorageService) UpdateManagerName(teamId string, name string) error {
 	if b.UpdateManagerNameFunc == nil {
-		return errors.New("TeamStorageService::UpdateManagerName is nil")
+		return errors.New("TeamStorageService::UpdateManagerNameFunc is nil")
 	}
 	return b.UpdateManagerNameFunc(teamId, name)
 }
@@ -52,7 +52,7 @@ func (b TeamStorageService) UpdateLeaderboardPosition(teamId string, position in
 
 func (b TeamStorageService) TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error) {
 	if b.TeamsByTimezoneIdxCountryIdxLeagueIdxFunc == nil {
-		return nil, errors.New("TeamStorageService::TeamsByTimezoneIdxCountryIdxLeagueIdx is nil")
+		return nil, errors.New("TeamStorageService::TeamsByTimezoneIdxCountryIdxLeagueIdxFunc is nil")
 	}
 	return b.TeamsByTimezoneIdxCountryIdxLeagueIdxFunc(timezoneIdx, countryIdx, leagueIdx)
 }
