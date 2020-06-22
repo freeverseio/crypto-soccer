@@ -53,9 +53,24 @@ func TestLeaderboardServiceNoMatches(t *testing.T) {
 	assert.NilError(t, service.Update(*bc.Contracts, matchDay, timezone))
 }
 
-// func TestLeaderboardService1Match(t *testing.T) {
-// 	timezone := 10
-// 	sto := mock.NewStorageService()
-// 	service := leaderboard.NewLeaderboardService(sto)
-// 	assert.Error(t, service.Update(*bc.Contracts, timezone), "odd number of teams")
-// }
+func TestLeaderboardService1Match(t *testing.T) {
+	timezone := 10
+	matchDay := 0
+	sto := mock.NewStorageService()
+	sto.MatchStorageService.MatchesByTimezoneFunc = func(timezone uint8) ([]storage.Match, error) {
+		return []storage.Match{storage.Match{}}, nil
+	}
+	service := leaderboard.NewLeaderboardService(sto)
+	assert.Error(t, service.Update(*bc.Contracts, matchDay, timezone), "matches count not multiple 56")
+}
+
+func TestLeaderboardServiceLeague(t *testing.T) {
+	timezone := 10
+	matchDay := 0
+	sto := mock.NewStorageService()
+	sto.MatchStorageService.MatchesByTimezoneFunc = func(timezone uint8) ([]storage.Match, error) {
+		return []storage.Match{storage.Match{}}, nil
+	}
+	service := leaderboard.NewLeaderboardService(sto)
+	assert.Error(t, service.Update(*bc.Contracts, matchDay, timezone), "matches count not multiple 56")
+}

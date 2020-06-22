@@ -51,3 +51,7 @@ func (b TeamStorageService) UpdateLeaderboardPosition(teamId string, position in
 	team.LeaderboardPosition = position
 	return team.Update(b.tx)
 }
+
+func (b TeamStorageService) TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error) {
+	return storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(b.tx, timezoneIdx, countryIdx, leagueIdx)
+}

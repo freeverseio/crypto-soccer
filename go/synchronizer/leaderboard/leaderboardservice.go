@@ -49,19 +49,35 @@ func (b LeaderboardService) ComputeLeague(
 		return errors.New("number of matches in not 56")
 	}
 
+	timezoneIdx := matches[0].TimezoneIdx
+	countryIdx := matches[0].CountryIdx
+	leagueIdx := matches[0].LeagueIdx
+
+	for _, match := range matches {
+		if match.TimezoneIdx != timezoneIdx {
+			return errors.New("matches of different timezone")
+		}
+		if match.CountryIdx != countryIdx {
+			return errors.New("matches of different country")
+		}
+		if match.LeagueIdx != leagueIdx {
+			return errors.New("matches of different league")
+		}
+	}
+
 	var results [56][2]uint8
 	for i := range matches {
 		results[i][0] = matches[i].HomeGoals
 		results[i][1] = matches[i].VisitorGoals
 	}
-	var teamIds [8]*big.Int
-	for i := range teamIds {
-		teamIds[i] = big.NewInt(1)
+	var teamIdxInLeague [8]*big.Int
+	for i := range teamIdxInLeague {
+		teamIdxInLeague[i] = big.NewInt(1)
 	}
 
 	llb, err := contracts.Leagues.ComputeLeagueLeaderBoard(
 		&bind.CallOpts{},
-		teamIds,
+		teamIdxInLeague,
 		results,
 		uint8(matchDay),
 	)
@@ -69,8 +85,22 @@ func (b LeaderboardService) ComputeLeague(
 		return err
 	}
 
+	teams, err := b.service.TeamService().TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return err
+	}
+	if len(teams) != 8 {
+		return errors.New("number of teams of a league has to be 8")
+	}
+	sort.Slice(teams[:], func(i, j int) bool {
+		return teams[i].TeamIdxInLeague < teams[j].TeamIdxInLeague
+	})
+
 	for i := 0; i < 8; i++ {
-		if err := b.service.TeamService().UpdateLeaderboardPosition(teamIds[i].String(), int(llb.Ranking[i])); err != nil {
+		if err := b.service.TeamService().UpdateLeaderboardPosition(
+			teams[i].TeamID,
+			int(llb.Ranking[i]),
+		); err != nil {
 			return err
 		}
 	}

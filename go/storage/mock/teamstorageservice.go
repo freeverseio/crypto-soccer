@@ -5,11 +5,12 @@ import (
 )
 
 type TeamStorageService struct {
-	TeamFunc                      func(teamId string) (*storage.Team, error)
-	InsertFunc                    func(team storage.Team) error
-	UpdateNameFunc                func(teamId string, name string) error
-	UpdateManagerNameFunc         func(teamId string, name string) error
-	UpdateLeaderboardPositionFunc func(teamId string, position int) error
+	TeamFunc                                  func(teamId string) (*storage.Team, error)
+	InsertFunc                                func(team storage.Team) error
+	UpdateNameFunc                            func(teamId string, name string) error
+	UpdateManagerNameFunc                     func(teamId string, name string) error
+	UpdateLeaderboardPositionFunc             func(teamId string, position int) error
+	TeamsByTimezoneIdxCountryIdxLeagueIdxFunc func(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error)
 }
 
 func (b TeamStorageService) Team(teamId string) (*storage.Team, error) {
@@ -30,4 +31,8 @@ func (b TeamStorageService) UpdateManagerName(teamId string, name string) error 
 
 func (b TeamStorageService) UpdateLeaderboardPosition(teamId string, position int) error {
 	return b.UpdateLeaderboardPositionFunc(teamId, position)
+}
+
+func (b TeamStorageService) TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error) {
+	return b.TeamsByTimezoneIdxCountryIdxLeagueIdxFunc(timezoneIdx, countryIdx, leagueIdx)
 }

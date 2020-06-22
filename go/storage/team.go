@@ -39,7 +39,8 @@ type TeamStorageService interface {
 	Insert(team Team) error
 	UpdateName(teamId string, name string) error
 	UpdateManagerName(teamId string, name string) error
-	UpdateLeaderboardPosition(teamId string, position int) error
+	UpdateLeaderboardPosition(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, position int) error
+	TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error)
 }
 
 func NewTeam() *Team {
