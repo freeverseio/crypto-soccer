@@ -40,15 +40,23 @@ func Sort(matches []storage.Match) {
 	})
 }
 
-func ComputeLeague(
+func (b LeaderboardService) ComputeLeague(
 	contracts contracts.Contracts,
 	matchDay int,
 	matches []storage.Match,
 ) error {
-	var teamIds [8]*big.Int
-	var results [56][2]uint8
+	if len(matches) != 56 {
+		return errors.New("number of matches in not 56")
+	}
 
-	bcLeaderboard, err := contracts.Leagues.ComputeLeagueLeaderBoard(
+	var results [56][2]uint8
+	for i := range matches {
+		results[i][0] = matches[i].HomeGoals
+		results[i][1] = matches[i].VisitorGoals
+	}
+	var teamIds [8]*big.Int
+
+	llb, err := contracts.Leagues.ComputeLeagueLeaderBoard(
 		&bind.CallOpts{},
 		teamIds,
 		results,
@@ -58,12 +66,12 @@ func ComputeLeague(
 		return err
 	}
 
-	l := Leaderboard{}
-	for i := range l {
-		l[i].TeamId = teamIds[i].String()
-		l[i].Position = int(bcLeaderboard.Ranking[i])
-		l[i].Points = int(bcLeaderboard.Points[i].Int64())
+	for i := 0; i < 8; i++ {
+		if err := b.service.TeamService().UpdateLeaderboardPosition(teamIds[i].String(), int(llb.Ranking[i])); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -88,7 +96,7 @@ func (b LeaderboardService) Update(
 	Sort(matches)
 
 	for i := 0; i < len(matches); i += 56 {
-		ComputeLeague(
+		b.ComputeLeague(
 			contracts,
 			matchDay,
 			matches[i:i+56],
