@@ -55,6 +55,9 @@ func (b LeaderboardService) ComputeLeague(
 		results[i][1] = matches[i].VisitorGoals
 	}
 	var teamIds [8]*big.Int
+	for i := range teamIds {
+		teamIds[i] = big.NewInt(1)
+	}
 
 	llb, err := contracts.Leagues.ComputeLeagueLeaderBoard(
 		&bind.CallOpts{},
