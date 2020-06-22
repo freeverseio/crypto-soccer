@@ -29,16 +29,16 @@ services:
     volumes:
       - ipfs.cluster-data:/data
   universe.db:
-    # image: "freeverseio/universe.db:${TAG}"
-    build: ../../universe.db
+    image: "freeverseio/universe.db:${TAG}"
+    # build: ../../universe.db
     restart: always
     volumes:
       - universe.db-data:/var/lib/postgresql/data
   synchronizer:
-    # image: "freeverseio/synchronizer:${TAG}"
-    build: 
-      context: ../../go/
-      dockerfile: Dockerfile.synchronizer
+    image: "freeverseio/synchronizer:${TAG}"
+    # build: 
+    #   context: ../../go/
+    #   dockerfile: Dockerfile.synchronizer
     restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
