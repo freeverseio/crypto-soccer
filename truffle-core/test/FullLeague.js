@@ -561,8 +561,10 @@ contract('FullLeague', (accounts) => {
 
         // First create the orgMap. This fake one has 2 countries per TZ, and 6 humans in each.
         tzZeroBased = 1;
-        // the important number to provide is the teamIdxInTZ, sorted 
-        teamIdxInTZ = 8+4; // first league is in country 0, second league is in country 1, this is the 4th team in that league.
+        // the important number to provide is the teamIdxInTZ, sorted as in the orgMap. Choose 12:
+        // first league is in country 0, second league is in country 1, this is the 4th team in that league.
+        teamIdxInTZ = 8+4; 
+
 
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
@@ -582,12 +584,14 @@ contract('FullLeague', (accounts) => {
         assert.equal(root, merkleStructA[lev = 1][leagueIdxInCountry], "merkleStructA and root do not match");
 
         // Finally, prove point 1: that the UA corresponding to tactics (pos 128+25) and training (128+26) in the league 0 belongs to the root.
-        leafPos = 128 + leagueIdxInCountry * 32 + 25;
+        // -- BEFORE HALF --
+        before = true;
+        leafPos = 128 + leagueIdxInCountry * 64 + 25 + (before ? 0 : 32);
         UA = leafsA[leagueIdxInCountry][leafPos];
         proof = merkleUtils.buildProofZeroPad(leafPos, leafsA[leagueIdxInCountry], nLevelsRootOfOneLeague);
         assert.equal(merkleUtils.verify(merkleStructA[lev = 1][leagueIdxInCountry], proof, UA, leafPos), true, "proof not working");
 
-        leafPos = 128 + leagueIdxInCountry * 32 + 26;
+        leafPos = 128 + leagueIdxInCountry * 64 + 26 + (before ? 0 : 32);
         UA = leafsA[leagueIdxInCountry][leafPos];
         proof = merkleUtils.buildProofZeroPad(leafPos, leafsA[leagueIdxInCountry], nLevelsRootOfOneLeague);
         assert.equal(merkleUtils.verify(merkleStructA[lev = 1][leagueIdxInCountry], proof, UA, leafPos), true, "proof not working");
@@ -598,9 +602,56 @@ contract('FullLeague', (accounts) => {
         assert.equal(userActionsBytes32.length, 24, "there should be 24 timezones");
         assert.equal(userActionsBytes32[tzZeroBased].length, 8 * 2 * nCountriesPerTZ, "orgMap[0].length not as expected");
 
-        leafPos = 128 + leagueIdxInCountry * 32 + 25;
+        leafPos = 128 + leagueIdxInCountry * 64 + 25 + (before ? 0 : 32);
         UA = leafsA[leagueIdxInCountry][leafPos];
         leafPosInUserActions = teamIdxInTZ * 2;
+
+        depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
+        proof = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
+        root = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
+        assert.equal(merkleUtils.verify(root, proof, UA, leafPosInUserActions), true, "proof not working");
+
+        leafPos = 128 + leagueIdxInCountry * 64 + 26 + (before ? 0 : 32);
+        UA = leafsA[leagueIdxInCountry][leafPos];
+        leafPosInUserActions = teamIdxInTZ * 2 + 1;
+
+        depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
+        proof = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
+        root = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
+        assert.equal(merkleUtils.verify(root, proof, UA, leafPosInUserActions), true, "proof not working");
+
+
+        // -- After HALF --
+        before = false;
+        leafPos = 128 + leagueIdxInCountry * 64 + 25 + (before ? 0 : 32);
+        UA = leafsA[leagueIdxInCountry][leafPos];
+        proof = merkleUtils.buildProofZeroPad(leafPos, leafsA[leagueIdxInCountry], nLevelsRootOfOneLeague);
+        assert.equal(merkleUtils.verify(merkleStructA[lev = 1][leagueIdxInCountry], proof, UA, leafPos), true, "proof not working");
+
+        leafPos = 128 + leagueIdxInCountry * 64 + 26 + (before ? 0 : 32);
+        UA = leafsA[leagueIdxInCountry][leafPos];
+        proof = merkleUtils.buildProofZeroPad(leafPos, leafsA[leagueIdxInCountry], nLevelsRootOfOneLeague);
+        assert.equal(merkleUtils.verify(merkleStructA[lev = 1][leagueIdxInCountry], proof, UA, leafPos), true, "proof not working");
+
+        // Now, for point 2: prove that these UA where part of the TZ submission
+        userActionsBytes32 = chllUtils.leafsToBytes32(userActions);
+
+        assert.equal(userActionsBytes32.length, 24, "there should be 24 timezones");
+        assert.equal(userActionsBytes32[tzZeroBased].length, 8 * 2 * nCountriesPerTZ, "orgMap[0].length not as expected");
+
+        leafPos = 128 + leagueIdxInCountry * 64 + 25 + (before ? 0 : 32);
+        UA = leafsA[leagueIdxInCountry][leafPos];
+        leafPosInUserActions = teamIdxInTZ * 2;
+
+        depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
+        proof = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
+        root = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
+        assert.equal(merkleUtils.verify(root, proof, UA, leafPosInUserActions), true, "proof not working");
+
+        leafPos = 128 + leagueIdxInCountry * 64 + 26 + (before ? 0 : 32);
+        UA = leafsA[leagueIdxInCountry][leafPos];
+        leafPosInUserActions = teamIdxInTZ * 2 + 1;
+        console.log(leafsPos, UA, leafPosInUserActions);
 
         depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
         proof = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
