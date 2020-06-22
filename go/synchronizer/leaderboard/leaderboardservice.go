@@ -20,6 +20,15 @@ func NewLeaderboardService(service storage.StorageService) *LeaderboardService {
 	}
 }
 
+func Sort(matches []storage.Match) {
+	sort.Slice(matches, func(i, j int) bool {
+		if matches[i].MatchDayIdx != matches[j].MatchDayIdx {
+			return matches[i].MatchDayIdx > matches[j].MatchDayIdx
+		}
+		return matches[i].MatchIdx > matches[j].MatchIdx
+	})
+}
+
 func (b LeaderboardService) Update(contracts contracts.Contracts, timezone int) error {
 	matchDay := 0
 	matches, err := b.service.MatchService().MatchesByTimezone(uint8(timezone))
