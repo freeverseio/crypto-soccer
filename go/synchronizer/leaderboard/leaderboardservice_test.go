@@ -1,6 +1,8 @@
 package leaderboard_test
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -65,43 +67,41 @@ func TestLeaderboardService1Match(t *testing.T) {
 	assert.Error(t, service.UpdateTimezoneLeaderboards(*bc.Contracts, matchDay, timezone), "matches count not multiple 56")
 }
 
-// func TestLeaderboardServiceLeague(t *testing.T) {
-// 	timezone := 10
-// 	matchDay := 15
+func TestLeaderboardServiceLeague(t *testing.T) {
+	matches := [56]storage.Match{}
+	for i := range matches {
+		matches[i] = *storage.NewMatch()
+	}
+	teams := [8]storage.Team{}
+	for i := range teams {
+		teams[i] = *storage.NewTeam()
+		teams[i].TeamID = fmt.Sprintf("%d", i)
+		teams[i].TeamIdxInLeague = uint32(i)
+	}
 
-// 	teams := []storage.Team{}
-// 	for i := 0; i < 8; i++ {
-// 		team := storage.NewTeam()
-// 		team.TeamID = fmt.Sprintf("%d", i)
-// 		team.TeamIdxInLeague = uint32(i)
-// 		teams = append(teams, *team)
-// 	}
+	sto := mock.NewStorageService()
+	sto.MatchStorageService.MatchesByTimezoneFunc = func(timezone uint8) ([]storage.Match, error) {
+		return matches[:], nil
+	}
+	sto.TeamStorageService.TeamsByTimezoneIdxCountryIdxLeagueIdxFunc = func(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error) {
+		return teams[:], nil
+	}
+	sto.TeamStorageService.UpdateLeaderboardPositionFunc = func(teamId string, position int) error {
+		id, err := strconv.Atoi(teamId)
+		if err != nil {
+			return err
+		}
+		teams[id].LeaderboardPosition = position
+		return nil
+	}
 
-// 	sto := mock.NewStorageService()
-// 	sto.MatchStorageService.MatchesByTimezoneFunc = func(timezone uint8) ([]storage.Match, error) {
-// 		matches := []storage.Match{}
-// 		for i := 0; i < 56; i++ {
-// 			match := storage.NewMatch()
-// 			match.HomeGoals = uint8(i / 10)
-// 			matches = append(matches, *match)
-// 		}
-// 		return matches, nil
-// 	}
-// 	sto.TeamStorageService.TeamsByTimezoneIdxCountryIdxLeagueIdxFunc = func(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error) {
-// 		return teams, nil
-// 	}
-// 	sto.TeamStorageService.UpdateLeaderboardPositionFunc = func(teamId string, position int) error {
-// 		id, err := strconv.Atoi(teamId)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		teams[id].LeaderboardPosition = position
-// 		return nil
-// 	}
+	service := leaderboard.NewLeaderboardService(sto)
+	timezone := 10
+	matchDay := 15
+	assert.NilError(t, service.UpdateTimezoneLeaderboards(*bc.Contracts, matchDay, timezone))
 
-// 	service := leaderboard.NewLeaderboardService(sto)
-// 	assert.NilError(t, service.UpdateTimezoneLeaderboards(*bc.Contracts, matchDay, timezone))
-// }
+	golden.Assert(t, dump.Sdump(teams), t.Name()+".golden")
+}
 
 func TestLeaderboardServiceUpdateLeagueLeaderboard(t *testing.T) {
 	matches := [56]storage.Match{}
