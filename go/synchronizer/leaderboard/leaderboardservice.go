@@ -129,11 +129,13 @@ func (b LeaderboardService) Update(
 	Sort(matches)
 
 	for i := 0; i < len(matches); i += 56 {
-		b.ComputeLeague(
+		if err := b.ComputeLeague(
 			contracts,
 			matchDay,
 			matches[i:i+56],
-		)
+		); err != nil {
+			return err
+		}
 	}
 
 	return nil
