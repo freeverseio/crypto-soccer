@@ -156,7 +156,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	if turnInDay == 1 {
 		leaderboardService := leaderboard.NewLeaderboardService(storagepostgres.NewStorageService(tx))
-		if err := leaderboardService.Update(*b.contracts, int(timezoneIdx), int(day)); err != nil {
+		if err := leaderboardService.UpdateTimezoneLeaderboards(*b.contracts, int(timezoneIdx), int(day)); err != nil {
 			return err
 		}
 	}
