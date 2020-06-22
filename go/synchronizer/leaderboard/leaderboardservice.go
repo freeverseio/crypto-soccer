@@ -22,10 +22,21 @@ func NewLeaderboardService(service storage.StorageService) *LeaderboardService {
 
 func Sort(matches []storage.Match) {
 	sort.Slice(matches, func(i, j int) bool {
-		if matches[i].MatchDayIdx != matches[j].MatchDayIdx {
-			return matches[i].MatchDayIdx > matches[j].MatchDayIdx
+		m0 := matches[i]
+		m1 := matches[j]
+		if m0.TimezoneIdx != m1.TimezoneIdx {
+			return m0.TimezoneIdx < m1.TimezoneIdx
 		}
-		return matches[i].MatchIdx > matches[j].MatchIdx
+		if m0.CountryIdx != m1.CountryIdx {
+			return m0.CountryIdx < m1.CountryIdx
+		}
+		if m0.LeagueIdx != m1.LeagueIdx {
+			return m0.LeagueIdx < m1.LeagueIdx
+		}
+		if m0.MatchDayIdx != m1.MatchDayIdx {
+			return m0.MatchDayIdx < m0.MatchDayIdx
+		}
+		return m0.MatchIdx < m0.MatchIdx
 	})
 }
 
