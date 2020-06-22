@@ -334,7 +334,7 @@ contract('FullLeague', (accounts) => {
         almostNullTraning = await training.encodeTP(TP = 0, TPperSkill, specialPlayer = 21).should.be.fulfilled;
     });
   
-    // it2('create real data for an entire league', async () => {
+    // it('create real data for an entire league', async () => {
     //     mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
     //     // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
     //     // => all assingments to 0, but with a special player chosen
@@ -359,7 +359,7 @@ contract('FullLeague', (accounts) => {
     //     );
     // });
 
-    it2('read an entire league and organize data in the leaf format required', async () => {
+    it('read an entire league and organize data in the leaf format required', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         leagueData = chllUtils.readCreatedLeagueData();
         var leafs = [];
@@ -384,7 +384,7 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it2('test day 0, half 0', async () => {
+    it('test day 0, half 0', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 0;
         assert.equal(leafs.length, nMatchdays * 2);
@@ -416,7 +416,7 @@ contract('FullLeague', (accounts) => {
     });
     
 
-    it2('test all days after 2nd half (day = odd)', async () => {
+    it('test all days after 2nd half (day = odd)', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 1;
         assert.equal(leafs.length, nMatchdays * 2);
@@ -481,7 +481,7 @@ contract('FullLeague', (accounts) => {
         }
     });
     
-    it2('challenge unexpected zero values', async () => {
+    it('challenge unexpected zero values', async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         depl = await deployUtils.deploy(defaultSetup.owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         proxy  = depl[0];
@@ -512,7 +512,7 @@ contract('FullLeague', (accounts) => {
     // - **OrgMap** = [tIdx0, ....tIdxNActive; ...]; max = 34 levels
     // - **UserActions** = [UA$_{tact,0}$, UA$_{train,0}$, ...]; max = 35 levels
     // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
-    it2('create orgmap', async () => {
+    it('create orgmap', async () => {
         // all returns of this function are arrays as a function of TZ_0-based!!!
         const {0: orgMapHeaders, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         h = web3.utils.keccak256(
@@ -528,7 +528,7 @@ contract('FullLeague', (accounts) => {
     // level 1: 2048 leagueRoots (only 24 TZs x 2 Countries = 48 are nonzero) => Emit 2048 leagueRoots, store new Root
     // level 2: 2048 x 640 leagueLeafs => emit one of these => only 640 leagueLeafs for one of those roots, store that leagueRoot
     // level 3: provide 640 leagueLeafs, and BC-challenge.
-    it2('create struct given an orgmap based on repeated league', async () => {
+    it('create struct given an orgmap based on repeated league', async () => {
         const {0: orgMapHeaders, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6);
         assert.equal(orgMap.length, 24, "leafsPerLeague.length not as expected");
         assert.equal(orgMap[0].length, 8 * nCountriesPerTZ, "orgMap[0].length not as expected");
@@ -545,24 +545,60 @@ contract('FullLeague', (accounts) => {
     });
     
     it('prove that some UA are in R[Data]', async () => {
-        const nLevelsRootOfOneLeague = 10; // since 640 is closest to 1024 = 2**10
+        // We need to prove 2 things: 1) that UA are in R[data], 2) that UA were part of the submitActionsRoot
+        // the depth of R[data] is 10, since it has 640 leaves => 1024
+        const nLevelsRootOfOneLeague = 10; 
+        // We will set to 4 the depth of each update level (even though in production it will be 11)
         const nLevelsInOneChallenge = 4;
+
+        // First create the orgMap. This fake one has 2 countries per TZ, and 6 humans in each.
         tzZeroBased = 1;
+        countryIdxInTz = 1;
+        teamIdxIdxInCountry = 4; // relative to the orgMap
+        leagueIdxInCountry = Math.floor(teamIdxIdxInCountry/nTeamsInLeague);
+        
+
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
         leafsA = chllUtils.leafsToBytes32(leafsADecimal);
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
         merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
+        // MerkleStruct has length 2. First entry is the Root. Second contains nLeagues per level (2**4 in this case)
         assert.equal(merkleStructA.length, 2, "merkleStructA.length not as expected");
         assert.equal(merkleStructA[0].length, 1, "merkleStructA.length not as expected");
         assert.equal(merkleStructA[1].length, nLeafsPerRoot, "merkleStructA.length not as expected");
         assert.equal(leafsA.length, 2, "we expect two leagues in this orgmap, 1 for each country");
 
-        root = merkleUtils.merkleRootZeroPad(leafsA[0], nLevelsRootOfOneLeague);
-        assert.equal(root, merkleStructA[lev = 1][pos = 0], "merkleStructA and root do not match");
-        proof = merkleUtils.buildProofZeroPad(leafPos = 128+25, leafsA[0], nLevelsRootOfOneLeague);
-        assert.equal(merkleUtils.verify(merkleStructA[lev = 1][pos = 0], proof, leafsA[0][leafPos], leafPos), true, "proof not working");
+        // First doubble check that the root of the league, computed manually, coincides with what's in the merkleStruct
+        root = merkleUtils.merkleRootZeroPad(leafsA[countryIdxInTz], nLevelsRootOfOneLeague);
+        assert.equal(root, merkleStructA[lev = 1][leagueIdxInCountry], "merkleStructA and root do not match");
+
+        // Finally, prove point 1: that the UA corresponding to tactics (pos 128+25) and training (128+26) in the league 0 belongs to the root.
+        leafPos = 128 + teamIdxIdxInCountry * 32 + 25;
+        UA = leafsA[countryIdxInTz][leafPos];
+        proof = merkleUtils.buildProofZeroPad(leafPos, leafsA[countryIdxInTz], nLevelsRootOfOneLeague);
+        assert.equal(merkleUtils.verify(merkleStructA[lev = 1][leagueIdxInCountry], proof, UA, leafPos), true, "proof not working");
+        leafPos = 128 + teamIdxIdxInCountry * 32 + 26;
+        UA = leafsA[countryIdxInTz][leafPos];
+        proof = merkleUtils.buildProofZeroPad(leafPos, leafsA[countryIdxInTz], nLevelsRootOfOneLeague);
+        assert.equal(merkleUtils.verify(merkleStructA[lev = 1][leagueIdxInCountry], proof, UA, leafPos), true, "proof not working");
+
+        // Now, for point 2: prove that these UA where part of the TZ submission
+        userActionsBytes32 = chllUtils.leafsToBytes32(userActions);
+
+        assert.equal(userActionsBytes32.length, 24, "there should be 24 timezones");
+        assert.equal(userActionsBytes32[tzZeroBased].length, 8 * 2 * nCountriesPerTZ, "orgMap[0].length not as expected");
+
+        leafPos = 128 + teamIdxIdxInCountry * 32 + 25;
+        UA = leafsA[countryIdxInTz][leafPos];
+        leafPosInUserActions = countryIdxInTz * 8 * 2 + teamIdxIdxInCountry * 2;
+
+        depthUAs = Math.ceil(Math.log2(userActionsBytes32[countryIdxInTz].length));
+
+        proof = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
+        root = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
+        assert.equal(merkleUtils.verify(root, proof, UA, leafPosInUserActions), true, "proof not working");
     });
     
     
