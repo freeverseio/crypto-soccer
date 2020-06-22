@@ -564,7 +564,7 @@ contract('FullLeague', (accounts) => {
         // the important number to provide is the teamIdxInTZ, sorted as in the orgMap. Choose 12:
         // first league is in country 0, second league is in country 1, this is the 4th team in that league.
         teamIdxInTZ = 8+4; 
-
+        // the only other thing to compare is beforeOrAfter
 
         const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
@@ -648,15 +648,13 @@ contract('FullLeague', (accounts) => {
         root = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
         assert.equal(merkleUtils.verify(root, proof, UA, leafPosInUserActions), true, "proof not working");
 
+        // training after the game should be zero, so one should just not be allowed to query
         leafPos = 128 + leagueIdxInCountry * 64 + 26 + (before ? 0 : 32);
         UA = leafsA[leagueIdxInCountry][leafPos];
         leafPosInUserActions = teamIdxInTZ * 2 + 1;
-        console.log(leafsPos, UA, leafPosInUserActions);
+        UA.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
 
-        depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
-        proof = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
-        root = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
-        assert.equal(merkleUtils.verify(root, proof, UA, leafPosInUserActions), true, "proof not working");
+        // TODO: show that it fails when forcing to compare
     });
     
     
