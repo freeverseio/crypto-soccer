@@ -30,6 +30,7 @@ services:
       - ipfs.cluster-data:/data
   universe.db:
     image: "freeverseio/universe.db:${TAG}"
+    # build: ../../universe.db
     restart: always
     volumes:
       - universe.db-data:/var/lib/postgresql/data

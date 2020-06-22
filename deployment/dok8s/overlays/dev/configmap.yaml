@@ -10,6 +10,6 @@ data:
   notary_extra_args: "-iap_test"
   authproxy_extra_args: "-backdoor"
 
-  PROXY_CONTRACT_ADDRESS: 0xBAa3745E93A87490175bcD9519d3Bc551Da87af1
+  PROXY_CONTRACT_ADDRESS: 0x92e439FAC74b539F44197860C494eDdADBDdD8A2
 
   BLOCKS_PER_STEP: "10000"

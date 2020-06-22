@@ -19,3 +19,8 @@ func New(url string) (*sql.DB, error) {
 	log.Info("[DBMS] ... connected")
 	return db, nil
 }
+
+type StorageService interface {
+	TeamService() TeamStorageService
+	MatchService() MatchStorageService
+}
