@@ -40,28 +40,11 @@ func Sort(matches []storage.Match) {
 	})
 }
 
-func (b LeaderboardService) Update(contracts contracts.Contracts, timezone int) error {
-	matchDay := 0
-	matches, err := b.service.MatchService().MatchesByTimezone(uint8(timezone))
-	if err != nil {
-		return err
-	}
-
-	if len(matches) == 0 {
-		return nil
-	}
-
-	if len(matches)%2 != 0 {
-		return errors.New("matches count not multiple 56")
-	}
-
-	sort.Slice(matches, func(i, j int) bool {
-		if matches[i].MatchDayIdx != matches[j].MatchDayIdx {
-			return matches[i].MatchDayIdx > matches[j].MatchDayIdx
-		}
-		return matches[i].MatchIdx > matches[j].MatchIdx
-	})
-
+func ComputeLeague(
+	contracts contracts.Contracts,
+	matchDay int,
+	matches []storage.Match,
+) error {
 	var teamIds [8]*big.Int
 	var results [56][2]uint8
 
@@ -80,6 +63,36 @@ func (b LeaderboardService) Update(contracts contracts.Contracts, timezone int) 
 		l[i].TeamId = teamIds[i].String()
 		l[i].Position = int(bcLeaderboard.Ranking[i])
 		l[i].Points = int(bcLeaderboard.Points[i].Int64())
+	}
+	return nil
+}
+
+func (b LeaderboardService) Update(
+	contracts contracts.Contracts,
+	timezone int,
+	matchDay int,
+) error {
+	matches, err := b.service.MatchService().MatchesByTimezone(uint8(timezone))
+	if err != nil {
+		return err
+	}
+
+	if len(matches) == 0 {
+		return nil
+	}
+
+	if len(matches)%56 != 0 {
+		return errors.New("matches count not multiple 56")
+	}
+
+	Sort(matches)
+
+	for i := 0; i < len(matches); i += 56 {
+		ComputeLeague(
+			contracts,
+			matchDay,
+			matches[i:i+56],
+		)
 	}
 
 	return nil

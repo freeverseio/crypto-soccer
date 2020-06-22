@@ -44,12 +44,13 @@ func TestLeaderboardServiceSort(t *testing.T) {
 
 func TestLeaderboardServiceNoMatches(t *testing.T) {
 	timezone := 10
+	matchDay := 0
 	sto := mock.NewStorageService()
 	sto.MatchStorageService.MatchesByTimezoneFunc = func(timezone uint8) ([]storage.Match, error) {
 		return []storage.Match{}, nil
 	}
 	service := leaderboard.NewLeaderboardService(*sto)
-	assert.NilError(t, service.Update(*bc.Contracts, timezone))
+	assert.NilError(t, service.Update(*bc.Contracts, matchDay, timezone))
 }
 
 // func TestLeaderboardService1Match(t *testing.T) {
