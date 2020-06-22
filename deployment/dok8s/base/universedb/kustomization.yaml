@@ -4,6 +4,7 @@ commonLabels:
   app.kubernetes.io/app: universedb
   app.kubernetes.io/component: universedb
 resources:
-- deployment.yaml
 - service.yaml
-- pvc.yaml
+- statefulset.yaml
+#- deployment.yaml
+#- pvc.yaml

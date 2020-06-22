@@ -17,7 +17,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25727372695716344446059389169162682094648336396331264410387800",
-		name: (string) (len=15) "Ragnar Mosquera",
+		name: (string) (len=14) "Rayan Mosquera",
 		dayOfBirth: (int32) 17397,
 		preferredPosition: (string) (len=2) "GK",
 		defence: (int32) 1086,
@@ -27,7 +27,7 @@
 		endurance: (int32) 1150,
 		potential: (int32) 1,
 		validUntil: (string) (len=10) "1555545600",
-		countryOfBirth: (string) (len=2) "EE",
+		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
 	}),
@@ -193,7 +193,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25727400280636043057291798517807131311665858395392107095262535",
-		name: (string) (len=13) "Nehat Santoya",
+		name: (string) (len=15) "Ignacio Santoya",
 		dayOfBirth: (int32) 17475,
 		preferredPosition: (string) (len=4) "MD R",
 		defence: (int32) 1209,
@@ -203,7 +203,7 @@
 		endurance: (int32) 885,
 		potential: (int32) 0,
 		validUntil: (string) (len=10) "1555545600",
-		countryOfBirth: (string) (len=2) "AL",
+		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=8) "Hispanic",
 		productId: (string) (len=13) "player_tier_1"
 	}),
@@ -241,7 +241,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25733389273209732090498784082748222183628662929387152896689828",
-		name: (string) (len=11) "Tito Hausey",
+		name: (string) (len=12) "Aitor Hausey",
 		dayOfBirth: (int32) 17110,
 		preferredPosition: (string) (len=4) "MF L",
 		defence: (int32) 2087,
@@ -251,7 +251,7 @@
 		endurance: (int32) 1181,
 		potential: (int32) 0,
 		validUntil: (string) (len=10) "1555545600",
-		countryOfBirth: (string) (len=2) "HR",
+		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=12) "NonHispBlack",
 		productId: (string) (len=13) "player_tier_1"
 	}),
@@ -305,7 +305,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25725883110050693447478392186186858896512000596999042817327831",
-		name: (string) (len=16) "Bryngeir Vazquez",
+		name: (string) (len=15) "Abraham Vazquez",
 		dayOfBirth: (int32) 17371,
 		preferredPosition: (string) (len=4) "M LR",
 		defence: (int32) 972,
@@ -315,7 +315,7 @@
 		endurance: (int32) 780,
 		potential: (int32) 4,
 		validUntil: (string) (len=10) "1555545600",
-		countryOfBirth: (string) (len=2) "IS",
+		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
 	}),
@@ -465,7 +465,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25723682446454057053310383140035784334757216960709633682441224",
-		name: (string) (len=14) "Aron Rodriguez",
+		name: (string) (len=14) "Pere Rodriguez",
 		dayOfBirth: (int32) 17579,
 		preferredPosition: (string) (len=4) "F CR",
 		defence: (int32) 614,
@@ -475,7 +475,7 @@
 		endurance: (int32) 1035,
 		potential: (int32) 6,
 		validUntil: (string) (len=10) "1555545600",
-		countryOfBirth: (string) (len=2) "IL",
+		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
 	}),
