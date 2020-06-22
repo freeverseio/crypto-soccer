@@ -1,14 +1,13 @@
 package leaderboard_test
 
 import (
-	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/storage/mock"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"gotest.tools/assert"
+	"gotest.tools/golden"
 )
 
 func TestLeaderboardServiceSort(t *testing.T) {
@@ -52,7 +51,7 @@ func TestLeaderboardServiceNoMatches(t *testing.T) {
 		return []storage.Match{}, nil
 	}
 	service := leaderboard.NewLeaderboardService(*sto)
-	assert.NilError(t, service.Update(*bc.Contracts, matchDay, timezone))
+	assert.NilError(t, service.UpdateTimezoneLeaderboards(*bc.Contracts, matchDay, timezone))
 }
 
 func TestLeaderboardService1Match(t *testing.T) {
@@ -63,44 +62,77 @@ func TestLeaderboardService1Match(t *testing.T) {
 		return []storage.Match{storage.Match{}}, nil
 	}
 	service := leaderboard.NewLeaderboardService(sto)
-	assert.Error(t, service.Update(*bc.Contracts, matchDay, timezone), "matches count not multiple 56")
+	assert.Error(t, service.UpdateTimezoneLeaderboards(*bc.Contracts, matchDay, timezone), "matches count not multiple 56")
 }
 
-func TestLeaderboardServiceLeague(t *testing.T) {
-	timezone := 10
-	matchDay := 15
+// func TestLeaderboardServiceLeague(t *testing.T) {
+// 	timezone := 10
+// 	matchDay := 15
 
-	teams := []storage.Team{}
-	for i := 0; i < 8; i++ {
-		team := storage.NewTeam()
-		team.TeamID = fmt.Sprintf("%d", i)
-		team.TeamIdxInLeague = uint32(i)
-		teams = append(teams, *team)
-	}
+// 	teams := []storage.Team{}
+// 	for i := 0; i < 8; i++ {
+// 		team := storage.NewTeam()
+// 		team.TeamID = fmt.Sprintf("%d", i)
+// 		team.TeamIdxInLeague = uint32(i)
+// 		teams = append(teams, *team)
+// 	}
 
-	sto := mock.NewStorageService()
-	sto.MatchStorageService.MatchesByTimezoneFunc = func(timezone uint8) ([]storage.Match, error) {
-		matches := []storage.Match{}
-		for i := 0; i < 56; i++ {
-			match := storage.NewMatch()
-			match.HomeGoals = uint8(i / 10)
-			matches = append(matches, *match)
-		}
-		return matches, nil
-	}
-	sto.TeamStorageService.TeamsByTimezoneIdxCountryIdxLeagueIdxFunc = func(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error) {
-		return teams, nil
-	}
-	sto.TeamStorageService.UpdateLeaderboardPositionFunc = func(teamId string, position int) error {
-		id, err := strconv.Atoi(teamId)
-		if err != nil {
-			return err
-		}
-		teams[id].LeaderboardPosition = position
-		return nil
-	}
+// 	sto := mock.NewStorageService()
+// 	sto.MatchStorageService.MatchesByTimezoneFunc = func(timezone uint8) ([]storage.Match, error) {
+// 		matches := []storage.Match{}
+// 		for i := 0; i < 56; i++ {
+// 			match := storage.NewMatch()
+// 			match.HomeGoals = uint8(i / 10)
+// 			matches = append(matches, *match)
+// 		}
+// 		return matches, nil
+// 	}
+// 	sto.TeamStorageService.TeamsByTimezoneIdxCountryIdxLeagueIdxFunc = func(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error) {
+// 		return teams, nil
+// 	}
+// 	sto.TeamStorageService.UpdateLeaderboardPositionFunc = func(teamId string, position int) error {
+// 		id, err := strconv.Atoi(teamId)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		teams[id].LeaderboardPosition = position
+// 		return nil
+// 	}
 
-	service := leaderboard.NewLeaderboardService(sto)
-	assert.NilError(t, service.Update(*bc.Contracts, matchDay, timezone))
+// 	service := leaderboard.NewLeaderboardService(sto)
+// 	assert.NilError(t, service.UpdateTimezoneLeaderboards(*bc.Contracts, matchDay, timezone))
+// }
 
+func TestLeaderboardServiceUpdateLeagueLeaderboard(t *testing.T) {
+	matches := [56]storage.Match{}
+	for i := range matches {
+		matches[i] = *storage.NewMatch()
+	}
+	teams := [8]storage.Team{}
+	for i := range teams {
+		teams[i] = *storage.NewTeam()
+	}
+	t.Run("matchDay0AllDraw", func(t *testing.T) {
+		matchDay := 0
+		rTeams, err := leaderboard.UpdateLeagueLeaderboard(
+			*bc.Contracts,
+			matchDay,
+			matches,
+			teams,
+		)
+		assert.NilError(t, err)
+		golden.Assert(t, dump.Sdump(rTeams), t.Name()+".golden")
+	})
+	t.Run("matchDay0VisitorWins", func(t *testing.T) {
+		matchDay := 0
+		matches[0].VisitorGoals = 3
+		rTeams, err := leaderboard.UpdateLeagueLeaderboard(
+			*bc.Contracts,
+			matchDay,
+			matches,
+			teams,
+		)
+		assert.NilError(t, err)
+		golden.Assert(t, dump.Sdump(rTeams), t.Name()+".golden")
+	})
 }

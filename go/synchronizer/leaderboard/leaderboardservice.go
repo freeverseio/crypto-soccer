@@ -40,28 +40,25 @@ func Sort(matches []storage.Match) {
 	})
 }
 
-func (b LeaderboardService) ComputeLeague(
+func UpdateLeagueLeaderboard(
 	contracts contracts.Contracts,
 	matchDay int,
-	matches []storage.Match,
-) error {
-	if len(matches) != 56 {
-		return errors.New("number of matches in not 56")
-	}
-
+	matches [56]storage.Match,
+	teams [8]storage.Team,
+) ([8]storage.Team, error) {
 	timezoneIdx := matches[0].TimezoneIdx
 	countryIdx := matches[0].CountryIdx
 	leagueIdx := matches[0].LeagueIdx
 
 	for _, match := range matches {
 		if match.TimezoneIdx != timezoneIdx {
-			return errors.New("matches of different timezone")
+			return [8]storage.Team{}, errors.New("matches of different timezone")
 		}
 		if match.CountryIdx != countryIdx {
-			return errors.New("matches of different country")
+			return [8]storage.Team{}, errors.New("matches of different country")
 		}
 		if match.LeagueIdx != leagueIdx {
-			return errors.New("matches of different league")
+			return [8]storage.Team{}, errors.New("matches of different league")
 		}
 	}
 
@@ -82,33 +79,18 @@ func (b LeaderboardService) ComputeLeague(
 		uint8(matchDay),
 	)
 	if err != nil {
-		return err
+		return [8]storage.Team{}, err
 	}
-
-	teams, err := b.service.TeamService().TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx, countryIdx, leagueIdx)
-	if err != nil {
-		return err
-	}
-	if len(teams) != 8 {
-		return errors.New("number of teams of a league has to be 8")
-	}
-	sort.Slice(teams[:], func(i, j int) bool {
-		return teams[i].TeamIdxInLeague < teams[j].TeamIdxInLeague
-	})
 
 	for i := 0; i < 8; i++ {
-		if err := b.service.TeamService().UpdateLeaderboardPosition(
-			teams[i].TeamID,
-			int(llb.Ranking[i]),
-		); err != nil {
-			return err
-		}
+		teams[i].LeaderboardPosition = int(llb.Ranking[i])
+
 	}
 
-	return nil
+	return teams, nil
 }
 
-func (b LeaderboardService) Update(
+func (b LeaderboardService) UpdateTimezoneLeaderboards(
 	contracts contracts.Contracts,
 	timezone int,
 	matchDay int,
@@ -129,12 +111,38 @@ func (b LeaderboardService) Update(
 	Sort(matches)
 
 	for i := 0; i < len(matches); i += 56 {
-		if err := b.ComputeLeague(
+		leagueMatches := [56]storage.Match{}
+		copy(leagueMatches[:], matches[i:i+56])
+
+		timezoneIdx := leagueMatches[0].TimezoneIdx
+		countryIdx := leagueMatches[0].CountryIdx
+		leagueIdx := leagueMatches[0].LeagueIdx
+		teams, err := b.service.TeamService().TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx, countryIdx, leagueIdx)
+		if err != nil {
+			return err
+		}
+		if len(teams) != 8 {
+			return errors.New("number of teams of a league has to be 8")
+		}
+		// ordering by index in league
+		sort.Slice(teams[:], func(i, j int) bool {
+			return teams[i].TeamIdxInLeague < teams[j].TeamIdxInLeague
+		})
+		leagueTeams := [8]storage.Team{}
+		copy(leagueTeams[:], teams)
+		if leagueTeams, err = UpdateLeagueLeaderboard(
 			contracts,
 			matchDay,
-			matches[i:i+56],
+			leagueMatches,
+			leagueTeams,
 		); err != nil {
 			return err
+		}
+
+		for i := range leagueTeams {
+			if err := b.service.TeamService().UpdateLeaderboardPosition(leagueTeams[i].TeamID, leagueTeams[i].LeaderboardPosition); err != nil {
+				return err
+			}
 		}
 	}
 
