@@ -22,7 +22,7 @@ func TestLeaderboardServiceSort(t *testing.T) {
 		assert.Equal(t, len(matches), 1)
 		assert.Equal(t, matches[0], storage.Match{})
 	})
-	t.Run("complicated one", func(t *testing.T) {
+	t.Run("complicate one", func(t *testing.T) {
 		matches := []storage.Match{}
 		match := storage.NewMatch()
 		match.TimezoneIdx = 2
