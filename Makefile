@@ -4,7 +4,7 @@ setup:
 contracts:
 	cd truffle-core && ./node_modules/.bin/truffle compile
 	cp -r truffle-core/build/contracts ./dashboard/src
-	cd scripts && ./deploy_go_contracts_bind_python2.py
+	cd scripts && python2 ./deploy_go_contracts_bind_python2.py
 
 clean:
 	rm -rf ./truffle-core/build

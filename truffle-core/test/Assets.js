@@ -10,6 +10,7 @@ const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
 const marketUtils = require('../utils/marketUtils.js');
+const timeTravel = require('../utils/TimeTravel.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -24,6 +25,8 @@ const EncodingSkills = artifacts.require('EncodingSkills');
 const EncodingState = artifacts.require('EncodingState');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 const UpdatesBase = artifacts.require('UpdatesBase');
+const Utils = artifacts.require('Utils');
+const Stakers = artifacts.require("Stakers")
 
 contract('Assets', (accounts) => {
     const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
@@ -46,12 +49,27 @@ contract('Assets', (accounts) => {
     const SK_PAS = 2;
     const SK_DEF = 3;
     const SK_END = 4;
-    
+    const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
+
     // var assets;
     // var market;
     
     const it2 = async(text, f) => {};
     function toBytes32(name) { return web3.utils.utf8ToHex(name); }
+
+
+    async function deployAndConfigureStakers(Stakers, updates, setup) {
+        const { singleTimezone, owners, requiredStake } = setup;
+        const stakers  = await Stakers.new(updates.address, requiredStake).should.be.fulfilled;
+
+        for (trustedParty of owners.trustedParties) {
+            await stakers.addTrustedParty(trustedParty, {from: owners.COO}).should.be.fulfilled;
+        }
+        for (trustedParty of owners.trustedParties) {
+            await stakers.enrol({from:trustedParty, value: requiredStake}).should.be.fulfilled;
+        }
+        return stakers;
+    }
 
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
@@ -61,7 +79,8 @@ contract('Assets', (accounts) => {
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
         initTx = await assets.initTZs({from: owners.COO}).should.be.fulfilled;
-        
+        utils = await Utils.new().should.be.fulfilled;
+
         sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
         buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
         
@@ -97,7 +116,7 @@ contract('Assets', (accounts) => {
         divId = await assets.encodeTZCountryAndVal(tz, 0, 0).should.be.fulfilled;
         result = await assets.divisionIdToRound(divId).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
-        
+
         tx = await assets.addDivisionManually(tz, 0).should.be.rejected;
         tx = await assets.addDivisionManually(tz, 0, {from: owners.COO}).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
@@ -140,7 +159,119 @@ contract('Assets', (accounts) => {
         result = await assets.divisionIdToRound(divId).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
     });
+
     
+    it('addDivision fails at half time', async () => {
+        // normal addDivision works, because on deploy, we always have nextTZToUpdate with turnInDay = 0
+        tx = await assets.addDivisionManually(tz, 0, {from: owners.COO}).should.be.fulfilled;
+
+        // let's try to addDivision to the tz that is about to play 2nd half: 
+        var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        turn.toNumber().should.be.equal(0);
+
+        await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, nullHash, {from: owners.relay}).should.be.fulfilled;
+        var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        turn.toNumber().should.be.equal(1);
+
+        // it should fail:
+        tx = await assets.addDivisionManually(tzToUpdate, 0, {from: owners.COO}).should.be.rejected;
+    });
+    
+    it('transferBot fails because addDivision fails at half time', async () => {
+        tx = await assets.transferFirstBotToAddr(timez = 1, countryIdxInTZ = 0, ALICE, {from: owners.relay}).should.be.fulfilled;
+
+        // let's try to addDivision to the tz that is about to play 2nd half: 
+        var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        turn.toNumber().should.be.equal(0);
+
+        await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, nullHash, {from: owners.relay}).should.be.fulfilled;
+
+        var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        turn.toNumber().should.be.equal(1);
+
+        // we can transfer bots up until bot 127, which fails because it really needs another division to be created:
+        result = await assets.getNHumansInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        for (bot = result.toNumber(); bot < 127; bot++) {
+            tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        }
+        // there have been a total of attempts:
+        past = await assets.getPastEvents( 'DivisionCreationFailed', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+        assert.equal(past.length, 14, "attemps to create division not as expected");
+        for (i = 0; i < past.length; i++){ 
+            past[i].args.timezone.toNumber().should.be.equal(tzToUpdate.toNumber());
+            past[i].args.countryIdxInTZ.toNumber().should.be.equal(0);
+        }
+
+        // one more assignment, and it fails:
+        tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.rejected;
+        // until we move away from half time:
+        // - first prepare the stakers contract 
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        stakers = await deployAndConfigureStakers(Stakers, updates, defaultSetup);
+        await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
+        await stakers.setGameOwner(updates.address, {from:owners.COO}).should.be.fulfilled;
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
+
+        // - seconds, update the verse, and move to next
+        await updates.updateTZ(verse = 1, nullHash, {from:alice}).should.be.fulfilled;
+        await timeTravel.advanceTimeAndBlock(3600);
+        await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, nullHash, {from: owners.relay}).should.be.fulfilled;
+        // - finally, retry assigning new bot
+        tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+    });
+
+    it('createCountry cannot create division immediately, but it can when possible', async () => {
+        // let's try to create a country in a tz that is about to play 2nd half, and see what happens
+        // first show that when it's not half time yet, we can create as usual. 
+        var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        turn.toNumber().should.be.equal(0);
+        tx = await assets.addCountryManually(tzToUpdate, {from: owners.COO}).should.be.fulfilled;
+        // it worked: there is 1 division, and no events of DivisionCreationFailed
+        result = await assets.getNDivisionsInCountry(tzToUpdate, countr = 1).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        past = await assets.getPastEvents( 'DivisionCreationFailed', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+        assert.equal(past.length, 0, "attemps to create division not as expected");
+
+        // now move to half time
+        await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, nullHash, {from: owners.relay}).should.be.fulfilled;
+        var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        turn.toNumber().should.be.equal(1);
+
+        // when adding a country now, the country is created without divisions, and broadcasting a divisionFailed event
+        tx = await assets.addCountryManually(tzToUpdate, {from: owners.COO}).should.be.fulfilled;
+        result = await assets.getNDivisionsInCountry(tzToUpdate, newCountryIdx = 2).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        past = await assets.getPastEvents( 'DivisionCreationFailed', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
+        assert.equal(past.length, 1, "attemps to create division not as expected");
+        for (i = 0; i < past.length; i++){ 
+            past[i].args.timezone.toNumber().should.be.equal(tzToUpdate.toNumber());
+            past[i].args.countryIdxInTZ.toNumber().should.be.equal(newCountryIdx);
+        }
+        // we would not be able to add manually either:
+        tx = await assets.addDivisionManually(tzToUpdate, newCountryIdx, {from: owners.COO}).should.be.rejected;
+
+        // when we move to next verse, we can finally add the division:
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        stakers = await deployAndConfigureStakers(Stakers, updates, defaultSetup);
+        await updates.setStakersAddress(stakers.address, {from: owners.superuser}).should.be.fulfilled;
+        await stakers.setGameOwner(updates.address, {from:owners.COO}).should.be.fulfilled;
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
+
+        // - seconds, update the verse, and move to next
+        await updates.updateTZ(verse = 1, nullHash, {from:alice}).should.be.fulfilled;
+        await timeTravel.advanceTimeAndBlock(3600);
+        await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, nullHash, {from: owners.relay}).should.be.fulfilled;
+     
+        tx = await assets.addDivisionManually(tzToUpdate, newCountryIdx, {from: owners.COO}).should.be.fulfilled;
+        result = await assets.getNDivisionsInCountry(tzToUpdate, newCountryIdx).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+    });
+
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
@@ -295,7 +426,8 @@ contract('Assets', (accounts) => {
         const tz = 1;
         const countryIdxInTZ = 0;
         nTeamsPerDiv = 128
-        for (user = 0; user < (nTeamsPerDiv - 1); user++) {
+        // the new division is triggered when 16 teams remain to fill the current division
+        for (user = 0; user < (nTeamsPerDiv - 15); user++) {
             await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
         }
         tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;

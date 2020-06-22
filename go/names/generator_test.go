@@ -39,7 +39,7 @@ func TestGeneratePlayerName(t *testing.T) {
 		}
 		result += name + " (" + countryISO2 + ", " + region + ") "
 	}
-	if int_hash(result) != uint64(1263868360796760173) {
+	if int_hash(result) != uint64(17820092263754406170) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -69,7 +69,7 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 		}
 		result += name + " (" + countryISO2 + ", " + region + ") "
 	}
-	if int_hash(result) != uint64(1263868360796760173) {
+	if int_hash(result) != uint64(17820092263754406170) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -107,7 +107,7 @@ func TestGenerateChildName(t *testing.T) {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
 	name = name + " " + name2
-	if name != "Batur Kebede Bülbül Kebede Jr." {
+	if name != "Bernat Kebede Anartz Kebede Jr." {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
@@ -136,7 +136,7 @@ func TestGenerateAcademyName(t *testing.T) {
 	if len(name) == 0 {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
-	if name != "Reşit Mccornell" {
+	if name != "Rafel Mccornell" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)

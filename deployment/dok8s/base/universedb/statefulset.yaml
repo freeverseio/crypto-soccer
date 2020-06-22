@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: universedb
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: universedb # has to match .spec.template.metadata.labels
+  serviceName: universedb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: universedb # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: universedb
+        image: freeverseio/universe.db:dev
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: universedb-storage
+          mountPath: /var/lib/postgresql/data
+      imagePullSecrets:
+      - name: docker-secret
+  volumeClaimTemplates:
+  - metadata:
+      name: universedb-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: do-block-storage 
+      resources:
+        requests:
+          storage: 200Gi

@@ -45,3 +45,13 @@ func (b TeamStorageService) UpdateManagerName(teamId string, name string) error 
 	b.teams[teamId] = team
 	return nil
 }
+
+func (b TeamStorageService) UpdateLeaderboardPosition(teamId string, position int) error {
+	team, ok := b.teams[teamId]
+	if !ok {
+		return errors.New("unexistent team")
+	}
+	team.LeaderboardPosition = position
+	b.teams[teamId] = team
+	return nil
+}
