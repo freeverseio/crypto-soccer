@@ -904,7 +904,6 @@ contract('Updates', (accounts) => {
         leagueIdxInCountry = Math.floor(teamIdxInTZ / 8);
         [leafPosInLeague, leafPosInUserActions] = chllUtils.getUALeafPos(leagueIdxInCountry, isBefore = true, isTactics = true);
         // lie in the UA for tactics except for leafsA
-        UA = leafsA[leagueIdxInCountry][leafPosInLeague];
         leafsBDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('0123456789');
         leafsCDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('9876543210');
 
@@ -917,6 +916,7 @@ contract('Updates', (accounts) => {
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
 
         // keep the proof that the UA are part of the league root
+        UA = leafsA[leagueIdxInCountry][leafPosInLeague];
         proofUAinLeagueRoot = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsA[leagueIdxInCountry], nLevelsInOneChallenge);
         userActionsBytes32 = chllUtils.leafsToBytes32(userActions);
         assert.equal(userActionsBytes32.length, 24, "there should be 24 timezones");
