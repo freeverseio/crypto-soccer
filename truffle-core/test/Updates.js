@@ -808,6 +808,9 @@ contract('Updates', (accounts) => {
         // Level0: A
         await updates.updateTZ(verse = 1, root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
 
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(0);
+
         // Level1: B
         await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.rejected;
         await updates.setAllowChallenges(true, {from: owners.COO}).should.be.rejected;
@@ -911,13 +914,19 @@ contract('Updates', (accounts) => {
         leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
         leafsC = chllUtils.leafsToBytes32(leafsCDecimal);
 
+        UA_A = leafsA[leagueIdxInCountry][leafPosInLeague];
+        UA_B = leafsB[leagueIdxInCountry][leafPosInLeague];
+        UA_C = leafsC[leagueIdxInCountry][leafPosInLeague];
+
         // set the levelVerifiableByBC to adjust to as many leagues as you have
         nLeafsPerRoot = 2**nLevelsInOneChallenge;
         levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
 
         // keep the proof that the UA are part of the league root
-        UA = leafsA[leagueIdxInCountry][leafPosInLeague];
-        proofUAinLeagueRoot = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsA[leagueIdxInCountry], nLevelsInOneChallenge);
+        proofUAinLeagueRoot_A = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsA[leagueIdxInCountry], nLevelsInLastChallenge);
+        proofUAinLeagueRoot_B = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsB[leagueIdxInCountry], nLevelsInLastChallenge);
+        proofUAinLeagueRoot_C = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsC[leagueIdxInCountry], nLevelsInLastChallenge);
+
         userActionsBytes32 = chllUtils.leafsToBytes32(userActions);
         assert.equal(userActionsBytes32.length, 24, "there should be 24 timezones");
         assert.equal(userActionsBytes32[tzZeroBased].length, 8 * 2 * nCountriesPerTZ, "orgMap[0].length not as expected");
@@ -968,13 +977,22 @@ contract('Updates', (accounts) => {
         
         // finally, the last challenge, is one that the BC can check
         // must provide the same leafs as the last person (C)
-        return;
-        await challenges.BCVerifableChallengeUAs([...roots2SubmitA], proofUAinLeagueRoot, proofUAinSubmittedActions, isBefore = true, isTactics = true, {from: erin}).should.be.rejected;
-        return;
-        await challenges.BCVerifableChallengeUAs([...roots2SubmitB], {from: erin}).should.be.rejected;
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitA], proofUAinLeagueRoot_A, proofUAinSubmittedActions, UA_A, teamIdxInTZ, isBefore = true, isTactics = true, {from: erin}).should.be.rejected;
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitB], proofUAinLeagueRoot_B, proofUAinSubmittedActions, UA_B, teamIdxInTZ, isBefore = true, isTactics = true, {from: erin}).should.be.rejected;
 
         // we succed to prove that C was wrong:
-        await challenges.BCVerifableChallengeUAs([...roots2SubmitC], {from: erin}).should.be.fulfilled;
+        console.log("acceptings?");
+        leagueRootC = await updates.getUpdatesRoot(tz, lev.toNumber(), curr = true).should.be.fulfilled;
+        console.log(leagueRootC);
+        console.log(merkleStructC[lev=1][leagueIdxInCountry]);
+        console.log(leafsC[leagueIdxInCountry].length)
+        console.log(merkleUtils.merkleRoot(leafsC[leagueIdxInCountry], 10));
+        assert.equal(merkleUtils.verify(leagueRootC, proofUAinLeagueRoot_C, UA_C, leafPosInLeague), true, "proof will not work");
+        console.log(merkleStructC.length, merkleStructC[lev=1].length, leafPosInLeague, leagueIdxInCountry);
+
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitC], proofUAinLeagueRoot_C, proofUAinSubmittedActions, UA_C, teamIdxInTZ, isBefore = true, isTactics = true, {from: erin}).should.be.fulfilled;
+
+        return;
 
         // we go back to level 1
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 

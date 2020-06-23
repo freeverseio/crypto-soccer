@@ -54,7 +54,7 @@ contract Challenges is UpdatesBase {
         leafPos = 2 * teamIdxInTZ + (isTactics ? 0 : 1);
 
         // Check that the provided UA does not coincide with the expected leaf in the actionsRoot submitted by the relayer:
-        require(!verify(getActionsRoot(intData[0], true), proofActionsRoot, UA, leafPos), "provided UA is not part of the league root");
+        require(!verify(getActionsRoot(intData[0], true), proofActionsRoot, UA, leafPos), "provided UA is not part of the submited actions root");
         _assertFormallyCorrectChallenge(intData, 0, 0, new bytes32[](0), leagueLeafs);
         _completeSuccessfulVerifiableChallenge(intData);
     }
