@@ -107,7 +107,7 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
     });
     
-    it('Inform event', async () =>  {
+    it2('Inform event', async () =>  {
         tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys")).should.be.rejected;
         tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys"), {from: owners.relay}).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "Inform", (event) => {
@@ -115,7 +115,7 @@ contract('Updates', (accounts) => {
         });
     });
 
-    it('test getAllMatchdaysUTCInRound', async () =>  {
+    it2('test getAllMatchdaysUTCInRound', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         nextVerseTimestamp = nextVerseTimestamp.toNumber();
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
@@ -142,7 +142,7 @@ contract('Updates', (accounts) => {
         }    
     });
     
-    it('test getCurrentRoundPure', async () =>  {
+    it2('test getCurrentRoundPure', async () =>  {
         result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse = 0).should.be.fulfilled;
@@ -176,7 +176,7 @@ contract('Updates', (accounts) => {
         result.toNumber().should.be.equal(1);
     });
 
-    it('test getMatchUTC', async () =>  {
+    it2('test getMatchUTC', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         nextVerseTimestamp = nextVerseTimestamp.toNumber();
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
@@ -204,11 +204,11 @@ contract('Updates', (accounts) => {
 
 
     
-    it('test that cannot initialize updates twice', async () =>  {
+    it2('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates({from: owners.COO}).should.be.rejected;
     });
     
-    it('check timezones for this verse', async () =>  {
+    it2('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
@@ -224,7 +224,7 @@ contract('Updates', (accounts) => {
         result.should.be.equal(expected);
     });
     
-    it('require that BC and local time are less than 15 sec out of sync', async () =>  {
+    it2('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await utils.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
         // the substraction is in miliseconds:
@@ -244,7 +244,7 @@ contract('Updates', (accounts) => {
         (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 20*1000).should.be.equal(true);
     });
     
-    it('check BC is set up in agreement with the local time', async () =>  {
+    it2('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
         nowBC = await utils.getNow().should.be.fulfilled;
@@ -275,7 +275,7 @@ contract('Updates', (accounts) => {
         }
     });
     
-    it('wait some minutes', async () =>  {
+    it2('wait some minutes', async () =>  {
         now = await utils.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
         extraTime = 3*60
@@ -290,7 +290,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    it('submitActions to timezone', async () =>  {
+    it2('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verseBefore = await updates.getCurrentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -311,7 +311,7 @@ contract('Updates', (accounts) => {
         });
     });
 
-    it('update Timezone once', async () =>  {
+    it2('update Timezone once', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
@@ -333,7 +333,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    it('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
+    it2('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
@@ -358,7 +358,7 @@ contract('Updates', (accounts) => {
     });
 
 
-    it('moveToNextVerse', async () =>  {
+    it2('moveToNextVerse', async () =>  {
         now = await utils.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
@@ -368,7 +368,7 @@ contract('Updates', (accounts) => {
         
     });
 
-    it('update Timezone many times', async () =>  {
+    it2('update Timezone many times', async () =>  {
         result = await assets.getCurrentRound(tz = 1).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         result = await assets.getCurrentRound(tz = 24).should.be.fulfilled;
@@ -380,7 +380,7 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
     });
     
-    it('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
+    it2('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
@@ -406,7 +406,7 @@ contract('Updates', (accounts) => {
     
     });
     
-    it('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
+    it2('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -421,7 +421,7 @@ contract('Updates', (accounts) => {
     // level 1: 2048 league Roots
     // level 2: 640 leafs for each
     
-    it('challenging a tz', async () =>  {
+    it2('challenging a tz', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
@@ -569,7 +569,7 @@ contract('Updates', (accounts) => {
     
     
     
-    // it('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
+    // it2('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
     //     await moveToNextVerse(updates, extraSecs = 2);
     //     var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
     //     const cif = "ciao3";
@@ -634,7 +634,7 @@ contract('Updates', (accounts) => {
     // });
     
     
-    // it('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
+    // it2('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
     //     // identical to previous test but we wait 1 challenge time less!
     //     // so at the very end, we're not allowed to submit actions because the time has not come for next timezone
     //     await moveToNextVerse(updates, extraSecs = 2);
@@ -701,7 +701,7 @@ contract('Updates', (accounts) => {
     // });
 
     
-    it('true status of timezone challenge', async () =>  {
+    it2('true status of timezone challenge', async () =>  {
         challengeTime = await updates.getChallengeTime().should.be.fulfilled;
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
@@ -761,7 +761,7 @@ contract('Updates', (accounts) => {
     // B = correct day, incorrect half
     // C = incorrect day and incorrect half
     // 0: A, 1: B, 2: A => so the leafs provided by A are the correct ones and everyone fails to challenge A.
-    it('vefiable challenge', async () =>  {
+    it2('vefiable challenge: zeroes', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
@@ -869,7 +869,143 @@ contract('Updates', (accounts) => {
         await challenges.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
     });
     
-    
+    // A = correct day and half
+    // B = correct day, incorrect half
+    // C = incorrect day and incorrect half
+    // 0: A, 1: B, 2: A => so the leafs provided by A are the correct ones and everyone fails to challenge A.
+    it('vefiable challenge: user actions', async () =>  {
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
+
+        // level 0 can only challenge leaf 0, as there is only 1 root
+        challengePos = [0];
+        var level = 0;
+
+        // move to next verse adn submit actions
+        await moveToNextVerse(updates, extraSecs = 2);
+        var {0: tz,  1: day, 2: half} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        tz      = tz.toNumber();
+        day     = day.toNumber();
+        half    = half.toNumber();
+        differentDay = (day == 7) ? 8 : 7;
+        const cif = "ciao3";
+
+        tzZeroBased = tz-1;
+        // create leafs by building them from an orgmap:
+        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        const {0: leafsCDecimal, 1: nLeaguesInTzC} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+
+        // choose a team:
+        teamIdxInTZ = 8+4;
+        leagueIdxInCountry = Math.floor(teamIdxInTZ / 8);
+        [leafPosInLeague, leafPosInUserActions] = chllUtils.getUALeafPos(leagueIdxInCountry, isBefore = true, isTactics = true);
+        // lie in the UA for tactics except for leafsA
+        UA = leafsA[leagueIdxInCountry][leafPosInLeague];
+        leafsBDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('0123456789');
+        leafsCDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('9876543210');
+
+        leafsA = chllUtils.leafsToBytes32(leafsADecimal);
+        leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
+        leafsC = chllUtils.leafsToBytes32(leafsCDecimal);
+
+        // set the levelVerifiableByBC to adjust to as many leagues as you have
+        nLeafsPerRoot = 2**nLevelsInOneChallenge;
+        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
+
+        // keep the proof that the UA are part of the league root
+        proofUAinLeagueRoot = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsA[leagueIdxInCountry], nLevelsInOneChallenge);
+        userActionsBytes32 = chllUtils.leafsToBytes32(userActions);
+        assert.equal(userActionsBytes32.length, 24, "there should be 24 timezones");
+        assert.equal(userActionsBytes32[tzZeroBased].length, 8 * 2 * nCountriesPerTZ, "orgMap[0].length not as expected");
+
+        // Submit correct actions root and keep the proof
+        depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
+        actionsRoot = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
+        console.log("submitActionsRoot...");
+        await updates.submitActionsRoot(actionsRoot, nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
+        proofUAinSubmittedActions = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
+
+        console.log("level: ", levelVerifiableByBC);
+        await updates.setLevelVerifiableByBC(levelVerifiableByBC, {from: owners.relay}).should.be.fulfilled;
+
+        // build merkle structs for 2 different days
+        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
+        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot, levelVerifiableByBC);
+        merkleStructC = merkleUtils.buildMerkleStruct(leafsC, nLeafsPerRoot, levelVerifiableByBC);
+        
+        // get data to challenge at level 0 (level is inferred from the length of challengePos).
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
+
+        // Level0: A
+
+        await updates.updateTZ(verse = 1, root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
+
+        // Level1: B
+        await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
+        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.fulfilled;
+
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        level = lev.toNumber();
+        
+        // Level2: C
+        challengePos.push(newChallengePos = 1);
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
+
+        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitC, {from:carol}).should.be.fulfilled;
+
+        // Check that we move to level 2
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
+        
+        // finally, the last challenge, is one that the BC can check
+        // must provide the same leafs as the last person (C)
+        return;
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitA], proofUAinLeagueRoot, proofUAinSubmittedActions, isBefore = true, isTactics = true, {from: erin}).should.be.rejected;
+        return;
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitB], {from: erin}).should.be.rejected;
+
+        // we succed to prove that C was wrong:
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitC], {from: erin}).should.be.fulfilled;
+
+        // we go back to level 1
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        isSet.should.be.equal(false);
+        level = lev.toNumber();
+
+        // Level2: B
+        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA, {from:dave}).should.be.fulfilled;
+
+        // Check that we move to level 2
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
+        
+        // finally, the last challenge, is one that the BC can check
+        // must provide the same leafs as the last person (C)
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitB]).should.be.rejected;
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitC]).should.be.rejected;
+
+        // we fail to succed to prove that A was wrong with zeros:
+        assert.equal(
+            chllUtils.areThereUnexpectedZeros([...roots2SubmitA], day, half, nNonNullLeafsInLeague),
+            false,
+            "unexpected"
+        );
+        result = await challenges.areThereUnexpectedZeros([...roots2SubmitA], day, half).should.be.fulfilled;
+        result.should.be.equal(false);
+        await challenges.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
+    });
     
 
 });

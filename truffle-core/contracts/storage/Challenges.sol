@@ -49,7 +49,7 @@ contract Challenges is UpdatesBase {
         // TODO: prevent training after
         // Check that the provided UA is a leaf of the root committed by the last updater:
         uint256 leagueIdxInCountry = teamIdxInTZ / 8;
-        uint256 leafPos = 128 + leagueIdxInCountry * 64 + 25 + (before ? 0 : 32) + (isTactics ? 0 : 1);
+        uint256 leafPos = 128 + leagueIdxInCountry * 64 + 25 + (beforeHalf ? 0 : 32) + (isTactics ? 0 : 1);
         require(verify(getUpdatesRoot(intData[0], intData[1], true), proofLeagueRoot, UA, leafPos), "provided UA is not part of the league root");
         leafPos = 2 * teamIdxInTZ + (isTactics ? 0 : 1);
 
