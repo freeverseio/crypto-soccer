@@ -67,15 +67,15 @@ contract UpdatesBase is UpdatesView, Merkle {
         if (intData[1] == 0) {
             /// at level 0, the value one challenges is the one written in the BC, so we don't use challLeaveVal (could be anything)
             /// and we don't need to verifiy that it belonged to a previous commit.
-            require(root != getRoot(intData[0], 0, true), "provided leafs lead to same root being challenged");
+            require(root != getUpdatesRoot(intData[0], 0, true), "provided leafs lead to same root being challenged");
         } else if ((intData[1] + 1) == intData[2]) {
             /// at last level, we just provide the league leaves provided by the last challenger,
             /// and we verify that they DO match with what is written.
-            require(root == getRoot(intData[0], intData[1], true), "provided leafs lead to same root being challenged");
+            require(root == getUpdatesRoot(intData[0], intData[1], true), "provided leafs lead to same root being challenged");
         } else {
             /// otherwise we also check that the challVal belonged to a previous commit
             require(root != challLeaveVal, "you are declaring that the provided leafs lead to same root being challenged");
-            bytes32 prevRoot = getRoot(intData[0], intData[1], true);
+            bytes32 prevRoot = getUpdatesRoot(intData[0], intData[1], true);
             require(verify(prevRoot, proofChallLeave, challLeaveVal, challLeavePos), "merkle proof not correct");
         }
         return root;        

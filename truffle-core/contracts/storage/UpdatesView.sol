@@ -24,8 +24,12 @@ contract UpdatesView is UniverseInfo {
     function getCurrentVerse() public view returns (uint256) { return _currentVerse; }
     function getCurrentVerseSeed() public view returns (bytes32) { return _currentVerseSeed; }
 
-    function getRoot(uint8 tz, uint8 level, bool current) public view returns(bytes32) { 
+    function getUpdatesRoot(uint8 tz, uint8 level, bool current) public view returns(bytes32) { 
         return (current) ? _roots[tz][_newestRootsIdx[tz]][level] : _roots[tz][1-_newestRootsIdx[tz]][level];
+    }
+
+    function getActionsRoot(uint8 tz, bool current) public view returns(bytes32) { 
+        return (current) ? _actionsRoot[tz][_newestRootsIdx[tz]] : _actionsRoot[tz][1-_newestRootsIdx[tz]];
     }
 
     function getChallengeTime() public view returns (uint256) { return _challengeTime; }
