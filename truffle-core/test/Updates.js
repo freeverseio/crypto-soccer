@@ -14,6 +14,7 @@ const timeTravel = require('../utils/TimeTravel.js');
 const deployUtils = require('../utils/deployUtils.js');
 const merkleUtils = require('../utils/merkleUtils.js');
 const chllUtils = require('../utils/challengeUtils.js');
+const { assert } = require('chai');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -981,15 +982,10 @@ contract('Updates', (accounts) => {
         await challenges.BCVerifableChallengeUAs([...roots2SubmitB], proofUAinLeagueRoot_B, proofUAinSubmittedActions, UA_B, teamIdxInTZ, isBefore = true, isTactics = true, {from: erin}).should.be.rejected;
 
         // we succed to prove that C was wrong:
-        console.log("acceptings?");
         leagueRootC = await updates.getUpdatesRoot(tz, lev.toNumber(), curr = true).should.be.fulfilled;
-        console.log(leagueRootC);
-        console.log(merkleStructC[lev=1][leagueIdxInCountry]);
-        console.log(leafsC[leagueIdxInCountry].length)
-        console.log(merkleUtils.merkleRoot(leafsC[leagueIdxInCountry], 10));
+        assert.equal(leagueRootC, merkleStructC[lev=1][leagueIdxInCountry], "unexpected roots");
+        assert.equal(leagueRootC, merkleUtils.merkleRoot(leafsC[leagueIdxInCountry], nLevelsInLastChallenge), "unexpected roots");
         assert.equal(merkleUtils.verify(leagueRootC, proofUAinLeagueRoot_C, UA_C, leafPosInLeague), true, "proof will not work");
-        console.log(merkleStructC.length, merkleStructC[lev=1].length, leafPosInLeague, leagueIdxInCountry);
-
         await challenges.BCVerifableChallengeUAs([...roots2SubmitC], proofUAinLeagueRoot_C, proofUAinSubmittedActions, UA_C, teamIdxInTZ, isBefore = true, isTactics = true, {from: erin}).should.be.fulfilled;
 
         return;
