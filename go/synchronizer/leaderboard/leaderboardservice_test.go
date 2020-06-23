@@ -111,6 +111,7 @@ func TestLeaderboardServiceUpdateLeagueLeaderboard(t *testing.T) {
 	teams := [8]storage.Team{}
 	for i := range teams {
 		teams[i] = *storage.NewTeam()
+		teams[i].TeamIdxInLeague = uint32(i)
 	}
 	t.Run("matchDay0AllDraw", func(t *testing.T) {
 		matchDay := 0
