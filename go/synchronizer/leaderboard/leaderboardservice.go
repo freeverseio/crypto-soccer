@@ -34,9 +34,9 @@ func Sort(matches []storage.Match) {
 			return m0.LeagueIdx < m1.LeagueIdx
 		}
 		if m0.MatchDayIdx != m1.MatchDayIdx {
-			return m0.MatchDayIdx < m0.MatchDayIdx
+			return m0.MatchDayIdx < m1.MatchDayIdx
 		}
-		return m0.MatchIdx < m0.MatchIdx
+		return m0.MatchIdx < m1.MatchIdx
 	})
 }
 
@@ -80,6 +80,7 @@ func UpdateLeagueLeaderboard(
 		teamIdxInLeague[i] = big.NewInt(int64(i))
 	}
 
+	// log.Infof("Calling ComputeLeagueLeaderboard %v %v %v", teamIdxInLeague, results, matchDay)
 	llb, err := contracts.Leagues.ComputeLeagueLeaderBoard(
 		&bind.CallOpts{},
 		teamIdxInLeague,
