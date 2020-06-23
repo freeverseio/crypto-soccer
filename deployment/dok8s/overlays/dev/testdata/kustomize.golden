@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   BLOCKS_PER_STEP: "10000"
-  PROXY_CONTRACT_ADDRESS: 0x25B7f1Ac6CC145A6930EdBC115821fB301032e9D
+  PROXY_CONTRACT_ADDRESS: 0x92e439FAC74b539F44197860C494eDdADBDdD8A2
   authproxy_extra_args: -backdoor
   freeverse_password: freeverse
   freeverse_username: freeverse

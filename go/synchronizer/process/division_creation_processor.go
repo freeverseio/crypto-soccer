@@ -95,6 +95,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 				team.Owner = storage.BotOwner
 				team.LeagueIdx = uint32(leagueIdx)
 				team.TeamIdxInLeague = teamIdxInLeague
+				team.LeaderboardPosition = int(teamIdxInLeague)
 				team.RankingPoints = 0
 				if err := team.Insert(tx); err != nil {
 					return err
