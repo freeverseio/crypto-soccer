@@ -46,6 +46,8 @@ func UpdateLeagueLeaderboard(
 	matches [56]storage.Match,
 	teams [8]storage.Team,
 ) ([8]storage.Team, error) {
+	// log.Infof("UpdateLeagueLeaderboard matches %+v, teams %+v", matches, teams)
+
 	timezoneIdx := matches[0].TimezoneIdx
 	countryIdx := matches[0].CountryIdx
 	leagueIdx := matches[0].LeagueIdx
@@ -62,6 +64,12 @@ func UpdateLeagueLeaderboard(
 		}
 	}
 
+	for i := range teams {
+		if teams[i].TeamIdxInLeague != uint32(i) {
+			return [8]storage.Team{}, errors.New("not ordered team")
+		}
+	}
+
 	var results [56][2]uint8
 	for i := range matches {
 		results[i][0] = matches[i].HomeGoals
@@ -69,7 +77,7 @@ func UpdateLeagueLeaderboard(
 	}
 	var teamIdxInLeague [8]*big.Int
 	for i := range teamIdxInLeague {
-		teamIdxInLeague[i] = big.NewInt(1)
+		teamIdxInLeague[i] = big.NewInt(int64(i))
 	}
 
 	llb, err := contracts.Leagues.ComputeLeagueLeaderBoard(
