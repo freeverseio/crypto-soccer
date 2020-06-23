@@ -28,7 +28,7 @@ contract Updates is UpdatesBase {
     /// the game starts at verse = 0. The transition to verse = 1 will be when the first submitActions happens.
     function initUpdates() external onlyCOO {
         require(_timeZoneForRound1 == 0, "cannot initialize updates twice");
-        _timeZoneForRound1 = 1;
+        _timeZoneForRound1 = 24;
         _firstVerseTimeStamp = 1592785800;
 
         uint256 secsOfDay   = now % (3600 * 24);

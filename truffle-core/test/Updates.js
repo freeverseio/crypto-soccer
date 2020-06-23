@@ -107,7 +107,7 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
     });
     
-    it2('Inform event', async () =>  {
+    it('Inform event', async () =>  {
         tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys")).should.be.rejected;
         tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys"), {from: owners.relay}).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "Inform", (event) => {
@@ -115,36 +115,37 @@ contract('Updates', (accounts) => {
         });
     });
 
-    it2('test getAllMatchdaysUTCInRound', async () =>  {
-        nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
-        nextVerseTimestamp = nextVerseTimestamp.toNumber();
+    it('test getAllMatchdaysUTCInRound', async () =>  {
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
-        timeZoneForRound1.toNumber().should.be.equal(1);
+        timeZoneForRound1.toNumber().should.be.equal(24);
+        firstVerseTimeStamp = await updates.getMatchUTC(timeZoneForRound1,0,0).should.be.fulfilled;
+        firstVerseTimeStamp = firstVerseTimeStamp.toNumber();
+
         // tests for init timezone
         utc = await updates.getAllMatchdaysUTCInRound(tz = timeZoneForRound1, round = 0).should.be.fulfilled;
         nMatchesPerRound = 14;
         for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
-            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay);
-            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay);
+            utc[2 * matchDay].toNumber().should.be.equal(firstVerseTimeStamp + 24*3600*matchDay);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(firstVerseTimeStamp + 19 * 1800 + 24*3600*matchDay);
         }
         // tests for last timezone
-        prevTz = 24;
+        prevTz = 23;
         utc = await updates.getAllMatchdaysUTCInRound(tz = prevTz, round = 0).should.be.fulfilled;
         nMatchesPerRound = 14;
         for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
-            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay + 23*3600);
-            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay + 23*3600);
+            utc[2 * matchDay].toNumber().should.be.equal(firstVerseTimeStamp + 24*3600*matchDay + 23*3600);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(firstVerseTimeStamp + 19 * 1800 + 24*3600*matchDay + 23*3600);
         }
         // tests for first timezone, round = 1
         utc = await updates.getAllMatchdaysUTCInRound(tz = timeZoneForRound1, round = 1).should.be.fulfilled;
         nMatchesPerRound = 14;
         for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
-            utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay + 7*24*3600);
-            utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay + 7*24*3600);
+            utc[2 * matchDay].toNumber().should.be.equal(firstVerseTimeStamp + 24*3600*matchDay + 7*24*3600);
+            utc[1 + 2 * matchDay].toNumber().should.be.equal(firstVerseTimeStamp + 19 * 1800 + 24*3600*matchDay + 7*24*3600);
         }    
     });
     
-    it2('test getCurrentRoundPure', async () =>  {
+    it('test getCurrentRoundPure', async () =>  {
         result = await assets.getCurrentRoundPure(tz = 5, tz1 = 5, verse = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         result = await assets.getCurrentRoundPure(tz = 24, tz1 = 5, verse = 0).should.be.fulfilled;
@@ -179,10 +180,11 @@ contract('Updates', (accounts) => {
     });
 
     it('test getMatchUTC', async () =>  {
-        nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
-        nextVerseTimestamp = nextVerseTimestamp.toNumber();
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
-        timeZoneForRound1.toNumber().should.be.equal(1);
+        timeZoneForRound1.toNumber().should.be.equal(24);
+        firstVerseTimeStamp = await updates.getMatchUTC(timeZoneForRound1,0,0).should.be.fulfilled;
+        firstVerseTimeStamp = firstVerseTimeStamp.toNumber();
+
         var {0: nextTimeZoneToUpdate, 1: day, 2: turn} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         currentRound = await updates.getCurrentRound(nextTimeZoneToUpdate).should.be.fulfilled;
         currentRound = currentRound.toNumber();
@@ -190,33 +192,33 @@ contract('Updates', (accounts) => {
 
         // tests for init timezone
         utc = await updates.getMatchUTC(tz = nextTimeZoneToUpdate, round = currentRound, matchDay = day).should.be.fulfilled;
-        utc.toNumber().should.be.equal(nextVerseTimestamp);
+        utc.toNumber().should.be.equal(firstVerseTimeStamp);
         utc = await updates.getMatchUTC(tz = nextTimeZoneToUpdate, round = currentRound, matchDay = day + 2).should.be.fulfilled;
-        utc.toNumber().should.be.equal(nextVerseTimestamp + 24*3600);
+        utc.toNumber().should.be.equal(firstVerseTimeStamp + 24*3600);
         utc = await updates.getMatchUTC(tz = nextTimeZoneToUpdate, round = currentRound, matchDay = day + 1).should.be.fulfilled;
-        utc.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600);
+        utc.toNumber().should.be.equal(firstVerseTimeStamp + 9.5*3600);
         utc = await updates.getMatchUTC(tz = nextTimeZoneToUpdate, round = 1, matchDay = 1).should.be.fulfilled;
-        utc.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600 + 7*24*3600);
+        utc.toNumber().should.be.equal(firstVerseTimeStamp + 9.5*3600 + 7*24*3600);
         utc = await updates.getMatchUTC(tz = nextTimeZoneToUpdate, round = 1, matchDay = 2).should.be.fulfilled;
-        utc.toNumber().should.be.equal(nextVerseTimestamp + 24*3600 + 7*24*3600);
+        utc.toNumber().should.be.equal(firstVerseTimeStamp + 24*3600 + 7*24*3600);
         // tests for other timezones
         tz = 1;
         deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
         utc = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
-        utc.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+        utc.toNumber().should.be.equal(firstVerseTimeStamp + deltaN * 3600);
         tz = 24;
         deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
         utc = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
-        utc.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+        utc.toNumber().should.be.equal(firstVerseTimeStamp + deltaN * 3600);
     });
 
 
     
-    it2('test that cannot initialize updates twice', async () =>  {
+    it('test that cannot initialize updates twice', async () =>  {
         await updates.initUpdates({from: owners.COO}).should.be.rejected;
     });
     
-    it2('check timezones for this verse', async () =>  {
+    it('check timezones for this verse', async () =>  {
         TZForRound1 = 2;
         result = "";
         for (verse = 0; verse < 10*VERSES_PER_DAY.toNumber(); verse += 13) {
@@ -232,7 +234,7 @@ contract('Updates', (accounts) => {
         result.should.be.equal(expected);
     });
     
-    it2('require that BC and local time are less than 15 sec out of sync', async () =>  {
+    it('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await utils.getNow().should.be.fulfilled;
         localTimeMs = Date.now();
         // the substraction is in miliseconds:
@@ -252,10 +254,10 @@ contract('Updates', (accounts) => {
         (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 20*1000).should.be.equal(true);
     });
     
-    it2('check BC is set up in agreement with the local time', async () =>  {
+    it('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
-        timeZoneForRound1.toNumber().should.be.equal(1);
+        timeZoneForRound1.toNumber().should.be.equal(24);
         nowBC = await utils.getNow().should.be.fulfilled;
 
         localTimeMs = Date.now();
@@ -273,7 +275,7 @@ contract('Updates', (accounts) => {
         nextVerse.getUTCSeconds().should.be.equal(0);
     });
     
-    it2('wait some minutes', async () =>  {
+    it('wait some minutes', async () =>  {
         now = await utils.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
         extraTime = 3*60
@@ -288,7 +290,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    it2('submitActions to timezone', async () =>  {
+    it('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verseBefore = await updates.getCurrentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
@@ -309,7 +311,7 @@ contract('Updates', (accounts) => {
         });
     });
 
-    it2('update Timezone once', async () =>  {
+    it('update Timezone once', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
@@ -331,7 +333,7 @@ contract('Updates', (accounts) => {
         isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    it2('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
+    it('update Timezone fails at bigbang if actions have not been submitted first', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
@@ -356,7 +358,7 @@ contract('Updates', (accounts) => {
     });
 
 
-    it2('moveToNextVerse', async () =>  {
+    it('moveToNextVerse', async () =>  {
         now = await utils.getNow().should.be.fulfilled;
         nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
         (nextTime - now > 0).should.be.equal(true)
@@ -366,7 +368,7 @@ contract('Updates', (accounts) => {
         
     });
 
-    it2('update Timezone many times', async () =>  {
+    it('update Timezone many times', async () =>  {
         result = await assets.getCurrentRound(tz = 1).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         result = await assets.getCurrentRound(tz = 24).should.be.fulfilled;
@@ -378,7 +380,7 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.rejected;
     });
     
-    it2('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
+    it('update Timezone many times with correct cadence actions+update, and then a fail because of lack of update', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
@@ -404,7 +406,7 @@ contract('Updates', (accounts) => {
     
     });
     
-    it2('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
+    it('timeZoneToUpdateBefore only increases turnInDay by one after submiteActionsRoot', async () =>  {
         await moveToNextVerse(updates, extraSecs = 2);
         var {0: tzBefore, 1: dayBefore, 2: turnInDayBefore} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         const cif = "ciao3";
@@ -419,7 +421,7 @@ contract('Updates', (accounts) => {
     // level 1: 2048 league Roots
     // level 2: 640 leafs for each
     
-    it2('challenging a tz', async () =>  {
+    it('challenging a tz', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
@@ -567,7 +569,7 @@ contract('Updates', (accounts) => {
     
     
     
-    // it2('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
+    // it('(takes a long time!) challenging a tz beyond the next timezone!', async () =>  {
     //     await moveToNextVerse(updates, extraSecs = 2);
     //     var {0: tz} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
     //     const cif = "ciao3";
@@ -632,7 +634,7 @@ contract('Updates', (accounts) => {
     // });
     
     
-    // it2('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
+    // it('(takes a long time!) challenging a tz beyond the next timezone! -- almost', async () =>  {
     //     // identical to previous test but we wait 1 challenge time less!
     //     // so at the very end, we're not allowed to submit actions because the time has not come for next timezone
     //     await moveToNextVerse(updates, extraSecs = 2);
@@ -699,7 +701,7 @@ contract('Updates', (accounts) => {
     // });
 
     
-    it2('true status of timezone challenge', async () =>  {
+    it('true status of timezone challenge', async () =>  {
         challengeTime = await updates.getChallengeTime().should.be.fulfilled;
         var {0: level, 1: nJumps, 2: isSet} = await updates.getStatusPure(nowTime = Math.floor(0.5*challengeTime), lastUpdate = 0, challengeTime, writtenLevel = 0).should.be.fulfilled;
         level.toNumber().should.be.equal(0);
@@ -759,7 +761,7 @@ contract('Updates', (accounts) => {
     // B = correct day, incorrect half
     // C = incorrect day and incorrect half
     // 0: A, 1: B, 2: A => so the leafs provided by A are the correct ones and everyone fails to challenge A.
-    it2('vefiable challenge', async () =>  {
+    it('vefiable challenge', async () =>  {
         const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
         parties = [alice, bob, carol, dave, erin, frank];
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
