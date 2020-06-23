@@ -119,6 +119,7 @@ contract('Updates', (accounts) => {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         nextVerseTimestamp = nextVerseTimestamp.toNumber();
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
+        timeZoneForRound1.toNumber().should.be.equal(1);
         // tests for init timezone
         utc = await updates.getAllMatchdaysUTCInRound(tz = timeZoneForRound1, round = 0).should.be.fulfilled;
         nMatchesPerRound = 14;
@@ -127,7 +128,8 @@ contract('Updates', (accounts) => {
             utc[1 + 2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 19 * 1800 + 24*3600*matchDay);
         }
         // tests for last timezone
-        utc = await updates.getAllMatchdaysUTCInRound(tz = (timeZoneForRound1 - 1), round = 0).should.be.fulfilled;
+        prevTz = 24;
+        utc = await updates.getAllMatchdaysUTCInRound(tz = prevTz, round = 0).should.be.fulfilled;
         nMatchesPerRound = 14;
         for (matchDay = 0; matchDay < nMatchesPerRound/2; matchDay++) {
             utc[2 * matchDay].toNumber().should.be.equal(nextVerseTimestamp + 24*3600*matchDay + 23*3600);
@@ -247,6 +249,7 @@ contract('Updates', (accounts) => {
     it('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.getNextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
+        timeZoneForRound1.toNumber().should.be.equal(1);
         nowBC = await utils.getNow().should.be.fulfilled;
 
         localTimeMs = Date.now();
@@ -254,25 +257,14 @@ contract('Updates', (accounts) => {
 
         nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000);
         now = new Date(localTimeMs);
-        expectedDate = now.getUTCDate();
         if (now.getUTCMinutes() < 27) {
             expectedHour = now.getUTCHours();
         } else {
             expectedHour = now.getUTCHours() + 1;
         }
-        // Testing day of the month, month and year is too complicated, as it may be on the verge to chage.
-        // So we comment it out:
-        // nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear());
-        // nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth());
-        // nextVerse.getUTCDate().should.be.equal(expectedDate);
         nextVerse.getUTCHours().should.be.equal(expectedHour);
         nextVerse.getUTCMinutes().should.be.equal(30);
         nextVerse.getUTCSeconds().should.be.equal(0);
-        if (expectedHour == 0) {
-            timeZoneForRound1.toNumber().should.be.equal(24);
-        } else {
-            timeZoneForRound1.toNumber().should.be.equal(expectedHour);
-        }
     });
     
     it('wait some minutes', async () =>  {

@@ -21,24 +21,25 @@ contract Updates is UpdatesBase {
 
     function setChallengeTime(uint256 newTime) external onlyCOO { _challengeTime = newTime; }
 
+    /// timezone = 1 is the first timezone in UTC time, which goes through Kiribati. 
+    /// timezone = 24 is the last timezone in UTC time, a few miles easy from it.
+    /// bigBang: time, in Unix epoch seconds, corresponding to 12:30pm on a Monday morning for timezone = 1.
+    /// the game is planned for BigBang = 1592785800, which is Monday 22nd June, 2020, 12:30pm in Kiribati.
+    /// the game starts at verse = 0. The transition to verse = 1 will be when the first submitActions happens.
     function initUpdates() external onlyCOO {
         require(_timeZoneForRound1 == 0, "cannot initialize updates twice");
-        /// the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
-        /// that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
-        /// the call to the contract initTZs() function.
-        /// TZ = 1 => starts at 1:00... TZ = 23 => starts at 23:00, TZ = 24, starts at 0:00
+        _timeZoneForRound1 = 1;
+        _firstVerseTimeStamp = 1592785800;
+
         uint256 secsOfDay   = now % (3600 * 24);
         uint256 hour        = secsOfDay / 3600;  /// 0, ..., 23
         uint256 minute      = (secsOfDay - hour * 3600) / 60; /// 0, ..., 59
         uint256 secs        = (secsOfDay - hour * 3600 - minute * 60); /// 0, ..., 59
         if (minute < 27) {
-            _timeZoneForRound1 = normalizeTZ(uint8(hour));
             _nextVerseTimestamp = now + (29-minute)*60 + (60 - secs);
         } else {
-            _timeZoneForRound1 = normalizeTZ(1+uint8(hour));
             _nextVerseTimestamp = now + (29-minute)*60 + (60 - secs) + 3600;
         }
-        _firstVerseTimeStamp = _nextVerseTimestamp;
     }
 
     function submitActionsRoot(
