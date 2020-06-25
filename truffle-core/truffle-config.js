@@ -14,11 +14,6 @@ module.exports = {
     }
   },
   networks: {
-    ganache: {
-      network_id: '*',
-      host: '127.0.0.1',
-      port: 8545
-    },
     xdai: { // 0xA9c0F76cA045163E28afDdFe035ec76a44f5C1F3
       provider: new HDWalletProvider(
         "a98c8730d71a46bcc40fb06fc68142edbc2fdf17b89197db0fbe41d35718d5fc",

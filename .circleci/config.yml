@@ -77,7 +77,7 @@ commands:
 
 jobs:
   truffle_core:
-    executor: freeverse
+    executor: freeverse_ethereum
     parallelism: 20
     steps:
       - checkout
