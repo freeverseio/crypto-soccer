@@ -12,6 +12,10 @@ executors:
   freeverse:
     docker:
       - image: freeverseio/circleci
+      - image: freeverseio/xdai:dev
+        auth:
+          username: $DOCKER_ID
+          password: $DOCKER_PASSWD
   freeverse_ethereum:
     docker:
       - image: freeverseio/circleci
@@ -77,7 +81,7 @@ commands:
 
 jobs:
   truffle_core:
-    executor: freeverse_ethereum
+    executor: freeverse
     parallelism: 20
     steps:
       - checkout
