@@ -12,7 +12,6 @@ type WorldPlayersTier struct {
 	DefendersCount   uint8
 	MidfieldersCount uint8
 	AttackersCount   uint8
-	Duration         int64
 }
 
 func AddPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlayersCount int64) WorldPlayersTier {
@@ -34,7 +33,6 @@ func AddPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlay
 
 func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 	var tiers []WorldPlayersTier
-	halfDay := int64(3600 * 12)
 
 	// Tier1:
 	// - has a fixed number of players, and fixed distribution of field position
@@ -47,7 +45,6 @@ func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 		DefendersCount:   9,
 		MidfieldersCount: 9,
 		AttackersCount:   9,
-		Duration:         halfDay,
 	}
 	tiers = append(tiers, tier)
 
@@ -62,7 +59,6 @@ func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 		DefendersCount:   0,
 		MidfieldersCount: 0,
 		AttackersCount:   0,
-		Duration:         halfDay,
 	}
 	randomPosPlayersCount := int64(2)
 	tier = AddPlayerAtRandomFieldPos(tier, seed, randomPosPlayersCount)
@@ -80,7 +76,6 @@ func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 		DefendersCount:   0,
 		MidfieldersCount: 0,
 		AttackersCount:   0,
-		Duration:         halfDay,
 	}
 	if int_hash(seed)%3 == 0 {
 		randomPosPlayersCount = int64(1)

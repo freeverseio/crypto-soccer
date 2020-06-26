@@ -148,7 +148,9 @@ func (b WorldPlayerService) createBatchByTier(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := strconv.FormatInt(offeringStartTime+tier.Duration, 10)
+
+		halfDay := int64(3600 * 12)
+		validUntil := strconv.FormatInt(offeringStartTime+halfDay, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
