@@ -1,83 +1,94 @@
 package worldplayer
 
+import (
+	"math/big"
+)
+
 type WorldPlayersTier struct {
-	Value               int64
-	MaxPotential        uint8
-	ProductId           string
-	GoalKeepersCount    uint8
-	DefendersCount      uint8
-	MidfieldersCount    uint8
-	AttackersCount      uint8
-	RandomFieldPosCount uint8
+	Value            int64
+	MaxPotential     uint8
+	ProductId        string
+	GoalKeepersCount uint8
+	DefendersCount   uint8
+	MidfieldersCount uint8
+	AttackersCount   uint8
+	Duration         int64
 }
 
-func GenerateBatchDistribution() []WorldPlayersTier {
-	return []WorldPlayersTier{
-		WorldPlayersTier{
-			Value:               1000,
-			MaxPotential:        9,
-			ProductId:           "player_tier_0",
-			GoalKeepersCount:    0,
-			DefendersCount:      0,
-			MidfieldersCount:    0,
-			AttackersCount:      0,
-			RandomFieldPosCount: 0,
-		},
-		WorldPlayersTier{
-			Value:               1000,
-			MaxPotential:        7,
-			ProductId:           "player_tier_1",
-			GoalKeepersCount:    3,
-			DefendersCount:      9,
-			MidfieldersCount:    9,
-			AttackersCount:      9,
-			RandomFieldPosCount: 0,
-		},
-		WorldPlayersTier{
-			Value:               1800,
-			MaxPotential:        8,
-			ProductId:           "player_tier_2",
-			GoalKeepersCount:    0,
-			DefendersCount:      0,
-			MidfieldersCount:    0,
-			AttackersCount:      0,
-			RandomFieldPosCount: 2,
-		}, WorldPlayersTier{
-			Value:               2500,
-			MaxPotential:        9,
-			ProductId:           "player_tier_3",
-			GoalKeepersCount:    0,
-			DefendersCount:      0,
-			MidfieldersCount:    0,
-			AttackersCount:      0,
-			RandomFieldPosCount: 1,
-		}, WorldPlayersTier{
-			Value:               5000,
-			MaxPotential:        9,
-			ProductId:           "player_tier_4",
-			GoalKeepersCount:    0,
-			DefendersCount:      0,
-			MidfieldersCount:    0,
-			AttackersCount:      0,
-			RandomFieldPosCount: 0,
-		}, WorldPlayersTier{
-			Value:               8000,
-			MaxPotential:        9,
-			ProductId:           "player_tier_5",
-			GoalKeepersCount:    0,
-			DefendersCount:      0,
-			MidfieldersCount:    0,
-			AttackersCount:      0,
-			RandomFieldPosCount: 0,
-		}, WorldPlayersTier{
-			Value:               10000,
-			MaxPotential:        9,
-			ProductId:           "player_tier_6",
-			GoalKeepersCount:    0,
-			DefendersCount:      0,
-			MidfieldersCount:    0,
-			AttackersCount:      0,
-			RandomFieldPosCount: 0,
-		},
+func AddPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlayersCount int64) WorldPlayersTier {
+	maxPos := uint64(4)
+	for p := int64(0); p < randomPosPlayersCount; p++ {
+		switch playerPos := GenerateRnd(big.NewInt(p), seed, maxPos); {
+		case playerPos == 0:
+			tier.GoalKeepersCount++
+		case playerPos == 1:
+			tier.DefendersCount++
+		case playerPos == 2:
+			tier.MidfieldersCount++
+		case playerPos == 3:
+			tier.AttackersCount++
+		}
 	}
+	return tier
+}
+
+func GenerateBatchDistribution(seed string) []WorldPlayersTier {
+	var tiers []WorldPlayersTier
+	halfDay := int64(3600 * 12)
+
+	// Tier1:
+	// - has a fixed number of players, and fixed distribution of field position
+	// - maxPotential 80%
+	tier := WorldPlayersTier{
+		Value:            1000,
+		MaxPotential:     7,
+		ProductId:        "player_tier_1",
+		GoalKeepersCount: 3,
+		DefendersCount:   9,
+		MidfieldersCount: 9,
+		AttackersCount:   9,
+		Duration:         halfDay,
+	}
+	tiers = append(tiers, tier)
+
+	// Tier2:
+	// - a fixed number (2) of players, with field position distributed randomly
+	// - maxPotential 90%
+	tier = WorldPlayersTier{
+		Value:            1800,
+		MaxPotential:     8,
+		ProductId:        "player_tier_2",
+		GoalKeepersCount: 0,
+		DefendersCount:   0,
+		MidfieldersCount: 0,
+		AttackersCount:   0,
+		Duration:         halfDay,
+	}
+	randomPosPlayersCount := int64(2)
+	tier = AddPlayerAtRandomFieldPos(tier, seed, randomPosPlayersCount)
+	tiers = append(tiers, tier)
+
+	// Tier3
+	// - variable number of players (1/3 of possibility to be 1, otherwise 0),
+	// - field position distributed randomly
+	// - maxPotential 100%
+	tier = WorldPlayersTier{
+		Value:            2500,
+		MaxPotential:     9,
+		ProductId:        "player_tier_3",
+		GoalKeepersCount: 0,
+		DefendersCount:   0,
+		MidfieldersCount: 0,
+		AttackersCount:   0,
+		Duration:         halfDay,
+	}
+	if int_hash(seed)%3 == 0 {
+		randomPosPlayersCount = int64(1)
+	} else {
+		randomPosPlayersCount = int64(0)
+	}
+	tier = AddPlayerAtRandomFieldPos(tier, seed+"salt", randomPosPlayersCount)
+	tiers = append(tiers, tier)
+
+	return tiers
 }

@@ -1,4 +1,4 @@
-([]*worldplayer.WorldPlayer) (len=33 cap=60) {
+([]*worldplayer.WorldPlayer) (len=32 cap=60) {
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25726027164631419126757699466464342922450104382458553456133469",
 		name: (string) (len=14) "Aarón Patrizi",
@@ -10,7 +10,7 @@
 		shoot: (int32) 1373,
 		endurance: (int32) 883,
 		potential: (int32) 2,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=12) "NonHispWhite",
 		productId: (string) (len=13) "player_tier_1"
@@ -26,7 +26,7 @@
 		shoot: (int32) 1114,
 		endurance: (int32) 937,
 		potential: (int32) 7,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=15) "PacificIslander",
 		productId: (string) (len=13) "player_tier_1"
@@ -42,7 +42,7 @@
 		shoot: (int32) 1670,
 		endurance: (int32) 1527,
 		potential: (int32) 1,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=12) "NonHispBlack",
 		productId: (string) (len=13) "player_tier_1"
@@ -58,7 +58,7 @@
 		shoot: (int32) 1053,
 		endurance: (int32) 1203,
 		potential: (int32) 1,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -74,7 +74,7 @@
 		shoot: (int32) 690,
 		endurance: (int32) 738,
 		potential: (int32) 4,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -90,7 +90,7 @@
 		shoot: (int32) 936,
 		endurance: (int32) 918,
 		potential: (int32) 6,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "SK",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -106,7 +106,7 @@
 		shoot: (int32) 784,
 		endurance: (int32) 1089,
 		potential: (int32) 3,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -122,7 +122,7 @@
 		shoot: (int32) 805,
 		endurance: (int32) 861,
 		potential: (int32) 7,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "GR",
 		race: (string) (len=12) "NonHispWhite",
 		productId: (string) (len=13) "player_tier_1"
@@ -138,7 +138,7 @@
 		shoot: (int32) 598,
 		endurance: (int32) 756,
 		potential: (int32) 7,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -154,7 +154,7 @@
 		shoot: (int32) 682,
 		endurance: (int32) 1141,
 		potential: (int32) 3,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -170,7 +170,7 @@
 		shoot: (int32) 801,
 		endurance: (int32) 1018,
 		potential: (int32) 1,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -186,7 +186,7 @@
 		shoot: (int32) 1049,
 		endurance: (int32) 1236,
 		potential: (int32) 2,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -202,7 +202,7 @@
 		shoot: (int32) 1351,
 		endurance: (int32) 885,
 		potential: (int32) 0,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=8) "Hispanic",
 		productId: (string) (len=13) "player_tier_1"
@@ -218,7 +218,7 @@
 		shoot: (int32) 885,
 		endurance: (int32) 765,
 		potential: (int32) 4,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "IT",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -234,7 +234,7 @@
 		shoot: (int32) 1199,
 		endurance: (int32) 1364,
 		potential: (int32) 7,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -250,7 +250,7 @@
 		shoot: (int32) 1470,
 		endurance: (int32) 1021,
 		potential: (int32) 4,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -266,7 +266,7 @@
 		shoot: (int32) 1213,
 		endurance: (int32) 657,
 		potential: (int32) 2,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "MT",
 		race: (string) (len=8) "Hispanic",
 		productId: (string) (len=13) "player_tier_1"
@@ -282,7 +282,7 @@
 		shoot: (int32) 813,
 		endurance: (int32) 822,
 		potential: (int32) 5,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "IT",
 		race: (string) (len=7) "Chinese",
 		productId: (string) (len=13) "player_tier_1"
@@ -298,7 +298,7 @@
 		shoot: (int32) 978,
 		endurance: (int32) 899,
 		potential: (int32) 0,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=14) "AmericanIndian",
 		productId: (string) (len=13) "player_tier_1"
@@ -314,7 +314,7 @@
 		shoot: (int32) 727,
 		endurance: (int32) 780,
 		potential: (int32) 4,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -330,7 +330,7 @@
 		shoot: (int32) 1455,
 		endurance: (int32) 976,
 		potential: (int32) 5,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=12) "NonHispWhite",
 		productId: (string) (len=13) "player_tier_1"
@@ -346,7 +346,7 @@
 		shoot: (int32) 1187,
 		endurance: (int32) 1324,
 		potential: (int32) 2,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "BE",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -362,7 +362,7 @@
 		shoot: (int32) 675,
 		endurance: (int32) 1352,
 		potential: (int32) 6,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -378,7 +378,7 @@
 		shoot: (int32) 765,
 		endurance: (int32) 1424,
 		potential: (int32) 5,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "AL",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -394,7 +394,7 @@
 		shoot: (int32) 900,
 		endurance: (int32) 989,
 		potential: (int32) 5,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -410,7 +410,7 @@
 		shoot: (int32) 1784,
 		endurance: (int32) 948,
 		potential: (int32) 4,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -426,7 +426,7 @@
 		shoot: (int32) 906,
 		endurance: (int32) 661,
 		potential: (int32) 7,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "PT",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -442,7 +442,7 @@
 		shoot: (int32) 932,
 		endurance: (int32) 942,
 		potential: (int32) 7,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -458,7 +458,7 @@
 		shoot: (int32) 1092,
 		endurance: (int32) 924,
 		potential: (int32) 5,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -474,7 +474,7 @@
 		shoot: (int32) 1032,
 		endurance: (int32) 1035,
 		potential: (int32) 6,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
@@ -490,7 +490,7 @@
 		shoot: (int32) 2160,
 		endurance: (int32) 1390,
 		potential: (int32) 6,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_2"
@@ -506,25 +506,9 @@
 		shoot: (int32) 2386,
 		endurance: (int32) 1326,
 		potential: (int32) 8,
-		validUntil: (string) (len=10) "1555545600",
+		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_2"
-	}),
-	(*worldplayer.WorldPlayer)({
-		playerId: (graphql.ID) (len=62) "25746059946341618025914227735584538035373287544604077579044600",
-		name: (string) (len=15) "Gustavo Ortuño",
-		dayOfBirth: (int32) 17501,
-		preferredPosition: (string) (len=4) "F LC",
-		defence: (int32) 2114,
-		speed: (int32) 2153,
-		pass: (int32) 3040,
-		shoot: (int32) 1784,
-		endurance: (int32) 2345,
-		potential: (int32) 4,
-		validUntil: (string) (len=10) "1555545600",
-		countryOfBirth: (string) (len=2) "ES",
-		race: (string) (len=7) "Spanish",
-		productId: (string) (len=13) "player_tier_3"
 	})
 }

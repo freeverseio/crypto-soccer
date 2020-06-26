@@ -25,8 +25,15 @@ func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generat
 	}
 }
 
+func GetSeedForWorldPlayers(teamId string, epoch int64) string {
+	epochHalfDays := epoch / (3600 * 24 * 2)
+	return teamId + strconv.FormatUint(uint64(epochHalfDays), 10)
+}
+
 func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPlayer, error) {
-	distribution := GenerateBatchDistribution()
+	seed := GetSeedForWorldPlayers(teamId, epoch)
+	distribution := GenerateBatchDistribution(seed)
+
 	batch := []*WorldPlayer{}
 	for _, tier := range distribution {
 		batchByTier, err := b.createBatchByTier(
@@ -81,7 +88,6 @@ func (b WorldPlayerService) createBatchByTier(
 	result := []*WorldPlayer{}
 
 	epochDays := epoch / (3600 * 24)
-	epochWeeks := epochDays / 7
 	id, _ := new(big.Int).SetString(teamId, 10)
 	if id == nil {
 		return nil, errors.New("invalid teamId")
@@ -90,23 +96,6 @@ func (b WorldPlayerService) createBatchByTier(
 	timezone, countryIdxInTZ, _, err := b.contracts.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, id)
 	if err != nil {
 		return nil, err
-	}
-
-	maxPos := uint64(4)
-	for p := uint8(0); p < tier.RandomFieldPosCount; p++ {
-		salt := teamId + strconv.FormatUint(uint64(p), 10)
-		switch playerPos := GenerateRnd(big.NewInt(epochDays), salt, maxPos); {
-		case playerPos == 0:
-			tier.GoalKeepersCount++
-		case playerPos == 1:
-			tier.DefendersCount++
-		case playerPos == 2:
-			tier.MidfieldersCount++
-		case playerPos == 3:
-			tier.AttackersCount++
-		case playerPos > 3:
-			return nil, errors.New("invalid maxPos for one world player")
-		}
 	}
 
 	worldPlayers, err := b.contracts.Privileged.CreateBuyNowPlayerIdBatch(
@@ -156,7 +145,7 @@ func (b WorldPlayerService) createBatchByTier(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := strconv.FormatInt((epochWeeks+1)*24*3600*7, 10) // valid 1 week
+		validUntil := strconv.FormatInt(epoch+tier.Duration, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
