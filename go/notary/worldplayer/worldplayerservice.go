@@ -25,13 +25,14 @@ func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generat
 	}
 }
 
-func GetSeedForWorldPlayers(teamId string, epoch int64) string {
-	epochHalfDays := epoch / (3600 * 24 * 2)
-	return teamId + strconv.FormatUint(uint64(epochHalfDays), 10)
+func GetSeedForWorldPlayers(teamId string, epoch int64) (string, int64) {
+	epochHalfDays := epoch / (3600 * 12)
+	offeringStartTime := epochHalfDays * 3600 * 12
+	return teamId + strconv.FormatUint(uint64(epochHalfDays), 10), offeringStartTime
 }
 
 func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPlayer, error) {
-	seed := GetSeedForWorldPlayers(teamId, epoch)
+	seed, offeringStartTime := GetSeedForWorldPlayers(teamId, epoch)
 	distribution := GenerateBatchDistribution(seed)
 
 	batch := []*WorldPlayer{}
@@ -39,6 +40,7 @@ func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPla
 		batchByTier, err := b.createBatchByTier(
 			teamId,
 			epoch,
+			offeringStartTime,
 			tier,
 		)
 		if err != nil {
@@ -83,6 +85,7 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 func (b WorldPlayerService) createBatchByTier(
 	teamId string,
 	epoch int64,
+	offeringStartTime int64,
 	tier WorldPlayersTier,
 ) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
@@ -145,7 +148,7 @@ func (b WorldPlayerService) createBatchByTier(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := strconv.FormatInt(epoch+tier.Duration, 10)
+		validUntil := strconv.FormatInt(offeringStartTime+tier.Duration, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,

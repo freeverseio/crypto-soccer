@@ -496,19 +496,19 @@
 		productId: (string) (len=13) "player_tier_2"
 	}),
 	(*worldplayer.WorldPlayer)({
-		playerId: (graphql.ID) (len=62) "25732963239449472560313395338506420235216759928947623869811026",
-		name: (string) (len=11) "Joel Duarte",
+		playerId: (graphql.ID) (len=62) "25732960174458390828535803569243969472488529974058052693787817",
+		name: (string) (len=14) "Angelin Zamora",
 		dayOfBirth: (int32) 17527,
-		preferredPosition: (string) (len=4) "F CR",
-		defence: (int32) 1099,
-		speed: (int32) 947,
-		pass: (int32) 1405,
-		shoot: (int32) 2386,
-		endurance: (int32) 1326,
+		preferredPosition: (string) (len=5) "D LCR",
+		defence: (int32) 2053,
+		speed: (int32) 1601,
+		pass: (int32) 1191,
+		shoot: (int32) 1193,
+		endurance: (int32) 1124,
 		potential: (int32) 8,
 		validUntil: (string) (len=10) "1554984000",
-		countryOfBirth: (string) (len=2) "ES",
-		race: (string) (len=7) "Spanish",
+		countryOfBirth: (string) (len=2) "FR",
+		race: (string) (len=8) "Hispanic",
 		productId: (string) (len=13) "player_tier_2"
 	})
 }

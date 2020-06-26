@@ -31,7 +31,7 @@ func TestWorldPlayerService(t *testing.T) {
 
 	// changing teamId or time can lead to existing tier3 players
 	// First, change teamId:
-	teamId2 := "2748779069442"
+	teamId2 := "274877906946"
 	batch, err = service.CreateBatch(teamId2, now)
 	assert.NilError(t, err)
 	assert.Equal(t, len(batch), 33)
