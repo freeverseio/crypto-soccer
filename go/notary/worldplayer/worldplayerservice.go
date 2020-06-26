@@ -94,7 +94,7 @@ func (b WorldPlayerService) createBatchByTier(
 
 	maxPos := uint64(4)
 	for p := uint8(0); p < tier.RandomFieldPosCount; p++ {
-		salt := strconv.FormatUint(uint64(p), 10)
+		salt := teamId + strconv.FormatUint(uint64(p), 10)
 		switch playerPos := GenerateRnd(big.NewInt(epochDays), salt, maxPos); {
 		case playerPos == 0:
 			tier.GoalKeepersCount++
@@ -105,7 +105,7 @@ func (b WorldPlayerService) createBatchByTier(
 		case playerPos == 3:
 			tier.AttackersCount++
 		case playerPos > 3:
-			return nil, errors.New("invalid maxPos for one player")
+			return nil, errors.New("invalid maxPos for one world player")
 		}
 	}
 

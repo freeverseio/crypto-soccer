@@ -512,18 +512,18 @@
 		productId: (string) (len=13) "player_tier_2"
 	}),
 	(*worldplayer.WorldPlayer)({
-		playerId: (graphql.ID) (len=62) "25746044621386209367025576361486481158237055830675330439318659",
-		name: (string) (len=11) "Sybrand Del",
+		playerId: (graphql.ID) (len=62) "25746059946341618025914227735584538035373287544604077579044600",
+		name: (string) (len=15) "Gustavo Ortuño",
 		dayOfBirth: (int32) 17501,
-		preferredPosition: (string) (len=2) "GK",
-		defence: (int32) 2162,
-		speed: (int32) 2834,
-		pass: (int32) 1171,
-		shoot: (int32) 3203,
-		endurance: (int32) 2061,
+		preferredPosition: (string) (len=4) "F LC",
+		defence: (int32) 2114,
+		speed: (int32) 2153,
+		pass: (int32) 3040,
+		shoot: (int32) 1784,
+		endurance: (int32) 2345,
 		potential: (int32) 4,
 		validUntil: (string) (len=10) "1555545600",
-		countryOfBirth: (string) (len=2) "NL",
+		countryOfBirth: (string) (len=2) "ES",
 		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_3"
 	})
