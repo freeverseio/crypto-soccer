@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func NewServer(
+func ListenAndServe(
 	ch chan interface{},
 	contracts contracts.Contracts,
 	namesdb *names.Generator,

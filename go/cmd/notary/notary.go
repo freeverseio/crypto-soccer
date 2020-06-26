@@ -99,7 +99,12 @@ func main() {
 
 		ch := make(chan interface{}, *bufferSize)
 
-		go gql.NewServer(ch, *contracts, namesdb, googleCredentials)
+		go gql.ListenAndServe(
+			ch,
+			*contracts,
+			namesdb,
+			googleCredentials,
+		)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(*processWait)*time.Second)
 
