@@ -70,7 +70,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		defer db.Close()
+		defer marketdb.Close()
 
 		namesdb, err := names.New(*namesDatabase)
 		if err != nil {
