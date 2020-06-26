@@ -2,6 +2,7 @@ package worldplayer
 
 import (
 	"math/big"
+	"strconv"
 )
 
 type WorldPlayersTier struct {
@@ -15,10 +16,10 @@ type WorldPlayersTier struct {
 	Duration         int64
 }
 
-func AddPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlayersCount int64) WorldPlayersTier {
+func addPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlayersCount int64) WorldPlayersTier {
 	maxPos := uint64(4)
 	for p := int64(0); p < randomPosPlayersCount; p++ {
-		switch playerPos := GenerateRnd(big.NewInt(p), seed, maxPos); {
+		switch playerPos := generateRnd(big.NewInt(p), seed, maxPos); {
 		case playerPos == 0:
 			tier.GoalKeepersCount++
 		case playerPos == 1:
@@ -32,9 +33,10 @@ func AddPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlay
 	return tier
 }
 
-func GenerateBatchDistribution(seed string) []WorldPlayersTier {
+func generateBatchDistribution(teamId string, periodNumber int64) []WorldPlayersTier {
 	var tiers []WorldPlayersTier
-	halfDay := int64(3600 * 12)
+
+	seed := teamId + strconv.FormatUint(uint64(periodNumber), 10)
 
 	// Tier1:
 	// - has a fixed number of players, and fixed distribution of field position
@@ -47,7 +49,6 @@ func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 		DefendersCount:   9,
 		MidfieldersCount: 9,
 		AttackersCount:   9,
-		Duration:         halfDay,
 	}
 	tiers = append(tiers, tier)
 
@@ -62,10 +63,9 @@ func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 		DefendersCount:   0,
 		MidfieldersCount: 0,
 		AttackersCount:   0,
-		Duration:         halfDay,
 	}
 	randomPosPlayersCount := int64(2)
-	tier = AddPlayerAtRandomFieldPos(tier, seed, randomPosPlayersCount)
+	tier = addPlayerAtRandomFieldPos(tier, seed, randomPosPlayersCount)
 	tiers = append(tiers, tier)
 
 	// Tier3
@@ -80,14 +80,13 @@ func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 		DefendersCount:   0,
 		MidfieldersCount: 0,
 		AttackersCount:   0,
-		Duration:         halfDay,
 	}
-	if int_hash(seed)%3 == 0 {
+	if intHash(seed)%3 == 0 {
 		randomPosPlayersCount = int64(1)
 	} else {
 		randomPosPlayersCount = int64(0)
 	}
-	tier = AddPlayerAtRandomFieldPos(tier, seed+"salt", randomPosPlayersCount)
+	tier = addPlayerAtRandomFieldPos(tier, seed+"salt", randomPosPlayersCount)
 	tiers = append(tiers, tier)
 
 	return tiers
