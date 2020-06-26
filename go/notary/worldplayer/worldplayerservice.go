@@ -18,7 +18,7 @@ type WorldPlayerService struct {
 	namesdb   *names.Generator
 }
 
-const Period = 3600 * 12 // half a day
+const PeriodSec = 3600 * 12 // half a day
 
 func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generator) *WorldPlayerService {
 	return &WorldPlayerService{
@@ -28,13 +28,15 @@ func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generat
 }
 
 func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPlayer, error) {
-	distribution := generateBatchDistribution(teamId, epoch)
+	currentPeriod := epoch / PeriodSec
+
+	distribution := generateBatchDistribution(teamId, currentPeriod)
 
 	batch := []*WorldPlayer{}
 	for _, tier := range distribution {
 		batchByTier, err := b.createBatchByTier(
 			teamId,
-			epoch,
+			currentPeriod,
 			tier,
 		)
 		if err != nil {
@@ -68,24 +70,23 @@ func intHash(s string) uint64 {
 	return h.Sum64()
 }
 
-func generateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
+func generateRnd(seed *big.Int, salt string, maxVal uint64) uint64 {
 	var result uint64 = intHash(seed.String() + salt)
-	if max_val == 0 {
+	if maxVal == 0 {
 		return result
 	}
-	return result % max_val
+	return result % maxVal
 }
 
 func (b WorldPlayerService) createBatchByTier(
 	teamId string,
-	epoch int64,
+	periodNumber int64,
 	tier WorldPlayersTier,
 ) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
 
-	nPeriods := epoch / Period
-	offeringStartTime := nPeriods * Period
-	epochDays := epoch / (3600 * 24)
+	offeringStartTime := periodNumber * PeriodSec
+	epochDays := periodNumber / 2
 
 	id, _ := new(big.Int).SetString(teamId, 10)
 	if id == nil {
@@ -144,7 +145,7 @@ func (b WorldPlayerService) createBatchByTier(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := strconv.FormatInt(offeringStartTime+Period, 10)
+		validUntil := strconv.FormatInt(offeringStartTime+PeriodSec, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,

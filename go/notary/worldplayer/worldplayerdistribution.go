@@ -33,11 +33,10 @@ func addPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlay
 	return tier
 }
 
-func generateBatchDistribution(teamId string, epoch int64) []WorldPlayersTier {
+func generateBatchDistribution(teamId string, periodNumber int64) []WorldPlayersTier {
 	var tiers []WorldPlayersTier
 
-	nPeriods := epoch / Period
-	seed := teamId + strconv.FormatUint(uint64(nPeriods), 10)
+	seed := teamId + strconv.FormatUint(uint64(periodNumber), 10)
 
 	// Tier1:
 	// - has a fixed number of players, and fixed distribution of field position
