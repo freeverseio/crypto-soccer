@@ -85,7 +85,6 @@ func (b WorldPlayerService) createBatchByTier(
 ) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
 
-	offeringStartTime := periodNumber * PeriodSec
 	epochDays := periodNumber / (3600 * 24 / PeriodSec)
 
 	id, _ := new(big.Int).SetString(teamId, 10)
@@ -145,7 +144,7 @@ func (b WorldPlayerService) createBatchByTier(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := strconv.FormatInt(offeringStartTime+PeriodSec, 10)
+		validUntil := strconv.FormatInt(periodNumber*PeriodSec+PeriodSec, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
