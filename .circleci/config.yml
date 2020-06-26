@@ -81,7 +81,7 @@ jobs:
     parallelism: 20
     steps:
       - checkout
-      - run: cd truffle-core && npm install
+      - run: cd truffle-core && npm ci
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run:
           command: |
