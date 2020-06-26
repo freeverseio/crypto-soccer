@@ -2,6 +2,7 @@ package worldplayer
 
 import (
 	"math/big"
+	"strconv"
 )
 
 type WorldPlayersTier struct {
@@ -32,8 +33,11 @@ func addPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlay
 	return tier
 }
 
-func GenerateBatchDistribution(seed string) []WorldPlayersTier {
+func generateBatchDistribution(teamId string, epoch int64) []WorldPlayersTier {
 	var tiers []WorldPlayersTier
+
+	nPeriods := epoch / Period
+	seed := teamId + strconv.FormatUint(uint64(nPeriods), 10)
 
 	// Tier1:
 	// - has a fixed number of players, and fixed distribution of field position

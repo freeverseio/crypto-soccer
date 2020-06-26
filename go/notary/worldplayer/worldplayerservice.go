@@ -18,6 +18,8 @@ type WorldPlayerService struct {
 	namesdb   *names.Generator
 }
 
+const Period = 3600 * 12 // half a day
+
 func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generator) *WorldPlayerService {
 	return &WorldPlayerService{
 		contracts: contracts,
@@ -25,22 +27,14 @@ func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generat
 	}
 }
 
-func getSeedForWorldPlayers(teamId string, epoch int64) (string, int64) {
-	epochHalfDays := epoch / (3600 * 12)
-	offeringStartTime := epochHalfDays * 3600 * 12
-	return teamId + strconv.FormatUint(uint64(epochHalfDays), 10), offeringStartTime
-}
-
 func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPlayer, error) {
-	seed, offeringStartTime := getSeedForWorldPlayers(teamId, epoch)
-	distribution := GenerateBatchDistribution(seed)
+	distribution := generateBatchDistribution(teamId, epoch)
 
 	batch := []*WorldPlayer{}
 	for _, tier := range distribution {
 		batchByTier, err := b.createBatchByTier(
 			teamId,
 			epoch,
-			offeringStartTime,
 			tier,
 		)
 		if err != nil {
@@ -85,12 +79,14 @@ func generateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 func (b WorldPlayerService) createBatchByTier(
 	teamId string,
 	epoch int64,
-	offeringStartTime int64,
 	tier WorldPlayersTier,
 ) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
 
+	nPeriods := epoch / Period
+	offeringStartTime := nPeriods * Period
 	epochDays := epoch / (3600 * 24)
+
 	id, _ := new(big.Int).SetString(teamId, 10)
 	if id == nil {
 		return nil, errors.New("invalid teamId")
@@ -148,9 +144,7 @@ func (b WorldPlayerService) createBatchByTier(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-
-		halfDay := int64(3600 * 12)
-		validUntil := strconv.FormatInt(offeringStartTime+halfDay, 10)
+		validUntil := strconv.FormatInt(offeringStartTime+Period, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
