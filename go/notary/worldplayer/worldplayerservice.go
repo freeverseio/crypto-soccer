@@ -86,7 +86,7 @@ func (b WorldPlayerService) createBatchByTier(
 	result := []*WorldPlayer{}
 
 	offeringStartTime := periodNumber * PeriodSec
-	epochDays := periodNumber / 2
+	epochDays := periodNumber / (3600 * 24 / PeriodSec)
 
 	id, _ := new(big.Int).SetString(teamId, 10)
 	if id == nil {
