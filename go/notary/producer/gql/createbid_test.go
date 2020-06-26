@@ -11,7 +11,7 @@ import (
 
 func TestCreateBidUnexistentAuction(t *testing.T) {
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, db)
 
 	in := input.CreateBidInput{}
 	in.TeamId = "10"
@@ -21,7 +21,7 @@ func TestCreateBidUnexistentAuction(t *testing.T) {
 
 func TestCreateBid(t *testing.T) {
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, db)
 
 	auction := input.CreateAuctionInput{}
 	auction.ValidUntil = "2000000000"

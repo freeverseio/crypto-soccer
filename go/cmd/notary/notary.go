@@ -66,7 +66,7 @@ func main() {
 
 	if err := func() error {
 		log.Info("Create the connection to DBMS")
-		db, err := postgres.New(*postgresURL)
+		marketdb, err := postgres.New(*postgresURL)
 		if err != nil {
 			return err
 		}
@@ -104,6 +104,7 @@ func main() {
 			*contracts,
 			namesdb,
 			googleCredentials,
+			marketdb,
 		)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(*processWait)*time.Second)
@@ -118,7 +119,7 @@ func main() {
 		cn, err := consumer.New(
 			ch,
 			market,
-			db,
+			marketdb,
 			*contracts,
 			privateKey,
 			googleCredentials,
