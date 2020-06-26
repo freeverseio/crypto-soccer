@@ -25,14 +25,14 @@ func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generat
 	}
 }
 
-func GetSeedForWorldPlayers(teamId string, epoch int64) (string, int64) {
+func getSeedForWorldPlayers(teamId string, epoch int64) (string, int64) {
 	epochHalfDays := epoch / (3600 * 12)
 	offeringStartTime := epochHalfDays * 3600 * 12
 	return teamId + strconv.FormatUint(uint64(epochHalfDays), 10), offeringStartTime
 }
 
 func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPlayer, error) {
-	seed, offeringStartTime := GetSeedForWorldPlayers(teamId, epoch)
+	seed, offeringStartTime := getSeedForWorldPlayers(teamId, epoch)
 	distribution := GenerateBatchDistribution(seed)
 
 	batch := []*WorldPlayer{}
@@ -68,14 +68,14 @@ func (b WorldPlayerService) GetWorldPlayer(
 	return nil, nil
 }
 
-func int_hash(s string) uint64 {
+func intHash(s string) uint64 {
 	h := fnv.New64a()
 	h.Write([]byte(s))
 	return h.Sum64()
 }
 
-func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
-	var result uint64 = int_hash(seed.String() + salt)
+func generateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
+	var result uint64 = intHash(seed.String() + salt)
 	if max_val == 0 {
 		return result
 	}

@@ -12,12 +12,13 @@ type WorldPlayersTier struct {
 	DefendersCount   uint8
 	MidfieldersCount uint8
 	AttackersCount   uint8
+	Duration         int64
 }
 
-func AddPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlayersCount int64) WorldPlayersTier {
+func addPlayerAtRandomFieldPos(tier WorldPlayersTier, seed string, randomPosPlayersCount int64) WorldPlayersTier {
 	maxPos := uint64(4)
 	for p := int64(0); p < randomPosPlayersCount; p++ {
-		switch playerPos := GenerateRnd(big.NewInt(p), seed, maxPos); {
+		switch playerPos := generateRnd(big.NewInt(p), seed, maxPos); {
 		case playerPos == 0:
 			tier.GoalKeepersCount++
 		case playerPos == 1:
@@ -61,7 +62,7 @@ func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 		AttackersCount:   0,
 	}
 	randomPosPlayersCount := int64(2)
-	tier = AddPlayerAtRandomFieldPos(tier, seed, randomPosPlayersCount)
+	tier = addPlayerAtRandomFieldPos(tier, seed, randomPosPlayersCount)
 	tiers = append(tiers, tier)
 
 	// Tier3
@@ -77,12 +78,12 @@ func GenerateBatchDistribution(seed string) []WorldPlayersTier {
 		MidfieldersCount: 0,
 		AttackersCount:   0,
 	}
-	if int_hash(seed)%3 == 0 {
+	if intHash(seed)%3 == 0 {
 		randomPosPlayersCount = int64(1)
 	} else {
 		randomPosPlayersCount = int64(0)
 	}
-	tier = AddPlayerAtRandomFieldPos(tier, seed+"salt", randomPosPlayersCount)
+	tier = addPlayerAtRandomFieldPos(tier, seed+"salt", randomPosPlayersCount)
 	tiers = append(tiers, tier)
 
 	return tiers
