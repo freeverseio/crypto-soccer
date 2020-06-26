@@ -2,6 +2,7 @@ package worldplayer
 
 import (
 	"errors"
+	"hash/fnv"
 	"math/big"
 	"strconv"
 
@@ -58,6 +59,20 @@ func (b WorldPlayerService) GetWorldPlayer(
 	return nil, nil
 }
 
+func int_hash(s string) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(s))
+	return h.Sum64()
+}
+
+func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
+	var result uint64 = int_hash(seed.String() + salt)
+	if max_val == 0 {
+		return result
+	}
+	return result % max_val
+}
+
 func (b WorldPlayerService) createBatchByTier(
 	teamId string,
 	epoch int64,
@@ -75,6 +90,23 @@ func (b WorldPlayerService) createBatchByTier(
 	timezone, countryIdxInTZ, _, err := b.contracts.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, id)
 	if err != nil {
 		return nil, err
+	}
+
+	maxPos := uint64(4)
+	for p := uint8(0); p < tier.RandomFieldPosCount; p++ {
+		salt := strconv.FormatUint(uint64(p), 10)
+		switch playerPos := GenerateRnd(big.NewInt(epochDays), salt, maxPos); {
+		case playerPos == 0:
+			tier.GoalKeepersCount++
+		case playerPos == 1:
+			tier.DefendersCount++
+		case playerPos == 2:
+			tier.MidfieldersCount++
+		case playerPos == 3:
+			tier.AttackersCount++
+		case playerPos > 3:
+			return nil, errors.New("invalid maxPos for one player")
+		}
 	}
 
 	worldPlayers, err := b.contracts.Privileged.CreateBuyNowPlayerIdBatch(

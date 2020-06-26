@@ -1,75 +1,83 @@
 package worldplayer
 
 type WorldPlayersTier struct {
-	Value            int64
-	MaxPotential     uint8
-	ProductId        string
-	GoalKeepersCount uint8
-	DefendersCount   uint8
-	MidfieldersCount uint8
-	AttackersCount   uint8
+	Value               int64
+	MaxPotential        uint8
+	ProductId           string
+	GoalKeepersCount    uint8
+	DefendersCount      uint8
+	MidfieldersCount    uint8
+	AttackersCount      uint8
+	RandomFieldPosCount uint8
 }
 
 func GenerateBatchDistribution() []WorldPlayersTier {
 	return []WorldPlayersTier{
 		WorldPlayersTier{
-			Value:            1000,
-			MaxPotential:     9,
-			ProductId:        "player_tier_0",
-			GoalKeepersCount: 0,
-			DefendersCount:   0,
-			MidfieldersCount: 0,
-			AttackersCount:   0,
+			Value:               1000,
+			MaxPotential:        9,
+			ProductId:           "player_tier_0",
+			GoalKeepersCount:    0,
+			DefendersCount:      0,
+			MidfieldersCount:    0,
+			AttackersCount:      0,
+			RandomFieldPosCount: 0,
 		},
 		WorldPlayersTier{
-			Value:            1000,
-			MaxPotential:     9,
-			ProductId:        "player_tier_1",
-			GoalKeepersCount: 3,
-			DefendersCount:   9,
-			MidfieldersCount: 9,
-			AttackersCount:   9,
+			Value:               1000,
+			MaxPotential:        7,
+			ProductId:           "player_tier_1",
+			GoalKeepersCount:    3,
+			DefendersCount:      9,
+			MidfieldersCount:    9,
+			AttackersCount:      9,
+			RandomFieldPosCount: 0,
 		},
 		WorldPlayersTier{
-			Value:            1800,
-			MaxPotential:     9,
-			ProductId:        "player_tier_2",
-			GoalKeepersCount: 0,
-			DefendersCount:   1,
-			MidfieldersCount: 1,
-			AttackersCount:   0,
+			Value:               1800,
+			MaxPotential:        8,
+			ProductId:           "player_tier_2",
+			GoalKeepersCount:    0,
+			DefendersCount:      0,
+			MidfieldersCount:    0,
+			AttackersCount:      0,
+			RandomFieldPosCount: 2,
 		}, WorldPlayersTier{
-			Value:            2500,
-			MaxPotential:     9,
-			ProductId:        "player_tier_3",
-			GoalKeepersCount: 0,
-			DefendersCount:   0,
-			MidfieldersCount: 0,
-			AttackersCount:   1,
+			Value:               2500,
+			MaxPotential:        9,
+			ProductId:           "player_tier_3",
+			GoalKeepersCount:    0,
+			DefendersCount:      0,
+			MidfieldersCount:    0,
+			AttackersCount:      0,
+			RandomFieldPosCount: 1,
 		}, WorldPlayersTier{
-			Value:            5000,
-			MaxPotential:     9,
-			ProductId:        "player_tier_4",
-			GoalKeepersCount: 0,
-			DefendersCount:   0,
-			MidfieldersCount: 0,
-			AttackersCount:   0,
+			Value:               5000,
+			MaxPotential:        9,
+			ProductId:           "player_tier_4",
+			GoalKeepersCount:    0,
+			DefendersCount:      0,
+			MidfieldersCount:    0,
+			AttackersCount:      0,
+			RandomFieldPosCount: 0,
 		}, WorldPlayersTier{
-			Value:            8000,
-			MaxPotential:     9,
-			ProductId:        "player_tier_5",
-			GoalKeepersCount: 0,
-			DefendersCount:   0,
-			MidfieldersCount: 0,
-			AttackersCount:   0,
+			Value:               8000,
+			MaxPotential:        9,
+			ProductId:           "player_tier_5",
+			GoalKeepersCount:    0,
+			DefendersCount:      0,
+			MidfieldersCount:    0,
+			AttackersCount:      0,
+			RandomFieldPosCount: 0,
 		}, WorldPlayersTier{
-			Value:            10000,
-			MaxPotential:     9,
-			ProductId:        "player_tier_6",
-			GoalKeepersCount: 0,
-			DefendersCount:   0,
-			MidfieldersCount: 0,
-			AttackersCount:   0,
+			Value:               10000,
+			MaxPotential:        9,
+			ProductId:           "player_tier_6",
+			GoalKeepersCount:    0,
+			DefendersCount:      0,
+			MidfieldersCount:    0,
+			AttackersCount:      0,
+			RandomFieldPosCount: 0,
 		},
 	}
 }

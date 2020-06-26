@@ -76,24 +76,24 @@ func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {
 	players, err := service.CreateBatch(teamId, now-2)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 33)
-	assert.Equal(t, string(players[0].PlayerId()), "25725015717574447640111183123578655469576475906857003090183425")
+	assert.Equal(t, string(players[0].PlayerId()), "25726027164631419126757699466463075271849876153057056752928093")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
 
 	players, err = service.CreateBatch(teamId, now-1)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 33)
-	assert.Equal(t, string(players[0].PlayerId()), "25725015717574447640111183123578655469576475906857003090183425")
+	assert.Equal(t, string(players[0].PlayerId()), "25726027164631419126757699466463075271849876153057056752928093")
 	assert.Equal(t, players[0].ValidUntil(), "1554940800")
 
 	players, err = service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 33)
-	assert.Equal(t, string(players[0].PlayerId()), "25725015717574447640111183123579923120176704136258499793388801")
+	assert.Equal(t, string(players[0].PlayerId()), "25726027164631419126757699466464342922450104382458553456133469")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 
 	players, err = service.CreateBatch(teamId, now+1)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 33)
-	assert.Equal(t, string(players[0].PlayerId()), "25725015717574447640111183123579923120176704136258499793388801")
+	assert.Equal(t, string(players[0].PlayerId()), "25726027164631419126757699466464342922450104382458553456133469")
 	assert.Equal(t, players[0].ValidUntil(), "1555545600")
 }
