@@ -2,6 +2,7 @@ package worldplayer
 
 import (
 	"errors"
+	"hash/fnv"
 	"math/big"
 	"strconv"
 
@@ -17,6 +18,8 @@ type WorldPlayerService struct {
 	namesdb   *names.Generator
 }
 
+const PeriodSec = 3600 * 12 // half a day
+
 func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generator) *WorldPlayerService {
 	return &WorldPlayerService{
 		contracts: contracts,
@@ -25,12 +28,15 @@ func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generat
 }
 
 func (b WorldPlayerService) CreateBatch(teamId string, epoch int64) ([]*WorldPlayer, error) {
-	distribution := GenerateBatchDistribution()
+	currentPeriod := epoch / PeriodSec
+
+	distribution := generateBatchDistribution(teamId, currentPeriod)
+
 	batch := []*WorldPlayer{}
 	for _, tier := range distribution {
 		batchByTier, err := b.createBatchByTier(
 			teamId,
-			epoch,
+			currentPeriod,
 			tier,
 		)
 		if err != nil {
@@ -58,15 +64,29 @@ func (b WorldPlayerService) GetWorldPlayer(
 	return nil, nil
 }
 
+func intHash(s string) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(s))
+	return h.Sum64()
+}
+
+func generateRnd(seed *big.Int, salt string, maxVal uint64) uint64 {
+	var result uint64 = intHash(seed.String() + salt)
+	if maxVal == 0 {
+		return result
+	}
+	return result % maxVal
+}
+
 func (b WorldPlayerService) createBatchByTier(
 	teamId string,
-	epoch int64,
+	periodNumber int64,
 	tier WorldPlayersTier,
 ) ([]*WorldPlayer, error) {
 	result := []*WorldPlayer{}
 
-	epochDays := epoch / (3600 * 24)
-	epochWeeks := epochDays / 7
+	epochDays := periodNumber / (3600 * 24 / PeriodSec)
+
 	id, _ := new(big.Int).SetString(teamId, 10)
 	if id == nil {
 		return nil, errors.New("invalid teamId")
@@ -124,7 +144,7 @@ func (b WorldPlayerService) createBatchByTier(
 		shoot := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsShootIdx])
 		endurance := int32(worldPlayers.SkillsVecArray[i][contracts.SkillsEnduranceIdx])
 		potential := int32(worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsPotentialIdx])
-		validUntil := strconv.FormatInt((epochWeeks+1)*24*3600*7, 10) // valid 1 week
+		validUntil := strconv.FormatInt(periodNumber*PeriodSec+PeriodSec, 10)
 		worldPlayer := NewWorldPlayer(
 			playerId,
 			name,
