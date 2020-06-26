@@ -18,7 +18,7 @@ func TestGetWorldPlayers(t *testing.T) {
 
 	players, err := r.GetWorldPlayers(struct{ Input input.GetWorldPlayersInput }{in})
 	assert.NilError(t, err)
-	assert.Equal(t, len(players), 33)
+	assert.Equal(t, len(players), 32)
 	assert.Assert(t, players[0].Race() != "")
 	assert.Assert(t, players[0].CountryOfBirth() != "")
 }
