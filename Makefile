@@ -1,5 +1,5 @@
 setup:
-	cd truffle-core && npm install
+	cd truffle-core && npm ci
 
 contracts:
 	cd truffle-core && ./node_modules/.bin/truffle compile
