@@ -58,7 +58,7 @@ contract Assets is AssetsView {
 
     /// Entry point for new users: acquiring a bot team
     function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyRelay {
-        require(_tzToNCountries[tz] != 0, "Timezone has not been initialized");
+        require(_tzToNCountries[tz] > countryIdxInTZ, "Country does not exist in TZ");
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
         uint256 firstBotIdx = _countryIdToNHumanTeams[countryId];
         uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
