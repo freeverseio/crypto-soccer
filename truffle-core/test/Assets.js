@@ -422,6 +422,14 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('transfer bot fails if country does not exist', async () => {
+        const tz = 1;
+        countryIdxInTZ = 0;
+        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        countryIdxInTZ = 100;
+        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.rejected;
+    });
+
    it('add users until you need a new division (it can take several seconds)', async () => {
         const tz = 1;
         const countryIdxInTZ = 0;
