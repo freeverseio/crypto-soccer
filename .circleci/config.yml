@@ -24,7 +24,7 @@ executors:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
           - POSTGRES_DB=cryptosoccer
-      - image: ipfs/go-ipfs:v0.5.0
+      - image: ipfs/go-ipfs:v0.6.0
         environment:
           - IPFS_PROFILE=test
   freeverse_market:
@@ -67,9 +67,9 @@ commands:
             name: "compiling ipfs-cluster"
             command: |
               set -x
-              wget https://github.com/ipfs/ipfs-cluster/archive/v0.12.0.tar.gz
-              tar -zxvf v0.12.0.tar.gz
-              cd ipfs-cluster-0.12.0/cmd/ipfs-cluster-service
+              wget https://github.com/ipfs/ipfs-cluster/archive/v0.13.0.tar.gz
+              tar -zxvf v0.13.0.tar.gz
+              cd ipfs-cluster-0.13.0/cmd/ipfs-cluster-service
               export GO111MODULE=on
               go build -a -ldflags '-w -extldflags "-static"'
               mv ipfs-cluster-service /usr/local/bin
