@@ -40,6 +40,7 @@ executors:
           - POSTGRES_PASSWORD=freeverse
           - POSTGRES_DB=market
 
+
 commands:
   submit_universe_db_schema:
     description: "Submit cryptosoccer schema in database"
