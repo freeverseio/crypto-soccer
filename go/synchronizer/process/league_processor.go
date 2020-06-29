@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
+	"github.com/pkg/errors"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -157,7 +158,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if turnInDay == 1 {
 		leaderboardService := leaderboard.NewLeaderboardService(storagepostgres.NewStorageService(tx))
 		if err := leaderboardService.UpdateTimezoneLeaderboards(*b.contracts, int(timezoneIdx), int(day)); err != nil {
-			return err
+			return errors.Wrap(err, "failed updating timezone leaderboard")
 		}
 	}
 
