@@ -41,6 +41,7 @@ func NewLeagueProcessor(
 }
 
 func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
+	log.Infof("[consumer] reshuffling timezone %v", timezoneIdx)
 	countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 	if err != nil {
 		return err
@@ -85,19 +86,21 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
 
-	// Verse 674 exception due to an error in the early code
-	if event.Verse.Int64() == int64(674) {
-		log.Warningf("[processor] Exception verse 674: reshuffling timezone 24")
+	switch event.Verse.Int64() {
+	case int64(674):
 		if err := b.resetTimezone(tx, 24); err != nil {
 			return err
 		}
-	} else {
+	case int64(678):
+		if err := b.resetTimezone(tx, 1); err != nil {
+			return err
+		}
+	default:
 		timezoneToReshuffle, err := TimezoneToReshuffle(timezoneIdx, day, turnInDay)
 		if err != nil {
 			return err
 		}
 		if timezoneToReshuffle != 0 {
-			log.Debugf("Reset of tz: %v \n", timezoneToReshuffle)
 			if err := b.resetTimezone(tx, timezoneToReshuffle); err != nil {
 				return err
 			}
