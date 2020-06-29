@@ -75,12 +75,11 @@ function zeroPadToLength(x, desiredLength) {
 //     tactics: [], // [2 * nMatchdays + 1][nTeamsInLeague]
 //     trainings: [] // [2 * nMatchdays + 1][nTeamsInLeague]
 // }
-// - Data[nNonNullLeafs] = [League[512], Team$_{i, aft}$[32], Team$_{i, bef}$[32]]
-// League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
+// - Data[nNonNullLeafs] = [League[128], Team$_{i, aft}$[32], Team$_{i, bef}$[32]]
+//  - League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
+//  - serialization of goals into results, inside League[128]: idx = day * nMatchesPerDay * 2 + matchInDay * 2 + teamHomeOrAway
 // 
-// returns leafs AFTER having played the matches at matchday = day, half = half.
-//  - sorting results:
-//      - idx = day * nMatchesPerDay * 2 + matchInDay * 2 + teamHomeOrAway
+// returns leafs BEFORE and AFTER having played the matches at matchday = day, half = half.
 function buildLeafs(leagueDataIn, day, half, nNonNullLeafs) {
   // oprate on cloned input for safety:
   lData = clone(leagueDataIn)
@@ -181,7 +180,7 @@ async function createLeagueData(leagues, play, encodeLog, now, teamState442, tea
               [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
               [leagueData.tactics[2 * day + 1][t0], leagueData.tactics[2 * day + 1][t1]], 
               [allMatchLogs[t0], allMatchLogs[t1]],
-              [is2nd = false, isHom = true, isPlay = false],
+              [is2nd = false, isHom = true, isPlay = false, isBotHome = false, isBotAway = false],
               [tp = 0, tp = 0]
           ).should.be.fulfilled;
           allTeamsSkills[t0] = vec2str(newSkills[0]);
@@ -203,7 +202,7 @@ async function createLeagueData(leagues, play, encodeLog, now, teamState442, tea
               [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
               [leagueData.tactics[2 * day + 1][t0], leagueData.tactics[2 * day + 1][t1]], 
               [allMatchLogs[t0], allMatchLogs[t1]],
-              [is2nd = true, isHom = true, isPlay = false]
+              [is2nd = true, isHom = true, isPlay = false, isBotHome = false, isBotAway = false]
           ).should.be.fulfilled;
           allTeamsSkills[t0] = vec2str(newSkills[0]);
           allTeamsSkills[t1] = vec2str(newSkills[1]);
@@ -215,7 +214,7 @@ async function createLeagueData(leagues, play, encodeLog, now, teamState442, tea
       }
       leagueData.teamStates.push([...allTeamsSkills]);        
       leagueData.matchLogs.push([...allMatchLogs]);   
-      var {0: rnking, 1: lPoints} = await leagues.computeLeagueLeaderBoard([...leagueData.results], day, leagueData.seeds[2*day + 1]).should.be.fulfilled;
+      var {0: rnking, 1: lPoints} = await leagues.computeLeagueLeaderBoard(leagueData.teamIds, [...leagueData.results], day).should.be.fulfilled;
       leagueData.points.push(vec2str(lPoints));   
   }
   return leagueData;

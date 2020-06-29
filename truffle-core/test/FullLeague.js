@@ -334,31 +334,36 @@ contract('FullLeague', (accounts) => {
         almostNullTraning = await training.encodeTP(TP = 0, TPperSkill, specialPlayer = 21).should.be.fulfilled;
     });
   
-    // it2('create real data for an entire league', async () => {
-    //     mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
-    //     // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
-    //     // => all assingments to 0, but with a special player chosen
+    it('create real data for an entire league', async () => {
+        mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
+        // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
+        // => all assingments to 0, but with a special player chosen
 
-    //      leagues = await Leagues.new().should.be.fulfilled;
-    //      teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
-    //      teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
-    //      leagueData = await chllUtils.createLeagueData(leagues, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
+        leagues = await Leagues.new().should.be.fulfilled;
+        teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
+        teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
+        console.log("aaa");
+        leagueData = await chllUtils.createLeagueData(leagues, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
+        console.log("aaa");
         
-    //     if (mode == WRITE_NEW_EXPECTED_RESULTS) {
-    //         fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
-    //             if (err) {
-    //                 console.log(err);
-    //             }
-    //         });
-    //     }
-    //     expectedData = fs.readFileSync('test/testdata/fullleague.json', 'utf8');
-    //     assert.equal(
-    //         web3.utils.keccak256(expectedData),
-    //         web3.utils.keccak256(JSON.stringify(leagueData)),
-    //         "leafs do not coincide with expected"
-    //     );
-    // });
+        if (mode == WRITE_NEW_EXPECTED_RESULTS) {
+            fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+        expectedData = fs.readFileSync('test/testdata/fullleague.json', 'utf8');
+        assert.equal(
+            web3.utils.keccak256(expectedData),
+            web3.utils.keccak256(JSON.stringify(leagueData)),
+            "leafs do not coincide with expected"
+        );
+    });
 
+    // leafs[0] is the Data[640] for matchDay = 0, half = 0; hence, it contains data before and after that half
+    // leafs[1] is the Data[640] for matchDay = 0, half = 1; hence, it contains data before and after that half
+    // ...
     it2('read an entire league and organize data in the leaf format required', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         leagueData = chllUtils.readCreatedLeagueData();
