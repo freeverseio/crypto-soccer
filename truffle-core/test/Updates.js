@@ -115,7 +115,6 @@ contract('Updates', (accounts) => {
         const {0: leafsCDecimal, 1: nLeaguesInTzC} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
     
         // leafsB and leafsC lie in the UA for tactics.
-        console.log("new 218, 25: ", leafPosInLeague, leafPosInUserActions)
         leafsBDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('0123456789');
         leafsCDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('9876543210');
     
@@ -143,12 +142,10 @@ contract('Updates', (accounts) => {
         // Submit correct actions root and keep the proof
         depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
         actionsRoot = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
-        console.log("submitActionsRoot...");
         const cif = "ciao3";
         await updates.submitActionsRoot(actionsRoot, nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
         proofUAinSubmittedActions = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
     
-        console.log("level: ", levelVerifiableByBC);
         await updates.setLevelVerifiableByBC(levelVerifiableByBC, {from: owners.relay}).should.be.fulfilled;
     
         // build merkle structs for 2 different days
@@ -195,9 +192,7 @@ contract('Updates', (accounts) => {
         assert.equal(leagueRootC, merkleStructC[lev=1][leagueIdxInCountry], "unexpected roots");
         assert.equal(leagueRootC, merkleUtils.merkleRoot(leafsC[leagueIdxInCountry], nLevelsInLastChallenge), "unexpected roots");
         assert.equal(merkleUtils.verify(leagueRootC, proofUAinLeagueRoot_C, UA_C, leafPosInLeague), true, "proof will not work");
-        console.log("AA");
         await challenges.BCVerifableChallengeUAs([...roots2SubmitC], proofUAinLeagueRoot_C, proofUAinSubmittedActions, UA_C, teamIdxInTZ, isTactics, isBefore, {from: erin}).should.be.fulfilled;
-        console.log("AA");
     
         // we go back to level 1
         var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
@@ -998,11 +993,22 @@ contract('Updates', (accounts) => {
     });
     
 
-    it('vefiable challenge: user actions', async () =>  {
-        await testVerifiableChallegeneUA(teamIdxInTZ = 8+4, isBefore = true, isTactics = false, accounts, owners);
-        // await testVerifiableChallegeneUA(teamIdxInTZ = 8+4, isBefore = true, isTactics = true, accounts, owners);
+    it('vefiable challenge: user actions - 1st half, tactics', async () =>  {
+        await testVerifiableChallegeneUA(teamIdxInTZ = 8+4, isBefore = true, isTactics = true, accounts, owners).should.be.fulfilled;
     });
     
+    it('vefiable challenge: user actions - 1st half, training points', async () =>  {
+        await testVerifiableChallegeneUA(teamIdxInTZ = 8+4, isBefore = true, isTactics = false, accounts, owners).should.be.fulfilled;
+    });
+
+    it('vefiable challenge: user actions - 2nd half, training points', async () =>  {
+        await testVerifiableChallegeneUA(teamIdxInTZ = 8+4, isBefore = false, isTactics = false, accounts, owners).should.be.fulfilled;
+    });
+
+    it('vefiable challenge: user actions - 2nd half, tactics', async () =>  {
+        await testVerifiableChallegeneUA(teamIdxInTZ = 8+4, isBefore = false, isTactics = true, accounts, owners).should.be.fulfilled;
+    });
+
 
 });
 
