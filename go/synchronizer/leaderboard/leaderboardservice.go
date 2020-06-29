@@ -1,13 +1,15 @@
 package leaderboard
 
 import (
-	"errors"
 	"math/big"
 	"sort"
+
+	"github.com/pkg/errors"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/prometheus/common/log"
 )
 
 type LeaderboardService struct {
@@ -88,12 +90,11 @@ func UpdateLeagueLeaderboard(
 		uint8(matchDay),
 	)
 	if err != nil {
-		return [8]storage.Team{}, err
+		return [8]storage.Team{}, errors.Wrapf(err, "failed calling the BC teamIdxInLeague %v , results %v, matchDay %v", teamIdxInLeague, results, matchDay)
 	}
 
 	for i := 0; i < 8; i++ {
 		teams[i].LeaderboardPosition = int(llb.Ranking[i])
-
 	}
 
 	return teams, nil
@@ -104,6 +105,7 @@ func (b LeaderboardService) UpdateTimezoneLeaderboards(
 	timezone int,
 	matchDay int,
 ) error {
+	log.Debugf("UpdateTimezoneLeaderboard timezone %v matchDay %v", timezone, matchDay)
 	matches, err := b.service.MatchService().MatchesByTimezone(uint8(timezone))
 	if err != nil {
 		return err
@@ -145,7 +147,7 @@ func (b LeaderboardService) UpdateTimezoneLeaderboards(
 			leagueMatches,
 			leagueTeams,
 		); err != nil {
-			return err
+			return errors.Wrapf(err, "failed update leaderboard timezone %v, country %v, league %v", timezoneIdx, countryIdx, leagueIdx)
 		}
 
 		for i := range leagueTeams {
