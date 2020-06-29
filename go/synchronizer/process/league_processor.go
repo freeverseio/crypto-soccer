@@ -85,23 +85,16 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
 
-	// following an exception due to an error in the early code
+	// Verse 674 exception due to an error in the early code
 	if event.Verse.Int64() == int64(674) {
-		log.Warningf("[processor] Exception verse 674 reshuffling timezone 24")
+		log.Warningf("[processor] Exception verse 674: reshuffling timezone 24")
 		if err := b.resetTimezone(tx, 24); err != nil {
 			return err
 		}
 	} else {
-		// Reshuffle happens 1 hour before the start of a league
-		// So for each timezone, on day 0, we reset timezone + 1.
-		// Except for the first timezone (tz=1), of course, which is reset the day before (day = 13)
-		// during the match played by the last timezone (tz=24)
-		timezoneToReshuffle := uint8(0)
-		if (timezoneIdx == 24) && (day == 13) && (turnInDay == 0) {
-			timezoneToReshuffle = 1
-		}
-		if (timezoneIdx < 24) && (day == 0) && (turnInDay == 0) {
-			timezoneToReshuffle = timezoneIdx + 1
+		timezoneToReshuffle, err := TimezoneToReshuffle(timezoneIdx, day, turnInDay)
+		if err != nil {
+			return err
 		}
 		if timezoneToReshuffle != 0 {
 			log.Debugf("Reset of tz: %v \n", timezoneToReshuffle)
