@@ -66,11 +66,11 @@ func main() {
 
 	if err := func() error {
 		log.Info("Create the connection to DBMS")
-		db, err := postgres.New(*postgresURL)
+		marketdb, err := postgres.New(*postgresURL)
 		if err != nil {
 			return err
 		}
-		defer db.Close()
+		defer marketdb.Close()
 
 		namesdb, err := names.New(*namesDatabase)
 		if err != nil {
@@ -99,7 +99,13 @@ func main() {
 
 		ch := make(chan interface{}, *bufferSize)
 
-		go gql.NewServer(ch, *contracts, namesdb, googleCredentials)
+		go gql.ListenAndServe(
+			ch,
+			*contracts,
+			namesdb,
+			googleCredentials,
+			marketdb,
+		)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(*processWait)*time.Second)
 
@@ -113,7 +119,7 @@ func main() {
 		cn, err := consumer.New(
 			ch,
 			market,
-			db,
+			marketdb,
 			*contracts,
 			privateKey,
 			googleCredentials,
