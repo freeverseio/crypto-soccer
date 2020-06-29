@@ -82,6 +82,130 @@ contract('Updates', (accounts) => {
         return stakers;
     }
     
+    // A = correct day and half
+    // B = correct day, incorrect half
+    // C = incorrect day and incorrect half
+    // 0: A, 1: B, 2: A => so the leafs provided by A are the correct ones and everyone fails to challenge A.
+    async function testVerifiableChallegeneUA(teamIdxInTZ, isBefore, isTactics, accounts, owners) {
+        leagueIdxInCountry = Math.floor(teamIdxInTZ / 8);
+        [leafPosInLeague, leafPosInUserActions] = chllUtils.getUALeafPos(leagueIdxInCountry, isBefore, isTactics);
+    
+        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
+        parties = [alice, bob, carol, dave, erin, frank];
+        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
+        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
+    
+        // move to next verse adn submit actions
+        await moveToNextVerse(updates, extraSecs = 2);
+        var {0: tz,  1: day, 2: half} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        tz      = tz.toNumber();
+        day     = day.toNumber();
+        half    = half.toNumber();
+        differentDay = (day == 7) ? 8 : 7;
+    
+        tzZeroBased = tz-1;
+    
+        // level 0 can only challenge leaf 0, as there is only 1 root
+        challengePos = [0];
+        var level = 0;
+        // create leafs by building them from an orgmap:
+        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+        const {0: leafsCDecimal, 1: nLeaguesInTzC} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
+    
+        // leafsB and leafsC lie in the UA for tactics.
+        console.log("new 218, 25: ", leafPosInLeague, leafPosInUserActions)
+        leafsBDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('0123456789');
+        leafsCDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('9876543210');
+    
+        leafsA = chllUtils.leafsToBytes32(leafsADecimal);
+        leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
+        leafsC = chllUtils.leafsToBytes32(leafsCDecimal);
+    
+        UA_A = leafsA[leagueIdxInCountry][leafPosInLeague];
+        UA_B = leafsB[leagueIdxInCountry][leafPosInLeague];
+        UA_C = leafsC[leagueIdxInCountry][leafPosInLeague];
+    
+        // set the levelVerifiableByBC to adjust to as many leagues as you have
+        nLeafsPerRoot = 2**nLevelsInOneChallenge;
+        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
+    
+        // keep the proof that the UA are part of the league root
+        proofUAinLeagueRoot_A = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsA[leagueIdxInCountry], nLevelsInLastChallenge);
+        proofUAinLeagueRoot_B = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsB[leagueIdxInCountry], nLevelsInLastChallenge);
+        proofUAinLeagueRoot_C = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsC[leagueIdxInCountry], nLevelsInLastChallenge);
+    
+        userActionsBytes32 = chllUtils.leafsToBytes32(userActions);
+        assert.equal(userActionsBytes32.length, 24, "there should be 24 timezones");
+        assert.equal(userActionsBytes32[tzZeroBased].length, 8 * 2 * nCountriesPerTZ, "orgMap[0].length not as expected");
+    
+        // Submit correct actions root and keep the proof
+        depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
+        actionsRoot = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
+        console.log("submitActionsRoot...");
+        const cif = "ciao3";
+        await updates.submitActionsRoot(actionsRoot, nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
+        proofUAinSubmittedActions = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
+    
+        console.log("level: ", levelVerifiableByBC);
+        await updates.setLevelVerifiableByBC(levelVerifiableByBC, {from: owners.relay}).should.be.fulfilled;
+    
+        // build merkle structs for 2 different days
+        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
+        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot, levelVerifiableByBC);
+        merkleStructC = merkleUtils.buildMerkleStruct(leafsC, nLeafsPerRoot, levelVerifiableByBC);
+        
+        // get data to challenge at level 0 (level is inferred from the length of challengePos).
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
+    
+        // Level0: A
+    
+        await updates.updateTZ(verse = 1, root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
+    
+        // Level1: B
+        await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
+        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.fulfilled;
+    
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        level = lev.toNumber();
+        
+        // Level2: C
+        challengePos.push(newChallengePos = 1);
+        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
+        var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
+    
+        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitC, {from:carol}).should.be.fulfilled;
+    
+        // Check that we move to level 2
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(2);
+        
+        // finally, the last challenge, is one that the BC can check
+        // must provide the same leafs as the last person (C)
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitA], proofUAinLeagueRoot_A, proofUAinSubmittedActions, UA_A, teamIdxInTZ, isTactics, isBefore, {from: erin}).should.be.rejected;
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitB], proofUAinLeagueRoot_B, proofUAinSubmittedActions, UA_B, teamIdxInTZ, isTactics, isBefore, {from: erin}).should.be.rejected;
+    
+        // we succed to prove that C was wrong:
+        leagueRootC = await updates.getUpdatesRoot(tz, lev.toNumber(), curr = true).should.be.fulfilled;
+        assert.equal(leagueRootC, merkleStructC[lev=1][leagueIdxInCountry], "unexpected roots");
+        assert.equal(leagueRootC, merkleUtils.merkleRoot(leafsC[leagueIdxInCountry], nLevelsInLastChallenge), "unexpected roots");
+        assert.equal(merkleUtils.verify(leagueRootC, proofUAinLeagueRoot_C, UA_C, leafPosInLeague), true, "proof will not work");
+        console.log("AA");
+        await challenges.BCVerifableChallengeUAs([...roots2SubmitC], proofUAinLeagueRoot_C, proofUAinSubmittedActions, UA_C, teamIdxInTZ, isTactics, isBefore, {from: erin}).should.be.fulfilled;
+        console.log("AA");
+    
+        // we go back to level 1
+        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
+        lev.toNumber().should.be.equal(1);
+        isSet.should.be.equal(false);
+    }
 
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
@@ -873,153 +997,14 @@ contract('Updates', (accounts) => {
         await challenges.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
     });
     
-    // A = correct day and half
-    // B = correct day, incorrect half
-    // C = incorrect day and incorrect half
-    // 0: A, 1: B, 2: A => so the leafs provided by A are the correct ones and everyone fails to challenge A.
+
     it('vefiable challenge: user actions', async () =>  {
-        const [owner, gameAddr, alice, bob, carol, dummy, dave, erin, frank] = accounts;
-        parties = [alice, bob, carol, dave, erin, frank];
-        await deployUtils.addTrustedParties(stakers, owners.COO, parties);
-        await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
-
-        // level 0 can only challenge leaf 0, as there is only 1 root
-        challengePos = [0];
-        var level = 0;
-
-        // move to next verse adn submit actions
-        await moveToNextVerse(updates, extraSecs = 2);
-        var {0: tz,  1: day, 2: half} = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        tz      = tz.toNumber();
-        day     = day.toNumber();
-        half    = half.toNumber();
-        differentDay = (day == 7) ? 8 : 7;
-        const cif = "ciao3";
-
-        tzZeroBased = tz-1;
-        // create leafs by building them from an orgmap:
-        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
-        const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
-        const {0: leafsBDecimal, 1: nLeaguesInTzB} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
-        const {0: leafsCDecimal, 1: nLeaguesInTzC} = chllUtils.createLeafsForOrgMap(day, half, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
-
-        // choose a team:
-        teamIdxInTZ = 8+4;
-        leagueIdxInCountry = Math.floor(teamIdxInTZ / 8);
-        [leafPosInLeague, leafPosInUserActions] = chllUtils.getUALeafPos(leagueIdxInCountry, isBefore = true, isTactics = true);
-        // lie in the UA for tactics except for leafsA
-        leafsBDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('0123456789');
-        leafsCDecimal[leagueIdxInCountry][leafPosInLeague] = web3.utils.toBN('9876543210');
-
-        leafsA = chllUtils.leafsToBytes32(leafsADecimal);
-        leafsB = chllUtils.leafsToBytes32(leafsBDecimal);
-        leafsC = chllUtils.leafsToBytes32(leafsCDecimal);
-
-        UA_A = leafsA[leagueIdxInCountry][leafPosInLeague];
-        UA_B = leafsB[leagueIdxInCountry][leafPosInLeague];
-        UA_C = leafsC[leagueIdxInCountry][leafPosInLeague];
-
-        // set the levelVerifiableByBC to adjust to as many leagues as you have
-        nLeafsPerRoot = 2**nLevelsInOneChallenge;
-        levelVerifiableByBC = merkleUtils.computeLevelVerifiableByBC(nLeaguesInTzA, nLeafsPerRoot);
-
-        // keep the proof that the UA are part of the league root
-        proofUAinLeagueRoot_A = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsA[leagueIdxInCountry], nLevelsInLastChallenge);
-        proofUAinLeagueRoot_B = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsB[leagueIdxInCountry], nLevelsInLastChallenge);
-        proofUAinLeagueRoot_C = merkleUtils.buildProofZeroPad(leafPosInLeague, leafsC[leagueIdxInCountry], nLevelsInLastChallenge);
-
-        userActionsBytes32 = chllUtils.leafsToBytes32(userActions);
-        assert.equal(userActionsBytes32.length, 24, "there should be 24 timezones");
-        assert.equal(userActionsBytes32[tzZeroBased].length, 8 * 2 * nCountriesPerTZ, "orgMap[0].length not as expected");
-
-        // Submit correct actions root and keep the proof
-        depthUAs = Math.ceil(Math.log2(userActionsBytes32[tzZeroBased].length));
-        actionsRoot = merkleUtils.merkleRootZeroPad(userActionsBytes32[tzZeroBased], depthUAs);
-        console.log("submitActionsRoot...");
-        await updates.submitActionsRoot(actionsRoot, nullHash, nullHash, 2, cif, {from: owners.relay}).should.be.fulfilled;
-        proofUAinSubmittedActions = merkleUtils.buildProofZeroPad(leafPosInUserActions, userActionsBytes32[tzZeroBased], depthUAs);
-
-        console.log("level: ", levelVerifiableByBC);
-        await updates.setLevelVerifiableByBC(levelVerifiableByBC, {from: owners.relay}).should.be.fulfilled;
-
-        // build merkle structs for 2 different days
-        merkleStructA = merkleUtils.buildMerkleStruct(leafsA, nLeafsPerRoot, levelVerifiableByBC);
-        merkleStructB = merkleUtils.buildMerkleStruct(leafsB, nLeafsPerRoot, levelVerifiableByBC);
-        merkleStructC = merkleUtils.buildMerkleStruct(leafsC, nLeafsPerRoot, levelVerifiableByBC);
-        
-        // get data to challenge at level 0 (level is inferred from the length of challengePos).
-        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
-        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
-        var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
-
-        // Level0: A
-
-        await updates.updateTZ(verse = 1, root = merkleStructA[lev = 0][pos = 0], {from:alice}).should.be.fulfilled;
-
-        // Level1: B
-        await updates.setAllowChallenges(true, {from: owners.superuser}).should.be.fulfilled;
-        await updates.challengeTZ(challVal = nullHash, challengePos[level], proof = [], roots2SubmitB, {from:bob}).should.be.fulfilled;
-
-        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        lev.toNumber().should.be.equal(1);
-        level = lev.toNumber();
-        
-        // Level2: C
-        challengePos.push(newChallengePos = 1);
-        var {0: challValA, 1: proofA, 2: roots2SubmitA} = merkleUtils.getDataToChallenge(challengePos, leafsA, merkleStructA, nLeafsPerRoot, levelVerifiableByBC);
-        var {0: challValB, 1: proofB, 2: roots2SubmitB} = merkleUtils.getDataToChallenge(challengePos, leafsB, merkleStructB, nLeafsPerRoot, levelVerifiableByBC);
-        var {0: challValC, 1: proofC, 2: roots2SubmitC} = merkleUtils.getDataToChallenge(challengePos, leafsC, merkleStructC, nLeafsPerRoot, levelVerifiableByBC);
-
-        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitC, {from:carol}).should.be.fulfilled;
-
-        // Check that we move to level 2
-        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
-        lev.toNumber().should.be.equal(2);
-        
-        // finally, the last challenge, is one that the BC can check
-        // must provide the same leafs as the last person (C)
-        await challenges.BCVerifableChallengeUAs([...roots2SubmitA], proofUAinLeagueRoot_A, proofUAinSubmittedActions, UA_A, teamIdxInTZ, isBefore = true, isTactics = true, {from: erin}).should.be.rejected;
-        await challenges.BCVerifableChallengeUAs([...roots2SubmitB], proofUAinLeagueRoot_B, proofUAinSubmittedActions, UA_B, teamIdxInTZ, isBefore = true, isTactics = true, {from: erin}).should.be.rejected;
-
-        // we succed to prove that C was wrong:
-        leagueRootC = await updates.getUpdatesRoot(tz, lev.toNumber(), curr = true).should.be.fulfilled;
-        assert.equal(leagueRootC, merkleStructC[lev=1][leagueIdxInCountry], "unexpected roots");
-        assert.equal(leagueRootC, merkleUtils.merkleRoot(leafsC[leagueIdxInCountry], nLevelsInLastChallenge), "unexpected roots");
-        assert.equal(merkleUtils.verify(leagueRootC, proofUAinLeagueRoot_C, UA_C, leafPosInLeague), true, "proof will not work");
-        await challenges.BCVerifableChallengeUAs([...roots2SubmitC], proofUAinLeagueRoot_C, proofUAinSubmittedActions, UA_C, teamIdxInTZ, isBefore = true, isTactics = true, {from: erin}).should.be.fulfilled;
-
-        return;
-
-        // we go back to level 1
-        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
-        lev.toNumber().should.be.equal(1);
-        var {0: lev, 1: nJumps, 2: isSet} = await updates.getStatus(tz, current = true).should.be.fulfilled; 
-        lev.toNumber().should.be.equal(1);
-        isSet.should.be.equal(false);
-        level = lev.toNumber();
-
-        // Level2: B
-        await updates.challengeTZ(challValB, challengePos[level], proofB, roots2SubmitA, {from:dave}).should.be.fulfilled;
-
-        // Check that we move to level 2
-        var {0: idx, 1: lev, 2: maxLev} = await updates.getChallengeData(tz, current = true).should.be.fulfilled; 
-        lev.toNumber().should.be.equal(2);
-        
-        // finally, the last challenge, is one that the BC can check
-        // must provide the same leafs as the last person (C)
-        await challenges.BCVerifableChallengeZeros([...roots2SubmitB]).should.be.rejected;
-        await challenges.BCVerifableChallengeZeros([...roots2SubmitC]).should.be.rejected;
-
-        // we fail to succed to prove that A was wrong with zeros:
-        assert.equal(
-            chllUtils.areThereUnexpectedZeros([...roots2SubmitA], day, half, nNonNullLeafsInLeague),
-            false,
-            "unexpected"
-        );
-        result = await challenges.areThereUnexpectedZeros([...roots2SubmitA], day, half).should.be.fulfilled;
-        result.should.be.equal(false);
-        await challenges.BCVerifableChallengeZeros([...roots2SubmitA]).should.be.rejected;
+        await testVerifiableChallegeneUA(teamIdxInTZ = 8+4, isBefore = true, isTactics = false, accounts, owners);
+        // await testVerifiableChallegeneUA(teamIdxInTZ = 8+4, isBefore = true, isTactics = true, accounts, owners);
     });
     
 
 });
+
+
+
