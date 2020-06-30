@@ -14,6 +14,7 @@ const timeTravel = require('../utils/TimeTravel.js');
 const deployUtils = require('../utils/deployUtils.js');
 const merkleUtils = require('../utils/merkleUtils.js');
 const chllUtils = require('../utils/challengeUtils.js');
+const { assert } = require('chai');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -223,6 +224,55 @@ contract('Updates', (accounts) => {
         expected = " | verse = 0, tz = 2, matchday = 0, turn = 0 | verse = 13, tz = 5, matchday = 0, turn = 1 | verse = 26, tz = 0, matchday = 0, turn = 0 | verse = 39, tz = 2, matchday = 1, turn = 1 | verse = 52, tz = 15, matchday = 0, turn = 0 | verse = 65, tz = 18, matchday = 0, turn = 1 | verse = 78, tz = 12, matchday = 1, turn = 0 | verse = 91, tz = 15, matchday = 1, turn = 1 | verse = 104, tz = 4, matchday = 2, turn = 0 | verse = 117, tz = 7, matchday = 2, turn = 1 | verse = 130, tz = 1, matchday = 1, turn = 0 | verse = 143, tz = 4, matchday = 3, turn = 1 | verse = 156, tz = 17, matchday = 2, turn = 0 | verse = 169, tz = 20, matchday = 2, turn = 1 | verse = 182, tz = 14, matchday = 3, turn = 0 | verse = 195, tz = 17, matchday = 3, turn = 1 | verse = 208, tz = 6, matchday = 4, turn = 0 | verse = 221, tz = 9, matchday = 4, turn = 1 | verse = 234, tz = 3, matchday = 5, turn = 0 | verse = 247, tz = 6, matchday = 5, turn = 1 | verse = 260, tz = 19, matchday = 4, turn = 0 | verse = 273, tz = 22, matchday = 4, turn = 1 | verse = 286, tz = 16, matchday = 5, turn = 0 | verse = 299, tz = 19, matchday = 5, turn = 1 | verse = 312, tz = 8, matchday = 6, turn = 0 | verse = 325, tz = 11, matchday = 6, turn = 1 | verse = 338, tz = 5, matchday = 7, turn = 0 | verse = 351, tz = 8, matchday = 7, turn = 1 | verse = 364, tz = 21, matchday = 6, turn = 0 | verse = 377, tz = 24, matchday = 6, turn = 1 | verse = 390, tz = 18, matchday = 7, turn = 0 | verse = 403, tz = 21, matchday = 7, turn = 1 | verse = 416, tz = 10, matchday = 8, turn = 0 | verse = 429, tz = 13, matchday = 8, turn = 1 | verse = 442, tz = 7, matchday = 9, turn = 0 | verse = 455, tz = 10, matchday = 9, turn = 1 | verse = 468, tz = 23, matchday = 8, turn = 0 | verse = 481, tz = 2, matchday = 10, turn = 1 | verse = 494, tz = 20, matchday = 9, turn = 0 | verse = 507, tz = 23, matchday = 9, turn = 1 | verse = 520, tz = 12, matchday = 10, turn = 0 | verse = 533, tz = 15, matchday = 10, turn = 1 | verse = 546, tz = 9, matchday = 11, turn = 0 | verse = 559, tz = 12, matchday = 11, turn = 1 | verse = 572, tz = 1, matchday = 10, turn = 0 | verse = 585, tz = 4, matchday = 12, turn = 1 | verse = 598, tz = 22, matchday = 11, turn = 0 | verse = 611, tz = 1, matchday = 11, turn = 1 | verse = 624, tz = 14, matchday = 12, turn = 0 | verse = 637, tz = 17, matchday = 12, turn = 1 | verse = 650, tz = 11, matchday = 13, turn = 0 | verse = 663, tz = 14, matchday = 13, turn = 1 | verse = 676, tz = 3, matchday = 0, turn = 0 | verse = 689, tz = 6, matchday = 0, turn = 1 | verse = 702, tz = 24, matchday = 13, turn = 0 | verse = 715, tz = 3, matchday = 1, turn = 1 | verse = 728, tz = 16, matchday = 0, turn = 0 | verse = 741, tz = 19, matchday = 0, turn = 1 | verse = 754, tz = 13, matchday = 1, turn = 0 | verse = 767, tz = 16, matchday = 1, turn = 1 | verse = 780, tz = 5, matchday = 2, turn = 0 | verse = 793, tz = 8, matchday = 2, turn = 1 | verse = 806, tz = 2, matchday = 3, turn = 0 | verse = 819, tz = 5, matchday = 3, turn = 1 | verse = 832, tz = 18, matchday = 2, turn = 0 | verse = 845, tz = 21, matchday = 2, turn = 1 | verse = 858, tz = 15, matchday = 3, turn = 0 | verse = 871, tz = 18, matchday = 3, turn = 1 | verse = 884, tz = 7, matchday = 4, turn = 0 | verse = 897, tz = 10, matchday = 4, turn = 1 | verse = 910, tz = 4, matchday = 5, turn = 0 | verse = 923, tz = 7, matchday = 5, turn = 1 | verse = 936, tz = 20, matchday = 4, turn = 0 | verse = 949, tz = 23, matchday = 4, turn = 1";
         result.should.be.equal(expected);
     });
+
+    it('check all timezones starting at 24', async () =>  {
+        write = false;
+        fs = require('fs');
+        if (write) {
+            TZForRound1 = 24;
+            var calendar = [];
+            for (verse = 0; verse < 15*VERSES_PER_DAY.toNumber(); verse += 1) {
+                var {0: tz, 1: day, 2: turn} = await updates.timeZoneToUpdatePure(verse, TZForRound1).should.be.fulfilled;
+                var thisVerse = {  tz: 0, day: 0, turn: 0 }; 
+                thisVerse.tz = tz.toNumber();
+                thisVerse.day = day.toNumber();
+                thisVerse.turn = turn.toNumber();
+                thisResult = "verse = " + verse + 
+                    ", tz = " + tz.toNumber() + 
+                    ", day = " + day.toNumber() +
+                    ", turn = " + turn.toNumber();
+                console.log(thisResult);
+                calendar.push(thisVerse);
+            }
+            fs.writeFileSync('test/testdata/calendar.json', JSON.stringify(calendar), function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+        calendar = JSON.parse(fs.readFileSync('test/testdata/calendar.json', 'utf8'));
+        verbose = false;
+        for (tz = 1; tz < 25; tz++) {
+            if (verbose) {console.log(tz);}
+            for (verse = 0; verse < calendar.length; verse++) {
+                if (calendar[verse].tz == tz && calendar[verse].day == 0 && calendar[verse].turn == 0){
+                    if (verse >= 4) {
+                        resetVerse = verse - 4;
+                        if (verbose) {
+                            console.log("tz ", tz, " must be reset during tz, day, turn = ", calendar[resetVerse].tz, calendar[resetVerse].day, calendar[resetVerse].turn);
+                        }
+                        expectedResetTZ = (tz == 1) ? 24 : tz -1;
+                        expectedResetTurn = 0;
+                        expectedResetDay = (tz == 24) ? 12 : 0;
+                        assert.equal(calendar[resetVerse].day, expectedResetDay);
+                        assert.equal(calendar[resetVerse].turn, expectedResetTurn);
+                        assert.equal(calendar[resetVerse].tz, expectedResetTZ);
+                    }
+                }
+            }
+        }
+    });
+
     
     it('require that BC and local time are less than 15 sec out of sync', async () =>  {
         blockChainTimeSec = await utils.getNow().should.be.fulfilled;
