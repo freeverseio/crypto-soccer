@@ -6,6 +6,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	"gotest.tools/assert"
 )
 
 func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
@@ -83,4 +84,10 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	if len(matches) != int(contracts.MatchDays*contracts.MatchesPerDay) {
 		t.Fatalf("Wrong matches %v", len(matches))
 	}
+}
+
+func TestCalendarGetAllMatchdaysUTCInNextRound(t *testing.T) {
+	processor := process.NewCalendar(bc.Contracts)
+	_, err := processor.GetAllMatchdaysUTCInNextRound(10)
+	assert.NilError(t, err)
 }
