@@ -41,7 +41,7 @@ func NewLeagueProcessor(
 }
 
 func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
-	log.Infof("[consumer] reshuffling timezone %v", timezoneIdx)
+	log.Infof("[processor|consume] shuffling timezone %v and create calendars", timezoneIdx)
 	countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 	if err != nil {
 		return err
@@ -88,10 +88,12 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	switch event.Verse.Int64() {
 	case int64(674):
+		log.Info("[674|BUG] forcing reset timezone 24")
 		if err := b.resetTimezone(tx, 24); err != nil {
 			return err
 		}
 	case int64(678):
+		log.Info("[678|BUG] forcing reset timezone 1")
 		if err := b.resetTimezone(tx, 1); err != nil {
 			return err
 		}

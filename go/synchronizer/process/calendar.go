@@ -3,6 +3,7 @@ package process
 import (
 	"database/sql"
 	"errors"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -44,6 +45,19 @@ func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 	return nil
 }
 
+func (b Calendar) GetAllMatchdaysUTCInNextRound(timezoneIdx uint8) ([14]*big.Int, error) {
+	round, err := b.contracts.Updates.GetCurrentRound(&bind.CallOpts{}, timezoneIdx)
+	if err != nil {
+		return [14]*big.Int{}, err
+	}
+	round.Add(round, big.NewInt(1))
+	matchesStart, err := b.contracts.Updates.GetAllMatchdaysUTCInRound(&bind.CallOpts{}, timezoneIdx, round)
+	if err != nil {
+		return [14]*big.Int{}, err
+	}
+	return matchesStart, nil
+}
+
 func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
 	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
@@ -53,7 +67,7 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 		return errors.New("Unexistent league")
 	}
 
-	matchesStart, err := b.contracts.Updates.GetAllMatchdaysUTCInCurrentRound(&bind.CallOpts{}, timezoneIdx)
+	matchesStart, err := b.GetAllMatchdaysUTCInNextRound(timezoneIdx)
 	if err != nil {
 		return err
 	}
