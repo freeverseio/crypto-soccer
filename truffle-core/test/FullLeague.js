@@ -305,7 +305,7 @@ contract('FullLeague', (accounts) => {
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         await assets.initTZs({from: owners.COO}).should.be.fulfilled;
         
-        training= await TrainingPoints.new(assets.address).should.be.fulfilled;
+        training = await TrainingPoints.new(assets.address).should.be.fulfilled;
         shop = await Shop.new(assets.address).should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
@@ -334,7 +334,7 @@ contract('FullLeague', (accounts) => {
         almostNullTraning = await training.encodeTP(TP = 0, TPperSkill, specialPlayer = 21).should.be.fulfilled;
     });
   
-    it('create real data for an entire league', async () => {
+    it2('create real data for an entire league', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
@@ -342,9 +342,7 @@ contract('FullLeague', (accounts) => {
         leagues = await Leagues.new().should.be.fulfilled;
         teamState442 = await createTeamState442(engine, forceSkills= [1000,1000,1000,1000,1000]).should.be.fulfilled;
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
-        console.log("aaa");
-        leagueData = await chllUtils.createLeagueData(leagues, play, encodeLog, now, teamState442, teamId).should.be.fulfilled;
-        console.log("aaa");
+        leagueData = await chllUtils.createLeagueData(leagues, play, training, now, teamState442, teamId).should.be.fulfilled;
         
         if (mode == WRITE_NEW_EXPECTED_RESULTS) {
             fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
@@ -364,7 +362,7 @@ contract('FullLeague', (accounts) => {
     // leafs[0] is the Data[640] for matchDay = 0, half = 0; hence, it contains data before and after that half
     // leafs[1] is the Data[640] for matchDay = 0, half = 1; hence, it contains data before and after that half
     // ...
-    it2('read an entire league and organize data in the leaf format required', async () => {
+    it('read an entire league and organize data in the leaf format required', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         leagueData = chllUtils.readCreatedLeagueData();
         var leafs = [];
@@ -519,7 +517,7 @@ contract('FullLeague', (accounts) => {
     // - **TZState** = [R[Data[League0]], ...]; max = 31 levels
     it2('create orgmap', async () => {
         // all returns of this function are arrays as a function of TZ_0-based!!!
-        const {0: orgMapHeaders, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        const {0: orgMapHeaders, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6, training)
         h = web3.utils.keccak256(
             JSON.stringify(orgMapHeaders) + 
             JSON.stringify(orgMap) + 
@@ -549,7 +547,7 @@ contract('FullLeague', (accounts) => {
         assert.equal(h, '0x265c6fbcc77b18e6831221ff78f0044a4ded80eae9f2f651334b8f6fe808abf0', "leafs not as expected");
     });
     
-    it('prove that some UA are in R[Data]', async () => {
+    it2('prove that some UA are in R[Data]', async () => {
         // We need to prove 2 things: 
         // 1) that UA are in R[data], 
         // 2) that UA were part of the submitActionsRoot
@@ -571,7 +569,7 @@ contract('FullLeague', (accounts) => {
         teamIdxInTZ = 8+4; 
         // the only other thing to compare is isBefore & isTactics
 
-        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6)
+        const {0: orgMapHeader, 1: orgMap, 2: userActions} = await chllUtils.createOrgMap(assets, nCountriesPerTZ = 2, nActiveUsersPerCountry = 6, training)
         const {0: leafsADecimal, 1: nLeaguesInTzA} = chllUtils.createLeafsForOrgMap(day = 13, half = 1, orgMapHeader[tzZeroBased], nNonNullLeafsInLeague);
         leafsA = chllUtils.leafsToBytes32(leafsADecimal);
         nLeafsPerRoot = 2**nLevelsInOneChallenge;

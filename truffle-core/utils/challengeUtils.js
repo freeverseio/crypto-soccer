@@ -10,7 +10,6 @@ const nTeamsInLeague = 8;
 const nMatchesPerLeague = nMatchesPerDay * nMatchdays;
 const nPlayersInTeam = 25;
 const tactics442NoChanges = web3.utils.toBN('117807001437318021721223080181760');
-const almostNullTraning = web3.utils.toBN('579746693130407358144519492431270138005893153662312470633652034799140864');
 
 function readTeam442(filepath = 'test/testdata/team442.json'){
   return JSON.parse(fs.readFileSync(filepath, 'utf8'));
@@ -69,11 +68,11 @@ function zeroPadToLength(x, desiredLength) {
 //     teamIds: [], // [nTeamsInLeague]
 //     startTimes: [], // [2 * nMatchDays]
 //     teamStates: [], // [2 * nMatchdays + 1][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
-//     matchLogs: [], // [2 * nMatchdays+ 1][nTeamsInLeague]
+//     matchLogs: [], // [2 * nMatchdays][nTeamsInLeague]
 //     results: [], // [nMatchesPerLeague][2]  -> goals per team per match
 //     points: [], // [2 * nMatchdays][nTeamsInLeague]
-//     tactics: [], // [2 * nMatchdays + 1][nTeamsInLeague]
-//     trainings: [] // [2 * nMatchdays + 1][nTeamsInLeague]
+//     tactics: [], // [2 * nMatchdays][nTeamsInLeague]
+//     trainings: [] // [nMatchdays][nTeamsInLeague]
 // }
 // - Data[nNonNullLeafs] = [League[128], Team$_{i, aft}$[32], Team$_{i, bef}$[32]]
 //  - League[128] = leafsLeague[128] = [Points[team=0,..,7], Goals[56][2]]
@@ -98,14 +97,36 @@ function buildLeafs(leagueDataIn, day, half, nNonNullLeafs) {
   }
   leafs = zeroPadToLength(leafs, 128);
   for (team = 0; team < nTeamsInLeague; team++) {
-      for (extraHalf = 0; extraHalf < 2; extraHalf++) {
+    // before this half
+    teamData = [];
+    for (p = 0; p < nPlayersInTeam; p++) {
+        teamData.push(lData.teamStates[2*day + half][team][p])
+    }
+    teamData.push(lData.tactics[2*day + half][team]);
+    teamData.push(lData.trainings[day][team]);
+    // the first ML on the first day of the league
+    teamData.push( day > 0 ? lData.matchLogs[2 * day - 1][team] : '0');
+    leafs = leafs.concat(zeroPadToLength(teamData, 32));
+    // after this half 
+    teamData = [];
+    for (p = 0; p < nPlayersInTeam; p++) {
+        teamData.push(lData.teamStates[2*day + half + 1][team][p])
+    }
+    teamData.push(lData.tactics[2*day + half][team]);
+    teamData.push(NULL_BYTES32);
+    teamData.push(lData.matchLogs[2*day][team]);
+    leafs = leafs.concat(zeroPadToLength(teamData, 32));
+
+
+
+      for (beforeOrAfter = 0; beforeOrAfter < 2; beforeOrAfter++) {
           teamData = [];
           for (p = 0; p < nPlayersInTeam; p++) {
-              teamData.push(lData.teamStates[2*day + half + extraHalf][team][p])
+              teamData.push(lData.teamStates[2*day + half + beforeOrAfter][team][p])
           }
-          teamData.push(lData.tactics[2*day + half + extraHalf][team]);
-          teamData.push(lData.trainings[2*day + half + extraHalf][team]);
-          teamData.push(lData.matchLogs[2*day + half + extraHalf][team]);
+          teamData.push(lData.tactics[2*day + half + beforeOrAfter][team]);
+          teamData.push(lData.trainings[2*day + half + beforeOrAfter][team]);
+          teamData.push(lData.matchLogs[2*day + half + beforeOrAfter][team]);
           leafs = leafs.concat(zeroPadToLength(teamData, 32));
       }
   }
@@ -122,7 +143,26 @@ function clone(a) {
   return JSON.parse(JSON.stringify(a));
 }
 
-async function createLeagueData(leagues, play, encodeLog, now, teamState442, teamId) {
+async function encodeTrainingByTotalTP(TP, trainingContract) { 
+  TPperSkill = Array.from(new Array(25), (x,i) => TP/5);
+  specialPlayer = 0;
+  // make sure they sum to TP:
+  for (bucket = 0; bucket < 5; bucket++){
+      sum4 = 0;
+      for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
+          sum4 += TPperSkill[sk];
+      }
+      TPperSkill[5 * bucket + 4] = TP - sum4;
+  }        
+  assignment = await trainingContract.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+  return assignment;
+}
+
+
+// teamStates and MLs are the only variables that require before-and-after, and have length +1. 
+// Their values can be non-trivial from previous leagues, and correspond to just-before, just-after
+// VAL | half 0 | VAL | half 1 | .... | last half in league | VAL
+async function createLeagueData(leagues, play, trainingContract, now, teamState442, teamId) {
   let secsBetweenMatches = 12*3600;
   var leagueData = {
       seeds: [], // [2 * nMatchDays]
@@ -132,12 +172,15 @@ async function createLeagueData(leagues, play, encodeLog, now, teamState442, tea
       matchLogs: [], // [1 + 2 * nMatchdays][nTeamsInLeague]
       results: [], // [nMatchesPerLeague][2]  ->  per team per match
       points: [], // [2 * nMatchdays][nTeamsInLeague]
-      tactics: [], // [2 * nMatchdays + 1][nTeamsInLeague]
-      trainings: [] // [2 * nMatchdays + 1][nTeamsInLeague]
+      tactics: [], // [2 * nMatchdays][nTeamsInLeague]
+      trainings: [] // [nMatchdays][nTeamsInLeague]
   }
   // on starting points: if we query computeLeagueLeaderBoard, I would get 
   // a non-null value, sorting because of all tied, which would depend on a seed.
   // we don't have that seed before a match starts, so we set all points to 0.
+  trainingPoints = 200;
+  encodedTraining = await encodeTrainingByTotalTP(trainingPoints, trainingContract);
+  nonTrivialML = await trainingContract.addTrainingPoints(log = 0, trainingPoints).should.be.fulfilled;
 
   leagueData.seeds = Array.from(new Array(2 * nMatchdays), (x,i) => web3.utils.keccak256(i.toString()).toString());
   leagueData.startTimes = Array.from(new Array(2 * nMatchdays), (x,i) => now + i * secsBetweenMatches);
@@ -151,18 +194,15 @@ async function createLeagueData(leagues, play, encodeLog, now, teamState442, tea
   leagueData.teamIds = Array.from(new Array(nTeamsInLeague), (x,i) => teamId.toNumber() + i);
   leagueData.results = Array.from(new Array(nMatchesPerLeague), (x,i) => [0,0]);
 
-  // tactics and trainings start at all 0 (undefined until we play the first match)
-  leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
-  leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
-  // same tactics and trainings for all matchdays:
-  tact = tactics442NoChanges.toString();
+  // tactics remain the same after a half is played
   for (day = 0; day < 2 * nMatchdays; day++) {
-      leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => tact));
+      leagueData.tactics.push(Array.from(new Array(nTeamsInLeague), (x,i) => tactics442NoChanges.toString()));
   }
-  // trainings after 2nd half are required to be 0
+  
+  // trainings are set to zero as soon as consumed. So at the end of half 0 they remain zero until the end of half 2, included.
+  // so we only need to calculate one per matchday
   for (day = 0; day < nMatchdays; day++) {
-      leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => almostNullTraning.toString()));
-      leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => 0));
+      leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => encodedTraining.toString()));
   }
 
   // we just need to build, across the league: teamStates, points, teamIds
@@ -178,10 +218,10 @@ async function createLeagueData(leagues, play, encodeLog, now, teamState442, tea
               leagueData.seeds[2 * day], leagueData.startTimes[2 * day], 
               [allTeamsSkills[t0], allTeamsSkills[t1]], 
               [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
-              [leagueData.tactics[2 * day + 1][t0], leagueData.tactics[2 * day + 1][t1]], 
+              [leagueData.tactics[2 * day][t0], leagueData.tactics[2 * day][t1]], 
               [allMatchLogs[t0], allMatchLogs[t1]],
               [is2nd = false, isHom = true, isPlay = false, isBotHome = false, isBotAway = false],
-              [tp = 0, tp = 0]
+              [leagueData.trainings[day][t0], leagueData.trainings[day][t1]]
           ).should.be.fulfilled;
           allTeamsSkills[t0] = vec2str(newSkills[0]);
           allTeamsSkills[t1] = vec2str(newSkills[1]);
@@ -208,8 +248,8 @@ async function createLeagueData(leagues, play, encodeLog, now, teamState442, tea
           allTeamsSkills[t1] = vec2str(newSkills[1]);
           allMatchLogs[t0] = newLogs[0].toString();
           allMatchLogs[t1] = newLogs[1].toString(); 
-          goals0 = await encodeLog.getNGoals(newLogs[0]).should.be.fulfilled;
-          goals1 = await encodeLog.getNGoals(newLogs[1]).should.be.fulfilled;
+          goals0 = await trainingContract.getNGoals(newLogs[0]).should.be.fulfilled;
+          goals1 = await trainingContract.getNGoals(newLogs[1]).should.be.fulfilled;
           leagueData.results[nMatchesPerDay * day + matchIdxInDay] = [goals0.toNumber(), goals1.toNumber()];
       }
       leagueData.teamStates.push([...allTeamsSkills]);        
@@ -263,7 +303,10 @@ function areThereUnexpectedZeros(dayLeaf, day, half, expectedLength) {
 }
 
 // all returns of this function are arrays[24] as a function of TZ_0-based!!!
-async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
+async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry, trainingContract) {
+  trainingPoints = 200;
+  encodedTraining = await encodeTrainingByTotalTP(trainingPoints, trainingContract);
+  
   orgMapHeader = [];
   orgMap = [];
   userActions = [];
@@ -277,7 +320,7 @@ async function createOrgMap(assets, nCountriesPerTZ, nActiveUsersPerCountry) {
       orgMapThisTZ = orgMapThisTZ.concat(Array.from(new Array(8), (x,i) => firstTeamIdInCountry.add(web3.utils.toBN(i))));
       for (team = 0; team < 8; team++) {
         userActionsThisTZ.push(tactics442NoChanges);
-        userActionsThisTZ.push(almostNullTraning);
+        userActionsThisTZ.push(encodedTraining);
       }
     }
     orgMapHeader.push(orgMapHeaderThisTZ);
