@@ -12,7 +12,7 @@ func TimezoneToReshuffle(timezoneIdx uint8, day uint8, turnInDay uint8) (uint8, 
 		return 0, errors.New("input timezone must be in [1,24]")
 	}
 	timezoneToReshuffle := uint8(0)
-	if (timezoneIdx == 23) && (day == 13) && (turnInDay == 0) {
+	if (timezoneIdx == 23) && (day == 12) && (turnInDay == 0) {
 		timezoneToReshuffle = 24
 	}
 	if (timezoneIdx == 24) && (day == 0) && (turnInDay == 0) {
