@@ -103,7 +103,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			timezoneToReshuffle, err = TimezoneToReshuffleOld(timezoneIdx, day, turnInDay)
 		} else {
 			if event.Verse.Int64() == transitionVerse {
-				log.Info("[%v|BUG] transitioning to new TimezoneToReshuffle function", transitionVerse)
+				log.Infof("[%v|BUG] transitioning to new TimezoneToReshuffle function", transitionVerse)
 			}
 			timezoneToReshuffle, err = TimezoneToReshuffle(timezoneIdx, day, turnInDay)
 		}
