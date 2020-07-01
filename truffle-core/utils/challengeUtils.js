@@ -63,14 +63,26 @@ function zeroPadToLength(x, desiredLength) {
   return x.concat(Array.from(new Array(desiredLength - x.length), (x,i) => 0))
 }
 
+function checkLengths(lData) {
+  assert.equal(lData.seeds.length, 2*nMatchdays, "wrong seeds length");
+  assert.equal(lData.teamIds.length, nTeamsInLeague, "wrong teamIds length");
+  assert.equal(lData.startTimes.length, 2*nMatchdays, "wrong startTimes length");
+  assert.equal(lData.teamStates.length, 2*nMatchdays + 1, "wrong teamStates length");
+  assert.equal(lData.matchLogs.length, 2*nMatchdays + 1, "wrong matchLogs length");
+  assert.equal(lData.results.length, nMatchesPerLeague, "wrong results length");
+  assert.equal(lData.points.length, nMatchdays, "wrong points length");
+  assert.equal(lData.tactics.length, 2*nMatchdays, "wrong tactics length");
+  assert.equal(lData.trainings.length, nMatchdays, "wrong trainings length");
+}
+
 // var leagueData = {
 //     seeds: [], // [2 * nMatchDays]
 //     teamIds: [], // [nTeamsInLeague]
 //     startTimes: [], // [2 * nMatchDays]
 //     teamStates: [], // [2 * nMatchdays + 1][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
-//     matchLogs: [], // [2 * nMatchdays][nTeamsInLeague]
+//     matchLogs: [], // [2 * nMatchdays + 1][nTeamsInLeague]
 //     results: [], // [nMatchesPerLeague][2]  -> goals per team per match
-//     points: [], // [2 * nMatchdays][nTeamsInLeague]
+//     points: [], // [nMatchdays][nTeamsInLeague]
 //     tactics: [], // [2 * nMatchdays][nTeamsInLeague]
 //     trainings: [] // [nMatchdays][nTeamsInLeague]
 // }
@@ -82,6 +94,7 @@ function zeroPadToLength(x, desiredLength) {
 function buildLeafs(leagueDataIn, day, half, nNonNullLeafs) {
   // oprate on cloned input for safety:
   lData = clone(leagueDataIn)
+  checkLengths(lData);
   var isNoPointsYet = (half == 0) && (day == 0);
   if (isNoPointsYet) { 
       leafs =  Array.from(new Array(nTeamsInLeague), (x,i) => 0);
@@ -104,8 +117,7 @@ function buildLeafs(leagueDataIn, day, half, nNonNullLeafs) {
     }
     teamData.push(lData.tactics[2*day + half][team]);
     teamData.push(lData.trainings[day][team]);
-    // the first ML on the first day of the league
-    teamData.push( day > 0 ? lData.matchLogs[2 * day - 1][team] : '0');
+    teamData.push(lData.matchLogs[2 * day + half][team]);
     leafs = leafs.concat(zeroPadToLength(teamData, 32));
     // after this half 
     teamData = [];
@@ -113,22 +125,9 @@ function buildLeafs(leagueDataIn, day, half, nNonNullLeafs) {
         teamData.push(lData.teamStates[2*day + half + 1][team][p])
     }
     teamData.push(lData.tactics[2*day + half][team]);
-    teamData.push(NULL_BYTES32);
-    teamData.push(lData.matchLogs[2*day][team]);
+    teamData.push('0');  // null tranings after a half, always
+    teamData.push(lData.matchLogs[2*day + half + 1][team]);
     leafs = leafs.concat(zeroPadToLength(teamData, 32));
-
-
-
-      for (beforeOrAfter = 0; beforeOrAfter < 2; beforeOrAfter++) {
-          teamData = [];
-          for (p = 0; p < nPlayersInTeam; p++) {
-              teamData.push(lData.teamStates[2*day + half + beforeOrAfter][team][p])
-          }
-          teamData.push(lData.tactics[2*day + half + beforeOrAfter][team]);
-          teamData.push(lData.trainings[2*day + half + beforeOrAfter][team]);
-          teamData.push(lData.matchLogs[2*day + half + beforeOrAfter][team]);
-          leafs = leafs.concat(zeroPadToLength(teamData, 32));
-      }
   }
   return zeroPadToLength(leafs, nNonNullLeafs);
 }
@@ -171,7 +170,7 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
       teamStates: [], // [1 + 2 * nMatchdays][nTeamsInLeague][PLAYERS_PER_TEAM_MAX]
       matchLogs: [], // [1 + 2 * nMatchdays][nTeamsInLeague]
       results: [], // [nMatchesPerLeague][2]  ->  per team per match
-      points: [], // [2 * nMatchdays][nTeamsInLeague]
+      points: [], // [nMatchdays][nTeamsInLeague]
       tactics: [], // [2 * nMatchdays][nTeamsInLeague]
       trainings: [] // [nMatchdays][nTeamsInLeague]
   }
@@ -184,7 +183,7 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
 
   leagueData.seeds = Array.from(new Array(2 * nMatchdays), (x,i) => web3.utils.keccak256(i.toString()).toString());
   leagueData.startTimes = Array.from(new Array(2 * nMatchdays), (x,i) => now + i * secsBetweenMatches);
-  allMatchLogs = Array.from(new Array(nTeamsInLeague), (x,i) => 0);
+  allMatchLogs = Array.from(new Array(nTeamsInLeague), (x,i) => nonTrivialML);
   leagueData.matchLogs.push([...allMatchLogs]);
   teamState442 = vec2str(teamState442);
   allTeamsSkills = Array.from(new Array(nTeamsInLeague), (x,i) => teamState442);
@@ -257,6 +256,7 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
       var {0: rnking, 1: lPoints} = await leagues.computeLeagueLeaderBoard(leagueData.teamIds, [...leagueData.results], day).should.be.fulfilled;
       leagueData.points.push(vec2str(lPoints));   
   }
+  checkLengths(leagueData);
   return leagueData;
 }
 
@@ -271,7 +271,7 @@ function readCreatedLeagueLeafs() {
 }
 
 function areThereUnexpectedZeros(dayLeaf, day, half, expectedLength) {
-  assert.equal(dayLeaf.length, expectedLength);
+  assert.equal(dayLeaf.length, expectedLength, "wrong dayLeaf length");
   if (day==0 && half == 0) {
       // at end of 1st half we still do not have league points
       for (i = 0; i < 8; i++) {
