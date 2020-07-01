@@ -3,9 +3,10 @@ package process_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	"gotest.tools/assert"
+	"gotest.tools/golden"
 )
 
 func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
@@ -77,10 +78,7 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	}
 
 	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(matches) != int(contracts.MatchDays*contracts.MatchesPerDay) {
-		t.Fatalf("Wrong matches %v", len(matches))
-	}
+	assert.NilError(t, err)
+	assert.Equal(t, len(matches), 56)
+	golden.Assert(t, dump.Sdump(matches), t.Name()+".golden")
 }
