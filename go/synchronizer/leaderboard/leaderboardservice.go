@@ -94,7 +94,7 @@ func UpdateLeagueLeaderboard(
 	}
 
 	for i := 0; i < 8; i++ {
-		teams[i].LeaderboardPosition = int(llb.Ranking[i])
+		teams[llb.Ranking[i]].LeaderboardPosition = int(i)
 	}
 
 	return teams, nil
