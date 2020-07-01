@@ -98,7 +98,17 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			return err
 		}
 	default:
-		timezoneToReshuffle, err := TimezoneToReshuffle(timezoneIdx, day, turnInDay)
+		var timezoneToReshuffle uint8
+		var err error
+		transitionVerse := int64(910)
+		if event.Verse.Int64() < transitionVerse {
+			timezoneToReshuffle, err = TimezoneToReshuffleOld(timezoneIdx, day, turnInDay)
+		} else {
+			if event.Verse.Int64() == transitionVerse {
+				log.Infof("[%v|BUG] transitioning to new TimezoneToReshuffle function", transitionVerse)
+			}
+			timezoneToReshuffle, err = TimezoneToReshuffle(timezoneIdx, day, turnInDay)
+		}
 		if err != nil {
 			return err
 		}
