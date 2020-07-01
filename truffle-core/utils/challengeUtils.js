@@ -179,7 +179,9 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
   // we don't have that seed before a match starts, so we set all points to 0.
   trainingPoints = 200;
   encodedTraining = await encodeTrainingByTotalTP(trainingPoints, trainingContract);
+  encodedTraining = encodedTraining.toString();
   nonTrivialML = await trainingContract.addTrainingPoints(log = 0, trainingPoints).should.be.fulfilled;
+  nonTrivialML = nonTrivialML.toString();
 
   leagueData.seeds = Array.from(new Array(2 * nMatchdays), (x,i) => web3.utils.keccak256(i.toString()).toString());
   leagueData.startTimes = Array.from(new Array(2 * nMatchdays), (x,i) => now + i * secsBetweenMatches);
@@ -201,7 +203,7 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
   // trainings are set to zero as soon as consumed. So at the end of half 0 they remain zero until the end of half 2, included.
   // so we only need to calculate one per matchday
   for (day = 0; day < nMatchdays; day++) {
-      leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => encodedTraining.toString()));
+      leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => encodedTraining));
   }
 
   // we just need to build, across the league: teamStates, points, teamIds
@@ -277,7 +279,7 @@ function areThereUnexpectedZeros(dayLeaf, day, half, expectedLength) {
       for (i = 0; i < 8; i++) {
           if (dayLeaf[i] != 0) return true;
       }
-      // we do not have tactics, nor training, nor ML before
+      // CHANGED: fully remove this loop: we can have non-null tactics, training, or ML before
       for (team = 0; team < nTeamsInLeague; team++) {
           off = 128 + 64 * team;
           for (i = 25; i < 28; i++) {
@@ -288,6 +290,7 @@ function areThereUnexpectedZeros(dayLeaf, day, half, expectedLength) {
   // every element of team from 28 to 32 is 0
   for (team = 0; team < nTeamsInLeague; team++) {
       off = 128 + 64 * team;
+      if (dayLeaf[off + 26] != 0) return true; // CHANGED: added this (null training end of half)
       for (i = 28; i < 32; i++) {
         if (dayLeaf[off + i] != 0) return true;
         if (dayLeaf[off + 32 + i] != 0) return true;
@@ -410,5 +413,6 @@ function getUALeafPos(leagueIdxInCountry, isBeforeHalf, isTactics) {
     createLeafsForOrgMap,
     leafsToHex,
     leafsToBytes32,
-    getUALeafPos
+    getUALeafPos,
+    encodeTrainingByTotalTP
   }

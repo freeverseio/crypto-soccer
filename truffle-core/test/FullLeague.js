@@ -362,7 +362,7 @@ contract('FullLeague', (accounts) => {
     // leafs[0] is the Data[640] for matchDay = 0, half = 0; hence, it contains data before and after that half
     // leafs[1] is the Data[640] for matchDay = 0, half = 1; hence, it contains data before and after that half
     // ...
-    it('read an entire league and organize data in the leaf format required', async () => {
+    it2('read an entire league and organize data in the leaf format required', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         leagueData = chllUtils.readCreatedLeagueData();
         var leafs = [];
@@ -387,7 +387,13 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it2('test day 0, half 0', async () => {
+    it('test day 0, half 0', async () => {
+        trainingPoints = 200;
+        encodedTraining = await chllUtils.encodeTrainingByTotalTP(trainingPoints, training);
+        encodedTraining = encodedTraining.toString();
+        nonTrivialML = await training.addTrainingPoints(log = 0, trainingPoints).should.be.fulfilled;
+        nonTrivialML = nonTrivialML.toString();
+
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 0;
         assert.equal(leafs.length, nMatchdays * 2);
@@ -403,9 +409,9 @@ contract('FullLeague', (accounts) => {
             for (i = off; i < off + 11; i++) assert.notEqual(leafs[day][i], 0, "unexpected teamstate leaf at start of league");
             // ...player 11...25 are identical because we used the same playerId for all of them
             for (i = off + 12; i < off + 25; i++) assert.equal(leafs[day][i], leafs[day][off+12], "unexpected teamstate leaf at start of league");
-            assert.equal(leafs[day][off + 25], 0, "unexpected nonnull tactics leaf at start of league");
-            assert.equal(leafs[day][off + 26], 0, "unexpected nonnull training leaf at start of league");
-            assert.equal(leafs[day][off + 27], 0, "unexpected nonnull matchLog leaf at start of league");
+            assert.equal(leafs[day][off + 25], tactics442NoChanges, "unexpected nonnull tactics leaf at start of league");
+            assert.equal(leafs[day][off + 26], encodedTraining, "unexpected nonnull training leaf at start of league");
+            assert.equal(leafs[day][off + 27], nonTrivialML, "unexpected nonnull matchLog leaf at start of league");
             // AFTER first half ---------
             off += 32;
             // ...player 0...10 are non-null, and different among them because of the different playerId
@@ -413,7 +419,7 @@ contract('FullLeague', (accounts) => {
             // ...player 11...25 are identical because we used the same playerId for all of them
             for (i = off + 12; i < off + 25; i++) assert.equal(leafs[day][i], leafs[day][off+12], "unexpected teamstate leaf at start of league");
             assert.equal(leafs[day][off + 25], tactics442NoChanges, "unexpected tactics leaf after 1st half of league");
-            assert.equal(leafs[day][off + 26], almostNullTraning, "unexpected training leaf after 1st half of league");
+            assert.equal(leafs[day][off + 26], 0, "unexpected non null training leaf after 1st half of league");
             assert.notEqual(leafs[day][off + 27], 0, "unexpected null matchLog leaf after 1st half of league");
         }
     });
