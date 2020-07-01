@@ -20,9 +20,10 @@ func TestTimezoneToReshuffle(t *testing.T) {
 		{1, 0, 1, 0},
 		{1, 13, 0, 0},
 		{22, 13, 0, 0},
-		{23, 12, 0, 0},
+		{23, 12, 0, 24},
+		{23, 12, 1, 0},
+		{23, 13, 0, 0},
 		{23, 13, 1, 0},
-		{23, 13, 0, 24},
 		{24, 13, 0, 0},
 		{24, 13, 1, 0},
 		{24, 0, 0, 1},
@@ -32,6 +33,41 @@ func TestTimezoneToReshuffle(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
 			result, err := process.TimezoneToReshuffle(
+				tc.TimezoneIdx,
+				tc.Day,
+				tc.TurnInDay,
+			)
+			assert.Equal(t, err, nil)
+			assert.Equal(t, tc.Result, result)
+		})
+	}
+}
+
+func TestTimezoneToReshuffleOld(t *testing.T) {
+	cases := []struct {
+		TimezoneIdx uint8
+		Day         uint8
+		TurnInDay   uint8
+		Result      uint8
+	}{
+		{1, 0, 0, 2},
+		{1, 1, 0, 0},
+		{1, 0, 1, 0},
+		{1, 13, 0, 0},
+		{22, 13, 0, 0},
+		{23, 12, 0, 0},
+		{23, 12, 1, 0},
+		{23, 13, 0, 24},
+		{23, 13, 1, 0},
+		{24, 13, 0, 0},
+		{24, 13, 1, 0},
+		{24, 0, 0, 1},
+		{24, 0, 1, 0},
+	}
+
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
+			result, err := process.TimezoneToReshuffleOld(
 				tc.TimezoneIdx,
 				tc.Day,
 				tc.TurnInDay,
