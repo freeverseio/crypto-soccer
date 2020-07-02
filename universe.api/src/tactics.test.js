@@ -12,8 +12,7 @@ describe('tactics', () => {
         });
 
         test('fails when tacticId is too large', () => {
-            var tacticPatchNew = {};
-            Object.assign(tacticPatchNew, tacticPatch);
+            const tacticPatchNew = getDefaultPatch();
             tacticPatchNew.tacticId = 2;
             expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
             tacticPatchNew.tacticId = 8;
@@ -23,8 +22,7 @@ describe('tactics', () => {
         });
 
         test('fails when shirtNum is too large', () => {
-            var tacticPatchNew = {};
-            Object.assign(tacticPatchNew, tacticPatch);
+            const tacticPatchNew = getDefaultPatch();
             const NO_PLAYER = 25;
             tacticPatchNew.shirt1 = NO_PLAYER;
             expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
@@ -33,8 +31,7 @@ describe('tactics', () => {
         });
 
         test('fails when substitutionShirt is too large', () => {
-            var tacticPatchNew = {};
-            Object.assign(tacticPatchNew, tacticPatch);
+            const tacticPatchNew = getDefaultPatch();
             const NO_PLAYER = 25;
             tacticPatchNew.substitution0Shirt = NO_PLAYER;
             expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
@@ -43,8 +40,7 @@ describe('tactics', () => {
         });
 
         test('fails when substitutionTarget is too large', () => {
-            var tacticPatchNew = {};
-            Object.assign(tacticPatchNew, tacticPatch);
+            const tacticPatchNew = getDefaultPatch();
             const NO_SUBST = 11;
             tacticPatchNew.substitution0Target = NO_SUBST;
             expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
@@ -53,8 +49,7 @@ describe('tactics', () => {
         });
 
         test('fails when substitutionMinute is too large', () => {
-            var tacticPatchNew = {};
-            Object.assign(tacticPatchNew, tacticPatch);
+            const tacticPatchNew = getDefaultPatch();
             tacticPatchNew.substitution0Minute = 90;
             expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
             tacticPatchNew.substitution0Minute = 91;
@@ -62,22 +57,29 @@ describe('tactics', () => {
         });
 
         test('empty spot in lineUp does not count', () => {
-            var tacticPatchNew = {};
-            Object.assign(tacticPatchNew, tacticPatch);
-            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            const tacticPatchNew = getDefaultPatch();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatchNew)).toThrow("too many players aligned given the 1st half redcards: 11");
             const NO_PLAYER = 25;
             tacticPatchNew.shirt1 = NO_PLAYER;
             expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatchNew)).not.toThrow();
         });
 
         test('player that does not exist in Universe does not count', () => {
-            var tacticPatchNew = {};
-            Object.assign(tacticPatchNew, tacticPatch);
-            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            const tacticPatchNew = getDefaultPatch();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatchNew)).toThrow("too many players aligned given the 1st half redcards: 11");
             // players 19...24 are not assigned for this team in the DB
             // pointing to them may happen, for example, if previously pointed to one that was sold
             tacticPatchNew.shirt1 = 23;
             expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatchNew)).not.toThrow();
+        });
+
+        test('injured player does not count', () => {
+            const dataNew = getDefaultData();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, dataNew, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            // players 19...24 are not assigned for this team in the DB
+            // pointing to them may happen, for example, if previously pointed to one that was sold
+            dataNew[0].injury_matches_left = 23;
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, dataNew, tacticPatch)).not.toThrow();
         });
 
         test('fails one red card in 1st half', () => {
@@ -87,8 +89,7 @@ describe('tactics', () => {
         });
 
         test('changes at half time: 0, 1, 2,3 work, but > 3 will fail', () => {
-            var tacticPatchNew = {};
-            Object.assign(tacticPatchNew, tacticPatch);
+            const tacticPatchNew = getDefaultPatch();
             expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
             tacticPatchNew.shirt0 = 14;
             expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
