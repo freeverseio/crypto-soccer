@@ -45,8 +45,12 @@ func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 	return nil
 }
 
-func (b Calendar) GetAllMatchdaysUTCInNextRound(timezoneIdx uint8) ([14]*big.Int, error) {
-	round, err := b.contracts.Updates.GetCurrentRound(&bind.CallOpts{}, timezoneIdx)
+func (b Calendar) GetAllMatchdaysUTCInNextRound(timezoneIdx uint8, verse *big.Int) ([14]*big.Int, error) {
+	tz1, err := b.contracts.Updates.GetTimeZoneForRound1(&bind.CallOpts{})
+	if err != nil {
+		return [14]*big.Int{}, err
+	}
+	round, err := b.contracts.Updates.GetCurrentRoundPure(&bind.CallOpts{}, timezoneIdx, tz1, verse)
 	if err != nil {
 		return [14]*big.Int{}, err
 	}
@@ -58,7 +62,7 @@ func (b Calendar) GetAllMatchdaysUTCInNextRound(timezoneIdx uint8) ([14]*big.Int
 	return matchesStart, nil
 }
 
-func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, verse *big.Int) error {
 	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
 		return err
@@ -67,7 +71,7 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 		return errors.New("Unexistent league")
 	}
 
-	matchesStart, err := b.GetAllMatchdaysUTCInNextRound(timezoneIdx)
+	matchesStart, err := b.GetAllMatchdaysUTCInNextRound(timezoneIdx, verse)
 	if err != nil {
 		return err
 	}

@@ -120,9 +120,20 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 		if err := b.calendarProcessor.Generate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)); err != nil {
 			return err
 		}
-		if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)); err != nil {
+		lastVerse, err := storage.LastVerse(tx)
+		if err != nil {
 			return err
 		}
+		if lastVerse != nil {
+			if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx), big.NewInt(lastVerse.VerseNumber)); err != nil {
+				return err
+			}
+		} else {
+			if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx), big.NewInt(0)); err != nil {
+				return err
+			}
+		}
+
 	}
 	return nil
 }
