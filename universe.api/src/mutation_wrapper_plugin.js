@@ -1,5 +1,6 @@
 const { makeWrapResolversPlugin } = require("graphile-utils");
 const { isTrainingGroupValid, isTrainingSpecialPlayerValid } = require('./training');
+const { checkTactics } = require("./tactics");
 
 const updateTrainingByTeamIdWrapper = propName => {
     return async (resolve, source, args, context, resolveInfo) => {
@@ -29,11 +30,6 @@ const updateTrainingByTeamIdWrapper = propName => {
     };
 };
 
-
-// tacticPatch: tacticId, shirt0, ..., shirt10, substitution0Shirt, substitution0Target, substitution0Minute, ....
-// - shirtN is a value in [0, 24] for valid team players, and 25 for no-one chosen in that position
-// - substitutionShirt, as shirtN
-// - substitutionTarget is a value in [0, 10] refering to the player that will LEAVE the field
 const updateTacticByTeamIdWrapper = propName => {
     return async (resolve, source, args, context, resolveInfo) => {
         const { teamId, tacticPatch } = args.input;
@@ -44,15 +40,17 @@ const updateTacticByTeamIdWrapper = propName => {
             values: [teamId, 'end'],
         };                    
         const resultQ1 = await pgClient.query(query);
-        // if (resultQ1.rowCount > 1) { throw "more than one match at half time"; }
-        if (resultQ1.rowCount == 0) { resolve(); }
-        r = resultQ1.rows[0];
+        console.log("TONI: nResults = ", resultQ1.rowCount);
+        if (resultQ1.rowCount == 0) { resolve(); } // it is 1st half, no need to check
+        data = resultQ1.rows;
+        // TODO: check that all entries in data share the same timezone, country, etc.
+        console.log(data);
         console.log("TONI: one match found at half time ");
-        console.log("quering for: ", r.timezone_idx, r.country_idx, r.league_idx, r.match_day_idx, r.match_idx);
+        console.log("quering for: ", data[0].timezone_idx, data[0].country_idx, data[0].league_idx, data[0].match_day_idx, data[0].match_idx);
+
         query = {
             text: 'SELECT COUNT(*) FROM match_events WHERE (team_id = $1 AND type = $2 AND timezone_idx = $3 AND country_idx = $4 AND league_idx = $5 AND match_day_idx = $6 AND match_idx = $7);',
-            // text: 'SELECT primary_player_id FROM match_events WHERE (team_id = $1 AND type = $2 AND timezone_idx = $3 AND country_idx = $4 AND league_idx = $5 AND match_day_idx = $6 AND match_idx = $7);',
-            values: [teamId, 'red_card', r.timezone_idx, r.country_idx, r.league_idx, r.match_day_idx, r.match_idx],
+            values: [teamId, 'red_card', data[0].timezone_idx, data[0].country_idx, data[0].league_idx, data[0].match_day_idx, data[0].match_idx],
         };                    
         const resultQ2 = await pgClient.query(query);
         if (resultQ2.rowCount === 0) {
@@ -61,45 +59,9 @@ const updateTacticByTeamIdWrapper = propName => {
         const nRedCards1stHalf = resultQ2.rows[0].count;
         console.log("TONI: numRedCards at 1st half: ", nRedCards1stHalf);
 
-
-        // // for each shirt in shirt0...10:
-        // // - get playerId with (teamId, shirtN) 
-        // // - get wasAligned, redCard by player Id
+        console.log(data);
     
-        // Object.keys(tacticPatch).forEach(function(key, index) {
-        //     if (typeof(key) == 'string') {
-        //         if (key.startsWith('shirt')) {
-        //             const shirt = tacticPatch[key];
-        //             const query = {
-        //                 text: 'SELECT red_card, shirt_number FROM players WHERE team_id = $1',
-        //                 values: [teamId, shirt],
-        //             };                    
-        //             const result = await pgClient.query(query);
-        //             // the result can be null, for example, if the player does not exist, has been sold, etc.
-        //             if (result.rowCount > 0) {
-        //                 // result.rows[0].red_card;
-        //                 // result.rows[0].yellow_card_1st_half;
-        //             }                    
-        //         }
-        //     }
-        // });
-        // // I will need:
-        // // - is2ndHalf
-        // //  - alignedEndOf1stHalf => JS code duplicated from Solidity, from encoded_skills
-        // //  - get last MATCH given teamId
-        // //      SELECT red_card, shirt_number FROM matches WHERE team_id = $1
-        //         player_id, red_cards, shirt_number, timezone_idx, country_idx, league_idx, match_day_idx, match_idx) 
-        //         JOIN: matches, players
-        //         WHERE: state == half, homeTeamID == teamId OR visitorTeamID == teamId, team_id == teamId, 
-
-        //         // this gives me all player_ids
-        //         primeray red 
-        //         math_events
-        //         WHERE: timezone_idx, country_idx, league_idx, match_day_idx, match_idx) 
-
-        // //  -   is2ndHalf = (state == half)
-        // //  -   was there a red card in 1st half
-        // checkTactics(resultOfQueries);
+        checkTactics(nRedCards1stHalf, data, tacticPatch);
         return resolve();
     };
 };
