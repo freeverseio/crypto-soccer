@@ -8,6 +8,8 @@ const BN = require('bn.js');
 //      - substitutionShirt, as shirtN
 //      - substitutionTarget is a value in [0, 10] refering to the player that will LEAVE the field
 const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
+    const NO_PLAYER = 25;
+    const NO_SUBST = 11;
     if (tacticPatch.tacticId > 8) throw "tacticId supported only up to 8, received " + tacticPatch.tacticId;
 
     nChangesAtHalfTime = 0;
@@ -16,6 +18,16 @@ const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
     // Players with red cards or injuries do not count as "aligned".
     Object.keys(tacticPatch).forEach(function(key, index) {
         if (typeof(key) == 'string') {
+            if (key.startsWith('shirt') || key.endsWith('Shirt')) {
+                const shirtNum = tacticPatch[key];
+                if (shirtNum > NO_PLAYER) throw "shirtNum too large: " + shirtNum;
+            }
+
+            if (key.endsWith('Target')) {
+                const posInLineUp = tacticPatch[key];
+                if (posInLineUp > NO_SUBST) throw "substitutionTarget too large: " + posInLineUp;
+            }
+
             if (key.startsWith('shirt')) {
                 const shirtNum = tacticPatch[key];
                 const player = getPlayerDataInUniverseByShirtNum(shirtNum, data);

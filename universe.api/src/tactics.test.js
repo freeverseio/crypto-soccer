@@ -31,6 +31,26 @@ describe('tactics', () => {
             expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("shirtNum too large: 26");
         });
 
+        test('fails when substitutionShirt is too large', () => {
+            var tacticPatchNew = {};
+            Object.assign(tacticPatchNew, tacticPatch);
+            const NO_PLAYER = 25;
+            tacticPatchNew.substitution0Shirt = NO_PLAYER;
+            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.substitution0Shirt = NO_PLAYER + 1;
+            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("shirtNum too large: 26");
+        });
+
+        test('fails when substitutionTarget is too large', () => {
+            var tacticPatchNew = {};
+            Object.assign(tacticPatchNew, tacticPatch);
+            const NO_SUBST = 11;
+            tacticPatchNew.substitution0Target = NO_SUBST;
+            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.substitution0Target = NO_SUBST + 1;
+            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("substitutionTarget too large: 12");
+        });
+
         test('empty spot in lineUp does not count', () => {
             var tacticPatchNew = {};
             Object.assign(tacticPatchNew, tacticPatch);
