@@ -1,6 +1,6 @@
 const { makeWrapResolversPlugin } = require("graphile-utils");
 const { checkTrainingGroup, checkTrainingSpecialPlayer } = require('./training');
-const { checkTactics } = require("./tactics");
+const { checkTactics2ndHalf, checkTacticsGeneric } = require("./tactics");
 
 const updateTrainingByTeamIdWrapper = propName => {
     return async (resolve, source, args, context, resolveInfo) => {
@@ -33,6 +33,8 @@ const updateTrainingByTeamIdWrapper = propName => {
 const updateTacticByTeamIdWrapper = propName => {
     return async (resolve, source, args, context, resolveInfo) => {
         const { teamId, tacticPatch } = args.input;
+
+
         const { pgClient } = context;
 
         var query = {
@@ -61,7 +63,7 @@ const updateTacticByTeamIdWrapper = propName => {
 
         console.log(data);
     
-        checkTactics(nRedCards1stHalf, data, tacticPatch);
+        checkTactics2ndHalf(nRedCards1stHalf, data, tacticPatch);
         return resolve();
     };
 };

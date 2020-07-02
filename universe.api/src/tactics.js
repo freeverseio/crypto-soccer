@@ -1,21 +1,11 @@
 const BN = require('bn.js');
 
-// INPUTS:
-// - data:
-//      - array where each element is a struct with fields: "shirt_number", "encoded_skills", "red_card", "injury_matches_left"
-// - tacticPatch: tacticId, shirt0, ..., shirt10, substitution0Shirt, substitution0Target, substitution0Minute, ....
-//      - shirtN is a value in [0, 24] for valid team players, and 25 for no-one chosen in that position
-//      - substitutionShirt, as shirtN
-//      - substitutionTarget is a value in [0, 10] refering to the player that will LEAVE the field
-const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
+// Check valid for both 1st and 2nd half
+const checkTacticsGeneric = (tacticPatch) => {
     const NO_PLAYER = 25;
     const NO_SUBST = 11;
     if (tacticPatch.tacticId > 8) throw "tacticId supported only up to 8, received " + tacticPatch.tacticId;
 
-    nChangesAtHalfTime = 0;
-    nAlignedPlayersThatCanPlay = 0;
-    // Goal: build how many changes were done at half time, and how many players are aligned.
-    // Players with red cards or injuries do not count as "aligned".
     Object.keys(tacticPatch).forEach(function(key, index) {
         if (typeof(key) == 'string') {
             if (key.startsWith('shirt') || key.endsWith('Shirt')) {
@@ -32,7 +22,24 @@ const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
                 const minute = tacticPatch[key];
                 if (minute > 90) throw "substitutionMinute too large: " + minute;
             }
+        }
+    });
+}
 
+// INPUTS:
+// - data:
+//      - array where each element is a struct with fields: "shirt_number", "encoded_skills", "red_card", "injury_matches_left"
+// - tacticPatch: tacticId, shirt0, ..., shirt10, substitution0Shirt, substitution0Target, substitution0Minute, ....
+//      - shirtN is a value in [0, 24] for valid team players, and 25 for no-one chosen in that position
+//      - substitutionShirt, as shirtN
+//      - substitutionTarget is a value in [0, 10] refering to the player that will LEAVE the field
+const checkTactics2ndHalf = (nRedCards1stHalf, data, tacticPatch) => {
+    nChangesAtHalfTime = 0;
+    nAlignedPlayersThatCanPlay = 0;
+    // Goal: build how many changes were done at half time, and how many players are aligned.
+    // Players with red cards or injuries do not count as "aligned".
+    Object.keys(tacticPatch).forEach(function(key, index) {
+        if (typeof(key) == 'string') {
             if (key.startsWith('shirt')) {
                 const shirtNum = tacticPatch[key];
                 const player = getPlayerDataInUniverseByShirtNum(shirtNum, data);
@@ -70,6 +77,7 @@ function getPlayerDataInUniverseByShirtNum(shirtNum, data) {
 
 
 module.exports = {
-    checkTactics,
+    checkTactics2ndHalf,
+    checkTacticsGeneric,
 };
 

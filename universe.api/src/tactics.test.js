@@ -1,4 +1,4 @@
-const { checkTactics } = require('./tactics');
+const { checkTactics2ndHalf, checkTacticsGeneric } = require('./tactics');
 
 
 describe('tactics', () => {
@@ -7,18 +7,18 @@ describe('tactics', () => {
         const tacticPatch = getDefaultPatch();
 
         test('default everything OK', () => {
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatch)).not.toThrow();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatch)).not.toThrow();
         });
 
         test('fails when tacticId is too large', () => {
             var tacticPatchNew = {};
             Object.assign(tacticPatchNew, tacticPatch);
             tacticPatchNew.tacticId = 2;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
             tacticPatchNew.tacticId = 8;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
             tacticPatchNew.tacticId = 9;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("tacticId supported only up to 8, received 9");
+            expect(() => checkTacticsGeneric(tacticPatchNew)).toThrow("tacticId supported only up to 8, received 9");
         });
 
         test('fails when shirtNum is too large', () => {
@@ -26,9 +26,9 @@ describe('tactics', () => {
             Object.assign(tacticPatchNew, tacticPatch);
             const NO_PLAYER = 25;
             tacticPatchNew.shirt1 = NO_PLAYER;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
             tacticPatchNew.shirt1 = NO_PLAYER + 1;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("shirtNum too large: 26");
+            expect(() => checkTacticsGeneric(tacticPatchNew)).toThrow("shirtNum too large: 26");
         });
 
         test('fails when substitutionShirt is too large', () => {
@@ -36,9 +36,9 @@ describe('tactics', () => {
             Object.assign(tacticPatchNew, tacticPatch);
             const NO_PLAYER = 25;
             tacticPatchNew.substitution0Shirt = NO_PLAYER;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
             tacticPatchNew.substitution0Shirt = NO_PLAYER + 1;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("shirtNum too large: 26");
+            expect(() => checkTacticsGeneric(tacticPatchNew)).toThrow("shirtNum too large: 26");
         });
 
         test('fails when substitutionTarget is too large', () => {
@@ -46,47 +46,47 @@ describe('tactics', () => {
             Object.assign(tacticPatchNew, tacticPatch);
             const NO_SUBST = 11;
             tacticPatchNew.substitution0Target = NO_SUBST;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
             tacticPatchNew.substitution0Target = NO_SUBST + 1;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("substitutionTarget too large: 12");
+            expect(() => checkTacticsGeneric(tacticPatchNew)).toThrow("substitutionTarget too large: 12");
         });
 
         test('fails when substitutionMinute is too large', () => {
             var tacticPatchNew = {};
             Object.assign(tacticPatchNew, tacticPatch);
             tacticPatchNew.substitution0Minute = 90;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTacticsGeneric(tacticPatchNew)).not.toThrow();
             tacticPatchNew.substitution0Minute = 91;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("substitutionMinute too large: 91");
+            expect(() => checkTacticsGeneric(tacticPatchNew)).toThrow("substitutionMinute too large: 91");
         });
 
         test('empty spot in lineUp does not count', () => {
             var tacticPatchNew = {};
             Object.assign(tacticPatchNew, tacticPatch);
-            expect(() => checkTactics(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
             const NO_PLAYER = 25;
             tacticPatchNew.shirt1 = NO_PLAYER;
-            expect(() => checkTactics(nRedCards1stHalf = 1, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatchNew)).not.toThrow();
         });
 
         test('fails one red card in 1st half', () => {
-            expect(() => checkTactics(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
-            expect(() => checkTactics(nRedCards1stHalf = 5, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
-            expect(() => checkTactics(nRedCards1stHalf = 13, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 5, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 13, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
         });
 
         test('changes at half time: 0, 1, 2,3 work, but > 3 will fail', () => {
             var tacticPatchNew = {};
             Object.assign(tacticPatchNew, tacticPatch);
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
             tacticPatchNew.shirt0 = 14;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
             tacticPatchNew.shirt3 = 15;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
             tacticPatchNew.shirt5 = 16;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
             tacticPatchNew.shirt8 = 17;
-            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("too many changes at half time");
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("too many changes at half time");
         });
     });
 });
