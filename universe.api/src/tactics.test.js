@@ -7,6 +7,7 @@ describe('tactics', () => {
         const tacticPatch = getDefaultPatch();
 
         test('default everything OK', () => {
+            expect(() => checkTacticsGeneric(tacticPatch)).not.toThrow();
             expect(() => checkTactics2ndHalf(nRedCards1stHalf = 0, data, tacticPatch)).not.toThrow();
         });
 
