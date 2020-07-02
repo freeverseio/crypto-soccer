@@ -28,6 +28,11 @@ const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
                 if (posInLineUp > NO_SUBST) throw "substitutionTarget too large: " + posInLineUp;
             }
 
+            if (key.endsWith('Minute')) {
+                const minute = tacticPatch[key];
+                if (minute > 90) throw "substitutionMinute too large: " + minute;
+            }
+
             if (key.startsWith('shirt')) {
                 const shirtNum = tacticPatch[key];
                 const player = getPlayerDataInUniverseByShirtNum(shirtNum, data);

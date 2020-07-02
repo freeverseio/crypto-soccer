@@ -51,6 +51,15 @@ describe('tactics', () => {
             expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("substitutionTarget too large: 12");
         });
 
+        test('fails when substitutionMinute is too large', () => {
+            var tacticPatchNew = {};
+            Object.assign(tacticPatchNew, tacticPatch);
+            tacticPatchNew.substitution0Minute = 90;
+            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.substitution0Minute = 91;
+            expect(() => checkTactics(nRedCards1stHalf = 0, data, tacticPatchNew)).toThrow("substitutionMinute too large: 91");
+        });
+
         test('empty spot in lineUp does not count', () => {
             var tacticPatchNew = {};
             Object.assign(tacticPatchNew, tacticPatch);
