@@ -12,14 +12,14 @@ const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
 
     nChangesAtHalfTime = 0;
     nAlignedPlayersThatCanPlay = 0;
-    const NO_PLAYER = 25;
+    // Goal: build how many changes were done at half time, and how many players are aligned.
+    // Players with red cards or injuries do not count as "aligned".
     Object.keys(tacticPatch).forEach(function(key, index) {
         if (typeof(key) == 'string') {
             if (key.startsWith('shirt')) {
                 const shirtNum = tacticPatch[key];
-                if (shirtNum > NO_PLAYER) throw "shirtNum too large: " + shirtNum;
-                if (shirtNum != NO_PLAYER) {
-                    const player = getPlayerByShirtNum(shirtNum, data);
+                const player = getPlayerDataInUniverseByShirtNum(shirtNum, data);
+                if (player != undefined) {
                     const canPlay = !player.red_card && player.injury_matches_left == 0;
                     if (canPlay) {
                         nAlignedPlayersThatCanPlay++;
@@ -39,12 +39,16 @@ function wasAligned1stHalf(encodedSkills) {
     return skillsBN.shrn(172).and(one).toNumber() == 1;
 }
 
-function getPlayerByShirtNum(shirtNum, data) {
+function getPlayerDataInUniverseByShirtNum(shirtNum, data) {
+    const NO_PLAYER = 25;
+    if (shirtNum > NO_PLAYER) throw "shirtNum too large: " + shirtNum;
+    if (shirtNum == NO_PLAYER) return undefined;
     for (player of data) {
         if (player.shirt_number == shirtNum) {
             return player;
         }
     }
+    return undefined;
 }
 
 
