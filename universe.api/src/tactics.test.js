@@ -11,7 +11,7 @@ describe('tactics', () => {
             expect(() => checkTactics(nRedCards1stHalf, data, tacticPatch)).not.toThrow();
         });
 
-        test('fails when wrong tacticId', () => {
+        test('fails when tacticId is too large', () => {
             var tacticPatchNew = {};
             Object.assign(tacticPatchNew, tacticPatch);
             tacticPatchNew.tacticId = 2;
@@ -20,6 +20,15 @@ describe('tactics', () => {
             expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
             tacticPatchNew.tacticId = 9;
             expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).toThrow("tacticId supported only up to 8, received 9");
+        });
+
+        test('fails when shirtNum is too large', () => {
+            var tacticPatchNew = {};
+            Object.assign(tacticPatchNew, tacticPatch);
+            tacticPatchNew.shirt1 = 25;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.shirt1 = 26;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).toThrow("shirtNum too large: 26");
         });
 
         test('fails one red card in 1st half', () => {

@@ -12,15 +12,19 @@ const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
 
     nChangesAtHalfTime = 0;
     nAlignedPlayersThatCanPlay = 0;
+    const NO_PLAYER = 25;
     Object.keys(tacticPatch).forEach(function(key, index) {
         if (typeof(key) == 'string') {
             if (key.startsWith('shirt')) {
                 const shirtNum = tacticPatch[key];
-                const player = getPlayerByShirtNum(shirtNum, data);
-                const canPlay = !player.red_card && player.injury_matches_left == 0;
-                if (canPlay) {
-                    nAlignedPlayersThatCanPlay++;
-                    if (!wasAligned1stHalf(player.encoded_skills)) { nChangesAtHalfTime++; }
+                if (shirtNum > NO_PLAYER) throw "shirtNum too large: " + shirtNum;
+                if (shirtNum != NO_PLAYER) {
+                    const player = getPlayerByShirtNum(shirtNum, data);
+                    const canPlay = !player.red_card && player.injury_matches_left == 0;
+                    if (canPlay) {
+                        nAlignedPlayersThatCanPlay++;
+                        if (!wasAligned1stHalf(player.encoded_skills)) { nChangesAtHalfTime++; }
+                    }
                 }
             }
         }
