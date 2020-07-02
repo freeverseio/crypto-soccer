@@ -58,6 +58,7 @@ const updateTacticByTeamIdWrapper = propName => {
 
         const resultQ2 = await pgClient.query(query);
         if (resultQ2.rowCount === 0) {
+            // if the match is in half time, there MUST be some event from the 1st half.
             throw "unexistent matchevents";
         }
         const nRedCards1stHalf = resultQ2.rows[0].count;
