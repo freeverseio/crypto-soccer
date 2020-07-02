@@ -12,8 +12,23 @@ describe('tactics', () => {
         });
 
         test('fails one red card in 1st half', () => {
-            nRedCards1stHalf = 1;
-            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards");
+            expect(() => checkTactics(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            expect(() => checkTactics(nRedCards1stHalf = 5, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            expect(() => checkTactics(nRedCards1stHalf = 13, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+        });
+
+        test('changes at half time: 0, 1, 2,3 work, but > 3 will fail', () => {
+            var nRedCards1stHalf = 0;
+            tacticPatchNew = tacticPatch;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.shirt0 = 14;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.shirt3 = 15;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.shirt5 = 16;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.shirt8 = 17;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).toThrow("too many changes at half time");
         });
 
     });
@@ -24,7 +39,7 @@ function getDefaultData() {
     data = [];
     encodedSkillsAlignedPlayer = '5986310706507378352962293074805895248510699696029696'; 
     encodedSkillsNotAlignedPlayer = '15324956156947726902719058204642840311988711972191687672616'; 
-    for (p = 0; p < 18; p++) {
+    for (p = 0; p < 11; p++) {
         data.push({ 
             "encoded_skills": encodedSkillsAlignedPlayer,
             "shirt_number": p,
@@ -34,7 +49,19 @@ function getDefaultData() {
             "country_idx": 0,
             "league_idx": 0,
             "match_day_idx": 1,
-        })
+        });
+    }
+    for (p = 11; p < 18; p++) {
+        data.push({ 
+            "encoded_skills": encodedSkillsNotAlignedPlayer,
+            "shirt_number": p,
+            "red_card": false,
+            "injury_matches_left": 0,
+            "timezone_idx": 4,
+            "country_idx": 0,
+            "league_idx": 0,
+            "match_day_idx": 1,
+        });
     }
     return data;
 }
@@ -43,16 +70,16 @@ function getDefaultPatch() {
     return {
         tacticId: 10,
         shirt0: 0,
-        shirt1: 3,
-        shirt2: 4,
-        shirt3: 5,
-        shirt4: 6,
-        shirt5: 7,
-        shirt6: 8,
-        shirt7: 9,
-        shirt8: 10,
-        shirt9: 11,
-        shirt10: 12,
+        shirt1: 1,
+        shirt2: 2,
+        shirt3: 3,
+        shirt4: 4,
+        shirt5: 5,
+        shirt6: 6,
+        shirt7: 7,
+        shirt8: 8,
+        shirt9: 9,
+        shirt10: 10,
         substitution0Shirt: 25,
         substitution0Target: 11,
         substitution0Minute: 0,

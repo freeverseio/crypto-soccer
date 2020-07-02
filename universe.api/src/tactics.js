@@ -26,12 +26,8 @@ const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
             }
         }
     });
-    if (nAlignedPlayersThatCanPlay > 11 - nRedCards1stHalf) { 
-        throw "too many players aligned given the 1st half redcards";
-    }
-    if (nChangesAtHalfTime >= 3) { 
-        throw "too many changes at half time";
-    }
+    if (nAlignedPlayersThatCanPlay > 11 - nRedCards1stHalf) throw "too many players aligned given the 1st half redcards: " +  nAlignedPlayersThatCanPlay;
+    if (nChangesAtHalfTime > 3) throw "too many changes at half time: " + nChangesAtHalfTime;
 };
 
 function wasAligned1stHalf(encodedSkills) {
