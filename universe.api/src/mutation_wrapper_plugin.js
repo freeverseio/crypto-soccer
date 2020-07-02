@@ -36,7 +36,7 @@ const updateTacticByTeamIdWrapper = propName => {
         const { pgClient } = context;
 
         var query = {
-            text: 'SELECT encoded_skills, shirt_number, red_card, timezone_idx, country_idx, league_idx, match_day_idx, match_idx FROM players JOIN matches ON (players.team_Id = matches.home_team_id OR players.team_Id = matches.visitor_team_id)  WHERE (team_id = $1 AND state = $2);',
+            text: 'SELECT encoded_skills, shirt_number, red_card, injury_matches_left, timezone_idx, country_idx, league_idx, match_day_idx, match_idx FROM players JOIN matches ON (players.team_Id = matches.home_team_id OR players.team_Id = matches.visitor_team_id)  WHERE (team_id = $1 AND state = $2);',
             values: [teamId, 'end'],
         };                    
         const resultQ1 = await pgClient.query(query);
