@@ -8,9 +8,8 @@ const BN = require('bn.js');
 //      - substitutionShirt, as shirtN
 //      - substitutionTarget is a value in [0, 10] refering to the player that will LEAVE the field
 const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
-    // for each shirt in shirt0...10:
-    // - c
-    // - get wasAligned, redCard by player Id
+    if (tacticPatch.tacticId > 8) throw "tacticId supported only up to 8, received " + tacticPatch.tacticId;
+
     nChangesAtHalfTime = 0;
     nAlignedPlayersThatCanPlay = 0;
     Object.keys(tacticPatch).forEach(function(key, index) {

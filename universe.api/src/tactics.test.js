@@ -11,6 +11,17 @@ describe('tactics', () => {
             expect(() => checkTactics(nRedCards1stHalf, data, tacticPatch)).not.toThrow();
         });
 
+        test('fails when wrong tacticId', () => {
+            var tacticPatchNew = {};
+            Object.assign(tacticPatchNew, tacticPatch);
+            tacticPatchNew.tacticId = 2;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.tacticId = 8;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
+            tacticPatchNew.tacticId = 9;
+            expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).toThrow("tacticId supported only up to 8, received 9");
+        });
+
         test('fails one red card in 1st half', () => {
             expect(() => checkTactics(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
             expect(() => checkTactics(nRedCards1stHalf = 5, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
@@ -19,7 +30,8 @@ describe('tactics', () => {
 
         test('changes at half time: 0, 1, 2,3 work, but > 3 will fail', () => {
             var nRedCards1stHalf = 0;
-            tacticPatchNew = tacticPatch;
+            var tacticPatchNew = {};
+            Object.assign(tacticPatchNew, tacticPatch);
             expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
             tacticPatchNew.shirt0 = 14;
             expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).not.toThrow();
@@ -30,9 +42,7 @@ describe('tactics', () => {
             tacticPatchNew.shirt8 = 17;
             expect(() => checkTactics(nRedCards1stHalf, data, tacticPatchNew)).toThrow("too many changes at half time");
         });
-
     });
-
 });
 
 function getDefaultData() {
@@ -68,7 +78,7 @@ function getDefaultData() {
 
 function getDefaultPatch() {
     return {
-        tacticId: 10,
+        tacticId: 8,
         shirt0: 0,
         shirt1: 1,
         shirt2: 2,
