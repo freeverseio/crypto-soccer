@@ -70,6 +70,16 @@ describe('tactics', () => {
             expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatchNew)).not.toThrow();
         });
 
+        test('player that does not exist in Universe does not count', () => {
+            var tacticPatchNew = {};
+            Object.assign(tacticPatchNew, tacticPatch);
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
+            // players 19...24 are not assigned for this team in the DB
+            // pointing to them may happen, for example, if previously pointed to one that was sold
+            tacticPatchNew.shirt1 = 23;
+            expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatchNew)).not.toThrow();
+        });
+
         test('fails one red card in 1st half', () => {
             expect(() => checkTactics2ndHalf(nRedCards1stHalf = 1, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
             expect(() => checkTactics2ndHalf(nRedCards1stHalf = 5, data, tacticPatch)).toThrow("too many players aligned given the 1st half redcards: 11");
