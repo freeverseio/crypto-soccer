@@ -1,3 +1,5 @@
+const BN = require('bn.js');
+
 // INPUTS:
 // - data:
 //      - array where each element is a struct with fields: "shirt_number", "encoded_skills", "red_card", "injury_matches_left"
@@ -5,7 +7,6 @@
 //      - shirtN is a value in [0, 24] for valid team players, and 25 for no-one chosen in that position
 //      - substitutionShirt, as shirtN
 //      - substitutionTarget is a value in [0, 10] refering to the player that will LEAVE the field
-
 const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
     // for each shirt in shirt0...10:
     // - c
@@ -20,14 +21,24 @@ const checkTactics = (nRedCards1stHalf, data, tacticPatch) => {
                 const canPlay = !player.red_card && player.injury_matches_left == 0;
                 if (canPlay) {
                     nAlignedPlayersThatCanPlay++;
-                    if (!wasAligned1stHalf(encodedSkills)) { nChangesAtHalfTime++; }
+                    if (!wasAligned1stHalf(player.encoded_skills)) { nChangesAtHalfTime++; }
                 }
             }
         }
     });
-    if (nAlignedPlayersThatCanPlay >= 11 - nRedCards1stHalf) { throw "too many players aligned given the 1st half redcards"}
-    if (nChangesAtHalfTime >= 3) { throw "too many changes at half time" }
+    if (nAlignedPlayersThatCanPlay > 11 - nRedCards1stHalf) { 
+        throw "too many players aligned given the 1st half redcards";
+    }
+    if (nChangesAtHalfTime >= 3) { 
+        throw "too many changes at half time";
+    }
 };
+
+function wasAligned1stHalf(encodedSkills) {
+    const skillsBN = new BN(encodedSkills, 10);
+    const one = new BN('1', 10);
+    return skillsBN.shrn(172).and(one).toNumber() == 1;
+}
 
 function getPlayerByShirtNum(shirtNum, data) {
     for (player of data) {
