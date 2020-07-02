@@ -12,37 +12,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-type LeaderboardService struct {
-	service storage.StorageService
-}
-
-func NewLeaderboardService(service storage.StorageService) *LeaderboardService {
-	return &LeaderboardService{
-		service: service,
-	}
-}
-
-func Sort(matches []storage.Match) {
-	sort.Slice(matches, func(i, j int) bool {
-		m0 := matches[i]
-		m1 := matches[j]
-		if m0.TimezoneIdx != m1.TimezoneIdx {
-			return m0.TimezoneIdx < m1.TimezoneIdx
-		}
-		if m0.CountryIdx != m1.CountryIdx {
-			return m0.CountryIdx < m1.CountryIdx
-		}
-		if m0.LeagueIdx != m1.LeagueIdx {
-			return m0.LeagueIdx < m1.LeagueIdx
-		}
-		if m0.MatchDayIdx != m1.MatchDayIdx {
-			return m0.MatchDayIdx < m1.MatchDayIdx
-		}
-		return m0.MatchIdx < m1.MatchIdx
-	})
-}
-
-func UpdateLeagueLeaderboard(
+func UpdateLeagueLeaderboardFrom1200(
 	contracts contracts.Contracts,
 	matchDay int,
 	matches [56]storage.Match,
@@ -94,13 +64,13 @@ func UpdateLeagueLeaderboard(
 	}
 
 	for i := 0; i < 8; i++ {
-		teams[i].LeaderboardPosition = int(llb.Ranking[i])
+		teams[llb.Ranking[i]].LeaderboardPosition = int(i)
 	}
 
 	return teams, nil
 }
 
-func (b LeaderboardService) UpdateTimezoneLeaderboards(
+func (b LeaderboardService) UpdateTimezoneLeaderboardsFrom1200(
 	contracts contracts.Contracts,
 	timezone int,
 	matchDay int,
@@ -141,7 +111,7 @@ func (b LeaderboardService) UpdateTimezoneLeaderboards(
 		})
 		leagueTeams := [8]storage.Team{}
 		copy(leagueTeams[:], teams)
-		if leagueTeams, err = UpdateLeagueLeaderboard(
+		if leagueTeams, err = UpdateLeagueLeaderboardFrom1200(
 			contracts,
 			matchDay,
 			leagueMatches,
