@@ -29,8 +29,15 @@ const updateTrainingByTeamIdWrapper = propName => {
     };
 };
 
+const updateTacticByTeamIdWrapper = propName => {
+    return async (resolve, source, args, context, resolveInfo) => {
+        return resolve();
+    };
+};
+
 module.exports = makeWrapResolversPlugin({
     Mutation: {
         updateTrainingByTeamId: updateTrainingByTeamIdWrapper(),
+        updateTacticByTeamId: updateTacticByTeamIdWrapper(),
     },
 });
