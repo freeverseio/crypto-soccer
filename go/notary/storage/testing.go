@@ -275,4 +275,40 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.Equal(t, result.StateExtra, order.StateExtra)
 
 	})
+
+	t.Run("pending order by playerId", func(t *testing.T) {
+		order := NewPlaystoreOrder()
+		order.PurchaseToken = "ciao12"
+		order.PackageName = "dsd"
+		order.ProductId = "444"
+		order.OrderId = "fdrd"
+		order.PlayerId = "4343534"
+		order.TeamId = "pippo"
+		order.State = PlaystoreOrderFailed
+		order.StateExtra = "prova"
+		order.Signature = "erere"
+
+		orders, err := service.PendingOrdersByPlayerId(order.PlayerId)
+		assert.NilError(t, err)
+		assert.Equal(t, len(orders), 0)
+
+		assert.NilError(t, service.Insert(*order))
+		orders, err = service.PendingOrdersByPlayerId(order.PlayerId)
+		assert.NilError(t, err)
+		assert.Equal(t, len(orders), 0)
+
+		order.PurchaseToken = "ciao432423"
+		order.State = PlaystoreOrderComplete
+		assert.NilError(t, service.Insert(*order))
+		orders, err = service.PendingOrdersByPlayerId(order.PlayerId)
+		assert.NilError(t, err)
+		assert.Equal(t, len(orders), 0)
+
+		order.PurchaseToken = "ciao4324233"
+		order.State = PlaystoreOrderAcknowledged
+		assert.NilError(t, service.Insert(*order))
+		orders, err = service.PendingOrdersByPlayerId(order.PlayerId)
+		assert.NilError(t, err)
+		assert.Equal(t, len(orders), 1)
+	})
 }

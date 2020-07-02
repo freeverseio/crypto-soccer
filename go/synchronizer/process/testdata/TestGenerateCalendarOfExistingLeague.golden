@@ -1,0 +1,1122 @@
+([]storage.Match) (len=56 cap=68) {
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 0,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 0,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 0,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 0,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 1,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 1,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 1,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 1,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 2,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 2,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 2,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 2,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 3,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 3,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 3,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 3,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 4,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 4,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 4,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 4,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 5,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 5,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 5,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 5,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 6,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 6,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 6,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 6,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 7,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 7,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 7,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 7,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 8,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 8,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 8,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 8,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 9,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 9,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 9,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 9,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 10,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 10,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 10,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 10,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 11,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 11,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 11,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 11,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 12,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 12,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 12,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 12,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 13,
+MatchIdx: (uint8) 0,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 13,
+MatchIdx: (uint8) 1,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 13,
+MatchIdx: (uint8) 2,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+},
+(storage.Match) {
+TimezoneIdx: (uint8) 1,
+CountryIdx: (uint32) 0,
+LeagueIdx: (uint32) 0,
+MatchDayIdx: (uint8) 13,
+MatchIdx: (uint8) 3,
+HomeTeamID: (*big.Int)(<nil>),
+VisitorTeamID: (*big.Int)(<nil>),
+Seed: ([32]uint8) (len=32 cap=32) {
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+},
+HomeGoals: (uint8) 0,
+VisitorGoals: (uint8) 0,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
+State: (storage.MatchState) "",
+StateExtra: (string) "",
+StartEpoch: (int64) 0
+}
+}

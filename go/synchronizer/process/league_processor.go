@@ -41,7 +41,7 @@ func NewLeagueProcessor(
 }
 
 func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
-	log.Infof("[consumer] reshuffling timezone %v", timezoneIdx)
+	log.Infof("[processor|consume] shuffling timezone %v and create calendars", timezoneIdx)
 	countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 	if err != nil {
 		return err
@@ -86,23 +86,27 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	log.Debugf("Timezone %v ... prepare to process the matches ..... ", timezoneIdx)
 
-	switch event.Verse.Int64() {
-	case int64(674):
+	verse := event.Verse.Uint64()
+
+	switch verse {
+	case uint64(674):
+		log.Info("[674|BUG] forcing reset timezone 24")
 		if err := b.resetTimezone(tx, 24); err != nil {
 			return err
 		}
-	case int64(678):
+	case uint64(678):
+		log.Info("[678|BUG] forcing reset timezone 1")
 		if err := b.resetTimezone(tx, 1); err != nil {
 			return err
 		}
 	default:
 		var timezoneToReshuffle uint8
 		var err error
-		transitionVerse := int64(910)
-		if event.Verse.Int64() < transitionVerse {
+		transitionVerse := uint64(910)
+		if event.Verse.Uint64() < transitionVerse {
 			timezoneToReshuffle, err = TimezoneToReshuffleOld(timezoneIdx, day, turnInDay)
 		} else {
-			if event.Verse.Int64() == transitionVerse {
+			if event.Verse.Uint64() == transitionVerse {
 				log.Infof("[%v|BUG] transitioning to new TimezoneToReshuffle function", transitionVerse)
 			}
 			timezoneToReshuffle, err = TimezoneToReshuffle(timezoneIdx, day, turnInDay)
@@ -172,8 +176,17 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	if turnInDay == 1 {
 		leaderboardService := leaderboard.NewLeaderboardService(storagepostgres.NewStorageService(tx))
-		if err := leaderboardService.UpdateTimezoneLeaderboards(*b.contracts, int(timezoneIdx), int(day)); err != nil {
-			return errors.Wrap(err, "failed updating timezone leaderboard")
+		if verse < 1200 {
+			if err := leaderboardService.UpdateTimezoneLeaderboards(*b.contracts, int(timezoneIdx), int(day)); err != nil {
+				return errors.Wrap(err, "failed updating timezone leaderboard")
+			}
+		} else {
+			if verse == uint64(1200) {
+				log.Info("[1200|BUG] switching to verse 1200 calculate leaderboard function")
+			}
+			if err := leaderboardService.UpdateTimezoneLeaderboardsFrom1200(*b.contracts, int(timezoneIdx), int(day)); err != nil {
+				return errors.Wrap(err, "failed updating timezone leaderboard")
+			}
 		}
 	}
 

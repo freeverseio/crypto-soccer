@@ -1,6 +1,7 @@
 package gql
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -10,15 +11,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func NewServer(
+func ListenAndServe(
 	ch chan interface{},
 	contracts contracts.Contracts,
 	namesdb *names.Generator,
 	googleCredentials []byte,
+	marketdb *sql.DB,
 ) error {
 	log.Info("New GraphQL server staring ...")
 
-	resolver := NewResolver(ch, contracts, namesdb, googleCredentials)
+	resolver := NewResolver(ch, contracts, namesdb, googleCredentials, marketdb)
 	schema := graphql.MustParseSchema(Schema, resolver)
 
 	handler := relay.Handler{Schema: schema}
