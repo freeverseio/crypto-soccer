@@ -335,7 +335,7 @@ contract('FullLeague', (accounts) => {
         almostNullTraning = await training.encodeTP(TP = 0, TPperSkill, specialPlayer = 21).should.be.fulfilled;
     });
   
-    it('create real data for an entire league', async () => {
+    it2('create real data for an entire league', async () => {
         mode = JUST_CHECK_AGAINST_EXPECTED_RESULTS; // JUST_CHECK_AGAINST_EXPECTED_RESULTS for testing, 1 WRITE_NEW_EXPECTED_RESULTS
         // prepare a training that is not identical to the bignumber(0), but which works irrespective of the previously earned TP
         // => all assingments to 0, but with a special player chosen
@@ -388,8 +388,8 @@ contract('FullLeague', (accounts) => {
         );
     });
     
-    it2('test day 0, half 0', async () => {
-        trainingPoints = 200;
+    it('test day 0, half 0', async () => {
+        trainingPoints = 25;
         encodedTraining = await chllUtils.encodeTrainingByTotalTP(trainingPoints, training);
         encodedTraining = encodedTraining.toString();
         nonTrivialML = await training.addTrainingPoints(log = 0, trainingPoints).should.be.fulfilled;
@@ -426,13 +426,7 @@ contract('FullLeague', (accounts) => {
     });
     
 
-    it2('test all days after 2nd half (day = odd)', async () => {
-        trainingPoints = 200;
-        encodedTraining = await chllUtils.encodeTrainingByTotalTP(trainingPoints, training);
-        encodedTraining = encodedTraining.toString();
-        nonTrivialML = await training.addTrainingPoints(log = 0, trainingPoints).should.be.fulfilled;
-        nonTrivialML = nonTrivialML.toString();
-        
+    it('test all days after 2nd half (day = odd)', async () => {
         leafs = chllUtils.readCreatedLeagueLeafs();
         day = 1;
         assert.equal(leafs.length, nMatchdays * 2);
