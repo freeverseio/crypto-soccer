@@ -120,9 +120,3 @@ func TestCalendarPopulate(t *testing.T) {
 	assert.Equal(t, matches[3].HomeTeamID.String(), "274877906949")
 	assert.Equal(t, matches[3].VisitorTeamID.String(), "274877906948")
 }
-
-func TestCalendarGetAllMatchdaysUTCInNextRound(t *testing.T) {
-	processor := process.NewCalendar(bc.Contracts)
-	_, err := processor.GetAllMatchdaysUTCInNextRound(10)
-	assert.NilError(t, err)
-}

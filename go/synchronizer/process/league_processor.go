@@ -40,7 +40,7 @@ func NewLeagueProcessor(
 	}
 }
 
-func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
+func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *big.Int) error {
 	log.Infof("[processor|consume] shuffling timezone %v and create calendars", timezoneIdx)
 	countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 	if err != nil {
@@ -57,7 +57,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8) error {
 			return err
 		}
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-			if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx); err != nil {
+			if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx, verse); err != nil {
 				return err
 			}
 			if err = storage.DeleteAllMatchEvents(tx, int(timezoneIdx), int(countryIdx), int(leagueIdx)); err != nil {
@@ -91,12 +91,12 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	switch verse {
 	case uint64(674):
 		log.Info("[674|BUG] forcing reset timezone 24")
-		if err := b.resetTimezone(tx, 24); err != nil {
+		if err := b.resetTimezone(tx, 24, event.Verse); err != nil {
 			return err
 		}
 	case uint64(678):
 		log.Info("[678|BUG] forcing reset timezone 1")
-		if err := b.resetTimezone(tx, 1); err != nil {
+		if err := b.resetTimezone(tx, 1, event.Verse); err != nil {
 			return err
 		}
 	default:
@@ -115,7 +115,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			return err
 		}
 		if timezoneToReshuffle != 0 {
-			if err := b.resetTimezone(tx, timezoneToReshuffle); err != nil {
+			if err := b.resetTimezone(tx, timezoneToReshuffle, event.Verse); err != nil {
 				return err
 			}
 		}
@@ -270,7 +270,7 @@ func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID string) ([25]*big.Int,
 	return state, nil
 }
 
-func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, verse *big.Int) error {
 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
@@ -292,7 +292,11 @@ func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx 
 	if err != nil {
 		return err
 	}
-	err = b.calendarProcessor.Populate(tx, timezoneIdx, countryIdx, leagueIdx)
+	matchesStart, err := b.calendarProcessor.GetAllMatchdaysUTCInNextRound(timezoneIdx, verse)
+	if err != nil {
+		return err
+	}
+	err = b.calendarProcessor.Populate(tx, timezoneIdx, countryIdx, leagueIdx, matchesStart)
 	if err != nil {
 		return err
 	}

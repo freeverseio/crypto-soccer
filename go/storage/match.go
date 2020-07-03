@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/big"
+	"sort"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -268,4 +269,25 @@ func MatchesByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, coun
 		matches = append(matches, match)
 	}
 	return matches, nil
+}
+
+func MatchesStartEpochByTimezone(tx *sql.Tx, timezone uint8) ([]int64, error) {
+	rows, err := tx.Query(`SELECT start_epoch FROM matches WHERE timezone_idx = $1 AND league_idx = '0';`, timezone)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	startTimes := []int64{}
+	for rows.Next() {
+		var value int64
+		err = rows.Scan(&value)
+		if err != nil {
+			return nil, err
+		}
+		startTimes = append(startTimes, value)
+	}
+	sort.Slice(startTimes, func(i, j int) bool {
+		return startTimes[i] < startTimes[j]
+	})
+	return startTimes, nil
 }

@@ -32,6 +32,29 @@ func VerseByNumber(tx *sql.Tx, verseNumber int64) (*Verse, error) {
 	return &verse, nil
 }
 
+func LastVerse(tx *sql.Tx) (*Verse, error) {
+	log.Debugf("[DBMS] LastVerse")
+	rows, err := tx.Query(`SELECT verse_number, root FROM verses ORDER BY verse_number DESC LIMIT 1;`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
+	verse := Verse{}
+	if err := rows.Scan(
+		&verse.VerseNumber,
+		&verse.Root,
+	); err != nil {
+		return nil, err
+	}
+
+	return &verse, nil
+}
+
 func (b Verse) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Verse Insert %v", b)
 
