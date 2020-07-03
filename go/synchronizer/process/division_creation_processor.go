@@ -126,14 +126,24 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 		}
 
 		matchesStart := [14]*big.Int{}
-		if countryIdx.Int64() == 0 && divisionIdxInCountry.Int64() == 0 {
+		if lastVerse == nil {
 			// timezone creation creating matches timing of current round
-			matchesStart, err = b.calendarProcessor.GetAllMatchdaysUTCInCurrentRound(timezone, big.NewInt(lastVerse.VerseNumber))
+			matchesStart, err = b.calendarProcessor.GetAllMatchdaysUTCInCurrentRound(timezone, big.NewInt(0))
 			if err != nil {
 				return err
 			}
 		} else {
 			// copy from the times of the timezone
+			matchesTimesByTimezone, err := storage.MatchesStartEpochByTimezone(tx, timezone)
+			if err != nil {
+				return err
+			}
+			if len(matchesTimesByTimezone) != 14 {
+				return errors.New("start epoch times have to be 14")
+			}
+			for i := range matchesStart {
+				matchesStart[i] = big.NewInt(matchesTimesByTimezone[i])
+			}
 		}
 
 		if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx), matchesStart); err != nil {
