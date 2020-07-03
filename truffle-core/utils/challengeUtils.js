@@ -116,7 +116,7 @@ function buildLeafs(leagueDataIn, day, half, nNonNullLeafs) {
         teamData.push(lData.teamStates[2*day + half][team][p])
     }
     teamData.push(lData.tactics[2*day + half][team]);
-    teamData.push(lData.trainings[day][team]);
+    teamData.push( half == 0 ? lData.trainings[day][team] : '0'); // null trainings always except before 1st half
     teamData.push(lData.matchLogs[2 * day + half][team]);
     leafs = leafs.concat(zeroPadToLength(teamData, 32));
     // after this half 
@@ -143,16 +143,8 @@ function clone(a) {
 }
 
 async function encodeTrainingByTotalTP(TP, trainingContract) { 
-  TPperSkill = Array.from(new Array(25), (x,i) => TP/5);
+  TPperSkill = Array.from(new Array(25), (x,i) => Math.floor(TP/5));
   specialPlayer = 0;
-  // make sure they sum to TP:
-  for (bucket = 0; bucket < 5; bucket++){
-      sum4 = 0;
-      for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
-          sum4 += TPperSkill[sk];
-      }
-      TPperSkill[5 * bucket + 4] = TP - sum4;
-  }        
   assignment = await trainingContract.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
   return assignment;
 }
@@ -177,7 +169,7 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
   // on starting points: if we query computeLeagueLeaderBoard, I would get 
   // a non-null value, sorting because of all tied, which would depend on a seed.
   // we don't have that seed before a match starts, so we set all points to 0.
-  trainingPoints = 200;
+  trainingPoints = 25;
   encodedTraining = await encodeTrainingByTotalTP(trainingPoints, trainingContract);
   encodedTraining = encodedTraining.toString();
   nonTrivialML = await trainingContract.addTrainingPoints(log = 0, trainingPoints).should.be.fulfilled;
@@ -208,14 +200,15 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
 
   // we just need to build, across the league: teamStates, points, teamIds
   // for (day = 0; day < 1; day++) {
-  for (day = 0; day < nMatchdays; day++) {
+    for (day = 0; day < nMatchdays; day++) {
       // 1st half
       for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
           var {0: t0, 1: t1} = await leagues.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
           t0 = t0.toNumber();
           t1 = t1.toNumber();
           console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 0,  teams:", t0, t1);
-          var {0: newSkills, 1: newLogs} =  await play.play1stHalfAndEvolve(
+          if (matchIdxInDay == 0) console.log(day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
+          var {0: newSkills, 1: newLogs, 2: err} =  await play.play1stHalfAndEvolve(
               leagueData.seeds[2 * day], leagueData.startTimes[2 * day], 
               [allTeamsSkills[t0], allTeamsSkills[t1]], 
               [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
@@ -224,8 +217,9 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
               [is2nd = false, isHom = true, isPlay = false, isBotHome = false, isBotAway = false],
               [leagueData.trainings[day][t0], leagueData.trainings[day][t1]]
           ).should.be.fulfilled;
-          allTeamsSkills[t0] = vec2str(newSkills[0]);
-          allTeamsSkills[t1] = vec2str(newSkills[1]);
+          allTeamsSkills[t0] = vec2str([...newSkills[0]]);
+          allTeamsSkills[t1] = vec2str([...newSkills[1]]);
+          if (matchIdxInDay == 0) console.log(err, day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
           allMatchLogs[t0] = newLogs[0].toString();
           allMatchLogs[t1] = newLogs[1].toString();
       }
@@ -237,6 +231,7 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
           t0 = t0.toNumber();
           t1 = t1.toNumber();
           console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 1,  teams:", t0, t1);
+          if (matchIdxInDay == 0) console.log(day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
           var {0: newSkills, 1: newLogs} =  await play.play2ndHalfAndEvolve(
               leagueData.seeds[2*day + 1], leagueData.startTimes[2*day + 1], 
               [allTeamsSkills[t0], allTeamsSkills[t1]], 
@@ -245,13 +240,22 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
               [allMatchLogs[t0], allMatchLogs[t1]],
               [is2nd = true, isHom = true, isPlay = false, isBotHome = false, isBotAway = false]
           ).should.be.fulfilled;
-          allTeamsSkills[t0] = vec2str(newSkills[0]);
-          allTeamsSkills[t1] = vec2str(newSkills[1]);
+          allTeamsSkills[t0] = vec2str([...newSkills[0]]);
+          allTeamsSkills[t1] = vec2str([...newSkills[1]]);
+          if (matchIdxInDay == 0) console.log(err, day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
           allMatchLogs[t0] = newLogs[0].toString();
           allMatchLogs[t1] = newLogs[1].toString(); 
           goals0 = await trainingContract.getNGoals(newLogs[0]).should.be.fulfilled;
           goals1 = await trainingContract.getNGoals(newLogs[1]).should.be.fulfilled;
           leagueData.results[nMatchesPerDay * day + matchIdxInDay] = [goals0.toNumber(), goals1.toNumber()];
+          TP0 = await trainingContract.getTrainingPoints(allMatchLogs[t0]).should.be.fulfilled;
+          TP1 = await trainingContract.getTrainingPoints(allMatchLogs[t1]).should.be.fulfilled;
+          encodedTraining0 = await encodeTrainingByTotalTP(TP0.toNumber(), trainingContract);
+          encodedTraining1 = await encodeTrainingByTotalTP(TP1.toNumber(), trainingContract);
+          if (day < nMatchesPerDay - 1) {  
+            leagueData.trainings[day+1][t0] = encodedTraining0;
+            leagueData.trainings[day+1][t1] = encodedTraining1;
+          }
       }
       leagueData.teamStates.push([...allTeamsSkills]);        
       leagueData.matchLogs.push([...allMatchLogs]);   
@@ -290,7 +294,8 @@ function areThereUnexpectedZeros(dayLeaf, day, half, expectedLength) {
   // every element of team from 28 to 32 is 0
   for (team = 0; team < nTeamsInLeague; team++) {
       off = 128 + 64 * team;
-      if (dayLeaf[off + 26] != 0) return true; // CHANGED: added this (null training end of half)
+      if ((half == 1) && (dayLeaf[off + 32 + 26] != 0)) return true; // CHANGED: added this (null training before start of 2nd half)
+      if (dayLeaf[off + 32 + 26] != 0) return true; // CHANGED: added this (null training end of every half)
       for (i = 28; i < 32; i++) {
         if (dayLeaf[off + i] != 0) return true;
         if (dayLeaf[off + 32 + i] != 0) return true;
