@@ -292,7 +292,11 @@ func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx 
 	if err != nil {
 		return err
 	}
-	err = b.calendarProcessor.Populate(tx, timezoneIdx, countryIdx, leagueIdx, verse)
+	matchesStart, err := b.calendarProcessor.GetAllMatchdaysUTCInNextRound(timezoneIdx, verse)
+	if err != nil {
+		return err
+	}
+	err = b.calendarProcessor.Populate(tx, timezoneIdx, countryIdx, leagueIdx, matchesStart)
 	if err != nil {
 		return err
 	}

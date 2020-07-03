@@ -62,18 +62,13 @@ func (b Calendar) GetAllMatchdaysUTCInNextRound(timezoneIdx uint8, verse *big.In
 	return matchesStart, nil
 }
 
-func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, verse *big.Int) error {
+func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchesStart [14]*big.Int) error {
 	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
 		return err
 	}
 	if league == nil {
 		return errors.New("Unexistent league")
-	}
-
-	matchesStart, err := b.GetAllMatchdaysUTCInNextRound(timezoneIdx, verse)
-	if err != nil {
-		return err
 	}
 
 	for matchDay := uint8(0); matchDay < contracts.MatchDays; matchDay++ {
