@@ -45,6 +45,22 @@ func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 	return nil
 }
 
+func (b Calendar) GetAllMatchdaysUTCInCurrentRound(timezoneIdx uint8, verse *big.Int) ([14]*big.Int, error) {
+	tz1, err := b.contracts.Updates.GetTimeZoneForRound1(&bind.CallOpts{})
+	if err != nil {
+		return [14]*big.Int{}, err
+	}
+	round, err := b.contracts.Updates.GetCurrentRoundPure(&bind.CallOpts{}, timezoneIdx, tz1, verse)
+	if err != nil {
+		return [14]*big.Int{}, err
+	}
+	matchesStart, err := b.contracts.Updates.GetAllMatchdaysUTCInRound(&bind.CallOpts{}, timezoneIdx, round)
+	if err != nil {
+		return [14]*big.Int{}, err
+	}
+	return matchesStart, nil
+}
+
 func (b Calendar) GetAllMatchdaysUTCInNextRound(timezoneIdx uint8, verse *big.Int) ([14]*big.Int, error) {
 	tz1, err := b.contracts.Updates.GetTimeZoneForRound1(&bind.CallOpts{})
 	if err != nil {

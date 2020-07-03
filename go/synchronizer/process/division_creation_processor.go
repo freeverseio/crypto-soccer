@@ -125,9 +125,15 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 			return err
 		}
 
-		matchesStart, err := b.calendarProcessor.GetAllMatchdaysUTCInNextRound(timezone, big.NewInt(lastVerse.VerseNumber))
-		if err != nil {
-			return err
+		matchesStart := [14]*big.Int{}
+		if countryIdx.Int64() == 0 && divisionIdxInCountry.Int64() == 0 {
+			// timezone creation creating matches timing of current round
+			matchesStart, err = b.calendarProcessor.GetAllMatchdaysUTCInCurrentRound(timezone, big.NewInt(lastVerse.VerseNumber))
+			if err != nil {
+				return err
+			}
+		} else {
+			// copy from the times of the timezone
 		}
 
 		if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx), matchesStart); err != nil {
