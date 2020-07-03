@@ -146,9 +146,7 @@ function clone(a) {
 async function encodeTrainingByTotalTP(TP, trainingContract) { 
   TPperSkill = Array.from(new Array(25), (x,i) => Math.floor(TP/5));
   specialPlayer = 0;
-  console.log(TP, TPperSkill[0]);
   assignment = await trainingContract.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
-  console.log("encoded");
   return assignment;
 }
 
@@ -210,16 +208,6 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
         t0 = t0.toNumber();
         t1 = t1.toNumber();
         console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 0,  teams:", t0, t1);
-        console.log(day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
-        if (true || matchIdxInDay == 0){
-          TP0 = await trainingContract.getTrainingPoints(allMatchLogs[t0]).should.be.fulfilled;
-          TP1 = await trainingContract.getTrainingPoints(allMatchLogs[t1]).should.be.fulfilled;
-          console.log("Critical day: ", TP0.toNumber(), TP1.toNumber());
-          decoded0 = await trainingContract.decodeTP(leagueData.trainings[day][t0]).should.be.fulfilled;
-          decoded1 = await trainingContract.decodeTP(leagueData.trainings[day][t1]).should.be.fulfilled;
-          console.log("0", decoded0.TP.toNumber(), decoded0.TPperSkill[0].toNumber());
-          console.log("1", decoded1.TP.toNumber(), decoded1.TPperSkill[0].toNumber());
-        }
         var {0: newSkills, 1: newLogs, 2: err} =  await play.play1stHalfAndEvolve(
             leagueData.seeds[2 * day], leagueData.startTimes[2 * day], 
             [allTeamsSkills[t0], allTeamsSkills[t1]], 
@@ -232,7 +220,6 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
         assert.equal(err.toNumber(), 0, "1st half error"); 
         allTeamsSkills[t0] = vec2str([...newSkills[0]]);
         allTeamsSkills[t1] = vec2str([...newSkills[1]]);
-        console.log(err, day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
         allMatchLogs[t0] = newLogs[0].toString();
         allMatchLogs[t1] = newLogs[1].toString();
       }
@@ -244,7 +231,6 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
         t0 = t0.toNumber();
         t1 = t1.toNumber();
         console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 1,  teams:", t0, t1);
-        console.log(day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
         var {0: newSkills, 1: newLogs} =  await play.play2ndHalfAndEvolve(
             leagueData.seeds[2*day + 1], leagueData.startTimes[2*day + 1], 
             [allTeamsSkills[t0], allTeamsSkills[t1]], 
@@ -256,7 +242,6 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
         assert.equal(err.toNumber(), 0, "2nd half error"); 
         allTeamsSkills[t0] = vec2str([...newSkills[0]]);
         allTeamsSkills[t1] = vec2str([...newSkills[1]]);
-        console.log(err, day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
         allMatchLogs[t0] = newLogs[0].toString();
         allMatchLogs[t1] = newLogs[1].toString(); 
         goals0 = await trainingContract.getNGoals(newLogs[0]).should.be.fulfilled;
@@ -267,9 +252,7 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
         const encodedTraining0 = await encodeTrainingByTotalTP(TP0.toNumber(), trainingContract);
         const encodedTraining1 = await encodeTrainingByTotalTP(TP1.toNumber(), trainingContract);
         if (day < (nMatchdays - 1)) {  
-          console.log("Encoding TP0 at day, t0", TP0.toNumber(), day+1, t0);
           leagueData.trainings[day+1][t0] = encodedTraining0;
-          console.log("Encoding TP1 at day, t1", TP1.toNumber(), day+1, t1);
           leagueData.trainings[day+1][t1] = encodedTraining1;
         } 
       }
