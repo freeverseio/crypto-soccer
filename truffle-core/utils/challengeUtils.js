@@ -3,6 +3,7 @@ const NULL_BYTES32 = web3.eth.abi.encodeParameter('bytes32','0x0');
 const merkleUtils = require('../utils/merkleUtils.js');
 const teamsUtils = require('../utils/teamsUtils.js');
 const fs = require('fs');
+const { assert } = require('chai');
 
 const nMatchdays = 14;
 const nMatchesPerDay = 4;
@@ -145,7 +146,9 @@ function clone(a) {
 async function encodeTrainingByTotalTP(TP, trainingContract) { 
   TPperSkill = Array.from(new Array(25), (x,i) => Math.floor(TP/5));
   specialPlayer = 0;
+  console.log(TP, TPperSkill[0]);
   assignment = await trainingContract.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+  console.log("encoded");
   return assignment;
 }
 
@@ -195,7 +198,7 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
   // trainings are set to zero as soon as consumed. So at the end of half 0 they remain zero until the end of half 2, included.
   // so we only need to calculate one per matchday
   for (day = 0; day < nMatchdays; day++) {
-      leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => encodedTraining));
+    leagueData.trainings.push(Array.from(new Array(nTeamsInLeague), (x,i) => encodedTraining));
   }
 
   // we just need to build, across the league: teamStates, points, teamIds
@@ -203,59 +206,72 @@ async function createLeagueData(leagues, play, trainingContract, now, teamState4
     for (day = 0; day < nMatchdays; day++) {
       // 1st half
       for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
-          var {0: t0, 1: t1} = await leagues.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
-          t0 = t0.toNumber();
-          t1 = t1.toNumber();
-          console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 0,  teams:", t0, t1);
-          if (matchIdxInDay == 0) console.log(day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
-          var {0: newSkills, 1: newLogs, 2: err} =  await play.play1stHalfAndEvolve(
-              leagueData.seeds[2 * day], leagueData.startTimes[2 * day], 
-              [allTeamsSkills[t0], allTeamsSkills[t1]], 
-              [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
-              [leagueData.tactics[2 * day][t0], leagueData.tactics[2 * day][t1]], 
-              [allMatchLogs[t0], allMatchLogs[t1]],
-              [is2nd = false, isHom = true, isPlay = false, isBotHome = false, isBotAway = false],
-              [leagueData.trainings[day][t0], leagueData.trainings[day][t1]]
-          ).should.be.fulfilled;
-          allTeamsSkills[t0] = vec2str([...newSkills[0]]);
-          allTeamsSkills[t1] = vec2str([...newSkills[1]]);
-          if (matchIdxInDay == 0) console.log(err, day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
-          allMatchLogs[t0] = newLogs[0].toString();
-          allMatchLogs[t1] = newLogs[1].toString();
+        var {0: t0, 1: t1} = await leagues.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
+        t0 = t0.toNumber();
+        t1 = t1.toNumber();
+        console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 0,  teams:", t0, t1);
+        console.log(day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
+        if (true || matchIdxInDay == 0){
+          TP0 = await trainingContract.getTrainingPoints(allMatchLogs[t0]).should.be.fulfilled;
+          TP1 = await trainingContract.getTrainingPoints(allMatchLogs[t1]).should.be.fulfilled;
+          console.log("Critical day: ", TP0.toNumber(), TP1.toNumber());
+          decoded0 = await trainingContract.decodeTP(leagueData.trainings[day][t0]).should.be.fulfilled;
+          decoded1 = await trainingContract.decodeTP(leagueData.trainings[day][t1]).should.be.fulfilled;
+          console.log("0", decoded0.TP.toNumber(), decoded0.TPperSkill[0].toNumber());
+          console.log("1", decoded1.TP.toNumber(), decoded1.TPperSkill[0].toNumber());
+        }
+        var {0: newSkills, 1: newLogs, 2: err} =  await play.play1stHalfAndEvolve(
+            leagueData.seeds[2 * day], leagueData.startTimes[2 * day], 
+            [allTeamsSkills[t0], allTeamsSkills[t1]], 
+            [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
+            [leagueData.tactics[2 * day][t0], leagueData.tactics[2 * day][t1]], 
+            [allMatchLogs[t0], allMatchLogs[t1]],
+            [is2nd = false, isHom = true, isPlay = false, isBotHome = false, isBotAway = false],
+            [leagueData.trainings[day][t0], leagueData.trainings[day][t1]]
+        ).should.be.fulfilled;
+        assert.equal(err.toNumber(), 0, "1st half error"); 
+        allTeamsSkills[t0] = vec2str([...newSkills[0]]);
+        allTeamsSkills[t1] = vec2str([...newSkills[1]]);
+        console.log(err, day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
+        allMatchLogs[t0] = newLogs[0].toString();
+        allMatchLogs[t1] = newLogs[1].toString();
       }
       leagueData.teamStates.push([...allTeamsSkills]);        
       leagueData.matchLogs.push([...allMatchLogs]);        
       // 2nd half
       for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {
-          var {0: t0, 1: t1} = await leagues.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
-          t0 = t0.toNumber();
-          t1 = t1.toNumber();
-          console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 1,  teams:", t0, t1);
-          if (matchIdxInDay == 0) console.log(day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
-          var {0: newSkills, 1: newLogs} =  await play.play2ndHalfAndEvolve(
-              leagueData.seeds[2*day + 1], leagueData.startTimes[2*day + 1], 
-              [allTeamsSkills[t0], allTeamsSkills[t1]], 
-              [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
-              [leagueData.tactics[2 * day + 1][t0], leagueData.tactics[2 * day + 1][t1]], 
-              [allMatchLogs[t0], allMatchLogs[t1]],
-              [is2nd = true, isHom = true, isPlay = false, isBotHome = false, isBotAway = false]
-          ).should.be.fulfilled;
-          allTeamsSkills[t0] = vec2str([...newSkills[0]]);
-          allTeamsSkills[t1] = vec2str([...newSkills[1]]);
-          if (matchIdxInDay == 0) console.log(err, day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
-          allMatchLogs[t0] = newLogs[0].toString();
-          allMatchLogs[t1] = newLogs[1].toString(); 
-          goals0 = await trainingContract.getNGoals(newLogs[0]).should.be.fulfilled;
-          goals1 = await trainingContract.getNGoals(newLogs[1]).should.be.fulfilled;
-          leagueData.results[nMatchesPerDay * day + matchIdxInDay] = [goals0.toNumber(), goals1.toNumber()];
-          TP0 = await trainingContract.getTrainingPoints(allMatchLogs[t0]).should.be.fulfilled;
-          TP1 = await trainingContract.getTrainingPoints(allMatchLogs[t1]).should.be.fulfilled;
-          encodedTraining0 = await encodeTrainingByTotalTP(TP0.toNumber(), trainingContract);
-          encodedTraining1 = await encodeTrainingByTotalTP(TP1.toNumber(), trainingContract);
-          if (day < nMatchesPerDay - 1) {  
-            leagueData.trainings[day+1][t0] = encodedTraining0;
-            leagueData.trainings[day+1][t1] = encodedTraining1;
-          }
+        var {0: t0, 1: t1} = await leagues.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
+        t0 = t0.toNumber();
+        t1 = t1.toNumber();
+        console.log("day:", day, ", matchIdxInDay:", matchIdxInDay, ", half 1,  teams:", t0, t1);
+        console.log(day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
+        var {0: newSkills, 1: newLogs} =  await play.play2ndHalfAndEvolve(
+            leagueData.seeds[2*day + 1], leagueData.startTimes[2*day + 1], 
+            [allTeamsSkills[t0], allTeamsSkills[t1]], 
+            [leagueData.teamIds[t0], leagueData.teamIds[t1]], 
+            [leagueData.tactics[2 * day + 1][t0], leagueData.tactics[2 * day + 1][t1]], 
+            [allMatchLogs[t0], allMatchLogs[t1]],
+            [is2nd = true, isHom = true, isPlay = false, isBotHome = false, isBotAway = false]
+        ).should.be.fulfilled;
+        assert.equal(err.toNumber(), 0, "2nd half error"); 
+        allTeamsSkills[t0] = vec2str([...newSkills[0]]);
+        allTeamsSkills[t1] = vec2str([...newSkills[1]]);
+        console.log(err, day, matchIdxInDay, t0, t1, allTeamsSkills[t0][0], allTeamsSkills[t1][0]);
+        allMatchLogs[t0] = newLogs[0].toString();
+        allMatchLogs[t1] = newLogs[1].toString(); 
+        goals0 = await trainingContract.getNGoals(newLogs[0]).should.be.fulfilled;
+        goals1 = await trainingContract.getNGoals(newLogs[1]).should.be.fulfilled;
+        leagueData.results[nMatchesPerDay * day + matchIdxInDay] = [goals0.toNumber(), goals1.toNumber()];
+        TP0 = await trainingContract.getTrainingPoints(allMatchLogs[t0]).should.be.fulfilled;
+        TP1 = await trainingContract.getTrainingPoints(allMatchLogs[t1]).should.be.fulfilled;
+        const encodedTraining0 = await encodeTrainingByTotalTP(TP0.toNumber(), trainingContract);
+        const encodedTraining1 = await encodeTrainingByTotalTP(TP1.toNumber(), trainingContract);
+        if (day < (nMatchdays - 1)) {  
+          console.log("Encoding TP0 at day, t0", TP0.toNumber(), day+1, t0);
+          leagueData.trainings[day+1][t0] = encodedTraining0;
+          console.log("Encoding TP1 at day, t1", TP1.toNumber(), day+1, t1);
+          leagueData.trainings[day+1][t1] = encodedTraining1;
+        } 
       }
       leagueData.teamStates.push([...allTeamsSkills]);        
       leagueData.matchLogs.push([...allMatchLogs]);   
