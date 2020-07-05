@@ -1,4 +1,4 @@
-const isTrainingGroupValid = (TP, shoot, speed, pass, defence, endurance) => {
+const checkTrainingGroup = (TP, shoot, speed, pass, defence, endurance) => {
     if (isNaN(TP)
         || isNaN(shoot)
         || isNaN(speed)
@@ -19,13 +19,13 @@ const isTrainingGroupValid = (TP, shoot, speed, pass, defence, endurance) => {
     if (10 * endurance > RHS) throw "endurance exceeds 60% of TP " + TP;
 };
 
-const isTrainingSpecialPlayerValid = (TP, shoot, speed, pass, defence, endurance) => {
+const checkTrainingSpecialPlayer = (TP, shoot, speed, pass, defence, endurance) => {
     const specialPlayerTP = Math.floor(TP * 11 / 10);
-    isTrainingGroupValid(specialPlayerTP, shoot, speed, pass, defence, endurance);
+    checkTrainingGroup(specialPlayerTP, shoot, speed, pass, defence, endurance);
 };
 
 module.exports = {
-    isTrainingGroupValid,
-    isTrainingSpecialPlayerValid,
+    checkTrainingGroup,
+    checkTrainingSpecialPlayer,
 };
 
