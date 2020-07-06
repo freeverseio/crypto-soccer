@@ -1,0 +1,5 @@
+resources:
+  - service-loadbalancer.yaml
+  - service.yaml
+  - setup-configmap.yaml
+  - statefulset.yaml
