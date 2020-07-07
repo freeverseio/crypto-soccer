@@ -976,7 +976,7 @@ contract('Engine', (accounts) => {
     it('play a match in home stadium, check that max goals is applied', async () => {
         // note: the home team is much better than the away team
         var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2nd = false, isHome = true, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
-        expected = [11, 0];
+        expected = [10, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -991,7 +991,7 @@ contract('Engine', (accounts) => {
     
     it('play a match', async () => {
         var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
-        expected = [11, 0];
+        expected = [10, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -1419,7 +1419,7 @@ contract('Engine', (accounts) => {
         debug.compareArrays(result, expectedResult, toNum = true);
 
         var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
-        expectedResult = [12, 0];
+        expectedResult = [11, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             nGoals.toNumber().should.be.equal(expectedResult[team]);
