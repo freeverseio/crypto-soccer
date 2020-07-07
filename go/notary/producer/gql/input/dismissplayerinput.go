@@ -32,11 +32,11 @@ func (b DismissPlayerInput) Hash() (common.Hash, error) {
 
 	validUntil, _ := new(big.Int).SetString(b.ValidUntil, 10)
 	if validUntil == nil {
-		return common.Hash{}, errors.New("Invalid ValidUntil")
+		return common.Hash{}, errors.New("invalid validUntil")
 	}
 	playerId, _ := new(big.Int).SetString(string(b.PlayerId), 10)
 	if playerId == nil {
-		return common.Hash{}, errors.New("Invalid PlayerId")
+		return common.Hash{}, errors.New("invalid playerId")
 	}
 
 	bytes, err := arguments.Pack(
@@ -82,7 +82,7 @@ func (b DismissPlayerInput) IsSignerOwner(contracts contracts.Contracts) (bool, 
 	}
 	playerId, _ := new(big.Int).SetString(string(b.PlayerId), 10)
 	if playerId == nil {
-		return false, errors.New("Invalid teamId")
+		return false, errors.New("invalid teamId")
 	}
 	owner, err := contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
 	if err != nil {

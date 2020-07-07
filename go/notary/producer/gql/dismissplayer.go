@@ -22,7 +22,7 @@ func (b *Resolver) DismissPlayer(args struct{ Input input.DismissPlayerInput }) 
 		return graphql.ID(id), err
 	}
 	if !isValid {
-		return graphql.ID(id), errors.New("Invalid signature")
+		return graphql.ID(id), errors.New("invalid signature")
 	}
 
 	isOwner, err := args.Input.IsSignerOwner(b.contracts)
@@ -30,7 +30,7 @@ func (b *Resolver) DismissPlayer(args struct{ Input input.DismissPlayerInput }) 
 		return id, err
 	}
 	if !isOwner {
-		return id, errors.New("Not player owner")
+		return id, errors.New("not player owner")
 	}
 
 	select {
