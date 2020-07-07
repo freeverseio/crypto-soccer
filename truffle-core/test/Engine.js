@@ -976,7 +976,7 @@ contract('Engine', (accounts) => {
     it('play a match in home stadium, check that max goals is applied', async () => {
         // note: the home team is much better than the away team
         var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2nd = false, isHome = true, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
-        expected = [11, 0];
+        expected = [10, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -991,7 +991,7 @@ contract('Engine', (accounts) => {
     
     it('play a match', async () => {
         var {0: log, 1: err} = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
-        expected = [11, 0];
+        expected = [10, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
@@ -1253,19 +1253,37 @@ contract('Engine', (accounts) => {
     });
     
     it('manages to shoot', async () => {
-        // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
-        let  = 8000; // the max allowed random number is 16383, so this is about half of it
+        // interface: managesToShoot(uint256[2] matchLogs, uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum)
         let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
-        let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        const matchLogs = [0, 0];
+        let result = await engine.managesToShoot(matchLogs, 0, globSkills, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.managesToShoot(matchLogs, 1, globSkills, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(false);
         globSkills = [[1,1,1,1,1], [100,100,100,100,100]];
-        result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.managesToShoot(matchLogs, 0, globSkills, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.managesToShoot(matchLogs, 1, globSkills, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
     });
+
+    it('effect of masacre in manages to shoot', async () => {
+        // interface: managesToShoot(uint256[2] matchLogs, uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum)
+        globSkills = [[1000,1000,1000,1000,1000], [1000,1000,1000,1000,1000]];
+        rnd = Math.floor(MAX_RND * 0.7);
+        result = await engine.managesToShoot(logs = [0, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
+        result.should.be.equal(true);
+        logMasacre = await precomp.addNGoals(log = 0, nGoals = 2).should.be.fulfilled;
+        result = await engine.managesToShoot(logs = [logMasacre, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
+        result.should.be.equal(true);
+        logMasacre = await precomp.addNGoals(log = 0, nGoals = 3).should.be.fulfilled;
+        result = await engine.managesToShoot(logs = [logMasacre, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
+        result.should.be.equal(false);
+        logMasacre = await precomp.addNGoals(log = 0, nGoals = 15).should.be.fulfilled;
+        result = await engine.managesToShoot(logs = [logMasacre, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
+        result.should.be.equal(false);
+    });
+
 
     it('throws dice', async () => {
         // interface: throwDice(uint weight1, uint weight2, uint rndNum)
@@ -1401,7 +1419,7 @@ contract('Engine', (accounts) => {
         debug.compareArrays(result, expectedResult, toNum = true);
 
         var {0: matchLog, 1: err} = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
-        expectedResult = [12, 0];
+        expectedResult = [11, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             nGoals.toNumber().should.be.equal(expectedResult[team]);
