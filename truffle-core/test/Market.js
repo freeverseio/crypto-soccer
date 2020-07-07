@@ -96,7 +96,23 @@ contract("Market", accounts => {
     buyerRnd = 1243523;
 
   });
-  
+
+  it("dismissPlayer signature", async () => {
+    const account = web3.eth.accounts.privateKeyToAccount('0x348ce564d427a3311b6536bbcff9390d69395b06ed6c486954e971d960fe8709');
+    account.address.should.be.equal("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
+    const playerId = "123455";
+    const validUntil = "5646456";
+    const returnToAcademy = true;
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId, returnToAcademy, account).should.be.fulfilled;
+
+    sigSeller.message.should.be.equal('0xdaa54d5f301de697c9dab3416a20ac9d4d7890f92f01c1340c18152cb93c5ca0');
+    sigSeller.messageHash.should.be.equal('0xfde13974fe686e362246c490ef0280e35928eca805695c7bfd89c7f2bc74b39b');
+    sigSeller.v.should.be.equal('0x1b');
+    sigSeller.r.should.be.equal('0x0f13e4028d911bbf7e305267d593c6b67888030032e73f94a5cf8af204567ab6');
+    sigSeller.s.should.be.equal('0x29848e9290568aa5d19c1b7a4761a20ed4059072aacd79bde56e1b52c17a2131');
+    sigSeller.signature.should.be.equal('0x0f13e4028d911bbf7e305267d593c6b67888030032e73f94a5cf8af204567ab629848e9290568aa5d19c1b7a4761a20ed4059072aacd79bde56e1b52c17a21311b');
+  });
+
   it("changing newSumSkillsAllowed", async () => {
     var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(20000);
@@ -1133,7 +1149,6 @@ contract("Market", accounts => {
     isFree.should.be.equal(false);
   });
   
-  
   it("dismissPlayers works", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
@@ -1257,6 +1272,8 @@ contract("Market", accounts => {
       {from: owners.market}
     ).should.be.rejected;
   });
+
+
   
   it("buyNow: buy now player fails for players with too large sumSkills", async () => {
     playerId = await createSpecialPlayerId(id = 4312432432);
