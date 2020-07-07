@@ -529,8 +529,8 @@ contract('Evolution', (accounts) => {
         // yellows -1
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
-        expectedGoals = [9,0];
-        expectedPoints = [63,10];
+        expectedGoals = [6,0];
+        expectedPoints = [54,10];
         expectedSums = [55000,33022];
         expectedFwds = [ 2, 3,  1, 3, 3, 2,  3, 1, 3 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
@@ -586,9 +586,9 @@ contract('Evolution', (accounts) => {
             sums.push(sum.toNumber());
             
         }   
-        expectedFwds = [ 2, 3,  1, 3, 3, 2,  3, 1, 3 ];     
-        expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
-        expectedAss = [ 6, 10, 6, 9, 8, 6, 10, 6, 9 ];     
+        expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
+        expectedSho = [ 6, 8, 1, 9, 8, 1 ];     
+        expectedAss = [ 6, 10, 6, 9, 8, 6 ];     
         fwds = [];
         sho = [];
         ass = [];
@@ -630,12 +630,12 @@ contract('Evolution', (accounts) => {
         // yellows -1
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
-        expectedGoals = [5,0];
-        expectedPoints = [53,10];
+        expectedGoals = [3,0];
+        expectedPoints = [45,11];
         expectedSums = [55000,33000];
-        expectedFwds = [ 1, 3, 2, 1, 3 ];     
-        expectedSho = [ 1, 10, 7, 1, 10];     
-        expectedAss = [ 6, 10, 8, 6, 10 ];   
+        expectedFwds = [ 1, 3, 2 ];     
+        expectedSho = [ 1, 10, 7];     
+        expectedAss = [ 6, 10, 8 ];   
         
         utils = await Utils.new().should.be.fulfilled;
         assignment = 0;
@@ -674,24 +674,14 @@ contract('Evolution', (accounts) => {
         sumSkills.toNumber().should.be.equal(33000);
 
         for (team = 0; team < 2; team++) {
-            console.log("--------- team: ", team);
             result = await assets.getAlignedEndOfFirstHalf(skills[team][0]).should.be.fulfilled;
-            console.log("aligned: ", result);
             result = await assets.getSubstitutedFirstHalf(skills[team][0]).should.be.fulfilled;
-            console.log("subst: ", result);
             result = await assets.getRedCardLastGame(skills[team][0]).should.be.fulfilled;
-            console.log("red: ", result);
             result = await assets.getInjuryWeeksLeft(skills[team][0]).should.be.fulfilled;
-            console.log("inj: ", result.toNumber());
-            console.log("skills: ", skills[team][0]);
             result = await assets.getSkill(skills[team][0],0).should.be.fulfilled;
-            console.log("sk0: ", result.toNumber());
             result = await assets.getSkill(skills[team][0],3).should.be.fulfilled;
-            console.log("sk3: ", result.toNumber());
             result = await assets.getSkill(skills[team][0],4).should.be.fulfilled;
-            console.log("sk4: ", result.toNumber());
             result = await assets.getSumOfSkills(skills[team][0]).should.be.fulfilled;
-            console.log("sumSk: ", result.toNumber());
         }
 
         var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play2ndHalfAndEvolve(
@@ -699,8 +689,6 @@ contract('Evolution', (accounts) => {
             [is2nd = true, isHomeStadium, isPlayoff, isB = true, isB = true]
         ).should.be.fulfilled;
 
-        console.log("DONE 2nd half");
-        
         goals = [];
         points = [];
         sums = [];
@@ -738,30 +726,17 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(ass, expectedAss, toNum = false, isBigNumber = false);
 
         for (team = 0; team < 2; team++) {
-            console.log("--------- team: ", team);
             result = await assets.getAlignedEndOfFirstHalf(skills[team][0]).should.be.fulfilled;
-            console.log("aligned: ", result);
             result = await assets.getSubstitutedFirstHalf(skills[team][0]).should.be.fulfilled;
-            console.log("subst: ", result);
             result = await assets.getRedCardLastGame(skills[team][0]).should.be.fulfilled;
-            console.log("red: ", result);
             result = await assets.getInjuryWeeksLeft(skills[team][0]).should.be.fulfilled;
-            console.log("inj: ", result.toNumber());
-            console.log("skills: ", skills[team][0]);
             result = await assets.getSkill(skills[team][0],0).should.be.fulfilled;
-            console.log("sk0: ", result.toNumber());
             result = await assets.getSkill(skills[team][0],3).should.be.fulfilled;
-            console.log("sk3: ", result.toNumber());
             result = await assets.getSkill(skills[team][0],4).should.be.fulfilled;
-            console.log("sk4: ", result.toNumber());
             result = await assets.getSumOfSkills(skills[team][0]).should.be.fulfilled;
-            console.log("sumSk: ", result.toNumber());
         }
 
     });
-
-
-
 
     it('test that used to fail because yellow cards remained 0 when turned into a red', async () => {
         utils = await Utils.new().should.be.fulfilled;
