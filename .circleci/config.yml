@@ -164,12 +164,6 @@ jobs:
       - submit_universe_db_schema
       - run: cd go/cmd/relay && go build ./relay.go
       - run: cd go/relay && go test ./... -p 1
-  market-trader:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: cd market.trader && npm install
-      - run: cd market.trader && npm test
   universe-api:
     docker:
       - image: circleci/node:lts
@@ -275,10 +269,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - market-trader:
-          filters:
-            tags:
-              only: /.*/
       - universe-api:
           filters:
             tags:
@@ -302,7 +292,6 @@ workflows:
                 - dev
           requires:
             - synchronizer
-            - market-trader
             - relay-actions
             - market-notary
             - go1
@@ -316,7 +305,6 @@ workflows:
               ignore: /.*/
           requires:
             - synchronizer
-            - market-trader
             - relay-actions
             - market-notary
             - go1
