@@ -172,7 +172,12 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
             seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
-            seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1]) ? 1 : 0;
+            seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(
+                matchLogs,
+                teamThatAttacks, 
+                globSkills, 
+                rnds[5*round+1]
+            ) ? 1 : 0;
             if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
                 /// scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
@@ -259,15 +264,22 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     }
 
     /// Decides if a team manages to shoot by confronting attack and defense via globSkills
-    function managesToShoot(uint8 teamThatAttacks, uint256[5][2] memory globSkills, uint256 rndNum)
+    function managesToShoot(uint256[2] memory matchLogs, uint8 teamThatAttacks, uint256[5][2] memory globSkills, uint256 rndNum)
         public
         pure
         returns (bool)
     {
         if (globSkills[teamThatAttacks][IDX_CREATE_SHOOT] == 0) return false;
+        uint256 penaltyForMasacre = 1; 
+        uint256 goalsTeamThatAttacks = getNGoals(matchLogs[teamThatAttacks]);
+        uint256 goalsTeamThatDefends = getNGoals(matchLogs[1-teamThatAttacks]);
+        if (goalsTeamThatAttacks >= goalsTeamThatDefends + 3) {
+            penaltyForMasacre = goalsTeamThatAttacks - (goalsTeamThatDefends + 3) + 2;
+        }
+        
         return throwDice(
-            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       /// globSkills[IDX_DEFEND_SHOOT] of defending team against...
-            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/10,  /// globSkills[IDX_CREATE_SHOOT] of attacking team.
+            (globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT]),       /// globSkills[IDX_DEFEND_SHOOT] of defending team against...
+            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/(10 * penaltyForMasacre),  /// globSkills[IDX_CREATE_SHOOT] of attacking team.
             rndNum
         ) == 1 ? true : false;
     }

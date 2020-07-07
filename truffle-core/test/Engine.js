@@ -1253,19 +1253,37 @@ contract('Engine', (accounts) => {
     });
     
     it('manages to shoot', async () => {
-        // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
-        let  = 8000; // the max allowed random number is 16383, so this is about half of it
+        // interface: managesToShoot(uint256[2] matchLogs, uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum)
         let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
-        let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        const matchLogs = [0, 0];
+        let result = await engine.managesToShoot(matchLogs, 0, globSkills, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.managesToShoot(matchLogs, 1, globSkills, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(false);
         globSkills = [[1,1,1,1,1], [100,100,100,100,100]];
-        result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.managesToShoot(matchLogs, 0, globSkills, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.managesToShoot(matchLogs, 1, globSkills, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
     });
+
+    it('effect of masacre in manages to shoot', async () => {
+        // interface: managesToShoot(uint256[2] matchLogs, uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum)
+        globSkills = [[1000,1000,1000,1000,1000], [1000,1000,1000,1000,1000]];
+        rnd = Math.floor(MAX_RND * 0.7);
+        result = await engine.managesToShoot(logs = [0, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
+        result.should.be.equal(true);
+        logMasacre = await precomp.addNGoals(log = 0, nGoals = 2).should.be.fulfilled;
+        result = await engine.managesToShoot(logs = [logMasacre, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
+        result.should.be.equal(true);
+        logMasacre = await precomp.addNGoals(log = 0, nGoals = 3).should.be.fulfilled;
+        result = await engine.managesToShoot(logs = [logMasacre, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
+        result.should.be.equal(false);
+        logMasacre = await precomp.addNGoals(log = 0, nGoals = 15).should.be.fulfilled;
+        result = await engine.managesToShoot(logs = [logMasacre, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
+        result.should.be.equal(false);
+    });
+
 
     it('throws dice', async () => {
         // interface: throwDice(uint weight1, uint weight2, uint rndNum)
