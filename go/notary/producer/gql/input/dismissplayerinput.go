@@ -6,8 +6,10 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 )
 
@@ -71,4 +73,20 @@ func (b DismissPlayerInput) VerifySignature() (bool, error) {
 		return false, err
 	}
 	return helper.VerifySignature(hash, sign)
+}
+
+func (b DismissPlayerInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
+	signerAddress, err := b.SignerAddress()
+	if err != nil {
+		return false, err
+	}
+	playerId, _ := new(big.Int).SetString(string(b.PlayerId), 10)
+	if playerId == nil {
+		return false, errors.New("Invalid teamId")
+	}
+	owner, err := contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
+	if err != nil {
+		return false, err
+	}
+	return signerAddress == owner, nil
 }
