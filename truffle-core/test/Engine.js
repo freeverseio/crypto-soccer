@@ -480,7 +480,7 @@ contract('Engine', (accounts) => {
     it2('computeExceptionalEvents clashing 2nd against 1st', async () => {
         // first half:
         //      - there is a red card with this seed, to player 2 at round 2. 
-        //      - there are two yellow cards, for player 1, and for subtituted 12.
+        //      - there are two yellow cards, for player 5, and for subtituted 13.
         for (p = 92; p < 92+1; p++) {
             seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
         }
@@ -523,20 +523,22 @@ contract('Engine', (accounts) => {
     
     it2('computeExceptionalEvents clashing 2nd against 1st, with no substitution in the middle', async () => {
         // first half:
-        //      - there is a red card with this seed, to player 9 at round 2. 
-        //      - there are two yellow cards, for player 1, and for subtituted 12.
-        seedForRedCard = seed + 83;
+        //      - there is a red card with this seed, to player 2 at round 2. 
+        //      - there are two yellow cards, for player 5, and for subtituted 13.
+        for (p = 92; p < 92+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         substis = [2, 3, 4];
         rounds = [4, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 0];
-        expectedOutRounds = [1, 0]; 
-        expectedYellows1 = [1, 12];
+        expectedOut = [2, 0];
+        expectedOutRounds = [2, 0]; 
+        expectedYellows1 = [5, 13];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
-        expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs1 = [2, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
@@ -547,12 +549,12 @@ contract('Engine', (accounts) => {
         tactics = await engine.encodeTactics(substis = [0,0,0], rounds = [0,0,0], lineupConsecutive, extraAttackNull, tacticsId = 0);
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 9]; // note that the red card comes from two yellows.
-        expectedOutRounds = [1, 1]; 
-        expectedYellows1 = [1, 12]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
-        expectedYellows2 = [1, 12]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
+        expectedOut = [2, 2]; // note that the red card comes from two yellows.
+        expectedOutRounds = [2, 4]; 
+        expectedYellows1 = [5, 13]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
+        expectedYellows2 = [5, 13]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
-        expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs1 = [2, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         await logUtils.checkExpectedLog(encodingLog, finalLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
