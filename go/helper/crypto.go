@@ -2,6 +2,7 @@ package helper
 
 import (
 	"crypto/ecdsa"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -53,4 +54,26 @@ func Sign(hash []byte, pvr *ecdsa.PrivateKey) ([]byte, error) {
 func PrefixedHash(hash common.Hash) common.Hash {
 	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
 	return crypto.Keccak256Hash([]byte(ss))
+}
+
+func RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
+	if len(signature) != 132 && len(signature) != 130 {
+		return r, s, v, fmt.Errorf("wrong signature length %v", len(signature))
+	}
+	if len(signature) == 132 {
+		signature = signature[2:] // remove 0x
+	}
+	vect, err := hex.DecodeString(signature[0:64])
+	if err != nil {
+		return r, s, v, err
+	}
+	copy(r[:], vect)
+	vect, err = hex.DecodeString(signature[64:128])
+	if err != nil {
+		return r, s, v, err
+	}
+	copy(s[:], vect)
+	vect, err = hex.DecodeString(signature[128:130])
+	v = vect[0]
+	return r, s, v, err
 }

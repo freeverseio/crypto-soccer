@@ -1,6 +1,7 @@
 package input_test
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/helper"
@@ -44,4 +45,9 @@ func TestDismissPlayerSignerAddress(t *testing.T) {
 	address, err := msg.SignerAddress()
 	assert.NilError(t, err)
 	assert.Equal(t, address.Hex(), "0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01")
+
+	r, s, v, err := helper.RSV(msg.Signature)
+	assert.Equal(t, hex.EncodeToString(r[:]), "0f13e4028d911bbf7e305267d593c6b67888030032e73f94a5cf8af204567ab6")
+	assert.Equal(t, hex.EncodeToString(s[:]), "29848e9290568aa5d19c1b7a4761a20ed4059072aacd79bde56e1b52c17a2131")
+	assert.Equal(t, v, uint8(0x1b))
 }
