@@ -167,7 +167,6 @@ contract("Market", accounts => {
     // transfer fails because team is still full
     await market.completePlayerTransit(playerIds[nPlayersToBuy-1]).should.be.rejected;
     await market.completePlayerTransit(playerIds[nPlayersToBuy-2]).should.be.rejected;
-
   });
 
   it("cryptomarket: only COO" , async () => {
@@ -323,7 +322,7 @@ contract("Market", accounts => {
     
   });
 
-  it("crypto mkt shows that we can get past 25 players" , async () => {
+  it("crypto mkt shows that we can get past 25 players, sell, and complete in-transits" , async () => {
     await market.setCryptoMarketAddress(marketCrypto.address, {from: owners.COO}).should.be.fulfilled;
     // set up teams: team 2 - ALICE, team 3 - BOB
     ALICE = accounts[0];
@@ -1154,6 +1153,65 @@ contract("Market", accounts => {
     isFree.should.be.equal(false);
   });
   
+  it("dismissPlayers: owner can still sell in auction after a dismiss", async () => {
+    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+
+    tx = await market.dismissPlayer(
+      validUntil,
+      playerId,
+      sigSeller.r,
+      sigSeller.s,
+      sigSeller.v,
+      {from: owners.market}
+    ).should.be.fulfilled;
+
+    await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
+  });
+
+  it("dismissPlayers: complete in transit can be achieved if dismissing first", async () => {
+    // sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
+    sellerPlayerIds = Array.from(new Array(10), (x,i) => 0);
+    for (n = 0; n < 10; n++) {
+      sellerPlayerIds[n] = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdInCountry2 = n).should.be.fulfilled;
+    }
+    ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[0]).should.be.fulfilled;
+    ownerTeamId.should.be.bignumber.equal(sellerTeamId);
+    ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;
+    ownerTeamId.should.be.bignumber.equal(sellerTeamId);
+    for (n = 0; n < 7; n++) {
+        console.log('transfering: ', n);
+        await marketUtils.transferPlayerViaAuction(owners.market, market, sellerPlayerIds[n], buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
+    }
+    ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[0]).should.be.fulfilled;
+    ownerTeamId.should.be.bignumber.equal(buyerTeamId);
+    owner = await market.getOwnerPlayer(sellerPlayerIds[0]).should.be.fulfilled;
+    owner.should.be.equal(buyerAccount.address);
+    ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;
+    ownerTeamId.should.be.bignumber.equal(sellerTeamId);
+
+    console.log('failing transfering: 7');
+    await marketUtils.transferPlayerViaAuction(owners.market, market, sellerPlayerIds[7], buyerTeamId, sellerAccount, buyerAccount).should.be.rejected;
+    // this internal function actually worked except for the last line: checking that the owner is the buyer. It left the player as IN TRANSIT
+    ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;
+    ownerTeamId.toNumber().should.be.equal(IN_TRANSIT_TEAM = 2);
+    nTransit = await market.getNPlayersInTransitInTeam(buyerTeamId).should.be.fulfilled;
+    nTransit.toNumber().should.be.equal(1);
+    await market.completePlayerTransit(sellerPlayerIds[7]).should.be.rejected;
+
+    sigBuyer = await marketUtils.signDismissPlayerMTx(validUntil, sellerPlayerIds[0].toString(), buyerAccount);
+    tx = await market.dismissPlayer(
+      validUntil,
+      sellerPlayerIds[0],
+      sigBuyer.r,
+      sigBuyer.s,
+      sigBuyer.v,
+      {from: owners.market}
+    ).should.be.fulfilled;
+
+    await market.completePlayerTransit(sellerPlayerIds[7]).should.be.fulfilled;
+  });
+
   it("dismissPlayers: Academy can not sell in auction after a dismiss", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);

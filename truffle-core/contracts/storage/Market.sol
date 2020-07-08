@@ -250,7 +250,7 @@ contract Market is MarketView {
             /// check player is not already frozen
             (!isPlayerFrozenInAnyMarket(playerId)) &&  
             /// check that the team it belongs to not already frozen
-            !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
+            !isTeamFrozen(teamIdOrigin) &&
             /// check asset is owned by legit address
             (owner != address(0)) && 
             /// check signatures are valid by requiring that they own the asset:
@@ -261,6 +261,7 @@ contract Market is MarketView {
         );  
         uint256 shirtOrigin = getCurrentShirtNum(state);
         _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+        // TODO: change player state!
         emit PlayerStateChange(playerId, setCurrentShirtNum(state, PLAYERS_PER_TEAM_MAX));
     }
 
