@@ -160,7 +160,7 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
         bool is2ndHalf
     ) 
         public
-        pure
+        view
     {
         uint8[9][2] memory playersPerZone = [getPlayersPerZone(tactics[0]), getPlayersPerZone(tactics[1])];
         bool[10][2] memory extraAttack = [getFullExtraAttack(tactics[0]), getFullExtraAttack(tactics[1])];
@@ -169,8 +169,12 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
         uint8 teamThatAttacks;
         uint256[3][2] memory outOfGameData = getOutOfGameData(matchLogs, is2ndHalf);
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
-            if (outOfGameData[0][0] > 0 && outOfGameData[0][1] == round) { subtractOutOfGameSkills(globSkills[0], skills[0][outOfGameData[0][2]]); }
-            if (outOfGameData[1][0] > 0 && outOfGameData[1][1] == round) { subtractOutOfGameSkills(globSkills[1], skills[1][outOfGameData[1][2]]); }
+            if (outOfGameData[0][0] > 0 && outOfGameData[0][1] == round) { 
+                globSkills[0] = _precomp.subtractOutOfGameSkills(globSkills[0], skills[0][outOfGameData[0][2]], tactics[0], outOfGameData[0][2]); 
+            }
+            if (outOfGameData[1][0] > 0 && outOfGameData[1][1] == round) { 
+                globSkills[1] = _precomp.subtractOutOfGameSkills(globSkills[1], skills[1][outOfGameData[1][2]], tactics[1], outOfGameData[1][2]); 
+            }
             if (is2ndHalf && ((round == 0) || (round == 5))) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
@@ -200,9 +204,7 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
         }
     }
 
-    function subtractOutOfGameSkills(uint256[5] memory globSkills, uint256 skills) public pure {
-        
-    }
+
     
     function getOutOfGameData(uint256[2] memory matchLogs, bool is2ndHalf) public pure returns (uint256[3][2] memory outOfGameData) {
         for (uint8 team = 0; team < 2; team++) {
