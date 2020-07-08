@@ -529,8 +529,8 @@ contract('Evolution', (accounts) => {
         // yellows -1
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
-        expectedGoals = [6,0];
-        expectedPoints = [54,10];
+        expectedGoals = [7,0];
+        expectedPoints = [56,10];
         expectedSums = [55000,33022];
         expectedFwds = [ 2, 3,  1, 3, 3, 2,  3, 1, 3 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     

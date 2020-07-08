@@ -101,7 +101,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
             matchLog = addYellowCard(matchLog, NO_OUT_OF_GAME_PLAYER, 1, is2ndHalf);
             return setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
         }
-        
+        // Define 15 weights. Each is the aggressiveness of a given player.
+        // The last one (weights[14 = NO_OUT_OF_GAME_PLAYER]) is the weight that nothing happens. 
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
 
@@ -114,7 +115,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         }
 
         /// Build weights for players, based on their aggressiveness.
-        /// If no change was planned (in pos = 11,12,13) => skills[pos] = 0 => weight = 0
+        /// If no change was planned (in pos = 11,12,13) => skills remain 0 => skills[pos] = 0 => weight = 0
         for (uint8 p = 0; p < NO_OUT_OF_GAME_PLAYER; p++) {
             if (skills[p] != 0) weights[p] = 1 + getAggressiveness(skills[p]); /// weights must be > 0 to ever be selected
         }
@@ -158,12 +159,19 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         matchLog = addYellowCard(matchLog, yellowCardeds[1], 1, is2ndHalf);
 
         /// Redcards & Injuries:
-        /// if a new red card is given to a previously yellow-carded player, no prob, such things happen.
-        /// events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
-        /// average sumAggressiveness = 11 * 2.5 = 27.5
+        /// If a new red card is given to a previously yellow-carded player, no prob, such things happen.
+        /// To assign a weight to having an out of game event, consider that:
+        /// - average sumOfAllAggressiveness = 11 * ( 1 + avg(0,1,2,3)) = 11 * 2.5 = 27.5
         /// total = 0.07 per game = 0.035 per half => weight nothing happens = 758
+        /// The problem is that we very often do not arrive to this line of code, since there have been 2 yellows.
+        /// After having played a few leagues, it seems good to increase likelihood of injuries by a factor of x3-x4,
+        /// while leaving untouched the likelihood of red cards.
+        /// Previously, we had 3 (injuries) vs 5 (red cards) => move to 10 vs 5
+        /// So, leave likelihood to 7.2% ( wegiht = 350), and change 3 vs 5 to 7 vs 5
+        /// This is an increase in injuries of 7.2/3.5*(10/15)/(3/8) = x 3.6
+        /// For red cards, this is an increase of 7.2/3.5*(5/15)/(5/8) = 1.09
         if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
-            weights[NO_OUT_OF_GAME_PLAYER] = 758;
+            weights[NO_OUT_OF_GAME_PLAYER] = 350;
             uint8 outOfGamePlayer = throwDiceArray(weights, rnds[0]);
             matchLog = logOutOfGame(is2ndHalf, false, outOfGamePlayer, matchLog, tactics, [rnds[0], rnds[1]]);
         }
@@ -250,8 +258,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
     /// redCard:     3
     function computeTypeOfEvent(uint256 rnd) public pure returns (uint8) {
         uint256[] memory weights = new uint256[](3);
-        weights[0] = 1; /// injuryHard   
-        weights[1] = 2; /// injuryLow
+        weights[0] = 3; /// injuryHard   
+        weights[1] = 7; /// injuryLow
         weights[2] = 5; /// redCard
         return 1 + throwDiceArray(weights, rnd);
     }
