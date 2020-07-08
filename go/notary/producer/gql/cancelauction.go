@@ -25,11 +25,5 @@ func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) 
 		return id, errors.New("Invalid signature")
 	}
 
-	select {
-	case b.ch <- args.Input:
-	default:
-		log.Warning("channel is full")
-		return id, errors.New("channel is full")
-	}
-	return id, nil
+	return id, b.push(args.Input)
 }

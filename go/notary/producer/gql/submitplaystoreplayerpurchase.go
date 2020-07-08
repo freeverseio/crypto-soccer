@@ -58,12 +58,5 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, err
 	}
 
-	select {
-	case b.ch <- args.Input:
-	default:
-		log.Warning("channel is full")
-		return result, errors.New("channel is full")
-	}
-
-	return graphql.ID(data.PurchaseToken), nil
+	return graphql.ID(data.PurchaseToken), b.push(args.Input)
 }
