@@ -235,8 +235,7 @@ contract Market is MarketView {
         uint256 playerId,
         bytes32 sigR,
         bytes32 sigS,
-        uint8 sigV,
-        bool returnToAcademy
+        uint8 sigV
     ) 
         external 
         onlyMarket 
@@ -244,7 +243,7 @@ contract Market is MarketView {
         uint256 state = getPlayerState(playerId);
         uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
         address owner = getOwnerTeam(teamIdOrigin);
-        bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId, returnToAcademy)));
+        bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId)));
         require (
             /// check validUntil has not expired
             (now < validUntil) &&
@@ -260,13 +259,9 @@ contract Market is MarketView {
             (validUntil < now + MAX_VALID_UNTIL),
             "conditions to dismiss player are not met"
         );  
-        if (returnToAcademy) { 
-            transferPlayer(playerId, ACADEMY_TEAM); 
-        } else {
-            uint256 shirtOrigin = getCurrentShirtNum(state);
-            _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
-            emit PlayerStateChange(playerId, setCurrentShirtNum(state, PLAYERS_PER_TEAM_MAX));
-        }
+        uint256 shirtOrigin = getCurrentShirtNum(state);
+        _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+        emit PlayerStateChange(playerId, setCurrentShirtNum(state, PLAYERS_PER_TEAM_MAX));
     }
 
     /// When a player has been put in the IN_TRANSIT team (due to more than 25 players in a team)

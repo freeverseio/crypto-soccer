@@ -1,10 +1,10 @@
 pragma solidity >= 0.6.3;
 
+import "./UniverseInfo.sol";
 import "../encoders/EncodingSkills.sol";
 import "../encoders/EncodingIDs.sol";
 import "../encoders/EncodingState.sol";
 import "./Storage.sol";
-import "./UniverseInfo.sol";
 
 /**
  @title Library of View/Pure functions to needed by game assets
