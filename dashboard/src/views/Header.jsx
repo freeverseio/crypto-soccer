@@ -12,6 +12,7 @@ const TopBar = ({account, location}) => {
             {/* <Menu.Item as={Link} to="/shop" name='Shop' active={pathname === '/shop'} /> */}
             <Menu.Item as={Link} to="/teams" name='Teams' active={pathname === '/teams'} />
             <Menu.Item as={Link} to="/iap" name='Iap' active={pathname === '/iap'} />
+            <Menu.Item as={Link} to="/auctions" name='Auctions' active={pathname === '/auctions'} />
             <Menu.Item position='right' as={Link} to='/settings' active={pathname === '/settings'}>
                 <Icon name='settings' />
             </Menu.Item>
