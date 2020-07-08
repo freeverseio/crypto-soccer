@@ -1165,8 +1165,19 @@ contract("Market", accounts => {
       sigSeller.v,
       {from: owners.market}
     ).should.be.fulfilled;
+    
+    // check that the shirtNum of this player is NULL ( = PLAYER_PER_TEAM_MAX)
+    state = await market.getPlayerState(playerId).should.be.fulfilled;
+    const PLAYERS_PER_TEAM_MAX = 25;
+    result = await market.getCurrentShirtNum(state).should.be.fulfilled;
+    result.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX);
 
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
+
+    // check that the shirtNum is now correct
+    state = await market.getPlayerState(playerId).should.be.fulfilled;
+    result = await market.getCurrentShirtNum(state).should.be.fulfilled;
+    (result.toNumber() != PLAYERS_PER_TEAM_MAX).should.be.equal(true);
   });
 
   it("dismissPlayers: complete in transit can be achieved if dismissing first", async () => {
@@ -1180,7 +1191,6 @@ contract("Market", accounts => {
     ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;
     ownerTeamId.should.be.bignumber.equal(sellerTeamId);
     for (n = 0; n < 7; n++) {
-        console.log('transfering: ', n);
         await marketUtils.transferPlayerViaAuction(owners.market, market, sellerPlayerIds[n], buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
     }
     ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[0]).should.be.fulfilled;
@@ -1190,7 +1200,6 @@ contract("Market", accounts => {
     ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;
     ownerTeamId.should.be.bignumber.equal(sellerTeamId);
 
-    console.log('failing transfering: 7');
     await marketUtils.transferPlayerViaAuction(owners.market, market, sellerPlayerIds[7], buyerTeamId, sellerAccount, buyerAccount).should.be.rejected;
     // this internal function actually worked except for the last line: checking that the owner is the buyer. It left the player as IN TRANSIT
     ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;

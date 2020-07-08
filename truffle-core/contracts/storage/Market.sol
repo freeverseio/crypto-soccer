@@ -261,8 +261,9 @@ contract Market is MarketView {
         );  
         uint256 shirtOrigin = getCurrentShirtNum(state);
         _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
-        // TODO: change player state!
-        emit PlayerStateChange(playerId, setCurrentShirtNum(state, PLAYERS_PER_TEAM_MAX));
+        state = setCurrentShirtNum(state, PLAYERS_PER_TEAM_MAX);
+        _playerIdToState[playerId] = state;
+        emit PlayerStateChange(playerId, state);
     }
 
     /// When a player has been put in the IN_TRANSIT team (due to more than 25 players in a team)
@@ -298,7 +299,8 @@ contract Market is MarketView {
     
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
-            _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+            // if shirtOrigin == PLAYER_PER_TEAM_MAX => player had been dismissed
+            if (shirtOrigin != PLAYERS_PER_TEAM_MAX) { _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID; }
         }
 
         /// part related to target team:
