@@ -78,10 +78,10 @@ commands:
 
 jobs:
   dashboard:
-    docker:
-      - image: cimg/node:12.16
+    executor: freeverse_ethereum
     steps:
       - checkout
+      - generate_contracts_code
       - run: cd dashboard && npm ci
       - run: cd dashboard && npm test -- --ci
   truffle_core:
