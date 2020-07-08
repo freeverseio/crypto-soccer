@@ -29,7 +29,6 @@ contract Market is MarketView {
     event PlayerFreezeCrypto(uint256 playerId, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
-    event PlayerRetired(uint256 playerId, uint256 teamId);
     event ProposedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
     event UpdatedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
 
@@ -266,7 +265,7 @@ contract Market is MarketView {
         } else {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
-            emit PlayerRetired(playerId, teamIdOrigin);
+            emit PlayerStateChange(playerId, setCurrentShirtNum(state, PLAYERS_PER_TEAM_MAX));
         }
     }
 
