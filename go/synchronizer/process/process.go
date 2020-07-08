@@ -190,6 +190,8 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		return ConsumeActionsSubmission(tx, p.contracts, p.useractionsPublisher, p.staker, v)
 	case updates.UpdatesTimeZoneUpdate:
 		return ConsumeTimezoneUpdate(tx, v)
+	case market.MarketPlayerRetired:
+		return ConsumePlayerRetired(tx, v)
 	default:
 		return fmt.Errorf("[processor|consume] unknown event %+v", e)
 	}
