@@ -1105,7 +1105,7 @@ contract("Market", accounts => {
     }
   });
 
-  it("retire player works", async () => {
+  it("dismissPlayer player works", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
@@ -1142,6 +1142,9 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.state.should.be.bignumber.equal(newState);
     });
 
+    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
+    onwer.should.be.equal(sellerAccount.address);
+
     ids = await market.getPlayerIdsInTeam(teamId).should.be.fulfilled;
     isFree = await market.isFreeShirt(ids[shirtNum = playerIdxInCountry], shirtNum ).should.be.fulfilled
     isFree.should.be.equal(true);
@@ -1149,34 +1152,6 @@ contract("Market", accounts => {
     isFree.should.be.equal(false);
     isFree = await market.isFreeShirt(ids[shirtNum= playerIdxInCountry - 1], shirtNum).should.be.fulfilled
     isFree.should.be.equal(false);
-  });
-  
-  it("dismissPlayers works", async () => {
-    playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
-    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
-    onwer.should.be.equal(sellerAccount.address);
-    
-    // First of all, Freeverse and Buyer check the signature
-    // In this case, using web3:
-    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-    recoveredSellerAddr.should.be.equal(sellerAccount.address);
-  
-    // We check that player is not frozen
-    let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
-    isPlayerFrozen.should.be.equal(false);
-  
-    tx = await market.dismissPlayer(
-      validUntil,
-      playerId,
-      sigSeller.r,
-      sigSeller.s,
-      sigSeller.v,
-      {from: owners.market}
-    ).should.be.fulfilled;
-
-    onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
-    onwer.should.be.equal(sellerAccount.address);
   });
   
   it("dismissPlayers: Academy can not sell in auction after a dismiss", async () => {
