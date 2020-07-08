@@ -37,7 +37,6 @@ func DismissPlayer(
 		r,
 		s,
 		v,
-		in.ReturnToAcademy,
 	)
 	if err != nil {
 		return err
