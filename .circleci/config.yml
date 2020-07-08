@@ -78,7 +78,7 @@ commands:
 
 jobs:
   dashboard:
-    executor: freeverse_ethereum
+    executor: freeverse
     steps:
       - checkout
       - generate_contracts_code
