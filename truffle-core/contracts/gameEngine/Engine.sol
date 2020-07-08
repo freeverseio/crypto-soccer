@@ -2,6 +2,7 @@ pragma solidity >= 0.6.3;
 
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
+import "../encoders/EncodingMatchLogBase1.sol";
 import "../encoders/EncodingMatchLogBase3.sol";
 import "../encoders/EncodingTactics.sol";
 import "./EngineApplyBoosters.sol";
@@ -14,7 +15,7 @@ import "./EngineApplyBoosters.sol";
  @dev to the rest of the code (inheritance led to too-large-to-deploy)
 */
  
-contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
+contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
     /// prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
@@ -166,7 +167,10 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
 
         uint64[] memory rnds = getNRandsFromSeed(seedAndStartTimeAndEvents[IDX_SEED], ROUNDS_PER_MATCH*5);
         uint8 teamThatAttacks;
+        uint256[3][2] memory outOfGameData = getOutOfGameData(matchLogs, is2ndHalf);
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
+            if (outOfGameData[0][0] > 0 && outOfGameData[0][1] == round) { subtractOutOfGameSkills(globSkills[0], skills[0][outOfGameData[0][2]]); }
+            if (outOfGameData[1][0] > 0 && outOfGameData[1][1] == round) { subtractOutOfGameSkills(globSkills[1], skills[1][outOfGameData[1][2]]); }
             if (is2ndHalf && ((round == 0) || (round == 5))) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
@@ -195,7 +199,20 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             }
         }
     }
+
+    function subtractOutOfGameSkills(uint256[5] memory globSkills, uint256 skills) public pure {
+        
+    }
     
+    function getOutOfGameData(uint256[2] memory matchLogs, bool is2ndHalf) public pure returns (uint256[3][2] memory outOfGameData) {
+        for (uint8 team = 0; team < 2; team++) {
+            outOfGameData[team][0] = getOutOfGameType(matchLogs[team], is2ndHalf);
+            outOfGameData[team][1] = getOutOfGameRound(matchLogs[team], is2ndHalf);
+            outOfGameData[team][2] = getOutOfGamePlayer(matchLogs[team], is2ndHalf);
+        }
+    }
+
+
     /// getLinedUpSkillsAndOutOfGames:
     ///      1. Unpacks the tactics and lineUp, verifies validity 
     ///      2. Rewrites skills[25] so that the first [14] entries correspond to players that will actually play
