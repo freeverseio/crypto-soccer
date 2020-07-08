@@ -150,6 +150,11 @@ func (b *Consumer) Consume(event interface{}) error {
 		); err != nil {
 			return err
 		}
+	case input.CompletePlayerTransitInput:
+		log.Debug("Received CompletePlayerTransit")
+		if err := CompletePlayerTransit(b.contracts, b.pvc, in); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}

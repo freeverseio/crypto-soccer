@@ -232,21 +232,30 @@ contract('Engine', (accounts) => {
     });
     
     it('wasPlayerAlignedEndOfLastHalf', async () => {
-        seedForRedCard = seed + 83;
-        substis = [2, 9, 1];
-        rounds = [4, 2, 6];
-        
-        // as seen in a test below, there is a redCard for player 9 at round 1
-        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0).should.be.fulfilled;
-        var {0: newLog, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics, tactics], [0, 0], [is2nd = false, isHomeStadium,  playoff = false, isBotHome, isBotAway]).should.be.fulfilled;
-        
-        // reassuring that the red card was as described above:
-        expectedOut = [9, 0];
-        expectedOutRounds = [1, 0]; // note that this 1 would be 9 otherwise
-        expectedYellows1 = [1, 12];
+        for (p = 92; p < 92+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+            substis = [2, 4, 1];
+            rounds = [4, 2, 6];
+            
+            // as seen in a test below, there is a red card for player 2 at round 3, so he cannot be substituted
+            tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0).should.be.fulfilled;
+            var {0: newLog, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics, tactics], [0, 0], [is2nd = false, isHomeStadium,  playoff = false, isBotHome, isBotAway]).should.be.fulfilled;
+
+            verbose = false;
+            if (verbose) {
+                typeOf = await precomp.getOutOfGameType(newLog[0], is2nd = false).should.be.fulfilled;
+                player = await precomp.getOutOfGamePlayer(newLog[0], is2nd = false).should.be.fulfilled;
+                round = await precomp.getOutOfGameRound(newLog[0], is2nd = false).should.be.fulfilled;
+                console.log(p, typeOf.toNumber(), player.toNumber(), round.toNumber());
+            }
+        }
+        // checking that the red card is as described above:
+        expectedOut = [2, 0];
+        expectedOutRounds = [2, 0]; // note that this 1 would be 9 otherwise
+        expectedYellows1 = [5, 13];
         expectedYellows2 = [0, 0];
-        expectedType = [3, 0]; // 0 = no event, 3 = redCard
-        expectedInGameSubs1 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedType = [3, 0]; // 0 = no event, 2 = soft, 3 = redCard
+        expectedInGameSubs1 = [2, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
 
         await logUtils.checkExpectedLog(encodingLog, newLog[0], nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
@@ -262,7 +271,7 @@ contract('Engine', (accounts) => {
         yellow20.should.not.be.bignumber.equal(yellow21);
 
         // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
-        expected = [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 0, 0, 0, 0, 1, 1, 9, 1, 8, 1, 0, 0, 0, 0, 1, 1, 9, 1, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+        expected = [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 7, 1, 6, 1, 1, 5, 1, 7, 0, 1, 10, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
         debug.compareArrays(newLog.slice(2), expected, toNum = true);
     });
     
@@ -312,17 +321,19 @@ contract('Engine', (accounts) => {
 
 
     it('computeExceptionalEvents no clashes with redcards', async () => {
-        // there is a red card with this seed, to player 9, but he's not involved in any change
-        seedForRedCard = seed + 83;
-        substis = [2, 6, 1];
+        // there is a red card with this seed, to player 2, but he's not involved in any change
+        for (p = 92; p < 92+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
+        substis = [9, 6, 1];
         rounds = [4, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [0, 9];
-        expectedOutRounds = [0, 1];
+        expectedOut = [0, 2];
+        expectedOutRounds = [0, 4];
         expectedYellows1 = [0, 0];
-        expectedYellows2 = [1, 12];
+        expectedYellows2 = [5, 13];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -334,40 +345,44 @@ contract('Engine', (accounts) => {
 
     
     it('computeExceptionalEvents clashing with redcards before changing player', async () => {
-        // there is a red card with this seed, to player 9. Since he's involved in a change, 
+        // there is a red card with this seed, to player 2. Since he's involved in a change, 
         // the round for which he saw the card should be before the proposed change round (2) 
-        seedForRedCard = seed + 83;
+        for (p = 92; p < 92+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         substis = [2, 9, 1];
-        rounds = [4, 2, 6];
+        rounds = [2, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [0, 9];
+        expectedOut = [0, 2];
         expectedOutRounds = [0, 1]; // note that this 1 would be 9 otherwise
         expectedYellows1 = [0, 0,];
-        expectedYellows2 = [1, 12];
+        expectedYellows2 = [5, 13];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        expectedInGameSubs2 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs2 = [2, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
 
-     it('computeExceptionalEvents clashing with redcards after changing player', async () => {
-        // there is a red card with this seed, to player 13, which is by definition one of the players to join during the game. 
+    it('computeExceptionalEvents clashing with redcards after changing player', async () => {
+        // there is a red card with this seed, to player 11, which is by definition one of the players to join during the game. 
         // the round for which he saw the card (6) should be after the proposed change round (6 too) 
-        seedForRedCardInSubstitutes = seed + 357;
+        for (p = 30; p < 30+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         substis = [2, 9, 1];
-        rounds = [4, 2, 6];
+        rounds = [6, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCardInSubstitutes).should.be.fulfilled;
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [0, 13];
+        expectedOut = [0, 11];
         expectedOutRounds = [0, 6]; // note that it'd be 0, 9 otherwise
         expectedYellows1 = [0, 0];
-        expectedYellows2 = [14, 13];
+        expectedYellows2 = [11, 14];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -378,18 +393,20 @@ contract('Engine', (accounts) => {
     });
 
     it('computeExceptionalEvents clashing with redcards after changing player forcing last minute', async () => {
-        // note that in the first half, player 13 joined, and saw a red card 
+        // note that in the first half, player 11 joined, and saw a red card 
         // same as previous but pushing it to the limit, so that the round is 10
-        seedForRedCardInSubstitutes = seed + 357;
+        for (p = 30; p < 30+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         substis = [2, 9, 1];
-        rounds = [4, 2, 10];
+        rounds = [10, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCardInSubstitutes).should.be.fulfilled;
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [0, 13];
+        expectedOut = [0, 11];
         expectedOutRounds = [0, 10]; 
         expectedYellows1 = [0, 0];
-        expectedYellows2 = [14, 13];
+        expectedYellows2 = [11, 14];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -403,15 +420,17 @@ contract('Engine', (accounts) => {
         // first half version of the previous
         // note that in the first half, player 13 joined, and saw both a yellow and a red card (!!)
         // same as previous but pushing it to the limit, so that the round is 10
-        seedForRedCardInSubstitutes = seed + 357;
+        for (p = 30; p < 30+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         substis = [2, 9, 1];
-        rounds = [4, 2, 10];
+        rounds = [10, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, isBotHome, seedForRedCardInSubstitutes).should.be.fulfilled;
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [13, 0];
+        expectedOut = [11, 0];
         expectedOutRounds = [10, 0];
-        expectedYellows1 = [14, 13];
+        expectedYellows1 = [11, 14];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -423,17 +442,19 @@ contract('Engine', (accounts) => {
     });
     
     it('check that nDefs is reduced by one when a defender misses in the 2nd half', async () => {
-        // note that in the first half, player 13 joined, and saw both a red card
+        // note that in the first half, player 11 joined, and saw both a red card
         // same as previous but pushing it to the limit, so that the round is 10
-        seedForRedCardInSubstitutes = seed + 357;
+        for (p = 30; p < 30+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         substis = [2, 9, 1];
-        rounds = [4, 2, 10];
+        rounds = [10, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, isBotHome, seedForRedCardInSubstitutes).should.be.fulfilled;
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [13, 0];
+        expectedOut = [11, 0];
         expectedOutRounds = [10, 0];
-        expectedYellows1 = [14, 13];
+        expectedYellows1 = [11, 14];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -443,7 +464,7 @@ contract('Engine', (accounts) => {
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF,  nTot2 = UNDEF,winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
            
-        // the player with shirt = 1 was substituted by player 13, who was red-carded
+        // the player with shirt = 1 was substituted by player 11, who was red-carded
         // in the 2nd half there is a defender less than usual
         teamStateAll50Half2[1] = 0;
         seedDraw = 12;
@@ -458,20 +479,22 @@ contract('Engine', (accounts) => {
     
     it('computeExceptionalEvents clashing 2nd against 1st', async () => {
         // first half:
-        //      - there is a red card with this seed, to player 9 at round 2. 
-        //      - there are two yellow cards, for player 1, and for subtituted 12.
-        seedForRedCard = seed + 83;
+        //      - there is a red card with this seed, to player 2 at round 2. 
+        //      - there are two yellow cards, for player 5, and for subtituted 13.
+        for (p = 92; p < 92+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 0];
-        expectedOutRounds = [1, 0]; // note that this 1 would be 9 otherwise
-        expectedYellows1 = [1, 12];
+        expectedOut = [2, 0];
+        expectedOutRounds = [2, 0]; // note that this 1 would be 9 otherwise
+        expectedYellows1 = [5, 13];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
-        expectedInGameSubs1 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs1 = [2, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
@@ -484,12 +507,12 @@ contract('Engine', (accounts) => {
         tactics = await engine.encodeTactics(substis = [0,0,0], rounds = [0,0,0], lineupConsecutive, extraAttackNull, tacticsId = 0);
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 9]; 
-        expectedOutRounds = [1, 1]; // note that this 1 would be 9 otherwise
-        expectedYellows1 = [1, 12]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
-        expectedYellows2 = [1, 12]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
+        expectedOut = [2, 2]; 
+        expectedOutRounds = [2, 4]; // note that this 4 would be 2 otherwise
+        expectedYellows1 = [5, 13]; 
+        expectedYellows2 = [5, 13]; 
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
-        expectedInGameSubs1 = [1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs1 = [2, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         await logUtils.checkExpectedLog(encodingLog, finalLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
@@ -500,20 +523,22 @@ contract('Engine', (accounts) => {
     
     it('computeExceptionalEvents clashing 2nd against 1st, with no substitution in the middle', async () => {
         // first half:
-        //      - there is a red card with this seed, to player 9 at round 2. 
-        //      - there are two yellow cards, for player 1, and for subtituted 12.
-        seedForRedCard = seed + 83;
+        //      - there is a red card with this seed, to player 2 at round 2. 
+        //      - there are two yellow cards, for player 5, and for subtituted 13.
+        for (p = 92; p < 92+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         substis = [2, 3, 4];
         rounds = [4, 2, 6];
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 0];
-        expectedOutRounds = [1, 0]; 
-        expectedYellows1 = [1, 12];
+        expectedOut = [2, 0];
+        expectedOutRounds = [2, 0]; 
+        expectedYellows1 = [5, 13];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
-        expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs1 = [2, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         await logUtils.checkExpectedLog(encodingLog, newLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
@@ -524,12 +549,12 @@ contract('Engine', (accounts) => {
         tactics = await engine.encodeTactics(substis = [0,0,0], rounds = [0,0,0], lineupConsecutive, extraAttackNull, tacticsId = 0);
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 9]; // note that the red card comes from two yellows.
-        expectedOutRounds = [1, 1]; 
-        expectedYellows1 = [1, 12]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
-        expectedYellows2 = [1, 12]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
+        expectedOut = [2, 2]; // note that the red card comes from two yellows.
+        expectedOutRounds = [2, 4]; 
+        expectedYellows1 = [5, 13]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
+        expectedYellows2 = [5, 13]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
-        expectedInGameSubs1 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs1 = [2, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         expectedInGameSubs2 = [1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         await logUtils.checkExpectedLog(encodingLog, finalLog, nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
             expectedOut, expectedOutRounds, expectedType, 
@@ -718,13 +743,15 @@ contract('Engine', (accounts) => {
     });
 
     it('red cards in first half force lineups of 10 players in 2nd half', async () => {
-        // choose a seed that gives a red card for player 9.
-        seedForRedCard = seed + 83;
+        // choose a seed that gives a red card for player 2.
+        for (p = 92; p < 92+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         isHomeSt = false;
-        expectedOut = [9, 0];
-        expectedOutRounds = [1, 0]; 
-        expectedYellows1 = [1, 10];
+        expectedOut = [2, 0];
+        expectedOutRounds = [4, 0]; 
+        expectedYellows1 = [4, 14];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
@@ -774,13 +801,16 @@ contract('Engine', (accounts) => {
     });
     
     it('red cards cannot be changed and continue having 11 players', async () => {
-        // choose a seed that gives a red card for player 9.
+        // choose a seed that gives a red card for player 2.
         RED = 3;
-        seedForRedCard = seed + 83;
+        RED_CARDED_PLAYER = 2;
+        for (p = 92; p < 92+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+        }
         var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         player = await encodingLog.getOutOfGamePlayer(log0[0], is2nd = false).should.be.fulfilled;
         typeOf = await encodingLog.getOutOfGameType(log0[0], is2nd = false).should.be.fulfilled;
-        player.toNumber().should.be.equal(9);
+        player.toNumber().should.be.equal(2);
         typeOf.toNumber().should.be.equal(RED);
 
         // play with the same players as in 1st half, including the red carded, and without having set redcard = true => fails as it believes there are 11 players playing
@@ -788,16 +818,16 @@ contract('Engine', (accounts) => {
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_TOO_MANY_LINEDUP);
         
         // if we correctly set the redcard flag => it understands there are only 10 players playing.
-        teamStateAll50Half2[9] = await encodingSet.setRedCardLastGame(teamStateAll50Half2[9], true);    
+        teamStateAll50Half2[RED_CARDED_PLAYER] = await encodingSet.setRedCardLastGame(teamStateAll50Half2[RED_CARDED_PLAYER], true);    
         var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         // play with the same players as in 1st half, substituting the red carded => fails
-        teamStateAll50Half2[9] = teamStateAll50Half1[9];
+        teamStateAll50Half2[RED_CARDED_PLAYER] = teamStateAll50Half1[RED_CARDED_PLAYER];
         var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_TOO_MANY_LINEDUP);
         
         // play with the same players as in 1st half, substituting any player => fails
-        teamStateAll50Half2[9] = teamStateAll50Half2[10];
-        teamStateAll50Half2[2] = teamStateAll50Half1[9];
+        teamStateAll50Half2[RED_CARDED_PLAYER] = teamStateAll50Half2[10];
+        teamStateAll50Half2[2] = teamStateAll50Half1[RED_CARDED_PLAYER];
         var {0: log2, 1: err} = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_TOO_MANY_LINEDUP);
     });

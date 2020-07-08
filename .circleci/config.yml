@@ -77,6 +77,13 @@ commands:
               ipfs-cluster-service init
 
 jobs:
+  dashboard:
+    executor: freeverse
+    steps:
+      - checkout
+      - generate_contracts_code
+      - run: cd dashboard && npm ci
+      - run: cd dashboard && npm test -- --ci
   truffle_core:
     executor: freeverse
     parallelism: 20
@@ -257,6 +264,10 @@ workflows:
   version: 2
   build_and_test:
     jobs:
+      - dashboard:
+          filters:
+            tags:
+              only: /.*/
       - truffle_core:
           filters:
             tags:
@@ -297,6 +308,7 @@ workflows:
             - go1
             - deployment-test
             - universe-api
+            - dashboard
       - dockerization-production:
           filters:
             tags:
@@ -310,6 +322,7 @@ workflows:
             - go1
             - deployment-test
             - universe-api
+            - dashboard
       - deployk8s:
           filters:
            branches:

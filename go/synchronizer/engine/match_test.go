@@ -272,10 +272,10 @@ func TestMatchHardInjury(t *testing.T) {
 	golden.Assert(t, dump.Sdump(m), t.Name()+".half.golden")
 	event := m.Events[12]
 	assert.Equal(t, event.Type, matchevents.EVNT_HARD)
-	assert.Equal(t, event.PrimaryPlayer, int16(10))
+	assert.Equal(t, event.PrimaryPlayer, int16(6))
 	assert.Equal(t, event.Team, int16(0))
-	player := m.HomeTeam.Players[10]
-	assert.Equal(t, player.Skills().String(), "41189051264108312725067636657451215385441042933812927683033564152")
+	player := m.HomeTeam.Players[6]
+	assert.Equal(t, player.Skills().String(), "14860978346969016050588129736533607305717269083675649869455819768")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(5))
 }
 
@@ -338,9 +338,9 @@ func TestMatchSoftInjury(t *testing.T) {
 	golden.Assert(t, dump.Sdump(m), t.Name()+".golden")
 	event := m.Events[12]
 	assert.Equal(t, event.Type, matchevents.EVNT_SOFT)
-	assert.Equal(t, event.PrimaryPlayer, int16(12))
+	assert.Equal(t, event.PrimaryPlayer, int16(6))
 	assert.Equal(t, event.Team, int16(0))
-	player := m.HomeTeam.Players[12]
+	player := m.HomeTeam.Players[6]
 	assert.Equal(t, player.Skills().String(), "14860978346394330222763421414649227170535903139818622698636968952")
 	assert.Equal(t, player.InjuryMatchesLeft, uint8(2))
 }

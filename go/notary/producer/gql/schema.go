@@ -43,6 +43,10 @@ const Schema = `
 		returnToAcademy: Boolean!
 	}
 
+	input CompletePlayerTransitInput {
+		playerId: ID!
+	}
+
 	type WorldPlayer {
 		playerId: ID!
 		name: String!
@@ -70,5 +74,6 @@ const Schema = `
 		createBid(input: CreateBidInput!): ID!
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 		dismissPlayer(input: DismissPlayerInput!): ID!
+		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
 	}
 `
