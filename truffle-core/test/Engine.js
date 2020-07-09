@@ -271,7 +271,7 @@ contract('Engine', (accounts) => {
         yellow20.should.not.be.bignumber.equal(yellow21);
 
         // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
-        expected = [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 7, 1, 6, 1, 1, 5, 1, 7, 0, 1, 10, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+        expected = [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 7, 1, 6, 1, 1, 5, 1, 7, 0, 1, 10, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
         debug.compareArrays(newLog.slice(2), expected, toNum = true);
     });
     
