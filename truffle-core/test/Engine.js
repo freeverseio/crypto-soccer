@@ -131,11 +131,11 @@ contract('Engine', (accounts) => {
         return teamState;
     };
 
-    const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false]) => {
+    const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false], aggr = 0) => {
         teamState = []
         sumSkills = skills.reduce((a, b) => a + b, 0);
         var playerStateTemp = await assets.encodePlayerSkills(
-            skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
+            skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr],
             alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills
         ).should.be.fulfilled;
@@ -144,7 +144,7 @@ contract('Engine', (accounts) => {
         }
 
         playerStateTemp = await assets.encodePlayerSkills(
-            skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
+            skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr],
             alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills
         ).should.be.fulfilled;
@@ -797,6 +797,46 @@ contract('Engine', (accounts) => {
             } else {
                 (typeOf.toNumber() > 0).should.be.equal(true);
             }
+        }
+    });
+
+    it('red cards affect the result negatively', async () => {
+        // We play one half twice. The only difference is that, in the 2nd attempt, one of the teams has max aggressiveness
+        // In this 2nd attempt, it sees a red card in round 0. 
+        RED = 3;
+        // toni
+        teamNormal = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [true, false], ag = 0).should.be.fulfilled;
+        teamAggr = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [true, false], ag = 3).should.be.fulfilled;
+        for (p = 79; p < 79+1; p++) {
+            seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+            var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamNormal, teamNormal], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+            goals = [];
+            expectedGoals = [3,2];
+            for (team = 0; team < 2; team++) {
+                nGoals = await encodingLog.getNGoals(log0[team]).should.be.fulfilled;
+                goals.push(nGoals.toNumber());
+            }
+            typeOf = await encodingLog.getOutOfGameType(log0[0], is2nd = false).should.be.fulfilled;
+            round = await encodingLog.getOutOfGameRound(log0[0], is2nd = false).should.be.fulfilled;
+            player = await encodingLog.getOutOfGamePlayer(log0[0], is2nd = false).should.be.fulfilled;
+            // console.log(p, goals, typeOf.toNumber(), round.toNumber(), player.toNumber(), err.toNumber())
+            typeOf.toNumber().should.be.equal(0);
+            debug.compareArrays(goals, expectedGoals, toNum = false);
+
+            var {0: log0, 1: err} =  await engine.playHalfMatch(seedForRedCard,  now, [teamAggr, teamNormal], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+            goals2 = [];
+            expectedGoals = [2,2];
+            for (team = 0; team < 2; team++) {
+                nGoals = await encodingLog.getNGoals(log0[team]).should.be.fulfilled;
+                goals2.push(nGoals.toNumber());
+            }
+            typeOf = await encodingLog.getOutOfGameType(log0[0], is2nd = false).should.be.fulfilled;
+            round = await encodingLog.getOutOfGameRound(log0[0], is2nd = false).should.be.fulfilled;
+            player = await encodingLog.getOutOfGamePlayer(log0[0], is2nd = false).should.be.fulfilled;
+            // console.log(p, goals2, typeOf.toNumber(), round.toNumber(), player.toNumber(), err.toNumber())
+            typeOf.toNumber().should.be.equal(RED);
+            round.toNumber().should.be.equal(0);
+            debug.compareArrays(goals2, expectedGoals, toNum = false);
         }
     });
     
