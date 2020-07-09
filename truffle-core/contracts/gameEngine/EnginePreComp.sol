@@ -358,6 +358,38 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         }
     }
 
+    function subtractOutOfGameSkills(uint256[5] memory globSkills, uint256 skills, uint256 tactics, uint256 posInLineUp) public pure returns(uint256[5] memory) {
+        if (skills == 0) return globSkills;
+
+        // If the outOfGamePlayer entered the field during this half time, then it plays in the position of the
+        // player it entered for. In such cas, posInLineUp = 11, 12, 13.
+        if (posInLineUp > 10) {
+           posInLineUp = getSubstitution(tactics, uint8(posInLineUp) - 11);
+        }
+        uint256[5] memory toSubtractSkills;
+        uint8[9] memory playersPerZone = getPlayersPerZone(tactics);
+        uint256 posCondModifier = computeModifierBadPositionAndCondition(uint8(posInLineUp), playersPerZone, skills, false);
+        if (posInLineUp == 0) {
+            computeGKGlobSkills(toSubtractSkills, skills, posCondModifier);
+        } else {
+            uint256[2] memory fwdModFactors;
+            fwdModFactors = getExtraAttackFactors(getExtraAttack(tactics, uint8(posInLineUp) - 1));
+            if (posInLineUp < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(toSubtractSkills, skills, posCondModifier, fwdModFactors);}
+            else if (posInLineUp < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(toSubtractSkills, skills, posCondModifier, fwdModFactors);}
+            else {computeForwardsGlobSkills(toSubtractSkills, skills, posCondModifier, fwdModFactors);}       
+        }
+
+        for (uint8 i = 0; i < 5; i++) {
+            if (globSkills[i] > toSubtractSkills[i]) {
+                globSkills[i] -= toSubtractSkills[i];
+            } else {
+                globSkills[i] = 1;
+            }
+        }
+        return globSkills;
+    }
+
+
     /// It internally computes a "penalty" quantity, and returns modifier = 10000-penalty.
     /// So: large modifier => good, large penalty => bad
     /// Examples: modifier = 0 => max penalty, modifier = 1000 => huge penalty, modifier = 10000 => no penalty
