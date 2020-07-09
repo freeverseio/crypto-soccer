@@ -17,10 +17,10 @@ func TestDismissPlayerInputHash(t *testing.T) {
 
 	hash, err := msg.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xdaa54d5f301de697c9dab3416a20ac9d4d7890f92f01c1340c18152cb93c5ca0")
+	assert.Equal(t, hash.Hex(), "0x26a63dd7a77ba6da621296c5433d235fa802b0eed629457ff3237b321f6db462")
 
 	hash = helper.PrefixedHash(hash)
-	assert.Equal(t, hash.Hex(), "0xfde13974fe686e362246c490ef0280e35928eca805695c7bfd89c7f2bc74b39b")
+	assert.Equal(t, hash.Hex(), "0xa345906cc0144e72ba04ea426d34bd486000e51de093b4b1a106deafa21c3244")
 }
 
 func TestDismissPlayerValidSignature(t *testing.T) {
@@ -28,7 +28,7 @@ func TestDismissPlayerValidSignature(t *testing.T) {
 	msg.PlayerId = "123455"
 	msg.ValidUntil = "5646456"
 	msg.ReturnToAcademy = true
-	msg.Signature = "0f13e4028d911bbf7e305267d593c6b67888030032e73f94a5cf8af204567ab629848e9290568aa5d19c1b7a4761a20ed4059072aacd79bde56e1b52c17a21311b"
+	msg.Signature = "2148732eeca5265898a5fe8dd3ba1c1af5b3d5b815fb23d9d6e383b376a2c91c694170ebd18b64b122905f82d3d6961a78a784b8966fcb350d51c6c5e7917d2d1b"
 
 	isValid, err := msg.VerifySignature()
 	assert.NilError(t, err)
@@ -40,14 +40,14 @@ func TestDismissPlayerSignerAddress(t *testing.T) {
 	msg.PlayerId = "123455"
 	msg.ValidUntil = "5646456"
 	msg.ReturnToAcademy = true
-	msg.Signature = "0f13e4028d911bbf7e305267d593c6b67888030032e73f94a5cf8af204567ab629848e9290568aa5d19c1b7a4761a20ed4059072aacd79bde56e1b52c17a21311b"
+	msg.Signature = "2148732eeca5265898a5fe8dd3ba1c1af5b3d5b815fb23d9d6e383b376a2c91c694170ebd18b64b122905f82d3d6961a78a784b8966fcb350d51c6c5e7917d2d1b"
 
 	address, err := msg.SignerAddress()
 	assert.NilError(t, err)
 	assert.Equal(t, address.Hex(), "0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01")
 
 	r, s, v, err := helper.RSV(msg.Signature)
-	assert.Equal(t, hex.EncodeToString(r[:]), "0f13e4028d911bbf7e305267d593c6b67888030032e73f94a5cf8af204567ab6")
-	assert.Equal(t, hex.EncodeToString(s[:]), "29848e9290568aa5d19c1b7a4761a20ed4059072aacd79bde56e1b52c17a2131")
+	assert.Equal(t, hex.EncodeToString(r[:]), "2148732eeca5265898a5fe8dd3ba1c1af5b3d5b815fb23d9d6e383b376a2c91c")
+	assert.Equal(t, hex.EncodeToString(s[:]), "694170ebd18b64b122905f82d3d6961a78a784b8966fcb350d51c6c5e7917d2d")
 	assert.Equal(t, v, uint8(0x1b))
 }

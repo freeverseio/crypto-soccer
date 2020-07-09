@@ -343,4 +343,9 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         lastUpdate = _maxSumSkillsBuyNowPlayerLastUpdate;
     } 
 
+    function isPlayerDismissed(uint256 playerId) public view returns(bool) {
+        uint256 state = getPlayerState(playerId);
+        return getCurrentShirtNum(state) == PLAYERS_PER_TEAM_MAX;
+    }
+
 }

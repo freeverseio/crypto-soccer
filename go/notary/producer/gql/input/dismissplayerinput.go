@@ -22,12 +22,10 @@ type DismissPlayerInput struct {
 
 func (b DismissPlayerInput) Hash() (common.Hash, error) {
 	uint256Ty, _ := abi.NewType("int256", "int256", nil)
-	boolTy, _ := abi.NewType("bool", "bool", nil)
 
 	arguments := abi.Arguments{
 		{Type: uint256Ty},
 		{Type: uint256Ty},
-		{Type: boolTy},
 	}
 
 	validUntil, _ := new(big.Int).SetString(b.ValidUntil, 10)
@@ -42,7 +40,6 @@ func (b DismissPlayerInput) Hash() (common.Hash, error) {
 	bytes, err := arguments.Pack(
 		validUntil,
 		playerId,
-		b.ReturnToAcademy,
 	)
 	if err != nil {
 		return common.Hash{}, err
