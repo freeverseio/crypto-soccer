@@ -52,3 +52,7 @@ func (m *MockMarketPay) GetOrder(hash string) (*Order, error) {
 func (m *MockMarketPay) IsPaid(order Order) bool {
 	return order.Status == PUBLISHED.String()
 }
+
+func (b *MockMarketPay) ValidateOrder(hash string) (string, error) {
+	return "not implemented", nil
+}
