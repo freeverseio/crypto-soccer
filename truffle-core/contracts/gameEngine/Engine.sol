@@ -267,17 +267,34 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
         return addNGKAndDefs(matchLog, n, is2ndHalf);
     }
 
+    function getEnduranceFactor(uint256 endurance) public pure returns (uint256) {
+        /// endurance is converted to a percentage, 
+        /// used to multiply (and hence decrease) the start endurance.
+        /// 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
+        /// 20000*11 is super-endurant => 100%
+        /// 1000*11 is starting => 65%
+        /// 100*11 is terrible => 20%
+        if (endurance == 0) return 0;
+        if (endurance < 11000) {
+            return 65 - ((11000-endurance)*65)/11000;
+        } else if (endurance < 200000) {
+            return 100 - ((220000-endurance)*35)/209000;
+        } else {
+            return 100;
+        }
+    }
+
     //// @dev Rescales global skills of both teams according to their endurance
     function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
         public
         pure
         returns (uint256[5] memory , uint256[5] memory ) 
     {
-        uint256 currentEnduranceA = skillsTeamA[IDX_ENDURANCE];
-        uint256 currentEnduranceB = skillsTeamB[IDX_ENDURANCE];
+        uint256 endFactorA = getEnduranceFactor(skillsTeamA[IDX_ENDURANCE]);
+        uint256 endFactorB = getEnduranceFactor(skillsTeamB[IDX_ENDURANCE]);
         for (uint8 sk = IDX_MOVE2ATTACK; sk < IDX_ENDURANCE; sk++) {
-            skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
-            skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
+            skillsTeamA[sk] = (skillsTeamA[sk] * endFactorA) / 100;
+            skillsTeamB[sk] = (skillsTeamB[sk] * endFactorB) / 100;
         }
         return (skillsTeamA, skillsTeamB);
     }

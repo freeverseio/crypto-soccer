@@ -340,22 +340,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
                 else {computeForwardsGlobSkills(globSkills, playerSkills, posCondModifier, fwdModFactors);}       
             }
         }
-        /// endurance is converted to a percentage, 
-        /// used to multiply (and hence decrease) the start endurance.
-        /// 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
-        /// 20000*11 is super-endurant => 100%
-        /// 1000*11 is starting => 65%
-        /// 100*11 is terrible => 20%
-        
-        if (globSkills[IDX_ENDURANCE] > 0) {
-            if (globSkills[IDX_ENDURANCE] < 11000) {
-                globSkills[IDX_ENDURANCE] = 65 - ((11000-globSkills[IDX_ENDURANCE])*65)/11000;
-            } else if (globSkills[IDX_ENDURANCE] < 200000) {
-                globSkills[IDX_ENDURANCE] = 100 - ((220000-globSkills[IDX_ENDURANCE])*35)/209000;
-            } else {
-                globSkills[IDX_ENDURANCE] = 100;
-            }
-        }
     }
 
     function subtractOutOfGameSkills(uint256[5] memory globSkills, uint256 skills, uint256 tactics, uint256 posInLineUp) public pure returns(uint256[5] memory) {
