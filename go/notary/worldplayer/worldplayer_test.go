@@ -76,38 +76,50 @@ func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {
 
 	// first, check that if created at now-1 or now-2, the offering time would be 12 hours ago,
 	// and hence, the validUntil would be exactly now
+	// also, store the defense of the first player, to compare with next queries
 	service := worldplayer.NewWorldPlayerService(*bc.Contracts, namesdb)
 	players, err := service.CreateBatch(teamId, now-2)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 32)
-	assert.Equal(t, string(players[0].PlayerId()), "25726027164631419126757699466463075271849876153057056752928093")
+	assert.Equal(t, string(players[0].PlayerId()), "25724436434260067557745572147503721500217552451380292479878199")
 	expectedValidUntil := int64(1554940800)
 	assert.Equal(t, players[0].ValidUntil(), strconv.FormatUint(uint64(expectedValidUntil), 10))
 	assert.Equal(t, expectedValidUntil-now == 0, true)
+	sk0 := players[0].Defence()
 
 	players, err = service.CreateBatch(teamId, now-1)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 32)
-	assert.Equal(t, string(players[0].PlayerId()), "25726027164631419126757699466463075271849876153057056752928093")
+	assert.Equal(t, string(players[0].PlayerId()), "25724436434260067557745572147503721500217552451380292479878199")
 	expectedValidUntil = int64(1554940800)
 	assert.Equal(t, players[0].ValidUntil(), strconv.FormatUint(uint64(expectedValidUntil), 10))
 	assert.Equal(t, expectedValidUntil-now == 0, true)
+	// check that the batch skills is unchanged
+	sk1 := players[0].Defence()
+	assert.Equal(t, sk1, sk0)
 
 	// second, check that if created at now or now+1, the offering time would be exactly now,
 	// and hence, the validUntil would be exactly 12 hours in the future
 	players, err = service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 32)
-	assert.Equal(t, string(players[0].PlayerId()), "25726027164631419126757699466464342922450104382458553456133469")
+	assert.Equal(t, string(players[0].PlayerId()), "25728203308299535852283230531167809334883996271558048168805556")
 	expectedValidUntil = int64(1554984000)
 	assert.Equal(t, players[0].ValidUntil(), strconv.FormatUint(uint64(expectedValidUntil), 10))
 	assert.Equal(t, expectedValidUntil-now == halfDay, true)
+	// check that the batch skills has changed
+	sk2 := players[0].Defence()
+	assert.Equal(t, sk2 == sk0, false)
 
 	players, err = service.CreateBatch(teamId, now+1)
 	assert.NilError(t, err)
 	assert.Equal(t, len(players), 32)
-	assert.Equal(t, string(players[0].PlayerId()), "25726027164631419126757699466464342922450104382458553456133469")
+	assert.Equal(t, string(players[0].PlayerId()), "25728203308299535852283230531167809334883996271558048168805556")
 	expectedValidUntil = int64(1554984000)
 	assert.Equal(t, players[0].ValidUntil(), strconv.FormatUint(uint64(expectedValidUntil), 10))
 	assert.Equal(t, expectedValidUntil-now == halfDay, true)
+	// check that the batch skills has not changed
+	sk3 := players[0].Defence()
+	assert.Equal(t, sk3 == sk2, true)
+
 }
