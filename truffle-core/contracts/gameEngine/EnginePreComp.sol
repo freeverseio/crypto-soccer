@@ -363,7 +363,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
             else {computeForwardsGlobSkills(toSubtractSkills, skills, posCondModifier, fwdModFactors);}       
         }
 
-        for (uint8 i = 0; i < 5; i++) {
+        // do not update endurance, until it is fixed an not rescaled in future versions.
+        for (uint8 i = 0; i < IDX_ENDURANCE; i++) {
             if (globSkills[i] > toSubtractSkills[i]) {
                 globSkills[i] -= toSubtractSkills[i];
             } else {

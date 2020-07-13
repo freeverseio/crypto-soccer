@@ -530,9 +530,9 @@ contract('Evolution', (accounts) => {
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
         expectedGoals = [4, 0];
-        expectedPoints = [70, 10];
+        expectedPoints = [56, 10];
         expectedSums = [55000,33022];
-        expectedFwds = [ 2, 3,  1, 3, 3, 2,  3, 1, 3 ];     
+        expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
         expectedAss = [ 6, 10, 6, 9, 8, 6, 10, 6, 9 ];   
         
@@ -576,7 +576,7 @@ contract('Evolution', (accounts) => {
         yellow2.toNumber().should.be.equal(4);
 
         // 2nd half:
-        expectedGoals = [12, 0];
+        expectedGoals = [7, 0];
         var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play2ndHalfAndEvolve(
             verseSeed, now, [skills[0], skills[1]], teamIds, [tacticsNew, tacticsNew], [matchLogsAndEvents[0], matchLogsAndEvents[1]],
             [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]
@@ -605,9 +605,9 @@ contract('Evolution', (accounts) => {
             sums.push(sum.toNumber());
             
         }   
-        expectedFwds = [ 2, 3, 1, 3, 3, 3 ];     
-        expectedSho = [ 6, 8, 1, 9, 8, 8 ];     
-        expectedAss = [ 6, 10, 6, 9, 8, 8 ];     
+        expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
+        expectedSho = [ 6, 8, 1, 9, 8, 1 ];     
+        expectedAss = [ 6, 10, 6, 9, 8, 6 ];     
         fwds = [];
         sho = [];
         ass = [];
@@ -1637,8 +1637,8 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, isBigNumber = false);
 
         // check Training Points (and Goals)
-        expectedGoals = [7, 5];
-        expectedPoints = [ 52, 20];
+        expectedGoals = [2, 5];
+        expectedPoints = [ 15, 49];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
