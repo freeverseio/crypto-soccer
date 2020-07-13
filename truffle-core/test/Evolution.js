@@ -1637,8 +1637,8 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, isBigNumber = false);
 
         // check Training Points (and Goals)
-        expectedGoals = [2, 5];
-        expectedPoints = [ 15, 49];
+        expectedGoals = [5, 5];
+        expectedPoints = [32, 22];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
