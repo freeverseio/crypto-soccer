@@ -1030,7 +1030,8 @@ contract('Engine', (accounts) => {
     });
     
     it('teams get tired', async () => {
-        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
+        logs = [0, 0];
+        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50], logs).should.be.fulfilled;
         result[0][0].toNumber().should.be.equal(10);
         result[0][1].toNumber().should.be.equal(20);
         result[0][2].toNumber().should.be.equal(30);
@@ -1041,6 +1042,28 @@ contract('Engine', (accounts) => {
         result[1][2].toNumber().should.be.equal(30);
         result[1][3].toNumber().should.be.equal(40);
         result[1][4].toNumber().should.be.equal(50);
+    });
+
+    it('teams get less tired with changes during half time', async () => {
+        logA = await engine.setChangesAtHalfTime(0, 1).should.be.fulfilled;
+        logB = await engine.setChangesAtHalfTime(0, 2).should.be.fulfilled;
+        globSkills = [10000,20000,30000,40000,80];
+
+        var result = await engine.teamsGetTired(globSkills, globSkills, [0, 0]).should.be.fulfilled;
+        expected = [ 8000, 8000*2, 8000*3, 8000*4, 80 ];
+        debug.compareArrays(result[0], expected, toNum = true);
+
+        var result = await engine.teamsGetTired(globSkills, globSkills, [logA, logB]).should.be.fulfilled;
+        expected = [ 8285, 16571, 24857, 33142, 80 ];
+        debug.compareArrays(result[0], expected, toNum = true);
+        expected = [ 8571, 17142, 25714, 34285, 80 ];
+        debug.compareArrays(result[1], expected, toNum = true);
+
+        logB = await engine.setChangesAtHalfTime(0, 3).should.be.fulfilled;
+        var result = await engine.teamsGetTired(globSkills, globSkills, [logA, logB]).should.be.fulfilled;
+        expected = [ 8857, 17714, 26571, 35428, 80 ];
+        debug.compareArrays(result[1], expected, toNum = true);
+
     });
     
     it('play a match in home stadium, check that max goals is applied', async () => {

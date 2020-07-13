@@ -68,6 +68,12 @@ contract('EncodingMatchLog', (accounts) => {
         result = await encoding.getTeamSumSkills(log).should.be.fulfilled;
         result.toNumber().should.be.equal(teamSumSkills)
         
+        result = await encoding.getChangesAtHalfTime(log).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await encoding.setChangesAtHalfTime(log, 3).should.be.fulfilled;
+        result = await encoding.getChangesAtHalfTime(result).should.be.fulfilled;
+        result.toNumber().should.be.equal(3);
+
         // HALF 1
         result = await utils.fullDecodeMatchLog(log, is2ndHalf = false).should.be.fulfilled;
         expected = [

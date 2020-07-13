@@ -636,6 +636,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
             }
         }
         if (changes > 3) return (matchLog, linedUpSkills, ERR_PLAYHALF_HALFCHANGES);
+        matchLog = setChangesAtHalfTime(matchLog, changes);
         if (fieldPlayers >= (getOutOfGameType(matchLog, false) == RED_CARD ? 11 : 12)) return (matchLog, linedUpSkills, ERR_PLAYHALF_TOO_MANY_LINEDUP);
 
         matchLog = addNTot(matchLog, fieldPlayers, is2ndHalf);
