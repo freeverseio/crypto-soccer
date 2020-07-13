@@ -128,6 +128,19 @@ contract('Leagues', (accounts) => {
         result[0].toNumber().should.be.equal(386000*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
         result[1].toNumber().should.be.equal(5);
+        console.log(result[0].toNumber()/48318382080000);
+    });
+
+    it('computeTeamRankingPoints with previous points and non-null teamId - realistic numbers', async () =>  {
+        teamId = await leagues.encodeTZCountryAndVal(tz = INIT_TZ, countryIdxInTZ = 0, teamIdxInCountry = 0);
+        teamStateAll1000 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine);
+        result = await leagues.computeTeamRankingPoints(teamStateAll1000, leagueRanking = 7, prevPerfPoints = 0, teamId, isBot = false).should.be.fulfilled;
+        // uint64 result = 
+        //     WEIGHT_SKILLS * teamSkills * 10 +
+        //     SKILLS_AT_START * (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague);
+        // so we should get 10 * 20 * (5*18*1e3) * (2**28)
+        A = 20 * 5* 25*1000 * 10 * (2**28);
+        Math.floor(result[0].toNumber()/A).should.be.equal(1);
     });
 
     it('computeLeagueLeaderBoard almost no clashes', async () =>  {
