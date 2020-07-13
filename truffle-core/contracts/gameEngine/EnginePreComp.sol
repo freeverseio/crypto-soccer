@@ -350,7 +350,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         if (globSkills[IDX_ENDURANCE] > 0) {
             if (globSkills[IDX_ENDURANCE] < 11000) {
                 globSkills[IDX_ENDURANCE] = 65 - ((11000-globSkills[IDX_ENDURANCE])*65)/11000;
-            } else if (globSkills[IDX_ENDURANCE] < 200000) {
+            } else if (globSkills[IDX_ENDURANCE] < 220000) {
                 globSkills[IDX_ENDURANCE] = 100 - ((220000-globSkills[IDX_ENDURANCE])*35)/209000;
             } else {
                 globSkills[IDX_ENDURANCE] = 100;
