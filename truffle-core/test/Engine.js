@@ -597,15 +597,16 @@ contract('Engine', (accounts) => {
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkillsDefault, trainingPointsDefault);
         
-        seedDraw= seed;
-        teamStateAll50Half2[9] = 0;
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], [log0, log0], [is2nd = true, isHomeStadium,  playoff = true, isBotHome, isBotAway]).should.be.fulfilled;
-        nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
-        nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
-        nGoals0.toNumber().should.be.equal(nGoals1.toNumber());
-
-        expected1 = [ true, false, true, true, true, false, false ];
-        expected2 = [ true, true, true, true, true, false, false ];
+        teamStateAll50Half2[9] = 0; 
+        for (i = 1; i < 2; i++) {
+            seedDraw = web3.utils.toBN(web3.utils.keccak256(i.toString()));
+            var {0: log2, 1: err} = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], [log0, log0], [is2nd = true, isHomeStadium,  playoff = true, isBotHome, isBotAway]).should.be.fulfilled;
+            nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
+            nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
+            nGoals0.toNumber().should.be.equal(nGoals1.toNumber());
+        }
+        expected1 = [ true, true, true, true, true, true, false ];
+        expected2 = [ true, true, true, true, true, true, true ];
 
         pen1 = [];
         pen2 = [];
@@ -710,11 +711,18 @@ contract('Engine', (accounts) => {
 
     it('find goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 13;
+        // log0 = log after playing 1st half
+        // log1 = log after playing 2nd half without any log from 1st half
+        // log12 = log after playing 2nd half with log0 from 1st half5
+        // note that 2nd half tactics have changes during the game, so they affect the glob stamina
         var {0: log0, 1: err} =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        err.toNumber().should.be.equal(0);
         var {0: log1, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        err.toNumber().should.be.equal(0);
         var {0: log12, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        err.toNumber().should.be.equal(0);
         expected1 = [1, 3];
-        expected2 = [0, 1];
+        expected2 = [1, 2];
         goals1 = [];
         goals2 = [];
         for (team = 0; team < 2; team++) {
@@ -726,18 +734,19 @@ contract('Engine', (accounts) => {
         debug.compareArrays(goals1, expected1, toNum = true);
         debug.compareArrays(goals2, expected2, toNum = true);
 
-        expected = [1, 4];
+        expected = [2, 5];
         goals = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log12[team]);
             goals.push(nGoals)
-            // nGoals.toNumber().should.be.equal(expected[team]);
             winner = await encodingLog.getWinner(log12[team]);
             winner.toNumber().should.be.equal(WINNER_AWAY);
             nDefs = await encodingLog.getNGKAndDefs(log12[team], is2nd = false);
             nDefs.toNumber().should.be.equal(5);
             nDefs = await encodingLog.getNGKAndDefs(log12[team], is2nd = true);
             nDefs.toNumber().should.be.equal(5);
+            nChangesHalfTime = await encodingLog.getChangesAtHalfTime(log12[team]);
+            nChangesHalfTime.toNumber().should.be.equal(3);
         }
         debug.compareArrays(goals, expected, toNum = true);
     });
