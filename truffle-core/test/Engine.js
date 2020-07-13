@@ -570,6 +570,44 @@ contract('Engine', (accounts) => {
     });
 
 
+    it('check positive effect of changes in half time by playing matches', async () => {
+        tactics1NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, noSubstitutions), 
+            extraAttackNull, tacticId433).should.be.fulfilled;
+        lineUp3Changes = [0,1,2,3,4,5,6,7,11,12,13]
+        tactics3Changes = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineUp3Changes, noSubstitutions), 
+            extraAttackNull, tacticId433).should.be.fulfilled;
+        teamStateAll1000Half2 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [true, false]).should.be.fulfilled;
+
+        nGoalsTotal = [0,0];
+        nGoalsTotalb = [0,0];
+        // play several matches, for each, making 0 changes at halftime, and again, making 3 changes instead
+        // - for each, check that the team doing the changes scores equal or more goals
+        // - for each, check that the team not doing the changes scores equal or less goals
+        // - at the end, add all goals, and check that the inequalities are strictly less and more, not equal.
+        for (i = 1; i < 5; i++) {
+            sed = web3.utils.toBN(web3.utils.keccak256(i.toString()));
+            var {0: log2, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll1000Half2, teamStateAll1000Half2], [tactics1NoChanges, tactics1NoChanges], [0, 0], [is2nd = true, isHomeStadium,  playoff = false, isBotHome, isBotAway]).should.be.fulfilled;
+            nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
+            nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
+            nChangesHalfTime = await encodingLog.getChangesAtHalfTime(log2[1]);
+            nChangesHalfTime.toNumber().should.be.equal(0);
+            nGoalsTotal[0] += nGoals0.toNumber();
+            nGoalsTotal[1] += nGoals1.toNumber();
+
+            var {0: log2, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll1000Half2, teamStateAll1000Half2], [tactics1NoChanges, tactics3Changes], [0, 0], [is2nd = true, isHomeStadium,  playoff = false, isBotHome, isBotAway]).should.be.fulfilled;
+            nGoals0b = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
+            nGoals1b = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
+            nChangesHalfTime = await encodingLog.getChangesAtHalfTime(log2[1]);
+            nChangesHalfTime.toNumber().should.be.equal(3);
+            nGoalsTotalb[0] += nGoals0b.toNumber();
+            nGoalsTotalb[1] += nGoals1b.toNumber();
+            (nGoals0b.toNumber() <= nGoals0.toNumber()).should.be.equal(true);
+            (nGoals1b.toNumber() >= nGoals1b.toNumber()).should.be.equal(true);
+        }
+        (nGoalsTotalb[0] < nGoalsTotal[0]).should.be.equal(true);
+        (nGoalsTotalb[1] > nGoalsTotal[1]).should.be.equal(true);
+    });
+
     it('check that penalties are played in playoff games and excluding redcarded players', async () => {
         // cook data so that the first half ended up in a way that:
         //  - there are red cards
