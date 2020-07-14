@@ -350,7 +350,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         if (globSkills[IDX_ENDURANCE] > 0) {
             if (globSkills[IDX_ENDURANCE] < 11000) {
                 globSkills[IDX_ENDURANCE] = 65 - ((11000-globSkills[IDX_ENDURANCE])*65)/11000;
-            } else if (globSkills[IDX_ENDURANCE] < 200000) {
+            } else if (globSkills[IDX_ENDURANCE] < 220000) {
                 globSkills[IDX_ENDURANCE] = 100 - ((220000-globSkills[IDX_ENDURANCE])*35)/209000;
             } else {
                 globSkills[IDX_ENDURANCE] = 100;
@@ -379,7 +379,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
             else {computeForwardsGlobSkills(toSubtractSkills, skills, posCondModifier, fwdModFactors);}       
         }
 
-        for (uint8 i = 0; i < 5; i++) {
+        // do not update endurance, until it is fixed an not rescaled in future versions.
+        for (uint8 i = 0; i < IDX_ENDURANCE; i++) {
             if (globSkills[i] > toSubtractSkills[i]) {
                 globSkills[i] -= toSubtractSkills[i];
             } else {
@@ -635,6 +636,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
             }
         }
         if (changes > 3) return (matchLog, linedUpSkills, ERR_PLAYHALF_HALFCHANGES);
+        matchLog = setChangesAtHalfTime(matchLog, changes);
         if (fieldPlayers >= (getOutOfGameType(matchLog, false) == RED_CARD ? 11 : 12)) return (matchLog, linedUpSkills, ERR_PLAYHALF_TOO_MANY_LINEDUP);
 
         matchLog = addNTot(matchLog, fieldPlayers, is2ndHalf);

@@ -570,6 +570,44 @@ contract('Engine', (accounts) => {
     });
 
 
+    it('check positive effect of changes in half time by playing matches', async () => {
+        tactics1NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, noSubstitutions), 
+            extraAttackNull, tacticId433).should.be.fulfilled;
+        lineUp3Changes = [0,1,2,3,4,5,6,7,11,12,13]
+        tactics3Changes = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineUp3Changes, noSubstitutions), 
+            extraAttackNull, tacticId433).should.be.fulfilled;
+        teamStateAll1000Half2 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [true, false]).should.be.fulfilled;
+
+        nGoalsTotal = [0,0];
+        nGoalsTotalb = [0,0];
+        // play several matches, for each, making 0 changes at halftime, and again, making 3 changes instead
+        // - for each, check that the team doing the changes scores equal or more goals
+        // - for each, check that the team not doing the changes scores equal or less goals
+        // - at the end, add all goals, and check that the inequalities are strictly less and more, not equal.
+        for (i = 1; i < 5; i++) {
+            sed = web3.utils.toBN(web3.utils.keccak256(i.toString()));
+            var {0: log2, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll1000Half2, teamStateAll1000Half2], [tactics1NoChanges, tactics1NoChanges], [0, 0], [is2nd = true, isHomeStadium,  playoff = false, isBotHome, isBotAway]).should.be.fulfilled;
+            nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
+            nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
+            nChangesHalfTime = await encodingLog.getChangesAtHalfTime(log2[1]);
+            nChangesHalfTime.toNumber().should.be.equal(0);
+            nGoalsTotal[0] += nGoals0.toNumber();
+            nGoalsTotal[1] += nGoals1.toNumber();
+
+            var {0: log2, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll1000Half2, teamStateAll1000Half2], [tactics1NoChanges, tactics3Changes], [0, 0], [is2nd = true, isHomeStadium,  playoff = false, isBotHome, isBotAway]).should.be.fulfilled;
+            nGoals0b = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
+            nGoals1b = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
+            nChangesHalfTime = await encodingLog.getChangesAtHalfTime(log2[1]);
+            nChangesHalfTime.toNumber().should.be.equal(3);
+            nGoalsTotalb[0] += nGoals0b.toNumber();
+            nGoalsTotalb[1] += nGoals1b.toNumber();
+            (nGoals0b.toNumber() <= nGoals0.toNumber()).should.be.equal(true);
+            (nGoals1b.toNumber() >= nGoals1b.toNumber()).should.be.equal(true);
+        }
+        (nGoalsTotalb[0] < nGoalsTotal[0]).should.be.equal(true);
+        (nGoalsTotalb[1] > nGoalsTotal[1]).should.be.equal(true);
+    });
+
     it('check that penalties are played in playoff games and excluding redcarded players', async () => {
         // cook data so that the first half ended up in a way that:
         //  - there are red cards
@@ -597,15 +635,16 @@ contract('Engine', (accounts) => {
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkillsDefault, trainingPointsDefault);
         
-        seedDraw= seed;
-        teamStateAll50Half2[9] = 0;
-        var {0: log2, 1: err} = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], [log0, log0], [is2nd = true, isHomeStadium,  playoff = true, isBotHome, isBotAway]).should.be.fulfilled;
-        nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
-        nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
-        nGoals0.toNumber().should.be.equal(nGoals1.toNumber());
-
-        expected1 = [ true, false, true, true, true, false, false ];
-        expected2 = [ true, true, true, true, true, false, false ];
+        teamStateAll50Half2[9] = 0; 
+        for (i = 1; i < 2; i++) {
+            seedDraw = web3.utils.toBN(web3.utils.keccak256(i.toString()));
+            var {0: log2, 1: err} = await engine.playHalfMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], [log0, log0], [is2nd = true, isHomeStadium,  playoff = true, isBotHome, isBotAway]).should.be.fulfilled;
+            nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
+            nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
+            nGoals0.toNumber().should.be.equal(nGoals1.toNumber());
+        }
+        expected1 = [ true, true, true, true, true, true, false ];
+        expected2 = [ true, true, true, true, true, true, true ];
 
         pen1 = [];
         pen2 = [];
@@ -710,11 +749,18 @@ contract('Engine', (accounts) => {
 
     it('find goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 13;
+        // log0 = log after playing 1st half
+        // log1 = log after playing 2nd half without any log from 1st half
+        // log12 = log after playing 2nd half with log0 from 1st half5
+        // note that 2nd half tactics have changes during the game, so they affect the glob stamina
         var {0: log0, 1: err} =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        err.toNumber().should.be.equal(0);
         var {0: log1, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        err.toNumber().should.be.equal(0);
         var {0: log12, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
+        err.toNumber().should.be.equal(0);
         expected1 = [1, 3];
-        expected2 = [0, 1];
+        expected2 = [1, 2];
         goals1 = [];
         goals2 = [];
         for (team = 0; team < 2; team++) {
@@ -726,18 +772,19 @@ contract('Engine', (accounts) => {
         debug.compareArrays(goals1, expected1, toNum = true);
         debug.compareArrays(goals2, expected2, toNum = true);
 
-        expected = [1, 4];
+        expected = [2, 5];
         goals = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log12[team]);
             goals.push(nGoals)
-            // nGoals.toNumber().should.be.equal(expected[team]);
             winner = await encodingLog.getWinner(log12[team]);
             winner.toNumber().should.be.equal(WINNER_AWAY);
             nDefs = await encodingLog.getNGKAndDefs(log12[team], is2nd = false);
             nDefs.toNumber().should.be.equal(5);
             nDefs = await encodingLog.getNGKAndDefs(log12[team], is2nd = true);
             nDefs.toNumber().should.be.equal(5);
+            nChangesHalfTime = await encodingLog.getChangesAtHalfTime(log12[team]);
+            nChangesHalfTime.toNumber().should.be.equal(3);
         }
         debug.compareArrays(goals, expected, toNum = true);
     });
@@ -1030,7 +1077,8 @@ contract('Engine', (accounts) => {
     });
     
     it('teams get tired', async () => {
-        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
+        logs = [0, 0];
+        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50], logs).should.be.fulfilled;
         result[0][0].toNumber().should.be.equal(10);
         result[0][1].toNumber().should.be.equal(20);
         result[0][2].toNumber().should.be.equal(30);
@@ -1041,6 +1089,28 @@ contract('Engine', (accounts) => {
         result[1][2].toNumber().should.be.equal(30);
         result[1][3].toNumber().should.be.equal(40);
         result[1][4].toNumber().should.be.equal(50);
+    });
+
+    it('teams get less tired with changes during half time', async () => {
+        logA = await engine.setChangesAtHalfTime(0, 1).should.be.fulfilled;
+        logB = await engine.setChangesAtHalfTime(0, 2).should.be.fulfilled;
+        globSkills = [10000,20000,30000,40000,80];
+
+        var result = await engine.teamsGetTired(globSkills, globSkills, [0, 0]).should.be.fulfilled;
+        expected = [ 8000, 8000*2, 8000*3, 8000*4, 80 ];
+        debug.compareArrays(result[0], expected, toNum = true);
+
+        var result = await engine.teamsGetTired(globSkills, globSkills, [logA, logB]).should.be.fulfilled;
+        expected = [ 8285, 16571, 24857, 33142, 80 ];
+        debug.compareArrays(result[0], expected, toNum = true);
+        expected = [ 8571, 17142, 25714, 34285, 80 ];
+        debug.compareArrays(result[1], expected, toNum = true);
+
+        logB = await engine.setChangesAtHalfTime(0, 3).should.be.fulfilled;
+        var result = await engine.teamsGetTired(globSkills, globSkills, [logA, logB]).should.be.fulfilled;
+        expected = [ 8857, 17714, 26571, 35428, 80 ];
+        debug.compareArrays(result[1], expected, toNum = true);
+
     });
     
     it('play a match in home stadium, check that max goals is applied', async () => {

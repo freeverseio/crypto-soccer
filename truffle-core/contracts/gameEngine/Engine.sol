@@ -176,7 +176,7 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
                 globSkills[1] = _precomp.subtractOutOfGameSkills(globSkills[1], skills[1][outOfGameData[1][2]], tactics[1], outOfGameData[1][2]); 
             }
             if (is2ndHalf && ((round == 0) || (round == 5))) {
-                teamsGetTired(globSkills[0], globSkills[1]);
+                teamsGetTired(globSkills[0], globSkills[1], matchLogs);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
             seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
@@ -268,16 +268,23 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
     }
 
     //// @dev Rescales global skills of both teams according to their endurance
-    function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
+    function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB, uint256[2] memory matchLogs)
         public
         pure
-        returns (uint256[5] memory , uint256[5] memory ) 
+        returns (uint256[5] memory , uint256[5] memory) 
     {
-        uint256 currentEnduranceA = skillsTeamA[IDX_ENDURANCE];
-        uint256 currentEnduranceB = skillsTeamB[IDX_ENDURANCE];
+        // To accound for halftime changes: assume that if we could change 7 players.
+        // then the team would effectively not get tired at all.
+        // factor(changes = 0) = endurance/100
+        // factor(changes = 7) = 1
+        // so: factor = e/100 + changes/7 (1-e/100) = ( (7-changes) * end + 100 * changes)/700
+        uint256 changesA = getChangesAtHalfTime(matchLogs[0]);
+        uint256 changesB = getChangesAtHalfTime(matchLogs[1]);
+        uint256 factorA = (7 - changesA) * skillsTeamA[IDX_ENDURANCE] + 100 * changesA;
+        uint256 factorB = (7 - changesB) * skillsTeamB[IDX_ENDURANCE] + 100 * changesB;
         for (uint8 sk = IDX_MOVE2ATTACK; sk < IDX_ENDURANCE; sk++) {
-            skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
-            skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
+            skillsTeamA[sk] = (skillsTeamA[sk] * factorA) / 700;
+            skillsTeamB[sk] = (skillsTeamB[sk] * factorB) / 700;
         }
         return (skillsTeamA, skillsTeamB);
     }
