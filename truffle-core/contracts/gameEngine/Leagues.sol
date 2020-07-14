@@ -19,7 +19,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint8 constant public MATCHES_PER_DAY = 4;
     uint8 constant public MATCHES_PER_LEAGUE = 56; /// = 4 * 14 = 7*8
     uint64 constant private INERTIA = 2;
-    uint64 constant private WEIGHT_SKILLS = 20;
+    uint64 constant private WEIGHT_SKILLS = 40;
     uint64 constant private SKILLS_AT_START = 90000; /// 18 players per team at start with 5 skills of 50 on avg
     uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; /// 268435455 = 2**28 - 1 
     uint256 constant private TEN_TO_13 = 1e13; // a power of 10 larger than MAX_TEAMID = 2**43
@@ -164,16 +164,16 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         /// P = [0, 20]
         /// I = [0, I0], with I0 = 10
         /// P = (I/I0 P0 + (1-I/I0) P1) = (I P0 + (I0-I) P1)/I0
-        /// Formula: R = W SK/SK0 + P  = W SK/SK0 + (I P0 + (I0-I) P1)/I0 
-        /// So we can avoid dividing, and simply compute:  R * SK0 * I0 = W SK I0 + SK0 (I P0 + (I0-I)P1) 
-        /// Note that if we do not need to divide:
-        ///  R * SK0 * I0 = W SK I0 + SK0 (I P0 + (I0-I) P1) 
+        /// If we want P = 20 to be equivalent to, say, 50% increase in skills, we need to choose W = 40. To avoid dividing: 
+
+        /// R = (W + P) SK/SK0 = (W +  (I P0 + (I0-I) P1)/I0 ) SK/SK0
+        /// R SK0 I0 = SK (W I0 + I P0 + (I0 - I) P1)
+        /// we return R SK0 I0
         uint64 perfPointsThisLeague = getPerfPoints(leagueRanking);
-        uint64 result = 
-            WEIGHT_SKILLS * teamSkills * 10 +
-            SKILLS_AT_START * (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague);
-        prevPerfPoints = (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague)/10;
-        return (result, prevPerfPoints);
+        // compute 10 * prevPerfPoints, and divide later
+        prevPerfPoints = (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague);
+        uint64 result = teamSkills * ( WEIGHT_SKILLS * 10 + prevPerfPoints );
+        return (result, prevPerfPoints/10);
     }
 
     function getPerfPoints(uint8 leagueRanking) public pure returns (uint64) {
