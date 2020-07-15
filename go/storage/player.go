@@ -225,7 +225,7 @@ func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	country_of_birth,
 	race,
 	yellow_card_1st_half
-	FROM players WHERE (team_id = $1);`, teamID)
+	FROM players WHERE (team_id = $1 AND shirt_number < 25);`, teamID)
 	if err != nil {
 		return nil, err
 	}

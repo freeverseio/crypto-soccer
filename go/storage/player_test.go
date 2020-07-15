@@ -165,3 +165,35 @@ func TestPlayerGetPlayersOfTeam(t *testing.T) {
 	assert.Assert(t, players[0].Equal(player))
 	assert.Assert(t, players[1].Equal(player2))
 }
+
+func TestPlayerGetPlayersOfTeamDoNotCountDismissPlayers(t *testing.T) {
+	tx, err := s.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	createMinimumUniverse(t, tx)
+
+	players, err := storage.PlayersByTeamId(tx, "343")
+	assert.NilError(t, err)
+	assert.Equal(t, len(players), 0)
+	var player storage.Player
+	player.PlayerId = big.NewInt(1)
+	player.Defence = 4
+	player.Endurance = 5
+	player.Pass = 6
+	player.Shoot = 7
+	player.Speed = 8
+	player.TeamId = teamID
+	player.EncodedSkills = big.NewInt(43535453)
+	player.EncodedState = big.NewInt(43453)
+	assert.NilError(t, player.Insert(tx, uint64(4)))
+	player2 := player
+	player2.PlayerId = big.NewInt(2)
+	player2.EncodedSkills = big.NewInt(767)
+	player2.ShirtNumber = 25
+	assert.NilError(t, player2.Insert(tx, uint64(4)))
+	players, err = storage.PlayersByTeamId(tx, teamID)
+	assert.NilError(t, err)
+	assert.Equal(t, len(players), 1)
+	assert.Assert(t, players[0].Equal(player))
+}
