@@ -260,7 +260,10 @@ jobs:
           kustomize edit set image freeverseio/synchronizer:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/universe.api:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/universe.db:${CIRCLE_SHA1}
-          kustomize build . | kubectl -n freeverse apply -f -
+          kustomize build . -o app.yaml
+          cat app.yaml
+          kubectl -n freeverse apply -f app.yaml
+          rm app.yaml
 workflows:
   version: 2
   build_and_test:
