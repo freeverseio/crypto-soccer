@@ -193,7 +193,7 @@ contract Market is MarketView {
         onlyMarket 
     {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezeTeam requirements not met");
-        _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
+        _teamIdToAuctionData[teamId] = validUntil + (now << 32) + ((uint256(sellerHiddenPrice) << 72) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
     }
 

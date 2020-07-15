@@ -612,8 +612,7 @@ contract("Market", accounts => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
-    const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
-    
+
     tx = await marketUtils.freezeTeam(owners.market, currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
@@ -631,8 +630,6 @@ contract("Market", accounts => {
   it("teams: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
-    offerValidUntil = now.toNumber() + 3600; // valid for an hour
-    const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
     tx = await marketUtils.freezeTeam(owners.market, currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
@@ -641,15 +638,24 @@ contract("Market", accounts => {
       return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(true);
     });
     
+    offerValidUntil = now.toNumber() -1; // offer had expired before doing the freeze
     tx = await marketUtils.completeTeamAuction(
       owners.market, 
       currencyId, price, offererRnd, offerValidUntil, sellerTeamId, 
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerAccount
     ).should.be.rejected;
+
+    offerValidUntil = now.toNumber() + 10; // offer had expired before doing the freeze
+    tx = await marketUtils.completeTeamAuction(
+      owners.market, 
+      currencyId, price, offererRnd, offerValidUntil, sellerTeamId, 
+      extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerAccount
+    ).should.be.fulfilled;
+
   });
 
   it("teams: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
-    validUntil = now.toNumber() + 3600*24*2; // two days
+    validUntil = now.toNumber() + 3600*24*4; // 4 days
     offererRnd = 23987435;
 
     sigSeller = await marketUtils.signPutAssetForSaleMTx(
