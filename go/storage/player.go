@@ -204,7 +204,7 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	return &player, nil
 }
 
-func PlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
+func ActivePlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 	rows, err := tx.Query(`SELECT 
 	player_id, 
 	defence,
