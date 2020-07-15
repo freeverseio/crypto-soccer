@@ -41,11 +41,11 @@ func NewMatchesFromTimezoneIdxMatchdayIdx(
 		if err != nil {
 			return nil, err
 		}
-		stoHomePlayers, err := storage.PlayersByTeamId(tx, stoMatch.HomeTeamID.String())
+		stoHomePlayers, err := storage.ActivePlayersByTeamId(tx, stoMatch.HomeTeamID.String())
 		if err != nil {
 			return nil, err
 		}
-		stoVisitorPlayers, err := storage.PlayersByTeamId(tx, stoMatch.VisitorTeamID.String())
+		stoVisitorPlayers, err := storage.ActivePlayersByTeamId(tx, stoMatch.VisitorTeamID.String())
 		if err != nil {
 			return nil, err
 		}
