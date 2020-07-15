@@ -82,8 +82,7 @@ contract("Market", accounts => {
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address, {from: owners.relay}).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
 
-    AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
-    AUCTION_TIME = AUCTION_TIME.toNumber();
+    AUCTION_TIME = 48 * 3600;
     
     POST_AUCTION_TIME = await constants.get_POST_AUCTION_TIME().should.be.fulfilled;
     POST_AUCTION_TIME = POST_AUCTION_TIME.toNumber();
@@ -872,10 +871,10 @@ contract("Market", accounts => {
     // Check that default value works, 2 days work, 3 days fail
     // validUntil = now.toNumber() + AUCTION_TIME;
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    validUntil2 = now.toNumber() + 3600*24*2 + 10; // two days and 10 sec
+    validUntil2 = now.toNumber() + 3600*24*3 + 10; // 3 days and 10 sec
     playerId2 = playerId.add(web3.utils.toBN(1));
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.fulfilled;
-    validUntil2 = now.toNumber() + 3600*24*3 + 10; // three days and 10 sec
+    validUntil2 = now.toNumber() + 3600*24*4 + 10; // 4 days and 10 sec
     playerId2 = playerId.add(web3.utils.toBN(2));
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.rejected;
   });
@@ -932,13 +931,13 @@ contract("Market", accounts => {
   });
   
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because post_auction time had passed", async () => {
-    // validUntil = now + AUCTION_TIME = now + 24 hours
-    // the payment must take place within 48 hours after valid until, so within 3 days from now.
-    // We show that 3 days - 10 sec work, but 3 days + 10 sec fail
+    // validUntil = now + AUCTION_TIME = now + 48 hours
+    // the payment must take place within 48 hours after valid until, so within 4 days from now.
+    // We show that 4 days - 10 sec work, but 4 days + 10 sec fail
     validUntil0 = now.toNumber() + AUCTION_TIME;
     playerId0 = playerId.add(web3.utils.toBN(1));
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, playerId0, sellerAccount).should.be.fulfilled;
-    await timeTravel.advanceTime(3*24*3600-10);
+    await timeTravel.advanceTime(4*24*3600-10);
     await timeTravel.advanceBlock().should.be.fulfilled;
     tx = await marketUtils.completePlayerAuction(
       owners.market,
@@ -951,7 +950,7 @@ contract("Market", accounts => {
     validUntil0 = now0.toNumber() + AUCTION_TIME;
     playerId0 = playerId.add(web3.utils.toBN(2));
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, playerId0, sellerAccount).should.be.fulfilled;
-    await timeTravel.advanceTime(3*24*3600+10);
+    await timeTravel.advanceTime(4*24*3600+10);
     await timeTravel.advanceBlock().should.be.fulfilled;
     tx = await marketUtils.completePlayerAuction(
       owners.market,
