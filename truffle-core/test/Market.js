@@ -810,7 +810,6 @@ contract("Market", accounts => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
-    const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
@@ -837,9 +836,6 @@ contract("Market", accounts => {
   it("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
-    offerValidUntil = now.toNumber() + 3600; // valid for an hour
-    const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
-
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
@@ -848,11 +844,20 @@ contract("Market", accounts => {
     });
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
+    offerValidUntil = now.toNumber() - 1; // valid until one sec in the past
     tx = await marketUtils.completePlayerAuction(
       owners.market,
       currencyId, price,  offererRnd, offerValidUntil, playerId, 
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
     ).should.be.rejected;
+    
+    // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
+    offerValidUntil = now.toNumber() + 10; // valid until one sec in the past
+    tx = await marketUtils.completePlayerAuction(
+      owners.market,
+      currencyId, price,  offererRnd, offerValidUntil, playerId, 
+      extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
+    ).should.be.fulfilled;
     
   });
   

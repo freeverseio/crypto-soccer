@@ -74,6 +74,7 @@ contract Constants {
     uint256 constant internal MAX_VALID_UNTIL     = 72 hours; /// the sum of the previous two
     uint256 constant internal VALID_UNTIL_MASK    = 4294967295; /// 2^32-1 (32 bit)
     uint256 constant internal KILL_LEFTMOST_40BIT_MASK = (2**(256-40))-1; 
+    uint256 constant internal KILL_LEFTMOST_72BIT_MASK = (2**(256-72))-1; 
     uint8 constant internal MAX_ACQUISITON_CONSTAINTS  = 6;
 
     /// Updates related:
