@@ -243,7 +243,8 @@ jobs:
       - image: cimg/base:2020.01
     steps:
       - checkout
-      - kube-orb/install-kubectl
+      - kube-orb/install-kubectl:
+          kubectl-version: "1.16.2"
       - kube-orb/install-kubeconfig:
           kubeconfig: KUBECONFIG_DATA
       - install_kustomize
