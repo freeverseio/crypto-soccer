@@ -244,6 +244,9 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		team.LeagueIdx = uint32(i / 8)
 		team.TeamIdxInLeague = uint32(i % 8)
 		// calculate the real Ranking points
+		// the blockchain returns R * A, where:
+		// - R is the real Ranking points, normalized so that an average team starts with 40 points
+		// - A is denominator, not applied to avoid losing precision in division, A = 10*(5*18*1000)*2^28 = 241591910400000
 		team.RankingPoints = team.RankingPoints / uint64(241591910400000)
 		if err := team.Update(tx); err != nil {
 			return err

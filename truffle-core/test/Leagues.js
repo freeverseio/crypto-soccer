@@ -96,30 +96,30 @@ contract('Leagues', (accounts) => {
 
     it('computeTeamRankingPoints with no previous points v1', async () =>  {
         // teamSkills = 5*25
-        // P = 0.8 * 20 = 16
+        // P = 0.8 * 50 = 40
         // R SK0 I0 = SK (W I0 + I P0 + (I0 - I) P1)
-        // 5*25 *(40* 10  + 160)
+        // 5*25 *(100* 10  + 400)
         result = await leagues.computeTeamRankingPointsPure(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(70000);
-        result[1].toNumber().should.be.equal(16);
+        result[0].toNumber().should.be.equal(175000);
+        result[1].toNumber().should.be.equal(40);
     });
 
     it('computeTeamRankingPoints with previous points v2', async () =>  {
         // teamSkills = 5*1000*25
         // prevPerfPoints = 0.2 * 10 = 2
         // R SK0 I0 = SK (W I0 + I P0 + (I0 - I) P1)
-        // 5*1000*25 * (40*10 + 20) = 52500000
+        // 5*1000*25 * (100*10 + 20) = 127500000
         teamStateAll1000 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine);
         result = await leagues.computeTeamRankingPointsPure(teamStateAll1000, leagueRanking = 7, prevPerfPoints = 10).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(52500000);
+        result[0].toNumber().should.be.equal(127500000);
         result[1].toNumber().should.be.equal(2);
     });
 
     it('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
         // teamSkills = 5*50*25
-        // prevPerfPoints = 0.8 * 2 + 0.2 * 10 = 3.6 = 3
+        // prevPerfPoints = 0.8 * 5 + 0.2 * 10 = 6
         // R SK0 I0 = SK (W I0 + I P0 + (I0 - I) P1)
-        // 5*50*25 * (40*10 + 36) = 2687500
+        // 5*50*25 * (100*10 + 60) = 6625000
         teamId = await leagues.encodeTZCountryAndVal(tz = INIT_TZ, countryIdxInTZ = 0, teamIdxInCountry = 0)
         // the team is Still a Bot:
         result = await leagues.computeTeamRankingPoints(teamStateAll50, leagueRanking = 6, prevPerfPoints = 10, teamId, isBot = true).should.be.fulfilled;
@@ -127,27 +127,27 @@ contract('Leagues', (accounts) => {
         result[1].toNumber().should.be.equal(0);
         // make it human:
         result = await leagues.computeTeamRankingPoints(teamStateAll50, leagueRanking = 6, prevPerfPoints = 10, teamId, isBot = false).should.be.fulfilled;
-        result[1].toNumber().should.be.equal(3);
-        result[0].toNumber().should.be.equal(2725000*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
+        result[1].toNumber().should.be.equal(6);
+        result[0].toNumber().should.be.equal(6625000*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
         denominator = 10 * 5 * 18 * 1000 * TWO_TO_28; // I0 SK0 2**28
         denominator.should.be.equal(241591910400000);
-        // ranking points shown to user should be:  (400 + 36)*25*50/(18*1000)/10 = 3.02777
-        Math.floor(result[0].toNumber()/denominator).should.be.equal(3);
+        // ranking points shown to user should be:  (100 + 6)*25*50/(18*1000) = 7.3
+        Math.floor(result[0].toNumber()/denominator).should.be.equal(7);
     });
 
     it('computeTeamRankingPoints with previous points and non-null teamId - realistic numbers', async () =>  {
         // teamSkills = 5*1000*25
         // prevPerfPoints = 0
         // R SK0 I0 = SK (W I0 + I P0 + (I0 - I) P1)
-        // 5*1000*25 * (40*10) = 50000000        
-        // User should see 40 * 25/18 = 55.55 = 55
+        // 5*1000*25 * (100*10) = 125000000        
+        // User should see 100 * 25/18 = 138.8 = 138
         teamId = await leagues.encodeTZCountryAndVal(tz = INIT_TZ, countryIdxInTZ = 0, teamIdxInCountry = 0);
         teamStateAll1000 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine);
         result = await leagues.computeTeamRankingPointsPure(teamStateAll1000, leagueRanking = 7, prevPerfPoints = 0).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(50000000);
+        result[0].toNumber().should.be.equal(125000000);
         result = await leagues.computeTeamRankingPoints(teamStateAll1000, leagueRanking = 7, prevPerfPoints = 0, teamId, isBot = false).should.be.fulfilled;
-        A = web3.utils.toBN(5*18*1000*10*TWO_TO_28);
-        result[0].div(A).toNumber().should.be.equal(55);
+        denominator = web3.utils.toBN(5*18*1000*10*TWO_TO_28);
+        result[0].div(denominator).toNumber().should.be.equal(138);
     });
 
     it('computeLeagueLeaderBoard almost no clashes', async () =>  {
