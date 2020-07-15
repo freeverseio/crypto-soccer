@@ -69,9 +69,9 @@ contract Constants {
  
     /// POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.
     ///  ...it includes time to ask for a 2nd-best bidder, or 3rd-best.
-    uint256 constant internal POST_AUCTION_TIME   = 6 hours; 
+    uint256 constant internal POST_AUCTION_TIME   = 48 hours; 
     uint256 constant internal AUCTION_TIME        = 24 hours; 
-    uint256 constant internal MAX_VALID_UNTIL     = 30 hours; /// the sum of the previous two
+    uint256 constant internal MAX_VALID_UNTIL     = 72 hours; /// the sum of the previous two
     uint256 constant internal VALID_UNTIL_MASK    = 4294967295; /// 2^32-1 (32 bit)
     uint256 constant internal KILL_LEFTMOST_40BIT_MASK = (2**(256-40))-1; 
     uint8 constant internal MAX_ACQUISITON_CONSTAINTS  = 6;

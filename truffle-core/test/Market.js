@@ -856,10 +856,17 @@ contract("Market", accounts => {
     
   });
   
-  it("players: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
-    tx, sellerHiddenPrice = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    validUntil = now.toNumber() + 3600*24*2; // two days
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
+  it("players: fails a freezePlayer via MTXs because validUntil is too large", async () => {
+    // validUntil is capped to avoid malicious use of MTXs in the future. Currenly capped to AUCTION_TIME + POST_AUCTION_TIME = 1d + 2d = 3 days
+    // Check that default value works, 2 days work, 3 days fail
+    // validUntil = now.toNumber() + AUCTION_TIME;
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    validUntil2 = now.toNumber() + 3600*24*2 + 10; // two days and 10 sec
+    playerId2 = playerId.add(web3.utils.toBN(1));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.fulfilled;
+    validUntil2 = now.toNumber() + 3600*24*3 + 10; // three days and 10 sec
+    playerId2 = playerId.add(web3.utils.toBN(2));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.rejected;
   });
   
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because targetTeam = originTeam", async () => {
