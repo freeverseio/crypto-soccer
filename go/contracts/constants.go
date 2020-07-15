@@ -1,5 +1,7 @@
 package contracts
 
+const NilAddress = "0x0000000000000000000000000000000000000000"
+
 const SkillsShootIdx = 0
 const SkillsSpeedIdx = 1
 const SkillsPassIdx = 2

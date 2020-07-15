@@ -16,6 +16,7 @@ type IMarketPay interface {
 	CreateOrder(name string, value string) (*Order, error)
 	GetOrder(hash string) (*Order, error)
 	IsPaid(order Order) bool
+	ValidateOrder(hash string) (string, error)
 }
 
 type MarketPay struct {
@@ -137,4 +138,44 @@ func (b *MarketPay) GetOrder(hash string) (*Order, error) {
 
 func (b *MarketPay) IsPaid(order Order) bool {
 	return order.Status == "PUBLISHED"
+}
+
+func (b *MarketPay) ValidateOrder(hash string) (string, error) {
+	log.Infof("Validate order %v", hash)
+	url := b.endpoint + "/express/validate/" + hash
+	method := "POST"
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return "", err
+	}
+	if err != nil {
+		fmt.Println(err)
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", b.bearerToken)
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	// log.Info(string(body))
+
+	// order := &Order{}
+	// err = json.Unmarshal(body, order)
+	// if err != nil {
+	// 	log.Error(order)
+	// 	return "", err
+	// }
+	return string(body), nil
 }

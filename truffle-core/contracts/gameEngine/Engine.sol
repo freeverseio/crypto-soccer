@@ -2,6 +2,7 @@ pragma solidity >= 0.6.3;
 
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
+import "../encoders/EncodingMatchLogBase1.sol";
 import "../encoders/EncodingMatchLogBase3.sol";
 import "../encoders/EncodingTactics.sol";
 import "./EngineApplyBoosters.sol";
@@ -14,7 +15,7 @@ import "./EngineApplyBoosters.sol";
  @dev to the rest of the code (inheritance led to too-large-to-deploy)
 */
  
-contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
+contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
     /// prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
@@ -159,20 +160,32 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         bool is2ndHalf
     ) 
         public
-        pure
+        view
     {
         uint8[9][2] memory playersPerZone = [getPlayersPerZone(tactics[0]), getPlayersPerZone(tactics[1])];
         bool[10][2] memory extraAttack = [getFullExtraAttack(tactics[0]), getFullExtraAttack(tactics[1])];
 
         uint64[] memory rnds = getNRandsFromSeed(seedAndStartTimeAndEvents[IDX_SEED], ROUNDS_PER_MATCH*5);
         uint8 teamThatAttacks;
+        uint256[3][2] memory outOfGameData = getOutOfGameData(matchLogs, is2ndHalf);
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
+            if (outOfGameData[0][0] > 0 && outOfGameData[0][1] == round) { 
+                globSkills[0] = _precomp.subtractOutOfGameSkills(globSkills[0], skills[0][outOfGameData[0][2]], tactics[0], outOfGameData[0][2]); 
+            }
+            if (outOfGameData[1][0] > 0 && outOfGameData[1][1] == round) { 
+                globSkills[1] = _precomp.subtractOutOfGameSkills(globSkills[1], skills[1][outOfGameData[1][2]], tactics[1], outOfGameData[1][2]); 
+            }
             if (is2ndHalf && ((round == 0) || (round == 5))) {
-                teamsGetTired(globSkills[0], globSkills[1]);
+                teamsGetTired(globSkills[0], globSkills[1], matchLogs);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
             seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
-            seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1]) ? 1 : 0;
+            seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(
+                matchLogs,
+                teamThatAttacks, 
+                globSkills, 
+                rnds[5*round+1]
+            ) ? 1 : 0;
             if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
                 /// scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
@@ -190,7 +203,18 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
             }
         }
     }
+
+
     
+    function getOutOfGameData(uint256[2] memory matchLogs, bool is2ndHalf) public pure returns (uint256[3][2] memory outOfGameData) {
+        for (uint8 team = 0; team < 2; team++) {
+            outOfGameData[team][0] = getOutOfGameType(matchLogs[team], is2ndHalf);
+            outOfGameData[team][1] = getOutOfGameRound(matchLogs[team], is2ndHalf);
+            outOfGameData[team][2] = getOutOfGamePlayer(matchLogs[team], is2ndHalf);
+        }
+    }
+
+
     /// getLinedUpSkillsAndOutOfGames:
     ///      1. Unpacks the tactics and lineUp, verifies validity 
     ///      2. Rewrites skills[25] so that the first [14] entries correspond to players that will actually play
@@ -244,30 +268,44 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     }
 
     //// @dev Rescales global skills of both teams according to their endurance
-    function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
+    function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB, uint256[2] memory matchLogs)
         public
         pure
-        returns (uint256[5] memory , uint256[5] memory ) 
+        returns (uint256[5] memory , uint256[5] memory) 
     {
-        uint256 currentEnduranceA = skillsTeamA[IDX_ENDURANCE];
-        uint256 currentEnduranceB = skillsTeamB[IDX_ENDURANCE];
+        // To accound for halftime changes: assume that if we could change 7 players.
+        // then the team would effectively not get tired at all.
+        // factor(changes = 0) = endurance/100
+        // factor(changes = 7) = 1
+        // so: factor = e/100 + changes/7 (1-e/100) = ( (7-changes) * end + 100 * changes)/700
+        uint256 changesA = getChangesAtHalfTime(matchLogs[0]);
+        uint256 changesB = getChangesAtHalfTime(matchLogs[1]);
+        uint256 factorA = (7 - changesA) * skillsTeamA[IDX_ENDURANCE] + 100 * changesA;
+        uint256 factorB = (7 - changesB) * skillsTeamB[IDX_ENDURANCE] + 100 * changesB;
         for (uint8 sk = IDX_MOVE2ATTACK; sk < IDX_ENDURANCE; sk++) {
-            skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
-            skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
+            skillsTeamA[sk] = (skillsTeamA[sk] * factorA) / 700;
+            skillsTeamB[sk] = (skillsTeamB[sk] * factorB) / 700;
         }
         return (skillsTeamA, skillsTeamB);
     }
 
     /// Decides if a team manages to shoot by confronting attack and defense via globSkills
-    function managesToShoot(uint8 teamThatAttacks, uint256[5][2] memory globSkills, uint256 rndNum)
+    function managesToShoot(uint256[2] memory matchLogs, uint8 teamThatAttacks, uint256[5][2] memory globSkills, uint256 rndNum)
         public
         pure
         returns (bool)
     {
         if (globSkills[teamThatAttacks][IDX_CREATE_SHOOT] == 0) return false;
+        uint256 penaltyForMasacre = 1; 
+        uint256 goalsTeamThatAttacks = getNGoals(matchLogs[teamThatAttacks]);
+        uint256 goalsTeamThatDefends = getNGoals(matchLogs[1-teamThatAttacks]);
+        if (goalsTeamThatAttacks >= goalsTeamThatDefends + 3) {
+            penaltyForMasacre = goalsTeamThatAttacks - (goalsTeamThatDefends + 3) + 2;
+        }
+        
         return throwDice(
-            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       /// globSkills[IDX_DEFEND_SHOOT] of defending team against...
-            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/10,  /// globSkills[IDX_CREATE_SHOOT] of attacking team.
+            (globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT]),       /// globSkills[IDX_DEFEND_SHOOT] of defending team against...
+            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/(10 * penaltyForMasacre),  /// globSkills[IDX_CREATE_SHOOT] of attacking team.
             rndNum
         ) == 1 ? true : false;
     }

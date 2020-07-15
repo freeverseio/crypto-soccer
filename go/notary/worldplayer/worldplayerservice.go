@@ -97,11 +97,13 @@ func (b WorldPlayerService) createBatchByTier(
 		return nil, err
 	}
 
+	seed := new(big.Int).SetUint64(generateRnd(id, string(epochDays), 0))
+
 	worldPlayers, err := b.contracts.Privileged.CreateBuyNowPlayerIdBatch(
 		&bind.CallOpts{},
 		big.NewInt(tier.Value),
 		tier.MaxPotential,
-		id,
+		seed,
 		[4]uint8{
 			tier.GoalKeepersCount,
 			tier.DefendersCount,
