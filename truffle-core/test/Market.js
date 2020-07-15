@@ -920,39 +920,33 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
-  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
-    // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
-    // 2. Freeverse checks signature and returns to buyer: OK, failed
-    // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
-    // 4. seller's mobile app sends to Freeverse: sigSeller and params
-    // 5. Freeverse checks signature and returns to seller: OK, failed
-    // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
-    // 7. If freeze went OK:
-    //          urges buyer to complete payment
-    //    If freeze not OK (he probably sold the player in a different market)
-    //          tells the buyer to forget about this player
-    // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
-    // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
-
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
-    isPlayerFrozen.should.be.equal(true);
-    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
-    });
-    
+  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because post_auction time had passed", async () => {
+    // validUntil = now + AUCTION_TIME = now + 24 hours
+    // the payment must take place within 48 hours after valid until, so within 3 days from now.
+    // We show that 3 days - 10 sec work, but 3 days + 10 sec fail
+    validUntil0 = now.toNumber() + AUCTION_TIME;
+    playerId0 = playerId.add(web3.utils.toBN(1));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, playerId0, sellerAccount).should.be.fulfilled;
+    await timeTravel.advanceTime(3*24*3600-10);
+    await timeTravel.advanceBlock().should.be.fulfilled;
     tx = await marketUtils.completePlayerAuction(
       owners.market,
-      currencyId, price,  sellerRnd, validUntil, playerId, 
+      currencyId, price,  sellerRnd, validUntil0, playerId0, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
 
-    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
-    });
-
-    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
-    finalOwner.should.be.equal(buyerAccount.address);
+    // try again
+    now0 = await market.getBlockchainNowTime().should.be.fulfilled;
+    validUntil0 = now0.toNumber() + AUCTION_TIME;
+    playerId0 = playerId.add(web3.utils.toBN(2));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, playerId0, sellerAccount).should.be.fulfilled;
+    await timeTravel.advanceTime(3*24*3600+10);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    tx = await marketUtils.completePlayerAuction(
+      owners.market,
+      currencyId, price,  sellerRnd, validUntil0, playerId0, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.rejected;
   });
   
   it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
