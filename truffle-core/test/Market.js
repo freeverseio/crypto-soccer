@@ -654,7 +654,7 @@ contract("Market", accounts => {
   });
 
   it("teams: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
-    validUntil = now.toNumber() + 3600*24*4; // 4 days
+    validUntil = now.toNumber() + 3600*24*4 + 30; // 4 days + 30 sec
     offererRnd = 23987435;
 
     sigSeller = await marketUtils.signPutAssetForSaleMTx(
