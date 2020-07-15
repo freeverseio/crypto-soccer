@@ -25,6 +25,13 @@ func (b *AuctionMachine) ProcessValidation(market marketpay.IMarketPay) error {
 	}
 
 	switch order.Status {
+	case "PENDING_VALIDATE":
+		result, err := market.ValidateOrder(paidBid.PaymentID)
+		if err != nil {
+			return err
+		}
+		log.Infof("auction[%v|%v] validation result %v", b.auction.ID, b.auction.State, result)
+		b.SetState(storage.AuctionValidation, result)
 	case "PENDING_RELEASE":
 		log.Infof("auction[%v|%v] pending release", b.auction.ID, b.auction.State)
 	case "RELEASED":

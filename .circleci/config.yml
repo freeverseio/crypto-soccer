@@ -77,6 +77,13 @@ commands:
               ipfs-cluster-service init
 
 jobs:
+  dashboard:
+    executor: freeverse
+    steps:
+      - checkout
+      - generate_contracts_code
+      - run: cd dashboard && npm ci
+      - run: cd dashboard && npm test -- --ci
   truffle_core:
     executor: freeverse
     parallelism: 20
@@ -164,12 +171,6 @@ jobs:
       - submit_universe_db_schema
       - run: cd go/cmd/relay && go build ./relay.go
       - run: cd go/relay && go test ./... -p 1
-  market-trader:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: cd market.trader && npm install
-      - run: cd market.trader && npm test
   universe-api:
     docker:
       - image: circleci/node:lts
@@ -263,6 +264,10 @@ workflows:
   version: 2
   build_and_test:
     jobs:
+      - dashboard:
+          filters:
+            tags:
+              only: /.*/
       - truffle_core:
           filters:
             tags:
@@ -272,10 +277,6 @@ workflows:
             tags:
               only: /.*/
       - go1:
-          filters:
-            tags:
-              only: /.*/
-      - market-trader:
           filters:
             tags:
               only: /.*/
@@ -302,12 +303,12 @@ workflows:
                 - dev
           requires:
             - synchronizer
-            - market-trader
             - relay-actions
             - market-notary
             - go1
             - deployment-test
             - universe-api
+            - dashboard
       - dockerization-production:
           filters:
             tags:
@@ -316,12 +317,12 @@ workflows:
               ignore: /.*/
           requires:
             - synchronizer
-            - market-trader
             - relay-actions
             - market-notary
             - go1
             - deployment-test
             - universe-api
+            - dashboard
       - deployk8s:
           filters:
            branches:

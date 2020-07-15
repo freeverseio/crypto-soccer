@@ -28,11 +28,5 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql
 		return graphql.ID(id), errors.New("Invalid signature")
 	}
 
-	select {
-	case b.ch <- args.Input:
-	default:
-		log.Warning("channel is full")
-		return id, errors.New("channel is full")
-	}
-	return id, nil
+	return id, b.push(args.Input)
 }

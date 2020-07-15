@@ -29,7 +29,6 @@ contract Market is MarketView {
     event PlayerFreezeCrypto(uint256 playerId, bool frozen);
     event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
     event PlayerStateChange(uint256 playerId, uint256 state);
-    event PlayerRetired(uint256 playerId, uint256 teamId);
     event ProposedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
     event UpdatedNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime);
 
@@ -236,8 +235,7 @@ contract Market is MarketView {
         uint256 playerId,
         bytes32 sigR,
         bytes32 sigS,
-        uint8 sigV,
-        bool returnToAcademy
+        uint8 sigV
     ) 
         external 
         onlyMarket 
@@ -245,14 +243,14 @@ contract Market is MarketView {
         uint256 state = getPlayerState(playerId);
         uint256 teamIdOrigin = getCurrentTeamIdFromPlayerState(state);
         address owner = getOwnerTeam(teamIdOrigin);
-        bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId, returnToAcademy)));
+        bytes32 msgHash = prefixed(keccak256(abi.encode(validUntil, playerId)));
         require (
             /// check validUntil has not expired
             (now < validUntil) &&
             /// check player is not already frozen
             (!isPlayerFrozenInAnyMarket(playerId)) &&  
             /// check that the team it belongs to not already frozen
-            !isTeamFrozen(getCurrentTeamIdFromPlayerId(playerId)) &&
+            !isTeamFrozen(teamIdOrigin) &&
             /// check asset is owned by legit address
             (owner != address(0)) && 
             /// check signatures are valid by requiring that they own the asset:
@@ -261,13 +259,11 @@ contract Market is MarketView {
             (validUntil < now + MAX_VALID_UNTIL),
             "conditions to dismiss player are not met"
         );  
-        if (returnToAcademy) { 
-            transferPlayer(playerId, ACADEMY_TEAM); 
-        } else {
-            uint256 shirtOrigin = getCurrentShirtNum(state);
-            _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
-            emit PlayerRetired(playerId, teamIdOrigin);
-        }
+        uint256 shirtOrigin = getCurrentShirtNum(state);
+        _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+        state = setCurrentShirtNum(state, PLAYERS_PER_TEAM_MAX);
+        _playerIdToState[playerId] = state;
+        emit PlayerStateChange(playerId, state);
     }
 
     /// When a player has been put in the IN_TRANSIT team (due to more than 25 players in a team)
@@ -303,7 +299,8 @@ contract Market is MarketView {
     
         if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
-            _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID;
+            // if shirtOrigin == PLAYER_PER_TEAM_MAX => player had been dismissed
+            if (shirtOrigin != PLAYERS_PER_TEAM_MAX) { _teamIdToPlayerIds[teamIdOrigin][shirtOrigin] = FREE_PLAYER_ID; }
         }
 
         /// part related to target team:

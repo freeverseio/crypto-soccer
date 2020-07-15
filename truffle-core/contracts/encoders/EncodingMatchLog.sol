@@ -47,6 +47,7 @@ import "../encoders/EncodingMatchLogBase3.sol";
  teamSumSkills: 24b  offset 212
  trainingPoints, 12b, offset 236
  bool isHomeStadium,  1b each, offset 248
+ changesAtHalftime, 2b, offset 249
 */
 
 contract EncodingMatchLog is EncodingMatchLogBase1, EncodingMatchLogBase2, EncodingMatchLogBase3 {

@@ -36,6 +36,17 @@ const Schema = `
 		teamId: ID!
 	}
 
+	input DismissPlayerInput {
+		signature: String!
+		validUntil: String!
+		playerId: ID!
+		returnToAcademy: Boolean!
+	}
+
+	input CompletePlayerTransitInput {
+		playerId: ID!
+	}
+
 	type WorldPlayer {
 		playerId: ID!
 		name: String!
@@ -62,5 +73,7 @@ const Schema = `
 		cancelAuction(input: CancelAuctionInput!): ID!
 		createBid(input: CreateBidInput!): ID!
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
+		dismissPlayer(input: DismissPlayerInput!): ID!
+		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
 	}
 `

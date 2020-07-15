@@ -45,12 +45,5 @@ func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) 
 		return id, fmt.Errorf("blockchain says no")
 	}
 
-	select {
-	case b.ch <- args.Input:
-	default:
-		log.Warning("channel is full")
-		return id, errors.New("channel is full")
-	}
-
-	return id, nil
+	return id, b.push(args.Input)
 }
