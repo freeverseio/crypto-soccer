@@ -244,7 +244,7 @@ jobs:
     steps:
       - checkout
       - kube-orb/install-kubectl:
-          kubectl-version: "1.16.2"
+          kubectl-version: "v1.16.12"
       - kube-orb/install-kubeconfig:
           kubeconfig: KUBECONFIG_DATA
       - install_kustomize
