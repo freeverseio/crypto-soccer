@@ -949,6 +949,19 @@ contract("Market", accounts => {
     ).should.be.rejected;
   });
   
+  it("players: test that valid until can be larger than AUCTION_TIME and complete transaction", async () => {
+    // this test illustrates an undesired behaviour: TODO - change solidity code
+    validUntil0 = now.toNumber() + AUCTION_TIME + 12 * 3600;
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, playerId, sellerAccount).should.be.fulfilled;
+    await timeTravel.advanceTime(AUCTION_TIME + 6 * 3600);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    tx = await marketUtils.completePlayerAuction(
+      owners.market,
+      currencyId, price,  sellerRnd, validUntil0, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.fulfilled;
+  });
+
   it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
   });
