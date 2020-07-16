@@ -82,5 +82,8 @@ contract Constants {
     uint16 constant internal VERSES_PER_ROUND = 672; /// 96 * 7days
     uint8 constant internal NULL_TIMEZONE = 0;
     uint8 constant internal MAX_CHALLENGE_LEVELS = 6;
-    
+
+    // time of 1st match played in prodcution environment: 1592785800
+    // so, set a forced deploy time half an hour earlier (-1800)
+    uint256 constant internal PRODUCTION_DEPLOY_TIME = 1592784000; 
 }
