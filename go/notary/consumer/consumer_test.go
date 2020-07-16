@@ -110,3 +110,20 @@ func TestConsumerConsumeUnknownEvent(t *testing.T) {
 	in := struct{}{}
 	assert.Error(t, c.Consume(in), "unknown event: {}")
 }
+
+func TestConsumerConsumeCreateOffer(t *testing.T) {
+	ch := make(chan interface{}, 10)
+	c, err := consumer.New(
+		ch,
+		marketpay.NewMockMarketPay(),
+		db,
+		*bc.Contracts,
+		bc.Owner,
+		googleCredentials,
+		namesdb,
+		false,
+	)
+	assert.NilError(t, err)
+	in := input.CreateOfferInput{}
+	assert.Error(t, c.Consume(in), "invalid playerId")
+}

@@ -155,6 +155,37 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err := CompletePlayerTransit(b.contracts, b.pvc, in); err != nil {
 			return err
 		}
+	case input.CreateOfferInput:
+		log.Debug("Received CreateOfferInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := CreateOffer(tx, in); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case producer.OfferEvent:
+		log.Debug("Received OfferEvent")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := ProcessOffers(
+			b.market,
+			tx,
+			b.contracts,
+			b.pvc,
+		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}

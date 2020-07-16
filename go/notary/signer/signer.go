@@ -235,3 +235,50 @@ func AddressFromSignature(hash, signature []byte) (common.Address, error) {
 	}
 	return PublicKeyBytesToAddress(sigPublicKey), nil
 }
+
+func HashOfferMessage(
+	currencyId uint8,
+	price *big.Int,
+	rnd *big.Int,
+	validUntil int64,
+	playerId *big.Int,
+	teamId *big.Int,
+) (common.Hash, error) {
+	var hash [32]byte
+	hashPrivateMessage, err := HashPrivateMsg(
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	arguments := abi.Arguments{
+		{
+			Type: bytes32Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+	}
+
+	bytes, err := arguments.Pack(
+		hashPrivateMessage,
+		big.NewInt(validUntil),
+		playerId,
+		teamId,
+	)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
+
+	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
+	return crypto.Keccak256Hash([]byte(ss)), nil
+}
