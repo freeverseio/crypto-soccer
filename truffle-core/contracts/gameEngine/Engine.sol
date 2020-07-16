@@ -180,13 +180,8 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
             seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
-            seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(
-                matchLogs,
-                teamThatAttacks, 
-                globSkills, 
-                rnds[5*round+1]
-            ) ? 1 : 0;
-            if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
+            if (managesToShoot(matchLogs, teamThatAttacks, globSkills, rnds[5*round+1])) {
+                seedAndStartTimeAndEvents[2 + round * 5 + 1] = 1;
                 /// scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
                     matchLogs[teamThatAttacks],
