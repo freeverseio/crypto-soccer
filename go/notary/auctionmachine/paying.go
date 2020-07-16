@@ -57,7 +57,6 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 
 func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	// transfer the auction
-	isOffer2StartAuction := false
 	bidHiddenPrice, err := signer.BidHiddenPrice(b.contracts.Market, big.NewInt(bid.ExtraPrice), big.NewInt(bid.Rnd))
 	if err != nil {
 		return err
@@ -86,7 +85,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		big.NewInt(bid.ExtraPrice),
 		big.NewInt(bid.Rnd),
 		teamId,
-		isOffer2StartAuction,
+		b.auction.IsOffer,
 	)
 	if err != nil {
 		return err
@@ -106,7 +105,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		teamId,
 		sig,
 		sigV,
-		isOffer2StartAuction,
+		b.auction.IsOffer,
 	)
 	if err != nil {
 		b.SetState(storage.AuctionWithdrableByBuyer, err.Error())

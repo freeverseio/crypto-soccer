@@ -1,0 +1,15 @@
+(*storage.Auction)({
+	ID: (string) "",
+	PlayerID: (string) "",
+	CurrencyID: (int) 0,
+	Price: (int64) 0,
+	Rnd: (int64) 0,
+	ValidUntil: (int64) 0,
+	Signature: (string) "",
+	State: (storage.AuctionState) (len=7) "started",
+	StateExtra: (string) "",
+	Seller: (string) "",
+	Buyer: (string) "".
+	AuctionID: (string) "",
+	TeamID: (string) "",
+})
