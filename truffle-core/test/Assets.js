@@ -512,10 +512,8 @@ contract('Assets', (accounts) => {
 
    it('gameDeployDay', async () => {
         const gameDeployDay =  await assets.gameDeployDay().should.be.fulfilled;
-        currentBlockNum = await web3.eth.getBlockNumber()
-        currentBlock = await web3.eth.getBlock(currentBlockNum)
-        currentDay = Math.floor(currentBlock.timestamp / (3600 * 24));
-        gameDeployDay.toNumber().should.be.equal(currentDay);
+        forcedTime = Math.floor(1592784000  / (3600 * 24));
+        gameDeployDay.toNumber().should.be.equal(forcedTime);
     });
 
    it('get skills of a GoalKeeper on creation', async () => {
@@ -534,11 +532,13 @@ contract('Assets', (accounts) => {
         newId.should.be.bignumber.equal(playerId);
         gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
         dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
+        // day of birth is now fixed because we force the deploy time:
+        dayOfBirth.toNumber().should.be.equal(17674);
         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-        (Math.abs(ageInDays.toNumber() - 10660) <= INGAMETIME_VS_REALTIME).should.be.equal(true); // we cannot guarantee exactness +/- 1
-        // check that the ageInDay can be obtained by INGAMETIME_VS_REALTIME * (now - dayOfBirth), where
-        // now is approximately gameDeployDay. There is an uncertainty of about INGAMETIME_VS_REALTIME days due to rounding.
-        (Math.abs(INGAMETIME_VS_REALTIME*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < INGAMETIME_VS_REALTIME).should.be.equal(true);
+        // however, ageInDays depends on the moments we query
+        localTimeMs = Date.now();
+        predictedAgeInDays = Math.floor( INGAMETIME_VS_REALTIME * (localTimeMs/1000/3600/24 - dayOfBirth.toNumber()) );
+        (Math.abs(predictedAgeInDays-ageInDays.toNumber()) < INGAMETIME_VS_REALTIME).should.be.equal(true);
     });
 
    it('get state of player on creation', async () => {
