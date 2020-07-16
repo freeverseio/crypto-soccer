@@ -56,7 +56,7 @@ contract('Proxy', (accounts) => {
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
         nSelPerContract = [selectors.length];
         utils = await Utils.new().should.be.fulfilled;
-        blockChainTimeSec = await utils.getNow().should.be.fulfilled;
+        blockChainTimeSec = Math.floor(Date.now()/1000);
     });
 
     it('collisions with proxy should fail', async () => {

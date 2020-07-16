@@ -78,8 +78,7 @@ contract('Assets', (accounts) => {
         [proxy, assets, market, updates] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        utils = await Utils.new().should.be.fulfilled;
-        blockChainTimeSec = await utils.getNow().should.be.fulfilled;
+        blockChainTimeSec = Math.floor(Date.now()/1000);
         initTx = await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
 
         sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);

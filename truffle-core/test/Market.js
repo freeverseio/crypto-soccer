@@ -73,8 +73,7 @@ contract("Market", accounts => {
 
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
 
-    utils = await Utils.new().should.be.fulfilled;
-    blockChainTimeSec = await utils.getNow().should.be.fulfilled;
+    blockChainTimeSec = Math.floor(Date.now()/1000);
     await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;
     sellerAccount = await web3.eth.accounts.create("iamaseller");

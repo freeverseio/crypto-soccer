@@ -166,7 +166,7 @@ contract('Engine', (accounts) => {
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         utils = await Utils.new().should.be.fulfilled;
-        blockChainTimeSec = await utils.getNow().should.be.fulfilled;
+        blockChainTimeSec = Math.floor(Date.now()/1000);
         await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
 
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
