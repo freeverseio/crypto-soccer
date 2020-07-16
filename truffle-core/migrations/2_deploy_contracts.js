@@ -108,7 +108,7 @@ module.exports = function (deployer, network, accounts) {
       }
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
-        await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
+        await assets.initSingleTZ(singleTimezone, DEPLOY_TIME).should.be.fulfilled;
       } else {
         await assets.initTZs(DEPLOY_TIME).should.be.fulfilled;
       }
