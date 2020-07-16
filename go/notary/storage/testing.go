@@ -312,3 +312,88 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.Equal(t, len(orders), 1)
 	})
 }
+
+func TestOfferServiceInterface(t *testing.T, service OfferService) {
+	t.Run("TestOfferByIDUnexistent", func(t *testing.T) {
+		auction, err := service.Offer("4343")
+		assert.NilError(t, err)
+		assert.Assert(t, auction == nil)
+	})
+
+	t.Run("TestOfferInsert", func(t *testing.T) {
+		offer := NewOffer()
+		offer.ID = "ciao"
+		offer.Rnd = 4
+		offer.PlayerID = "3"
+		offer.CurrencyID = 3
+		offer.Price = 3
+		offer.ValidUntil = 3
+		offer.Signature = "3"
+		offer.State = OfferStarted
+		offer.StateExtra = "3"
+		offer.Seller = "3"
+		assert.NilError(t, service.Insert(*offer))
+
+		result, err := service.Offer(offer.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, *result, *offer)
+	})
+
+	t.Run("TestPendingOffers", func(t *testing.T) {
+		offer := NewOffer()
+		offer.ID = "ciao0"
+		offer.State = OfferStarted
+		assert.NilError(t, service.Insert(*offer))
+		result, err := service.PendingOffers()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 2)
+
+		offer.ID = "ciao5"
+		offer.State = OfferFailed
+		assert.NilError(t, service.Insert(*offer))
+		result, err = service.PendingOffers()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 6)
+
+		offer.ID = "ciao6"
+		offer.State = OfferEnded
+		assert.NilError(t, service.Insert(*offer))
+		result, err = service.PendingOffers()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 6)
+
+		offer.ID = "ciao7"
+		offer.State = OfferCancelled
+		assert.NilError(t, service.Insert(*offer))
+		result, err = service.PendingOffers()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 6)
+	})
+
+	t.Run("TestOfferUpdate", func(t *testing.T) {
+		offer := NewOffer()
+		offer.ID = "ciao20"
+		offer.State = OfferStarted
+		offer.StateExtra = "priva"
+		offer.Seller = "yo"
+		offer.AuctionID = "123456"
+		assert.NilError(t, service.Insert(*offer))
+		result, err := service.Offer(offer.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, result.State, OfferStarted)
+		assert.Equal(t, result.StateExtra, "priva")
+		assert.Equal(t, result.Seller, "yo")
+		assert.Equal(t, result.AuctionID, "123456")
+
+		offer.State = OfferCancelled
+		offer.StateExtra = "privato"
+		offer.Seller = "yo2"
+		offer.AuctionID = "1234562"
+		assert.NilError(t, service.Update(*offer))
+
+		result, err = service.Offer(offer.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, *result, *offer)
+	})
+
+}

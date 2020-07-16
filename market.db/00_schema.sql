@@ -96,3 +96,38 @@ CREATE TABLE playstore_orders_histories(
     state_extra TEXT NOT NULL
 );
 
+CREATE TYPE offer_state AS ENUM ('started', 'failed', 'cancelled', 'ended', 'asset_frozen', 'paying', 'withadrable_by_seller', 'withadrable_by_buyer','validation');
+CREATE TABLE offer (
+    id TEXT NOT NULL,
+    player_id TEXT NOT NULL,
+    currency_id INT NOT NULL,
+    price BIGINT NOT NULL,
+    rnd BIGINT NOT NULL,
+    valid_until BIGINT NOT NULL,
+    signature TEXT NOT NULL,
+    state auction_state NOT NULL,
+    state_extra TEXT NOT NULL,
+    seller TEXT NOT NULL,
+    buyer TEXT NOT NULL,
+    auction_id TEXT REFERENCES auctions(id),
+    team_id TEXT NOT NULL,
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE offer_histories (
+    inserted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id TEXT NOT NULL REFERENCES offer(id),
+    player_id TEXT NOT NULL,
+    currency_id INT NOT NULL,
+    price BIGINT NOT NULL,
+    rnd BIGINT NOT NULL,
+    valid_until BIGINT NOT NULL,
+    signature TEXT NOT NULL,
+    state auction_state NOT NULL,
+    state_extra TEXT NOT NULL,
+    payment_url TEXT NOT NULL,
+    seller TEXT NOT NULL,
+    buyer TEXT NOT NULL,
+    auction_id TEXT REFERENCES auctions(id),
+    team_id TEXT NOT NULL
+);
