@@ -73,6 +73,9 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	if playerId == nil {
 		return errors.New("invalid teamid")
 	}
+
+	isOffer := b.offer.ID != ""
+
 	var sig [2][32]byte
 	var sigV uint8
 	_, err = signer.HashBidMessage(
@@ -85,7 +88,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		big.NewInt(bid.ExtraPrice),
 		big.NewInt(bid.Rnd),
 		teamId,
-		b.auction.IsOffer,
+		isOffer,
 	)
 	if err != nil {
 		return err
@@ -105,7 +108,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		teamId,
 		sig,
 		sigV,
-		b.auction.IsOffer,
+		isOffer,
 	)
 	if err != nil {
 		b.SetState(storage.AuctionWithdrableByBuyer, err.Error())
