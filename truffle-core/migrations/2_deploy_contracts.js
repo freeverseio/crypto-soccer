@@ -26,6 +26,8 @@ const EncodingState = artifacts.require('EncodingState');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 const UpdatesBase = artifacts.require('UpdatesBase');
 
+const DEPLOY_TIME = 1592785800 - 1800; // half an hour before the first match played in PROD
+
 require('chai')
     .use(require('chai-as-promised'))
     .should();
@@ -98,7 +100,7 @@ module.exports = function (deployer, network, accounts) {
       await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
       await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
       await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
-      await updates.initUpdates().should.be.fulfilled; 
+      await updates.initUpdates(DEPLOY_TIME).should.be.fulfilled; 
       await updates.setStakersAddress(stakers.address).should.be.fulfilled;
       await stakers.setGameOwner(updates.address).should.be.fulfilled;
       for (trustedParty of owners.trustedParties) {
@@ -108,7 +110,7 @@ module.exports = function (deployer, network, accounts) {
         console.log("Init single timezone", singleTimezone);
         await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
       } else {
-        await assets.initTZs().should.be.fulfilled;
+        await assets.initTZs(DEPLOY_TIME).should.be.fulfilled;
       }
 
       console.log("Setting final ownerships, up to acceptance by company...");

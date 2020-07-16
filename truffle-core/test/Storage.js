@@ -27,6 +27,7 @@ const EncodingSkills = artifacts.require('EncodingSkills');
 const EncodingState = artifacts.require('EncodingState');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 const UpdatesBase = artifacts.require('UpdatesBase');
+const Utils = artifacts.require('Utils');
 
 contract('Proxy', (accounts) => {
     const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
@@ -54,6 +55,8 @@ contract('Proxy', (accounts) => {
         assetsAsLib = await Assets.new().should.be.fulfilled;
         selectors = deployUtils.extractSelectorsFromAbi(Assets.abi);
         nSelPerContract = [selectors.length];
+        utils = await Utils.new().should.be.fulfilled;
+        blockChainTimeSec = await utils.getNow().should.be.fulfilled;
     });
 
     it('collisions with proxy should fail', async () => {
@@ -109,13 +112,13 @@ contract('Proxy', (accounts) => {
     it('Assets permissions check on full deploy', async () => {
         depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges,inheritedArtfcts);
         assets = depl[1]
-        await assets.initTZs().should.be.rejected;
-        await assets.initTZs({from: COO}).should.be.rejected;
+        await assets.initTZs(blockChainTimeSec).should.be.rejected;
+        await assets.initTZs(blockChainTimeSec, {from: COO}).should.be.rejected;
 
         await assets.setCOO(COO, {from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.fulfilled;
         
-        await assets.initTZs({from: COO}).should.be.fulfilled;
+        await assets.initTZs(blockChainTimeSec, {from: COO}).should.be.fulfilled;
         await assets.countCountries(tz = 1).should.be.fulfilled;
         tz = 1;
         countryIdxInTZ = 0;
@@ -165,27 +168,27 @@ contract('Proxy', (accounts) => {
     });
 
     it('call initTZs() function inside Assets via delegate call from declaring ALL selectors in Assets', async () => {
-        await assets.initTZs({from: COO}).should.be.rejected;
+        await assets.initTZs(blockChainTimeSec, {from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
 
         // add function (still not enough to call assets):
         contractId = 1;
         contractIds = [contractId];
         tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
-        await assets.initTZs({from: COO}).should.be.rejected;
+        await assets.initTZs(blockChainTimeSec, {from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.rejected;
         
         // activate function, now, enough to call assets:
         tx1 = await proxy.activateContracts(contractIds, {from: superuser}).should.be.fulfilled;
-        await assets.initTZs({from: COO}).should.be.rejected;
+        await assets.initTZs(blockChainTimeSec, {from: COO}).should.be.rejected;
         await assets.setCOO(COO, {from: superuser}).should.be.fulfilled;
-        await assets.initTZs({from: COO}).should.be.fulfilled;
+        await assets.initTZs(blockChainTimeSec, {from: COO}).should.be.fulfilled;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
 
         // test that deactivateContracts destroys all calls to assets functions
         tx1 = await proxy.deactivateContracts(contractIds = [contractId], {from: superuser}).should.be.fulfilled;
-        await assets.initTZs().should.be.rejected;
+        await assets.initTZs(blockChainTimeSec).should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.rejected;
 
         // I can re-activate, and, because storage is preserved, I cannot initTZs again, but nCountries is still OK
@@ -193,7 +196,7 @@ contract('Proxy', (accounts) => {
         contractIds = [contractId];
         tx0 = await proxy.addContracts(contractIds, [assetsAsLib.address], nSelPerContract, selectors, names = [toBytes32("Assets")], {from: superuser}).should.be.fulfilled;
         tx1 = await proxy.activateContracts(contractIds , {from: superuser}).should.be.fulfilled;
-        await assets.initTZs({from: COO}).should.be.rejected;
+        await assets.initTZs(blockChainTimeSec, {from: COO}).should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(contractId).should.be.fulfilled;
@@ -217,7 +220,7 @@ contract('Proxy', (accounts) => {
 
         var {0: addr, 1: nom, 2: sels, 3: isActive} = await proxy.getContractInfo(2).should.be.fulfilled;
         isActive.should.be.equal(false);
-        await assets.initTZs({from: COO}).should.be.rejected;
+        await assets.initTZs(blockChainTimeSec, {from: COO}).should.be.rejected;
         result = await assets.countCountries(tz = 1).should.be.fulfilled;
         (result.toNumber() > 0).should.be.equal(true);
     });

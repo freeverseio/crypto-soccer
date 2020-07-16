@@ -98,7 +98,8 @@ contract('Updates', (accounts) => {
         utils = await Utils.new().should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
         merkle = await Merkle.new().should.be.fulfilled;
-        await updates.initUpdates({from: owners.COO}).should.be.fulfilled;
+        blockChainTimeSec = await utils.getNow().should.be.fulfilled;
+        await updates.initUpdates(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
         await updates.setChallengeLevels(nLevelsInOneChallenge, nNonNullLeafsInLeague, nLevelsInLastChallenge, {from: owners.relay}).should.be.fulfilled;
         NULL_TIMEZONE = await constants.get_NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
@@ -206,7 +207,7 @@ contract('Updates', (accounts) => {
 
     
     it('test that cannot initialize updates twice', async () =>  {
-        await updates.initUpdates({from: owners.COO}).should.be.rejected;
+        await updates.initUpdates(2131231232, {from: owners.COO}).should.be.rejected;
     });
     
     it('check timezones for this verse', async () =>  {

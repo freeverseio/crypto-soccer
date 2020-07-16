@@ -23,6 +23,7 @@ const Challenges = artifacts.require('Challenges');
 const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
 const TrainingPoints = artifacts.require('TrainingPoints');
+const Utils = artifacts.require('Utils');
 
 const UniverseInfo = artifacts.require('UniverseInfo');
 const EncodingSkills = artifacts.require('EncodingSkills');
@@ -71,7 +72,10 @@ contract("Market", accounts => {
     marketCrypto = await MarketCrypto.new(proxy.address, {from: owners.superuser}).should.be.fulfilled;
 
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
-    await assets.initTZs({from: owners.COO}).should.be.fulfilled;
+
+    utils = await Utils.new().should.be.fulfilled;
+    blockChainTimeSec = await utils.getNow().should.be.fulfilled;
+    await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;
     sellerAccount = await web3.eth.accounts.create("iamaseller");
     buyerAccount = await web3.eth.accounts.create("iamabuyer");
