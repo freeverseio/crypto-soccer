@@ -47,11 +47,16 @@ func processAuction(
 	contracts contracts.Contracts,
 ) error {
 	service := postgres.NewAuctionHistoryService(tx)
+	offerService := postgres.NewOfferHistoryService(tx)
 	bids, err := service.Bid().Bids(auction.ID)
 	if err != nil {
 		return err
 	}
-	am, err := auctionmachine.New(auction, bids, contracts, pvc)
+	offer, err := offerService.OfferByAuctionId(auction.ID)
+	if err != nil {
+		return err
+	}
+	am, err := auctionmachine.New(auction, bids, *offer, contracts, pvc)
 	if err != nil {
 		return err
 	}

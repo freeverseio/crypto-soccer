@@ -39,13 +39,13 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 		return err
 	}
 
-	if in.OfferId {
+	if in.OfferId != "" {
 		offer := storage.NewOffer()
-		offer.id = in.OfferId
-		offer.state = storage.OfferAccepted
-		stateExtra = ""
-		AuctionID = auction.ID
-		Seller = auction.Seller
+		offer.ID = in.OfferId
+		offer.State = storage.OfferAccepted
+		offer.StateExtra = ""
+		offer.AuctionID = auction.ID
+		offer.Seller = auction.Seller
 
 		service := postgres.NewOfferService(tx)
 		if err = service.Update(*offer); err != nil {
