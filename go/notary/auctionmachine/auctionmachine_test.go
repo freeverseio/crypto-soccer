@@ -25,7 +25,9 @@ func TestAuctionStarted(t *testing.T) {
 		auction.PlayerID = "274877906944"
 		auction.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"
 		auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
-		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+		offer := storage.NewOffer()
+
+		m, err := auctionmachine.New(*auction, nil, *offer, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.StateExtra(), "")
@@ -35,7 +37,9 @@ func TestAuctionStarted(t *testing.T) {
 	t.Run("expired", func(t *testing.T) {
 		auction := storage.NewAuction()
 		auction.ValidUntil = time.Now().Unix() - 10
-		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+		offer := storage.NewOffer()
+
+		m, err := auctionmachine.New(*auction, nil, *offer, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.StateExtra(), "expired")
@@ -46,7 +50,9 @@ func TestAuctionStarted(t *testing.T) {
 		auction := storage.NewAuction()
 		auction.ValidUntil = time.Now().Unix() + 100
 		auction.PlayerID = "274877906944"
-		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+		offer := storage.NewOffer()
+
+		m, err := auctionmachine.New(*auction, nil, *offer, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.StateExtra(), "seller  is not the owner 0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
@@ -99,8 +105,9 @@ func TestAuctionStartedGoFrozen(t *testing.T) {
 
 	bid := storage.NewBid()
 	bids := []storage.Bid{*bid}
+	offer := storage.NewOffer()
 
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, bids, *offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process(nil))
 	assert.Equal(t, m.State(), storage.AuctionAssetFrozen)
@@ -208,7 +215,9 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 	}
 
 	market := marketpay.NewMockMarketPay()
-	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner)
+	offer := storage.NewOffer()
+
+	machine, err := auctionmachine.New(auction, bids, *offer, *bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}

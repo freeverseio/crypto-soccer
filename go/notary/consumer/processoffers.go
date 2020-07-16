@@ -4,14 +4,12 @@ import (
 	"crypto/ecdsa"
 	"database/sql"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
-
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
-	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -49,22 +47,22 @@ func processOffer(
 	contracts contracts.Contracts,
 ) error {
 	service := postgres.NewOfferHistoryService(tx)
-	bid := CreateBidInput{
-		Signature: offer.Signature,
-		AuctionId: offer.AuctionID,
+	bid := input.CreateBidInput{
+		Signature:  offer.Signature,
+		AuctionId:  graphql.ID(offer.AuctionID),
 		ExtraPrice: 0,
-		Rnd: offer.Rnd,
-		TeamId: offer.TeamID,
-		IsOffer: true
+		Rnd:        int32(offer.Rnd),
+		TeamId:     offer.TeamID,
+		IsOffer:    true,
 	}
-	
+
 	err := CreateBid(tx, bid)
 
 	if err != nil {
 		log.Error(err)
 		return err
 	}
-	offer.state = storage.OfferAccepted 
+	offer.State = storage.OfferAccepted
 	service.Update(offer)
 
 	return nil
