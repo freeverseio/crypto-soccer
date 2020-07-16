@@ -315,7 +315,7 @@ contract('Assets', (accounts) => {
         depl2 = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         assets2 = depl2[1];
         await assets2.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
-        tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone, {from: owners.COO}).should.be.fulfilled;
+        tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone, blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
             return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
         });
