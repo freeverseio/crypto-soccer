@@ -3117,10 +3117,10 @@ Type: (int16) 0,
 Team: (int16) 1,
 ManagesToShoot: (bool) true,
 IsGoal: (bool) false,
-PrimaryPlayer: (int16) 6,
-SecondaryPlayer: (int16) 0,
+PrimaryPlayer: (int16) 3,
+SecondaryPlayer: (int16) -1,
 PrimaryPlayerID: (string) (len=11) "21342314523",
-SecondaryPlayerID: (string) (len=11) "21342314523"
+SecondaryPlayerID: (string) ""
 },
 (matchevents.MatchEvent) {
 Minute: (int16) 35,
