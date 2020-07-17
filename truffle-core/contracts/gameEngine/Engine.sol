@@ -192,7 +192,7 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
             if (managesToShoot(matchLogs, teamThatAttacks, globSkills, rnds[5*round+1])) {
                 seedAndStartTimeAndEvents[2 + round * 5 + 1] = 1;
                 bool isPenalty = computeIsPenalty(rnds[5*round+2]);
-                uint256 GKskill = getRelevantGKSkill(isPenalty, globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT], skills[1-teamThatAttacks][GK_PEN]);
+                uint256 GKskill = getRelevantGKSkill(isPenalty, globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT], skills[1-teamThatAttacks][0]);
                 /// scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
                     matchLogs[teamThatAttacks],
@@ -212,8 +212,8 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
     }
 
     // To save penalties, we will average: 80% from the blockPenalty skill, 20% from overall blockShoot.
-    function getRelevantGKSkill(bool isPen, uint256 blockShoot, uint256 blockPenalty) public pure returns (uint256) {
-        return isPen ? (blockShoot + 4 * blockPenalty) / 5 : blockShoot;
+    function getRelevantGKSkill(bool isPen, uint256 blockShoot, uint256 skillsGK) public pure returns (uint256) {
+        return isPen ? (blockShoot + 4 * getSkill(skillsGK, GK_PEN)) / 5 : blockShoot;
     }
 
     // In real life, there are 0.3 penalties per match. Let us increase them to 0.4.
@@ -221,7 +221,7 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
     // If a shoot has probability p of being a penalty, then < penalties > = 12 p 
     // So, choose p = 0.4/12 = 4/120 = 1/30
     function computeIsPenalty(uint64 rnd) public pure returns (bool) {
-        return false;// (rnd % 30) == 0;
+        return (rnd % 20) == 0;
     }
 
     
