@@ -100,6 +100,7 @@ func Generate(
 ) (MatchEvents, error) {
 	NULL := int16(-1)
 	NOONE := int16(14)
+	PENALTY := int16(100)
 	var emptyEvents []MatchEvent
 
 	// check 1:
@@ -125,7 +126,7 @@ func Generate(
 	// - per-round (always 12 per half)
 	// - cards & injuries
 	// - substitutions
-	events, rounds2mins := addEventsInRound(seed0, blockchainEvents, lineup0, lineup1, NULL, NOONE)
+	events, rounds2mins := addEventsInRound(seed0, blockchainEvents, lineup0, lineup1, NULL, NOONE, PENALTY)
 	events, err = addCardsAndInjuries(0, events, seed1, matchLog0, rounds2mins, lineup0, NULL, NOONE)
 	if err != nil {
 		return events, err
@@ -232,7 +233,7 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 
 // output event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
 // eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
-func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]uint8, lineup1 [14]uint8, NULL int16, NOONE int16) ([]MatchEvent, []uint64) {
+func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]uint8, lineup1 [14]uint8, NULL int16, NOONE int16, PENALTY int16) ([]MatchEvent, []uint64) {
 	var events []MatchEvent
 	nEvents := (len(blockchainEvents) - 2) / 5
 	deltaMinutes := float64(45.0 / ((nEvents - 1) * 1.0))
@@ -267,7 +268,11 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]ui
 		if managesToShoot.Int64() == 1 {
 			// select the players from the team that attacks:
 			thisEvent.PrimaryPlayer = toShirtNum(uint8(shooter.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
-			thisEvent.SecondaryPlayer = toShirtNum(uint8(assister.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
+			if int16(assister.Int64()) == PENALTY {
+				thisEvent.SecondaryPlayer = PENALTY
+			} else {
+				thisEvent.SecondaryPlayer = toShirtNum(uint8(assister.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
+			}
 		} else {
 			salt := "b" + strconv.Itoa(int(e))
 			// select the player from the team that defends:
@@ -393,7 +398,9 @@ func (b *MatchEvents) populateWithPlayerID(
 				(*b)[i].PrimaryPlayerID = primaryPlayerTeam[(*b)[i].PrimaryPlayer].String()
 			}
 		}
-		if (*b)[i].SecondaryPlayer != -1 {
+		// Secondary player can be NIL (-1) or signal a penalty kick (100)
+		isExeption := ((*b)[i].SecondaryPlayer == -1) || ((*b)[i].SecondaryPlayer == 100)
+		if !isExeption {
 			if secondaryPlayerTeam[(*b)[i].SecondaryPlayer] == nil {
 				return fmt.Errorf("inconsistent event %+v", (*b)[i])
 			}
