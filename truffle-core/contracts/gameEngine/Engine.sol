@@ -18,6 +18,8 @@ import "./EngineApplyBoosters.sol";
 contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
+    uint8 constant internal PENALTY_CODE = 100;
+
     /// prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
     uint8 constant public IDX_GK = 0;
     uint8 constant public IDX_D  = 1;
@@ -434,15 +436,17 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
         }
         scoreData[2] = uint256(isGoal ? 1: 0);
         uint8 assister;
+        if (isPenalty) assister = PENALTY_CODE;
+        if (!isPenalty && isGoal) assister = selectAssister(skills, playersPerZone, extraAttack, shooter, rnds[2]);
+        // stuff is only added to the matchlog if this is a goal
         if (isGoal) {
-            assister = isPenalty ? 25 : selectAssister(skills, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog = addAssister(matchLog, assister, currentGoals);
             matchLog = addShooter(matchLog, shooter, currentGoals);
             matchLog = addForwardPos(matchLog, getForwardPosFromPlayersPerZone(shooter, playersPerZone), currentGoals);
             matchLog++; /// adds 1 goal because nGoals is the right-most number serialized
             scoreData[0] = matchLog;
-            scoreData[3] = uint256(assister);
         }
+        scoreData[3] = uint256(assister);
         return scoreData;
     }
     
