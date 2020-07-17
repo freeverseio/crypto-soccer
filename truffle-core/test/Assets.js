@@ -78,8 +78,8 @@ contract('Assets', (accounts) => {
         [proxy, assets, market, updates] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
         constants = await ConstantsGetters.new().should.be.fulfilled;
-        initTx = await assets.initTZs({from: owners.COO}).should.be.fulfilled;
-        utils = await Utils.new().should.be.fulfilled;
+        blockChainTimeSec = Math.floor(Date.now()/1000);
+        initTx = await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
 
         sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
         buyerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
@@ -315,7 +315,7 @@ contract('Assets', (accounts) => {
         depl2 = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         assets2 = depl2[1];
         await assets2.setCOO(owners.COO, {from: owners.superuser}).should.be.fulfilled;
-        tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone, {from: owners.COO}).should.be.fulfilled;
+        tx = await assets2.initSingleTZ(tz = defaultSetup.singleTimezone, blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "DivisionCreation", (event) => {
             return event.timezone.toString() === tz.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
         });
@@ -323,7 +323,7 @@ contract('Assets', (accounts) => {
     
     
     it('check cannot initialize contract twice', async () => {
-        await assets.initTZs().should.be.rejected;
+        await assets.initTZs(123342123423).should.be.rejected;
     });
 
     it('emit event upon initTZs of the Assets contract', async () => {

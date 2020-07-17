@@ -33,9 +33,9 @@ contract Assets is AssetsView {
     /// External Functions
 
     /// Inits all 24 timezones, each with one country, each with one division
-    function initTZs() external onlyCOO {
+    function initTZs(uint256 deployTimeInUnixEpochSecs) external onlyCOO {
         require(gameDeployDay == 0, "cannot initialize twice");
-        gameDeployDay = secsToDays(now);
+        gameDeployDay = secsToDays(deployTimeInUnixEpochSecs);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
@@ -43,9 +43,9 @@ contract Assets is AssetsView {
     }
 
     /// Next function is only used for testing: it inits only one timezone
-    function initSingleTZ(uint8 tz) external onlyCOO {
+    function initSingleTZ(uint8 tz, uint256 deployTimeInUnixEpochSecs) external onlyCOO {
         require(gameDeployDay == 0, "cannot initialize twice");
-        gameDeployDay = secsToDays(now);
+        gameDeployDay = secsToDays(deployTimeInUnixEpochSecs);
         _initTimeZone(tz);
         if (_market == NULL_ADDR) { emit AssetsInit(msg.sender); }
     }
