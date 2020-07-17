@@ -15,7 +15,6 @@ contract ConstantsGetters is Constants {
     function get_LEAGUES_PER_DIV() external pure returns(uint8) { return LEAGUES_PER_DIV;}
     function get_TEAMS_PER_LEAGUE() external pure returns(uint8) { return TEAMS_PER_LEAGUE;}
     function get_FREE_PLAYER_ID() external pure returns(uint256) { return FREE_PLAYER_ID;}
-    function get_AUCTION_TIME() external pure returns(uint256) { return AUCTION_TIME;}
     function get_POST_AUCTION_TIME() external pure returns(uint256) { return POST_AUCTION_TIME;}
     function get_NULL_TIMEZONE() external pure returns(uint8) { return NULL_TIMEZONE;}
     function get_VERSES_PER_DAY() external pure returns(uint8) { return VERSES_PER_DAY;}
