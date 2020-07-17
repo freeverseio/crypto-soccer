@@ -110,7 +110,8 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	if bid.State != storage.BidPaying {
 		t.Fatalf("Wrong state %v", bid.State)
 	}
-	if bid.PaymentDeadline != 21610 {
+	// note: 172810 is almost exactly 48h, equal to the POST_AUCTION_TIME
+	if bid.PaymentDeadline != 172810 {
 		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
 	}
 }
