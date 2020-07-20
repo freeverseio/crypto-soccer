@@ -11,6 +11,7 @@ pragma solidity >= 0.6.3;
   currentShirtNum         =  5 bits, offset = 43
   prevPlayerTeamId        = 43 bits, offset = 48
   lastSaleBlocknum        = 35 bits, offset = 91
+  isInTransit             = 1 bits, offset = 126
 */
 
 contract EncodingState {
@@ -78,6 +79,14 @@ contract EncodingState {
 
     function getLastSaleBlock(uint256 playerState) public pure returns (uint256) {
         return (playerState >> 91) & TWO_TO_35_MINUS_ONE;
+    }
+
+    function setIsInTransit(uint256 log, bool isInTransit) public pure returns(uint256) {
+        return (log & ~(uint256(1) << 126)) | (uint256(isInTransit ? 1 : 0) << 126);
+    }
+
+    function getIsInTransitFromState(uint256 log) public pure returns(bool) {
+        return ((log >> 126) & 1) == 1;
     }
 
 }

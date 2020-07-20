@@ -133,13 +133,21 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         returns(bool ok) 
     {
         /// the next line will verify that the playerId is the same that was used by the seller to sign
-        bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
+        // bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(buyerTeamId);
         if (isConstrained && nRemain == 0) return false;
-        bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
+        bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(
+            prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId)), 
+            buyerHiddenPrice, 
+            buyerTeamId, 
+            isOffer2StartAuction)
+        );
         address buyerTeamOwner = getOwnerTeam(buyerTeamId);
-        ok =    /// origin and target teams must be different
-                (buyerTeamId != getCurrentTeamIdFromPlayerId(playerId)) &&
+        uint256 state = getPlayerState(playerId);
+        ok =    /// cannot be a player in transit
+                !getIsInTransitFromState(state) &&
+                /// origin and target teams must be different
+                buyerTeamId != getCurrentTeamIdFromPlayerState(state) &&
                 /// check asset is owned by buyer
                 (buyerTeamOwner != NULL_ADDR) && 
                 /// check buyer and seller refer to the exact same auction
@@ -169,7 +177,9 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         view 
         returns (bool)
     {
-        uint256 currentTeamId = getCurrentTeamIdFromPlayerId(playerId);
+        uint256 state = getPlayerState(playerId);
+        require(!getIsInTransitFromState(state), "cannot freeze a player that is in transit");
+        uint256 currentTeamId = getCurrentTeamIdFromPlayerState(state);
         bool areOK = 
             /// check validUntil has not expired
             (now < validUntil) &&
@@ -336,8 +346,6 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     }
     
     function getNPlayersInTransitInTeam(uint256 teamId) public view returns (uint8) { return _nPlayersInTransitInTeam[teamId]; }        
-
-    function getTargetTeamIdForTransitPlayer(uint256 playerId) public view returns (uint256) { return _playerInTransitToTeam[playerId]; }        
 
     function getNewMaxSumSkillsBuyNowPlayer() public view returns(uint256 sumSkills, uint256 minLapseTime, uint256 lastUpdate) {
         sumSkills = _maxSumSkillsBuyNowPlayer;

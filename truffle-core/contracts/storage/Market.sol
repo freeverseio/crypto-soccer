@@ -270,20 +270,22 @@ contract Market is MarketView {
     /// Then it can be given to the target team executing this function, if at least one slot is available.
     /// This function can be called by anyone who wants to pay the gas
     function completePlayerTransit(uint256 playerId) external  {
-        uint256 teamIdTarget = _playerInTransitToTeam[playerId];
-        require(teamIdTarget != 0, "player not in transit");
+        uint256 state = getPlayerState(playerId);
+        require(getIsInTransitFromState(state), "player not in transit");
+        uint256 teamIdTarget = getCurrentTeamIdFromPlayerState(state);
+        require(teamIdTarget != 0, "target team cannot be null");
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         require(shirtTarget < PLAYERS_PER_TEAM_MAX, "cannot complete player transit because targetTeam is still full");
-        uint256 state = getPlayerState(playerId);
-        state = setCurrentShirtNum(
-                    setCurrentTeamId(
-                        state, teamIdTarget
-                    ), shirtTarget
-                );
+        state = setIsInTransit(
+                    setCurrentShirtNum(
+                        setCurrentTeamId(
+                            state, teamIdTarget
+                        ), 
+                    shirtTarget),
+                false);
         _playerIdToState[playerId] = state;
         _teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
         _nPlayersInTransitInTeam[teamIdTarget] -= 1;
-        delete _playerInTransitToTeam[playerId];
         emit PlayerStateChange(playerId, state);
     }
 
@@ -320,13 +322,14 @@ contract Market is MarketView {
                         );
                 _teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
             } else {
-                _playerInTransitToTeam[playerId] = teamIdTarget;
                 _nPlayersInTransitInTeam[teamIdTarget] += 1;
                 state = setLastSaleBlock(
-                            setCurrentTeamId(
-                                state, IN_TRANSIT_TEAM
-                            ), block.number
-                        );
+                            setIsInTransit(
+                                setCurrentTeamId(
+                                    state, teamIdTarget
+                                ), 
+                            true),
+                        block.number);
             }
         }
         _playerIdToState[playerId] = state;
