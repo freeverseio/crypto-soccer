@@ -342,7 +342,36 @@ contract('Evolution', (accounts) => {
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
     });
-  
+
+    it('test many games', async () => {
+        teamStateAll1000Half1 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
+        skills = [teamStateAll1000Half1, teamStateAll1000Half1];
+        n = 41432;
+        teamIds = [2748779069444, 2748779069440];
+        sed = web3.utils.toHex(web3.utils.keccak256(n.toString()));
+        var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play1stHalfAndEvolve(
+            sed, now, skills, teamIds, [tactics442NoChanges, tactics442NoChanges], [0, 0],
+            [is2nd = false, isHomeStadium, isPlayoff, isB = false, isB = false], [0, 0]
+        ).should.be.fulfilled;
+        hash = web3.utils.keccak256(JSON.stringify(skills) + JSON.stringify(matchLogsAndEvents));
+        console.log(hash);
+        err.toNumber().should.be.equal(0);
+        nIter = 100;
+        for (n = 0; n < nIter; n++) {
+            console.log(n);
+            sed = web3.utils.toHex(web3.utils.keccak256(n.toString()));
+            var {0: skills2, 1: matchLogsAndEvents2, 2: err} = await play.play2ndHalfAndEvolve(
+                sed, now, skills, teamIds, [tactics442NoChanges, tactics442NoChanges], [matchLogsAndEvents[0], matchLogsAndEvents[1]],
+                [is2nd = true, isHomeStadium, isPlayoff, isB = false, isB = false]
+            ).should.be.fulfilled;
+            hash = web3.utils.keccak256(hash + JSON.stringify(skills2) + JSON.stringify(matchLogsAndEvents2));
+            console.log(hash);
+        }        
+        console.log(hash);
+        assert.equal(hash, '0x872034820441e673458c8ec7e1e5647d1fff3072bd0aa751dffe8ee6cdde52c5', "wrong hash");
+    });
+
+    return
     it('test from real usage with more than 3 substitutions in half time', async () => {
         m = JSONbig.parse(fs.readFileSync('test/testdata/fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json', 'utf8'));
         skills0 = [];
