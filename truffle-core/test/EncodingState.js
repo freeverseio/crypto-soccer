@@ -46,6 +46,14 @@ contract('EncodingState', (accounts) => {
         newState = await encodingState.setLastSaleBlock(state, newval = 11223).should.be.fulfilled;
         result = await encodingState.getLastSaleBlock(newState).should.be.fulfilled;
         result.toNumber().should.be.equal(newval);
+        result = await encodingState.getIsInTransitFromState(newState).should.be.fulfilled;
+        result.should.be.equal(false);
+        newState = await encodingState.setIsInTransit(newState, newval = true).should.be.fulfilled;
+        result = await encodingState.getIsInTransitFromState(newState).should.be.fulfilled;
+        result.should.be.equal(newval);
+        newState = await encodingState.setIsInTransit(newState, newval = false).should.be.fulfilled;
+        result = await encodingState.getIsInTransitFromState(newState).should.be.fulfilled;
+        result.should.be.equal(newval);
     });
 
 
