@@ -356,7 +356,7 @@ contract('Evolution', (accounts) => {
         hash = web3.utils.keccak256(JSON.stringify(skills) + JSON.stringify(matchLogsAndEvents));
         console.log(hash);
         err.toNumber().should.be.equal(0);
-        nIter = 100;
+        nIter = 500;
         for (n = 0; n < nIter; n++) {
             console.log(n);
             sed = web3.utils.toHex(web3.utils.keccak256(n.toString()));
@@ -364,11 +364,19 @@ contract('Evolution', (accounts) => {
                 sed, now, skills, teamIds, [tactics442NoChanges, tactics442NoChanges], [matchLogsAndEvents[0], matchLogsAndEvents[1]],
                 [is2nd = true, isHomeStadium, isPlayoff, isB = false, isB = false]
             ).should.be.fulfilled;
-            hash = web3.utils.keccak256(hash + JSON.stringify(skills2) + JSON.stringify(matchLogsAndEvents2));
+            fulldecode1 = await utils.fullDecodeMatchLog(matchLogsAndEvents2[0], is2nd = true).should.be.fulfilled;
+            fulldecode2 = await utils.fullDecodeMatchLog(matchLogsAndEvents2[1], is2nd = true).should.be.fulfilled;
+            hash = web3.utils.keccak256(
+                hash + 
+                JSON.stringify(fulldecode1) + 
+                JSON.stringify(fulldecode2) + 
+                JSON.stringify(skills2) + 
+                JSON.stringify(matchLogsAndEvents2)
+            );
             console.log(hash);
         }        
         console.log(hash);
-        assert.equal(hash, '0x872034820441e673458c8ec7e1e5647d1fff3072bd0aa751dffe8ee6cdde52c5', "wrong hash");
+        assert.equal(hash, '0xcec5a0f7e8dd8d9a9b7fab32c476f1c392e145f01b17d891a8d3eea7269f6269', "wrong hash");
     });
 
     return
