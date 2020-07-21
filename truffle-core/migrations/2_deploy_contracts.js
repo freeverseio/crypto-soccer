@@ -137,8 +137,8 @@ module.exports = function (deployer, network, accounts) {
     /////// /////// /////// /////// /////// /////// /////// /////// /////// /////// /////// ///////
     if (network == "upgradexdaidev") {    
       // we only need 2 external inputs:
-      const versionNumber = 2;
-      const proxyAddr = "0x5fDDFE441EC3Fc9a4Bd99081bE075C7F984Eed3c";
+      const versionNumber = 4;
+      const proxyAddr = "0x7334A1E445B4E1Fb94001E1a9F772212b6D9de46";
       console.log("Upgrading " + network + " to version number " + versionNumber);
       
       console.log("Reading the directory info referred to by the proxy contract")
