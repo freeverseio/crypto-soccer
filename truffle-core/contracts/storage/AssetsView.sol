@@ -10,7 +10,8 @@ import "../encoders/EncodingState.sol";
 */
 
 contract AssetsView is EncodingSkills, EncodingState, UniverseInfo {
-    
+// contract AssetsView is UniverseInfo, EncodingSkills, EncodingState {
+
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
         if (getIsSpecial(playerId)) return playerId;
         if (!wasPlayerCreatedVirtually(playerId)) return 0;
