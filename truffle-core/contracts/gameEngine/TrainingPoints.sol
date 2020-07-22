@@ -1,14 +1,12 @@
 pragma solidity >= 0.6.3;
 
-import "../storage/Assets.sol";
+import "../storage/ComputeSkills.sol";
 import "./EngineLib.sol";
 import "../encoders/EncodingMatchLog.sol";
-import "./Engine.sol";
 import "../encoders/EncodingTPAssignment.sol";
 import "../encoders/EncodingSkills.sol";
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingTacticsBase2.sol";
-import "../gameEngine/ErrorCodes.sol";
 
 /**
  @title Computes training points given a matchLog, and applies them given a TP assignment by user
@@ -17,7 +15,7 @@ import "../gameEngine/ErrorCodes.sol";
  @dev Inheriting Assets led to too-large-to-deploy 
 */
 
-contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsBase2 {
+contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkills, EncodingSkillsSetters, EncodingTacticsBase2, ComputeSkills {
     
     /// a set of constants that make the formulas below more readable
     uint256 constant internal YEARS_30  = 946080000; /// 30 years in sec
@@ -26,12 +24,6 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     uint256 constant internal YEARS_2   = 63072000; /// 2 year in sec
     uint256 constant internal YEARS_16  = 504576000; /// 16 year in sec
     uint256 constant internal DAYS_1    = 86400; /// 1 day in sec
-
-    Assets private _assets;
-
-    constructor(address assetsAddr) public {
-        _assets = Assets(assetsAddr);
-    }
 
     function computeTrainingPoints(uint256 matchLog0, uint256 matchLog1) public pure returns (uint256, uint256)
     {
@@ -135,7 +127,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         uint16 earnedTPs
     ) 
         public
-        view
+        pure
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory, uint8 err)
     {
         uint16[25] memory TPperSkill;
@@ -186,7 +178,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
     /// deltaS(i)    = max[ TP(i), TP(i) * numerator / denominator] - max(0,(ageInSecs-31)*f/Ys)
     /// skill(i)     = max(0, skill(i) + deltaS(i))
     /// shoot, speed, pass, defence, endurance
-    function evolvePlayer(uint256 skills, uint16[5] memory TPperSkill, uint256 matchStartTime) public view returns(uint256) {
+    function evolvePlayer(uint256 skills, uint16[5] memory TPperSkill, uint256 matchStartTime) public pure returns(uint256) {
         uint256 ageInSecs = INGAMETIME_VS_REALTIME * (matchStartTime - getBirthDay(skills) * DAYS_1); 
         uint256 deltaNeg;
         if (ageInSecs > YEARS_35h) {
@@ -229,7 +221,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         return 1;
     }
 
-    function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public view returns (uint256) {
+    function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public pure returns (uint256) {
         if (ageInSecs < 1166832000) { return skills; }   /// 1166832000 = 37 * Ys
 
         /// 75% chances to lead to a child, 25% to lead to academy player:
@@ -245,7 +237,7 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         ///  - Formula copied directly to avoid stack overflow: uint256 dayOfBirth = (matchStartTime - ageInSecs / INGAMETIME_VS_REALTIME) / DAYS_1; 
         ageInSecs = YEARS_16 + (dna % YEARS_2);
 
-        (uint32[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(
+        (uint32[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(
             dna, 
             forwardnessToShirtNum(dna, getForwardness(skills)), /// ensure they play in the same pos in field:
             0
