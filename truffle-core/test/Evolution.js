@@ -313,11 +313,9 @@ contract('Evolution', (accounts) => {
         depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
-        utils = await Utils.new().should.be.fulfilled;
-        blockChainTimeSec = Math.floor(Date.now()/1000);
-        await assets.initTZs( {from: owners.COO}).should.be.fulfilled;
+        await assets.initTZs({from: owners.COO}).should.be.fulfilled;
         
-        training = await TrainingPoints.new(assets.address).should.be.fulfilled;
+        training = await TrainingPoints.new().should.be.fulfilled;
         shop = await Shop.new(assets.address).should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
@@ -342,49 +340,7 @@ contract('Evolution', (accounts) => {
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
     });
-
-    it('test many games', async () => {
-        teamStateAll1000Half1 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
-        skills = [teamStateAll1000Half1, teamStateAll1000Half1];
-        n = 41432;
-        teamIds = [2748779069444, 2748779069440];
-        sed = web3.utils.toHex(web3.utils.keccak256(n.toString()));
-        var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play1stHalfAndEvolve(
-            sed, now, skills, teamIds, [tactics442NoChanges, tactics442NoChanges], [0, 0],
-            [is2nd = false, isHomeStadium, isPlayoff, isB = false, isB = false], [0, 0]
-        ).should.be.fulfilled;
-        hash = web3.utils.keccak256(JSON.stringify(skills) + JSON.stringify(matchLogsAndEvents));
-        console.log(hash);
-        err.toNumber().should.be.equal(0);
-        nIter = 10;
-        for (n = 0; n < nIter; n++) {
-            console.log(n);
-            sed = web3.utils.toHex(web3.utils.keccak256(n.toString()));
-            var {0: skills2, 1: matchLogsAndEvents2, 2: err} = await play.play2ndHalfAndEvolve(
-                sed, now, skills, teamIds, [tactics442NoChanges, tactics442NoChanges], [matchLogsAndEvents[0], matchLogsAndEvents[1]],
-                [is2nd = true, isHomeStadium, isPlayoff, isB = false, isB = false]
-            ).should.be.fulfilled;
-            fulldecode1 = await utils.fullDecodeMatchLog(matchLogsAndEvents2[0], is2nd = true).should.be.fulfilled;
-            fulldecode2 = await utils.fullDecodeMatchLog(matchLogsAndEvents2[1], is2nd = true).should.be.fulfilled;
-            hash = web3.utils.keccak256(
-                hash + 
-                JSON.stringify(fulldecode1) + 
-                JSON.stringify(fulldecode2) + 
-                JSON.stringify(skills2) + 
-                JSON.stringify(matchLogsAndEvents2)
-            );
-            console.log(hash);
-        }        
-        console.log(hash);
-        hashV1_500 = '0xcec5a0f7e8dd8d9a9b7fab32c476f1c392e145f01b17d891a8d3eea7269f6269'; // not checked!
-        hashV1_10 = '0x72aa7675a51d1676b62e9bff1d296fb8274d6f32ba260b97f31525daf0861c98';
-        hashV2_10 = '0xbe672e74038d638af973eef5ff638fe55119d557f59afced42caaee0d73293a4';
-        // hashV1_10_plus_storage = hashV1_10
-        // hashV1_10_plus_storage_encoders = hashV1_10
-        // assert.equal(hash, '0x9361d9b059a0db07b9d153ac928e937cd2a52d0ded392bdb6aa017dbe1588d12', "wrong hash");
-    });
-
-    return
+  
     it('test from real usage with more than 3 substitutions in half time', async () => {
         m = JSONbig.parse(fs.readFileSync('test/testdata/fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json', 'utf8'));
         skills0 = [];
@@ -573,10 +529,10 @@ contract('Evolution', (accounts) => {
         // yellows -1
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
-        expectedGoals = [9,0];
-        expectedPoints = [63,10];
+        expectedGoals = [4, 0];
+        expectedPoints = [56, 10];
         expectedSums = [55000,33022];
-        expectedFwds = [ 2, 3,  1, 3, 3, 2,  3, 1, 3 ];     
+        expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
         expectedAss = [ 6, 10, 6, 9, 8, 6, 10, 6, 9 ];   
         
@@ -606,18 +562,37 @@ contract('Evolution', (accounts) => {
             nPoints = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
             points.push(nPoints.toNumber());
         }        
-        
+        debug.compareArrays(goals, expectedGoals, toNum = false, isBigNumber = false);
+
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
         outPlayer.toNumber().should.be.equal(14);
         yellow1.toNumber().should.be.equal(14);
         yellow2.toNumber().should.be.equal(8);
 
-        
+        var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
+        outPlayer.toNumber().should.be.equal(3);
+        outRounds.toNumber().should.be.equal(4);
+        yellow1.toNumber().should.be.equal(8);
+        yellow2.toNumber().should.be.equal(4);
+
+        // 2nd half:
+        expectedGoals = [7, 0];
         var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play2ndHalfAndEvolve(
             verseSeed, now, [skills[0], skills[1]], teamIds, [tacticsNew, tacticsNew], [matchLogsAndEvents[0], matchLogsAndEvents[1]],
             [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]
         ).should.be.fulfilled;
-        
+
+        // the result is biased because 1 team played with 1 injury and 1 red card
+        result = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = true).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await training.getOutOfGameType(matchLogsAndEvents[1], is2 = false).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await training.getOutOfGameType(matchLogsAndEvents[1], is2 = true).should.be.fulfilled;
+        result.toNumber().should.be.equal(3);
+
+
         goals = [];
         points = [];
         sums = [];
@@ -630,9 +605,9 @@ contract('Evolution', (accounts) => {
             sums.push(sum.toNumber());
             
         }   
-        expectedFwds = [ 2, 3,  1, 3, 3, 2,  3, 1, 3 ];     
-        expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
-        expectedAss = [ 6, 10, 6, 9, 8, 6, 10, 6, 9 ];     
+        expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
+        expectedSho = [ 6, 8, 1, 9, 8, 1 ];     
+        expectedAss = [ 6, 10, 6, 9, 8, 6 ];     
         fwds = [];
         sho = [];
         ass = [];
@@ -674,12 +649,12 @@ contract('Evolution', (accounts) => {
         // yellows -1
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
-        expectedGoals = [5,0];
-        expectedPoints = [53,10];
+        expectedGoals = [3,0];
+        expectedPoints = [45,11];
         expectedSums = [55000,33000];
-        expectedFwds = [ 1, 3, 2, 1, 3 ];     
-        expectedSho = [ 1, 10, 7, 1, 10];     
-        expectedAss = [ 6, 10, 8, 6, 10 ];   
+        expectedFwds = [ 1, 3, 2 ];     
+        expectedSho = [ 1, 10, 7];     
+        expectedAss = [ 6, 10, 8 ];   
         
         utils = await Utils.new().should.be.fulfilled;
         assignment = 0;
@@ -718,24 +693,14 @@ contract('Evolution', (accounts) => {
         sumSkills.toNumber().should.be.equal(33000);
 
         for (team = 0; team < 2; team++) {
-            console.log("--------- team: ", team);
             result = await assets.getAlignedEndOfFirstHalf(skills[team][0]).should.be.fulfilled;
-            console.log("aligned: ", result);
             result = await assets.getSubstitutedFirstHalf(skills[team][0]).should.be.fulfilled;
-            console.log("subst: ", result);
             result = await assets.getRedCardLastGame(skills[team][0]).should.be.fulfilled;
-            console.log("red: ", result);
             result = await assets.getInjuryWeeksLeft(skills[team][0]).should.be.fulfilled;
-            console.log("inj: ", result.toNumber());
-            console.log("skills: ", skills[team][0]);
             result = await assets.getSkill(skills[team][0],0).should.be.fulfilled;
-            console.log("sk0: ", result.toNumber());
             result = await assets.getSkill(skills[team][0],3).should.be.fulfilled;
-            console.log("sk3: ", result.toNumber());
             result = await assets.getSkill(skills[team][0],4).should.be.fulfilled;
-            console.log("sk4: ", result.toNumber());
             result = await assets.getSumOfSkills(skills[team][0]).should.be.fulfilled;
-            console.log("sumSk: ", result.toNumber());
         }
 
         var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play2ndHalfAndEvolve(
@@ -743,8 +708,6 @@ contract('Evolution', (accounts) => {
             [is2nd = true, isHomeStadium, isPlayoff, isB = true, isB = true]
         ).should.be.fulfilled;
 
-        console.log("DONE 2nd half");
-        
         goals = [];
         points = [];
         sums = [];
@@ -782,30 +745,17 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(ass, expectedAss, toNum = false, isBigNumber = false);
 
         for (team = 0; team < 2; team++) {
-            console.log("--------- team: ", team);
             result = await assets.getAlignedEndOfFirstHalf(skills[team][0]).should.be.fulfilled;
-            console.log("aligned: ", result);
             result = await assets.getSubstitutedFirstHalf(skills[team][0]).should.be.fulfilled;
-            console.log("subst: ", result);
             result = await assets.getRedCardLastGame(skills[team][0]).should.be.fulfilled;
-            console.log("red: ", result);
             result = await assets.getInjuryWeeksLeft(skills[team][0]).should.be.fulfilled;
-            console.log("inj: ", result.toNumber());
-            console.log("skills: ", skills[team][0]);
             result = await assets.getSkill(skills[team][0],0).should.be.fulfilled;
-            console.log("sk0: ", result.toNumber());
             result = await assets.getSkill(skills[team][0],3).should.be.fulfilled;
-            console.log("sk3: ", result.toNumber());
             result = await assets.getSkill(skills[team][0],4).should.be.fulfilled;
-            console.log("sk4: ", result.toNumber());
             result = await assets.getSumOfSkills(skills[team][0]).should.be.fulfilled;
-            console.log("sumSk: ", result.toNumber());
         }
 
     });
-
-
-
 
     it('test that used to fail because yellow cards remained 0 when turned into a red', async () => {
         utils = await Utils.new().should.be.fulfilled;
@@ -1666,6 +1616,16 @@ contract('Evolution', (accounts) => {
             [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]
         ).should.be.fulfilled;
 
+        // the result in the 2nd half is biased because team 1 had an injury and a red card over the game! 
+        result = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = true).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await training.getOutOfGameType(matchLogsAndEvents[1], is2 = false).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await training.getOutOfGameType(matchLogsAndEvents[1], is2 = true).should.be.fulfilled;
+        result.toNumber().should.be.equal(3);
+        
         // check that we find the correct halfTimeSubs in the matchLog.
         // note that what is stored is: lineUp[p] + 1 = 17
         expectedHalfTimeSubs = [17,0,0];
@@ -1677,8 +1637,8 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, isBigNumber = false);
 
         // check Training Points (and Goals)
-        expectedGoals = [2, 5];
-        expectedPoints = [ 15, 49 ];
+        expectedGoals = [5, 5];
+        expectedPoints = [32, 22];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
