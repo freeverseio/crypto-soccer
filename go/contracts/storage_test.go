@@ -13,12 +13,7 @@ func TestPostgresNewContracts(t *testing.T) {
 	assert.NilError(t, err)
 	defer tx.Rollback()
 	_, err = contracts.NewFromStorage(bc.Client, tx)
-	assert.Error(t, err, "no proxy address in the storage")
-
-	assert.NilError(t, (storage.Param{contracts.ProxyName, "0x0"}).InsertOrUpdate(tx))
-
-	_, err = contracts.NewFromStorage(bc.Client, tx)
-	assert.Error(t, err, "no contract code at given address")
+	assert.Error(t, err, "no league contract in storage")
 }
 
 func TestPostgresNewContractsToStorage(t *testing.T) {

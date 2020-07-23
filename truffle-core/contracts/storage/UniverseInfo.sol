@@ -1,5 +1,6 @@
 pragma solidity >= 0.6.3;
 
+import "./Constants.sol";
 import "./Storage.sol";
 import "../encoders/EncodingIDs.sol";
 import "../encoders/EncodingSkillsGetters.sol";
@@ -9,7 +10,8 @@ import "../encoders/EncodingSkillsGetters.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
-contract UniverseInfo is Storage, EncodingSkillsGetters, EncodingIDs {
+/// Warning: This contract must ALWAYS inherit Storage first, so that it ends up inheriting the correct order in storage slots
+contract UniverseInfo is Storage, EncodingSkillsGetters, EncodingIDs, Constants {
     
     event TeamTransfer(uint256 teamId, address to);
 
