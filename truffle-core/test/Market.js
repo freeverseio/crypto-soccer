@@ -1092,7 +1092,7 @@ contract("Market", accounts => {
 
   it("retire player works", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = false, sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     onwer.should.be.equal(sellerAccount.address);
     
@@ -1136,7 +1136,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers works", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     onwer.should.be.equal(sellerAccount.address);
     
@@ -1166,7 +1166,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers: Academy can sell in auction again after a dismiss", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
 
     tx = await market.dismissPlayer(
       validUntil,
@@ -1183,7 +1183,7 @@ contract("Market", accounts => {
 
   it("dismissPlayers: Academy can sell as buynow", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
 
     tx = await market.dismissPlayer(
       validUntil,
@@ -1207,7 +1207,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers fails when already sold, not owner any more", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
     
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
@@ -1226,7 +1226,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers fails if frozen first", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
     await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     
     tx = await market.dismissPlayer(
@@ -1242,7 +1242,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers fails if too long passed", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), returnToAcademy = true, sellerAccount);
+    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
 
     await timeTravel.advanceTime(validUntil - now + 200);
     await timeTravel.advanceBlock().should.be.fulfilled;
