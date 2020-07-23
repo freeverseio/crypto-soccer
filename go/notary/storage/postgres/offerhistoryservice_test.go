@@ -14,5 +14,6 @@ func TestOfferHistoryServiceInterface(t *testing.T) {
 	defer tx.Rollback()
 
 	service := postgres.NewOfferHistoryService(tx)
-	storage.TestOfferServiceInterface(t, service)
+	auctionService := postgres.NewAuctionService(tx)
+	storage.TestOfferServiceInterface(t, service, auctionService)
 }
