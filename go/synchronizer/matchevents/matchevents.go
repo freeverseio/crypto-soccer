@@ -398,14 +398,18 @@ func (b *MatchEvents) populateWithPlayerID(
 				(*b)[i].PrimaryPlayerID = primaryPlayerTeam[(*b)[i].PrimaryPlayer].String()
 			}
 		}
-		// Secondary player can be NIL (-1) or signal a penalty kick (100)
-		isExeption := ((*b)[i].SecondaryPlayer == -1) || ((*b)[i].SecondaryPlayer == 100)
-		if !isExeption {
+
+		switch (*b)[i].SecondaryPlayer {
+		case -1: // no seconday player
+		case contracts.PenaltyPlayerId:
+			// (*b)[i].SecondaryPlayerID = fmt.Sprintf("%d", contracts.PenaltyPlayerId)
+		default:
 			if secondaryPlayerTeam[(*b)[i].SecondaryPlayer] == nil {
 				return fmt.Errorf("inconsistent event %+v", (*b)[i])
 			}
 			(*b)[i].SecondaryPlayerID = secondaryPlayerTeam[(*b)[i].SecondaryPlayer].String()
 		}
 	}
+
 	return nil
 }
