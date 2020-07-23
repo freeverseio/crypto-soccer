@@ -13,7 +13,6 @@ import (
 
 func CreateOffer(tx *sql.Tx, in input.CreateOfferInput) error {
 	offer := storage.NewOffer()
-	fmt.Println("creating offer.......")
 	id, err := in.ID()
 	if err != nil {
 		return err
@@ -35,7 +34,6 @@ func CreateOffer(tx *sql.Tx, in input.CreateOfferInput) error {
 	}
 	offer.Buyer = signerAddress.Hex()
 	offer.Seller = in.Seller
-	fmt.Printf("\nseller in %v\n", offer.Seller)
 	service := postgres.NewOfferHistoryService(tx)
 	if err = service.Insert(*offer); err != nil {
 		return err
