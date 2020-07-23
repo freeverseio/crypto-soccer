@@ -18,9 +18,9 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
     uint8 constant public MATCHES_PER_LEAGUE = 56; /// = 4 * 14 = 7*8
-    uint64 constant private INERTIA = 4;
-    uint64 constant private WEIGHT_SKILLS = 20;
-    uint64 constant private SKILLS_AT_START = 18000; /// 18 players per team at start with 50 avg
+    uint64 constant private INERTIA = 2;
+    uint64 constant private WEIGHT_SKILLS = 100;
+    uint64 constant private SKILLS_AT_START = 90000; /// 18 players per team at start with 5 skills of 50 on avg
     uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; /// 268435455 = 2**28 - 1 
     uint256 constant private TEN_TO_13 = 1e13; // a power of 10 larger than MAX_TEAMID = 2**43
     uint256 constant private TEN_TO_9 = 1e9; 
@@ -161,36 +161,30 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         /// Nomenclature:    R = rankingPoints, W = Weight_Skills, SK = TeamSkills, SK0 = TeamSkillsAtStart, I = 
         ///                  I = Inertia, I0 = inertia Max, P0 = prevPerfPoints, P1 = currenteLeaguePerfPoints
         /// 
-        /// Note that we use P = [0, 20] instead of the user-facing P' = [-10, 10] to avoid negatives.
-        /// I/I0 is the percentage of the previous perfPoints that we carry here. 
-        /// Formula: R = W SK/SK0 + P - 10 = W SK/SK0 + (I P0 + (10-I) P1)/I0 - 10
-        /// So we can avoid dividing, and simply compute:  R * SK0 * I0 = W SK I0 + SK0 (I P0 + (10-I)P1) - 10 SK0 I0
-        /// Note that if we do not need to divide, we can just keep I = 4, I0 = 10
-        ///  R * SK0 * I0 = 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10 W SK + SK0 Pnow
-        /// And finall  RankingPoints = 10W SK + SK0 Pnow
+        /// P = [0, 20]
+        /// I = [0, I0], with I0 = 10
+        /// P = (I/I0 P0 + (1-I/I0) P1) = (I P0 + (I0-I) P1)/I0
+        /// If we want P = 20 to be equivalent to, say, 50% increase in skills, we need to choose W = 40. To avoid dividing: 
 
-        /// The user knows that his performance points now are: (note I' = I/I0)
-        ///  Pnow' = I' P0' + (1-I')P1' = I' P0 + (1-I')P1 - 10 = Pnow/I0
-
-        /// Formula in terms of pos and neg terms:
-        ///   pos = 10 W SK + SK0 (I P0 + 10 P1),   neg = SK0 (I P1 + 100)
+        /// R = (W + P) SK/SK0 = (W +  (I P0 + (I0-I) P1)/I0 ) SK/SK0
+        /// R SK0 I0 = SK (W I0 + I P0 + (I0 - I) P1)
+        /// we return R SK0 I0
         uint64 perfPointsThisLeague = getPerfPoints(leagueRanking);
-        uint64 pos = 10 * WEIGHT_SKILLS * teamSkills + SKILLS_AT_START * (INERTIA * prevPerfPoints + 10 * perfPointsThisLeague);
-        uint64 neg = SKILLS_AT_START * (INERTIA * perfPointsThisLeague + 100);
-        prevPerfPoints = (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague)/10;
-        if (pos > neg) return (pos-neg, prevPerfPoints);
-        else return (0, prevPerfPoints);
+        // compute 10 * prevPerfPoints, and divide later
+        prevPerfPoints = (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague);
+        uint64 result = teamSkills * ( WEIGHT_SKILLS * 10 + prevPerfPoints );
+        return (result, prevPerfPoints/10);
     }
 
     function getPerfPoints(uint8 leagueRanking) public pure returns (uint64) {
-        if (leagueRanking == 0) return 20;
-        else if (leagueRanking == 1) return 18;
-        else if (leagueRanking == 2) return 15;
-        else if (leagueRanking == 3) return 12;
-        else if (leagueRanking == 4) return 10;
-        else if (leagueRanking == 5) return 8;
+        if (leagueRanking == 0) return 50;
+        else if (leagueRanking == 1) return 42;
+        else if (leagueRanking == 2) return 30;
+        else if (leagueRanking == 3) return 25;
+        else if (leagueRanking == 4) return 20;
+        else if (leagueRanking == 5) return 15;
         else if (leagueRanking == 6) return 5;
-        else return 2;
+        else return 0;
     }
 
     /// the teams in each league are ordered, team = 0, 1, ... 7, according to the orgMap (which provides teamIdxInLeague)

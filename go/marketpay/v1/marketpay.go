@@ -21,6 +21,7 @@ type IMarketPay interface {
 
 type MarketPay struct {
 	endpoint    string
+	endpoint2   string
 	publicKey   string
 	bearerToken string
 }
@@ -28,6 +29,7 @@ type MarketPay struct {
 func New(pk string) *MarketPay {
 	market := MarketPay{}
 	market.endpoint = "https://api.truust.io/1.0"
+	market.endpoint2 = "https://api.truust.io/2.0"
 	market.publicKey = "pk_production_Q2F2VlMxSEk="
 	market.bearerToken = "Bearer " + pk
 	return &market
@@ -36,9 +38,9 @@ func New(pk string) *MarketPay {
 func NewSandbox() *MarketPay {
 	market := MarketPay{}
 	market.endpoint = "https://api-sandbox.truust.io/1.0"
+	market.endpoint2 = "https://api-sandbox.truust.io/2.0"
 	market.publicKey = "pk_stage_ZkNpNElWeEg="
 	market.bearerToken = "Bearer sk_stage_NCzkqJwQTNVStxDxVxmSflVv"
-
 	return &market
 }
 
@@ -141,8 +143,12 @@ func (b *MarketPay) IsPaid(order Order) bool {
 }
 
 func (b *MarketPay) ValidateOrder(hash string) (string, error) {
-	log.Infof("Validate order %v", hash)
-	url := b.endpoint + "/express/validate/" + hash
+	order, err := b.GetOrder(hash)
+	if err != nil {
+		return "", err
+	}
+	log.Infof("Validate order ID %v", order.ID)
+	url := b.endpoint2 + "/orders/" + order.ID + "/validate"
 	method := "POST"
 
 	client := &http.Client{

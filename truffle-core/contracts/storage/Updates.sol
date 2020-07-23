@@ -9,6 +9,7 @@ import "./UpdatesBase.sol";
  @dev which is responsible of managing stakes and rewards accordingly
 */
 
+/// Warning: This contract must ALWAYS inherit UpdatesBase first, so that it ends up inheriting Storage first.
 contract Updates is UpdatesBase {
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, bytes32 root, string ipfsCid);
     event TimeZoneUpdate(uint256 verse, uint8 timeZone, bytes32 root, uint256 submissionTime);

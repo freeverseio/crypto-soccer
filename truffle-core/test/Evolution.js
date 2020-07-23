@@ -128,6 +128,21 @@ contract('Evolution', (accounts) => {
         return secs/ (24 * 3600);
     }
     
+    function getPenaltyData(mlog) {
+        log = [...mlog];
+        nPenalties = 0;
+        nPenaltiesFailed = 0;
+        shooters = [];
+        for (e = 0; e < 12; e++) {
+            if (100 == log[6+5*e].toNumber()) {
+                nPenalties++;
+                if (0 == log[5+5*e].toNumber()) { nPenaltiesFailed++; }
+                shooters.push(log[4+5*e].toNumber())
+            }
+        }
+        return [nPenalties, nPenaltiesFailed, shooters];            
+    }
+
     function getDefaultTPs() {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
@@ -317,10 +332,10 @@ contract('Evolution', (accounts) => {
         blockChainTimeSec = Math.floor(Date.now()/1000);
         await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
         
-        training = await TrainingPoints.new(assets.address).should.be.fulfilled;
-        shop = await Shop.new(assets.address).should.be.fulfilled;
+        training = await TrainingPoints.new().should.be.fulfilled;
+        // shop = await Shop.new(assets.address).should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
-        play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
+        play = await PlayAndEvolve.new(training.address, evo.address, engine.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
@@ -530,7 +545,7 @@ contract('Evolution', (accounts) => {
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
         expectedGoals = [4, 0];
-        expectedPoints = [56, 10];
+        expectedPoints = [58, 10];
         expectedSums = [55000,33022];
         expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
@@ -552,7 +567,11 @@ contract('Evolution', (accounts) => {
             verseSeed, now, [teamStateAll1000Half1, teamStateAll700Half1], teamIds, [tacticsNew, tacticsNew], [prev2ndHalfLog, prev2ndHalfLog],
             [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway], [assignment, assignment]
         ).should.be.fulfilled;
-        
+
+        var {0: nPenalties, 1: nPenaltiesFailed, 2: shooters} = getPenaltyData(matchLogsAndEvents);
+        nPenalties.should.be.equal(1);
+        nPenaltiesFailed.should.be.equal(0);
+
         goals = [];
         points = [];
         for (team = 0; team < 2; team++) {
@@ -591,7 +610,10 @@ contract('Evolution', (accounts) => {
         result = await training.getOutOfGameType(matchLogsAndEvents[1], is2 = true).should.be.fulfilled;
         result.toNumber().should.be.equal(3);
 
-
+        var {0: nPenalties, 1: nPenaltiesFailed, 2: shooters} = getPenaltyData(matchLogsAndEvents);
+        nPenalties.should.be.equal(0);
+        nPenaltiesFailed.should.be.equal(0);
+     
         goals = [];
         points = [];
         sums = [];
@@ -604,9 +626,9 @@ contract('Evolution', (accounts) => {
             sums.push(sum.toNumber());
             
         }   
-        expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
-        expectedSho = [ 6, 8, 1, 9, 8, 1 ];     
-        expectedAss = [ 6, 10, 6, 9, 8, 6 ];     
+        expectedFwds = [ 1, 3, 1, 3, 3, 1 ];     
+        expectedSho = [ 1, 8, 1, 9, 8, 1 ];     
+        expectedAss = [ 4, 14, 6, 9, 8, 6 ];     
         fwds = [];
         sho = [];
         ass = [];
@@ -1583,6 +1605,10 @@ contract('Evolution', (accounts) => {
             [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway], [assignment, assignment]
         ).should.be.fulfilled;
         
+        var {0: nPenalties, 1: nPenaltiesFailed, 2: shooters} = getPenaltyData(matchLogsAndEvents0);
+        nPenalties.should.be.equal(0);
+        nPenaltiesFailed.should.be.equal(0);
+
         goals = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodeLog.getNGoals(matchLogsAndEvents0[team]);
@@ -1612,6 +1638,11 @@ contract('Evolution', (accounts) => {
             [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]
         ).should.be.fulfilled;
 
+        var {0: nPenalties, 1: nPenaltiesFailed, 2: shooters} = getPenaltyData(matchLogsAndEvents);
+        nPenalties.should.be.equal(1);
+        nPenaltiesFailed.should.be.equal(0);
+
+
         // the result in the 2nd half is biased because team 1 had an injury and a red card over the game! 
         result = await training.getOutOfGameType(matchLogsAndEvents[0], is2 = false).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
@@ -1634,7 +1665,7 @@ contract('Evolution', (accounts) => {
 
         // check Training Points (and Goals)
         expectedGoals = [5, 5];
-        expectedPoints = [32, 22];
+        expectedPoints = [36, 22];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {

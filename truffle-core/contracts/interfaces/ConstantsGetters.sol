@@ -27,4 +27,5 @@ contract ConstantsGetters is Constants {
     function get_SK_PAS() external pure returns(uint8) { return SK_PAS; }
     function get_SK_DEF() external pure returns(uint8) { return SK_DEF; }
     function get_SK_END() external pure returns(uint8) { return SK_END; }
+    function get_IN_TRANSIT_SHIRTNUM() external pure returns(uint8) { return IN_TRANSIT_SHIRTNUM;}
 }

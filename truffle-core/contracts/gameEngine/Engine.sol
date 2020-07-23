@@ -18,6 +18,8 @@ import "./EngineApplyBoosters.sol";
 contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, EncodingTactics  {
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public N_SKILLS = 5;
+    uint8 constant internal PENALTY_CODE = 100;
+
     /// prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
     uint8 constant public IDX_GK = 0;
     uint8 constant public IDX_D  = 1;
@@ -32,7 +34,14 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
     uint8 constant public SK_PAS = 2;
     uint8 constant public SK_DEF = 3;
     uint8 constant public SK_END = 4;    
-    
+
+    /// Skills for GKs: shot-stopping, 1-on-1, pass, penaltySaving, endurance 
+    uint8 constant internal GK_SHO = 0;
+    uint8 constant internal GK_1O1 = 1;
+    uint8 constant internal GK_PAS = 2;
+    uint8 constant internal GK_PEN = 3;
+    uint8 constant internal GK_END = 4;    
+
     uint8 public constant ROUNDS_PER_MATCH  = 12;   /// Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 public constant MAX_GOALS_IN_MATCH  = 15;   /// Max number of goals that one single team in an entire match (no restriction on which half)
     /// Idxs for vector of globSkills: 
@@ -180,20 +189,18 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
             seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
-            seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(
-                matchLogs,
-                teamThatAttacks, 
-                globSkills, 
-                rnds[5*round+1]
-            ) ? 1 : 0;
-            if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
+            if (managesToShoot(matchLogs, teamThatAttacks, globSkills, rnds[5*round+1])) {
+                seedAndStartTimeAndEvents[2 + round * 5 + 1] = 1;
+                bool isPenalty = computeIsPenalty(rnds[5*round+2]);
+                uint256 GKskill = getRelevantGKSkill(isPenalty, globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT], skills[1-teamThatAttacks][0]);
                 /// scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
                     matchLogs[teamThatAttacks],
                     skills[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     extraAttack[teamThatAttacks],
-                    globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
+                    GKskill,
+                    isPenalty,
                     [rnds[5*round+2], rnds[5*round+3], rnds[5*round+4]]
                 );
                 matchLogs[teamThatAttacks] = scoreData[0];
@@ -204,6 +211,18 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
         }
     }
 
+    // To save penalties, we will average: 80% from the blockPenalty skill, 20% from overall blockShoot.
+    function getRelevantGKSkill(bool isPen, uint256 blockShoot, uint256 skillsGK) public pure returns (uint256) {
+        return isPen ? (blockShoot + 4 * getSkill(skillsGK, GK_PEN)) / 5 : blockShoot;
+    }
+
+    // In real life, there are 0.3 penalties per match. Let us increase them to 0.4.
+    // Our matches have 24 rounds per game. Say, in about 12, someone manages to shoot.
+    // If a shoot has probability p of being a penalty, then < penalties > = 12 p 
+    // So, choose p = 0.4/12 = 4/120 = 1/30
+    function computeIsPenalty(uint64 rnd) public pure returns (bool) {
+        return (rnd % 20) == 0;
+    }
 
     
     function getOutOfGameData(uint256[2] memory matchLogs, bool is2ndHalf) public pure returns (uint256[3][2] memory outOfGameData) {
@@ -392,6 +411,7 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
         uint256 blockShoot,
+        bool isPenalty,
         uint64[3] memory rnds
     )
         public
@@ -400,35 +420,51 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
     {
         scoreData[0] = matchLog;
         uint8 currentGoals = getNGoals(matchLog);
-        uint8 shooter = selectShooter(skills, playersPerZone, extraAttack, rnds[0]);
-        scoreData[1] = uint256(shooter);
         /// if we scored alread the max number of goals, return. Note that isGoal = 0 inside scoreData.
         if (currentGoals >= MAX_GOALS_IN_MATCH) return scoreData;
-        //// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        uint256 shootPenalty = ( getForwardness(skills[shooter]) == IDX_GK ? 1 : 10);
-        /// since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
-        /// shooter weight =  shoot * shootPenalty/(10) * (7/10) = shoort * shootPenalty * 7 / 1e2 
-        bool isGoal = throwDice((getSkill(skills[shooter], SK_SHO) * 7 * shootPenalty)/100, blockShoot, rnds[1]) == 0;
+        uint8 shooter = isPenalty ? getBestShooter(skills) : selectShooter(skills, playersPerZone, extraAttack, rnds[0]);
+        scoreData[1] = uint256(shooter);
+        bool isGoal;
+        if (isPenalty) {
+            /// 75% of penalties are scored in the premier league
+            isGoal = throwDice(3 * getSkill(skills[shooter], SK_SHO), blockShoot, rnds[1]) == 0;
+        } else {
+            /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
+            /// handicap = 10 for the standard case (not-a-GK shooting), 1 otherise => so we need to divide by extra 10
+            uint256 shootHandicap = ( getForwardness(skills[shooter]) == IDX_GK ? 1 : 10);
+            isGoal = throwDice((getSkill(skills[shooter], SK_SHO) * 7 * shootHandicap)/100, blockShoot, rnds[1]) == 0;
+        }
         scoreData[2] = uint256(isGoal ? 1: 0);
         uint8 assister;
+        if (isPenalty) assister = PENALTY_CODE;
+        if (!isPenalty && isGoal) assister = selectAssister(skills, playersPerZone, extraAttack, shooter, rnds[2]);
+        // stuff is only added to the matchlog if this is a goal
         if (isGoal) {
-            assister = selectAssister(skills, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog = addAssister(matchLog, assister, currentGoals);
             matchLog = addShooter(matchLog, shooter, currentGoals);
             matchLog = addForwardPos(matchLog, getForwardPosFromPlayersPerZone(shooter, playersPerZone), currentGoals);
             matchLog++; /// adds 1 goal because nGoals is the right-most number serialized
             scoreData[0] = matchLog;
-            scoreData[3] = uint256(assister);
         }
+        scoreData[3] = uint256(assister);
         return scoreData;
     }
     
     function getForwardPosFromPlayersPerZone(uint8 posInLineUp, uint8[9] memory playersPerZone) public pure returns (uint8) {
         if (posInLineUp == 0) return 0;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)) return 1;
-        else if (posInLineUp < 1 + getNDefenders(playersPerZone)+ getNMidfielders(playersPerZone)) return 2;
+        else if (posInLineUp < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) return 2;
         else return 3;
     }
 
+    function getBestShooter(uint256[PLAYERS_PER_TEAM_MAX] memory skills) public pure returns (uint8 bestShooter) {
+        uint256 maxSkill = 0;
+        for (uint8 p = 1; p < 11; p++) {
+            uint256 thisSkill = getSkill(skills[p], SK_SHO);
+            if (thisSkill > maxSkill) {
+                bestShooter = p;
+                maxSkill = thisSkill;
+            }
+        }
+    }
 }
-
