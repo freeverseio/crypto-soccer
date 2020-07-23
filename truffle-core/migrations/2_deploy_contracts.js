@@ -57,7 +57,7 @@ module.exports = function (deployer, network, accounts) {
       const shop = await deployer.deploy(Shop, proxy.address).should.be.fulfilled;
       const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
       const utils = await deployer.deploy(Utils).should.be.fulfilled;
-      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address, shop.address).should.be.fulfilled;
+      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address).should.be.fulfilled;
       const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
       const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
       const marketCrypto = await deployer.deploy(MarketCrypto, proxy.address).should.be.fulfilled;
@@ -161,7 +161,7 @@ module.exports = function (deployer, network, accounts) {
       const shop = await deployer.deploy(Shop, proxy.address).should.be.fulfilled;
       const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
       const utils = await deployer.deploy(Utils).should.be.fulfilled;
-      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address, shop.address).should.be.fulfilled;
+      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address).should.be.fulfilled;
       const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
       const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
 
