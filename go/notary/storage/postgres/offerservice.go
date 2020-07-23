@@ -23,7 +23,7 @@ func (b OfferService) Bid() storage.BidService {
 }
 
 func (b OfferService) PendingOffers() ([]storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offer WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended') AND auction_id IS NOT NULL;")
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offers WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended') AND auction_id IS NOT NULL;")
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (b OfferService) PendingOffers() ([]storage.Offer, error) {
 }
 
 func (b OfferService) Offer(ID string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offer WHERE id = $1;", ID)
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (b OfferService) Offer(ID string) (*storage.Offer, error) {
 }
 
 func (b OfferService) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offer WHERE auction_id = $1;", auctionId)
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offers WHERE auction_id = $1;", auctionId)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (b OfferService) OfferByAuctionId(auctionId string) (*storage.Offer, error)
 
 func (b OfferService) Insert(offer storage.Offer) error {
 	log.Debugf("[DBMS] + create Offer %v", b)
-	_, err := b.tx.Exec("INSERT INTO offer (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+	_, err := b.tx.Exec("INSERT INTO offers (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		offer.ID,
 		offer.PlayerID,
 		offer.CurrencyID,
@@ -129,7 +129,7 @@ func (b OfferService) Insert(offer storage.Offer) error {
 func (b OfferService) Update(offer storage.Offer) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
 	fmt.Printf("[DBMS] + update Offer %v", b)
-	_, err := b.tx.Exec(`UPDATE offer SET 
+	_, err := b.tx.Exec(`UPDATE offers SET 
 		state=$1, 
 		state_extra=$2,
 		auction_id=$3,

@@ -97,7 +97,7 @@ CREATE TABLE playstore_orders_histories(
 );
 
 CREATE TYPE offer_state AS ENUM ('started', 'failed', 'cancelled', 'ended', 'accepted');
-CREATE TABLE offer (
+CREATE TABLE offers (
     id TEXT NOT NULL,
     player_id TEXT NOT NULL,
     currency_id INT NOT NULL,
@@ -114,9 +114,9 @@ CREATE TABLE offer (
     PRIMARY KEY(id)
 );
 
-CREATE TABLE offer_histories (
+CREATE TABLE offers_histories (
     inserted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id TEXT NOT NULL REFERENCES offer(id),
+    id TEXT NOT NULL REFERENCES offers(id),
     player_id TEXT NOT NULL,
     currency_id INT NOT NULL,
     price BIGINT NOT NULL,
