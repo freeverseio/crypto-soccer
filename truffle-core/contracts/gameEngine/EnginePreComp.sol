@@ -123,7 +123,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         /// average sumAggressiveness = 11 * 2.5 = 27.5
         /// total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         /// weight nothing happens = 9
-        weights[NO_OUT_OF_GAME_PLAYER] = 9;
+        weights[NO_OUT_OF_GAME_PLAYER] = 1;
         uint8[2] memory yellowCardeds;
         
         yellowCardeds[0] = throwDiceArray(weights, rnds[2]);
@@ -163,7 +163,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         /// average sumAggressiveness = 11 * 2.5 = 27.5
         /// total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
-            weights[NO_OUT_OF_GAME_PLAYER] = 758;
+            weights[NO_OUT_OF_GAME_PLAYER] = 3;
             uint8 outOfGamePlayer = throwDiceArray(weights, rnds[0]);
             matchLog = logOutOfGame(is2ndHalf, false, outOfGamePlayer, matchLog, tactics, [rnds[0], rnds[1]]);
         }

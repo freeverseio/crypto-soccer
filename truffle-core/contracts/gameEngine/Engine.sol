@@ -253,7 +253,7 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256 currentEnduranceB = skillsTeamB[IDX_ENDURANCE];
         for (uint8 sk = IDX_MOVE2ATTACK; sk < IDX_ENDURANCE; sk++) {
             skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
-            skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
+            skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) * 100;
         }
         return (skillsTeamA, skillsTeamB);
     }
@@ -266,8 +266,8 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
     {
         if (globSkills[teamThatAttacks][IDX_CREATE_SHOOT] == 0) return false;
         return throwDice(
-            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       /// globSkills[IDX_DEFEND_SHOOT] of defending team against...
-            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/10,  /// globSkills[IDX_CREATE_SHOOT] of attacking team.
+            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT]/100,       /// globSkills[IDX_DEFEND_SHOOT] of defending team against...
+            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*60)/2,  /// globSkills[IDX_CREATE_SHOOT] of attacking team.
             rndNum
         ) == 1 ? true : false;
     }
@@ -290,12 +290,12 @@ contract Engine is EngineLib, EncodingMatchLogBase3, EncodingTactics  {
         uint256 teamPassCapacity = weights[0];
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = uint256(extraAttack[p-1] ? 90 : 20) * getSkill(skills[p], SK_PAS);
+            weights[p] = uint256(extraAttack[p-1] ? 9000 : 20) * getSkill(skills[p], SK_PAS);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = uint256(extraAttack[p-1] ? 150 : 100) * getSkill(skills[p], SK_PAS);
+            weights[p] = uint256(extraAttack[p-1] ? 1520 : 100) * getSkill(skills[p], SK_PAS);
             teamPassCapacity += weights[p];
             p++;
         }
