@@ -10,6 +10,7 @@ import "./ComputeSkills.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
+/// Warning: This contract must ALWAYS inherit UniverseInfo first, so that it ends up inheriting Storage before any other contract.
 contract AssetsView is UniverseInfo, EncodingSkills, EncodingState, ComputeSkills {
     
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {

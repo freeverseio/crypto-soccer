@@ -11,6 +11,7 @@ import "../storage/AssetsView.sol";
  @dev All storage is govenrned by Proxy, via the Storage contract.
 */
 
+/// Warning: This contract must ALWAYS inherit AssetsView first, so that it ends up inheriting Storage before any other contract.
 contract Assets is AssetsView {
 
     event AssetsInit(address creatorAddr);
