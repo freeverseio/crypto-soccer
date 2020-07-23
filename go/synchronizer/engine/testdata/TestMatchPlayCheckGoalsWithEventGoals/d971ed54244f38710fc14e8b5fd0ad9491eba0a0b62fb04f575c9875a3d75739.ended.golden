@@ -1386,7 +1386,7 @@
 			PrimaryPlayer: (int16) 3,
 			SecondaryPlayer: (int16) 100,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
-			SecondaryPlayerID: (string) ""
+			SecondaryPlayerID: (string) (len=3) "100"
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 15,
@@ -1551,7 +1551,7 @@
 			PrimaryPlayer: (int16) 3,
 			SecondaryPlayer: (int16) 100,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
-			SecondaryPlayerID: (string) ""
+			SecondaryPlayerID: (string) (len=3) "100"
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 60,

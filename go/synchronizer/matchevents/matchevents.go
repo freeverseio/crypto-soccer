@@ -402,7 +402,7 @@ func (b *MatchEvents) populateWithPlayerID(
 		switch (*b)[i].SecondaryPlayer {
 		case -1: // no seconday player
 		case contracts.PenaltyPlayerId:
-			// (*b)[i].SecondaryPlayerID = fmt.Sprintf("%d", contracts.PenaltyPlayerId)
+			(*b)[i].SecondaryPlayerID = fmt.Sprintf("%d", contracts.PenaltyPlayerId)
 		default:
 			if secondaryPlayerTeam[(*b)[i].SecondaryPlayer] == nil {
 				return fmt.Errorf("inconsistent event %+v", (*b)[i])
