@@ -1,4 +1,4 @@
-(*storage.Auction)({
+(*storage.Offer)({
 	ID: (string) "",
 	PlayerID: (string) "",
 	CurrencyID: (int) 0,
@@ -6,10 +6,10 @@
 	Rnd: (int64) 0,
 	ValidUntil: (int64) 0,
 	Signature: (string) "",
-	State: (storage.AuctionState) (len=7) "started",
+	State: (storage.OfferState) (len=7) "started",
 	StateExtra: (string) "",
 	Seller: (string) "",
-	Buyer: (string) "".
+	Buyer: (string) "",
 	AuctionID: (string) "",
-	TeamID: (string) "",
+	TeamID: (string) ""
 })

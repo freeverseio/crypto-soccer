@@ -125,7 +125,6 @@ CREATE TABLE offer_histories (
     signature TEXT NOT NULL,
     state auction_state NOT NULL,
     state_extra TEXT NOT NULL,
-    payment_url TEXT NOT NULL,
     seller TEXT NOT NULL,
     buyer TEXT NOT NULL,
     auction_id TEXT REFERENCES auctions(id),
