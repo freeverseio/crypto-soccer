@@ -10,7 +10,7 @@ import "./MarketView.sol";
  @dev If the payment was in FIAT, the CompleteAuction TX requires the company signture too.
  @dev Only BuyNow players can be offered by the company without auction. 
  @dev These "BuyNow" players have limited max skills.
- @dev If a team acquires more than 25 players, the extra ones remain in the IN_TRANSIT team
+ @dev If a team acquires more than 25 players, the extra ones remain with shirtNum = 26 = IN_TRANSIT_SHIRTNUM
  @dev until some of the 25 are sold or retired.
  @dev The serialized structs appearing here are "AcquisitonConstraints" and "AuctionData"
  @dev Both use validUntil (in seconds) which uses 32b, hence allowing 2**32/(3600*24*365) = 136 years after 1970
@@ -267,24 +267,24 @@ contract Market is MarketView {
         emit PlayerStateChange(playerId, state);
     }
 
-    /// When a player has been put in the IN_TRANSIT team (due to more than 25 players in a team)
+    /// When a player has been put in IN_TRANSIT (due to more than 25 players in a team)
     /// Then it can be given to the target team executing this function, if at least one slot is available.
     /// This function can be called by anyone who wants to pay the gas
     function completePlayerTransit(uint256 playerId) external  {
-        uint256 teamIdTarget = _playerInTransitToTeam[playerId];
-        require(teamIdTarget != 0, "player not in transit");
+        uint256 state = getPlayerState(playerId);
+        require(getIsInTransitFromState(state), "player not in transit");
+        uint256 teamIdTarget = getCurrentTeamIdFromPlayerState(state);
+        require(teamIdTarget != 0, "target team cannot be null");
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         require(shirtTarget < PLAYERS_PER_TEAM_MAX, "cannot complete player transit because targetTeam is still full");
-        uint256 state = getPlayerState(playerId);
         state = setCurrentShirtNum(
                     setCurrentTeamId(
                         state, teamIdTarget
-                    ), shirtTarget
-                );
+                    ), 
+                shirtTarget);
         _playerIdToState[playerId] = state;
         _teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
         _nPlayersInTransitInTeam[teamIdTarget] -= 1;
-        delete _playerInTransitToTeam[playerId];
         emit PlayerStateChange(playerId, state);
     }
 
@@ -321,13 +321,14 @@ contract Market is MarketView {
                         );
                 _teamIdToPlayerIds[teamIdTarget][shirtTarget] = playerId;
             } else {
-                _playerInTransitToTeam[playerId] = teamIdTarget;
                 _nPlayersInTransitInTeam[teamIdTarget] += 1;
                 state = setLastSaleBlock(
-                            setCurrentTeamId(
-                                state, IN_TRANSIT_TEAM
-                            ), block.number
-                        );
+                            setCurrentShirtNum(
+                                setCurrentTeamId(
+                                    state, teamIdTarget
+                                ), 
+                            IN_TRANSIT_SHIRTNUM),
+                        block.number);
             }
         }
         _playerIdToState[playerId] = state;

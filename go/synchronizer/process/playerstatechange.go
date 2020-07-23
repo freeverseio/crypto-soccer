@@ -59,11 +59,7 @@ func GeneratePlayerByPlayerIdAndState(
 	if err != nil {
 		return nil, err
 	}
-	targetTeamId := teamId
-	if targetTeamId.Int64() == int64(contracts.InTransitTeam) {
-		targetTeamId, err = contr.Market.GetTargetTeamIdForTransitPlayer(&bind.CallOpts{}, playerId)
-	}
-	timezone, countryIdxInTZ, _, err := contr.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, targetTeamId)
+	timezone, countryIdxInTZ, _, err := contr.Market.DecodeTZCountryAndVal(&bind.CallOpts{}, teamId)
 	if err != nil {
 		return nil, err
 	}
