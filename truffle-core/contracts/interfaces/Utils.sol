@@ -1,14 +1,15 @@
 pragma solidity >= 0.6.3;
 import "../encoders/EncodingMatchLog.sol";
-import "../storage/AssetsView.sol";
 import "../encoders/EncodingTacticsBase3.sol";
+import "../encoders/EncodingSkillsGetters.sol";
+import "../storage/Constants.sol";
 
 /**
  @title Library of pure functions used by company to compute useful data
  @author Freeverse.io, www.freeverse.io
 */
 
-contract Utils is EncodingMatchLog, EncodingTacticsBase3, AssetsView {
+contract Utils is EncodingMatchLog, EncodingTacticsBase3, EncodingSkillsGetters, Constants {
 
     function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {
         decodedLog[0] = uint32(getTeamSumSkills(log));

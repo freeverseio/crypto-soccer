@@ -7,10 +7,13 @@ pragma solidity >= 0.6.3;
  @dev as the company, use the returned data to, e.g. offer BuyNow or Special players.
 */
 
-import "../storage/AssetsView.sol";
+import "../storage/ComputeSkills.sol";
+import "../encoders/EncodingSkills.sol";
+import "../encoders/EncodingSkillsGetters.sol";
 import "../encoders/EncodingSkillsSetters.sol";
+import "../encoders/EncodingIDs.sol";
 
-contract Privileged is AssetsView, EncodingSkillsSetters {
+contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, EncodingSkillsSetters, EncodingIDs {
     
     /// order of idxs:
     /// skills: shoot, speed, pass, defence, endurance
