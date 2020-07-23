@@ -3,7 +3,6 @@ package input
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 	"strconv"
 
@@ -116,7 +115,6 @@ func (b CreateOfferInput) IsValidForBlockchain(contracts contracts.Contracts) (b
 	var sig [2][32]byte
 	var sigV uint8
 	sig[0], sig[1], sigV, err = signer.RSV(b.Signature)
-	fmt.Println("sginer rsv")
 	if err != nil {
 		return false, err
 	}
@@ -126,19 +124,16 @@ func (b CreateOfferInput) IsValidForBlockchain(contracts contracts.Contracts) (b
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
 	)
-	fmt.Println("seller hiddenprice")
 
 	if err != nil {
 		return false, err
 	}
 
 	validUntil, _ := new(big.Int).SetString(b.ValidUntil, 10)
-	fmt.Println("validuntil")
 	if validUntil == nil {
 		return false, errors.New("invalid valid until")
 	}
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
-	fmt.Println("playerid")
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
 	}
@@ -150,15 +145,8 @@ func (b CreateOfferInput) IsValidForBlockchain(contracts contracts.Contracts) (b
 		sig,
 		sigV,
 	)
-	fmt.Printf("is valid %v\n", isValid)
-	fmt.Printf("sellerHiddenPrice %v\n", sellerHiddenPrice)
-	fmt.Printf("validuntil %v\n", validUntil)
-	fmt.Printf("playerId %v\n", playerId)
-	fmt.Printf("sig %v\n", sig)
-	fmt.Printf("sigV %v\n", sigV)
 
 	if err != nil {
-		fmt.Printf("Err is valid, %v\n", err)
 		return false, err
 	}
 

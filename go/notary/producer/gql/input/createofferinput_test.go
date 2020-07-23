@@ -93,6 +93,7 @@ func TestCreateOfferIsValidBlockchain(t *testing.T) {
 	in.TeamId = "2748779069441"
 	in.Price = 41234
 	in.Rnd = 42321
+	//TODOO
 
 	hash, err := in.Hash()
 	assert.NilError(t, err)
@@ -102,5 +103,5 @@ func TestCreateOfferIsValidBlockchain(t *testing.T) {
 
 	isValid, err := in.IsValidForBlockchain(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, false, isValid)
+	assert.Assert(t, isValid)
 }
