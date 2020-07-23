@@ -9,12 +9,14 @@ require('chai')
 
 const EncodingState = artifacts.require('EncodingState');
 const EncodingIDs = artifacts.require('EncodingIDs');
+const ConstantsGetters = artifacts.require('ConstantsGetters');
 
 contract('EncodingState', (accounts) => {
 
     beforeEach(async () => {
         encodingState = await EncodingState.new().should.be.fulfilled;
         encodingIDs = await EncodingIDs.new().should.be.fulfilled;
+        constants = await ConstantsGetters.new().should.be.fulfilled;
     });
     
     it('encode decode player state', async () => {
@@ -48,12 +50,13 @@ contract('EncodingState', (accounts) => {
         result.toNumber().should.be.equal(newval);
         result = await encodingState.getIsInTransitFromState(newState).should.be.fulfilled;
         result.should.be.equal(false);
-        newState = await encodingState.setIsInTransit(newState, newval = true).should.be.fulfilled;
+        IN_TRANSIT_SHIRTNUM = await constants.get_IN_TRANSIT_SHIRTNUM().should.be.fulfilled;
+        newState = await encodingState.setCurrentShirtNum(newState, newval = IN_TRANSIT_SHIRTNUM.toNumber()).should.be.fulfilled;
         result = await encodingState.getIsInTransitFromState(newState).should.be.fulfilled;
-        result.should.be.equal(newval);
-        newState = await encodingState.setIsInTransit(newState, newval = false).should.be.fulfilled;
+        result.should.be.equal(true);
+        newState = await encodingState.setCurrentShirtNum(newState, newval = 13).should.be.fulfilled;
         result = await encodingState.getIsInTransitFromState(newState).should.be.fulfilled;
-        result.should.be.equal(newval);
+        result.should.be.equal(false);
     });
 
 
