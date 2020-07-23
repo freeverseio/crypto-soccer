@@ -38,6 +38,10 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, fmt.Errorf("signer is the owner of playerId %v you can't make an offer for your player", args.Input.PlayerId)
 	}
 
+	seller, err := args.Input.GetOwner(b.contracts)
+	fmt.Printf("seller %v", seller)
+	args.Input.Seller = seller.Hex()
+	fmt.Printf("seller hex %v", seller.Hex())
 	isValidForBlockchain, err := args.Input.IsValidForBlockchain(b.contracts)
 	if err != nil {
 		return id, err

@@ -17,7 +17,7 @@ func TestCreateBidWithNoAuction(t *testing.T) {
 	defer tx.Rollback()
 
 	in := input.CreateBidInput{}
-	assert.Error(t, consumer.CreateBid(tx, in), "No auction for bid {  0 0 }")
+	assert.Error(t, consumer.CreateBid(tx, in), "No auction for bid {  0 0  false}")
 }
 
 func TestCreateBid(t *testing.T) {

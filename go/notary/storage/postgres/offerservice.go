@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
@@ -51,7 +52,7 @@ func (b OfferService) PendingOffers() ([]storage.Offer, error) {
 }
 
 func (b OfferService) Offer(ID string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offer WHERE id = $1;", ID)
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offer WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -127,6 +128,7 @@ func (b OfferService) Insert(offer storage.Offer) error {
 
 func (b OfferService) Update(offer storage.Offer) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
+	fmt.Printf("[DBMS] + update Offer %v", b)
 	_, err := b.tx.Exec(`UPDATE offer SET 
 		state=$1, 
 		state_extra=$2,

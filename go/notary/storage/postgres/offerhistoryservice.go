@@ -33,7 +33,7 @@ func (b OfferHistoryService) Update(offer storage.Offer) error {
 }
 
 func (b OfferHistoryService) insertHistory(offer storage.Offer) error {
-	_, err := b.tx.Exec("INSERT INTO offers_histories (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, auction_id, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);",
+	_, err := b.tx.Exec("INSERT INTO offer_histories (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		offer.ID,
 		offer.PlayerID,
 		offer.CurrencyID,
@@ -45,7 +45,6 @@ func (b OfferHistoryService) insertHistory(offer storage.Offer) error {
 		offer.StateExtra,
 		offer.Seller,
 		offer.Buyer,
-		offer.AuctionID,
 		offer.TeamID,
 	)
 	return err

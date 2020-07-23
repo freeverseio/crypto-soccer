@@ -21,7 +21,7 @@ func TestCreateOfferInputHash(t *testing.T) {
 	in.TeamId = "20"
 	hash, err := in.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	assert.Equal(t, hash.Hex(), "0x1cb2cbf8063631f3c7968aa0efd48df796f7f512faea66effd5c48f36a0660ce")
 }
 
 func TestCreateOfferInputID(t *testing.T) {
@@ -31,9 +31,10 @@ func TestCreateOfferInputID(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
+	in.TeamId = "20"
 	id, err := in.ID()
 	assert.NilError(t, err)
-	assert.Equal(t, string(id), "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	assert.Equal(t, string(id), "1cb2cbf8063631f3c7968aa0efd48df796f7f512faea66effd5c48f36a0660ce")
 }
 
 func TestCreateOfferValidSignature(t *testing.T) {
@@ -42,6 +43,7 @@ func TestCreateOfferValidSignature(t *testing.T) {
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
+	in.TeamId = "20"
 	in.Rnd = 42321
 
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
@@ -56,18 +58,20 @@ func TestCreateOfferSignerAddress(t *testing.T) {
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
+	in.TeamId = "20"
 	in.Rnd = 42321
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	address, err := in.SignerAddress()
 	assert.NilError(t, err)
-	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
+	assert.Equal(t, address.Hex(), "0x15b86743899dDE665a5085E257283824ea11a27B")
 }
 
 func TestCreateOfferIsSignerOwner(t *testing.T) {
 	in := input.CreateOfferInput{}
 	in.ValidUntil = "2000000000"
-	in.PlayerId = "274877906944"
+	in.PlayerId = "274877906940"
 	in.CurrencyId = 1
+	in.TeamId = "20"
 	in.Price = 41234
 	in.Rnd = 42321
 
@@ -78,7 +82,7 @@ func TestCreateOfferIsSignerOwner(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 	isOwner, err := in.IsSignerOwner(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Assert(t, isOwner)
+	assert.Equal(t, isOwner, false)
 }
 
 func TestCreateOfferIsValidBlockchain(t *testing.T) {
@@ -86,6 +90,7 @@ func TestCreateOfferIsValidBlockchain(t *testing.T) {
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
+	in.TeamId = "2748779069441"
 	in.Price = 41234
 	in.Rnd = 42321
 
@@ -97,5 +102,5 @@ func TestCreateOfferIsValidBlockchain(t *testing.T) {
 
 	isValid, err := in.IsValidForBlockchain(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Assert(t, isValid)
+	assert.Equal(t, false, isValid)
 }

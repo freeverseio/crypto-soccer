@@ -253,7 +253,7 @@ func HashOfferMessage(
 	if err != nil {
 		return [32]byte{}, err
 	}
-
+	// fmt.Printf("hash private message %v", hashPrivateMessage)
 	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	arguments := abi.Arguments{
@@ -266,8 +266,11 @@ func HashOfferMessage(
 		{
 			Type: uint256Ty,
 		},
+		{
+			Type: uint256Ty,
+		},
 	}
-
+	// fmt.Println("Before arguments")
 	bytes, err := arguments.Pack(
 		hashPrivateMessage,
 		big.NewInt(validUntil),
@@ -275,10 +278,13 @@ func HashOfferMessage(
 		teamId,
 	)
 	if err != nil {
+		// fmt.Printf("Err arguments pack %v", err)
 		return [32]byte{}, err
 	}
 	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
 
 	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
+	// fmt.Printf("ss %v", ss)
+
 	return crypto.Keccak256Hash([]byte(ss)), nil
 }
