@@ -15,6 +15,9 @@ const BirthTraitsAggressivenessIdx = 3
 
 const AccademyTeamId = 1
 const InTransitTeam = 2
+const MetaTeamId = 3
+
+const PenaltyPlayerId = 100
 
 const MatchDays = 14
 const MatchesPerDay = 4

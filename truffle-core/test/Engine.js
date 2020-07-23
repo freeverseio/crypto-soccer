@@ -131,7 +131,7 @@ contract('Engine', (accounts) => {
         return teamState;
     };
 
-    const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false], aggr = 0) => {
+    const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false], aggr = 0, withGK = false) => {
         teamState = []
         sumSkills = skills.reduce((a, b) => a + b, 0);
         var playerStateTemp = await assets.encodePlayerSkills(
@@ -143,6 +143,15 @@ contract('Engine', (accounts) => {
             teamState.push(playerStateTemp)
         }
 
+        if (withGK) {
+            var playerStateTemp = await assets.encodePlayerSkills(
+                skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, fwd = 0, left = 0, aggr],
+                alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, 
+                injuryWeeksLeft = 0, subLastHalf, sumSkills
+            ).should.be.fulfilled;            
+            teamState[0] = playerStateTemp;
+        }
+
         playerStateTemp = await assets.encodePlayerSkills(
             skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr],
             alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, 
@@ -151,6 +160,9 @@ contract('Engine', (accounts) => {
         for (player = 11; player < PLAYERS_PER_TEAM_MAX; player++) {
             teamState.push(playerStateTemp)
         }
+
+
+
         return teamState;
     };
 
@@ -191,6 +203,43 @@ contract('Engine', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
+    });
+
+    it('check frequency of penalties', async () => {
+        teamStateAll1000Half1 = await createTeamStateFromSinglePlayer(
+            [1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [false, false], agr = 2, withGK = true
+        ).should.be.fulfilled;
+        nMatches = 40;
+        totPens = 0;
+        totPensFailed = 0;
+        totGoals = 0;
+        tactics1GKonly = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineup1, noSubstitutions), 
+            extraAttackNull, tacticId442).should.be.fulfilled
+        for (p = 0; p < nMatches; p++) {
+            sed = web3.utils.toBN(web3.utils.keccak256(p.toString()));
+            var {0: log, 1: err} = await engine.playHalfMatch(sed, now, [teamStateAll1000Half1, teamStateAll1000Half1], [tactics1GKonly, tactics1GKonly], [0, 0], [is2nd = false, isHomeStadium,  playoff = false, isBotHome, isBotAway]).should.be.fulfilled;
+            (err.toNumber() == 0).should.be.equal(true);
+            pens = 0;
+            pensFailed = 0;
+            goals = 0;
+            shooters = [];
+            for (e = 0; e < 12; e++) {
+                if (100 == log[6+5*e].toNumber()) {
+                    pens++;
+                    if (0 == log[5+5*e].toNumber()) { pensFailed++; }
+                    shooters.push(log[4+5*e].toNumber())
+                }
+                if (1 == log[5+5*e].toNumber()) goals++;
+            }
+            // console.log("pens: ", pens, "goals: ", goals, "pensFailed: ", pensFailed, "shooters: ", shooters);
+            totPens += pens;
+            totGoals += goals;
+            totPensFailed += pensFailed;
+        }
+        penaltiesPerMatch = 2 * totPens/nMatches;
+        penaltiesFailedFreq = totPensFailed/totPens;
+        (Math.abs(penaltiesPerMatch - 0.4) < 0.03).should.be.equal(true);
+        (Math.abs(penaltiesFailedFreq - 0.25) < 0.03).should.be.equal(true);
     });
 
     it('create 442 team', async () => {
@@ -1149,7 +1198,7 @@ contract('Engine', (accounts) => {
         teamState[10] = messi;
         teamThatAttacks = 0;
         log = [0, 0]
-        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, isPen = false, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         log[teamThatAttacks] = scoreData[0];
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
@@ -1167,7 +1216,7 @@ contract('Engine', (accounts) => {
         teamState[10] = oldMessi;
         teamThatAttacks = 0;
         log = [0, 0]
-        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20,  isPen = false,[kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         log[teamThatAttacks] = scoreData[0];
         log = extractMatchLogs(log);
         // for this case, there should be a goal, so: 1-0    
@@ -1191,7 +1240,7 @@ contract('Engine', (accounts) => {
         result.toNumber().should.be.equal(10);
         teamThatAttacks = 0;
         log = [0, 0]
-        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, isPen = false, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         log[teamThatAttacks] = scoreData[0];
         // for this case, there should be a goal, so: 1-0    
         expectedGoals       = [1, 0];
@@ -1211,7 +1260,7 @@ contract('Engine', (accounts) => {
         // let's put a radically good GK, and check that it doesn't score
         log = [0, 0]
         teamThatAttacks = 0;
-        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, isPen = false, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         log[teamThatAttacks] = scoreData[0];
         expectedGoals       = [0, 0];
         expectedShooters    = [0, 0];
@@ -1229,7 +1278,7 @@ contract('Engine', (accounts) => {
         }
         // Finally, check that even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
         log = [0, 0]
-        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, isPen = false, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
         log[teamThatAttacks] = scoreData[0];
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
