@@ -23,7 +23,8 @@ import "./MarketView.sol";
  @dev   => (n5, validUntil5, n4, validUntil4,... n0, validUntil0), 
  @dev   => so it leaves the leftmost 256 - 6 * 36 = 40b free
 */
- 
+
+/// Warning: This contract must ALWAYS inherit MarketView first, so that it ends up inheriting Storage before any other contract.
 contract Market is MarketView {
     event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
     event PlayerFreezeCrypto(uint256 playerId, bool frozen);

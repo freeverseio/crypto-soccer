@@ -3,7 +3,6 @@ pragma solidity >= 0.6.3;
 import "./TrainingPoints.sol";
 import "./Evolution.sol";
 import "./Engine.sol";
-import "./Shop.sol";
 import "../gameEngine/ErrorCodes.sol";
 import "../encoders/EncodingTacticsBase1.sol";
 
@@ -26,13 +25,11 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1 {
     TrainingPoints private training;
     Evolution private evo;
     Engine private engine;
-    Shop private shop;
 
-    constructor(address trainingAddr, address evolutionAddr, address engineAddr, address shopAddr) public {
+    constructor(address trainingAddr, address evolutionAddr, address engineAddr) public {
         training = TrainingPoints(trainingAddr);
         evo = Evolution(evolutionAddr);
         engine = Engine(engineAddr);
-        shop = Shop(shopAddr);
     }
 
     function generateMatchSeed(bytes32 seed, uint256[2] memory teamIds) public pure returns (uint256) {
@@ -70,8 +67,9 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1 {
             } else {
                 (skills[team], err) = training.applyTrainingPoints(skills[team], assignedTPs[team], tactics[team], matchStartTime, evo.getTrainingPoints(matchLogs[team]));
                 if (err > 0) return (skills, matchLogsAndEvents, err);
-                err = shop.validateItemsInTactics(tactics[team]);
-                if (err > 0) return (skills, matchLogsAndEvents, err);
+                // TODO: when we support shop, enable these 2 lines:
+                // err = shop.validateItemsInTactics(tactics[team]);
+                // if (err > 0) return (skills, matchLogsAndEvents, err);
             }
         }
             
@@ -124,8 +122,9 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1 {
             if (matchBools[IDX_IS_BOT_HOME + team]) {
                 tactics[team] = getBotTactics();
             } else {
-                err = shop.validateItemsInTactics(tactics[team]);
-                if (err > 0) return (skills, matchLogsAndEvents, err);
+                // TODO: when we support shop, enable these 2 lines:
+                // err = shop.validateItemsInTactics(tactics[team]);
+                // if (err > 0) return (skills, matchLogsAndEvents, err);
             }
         }
 
