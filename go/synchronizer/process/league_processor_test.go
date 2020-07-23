@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"gotest.tools/assert"
 
@@ -57,7 +58,8 @@ func TestLeagueProcessMatch(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	divisionIdx := big.NewInt(0)
-
+	assetInitProcessor := process.NewAssetsInitProcessor(bc.Contracts)
+	assert.NilError(t, assetInitProcessor.Process(tx, assets.AssetsAssetsInit{common.HexToAddress("0x0"), types.Log{}}))
 	divisionCreationProcessor := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
 	assert.NilError(t, divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}}))
 	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
