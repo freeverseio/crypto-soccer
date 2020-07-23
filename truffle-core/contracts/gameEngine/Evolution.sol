@@ -2,7 +2,6 @@ pragma solidity >= 0.6.3;
 
 import "./EngineLib.sol";
 import "../encoders/EncodingMatchLog.sol";
-import "./Engine.sol";
 import "../encoders/EncodingTPAssignment.sol";
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingTacticsBase1.sol";
