@@ -84,6 +84,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	player := storage.Player{}
 	player.PlayerId = big.NewInt(contracts.PenaltyPlayerId)
 	player.TeamId = fmt.Sprintf("%d", contracts.MetaTeamId)
+	player.Name = "Penalty MetaPlayer"
 	log.Infof("creating Penalty MetaPlayer with id %v and TeamId %v", player.PlayerId.String(), player.TeamId)
 	if err := player.Insert(tx, event.Raw.BlockNumber); err != nil {
 		return err
