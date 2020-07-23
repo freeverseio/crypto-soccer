@@ -9,6 +9,7 @@ import "../encoders/EncodingSkillsSetters.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
+/// Warning: This contract must ALWAYS inherit UniverseInfo first, so that it ends up inheriting Storage before any other contract.
 contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     
     function getMaxAllowedAcquisitions(uint256 teamId) public view returns (bool isConstrained, uint8) {

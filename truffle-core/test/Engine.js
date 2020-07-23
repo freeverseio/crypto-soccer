@@ -177,7 +177,9 @@ contract('Engine', (accounts) => {
         depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
-        await assets.initTZs({from: owners.COO}).should.be.fulfilled;
+        utils = await Utils.new().should.be.fulfilled;
+        blockChainTimeSec = Math.floor(Date.now()/1000);
+        await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
 
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
@@ -313,7 +315,6 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nGKAndDefs1 = UNDEF, nGKAndDefs2 = UNDEF, nTot1 = UNDEF, nTot2 = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
 
         // check that the 2nd team does not have an identical set of injuries+redcards
-        utils = await Utils.new().should.be.fulfilled;
         var {0: sumSkills0 , 1: winner0, 2: nGoals0, 3: TPs0, 4: outPlayer0, 5: typeOut0, 6: outRounds0, 7: yellow10, 8: yellow20, 9: subs10, 10: subs20, 11: subs30 } = await utils.fullDecodeMatchLog(newLog[0], is2nd = false).should.be.fulfilled;
         var {0: sumSkills1 , 1: winner1, 2: nGoals1, 3: TPs1, 4: outPlayer1, 5: typeOut1, 6: outRounds1, 7: yellow11, 8: yellow21, 9: subs11, 10: subs21, 11: subs31 } = await utils.fullDecodeMatchLog(newLog[1], is2nd = false).should.be.fulfilled;
         outPlayer0.should.not.be.bignumber.equal(outPlayer1);
