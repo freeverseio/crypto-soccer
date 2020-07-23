@@ -52,9 +52,8 @@ func TestGetOrder(t *testing.T) {
 		t.Fatal("Order mistmatch")
 	}
 
-	result, err := mp.ValidateOrder(order.TrusteeShortlink.Hash)
+	_, err = mp.ValidateOrder(order.TrusteeShortlink.Hash)
 	assert.NilError(t, err)
-	assert.Equal(t, result, `{"errors":"Invalid credentials."}`)
 }
 
 func TestIsPaid(t *testing.T) {
