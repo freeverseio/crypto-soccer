@@ -260,7 +260,7 @@ func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID string) ([25]*big.Int,
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)
 	}
-	players, err := storage.PlayersByTeamId(tx, teamID)
+	players, err := storage.ActivePlayersByTeamId(tx, teamID)
 	if err != nil {
 		return state, err
 	}

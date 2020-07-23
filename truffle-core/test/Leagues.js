@@ -78,7 +78,8 @@ contract('Leagues', (accounts) => {
         depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
-        await assets.initSingleTZ(INIT_TZ, {from: owners.COO}).should.be.fulfilled;
+        blockChainTimeSec = Math.floor(Date.now()/1000);
+        await assets.initSingleTZ(INIT_TZ, blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
 
         constants = await ConstantsGetters.new().should.be.fulfilled;
         leagues = await Leagues.new().should.be.fulfilled;

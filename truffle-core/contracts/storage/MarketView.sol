@@ -106,13 +106,14 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 /// /// check that they signed what they input data says they signed:
                 (buyerAddress == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) && 
                 /// check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32)) &&
+                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_72BIT_MASK) == (_teamIdToAuctionData[teamId] >> 64)) &&
                 /// /// check player is still frozen
                 isTeamFrozen(teamId);
 
         if (isOffer2StartAuction) {
-            /// in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            /// in this case: validUntil is interpreted as offerValidUntil, and we just require that the offer
+            /// was valid when the freeze was made.
+            ok = ok && (validUntil > ((_teamIdToAuctionData[teamId] >> 32) & VALID_UNTIL_MASK));
         } else {
             ok = ok && (validUntil == (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK));
         } 
@@ -143,15 +144,16 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 /// check asset is owned by buyer
                 (buyerTeamOwner != NULL_ADDR) && 
                 /// check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
+                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_72BIT_MASK) == (_playerIdToAuctionData[playerId] >> 64)) &&
                 /// check signatures are valid by requiring that they own the asset:
                 (buyerTeamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&
                 /// check player is still frozen
                 isPlayerFrozenFiat(playerId);
 
         if (isOffer2StartAuction) {
-            /// in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            /// in this case: validUntil is interpreted as offerValidUntil, and we just require that the offer
+            /// was valid when the freeze was made.
+            ok = ok && (validUntil > ((_playerIdToAuctionData[playerId] >> 32) & VALID_UNTIL_MASK));
         } else {
             ok = ok && (validUntil == (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK));
         } 
