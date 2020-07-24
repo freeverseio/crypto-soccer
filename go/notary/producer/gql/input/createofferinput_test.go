@@ -2,9 +2,7 @@ package input_test
 
 import (
 	"encoding/hex"
-	"strconv"
 	"testing"
-	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
@@ -83,25 +81,4 @@ func TestCreateOfferIsSignerOwner(t *testing.T) {
 	isOwner, err := in.IsSignerOwner(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, false)
-}
-
-func TestCreateOfferIsValidBlockchain(t *testing.T) {
-	in := input.CreateOfferInput{}
-	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
-	in.PlayerId = "274877906944"
-	in.CurrencyId = 1
-	in.TeamId = "2748779069441"
-	in.Price = 41234
-	in.Rnd = 42321
-	//TODOO
-
-	hash, err := in.Hash()
-	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
-	assert.NilError(t, err)
-	in.Signature = hex.EncodeToString(signature)
-
-	isValid, err := in.IsValidForBlockchain(*bc.Contracts)
-	assert.NilError(t, err)
-	assert.Assert(t, isValid)
 }

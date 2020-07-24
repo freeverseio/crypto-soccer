@@ -40,16 +40,6 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 
 	seller, err := args.Input.GetOwner(b.contracts)
 	args.Input.Seller = seller.Hex()
-	fmt.Printf("We make it to before isvalid, %v\n", args.Input)
-	isValidForBlockchain, err := args.Input.IsValidForBlockchain(b.contracts)
-	if err != nil {
-		fmt.Printf("isvalid error: %v\n", isValidForBlockchain)
-
-		return id, err
-	}
-	if !isValidForBlockchain {
-		return id, fmt.Errorf("blockchain says no")
-	}
 
 	return id, b.push(args.Input)
 }
