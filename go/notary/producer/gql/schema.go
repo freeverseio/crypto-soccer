@@ -40,7 +40,6 @@ const Schema = `
 		signature: String!
 		validUntil: String!
 		playerId: ID!
-		returnToAcademy: Boolean!
 	}
 
 	input CompletePlayerTransitInput {

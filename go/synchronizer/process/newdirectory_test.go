@@ -40,5 +40,4 @@ func TestNewDirectoryStoreTheNewContracts(t *testing.T) {
 	param, err = storage.ParamByName(tx, contracts.AssetsName)
 	assert.NilError(t, err)
 	assert.Assert(t, param != nil)
-
 }
