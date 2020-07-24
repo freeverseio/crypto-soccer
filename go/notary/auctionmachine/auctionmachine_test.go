@@ -260,3 +260,151 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 		assert.Equal(t, auction.PaymentURL, "https://settlor.io/9136de")
 	})
 }
+
+func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
+	bc, err := testutils.NewBlockchain()
+	assert.NilError(t, err)
+
+	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8bce1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	bob, _ := crypto.HexToECDSA("3693a221b147b8888490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		1,
+		big.NewInt(0),
+		crypto.PubkeyToAddress(alice.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = helper.WaitReceipt(bc.Client, tx, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		1,
+		big.NewInt(0),
+		crypto.PubkeyToAddress(bob.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = helper.WaitReceipt(bc.Client, tx, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	now := time.Now().Unix()
+	validUntil := now + 8
+	playerID := big.NewInt(274877906945)
+	currencyID := uint8(1)
+	price := big.NewInt(4129834)
+	auctionRnd := big.NewInt(42321)
+	extraPrice := big.NewInt(0)
+	bidRnd := big.NewInt(124352439)
+	teamID := big.NewInt(274877906945)
+	isOffer2StartAuction := true
+
+	hashAuctionMsg, err := signer.HashSellMessage(
+		currencyID,
+		price,
+		auctionRnd,
+		validUntil,
+		playerID,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signAuctionMsg, err := signer.Sign(hashAuctionMsg.Bytes(), alice)
+	if err != nil {
+		t.Fatal(err)
+	}
+	auction := storage.Auction{
+		ID:         "TheTestingAuction2",
+		PlayerID:   playerID.String(),
+		CurrencyID: int(currencyID),
+		Price:      price.Int64(),
+		Rnd:        auctionRnd.Int64(),
+		ValidUntil: validUntil,
+		Signature:  "0x" + hex.EncodeToString(signAuctionMsg),
+		State:      storage.AuctionStarted,
+		Seller:     "0x916a407D8cB5B4E533672C908757737F27fE3C25",
+	}
+
+	hashBidMsg, err := signer.HashBidMessage(
+		bc.Contracts.Market,
+		currencyID,
+		price,
+		auctionRnd,
+		validUntil,
+		playerID,
+		extraPrice,
+		bidRnd,
+		teamID,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signBidMsg, err := signer.Sign(hashBidMsg.Bytes(), bob)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bids := []storage.Bid{
+		storage.Bid{
+			AuctionID:  auction.ID,
+			ExtraPrice: extraPrice.Int64(),
+			Rnd:        bidRnd.Int64(),
+			TeamID:     teamID.String(),
+			Signature:  "0x" + hex.EncodeToString(signBidMsg),
+			State:      storage.BidAccepted,
+		},
+	}
+
+	market := marketpay.NewMockMarketPay()
+	offer := storage.NewOffer()
+	offer.ID = "Offeridi"
+
+	machine, err := auctionmachine.New(auction, bids, *offer, *bc.Contracts, bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, machine.State(), storage.AuctionStarted)
+
+	// machine freeze the asset cause of existent bid
+	assert.NilError(t, machine.Process(market))
+	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
+
+	// machine do nothing cause auction deadline is not passed
+	assert.NilError(t, machine.Process(market))
+	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
+
+	// waiting that the auction deadline
+	time.Sleep(10 * time.Second)
+
+	// machine put the auction in paying wait
+	assert.NilError(t, machine.Process(market))
+	assert.Equal(t, machine.State(), storage.AuctionPaying)
+	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
+
+	// machine put the bid is paying state
+	assert.NilError(t, machine.Process(market))
+	assert.Equal(t, machine.State(), storage.AuctionPaying)
+	assert.Equal(t, machine.Bids()[0].State, storage.BidPaying)
+	assert.Assert(t, machine.Bids()[0].PaymentDeadline != 0)
+
+	// set the market transaction as paid
+	market.SetOrderStatus(marketpay.PUBLISHED)
+
+	// machine set the bid to paid and set the auction as withdrable by seller
+	assert.NilError(t, machine.Process(market))
+	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
+	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller)
+	assert.Equal(t, machine.StateExtra(), "")
+
+	t.Run("AuctionWithdrableBySeller", func(t *testing.T) {
+		auction := machine.Auction()
+		assert.Equal(t, auction.PaymentURL, "https://settlor.io/9136de")
+	})
+}
