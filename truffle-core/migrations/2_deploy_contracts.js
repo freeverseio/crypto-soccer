@@ -26,6 +26,8 @@ const EncodingState = artifacts.require('EncodingState');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 const UpdatesBase = artifacts.require('UpdatesBase');
 
+const DEPLOY_TIME = 1592785800 - 1800; // half an hour before the first match played in PROD
+
 require('chai')
     .use(require('chai-as-promised'))
     .should();
@@ -51,13 +53,13 @@ module.exports = function (deployer, network, accounts) {
       const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
       const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
       const engine = await deployer.deploy(Engine, enginePreComp.address, engineApplyBoosters.address).should.be.fulfilled;
-      const trainingPoints= await deployer.deploy(TrainingPoints, proxy.address).should.be.fulfilled;
+      const trainingPoints= await deployer.deploy(TrainingPoints).should.be.fulfilled;
       const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
       const leagues = await deployer.deploy(Leagues).should.be.fulfilled;
       const shop = await deployer.deploy(Shop, proxy.address).should.be.fulfilled;
       const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
       const utils = await deployer.deploy(Utils).should.be.fulfilled;
-      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address, shop.address).should.be.fulfilled;
+      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address).should.be.fulfilled;
       const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
       const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
       const marketCrypto = await deployer.deploy(MarketCrypto, proxy.address).should.be.fulfilled;
@@ -98,7 +100,7 @@ module.exports = function (deployer, network, accounts) {
       await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
       await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
       await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
-      await updates.initUpdates().should.be.fulfilled; 
+      await updates.initUpdates(DEPLOY_TIME).should.be.fulfilled; 
       await updates.setStakersAddress(stakers.address).should.be.fulfilled;
       await stakers.setGameOwner(updates.address).should.be.fulfilled;
       for (trustedParty of owners.trustedParties) {
@@ -106,9 +108,9 @@ module.exports = function (deployer, network, accounts) {
       }
       if (singleTimezone != -1) {
         console.log("Init single timezone", singleTimezone);
-        await assets.initSingleTZ(singleTimezone).should.be.fulfilled;
+        await assets.initSingleTZ(singleTimezone, DEPLOY_TIME).should.be.fulfilled;
       } else {
-        await assets.initTZs().should.be.fulfilled;
+        await assets.initTZs(DEPLOY_TIME).should.be.fulfilled;
       }
 
       console.log("Setting final ownerships, up to acceptance by company...");
@@ -155,13 +157,13 @@ module.exports = function (deployer, network, accounts) {
       const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
       const engineApplyBoosters = await deployer.deploy(EngineApplyBoosters).should.be.fulfilled;
       const engine = await deployer.deploy(Engine, enginePreComp.address, engineApplyBoosters.address).should.be.fulfilled;
-      const trainingPoints= await deployer.deploy(TrainingPoints, proxy.address).should.be.fulfilled;
+      const trainingPoints= await deployer.deploy(TrainingPoints).should.be.fulfilled;
       const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
       const leagues = await deployer.deploy(Leagues).should.be.fulfilled;
       const shop = await deployer.deploy(Shop, proxy.address).should.be.fulfilled;
       const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
       const utils = await deployer.deploy(Utils).should.be.fulfilled;
-      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address, shop.address).should.be.fulfilled;
+      const playAndEvolve = await deployer.deploy(PlayAndEvolve, trainingPoints.address, evolution.address, engine.address).should.be.fulfilled;
       const merkle = await deployer.deploy(Merkle).should.be.fulfilled;
       const constantsGetters = await deployer.deploy(ConstantsGetters).should.be.fulfilled;
 

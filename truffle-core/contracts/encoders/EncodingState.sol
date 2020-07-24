@@ -1,5 +1,7 @@
 pragma solidity >= 0.6.3;
 
+import "../storage/Constants.sol";
+
 /**
  @title Getters for library to serialize/deserialize player state
  @author Freeverse.io, www.freeverse.io
@@ -11,9 +13,10 @@ pragma solidity >= 0.6.3;
   currentShirtNum         =  5 bits, offset = 43
   prevPlayerTeamId        = 43 bits, offset = 48
   lastSaleBlocknum        = 35 bits, offset = 91
+  isInTransit             = implicit from shirtNum == 26 ( = IN_TRANSIT_SHIRTNUM)
 */
 
-contract EncodingState {
+contract EncodingState is Constants {
 
     uint256 constant internal TWO_TO_43_MINUS_ONE = 8796093022207;
     uint256 constant internal TWO_TO_35_MINUS_ONE = 34359738367;
@@ -80,4 +83,7 @@ contract EncodingState {
         return (playerState >> 91) & TWO_TO_35_MINUS_ONE;
     }
 
+    function getIsInTransitFromState(uint256 state) public pure returns(bool) {
+        return getCurrentShirtNum(state) == IN_TRANSIT_SHIRTNUM;
+    }
 }

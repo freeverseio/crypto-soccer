@@ -1,17 +1,24 @@
 pragma solidity >= 0.6.3;
 
 import "./ProxyStorage.sol";
-import "../storage/Constants.sol";
 import "./Stakers.sol";
 
 /**
  @title Storage for all assets.
  @author Freeverse.io, www.freeverse.io
  @dev Treat with great care. All additions must go below the last line
- @dev of the previous version 
+ @dev of the previous version
 */
 
-contract Storage is ProxyStorage, Constants{
+/**
+Warning:
+- This contract must ALWAYS inherit ProxyStorage first, to preserve order of slots.
+- Never alter the order of variables, never remove one.
+- Variables that need to be added must always go at the bottom of this file, and once deployed, remain in the introced order.
+- Avoid inheriting Constants, specially if these constants determine the size of the storage variables (e.g. length of arrays)
+- ...because a change in Constants would change the Storage allocation order.
+*/
+contract Storage is ProxyStorage {
 
     uint256[2**12] _slotReserve;
 
@@ -34,7 +41,7 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => uint256) internal _countryIdToNDivisions;
     mapping (uint256 => uint256) internal _countryIdToNHumanTeams;
     mapping (uint256 => uint256) internal _divisionIdToRound;
-    mapping (uint256 => uint256[PLAYERS_PER_TEAM_MAX]) internal _teamIdToPlayerIds;
+    mapping (uint256 => uint256[25]) internal _teamIdToPlayerIds;
     mapping (uint256 => address) internal _teamIdToOwner;
     mapping (uint8 => uint256) internal _tzToNCountries;
 
@@ -64,7 +71,7 @@ contract Storage is ProxyStorage, Constants{
     mapping (uint256 => bytes32[2]) _activeTeamsPerCountryRoot;
     mapping (uint256 => bytes32[2]) _orgMapRoot;
     mapping (uint256 => uint8[2]) _levelVerifiableByBC;
-    mapping (uint256 => bytes32[MAX_CHALLENGE_LEVELS][2]) _roots;
+    mapping (uint256 => bytes32[6][2]) _roots;
     mapping (uint256 => uint8[2]) _challengeLevel;
     mapping (uint256 => uint8) _newestOrgMapIdx;
     mapping (uint256 => uint8) _newestRootsIdx;
@@ -74,4 +81,7 @@ contract Storage is ProxyStorage, Constants{
     /// The update/challenge game needs to call the external
     /// Stakers contract, that only manages deposits, slashes, etc.
     Stakers public _stakers;
+
+    // Last line of this contract as of Thursday, July 23rd, midday UTC+2 
+    // Any new storage variables, add below this line.
 }

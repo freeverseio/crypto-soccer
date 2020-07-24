@@ -302,12 +302,14 @@ contract('FullLeague', (accounts) => {
         depl = await deployUtils.deploy(owners, Proxy, Assets, Market, Updates, Challenges, inheritedArtfcts);
         [proxy, assets, market, updates, challenges] = depl;
         await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
-        await assets.initTZs({from: owners.COO}).should.be.fulfilled;
+
+        blockChainTimeSec = Math.floor(Date.now()/1000);
+        await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
         
-        training= await TrainingPoints.new(assets.address).should.be.fulfilled;
-        shop = await Shop.new(assets.address).should.be.fulfilled;
+        training= await TrainingPoints.new().should.be.fulfilled;
+        // shop = await Shop.new(assets.address).should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
-        play = await PlayAndEvolve.new(training.address, evo.address, engine.address, shop.address).should.be.fulfilled;
+        play = await PlayAndEvolve.new(training.address, evo.address, engine.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;

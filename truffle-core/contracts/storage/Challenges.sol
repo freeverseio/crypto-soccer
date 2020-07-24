@@ -9,6 +9,7 @@ import "./UpdatesBase.sol";
  @dev Currently, all functions in this contract are fully disabled.
 */
 
+/// Warning: This contract must ALWAYS inherit UpdatesBase first, so that it ends up inheriting Storage before any other contract.
 contract Challenges is UpdatesBase {
 
     function BCVerifableChallengeFake(bytes32[] memory leagueLeafs, bool forceSuccess) public {
