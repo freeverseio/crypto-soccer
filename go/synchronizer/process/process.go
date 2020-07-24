@@ -175,7 +175,7 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		if err != nil {
 			return err
 		}
-		return err
+		return p.contracts.ToStorage(tx)
 	case assets.AssetsAssetsInit:
 		assetsInitProcessor := NewAssetsInitProcessor(p.contracts)
 		return assetsInitProcessor.Process(tx, v)
