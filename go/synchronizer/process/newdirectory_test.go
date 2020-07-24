@@ -23,6 +23,10 @@ func TestNewDirectoryStoreTheNewContracts(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Assert(t, param == nil)
 
+	param, err = storage.ParamByName(tx, contracts.AssetsName)
+	assert.NilError(t, err)
+	assert.Assert(t, param == nil)
+
 	directoryAddress := bc.Contracts.DirectoryAddress
 	event := proxy.ProxyNewDirectory{common.HexToAddress(directoryAddress), types.Log{}}
 
@@ -33,4 +37,7 @@ func TestNewDirectoryStoreTheNewContracts(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, param.Value, directoryAddress)
 
+	param, err = storage.ParamByName(tx, contracts.AssetsName)
+	assert.NilError(t, err)
+	assert.Assert(t, param != nil)
 }
