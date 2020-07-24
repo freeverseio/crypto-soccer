@@ -26,9 +26,8 @@ func TestNewDirectoryStoreTheNewContracts(t *testing.T) {
 	directoryAddress := bc.Contracts.DirectoryAddress
 	event := proxy.ProxyNewDirectory{common.HexToAddress(directoryAddress), types.Log{}}
 
-	newContracts, err := process.ConsumeNewDirectory(tx, *bc.Contracts, event)
+	_, err = process.ConsumeNewDirectory(tx, *bc.Contracts, event)
 	assert.NilError(t, err)
-	assert.Assert(t, newContracts != nil)
 
 	param, err = storage.ParamByName(tx, contracts.DirectoryName)
 	assert.NilError(t, err)
