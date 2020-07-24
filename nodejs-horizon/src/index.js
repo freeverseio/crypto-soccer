@@ -48,7 +48,17 @@ const main = async () => {
         after: Cursor
         orderBy: [AuctionsOrderBy!] = [PRIMARY_KEY_ASC]
         condition: AuctionCondition
-      ): AuctionsConnection!
+      ): AuctionsConnection!,
+      offersByPlayerId(
+        first: Int
+        last: Int
+        offset: Int
+        before: Cursor
+        after: Cursor
+        orderBy: [OffersOrderBy!] = [PRIMARY_KEY_ASC]
+        condition: AuctionCondition
+      ): OffersConnection!
+
     }
 
     extend type Auction {
@@ -69,6 +79,23 @@ const main = async () => {
             schema: marketRemoteSchema,
             operation: 'query',
             fieldName: 'allAuctions',
+            args: {
+              condition: {
+                playerId: player.playerId
+              }
+            },
+            context,
+            info,
+          })
+        }
+      },
+      offersByPlayerId: {
+        fragment: `... on Player { playerId }`,
+        resolve(player, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: marketRemoteSchema,
+            operation: 'query',
+            fieldName: 'allOffers',
             args: {
               condition: {
                 playerId: player.playerId

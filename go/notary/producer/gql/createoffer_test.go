@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -15,6 +16,16 @@ import (
 )
 
 func TestCreateOffer(t *testing.T) {
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+	offerer, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(offerer.PublicKey),
+	)
+
 	offererRnd := int32(42321)
 	offerValidUntil := time.Now().Unix() + 100
 
@@ -41,8 +52,7 @@ func TestCreateOffer(t *testing.T) {
 		teamId,
 	)
 	assert.NilError(t, err)
-	buyerKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	signatureOffer, err := signer.Sign(hashOffer.Bytes(), buyerKey)
+	signatureOffer, err := signer.Sign(hashOffer.Bytes(), offerer)
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(signatureOffer)
 	id, err := r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
