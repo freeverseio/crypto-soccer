@@ -9,7 +9,7 @@ import (
 )
 
 func ConsumeNewDirectory(tx *sql.Tx, contr contracts.Contracts, event proxy.ProxyNewDirectory) (*contracts.Contracts, error) {
-	log.Info("[processor|consume] new directory ... create the bindings to the new contracts")
+	log.Infof("[processor|consume] NewDirectory event: block %v , directory %v", event.Raw.BlockNumber, event.Addr.Hex())
 	var err error
 	c, err := contracts.NewByNewDirectoryEvent(contr.Client, event)
 	if err != nil {

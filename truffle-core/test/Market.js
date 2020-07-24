@@ -23,6 +23,7 @@ const Challenges = artifacts.require('Challenges');
 const MarketCrypto = artifacts.require('MarketCrypto');
 const Privileged = artifacts.require('Privileged');
 const TrainingPoints = artifacts.require('TrainingPoints');
+const Utils = artifacts.require('Utils');
 
 const UniverseInfo = artifacts.require('UniverseInfo');
 const EncodingSkills = artifacts.require('EncodingSkills');
@@ -71,7 +72,9 @@ contract("Market", accounts => {
     marketCrypto = await MarketCrypto.new(proxy.address, {from: owners.superuser}).should.be.fulfilled;
 
     freeverseAccount = await web3.eth.accounts.create("iamFreeverse");
-    await assets.initTZs({from: owners.COO}).should.be.fulfilled;
+
+    blockChainTimeSec = Math.floor(Date.now()/1000);
+    await assets.initTZs(blockChainTimeSec, {from: owners.COO}).should.be.fulfilled;
     privileged = await Privileged.new().should.be.fulfilled;
     sellerAccount = await web3.eth.accounts.create("iamaseller");
     buyerAccount = await web3.eth.accounts.create("iamabuyer");
@@ -82,8 +85,7 @@ contract("Market", accounts => {
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address, {from: owners.relay}).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
 
-    AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
-    AUCTION_TIME = AUCTION_TIME.toNumber();
+    AUCTION_TIME = 48 * 3600;
     
     POST_AUCTION_TIME = await constants.get_POST_AUCTION_TIME().should.be.fulfilled;
     POST_AUCTION_TIME = POST_AUCTION_TIME.toNumber();
@@ -362,11 +364,15 @@ contract("Market", accounts => {
       await marketCrypto.executePlayerTransfer(playerIds[n]).should.be.fulfilled;
       if (n >= 7) {
         ownTeam = await market.getCurrentTeamIdFromPlayerId(playerIds[n]).should.be.fulfilled;
-        ownTeam.toNumber().should.be.equal(IN_TRANSIT_TEAM);
+        ownTeam.should.be.bignumber.equal(buyerTeamId0);
+        state = await market.getPlayerState(playerIds[n]).should.be.fulfilled;
+        isInTransit = await market.getIsInTransitFromState(state).should.be.fulfilled;
+        isInTransit.should.be.equal(true);
       }
     }
+
     // note that the players are not frozen anymore. However, it'll be impossible to freeze them since
-    // they currently belong to IN_TRANSIT_TEAM
+    // they currently are In transit
     result = await market.isPlayerFrozenInAnyMarket(playerIds[8]).should.be.fulfilled;
     result.should.be.equal(false);
   
@@ -612,8 +618,7 @@ contract("Market", accounts => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
-    const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
-    
+
     tx = await marketUtils.freezeTeam(owners.market, currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
@@ -631,8 +636,6 @@ contract("Market", accounts => {
   it("teams: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
-    offerValidUntil = now.toNumber() + 3600; // valid for an hour
-    const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
     tx = await marketUtils.freezeTeam(owners.market, currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
@@ -641,15 +644,24 @@ contract("Market", accounts => {
       return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(true);
     });
     
+    offerValidUntil = now.toNumber() -1; // offer had expired before doing the freeze
     tx = await marketUtils.completeTeamAuction(
       owners.market, 
       currencyId, price, offererRnd, offerValidUntil, sellerTeamId, 
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerAccount
     ).should.be.rejected;
+
+    offerValidUntil = now.toNumber() + 10; // offer had expired before doing the freeze
+    tx = await marketUtils.completeTeamAuction(
+      owners.market, 
+      currencyId, price, offererRnd, offerValidUntil, sellerTeamId, 
+      extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerAccount
+    ).should.be.fulfilled;
+
   });
 
   it("teams: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
-    validUntil = now.toNumber() + 3600*24*2; // two days
+    validUntil = now.toNumber() + 3600*24*4 + 30; // 4 days + 30 sec
     offererRnd = 23987435;
 
     sigSeller = await marketUtils.signPutAssetForSaleMTx(
@@ -810,7 +822,6 @@ contract("Market", accounts => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
-    const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
@@ -837,9 +848,6 @@ contract("Market", accounts => {
   it("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
-    offerValidUntil = now.toNumber() + 3600; // valid for an hour
-    const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
-
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
@@ -848,18 +856,34 @@ contract("Market", accounts => {
     });
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
+    offerValidUntil = now.toNumber() - 1; // valid until one sec in the past
     tx = await marketUtils.completePlayerAuction(
       owners.market,
       currencyId, price,  offererRnd, offerValidUntil, playerId, 
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
     ).should.be.rejected;
     
+    // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
+    offerValidUntil = now.toNumber() + 10; // valid until one sec in the past
+    tx = await marketUtils.completePlayerAuction(
+      owners.market,
+      currencyId, price,  offererRnd, offerValidUntil, playerId, 
+      extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
+    ).should.be.fulfilled;
+    
   });
   
-  it("players: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
-    tx, sellerHiddenPrice = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    validUntil = now.toNumber() + 3600*24*2; // two days
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
+  it("players: fails a freezePlayer via MTXs because validUntil is too large", async () => {
+    // validUntil is capped to avoid malicious use of MTXs in the future. Currenly capped to AUCTION_TIME + POST_AUCTION_TIME = 1d + 2d = 3 days
+    // Check that default value works, 2 days work, 3 days fail
+    // validUntil = now.toNumber() + AUCTION_TIME;
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    validUntil2 = now.toNumber() + 3600*24*3 + 10; // 3 days and 10 sec
+    playerId2 = playerId.add(web3.utils.toBN(1));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.fulfilled;
+    validUntil2 = now.toNumber() + 3600*24*4 + 10; // 4 days and 10 sec
+    playerId2 = playerId.add(web3.utils.toBN(2));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.rejected;
   });
   
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because targetTeam = originTeam", async () => {
@@ -913,41 +937,48 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
-  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
-    // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
-    // 2. Freeverse checks signature and returns to buyer: OK, failed
-    // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
-    // 4. seller's mobile app sends to Freeverse: sigSeller and params
-    // 5. Freeverse checks signature and returns to seller: OK, failed
-    // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
-    // 7. If freeze went OK:
-    //          urges buyer to complete payment
-    //    If freeze not OK (he probably sold the player in a different market)
-    //          tells the buyer to forget about this player
-    // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
-    // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
-
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
-    isPlayerFrozen.should.be.equal(true);
-    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
-    });
-    
+  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because post_auction time had passed", async () => {
+    // validUntil = now + AUCTION_TIME = now + 48 hours
+    // the payment must take place within 48 hours after valid until, so within 4 days from now.
+    // We show that 4 days - 10 sec work, but 4 days + 10 sec fail
+    validUntil0 = now.toNumber() + AUCTION_TIME;
+    playerId0 = playerId.add(web3.utils.toBN(1));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, playerId0, sellerAccount).should.be.fulfilled;
+    await timeTravel.advanceTime(4*24*3600-10);
+    await timeTravel.advanceBlock().should.be.fulfilled;
     tx = await marketUtils.completePlayerAuction(
       owners.market,
-      currencyId, price,  sellerRnd, validUntil, playerId, 
+      currencyId, price,  sellerRnd, validUntil0, playerId0, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
 
-    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
-    });
-
-    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
-    finalOwner.should.be.equal(buyerAccount.address);
+    // try again
+    now0 = await market.getBlockchainNowTime().should.be.fulfilled;
+    validUntil0 = now0.toNumber() + AUCTION_TIME;
+    playerId0 = playerId.add(web3.utils.toBN(2));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, playerId0, sellerAccount).should.be.fulfilled;
+    await timeTravel.advanceTime(4*24*3600+10);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    tx = await marketUtils.completePlayerAuction(
+      owners.market,
+      currencyId, price,  sellerRnd, validUntil0, playerId0, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.rejected;
   });
   
+  it("players: test that valid until can be larger than AUCTION_TIME and complete transaction", async () => {
+    // this test illustrates an undesired behaviour: TODO - change solidity code
+    validUntil0 = now.toNumber() + AUCTION_TIME + 12 * 3600;
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, playerId, sellerAccount).should.be.fulfilled;
+    await timeTravel.advanceTime(AUCTION_TIME + 6 * 3600);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    tx = await marketUtils.completePlayerAuction(
+      owners.market,
+      currencyId, price,  sellerRnd, validUntil0, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.fulfilled;
+  });
+
   it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
   });
@@ -1089,7 +1120,7 @@ contract("Market", accounts => {
   });
 
   it("special players: check children of special players", async () => {
-    training= await TrainingPoints.new(assets.address).should.be.fulfilled;
+    training= await TrainingPoints.new().should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     sumSkills = await market.getSumOfSkills(playerId).should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(16912);
@@ -1183,6 +1214,7 @@ contract("Market", accounts => {
   it("dismissPlayers: complete in transit can be achieved if dismissing first", async () => {
     // sellerTeamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
     sellerPlayerIds = Array.from(new Array(10), (x,i) => 0);
+    // Prepare 10 player IDs
     for (n = 0; n < 10; n++) {
       sellerPlayerIds[n] = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdInCountry2 = n).should.be.fulfilled;
     }
@@ -1190,9 +1222,11 @@ contract("Market", accounts => {
     ownerTeamId.should.be.bignumber.equal(sellerTeamId);
     ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;
     ownerTeamId.should.be.bignumber.equal(sellerTeamId);
+    // Transfer the first 7. No prob, there's space in the buyerTeam
     for (n = 0; n < 7; n++) {
         await marketUtils.transferPlayerViaAuction(owners.market, market, sellerPlayerIds[n], buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
     }
+    // Player 0 belongs to buyer, player 7 still to seller
     ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[0]).should.be.fulfilled;
     ownerTeamId.should.be.bignumber.equal(buyerTeamId);
     owner = await market.getOwnerPlayer(sellerPlayerIds[0]).should.be.fulfilled;
@@ -1200,10 +1234,16 @@ contract("Market", accounts => {
     ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;
     ownerTeamId.should.be.bignumber.equal(sellerTeamId);
 
-    await marketUtils.transferPlayerViaAuction(owners.market, market, sellerPlayerIds[7], buyerTeamId, sellerAccount, buyerAccount).should.be.rejected;
-    // this internal function actually worked except for the last line: checking that the owner is the buyer. It left the player as IN TRANSIT
-    ownerTeamId = await market.getCurrentTeamIdFromPlayerId(sellerPlayerIds[7]).should.be.fulfilled;
-    ownerTeamId.toNumber().should.be.equal(IN_TRANSIT_TEAM = 2);
+    state = await market.getPlayerState(sellerPlayerIds[7]).should.be.fulfilled;
+    isInTransit = await market.getIsInTransitFromState(state).should.be.fulfilled;
+    isInTransit.should.be.equal(false);
+
+    await marketUtils.transferPlayerViaAuction(owners.market, market, sellerPlayerIds[7], buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
+
+    state = await market.getPlayerState(sellerPlayerIds[7]).should.be.fulfilled;
+    isInTransit = await market.getIsInTransitFromState(state).should.be.fulfilled;
+    isInTransit.should.be.equal(true);
+
     nTransit = await market.getNPlayersInTransitInTeam(buyerTeamId).should.be.fulfilled;
     nTransit.toNumber().should.be.equal(1);
     await market.completePlayerTransit(sellerPlayerIds[7]).should.be.rejected;
@@ -1219,6 +1259,10 @@ contract("Market", accounts => {
     ).should.be.fulfilled;
 
     await market.completePlayerTransit(sellerPlayerIds[7]).should.be.fulfilled;
+
+    state = await market.getPlayerState(sellerPlayerIds[7]).should.be.fulfilled;
+    isInTransit = await market.getIsInTransitFromState(state).should.be.fulfilled;
+    isInTransit.should.be.equal(false);
   });
 
   it("dismissPlayers: Academy can not sell in auction after a dismiss", async () => {

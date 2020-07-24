@@ -204,8 +204,8 @@ async function transferTeamViaAuction(contractOwner, market, sellerTeamId, selle
   buyerRnd = 1243523;
 
   now = await market.getBlockchainNowTime().should.be.fulfilled;
-  AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
-  validUntil = now.toNumber() + AUCTION_TIME.toNumber();
+  AUCTION_TIME = 48 * 3600;
+  validUntil = now.toNumber() + AUCTION_TIME;
     
   tx = await freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
   isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
@@ -239,8 +239,9 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
   buyerRnd = 1243523;
   
   now = await market.getBlockchainNowTime().should.be.fulfilled;
-  AUCTION_TIME = await constants.get_AUCTION_TIME().should.be.fulfilled;
-  validUntil = now.toNumber() + AUCTION_TIME.toNumber();
+  AUCTION_TIME = 48 * 3600;
+  validUntil = now.toNumber() + AUCTION_TIME;
+
   tx = await freezePlayer(contractOwner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
   isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
   isPlayerFrozen.should.be.equal(true);

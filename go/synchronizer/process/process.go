@@ -85,15 +85,15 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 	}
 
 	if lastProcessedBlock == 0 {
-		log.Info("[processor] BigBang")
 		bigBangEvent, err := p.getFirstDeployEvent(p.proxyContractAddress)
 		if err != nil {
 			return 0, err
 		}
 		if bigBangEvent == nil {
-			log.Error("[processor] no BigBang event found")
 			return 0, err
 		}
+
+		log.Infof("[processor|consume] bigBang event ... block %v , directory %v", bigBangEvent.Raw.BlockNumber, bigBangEvent.Addr.Hex())
 
 		c, err := contracts.NewByNewDirectoryEvent(p.Client, *bigBangEvent)
 		if err != nil {

@@ -14,7 +14,8 @@ const Proxy = artifacts.require('Proxy');
 const Assets = artifacts.require('Assets');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
-const Challenges = artifacts.require('Challenges');const Shop = artifacts.require('Shop');
+const Challenges = artifacts.require('Challenges');
+const Shop = artifacts.require('Shop');
 const EncodingTactics = artifacts.require('EncodingTactics');
 const Utils = artifacts.require('Utils');
 

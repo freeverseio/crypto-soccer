@@ -5,7 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/relay/consumer"
-	"github.com/freeverseio/crypto-soccer/go/useractions/ipfscluster"
+	"github.com/freeverseio/crypto-soccer/go/useractions/memory"
 	"gotest.tools/assert"
 )
 
@@ -20,7 +20,7 @@ func TestSubmitActionRoot(t *testing.T) {
 		bc.Client,
 		auth,
 		bc.Contracts.Updates,
-		ipfscluster.NewUserActionsPublishService("localhost:5001"),
+		memory.NewUserActionsPublishService(),
 	)
 	assert.NilError(t, p.Process(tx))
 }
