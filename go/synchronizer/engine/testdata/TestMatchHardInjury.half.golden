@@ -12,7 +12,7 @@
 			00000010  60 82 81 82 0f e2 b2 4f  1e 52 33 ad e6 af 1d d5  |`......O.R3.....|
 		},
 		HomeGoals: (uint8) 0,
-		VisitorGoals: (uint8) 1,
+		VisitorGoals: (uint8) 0,
 		HomeTeamSumSkills: (uint32) 54956,
 		VisitorTeamSumSkills: (uint32) 54978,
 		State: (storage.MatchState) (len=4) "half",
@@ -708,7 +708,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 0,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=75) "452313210449535453918776347537557551137599264637377913622453764364024415809"
+			MatchLog: (string) (len=75) "452313210449535453918776347537557551137599263369727313394219859267693838336"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -1459,11 +1459,11 @@
 			Type: (int16) 0,
 			Team: (int16) 1,
 			ManagesToShoot: (bool) true,
-			IsGoal: (bool) true,
-			PrimaryPlayer: (int16) 3,
-			SecondaryPlayer: (int16) 100,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 12,
+			SecondaryPlayer: (int16) 0,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
-			SecondaryPlayerID: (string) (len=3) "100"
+			SecondaryPlayerID: (string) (len=11) "21342314523"
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 41,
