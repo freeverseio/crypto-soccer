@@ -7,6 +7,7 @@ import "./UniverseInfo.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
+/// Warning: This contract must ALWAYS inherit UniverseInfo first, so that it ends up inheriting Storage first.
 contract UpdatesView is UniverseInfo {
 
     function getLastUpdateTime(uint8 tz) public view returns(uint256) {

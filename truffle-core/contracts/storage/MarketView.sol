@@ -9,6 +9,7 @@ import "../encoders/EncodingSkillsSetters.sol";
  @author Freeverse.io, www.freeverse.io
 */
 
+/// Warning: This contract must ALWAYS inherit UniverseInfo first, so that it ends up inheriting Storage before any other contract.
 contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     
     function getMaxAllowedAcquisitions(uint256 teamId) public view returns (bool isConstrained, uint8) {
@@ -105,13 +106,14 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 /// /// check that they signed what they input data says they signed:
                 (buyerAddress == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) && 
                 /// check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32)) &&
+                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_72BIT_MASK) == (_teamIdToAuctionData[teamId] >> 64)) &&
                 /// /// check player is still frozen
                 isTeamFrozen(teamId);
 
         if (isOffer2StartAuction) {
-            /// in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            /// in this case: validUntil is interpreted as offerValidUntil, and we just require that the offer
+            /// was valid when the freeze was made.
+            ok = ok && (validUntil > ((_teamIdToAuctionData[teamId] >> 32) & VALID_UNTIL_MASK));
         } else {
             ok = ok && (validUntil == (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK));
         } 
@@ -132,25 +134,34 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         returns(bool ok) 
     {
         /// the next line will verify that the playerId is the same that was used by the seller to sign
-        bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
+        // bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(buyerTeamId);
         if (isConstrained && nRemain == 0) return false;
-        bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
+        bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(
+            prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId)), 
+            buyerHiddenPrice, 
+            buyerTeamId, 
+            isOffer2StartAuction)
+        );
         address buyerTeamOwner = getOwnerTeam(buyerTeamId);
-        ok =    /// origin and target teams must be different
-                (buyerTeamId != getCurrentTeamIdFromPlayerId(playerId)) &&
+        uint256 state = getPlayerState(playerId);
+        ok =    /// cannot be a player in transit
+                !getIsInTransitFromState(state) &&
+                /// origin and target teams must be different
+                buyerTeamId != getCurrentTeamIdFromPlayerState(state) &&
                 /// check asset is owned by buyer
                 (buyerTeamOwner != NULL_ADDR) && 
                 /// check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
+                ((uint256(sellerHiddenPrice) & KILL_LEFTMOST_72BIT_MASK) == (_playerIdToAuctionData[playerId] >> 64)) &&
                 /// check signatures are valid by requiring that they own the asset:
                 (buyerTeamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&
                 /// check player is still frozen
                 isPlayerFrozenFiat(playerId);
 
         if (isOffer2StartAuction) {
-            /// in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            /// in this case: validUntil is interpreted as offerValidUntil, and we just require that the offer
+            /// was valid when the freeze was made.
+            ok = ok && (validUntil > ((_playerIdToAuctionData[playerId] >> 32) & VALID_UNTIL_MASK));
         } else {
             ok = ok && (validUntil == (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK));
         } 
@@ -167,7 +178,9 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         view 
         returns (bool)
     {
-        uint256 currentTeamId = getCurrentTeamIdFromPlayerId(playerId);
+        uint256 state = getPlayerState(playerId);
+        require(!getIsInTransitFromState(state), "cannot freeze a player that is in transit");
+        uint256 currentTeamId = getCurrentTeamIdFromPlayerState(state);
         bool areOK = 
             /// check validUntil has not expired
             (now < validUntil) &&
@@ -334,8 +347,6 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     }
     
     function getNPlayersInTransitInTeam(uint256 teamId) public view returns (uint8) { return _nPlayersInTransitInTeam[teamId]; }        
-
-    function getTargetTeamIdForTransitPlayer(uint256 playerId) public view returns (uint256) { return _playerInTransitToTeam[playerId]; }        
 
     function getNewMaxSumSkillsBuyNowPlayer() public view returns(uint256 sumSkills, uint256 minLapseTime, uint256 lastUpdate) {
         sumSkills = _maxSumSkillsBuyNowPlayer;

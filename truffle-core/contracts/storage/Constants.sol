@@ -20,6 +20,7 @@ contract Constants {
     uint256 constant internal FREE_PLAYER_ID  = 1; /// it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant internal ACADEMY_TEAM = 1;
     uint256 constant internal IN_TRANSIT_TEAM = 2;
+    uint8 constant internal IN_TRANSIT_SHIRTNUM = 26;
     uint256 constant internal NULL_TEAMID = 0;
     uint256 constant internal NULL_PLAYERID = 0;
     uint256 constant internal INGAMETIME_VS_REALTIME = 14;
@@ -69,11 +70,10 @@ contract Constants {
  
     /// POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.
     ///  ...it includes time to ask for a 2nd-best bidder, or 3rd-best.
-    uint256 constant internal POST_AUCTION_TIME   = 6 hours; 
-    uint256 constant internal AUCTION_TIME        = 24 hours; 
-    uint256 constant internal MAX_VALID_UNTIL     = 30 hours; /// the sum of the previous two
+    uint256 constant internal POST_AUCTION_TIME   = 48 hours; 
+    uint256 constant internal MAX_VALID_UNTIL     = 96 hours; 
     uint256 constant internal VALID_UNTIL_MASK    = 4294967295; /// 2^32-1 (32 bit)
-    uint256 constant internal KILL_LEFTMOST_40BIT_MASK = (2**(256-40))-1; 
+    uint256 constant internal KILL_LEFTMOST_72BIT_MASK = (2**(256-72))-1; 
     uint8 constant internal MAX_ACQUISITON_CONSTAINTS  = 6;
 
     /// Updates related:
