@@ -40,7 +40,7 @@ func New(
 }
 
 func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
-	log.Infof("Process auction %v in state %v", b.auction.ID, b.State())
+	log.Debugf("Process auction %v in state %v", b.auction.ID, b.State())
 	switch b.auction.State {
 	case storage.AuctionStarted:
 		return b.processStarted()
