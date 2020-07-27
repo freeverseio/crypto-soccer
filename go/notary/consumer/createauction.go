@@ -23,7 +23,7 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 	auction.CurrencyID = int(in.CurrencyId)
 	auction.Price = int64(in.Price)
 	if auction.ValidUntil, err = strconv.ParseInt(in.ValidUntil, 10, 64); err != nil {
-		fmt.Printf("%d of type %T", auction.ValidUntil, auction.ValidUntil)
+		return fmt.Errorf("invalid validUntil %v", in.ValidUntil)
 	}
 	auction.Signature = in.Signature
 	auction.State = storage.AuctionStarted
