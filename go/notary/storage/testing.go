@@ -396,14 +396,14 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		assert.NilError(t, service.Insert(*offer))
 		result, err := service.PendingOffers()
 		assert.NilError(t, err)
-		assert.Equal(t, len(result), 1)
+		assert.Equal(t, len(result), 3)
 
 		offer.ID = "ciao5"
 		offer.State = OfferFailed
 		assert.NilError(t, service.Insert(*offer))
 		result, err = service.PendingOffers()
 		assert.NilError(t, err)
-		assert.Equal(t, len(result), 1)
+		assert.Equal(t, len(result), 3)
 
 	})
 

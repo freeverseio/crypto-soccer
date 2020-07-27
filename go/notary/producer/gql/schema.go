@@ -57,6 +57,11 @@ const Schema = `
 		seller: String!
 	}
 
+	input CancelOfferInput {
+		signature: String!
+		offerId:   ID!
+	}
+
 	type WorldPlayer {
 		playerId: ID!
 		name: String!
@@ -86,5 +91,6 @@ const Schema = `
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
 		createOffer(input: CreateOfferInput!): ID!
+		cancelOffer(input: CancelOfferInput!): ID!
 	}
 `
