@@ -91,7 +91,7 @@ func TestConsumerConsumeCreateBid(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	in := input.CreateBidInput{}
-	assert.Error(t, c.Consume(in), "No auction for bid {  0 0  false}")
+	assert.Error(t, c.Consume(in), "No auction for bid {  0 0 }")
 }
 
 func TestConsumerConsumeUnknownEvent(t *testing.T) {
@@ -125,5 +125,5 @@ func TestConsumerConsumeCreateOffer(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	in := input.CreateOfferInput{}
-	assert.Error(t, c.Consume(in), "invalid playerId")
+	assert.Error(t, c.Consume(in), "invalid teamId")
 }

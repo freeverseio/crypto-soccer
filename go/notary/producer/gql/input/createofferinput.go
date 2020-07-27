@@ -26,40 +26,47 @@ type CreateOfferInput struct {
 	Seller     string
 }
 
-func (b CreateOfferInput) ID() (graphql.ID, error) {
-	hash, err := b.Hash()
+func (b CreateOfferInput) ID(contracts contracts.Contracts) (graphql.ID, error) {
+	hash, err := b.Hash(contracts)
 	if err != nil {
 		return graphql.ID(""), err
 	}
 	return graphql.ID(hash.String()[2:]), nil
 }
 
-func (b CreateOfferInput) Hash() (common.Hash, error) {
-	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
-	if playerId == nil {
-		return common.Hash{}, errors.New("invalid playerId")
-	}
+func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, error) {
 	teamId, _ := new(big.Int).SetString(b.TeamId, 10)
 	if teamId == nil {
 		return common.Hash{}, errors.New("invalid teamId")
 	}
 	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
 	if err != nil {
-		return common.Hash{}, err
+		return common.Hash{}, errors.New("invalid validUntil")
 	}
-	hash, err := signer.HashOfferMessage(
+	playerId, err := strconv.ParseInt(b.PlayerId, 10, 64)
+	if err != nil {
+		return common.Hash{}, errors.New("invalid playerId")
+	}
+	hash, err := signer.HashBidMessage(
+		contracts.Market,
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
 		validUntil,
-		playerId,
+		big.NewInt(int64(playerId)),
+		big.NewInt(0),
+		big.NewInt(int64(b.Rnd)),
 		teamId,
+		true,
 	)
-	return hash, err
+	if err != nil {
+		return common.Hash{}, err
+	}
+	return common.Hash(hash), nil
 }
 
-func (b CreateOfferInput) VerifySignature() (bool, error) {
-	hash, err := b.Hash()
+func (b CreateOfferInput) VerifySignature(contracts contracts.Contracts) (bool, error) {
+	hash, err := b.Hash(contracts)
 	if err != nil {
 		return false, err
 	}
@@ -70,8 +77,8 @@ func (b CreateOfferInput) VerifySignature() (bool, error) {
 	return helper.VerifySignature(hash, sign)
 }
 
-func (b CreateOfferInput) SignerAddress() (common.Address, error) {
-	hash, err := b.Hash()
+func (b CreateOfferInput) SignerAddress(contracts contracts.Contracts) (common.Address, error) {
+	hash, err := b.Hash(contracts)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -83,7 +90,7 @@ func (b CreateOfferInput) SignerAddress() (common.Address, error) {
 }
 
 func (b CreateOfferInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
-	signerAddress, err := b.SignerAddress()
+	signerAddress, err := b.SignerAddress(contracts)
 	if err != nil {
 		return false, err
 	}
