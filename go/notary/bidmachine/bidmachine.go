@@ -103,7 +103,7 @@ func (b *BidMachine) processPaying() error {
 		return nil
 	}
 
-	log.Infof("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
+	log.Debugf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
 	order, err := b.market.GetOrder(b.bid.PaymentID)
 	if err != nil {
 		return err

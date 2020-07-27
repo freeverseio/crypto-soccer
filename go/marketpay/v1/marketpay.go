@@ -101,7 +101,6 @@ func (b *MarketPay) CreateOrder(
 }
 
 func (b *MarketPay) GetOrder(hash string) (*Order, error) {
-	log.Infof("Getting order %v", hash)
 	url := b.endpoint + "/express/hash/" + hash
 	method := "GET"
 
