@@ -12,7 +12,7 @@ import (
 func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (graphql.ID, error) {
 	log.Debugf("CreateOffer %v", args)
 
-	id, err := args.Input.ID()
+	id, err := args.Input.ID(b.contracts)
 	if err != nil {
 		return graphql.ID(""), err
 	}
@@ -21,7 +21,7 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, errors.New("internal error: no channel")
 	}
 
-	isValid, err := args.Input.VerifySignature()
+	isValid, err := args.Input.VerifySignature(b.contracts)
 	if err != nil {
 		return id, err
 	}

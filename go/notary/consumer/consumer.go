@@ -157,11 +157,12 @@ func (b *Consumer) Consume(event interface{}) error {
 		}
 	case input.CreateOfferInput:
 		log.Debug("Received CreateOfferInput")
+
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
 		}
-		if err := CreateOffer(tx, in); err != nil {
+		if err := CreateOffer(tx, in, b.contracts); err != nil {
 			tx.Rollback()
 			return err
 		}

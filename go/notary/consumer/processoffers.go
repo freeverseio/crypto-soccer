@@ -3,6 +3,7 @@ package consumer
 import (
 	"crypto/ecdsa"
 	"database/sql"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
@@ -47,23 +48,32 @@ func processOffer(
 	contracts contracts.Contracts,
 ) error {
 	service := postgres.NewOfferHistoryService(tx)
+
+	if offer.ValidUntil < time.Now().Unix() {
+		offer.State = storage.OfferEnded
+		offer.StateExtra = "Offer expired when processing"
+		service.Update(offer)
+
+		return nil
+	}
+
 	bid := input.CreateBidInput{
 		Signature:  offer.Signature,
 		AuctionId:  graphql.ID(offer.AuctionID),
 		ExtraPrice: 0,
 		Rnd:        int32(offer.Rnd),
 		TeamId:     offer.TeamID,
-		IsOffer:    true,
 	}
 
 	err := CreateBid(tx, bid)
 
 	if err != nil {
 		log.Error(err)
+		offer.State = storage.OfferFailed
+		offer.StateExtra = "Could not create bid"
+		service.Update(offer)
 		return err
 	}
-	offer.State = storage.OfferAccepted
-	service.Update(offer)
 
 	return nil
 }

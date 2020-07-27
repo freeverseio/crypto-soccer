@@ -32,25 +32,29 @@ func TestCreateOffer(t *testing.T) {
 	teamId, _ := new(big.Int).SetString(in.TeamId, 10)
 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
 	assert.NilError(t, err)
-	hash, err := signer.HashOfferMessage(
+	hash, err := signer.HashBidMessage(
+		bc.Contracts.Market,
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
 		validUntil,
 		playerId,
+		big.NewInt(0),
+		big.NewInt(int64(in.Rnd)),
 		teamId,
+		true,
 	)
-	assert.Equal(t, hash.Hex(), "0xe194d576ea5dff0e13e4f9d9d2aa4f5fb06af68732fd0e2106c82a8e7949ef19")
+	assert.Equal(t, hash.Hex(), "0x5c3817ae7930907579b9694a5f5439906c1695a6985e772f982ff7fea2f9ae7e")
 	assert.NilError(t, err)
 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(signature), "83df48b4f3be03a020690b7af318f9cf4005a874da05631443dc833c3644c38865383b54d2556e8c50de6a15d65d88c4214ea849c0867b91cdb946de4b24bee11c")
+	assert.Equal(t, hex.EncodeToString(signature), "030e2a64488d1fe9150cf0ca9c85ca275f3f867c905a4e325eb1715d9d39621207cd3001c929f00ed1b56370d21def0b1179a7b7c1d27602f80206636fc1b2961c")
 	in.Signature = hex.EncodeToString(signature)
 
-	assert.NilError(t, consumer.CreateOffer(tx, in))
-	id, err := in.ID()
+	assert.NilError(t, consumer.CreateOffer(tx, in, *bc.Contracts))
+	id, err := in.ID(*bc.Contracts)
 	assert.NilError(t, err)
 
 	service := postgres.NewOfferService(tx)

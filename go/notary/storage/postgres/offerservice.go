@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
@@ -23,7 +22,7 @@ func (b OfferService) Bid() storage.BidService {
 }
 
 func (b OfferService) PendingOffers() ([]storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offers WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended') AND auction_id IS NOT NULL;")
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +66,34 @@ func (b OfferService) Offer(ID string) (*storage.Offer, error) {
 		&offer.CurrencyID,
 		&offer.Price,
 		&offer.Rnd,
+		&offer.ValidUntil,
+		&offer.Signature,
+		&offer.State,
+		&offer.StateExtra,
+		&offer.Seller,
+		&offer.Buyer,
+		&offer.AuctionID,
+		&offer.TeamID,
+	)
+	return &offer, err
+}
+
+func (b OfferService) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE rnd = $1 AND price = $2;", rnd, price)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, nil
+	}
+	var offer storage.Offer
+	offer.Price = int64(price)
+	offer.Rnd = int64(rnd)
+	err = rows.Scan(
+		&offer.ID,
+		&offer.PlayerID,
+		&offer.CurrencyID,
 		&offer.ValidUntil,
 		&offer.Signature,
 		&offer.State,
@@ -126,9 +153,18 @@ func (b OfferService) Insert(offer storage.Offer) error {
 	return err
 }
 
+func NewNullString(s string) sql.NullString {
+	if len(s) == 0 {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
+}
+
 func (b OfferService) Update(offer storage.Offer) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
-	fmt.Printf("[DBMS] + update Offer %v", b)
 	_, err := b.tx.Exec(`UPDATE offers SET 
 		state=$1, 
 		state_extra=$2,
@@ -137,8 +173,8 @@ func (b OfferService) Update(offer storage.Offer) error {
 		WHERE id=$5;`,
 		offer.State,
 		offer.StateExtra,
-		offer.AuctionID,
-		offer.Seller,
+		NewNullString(offer.AuctionID),
+		NewNullString(offer.Seller),
 		offer.ID,
 	)
 	return err

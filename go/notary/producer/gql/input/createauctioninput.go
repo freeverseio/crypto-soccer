@@ -22,7 +22,6 @@ type CreateAuctionInput struct {
 	Price      int32
 	Rnd        int32
 	ValidUntil string
-	OfferId    string
 }
 
 func (b CreateAuctionInput) ID() (graphql.ID, error) {

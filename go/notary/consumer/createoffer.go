@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CreateOffer(tx *sql.Tx, in input.CreateOfferInput) error {
+func CreateOffer(tx *sql.Tx, in input.CreateOfferInput, contracts contracts.Contracts) error {
 	offer := storage.NewOffer()
-	id, err := in.ID()
+	id, err := in.ID(contracts)
 	if err != nil {
 		return err
 	}
@@ -28,7 +29,7 @@ func CreateOffer(tx *sql.Tx, in input.CreateOfferInput) error {
 	offer.Signature = in.Signature
 	offer.State = storage.OfferStarted
 	offer.StateExtra = ""
-	signerAddress, err := in.SignerAddress()
+	signerAddress, err := in.SignerAddress(contracts)
 	if err != nil {
 		return err
 	}
