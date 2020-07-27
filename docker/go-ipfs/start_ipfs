@@ -30,7 +30,7 @@ else
   ipfs config --json Swarm.ConnMgr.HighWater 30
   ipfs config Swarm.ConnMgr.GracePeriod 30s
 
-  # ipfs bootstrap rm --all
+#  ipfs bootstrap rm --all
   ipfs bootstrap add /p2p-circuit/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
   ipfs bootstrap add /dns4/ipfs.gorengine.com/tcp/4001/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
   ipfs bootstrap add /dns4/ipfs.gorengine.com/udp/4002/p2p/QmbtmDZuRbk3GBY5mXFQFsE7Z2vZ4yHVfBnqbNjyqvg79t
