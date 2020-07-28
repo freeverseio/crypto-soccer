@@ -88,7 +88,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case producer.ProcessEvent:
-		log.Debug("Received ProcessEvent")
+		log.Info("[consumer] process auctions")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
@@ -106,7 +106,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case producer.PlaystoreOrderEvent:
-		log.Debug("Received PlaystoreOrderEvent")
+		log.Info("[consumer] process playstore events")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
