@@ -368,7 +368,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		Seller:     "0x916a407D8cB5B4E533672C908757737F27fE3C25",
 	}
 
-	offer.AuctionID = auction.ID // needed?
+	offer.AuctionID = auction.ID
 	offer.State = storage.OfferAccepted
 
 	bids := []storage.Bid{

@@ -21,6 +21,9 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 	if err != nil {
 		return err
 	}
+	if offer != nil && offer.State != storage.OfferStarted {
+		return errors.New("Auctions can only be created for offers in Started state")
+	}
 	if offer != nil && offer.ValidUntil < time.Now().Unix() {
 		offer.State = storage.OfferEnded
 		offer.StateExtra = "Offer expired when accepting"
@@ -57,6 +60,7 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 		return err
 	}
 
+	// offer was necessarily in OfferStarted state, due to check above
 	if offer != nil && offer.ID != "" {
 		offer.State = storage.OfferAccepted
 		offer.StateExtra = ""
