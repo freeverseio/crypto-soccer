@@ -76,6 +76,13 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 
 	isOffer := b.offer.ID != ""
 
+	var validUntil int64
+	if isOffer {
+		validUntil = b.offer.ValidUntil
+	} else {
+		validUntil = b.auction.ValidUntil
+	}
+
 	var sig [2][32]byte
 	var sigV uint8
 	_, err = signer.HashBidMessage(
@@ -102,7 +109,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	tx, err := b.contracts.Market.CompletePlayerAuction(
 		auth,
 		auctionHiddenPrice,
-		big.NewInt(b.auction.ValidUntil),
+		big.NewInt(validUntil),
 		playerId,
 		bidHiddenPrice,
 		teamId,
