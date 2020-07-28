@@ -9,7 +9,7 @@ import (
 )
 
 func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql.ID, error) {
-	log.Debugf("CreateBid %v", args)
+	log.Infof("[notary|producer|gql] create bid %+v", args.Input)
 
 	id, err := args.Input.ID(b.contracts)
 	if err != nil {
