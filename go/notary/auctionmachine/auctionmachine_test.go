@@ -264,13 +264,15 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	bc, err := testutils.NewBlockchain()
 	assert.NilError(t, err)
+	tz := uint8(1)
+	countryIdx := big.NewInt(0)
 
 	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8bce1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	bob, _ := crypto.HexToECDSA("3693a221b147b8888490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
 	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
-		1,
-		big.NewInt(0),
+		tz,
+		countryIdx,
 		crypto.PubkeyToAddress(alice.PublicKey),
 	)
 	if err != nil {
@@ -282,8 +284,8 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	}
 	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
-		1,
-		big.NewInt(0),
+		tz,
+		countryIdx,
 		crypto.PubkeyToAddress(bob.PublicKey),
 	)
 	if err != nil {
@@ -301,8 +303,9 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	currencyID := uint8(1)
 	price := big.NewInt(4129834)
 	extraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
 	offerRnd := big.NewInt(124352439)
-	teamID := big.NewInt(274877906945)
+	buyerTeamID := big.NewInt(274877906945)
 	isOffer2StartAuction := true
 
 	hashOffer, err := signer.HashBidMessage(
@@ -312,9 +315,9 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		offerRnd,
 		offerValidUntil,
 		playerID,
-		big.NewInt(0),
-		offerRnd,
-		teamID,
+		extraPrice,
+		dummyRnd,
+		buyerTeamID,
 		isOffer2StartAuction,
 	)
 
@@ -336,7 +339,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		Seller:     crypto.PubkeyToAddress(alice.PublicKey).Hex(),
 		Buyer:      crypto.PubkeyToAddress(bob.PublicKey).Hex(),
 		AuctionID:  "",
-		TeamID:     teamID.String(),
+		TeamID:     buyerTeamID.String(),
 	}
 
 	hashAuctionMsg, err := signer.HashSellMessage(
@@ -368,32 +371,13 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	offer.AuctionID = auction.ID
 	offer.State = storage.OfferAccepted
 
-	hashBidMsg, err := signer.HashBidMessage(
-		bc.Contracts.Market,
-		currencyID,
-		price,
-		offerRnd,
-		auctionValidUntil,
-		playerID,
-		extraPrice,
-		offerRnd,
-		teamID,
-		isOffer2StartAuction,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	signBidMsg, err := signer.Sign(hashBidMsg.Bytes(), bob)
-	if err != nil {
-		t.Fatal(err)
-	}
 	bids := []storage.Bid{
 		storage.Bid{
 			AuctionID:  auction.ID,
 			ExtraPrice: extraPrice.Int64(),
-			Rnd:        offerRnd.Int64(),
-			TeamID:     teamID.String(),
-			Signature:  "0x" + hex.EncodeToString(signBidMsg),
+			Rnd:        dummyRnd.Int64(),
+			TeamID:     buyerTeamID.String(),
+			Signature:  "0x" + hex.EncodeToString(signOfferMsg),
 			State:      storage.BidAccepted,
 		},
 	}

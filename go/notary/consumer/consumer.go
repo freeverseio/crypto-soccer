@@ -187,6 +187,19 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err = tx.Commit(); err != nil {
 			return err
 		}
+	case input.AcceptOfferInput:
+		log.Debug("Received CreateAuctionInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := AcceptOffer(tx, in); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}
