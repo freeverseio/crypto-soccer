@@ -9,7 +9,7 @@ import (
 )
 
 func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) (graphql.ID, error) {
-	log.Debugf("CancelAuction %v", args)
+	log.Infof("[notary|producer|gql] cancel auction %+v", args.Input)
 
 	id := args.Input.AuctionId
 
