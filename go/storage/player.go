@@ -95,7 +95,6 @@ func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 	if err := history.Insert(tx); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -141,7 +140,6 @@ func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	if err := history.Insert(tx); err != nil {
 		return err
 	}
-
 	return nil
 }
 
