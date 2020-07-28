@@ -62,6 +62,15 @@ const Schema = `
 		offerId:   ID!
 	}
 
+	input AcceptOfferInput {
+		signature: String!
+		playerId: String!
+		currencyId: Int!
+		price: Int!
+		validUntil: String!
+		rnd: Int!
+  }
+
 	type WorldPlayer {
 		playerId: ID!
 		name: String!
@@ -91,6 +100,7 @@ const Schema = `
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
 		createOffer(input: CreateOfferInput!): ID!
+		acceptOffer(input: AcceptOfferInput!): ID!
 		cancelOffer(input: CancelOfferInput!): ID!
 	}
 `
