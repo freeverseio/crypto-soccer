@@ -120,7 +120,9 @@ func (b *BidMachine) processAccepted() error {
 	log.Infof("[bid] Auction %v extra_price %v create MarketPay order", b.bid.AuctionID, b.bid.ExtraPrice)
 	price := fmt.Sprintf("%.2f", float64(b.auction.Price+b.bid.ExtraPrice)/100.0)
 	name := "Freeverse Player transaction"
+	log.Infof("[bid] creating order with price %v", price)
 	order, err := b.market.CreateOrder(name, price)
+	log.Infof("[bid] creating order with price %v...done", price)
 	if err != nil {
 		b.setState(storage.BidFailed, err.Error())
 		return nil

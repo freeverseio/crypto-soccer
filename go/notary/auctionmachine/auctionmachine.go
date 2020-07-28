@@ -44,12 +44,14 @@ func New(
 
 func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 	log.Debugf("Process auction %v in state %v", b.auction.ID, b.State())
+	log.Infof("Process auction %v in state %v", b.auction.ID, b.State())
 	switch b.auction.State {
 	case storage.AuctionStarted:
 		return b.processStarted()
 	case storage.AuctionAssetFrozen:
 		return b.ProcessAssetFrozen()
 	case storage.AuctionPaying:
+		log.Infof("ProcessPaying...")
 		return b.ProcessPaying(market)
 	case storage.AuctionWithdrableBySeller:
 		return b.ProcessWithdrawableBySeller(market)
@@ -98,8 +100,10 @@ func (b *AuctionMachine) SetState(state storage.AuctionState, extra string) {
 }
 
 func (b AuctionMachine) checkState(state storage.AuctionState) error {
+	log.Infof("checkState...")
 	if b.auction.State != state {
 		return fmt.Errorf("auction[%v|%v] is not in state %v", b.auction.ID, b.auction.State, state)
 	}
+	log.Infof("checkState...done")
 	return nil
 }

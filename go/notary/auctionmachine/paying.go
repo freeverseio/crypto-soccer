@@ -10,6 +10,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
@@ -34,21 +35,27 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 		return err
 	}
 
+	log.Infof("[bidMachine]process...")
 	err = bidMachine.Process()
 	if err != nil {
 		return err
 	}
+	log.Infof("[bidMachine]process...done")
 	if bid.State == storage.BidPaid {
+		log.Infof("[bidMachine]transferAuction...")
 		if err := b.transferAuction(*bid); err != nil {
 			return err
 		}
+		log.Infof("[bidMachine]transferAuction...done")
 		order, err := market.GetOrder(bid.PaymentID)
 		if err != nil {
 			return err
 		}
+		log.Infof("[bidMachine]PaymentURL...")
 		b.auction.PaymentURL = order.SettlorShortlink.ShortURL
 		bid.State = storage.BidPaid
 
+		log.Infof("[bidMachine]PaymentURL...done")
 		b.SetState(storage.AuctionWithdrableBySeller, "")
 	}
 
@@ -57,6 +64,7 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 
 func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	// transfer the auction
+	log.Infof("bidHiddenPrice ExtraPrice, rnd = %v, %v", bid.ExtraPrice, bid.Rnd)
 	bidHiddenPrice, err := signer.BidHiddenPrice(b.contracts.Market, big.NewInt(bid.ExtraPrice), big.NewInt(bid.Rnd))
 	if err != nil {
 		return err
@@ -78,6 +86,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 
 	var sig [2][32]byte
 	var sigV uint8
+	// REMOVE THIS ???
 	_, err = signer.HashBidMessage(
 		b.contracts.Market,
 		uint8(b.auction.CurrencyID),
@@ -93,6 +102,8 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	if err != nil {
 		return err
 	}
+	log.Infof("sig... with isOffer = %v", isOffer)
+
 	sig[0], sig[1], sigV, err = signer.RSV(bid.Signature)
 	if err != nil {
 		return err
@@ -102,7 +113,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	tx, err := b.contracts.Market.CompletePlayerAuction(
 		auth,
 		auctionHiddenPrice,
-		big.NewInt(b.auction.ValidUntil),
+		big.NewInt(bid.ValidUntil),
 		playerId,
 		bidHiddenPrice,
 		teamId,
