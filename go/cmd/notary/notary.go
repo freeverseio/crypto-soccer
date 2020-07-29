@@ -16,7 +16,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -109,7 +109,7 @@ func main() {
 		go producer.NewProcessor(ch, time.Duration(30)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(2)*time.Second)
 
-		var market marketpay.IMarketPay
+		var market marketpay.MarketPayService
 		if *marketID == "" {
 			market = marketpay.NewSandbox()
 		} else {

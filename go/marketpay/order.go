@@ -1,4 +1,4 @@
-package v1
+package marketpay
 
 import "encoding/json"
 
@@ -66,6 +66,13 @@ type Order struct {
 		} `json:"source"`
 	} `json:"shortlink"`
 	Image interface{} `json:"image"`
+}
+
+type MarketPayService interface {
+	CreateOrder(name string, value string) (*Order, error)
+	GetOrder(hash string) (*Order, error)
+	IsPaid(order Order) bool
+	ValidateOrder(hash string) (string, error) // TODO remove return string value <--- unuseful
 }
 
 func (b Order) ToJson() []byte {

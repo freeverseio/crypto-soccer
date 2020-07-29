@@ -1,10 +1,10 @@
-package v1_test
+package marketpay_test
 
 import (
 	"encoding/json"
 	"testing"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"gotest.tools/assert"
 )
 
