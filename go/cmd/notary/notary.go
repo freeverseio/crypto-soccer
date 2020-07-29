@@ -108,7 +108,6 @@ func main() {
 		)
 		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(*processWait)*time.Second)
-		go producer.NewOfferEventProcessor(ch, time.Duration(*processWait)*time.Second)
 
 		var market marketpay.IMarketPay
 		if *marketID == "" {

@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+	"github.com/graph-gophers/graphql-go"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -15,7 +17,7 @@ import (
 
 func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 
-	offerService := postgres.NewOfferService(tx)
+	offerService := postgres.NewOfferHistoryService(tx)
 
 	offer, err := offerService.OfferByRndPrice(in.Rnd, in.Price)
 	if err != nil {
@@ -69,6 +71,24 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 		offer.Seller = auction.Seller
 
 		if err = offerService.Update(*offer); err != nil {
+			return err
+		}
+
+		bid := input.CreateBidInput{
+			Signature:  offer.Signature,
+			AuctionId:  graphql.ID(offer.AuctionID),
+			ExtraPrice: 0,
+			Rnd:        int32(offer.Rnd),
+			TeamId:     offer.TeamID,
+		}
+
+		err = CreateBid(tx, bid)
+
+		if err != nil {
+			log.Error(err)
+			offer.State = storage.OfferFailed
+			offer.StateExtra = "Could not create bid"
+			offerService.Update(*offer)
 			return err
 		}
 	}

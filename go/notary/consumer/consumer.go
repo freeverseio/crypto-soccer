@@ -169,24 +169,6 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err = tx.Commit(); err != nil {
 			return err
 		}
-	case producer.OfferEvent:
-		log.Debug("Received OfferEvent")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := ProcessOffers(
-			b.market,
-			tx,
-			b.contracts,
-			b.pvc,
-		); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
 	case input.AcceptOfferInput:
 		log.Debug("Received CreateAuctionInput")
 		tx, err := b.db.Begin()
@@ -194,6 +176,19 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 		if err := AcceptOffer(tx, in); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case input.CancelOfferInput:
+		log.Debug("Received CancelOfferInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := CancelOffer(tx, in); err != nil {
 			tx.Rollback()
 			return err
 		}
