@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
@@ -111,9 +112,9 @@ func main() {
 
 		var market marketpay.MarketPayService
 		if *marketID == "" {
-			market = marketpay.NewSandbox()
+			market = v1.NewSandbox()
 		} else {
-			market = marketpay.New(*marketID)
+			market = v1.New(*marketID)
 		}
 
 		cn, err := consumer.New(
