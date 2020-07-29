@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/marketpay"
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
