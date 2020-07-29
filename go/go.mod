@@ -3,6 +3,7 @@ module github.com/freeverseio/crypto-soccer/go
 go 1.12
 
 require (
+	github.com/apex/log v1.6.0
 	github.com/awa/go-iap v1.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/didip/tollbooth v4.0.2+incompatible
@@ -25,7 +26,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.2
-	github.com/stretchr/testify v1.5.0
+	github.com/stretchr/testify v1.6.1
 	github.com/urfave/cli v1.22.2
 	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6
 	golang.org/x/oauth2 v0.0.0-20190523182746-aaccbc9213b0
