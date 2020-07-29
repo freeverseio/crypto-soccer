@@ -54,7 +54,6 @@ const Schema = `
 		validUntil: String!
 		rnd: Int!
 		teamId: String!
-		seller: String!
 	}
 
 	input CancelOfferInput {

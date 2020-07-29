@@ -71,7 +71,7 @@ func TestAcceptOffer(t *testing.T) {
 	in.CurrencyId = inOffer.CurrencyId
 	in.Price = inOffer.Price
 	in.Rnd = inOffer.Rnd
-	in.OfferId = graphql.ID(string(offer.ID))
+	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
 
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
@@ -133,6 +133,7 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	offerTeamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
 	offerValidUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
 	assert.NilError(t, err)
+	dummyRnd := int64(0)
 
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
@@ -142,17 +143,17 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 		offerValidUntil,
 		offerPlayerId,
 		big.NewInt(0),
-		big.NewInt(int64(inOffer.Rnd)),
+		big.NewInt(dummyRnd),
 		offerTeamId,
 		true,
 	)
-	assert.Equal(t, hashOffer.Hex(), "0x77ea6c76e92738e3dafbb9bc9cfd9e726671a474eb7b659303bf80dc1b14ebe0")
+	assert.Equal(t, hashOffer.Hex(), "0x80ddf12ab28a6fb4a8ab17af2a81a7e251b5ca4d8aa1c97706218aa3782b7d1c")
 	assert.NilError(t, err)
 	offerPrivateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
 	offerSignature, err := signer.Sign(hashOffer.Bytes(), offerPrivateKey)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(offerSignature), "7f0c39cf5496deab81f6e597c2689853817cfce0a490bd3355bb636beaaffdcc6de5d20949d1cc6561fc069c3ba0708924d6aae11952f9fc961bd98858f931251c")
+	assert.Equal(t, hex.EncodeToString(offerSignature), "6ed548051674d96385ef4fc0e4dcd5e72697a125875eee0af85b94f0fe8c3dfd766dcde4fd4db9c566d444a8b698cf511969523229806c9c4a8e34c191c357681c")
 	inOffer.Signature = hex.EncodeToString(offerSignature)
 
 	assert.NilError(t, consumer.CreateOffer(tx, inOffer, *bc.Contracts))
@@ -168,7 +169,7 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 4232
-	in.OfferId = graphql.ID(string(offer.ID))
+	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
 
 	auctionPlayerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	auctionValidUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)

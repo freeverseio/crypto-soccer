@@ -42,7 +42,7 @@ func TestCreateOffer(t *testing.T) {
 	teamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
-
+	dummyRnd := int64(0)
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
@@ -51,7 +51,7 @@ func TestCreateOffer(t *testing.T) {
 		validUntil,
 		playerId,
 		big.NewInt(0),
-		big.NewInt(int64(inOffer.Rnd)),
+		big.NewInt(dummyRnd),
 		teamId,
 		true,
 	)
@@ -100,7 +100,6 @@ func TestCreateOffer(t *testing.T) {
 
 func TestCreateOfferSameOwner(t *testing.T) {
 	offerer := bc.Owner
-
 	offererRnd := int32(42321)
 	offerValidUntil := time.Now().Unix() + 100
 
@@ -117,6 +116,7 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	teamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
+	dummyRnd := int64(0)
 
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
@@ -126,7 +126,7 @@ func TestCreateOfferSameOwner(t *testing.T) {
 		validUntil,
 		playerId,
 		big.NewInt(0),
-		big.NewInt(int64(inOffer.Rnd)),
+		big.NewInt(dummyRnd),
 		teamId,
 		true,
 	)

@@ -10,7 +10,6 @@ import (
 
 func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (bool, error) {
 	log.Debugf("CreateOffer %v", args)
-	fmt.Printf("CreateOffer %v", args)
 
 	if b.ch == nil {
 		return false, errors.New("internal error: no channel")

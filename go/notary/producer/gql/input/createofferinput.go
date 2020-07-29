@@ -38,6 +38,8 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 	if err != nil {
 		return common.Hash{}, errors.New("invalid playerId")
 	}
+	dummyRnd := int64(0)
+
 	hash, err := signer.HashBidMessage(
 		contracts.Market,
 		uint8(b.CurrencyId),
@@ -46,7 +48,7 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 		validUntil,
 		big.NewInt(int64(playerId)),
 		big.NewInt(0),
-		big.NewInt(int64(b.Rnd)),
+		big.NewInt(dummyRnd),
 		teamId,
 		true,
 	)
