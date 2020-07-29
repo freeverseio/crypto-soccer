@@ -4,11 +4,10 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
-
-	"github.com/freeverseio/crypto-soccer/go/marketpay"
 )
 
 func TestPaying(t *testing.T) {
@@ -25,7 +24,7 @@ func TestPaying(t *testing.T) {
 	auction.State = storage.AuctionStarted
 	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.Error(t, m.ProcessPaying(marketpay.NewMockMarketPay()), "auction[f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a|started] is not in state paying")
+	assert.Error(t, m.ProcessPaying(v1.NewMockMarketPay()), "auction[f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a|started] is not in state paying")
 }
 
 func TestPayingNilBids(t *testing.T) {
@@ -33,7 +32,7 @@ func TestPayingNilBids(t *testing.T) {
 	auction.State = storage.AuctionPaying
 	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessPaying(marketpay.NewMockMarketPay()))
+	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
 	assert.Equal(t, m.StateExtra(), "No available healty bid")
 }
@@ -46,7 +45,7 @@ func TestPayingNoBidsAvailable(t *testing.T) {
 	bids := []storage.Bid{*bid}
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessPaying(marketpay.NewMockMarketPay()))
+	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
 	assert.Equal(t, m.StateExtra(), "No available healty bid")
 }
@@ -59,6 +58,6 @@ func TestPayingWithBid(t *testing.T) {
 	bids := []storage.Bid{*bid}
 	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
-	assert.NilError(t, m.ProcessPaying(marketpay.NewMockMarketPay()))
+	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionPaying)
 }
