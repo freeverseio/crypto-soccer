@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"github.com/graph-gophers/graphql-go"
@@ -20,9 +21,9 @@ func TestAcceptOffer(t *testing.T) {
 	tx, err := db.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
-
-	// the offer should not expire before the seller accepts the offer
-	// then, an auction starts that may end days layer (e.g. 2 days)
+	// The two main time parameters:
+	// - the offer should not expire before the seller accepts the offer
+	// - then, an auction starts that may end days layer (e.g. 2 days)
 	offerValidUntil := big.NewInt(999999999999)
 	auctionValidUntil := big.NewInt(999999999999 + 3600*24*2)
 	playerId := big.NewInt(274877906940)
@@ -122,39 +123,42 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
+	// in this example the offer expired 5 min ago
+	offerValidUntil := big.NewInt(time.Now().Unix() - 5*60)
+	auctionValidUntil := big.NewInt(time.Now().Unix() + 48*3600)
+	playerId := big.NewInt(274877906940)
+	ofererTeamId := big.NewInt(456678987944)
+
 	inOffer := input.CreateOfferInput{}
-	inOffer.ValidUntil = "10000000"
-	inOffer.PlayerId = "274877906940"
-	inOffer.TeamId = "456678987944"
+	inOffer.ValidUntil = offerValidUntil.String()
+	inOffer.PlayerId = playerId.String()
+	inOffer.TeamId = ofererTeamId.String()
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = 4232
 	inOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
-	offerPlayerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
-	offerTeamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
-	offerValidUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
 	assert.NilError(t, err)
-	dummyRnd := int64(0)
+	extraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
 
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
-		offerValidUntil,
-		offerPlayerId,
-		big.NewInt(0),
-		big.NewInt(dummyRnd),
-		offerTeamId,
+		offerValidUntil.Int64(),
+		playerId,
+		extraPrice,
+		dummyRnd,
+		ofererTeamId,
 		true,
 	)
-	assert.Equal(t, hashOffer.Hex(), "0x80ddf12ab28a6fb4a8ab17af2a81a7e251b5ca4d8aa1c97706218aa3782b7d1c")
+	// We cannot compare hashes because validUntil is different in every test (it uses time.now())
 	assert.NilError(t, err)
 	offerPrivateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
 	offerSignature, err := signer.Sign(hashOffer.Bytes(), offerPrivateKey)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(offerSignature), "6ed548051674d96385ef4fc0e4dcd5e72697a125875eee0af85b94f0fe8c3dfd766dcde4fd4db9c566d444a8b698cf511969523229806c9c4a8e34c191c357681c")
 	inOffer.Signature = hex.EncodeToString(offerSignature)
 
 	assert.NilError(t, consumer.CreateOffer(tx, inOffer, *bc.Contracts))
@@ -165,33 +169,106 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	assert.NilError(t, err)
 
 	in := input.AcceptOfferInput{}
-	in.ValidUntil = "999999999999"
-	in.PlayerId = "274877906944"
-	in.CurrencyId = 1
-	in.Price = 41234
-	in.Rnd = 4232
+	in.ValidUntil = auctionValidUntil.String()
+	in.PlayerId = inOffer.PlayerId
+	in.CurrencyId = inOffer.CurrencyId
+	in.Price = inOffer.Price
+	in.Rnd = inOffer.Rnd
 	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
 
-	auctionPlayerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	auctionValidUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
 	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
-		auctionValidUntil,
-		auctionPlayerId,
+		auctionValidUntil.Int64(),
+		playerId,
 	)
-	assert.Equal(t, hash.Hex(), "0xf1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a")
 	assert.NilError(t, err)
 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(signature), "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b")
 	in.Signature = hex.EncodeToString(signature)
 
 	err = consumer.AcceptOffer(tx, in)
 	assert.Error(t, err, "Associated Offer is expired")
 
+}
+
+func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	// in this example the offer expires in 5 min
+	offerValidUntil := big.NewInt(time.Now().Unix() + 5*60)
+	auctionValidUntil := big.NewInt(time.Now().Unix() + 48*3600)
+	playerId := big.NewInt(274877906940)
+	ofererTeamId := big.NewInt(456678987944)
+
+	inOffer := input.CreateOfferInput{}
+	inOffer.ValidUntil = offerValidUntil.String()
+	inOffer.PlayerId = playerId.String()
+	inOffer.TeamId = ofererTeamId.String()
+	inOffer.CurrencyId = 1
+	inOffer.Price = 41234
+	inOffer.Rnd = 4232
+	inOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
+	assert.NilError(t, err)
+	extraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
+
+	hashOffer, err := signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(inOffer.CurrencyId),
+		big.NewInt(int64(inOffer.Price)),
+		big.NewInt(int64(inOffer.Rnd)),
+		offerValidUntil.Int64(),
+		playerId,
+		extraPrice,
+		dummyRnd,
+		ofererTeamId,
+		true,
+	)
+	// We cannot compare hashes because validUntil is different in every test (it uses time.now())
+	assert.NilError(t, err)
+	offerPrivateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	assert.NilError(t, err)
+	offerSignature, err := signer.Sign(hashOffer.Bytes(), offerPrivateKey)
+	assert.NilError(t, err)
+	inOffer.Signature = hex.EncodeToString(offerSignature)
+
+	assert.NilError(t, consumer.CreateOffer(tx, inOffer, *bc.Contracts))
+
+	offerService := postgres.NewOfferService(tx)
+
+	offer, err := offerService.OfferByRndPrice(inOffer.Rnd, inOffer.Price)
+	assert.NilError(t, err)
+
+	in := input.AcceptOfferInput{}
+	in.ValidUntil = auctionValidUntil.String()
+	in.PlayerId = inOffer.PlayerId
+	in.CurrencyId = inOffer.CurrencyId
+	in.Price = inOffer.Price
+	in.Rnd = inOffer.Rnd
+	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
+
+	assert.NilError(t, err)
+	hash, err := signer.HashSellMessage(
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		auctionValidUntil.Int64(),
+		playerId,
+	)
+	assert.NilError(t, err)
+	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), privateKey)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	err = consumer.AcceptOffer(tx, in)
+	assert.NilError(t, err)
 }
