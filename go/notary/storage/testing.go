@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"testing"
 
 	"gotest.tools/assert"
@@ -316,14 +315,13 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 
 func TestOfferServiceInterface(t *testing.T, service OfferService, auctionService AuctionService) {
 	t.Run("TestOfferByIDUnexistent", func(t *testing.T) {
-		offer, err := service.Offer("4343")
+		offer, err := service.Offer(4343)
 		assert.NilError(t, err)
 		assert.Assert(t, offer == nil)
 	})
 
 	t.Run("TestOfferInsert", func(t *testing.T) {
 		offer := NewOffer()
-		offer.ID = "ciao"
 		offer.Rnd = 4
 		offer.PlayerID = "3"
 		offer.CurrencyID = 3
@@ -334,9 +332,12 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		offer.StateExtra = "3"
 		offer.Seller = "3"
 		offer.Buyer = "4"
-		assert.NilError(t, service.Insert(*offer))
 
-		result, err := service.Offer(offer.ID)
+		offerId, err := service.Insert(*offer)
+		offer.ID = offerId
+		assert.NilError(t, err)
+
+		result, err := service.Offer(offerId)
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 	})
@@ -360,14 +361,13 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		assert.NilError(t, err)
 		assert.Equal(t, *auctionResult, *auction)
 
-		fmt.Printf("action %v\n", auctionResult)
-
 		offer := NewOffer()
-		offer.ID = "ciao20"
 		offer.State = OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
-		assert.NilError(t, service.Insert(*offer))
+		offerId, err := service.Insert(*offer)
+		offer.ID = offerId
+		assert.NilError(t, err)
 		result, err := service.Offer(offer.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, result.State, OfferStarted)
@@ -381,30 +381,9 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		assert.NilError(t, service.Update(*offer))
 		result, err = service.Offer(offer.ID)
 
-		fmt.Printf("offah %v\n", result)
 		assert.Equal(t, result.AuctionID, "ciao")
-		fmt.Printf("result eeh, %v\n", result)
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
-	})
-
-	t.Run("TestPendingOffers", func(t *testing.T) {
-		offer := NewOffer()
-		offer.ID = "ciao0"
-		offer.AuctionID = "0"
-		offer.State = OfferStarted
-		assert.NilError(t, service.Insert(*offer))
-		result, err := service.PendingOffers()
-		assert.NilError(t, err)
-		assert.Equal(t, len(result), 3)
-
-		offer.ID = "ciao5"
-		offer.State = OfferFailed
-		assert.NilError(t, service.Insert(*offer))
-		result, err = service.PendingOffers()
-		assert.NilError(t, err)
-		assert.Equal(t, len(result), 3)
-
 	})
 
 }

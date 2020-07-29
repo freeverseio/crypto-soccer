@@ -23,19 +23,6 @@ func TestCreateOfferInputHash(t *testing.T) {
 	assert.Equal(t, hash.Hex(), "0x6c916b19d781786ba2a3e90fbb3c772df29c8917d1b0486f92ff40234e5cdcdc")
 }
 
-func TestCreateOfferInputID(t *testing.T) {
-	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
-	in.PlayerId = "10"
-	in.CurrencyId = 1
-	in.Price = 41234
-	in.Rnd = 42321
-	in.TeamId = "20"
-	id, err := in.ID(*bc.Contracts)
-	assert.NilError(t, err)
-	assert.Equal(t, string(id), "6c916b19d781786ba2a3e90fbb3c772df29c8917d1b0486f92ff40234e5cdcdc")
-}
-
 func TestCreateOfferValidSignature(t *testing.T) {
 	in := input.CreateOfferInput{}
 	in.ValidUntil = "2000000000"

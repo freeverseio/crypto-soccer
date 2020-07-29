@@ -38,7 +38,7 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 	}
 
 	auction := storage.NewAuction()
-	id, err := in.ID()
+	id, err := in.AuctionID()
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 		return err
 	}
 
-	if offer != nil && offer.ID != "" {
+	if offer != nil && offer.ID != 0 {
 		offer.State = storage.OfferAccepted
 		offer.StateExtra = ""
 		offer.AuctionID = auction.ID

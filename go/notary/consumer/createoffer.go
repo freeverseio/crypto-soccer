@@ -14,11 +14,7 @@ import (
 
 func CreateOffer(tx *sql.Tx, in input.CreateOfferInput, contracts contracts.Contracts) error {
 	offer := storage.NewOffer()
-	id, err := in.ID(contracts)
-	if err != nil {
-		return err
-	}
-	offer.ID = string(id)
+	var err error
 	offer.Rnd = int64(in.Rnd)
 	offer.PlayerID = in.PlayerId
 	offer.CurrencyID = int(in.CurrencyId)
@@ -36,7 +32,7 @@ func CreateOffer(tx *sql.Tx, in input.CreateOfferInput, contracts contracts.Cont
 	offer.Buyer = signerAddress.Hex()
 	offer.Seller = in.Seller
 	service := postgres.NewOfferHistoryService(tx)
-	if err = service.Insert(*offer); err != nil {
+	if _, err = service.Insert(*offer); err != nil {
 		return err
 	}
 

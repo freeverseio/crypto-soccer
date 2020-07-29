@@ -69,6 +69,7 @@ const Schema = `
 		price: Int!
 		validUntil: String!
 		rnd: Int!
+		offerId: ID!
   }
 
 	type WorldPlayer {
@@ -99,7 +100,7 @@ const Schema = `
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
-		createOffer(input: CreateOfferInput!): ID!
+		createOffer(input: CreateOfferInput!): Boolean!
 		acceptOffer(input: AcceptOfferInput!): ID!
 		cancelOffer(input: CancelOfferInput!): ID!
 	}

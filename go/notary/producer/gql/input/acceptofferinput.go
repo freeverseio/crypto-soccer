@@ -22,16 +22,16 @@ type AcceptOfferInput struct {
 	Price      int32
 	Rnd        int32
 	ValidUntil string
+	OfferId    graphql.ID
 }
 
-func (b AcceptOfferInput) ID() (graphql.ID, error) {
+func (b AcceptOfferInput) AuctionID() (graphql.ID, error) {
 	hash, err := b.Hash()
 	if err != nil {
 		return graphql.ID(""), err
 	}
 	return graphql.ID(hash.String()[2:]), nil
 }
-
 func (b AcceptOfferInput) Hash() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
