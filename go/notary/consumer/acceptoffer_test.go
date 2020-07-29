@@ -21,10 +21,17 @@ func TestAcceptOffer(t *testing.T) {
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
+	// the offer should not expire before the seller accepts the offer
+	// then, an auction starts that may end days layer (e.g. 2 days)
+	offerValidUntil := big.NewInt(999999999999)
+	auctionValidUntil := big.NewInt(999999999999 + 3600*24*2)
+	playerId := big.NewInt(274877906940)
+	ofererTeamId := big.NewInt(456678987944)
+
 	inOffer := input.CreateOfferInput{}
-	inOffer.ValidUntil = "999999999999"
-	inOffer.PlayerId = "274877906940"
-	inOffer.TeamId = "456678987944"
+	inOffer.ValidUntil = offerValidUntil.String()
+	inOffer.PlayerId = playerId.String()
+	inOffer.TeamId = ofererTeamId.String()
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = 4232
@@ -32,21 +39,17 @@ func TestAcceptOffer(t *testing.T) {
 
 	extraPrice := big.NewInt(0)
 	dummyRnd := big.NewInt(0)
-	offerPlayerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
-	offerTeamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
-	offerValidUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
-	assert.NilError(t, err)
 
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
-		offerValidUntil,
-		offerPlayerId,
+		offerValidUntil.Int64(),
+		playerId,
 		extraPrice,
 		dummyRnd,
-		offerTeamId,
+		ofererTeamId,
 		true,
 	)
 	assert.Equal(t, hashOffer.Hex(), "0x1563f70ce76787ea99b420ad637df3757b492c98cd5a774d7111c861453c270b")
@@ -66,30 +69,28 @@ func TestAcceptOffer(t *testing.T) {
 	assert.NilError(t, err)
 
 	in := input.AcceptOfferInput{}
-	in.ValidUntil = "999999999999"
+	in.ValidUntil = auctionValidUntil.String()
 	in.PlayerId = inOffer.PlayerId
 	in.CurrencyId = inOffer.CurrencyId
 	in.Price = inOffer.Price
 	in.Rnd = inOffer.Rnd
 	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
 
-	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
 	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
-		validUntil,
+		auctionValidUntil.Int64(),
 		playerId,
 	)
-	assert.Equal(t, hash.Hex(), "0xa22033e41e3e5e2f52acca342890f137d4dfa7007ab4741e9c289667a28067df")
+	assert.Equal(t, hash.Hex(), "0x1059367f2fb81d2697a1a2c8bc59e561188e3bb2545bfd783ff58e97f7ec70e4")
 	assert.NilError(t, err)
 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(signature), "c0ec61c2e32e37fe1bc1fbc8806c3f43461ac09cd4ac75b22c9625d9c80050da6b9d71f32800225c925f75a413620a8a29983c6cee138c5aab4593d7fbb897e51b")
+	assert.Equal(t, hex.EncodeToString(signature), "a063ae70f54381e09eeb4e46f50e52066a4c255945b37a0f0155e541afbc92df7aae2ec4ffc730091013dd062dfb005d255ccf7e39644f1d7d1ac57b214d1cea1c")
 	in.Signature = hex.EncodeToString(signature)
 
 	assert.NilError(t, consumer.AcceptOffer(tx, in))

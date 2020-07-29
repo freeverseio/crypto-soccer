@@ -35,6 +35,7 @@ func TestCreateOffer(t *testing.T) {
 	offerExtraPrice := big.NewInt(0)
 	isOffer := true
 	assert.NilError(t, err)
+	// an offer cannot be signed with non null extraPrice:
 	hash, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(in.CurrencyId),
@@ -48,6 +49,7 @@ func TestCreateOffer(t *testing.T) {
 		isOffer,
 	)
 	assert.Error(t, err, "offers must have zero extraPrice")
+	// an offer cannot be signed with non null bid.Rnd:
 	hash, err = signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(in.CurrencyId),
@@ -61,6 +63,7 @@ func TestCreateOffer(t *testing.T) {
 		isOffer,
 	)
 	assert.Error(t, err, "offers must have zero bidRnd")
+	// it should now work:
 	hash, err = signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(in.CurrencyId),
