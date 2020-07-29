@@ -126,8 +126,8 @@ func TestHashBidMessage(t *testing.T) {
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	auctionRnd := big.NewInt(42321)
-	extraPrice := big.NewInt(332)
-	bidRnd := big.NewInt(1243523)
+	extraPrice := big.NewInt(0)
+	bidRnd := big.NewInt(0)
 	teamID := big.NewInt(274877906945)
 	isOffer2StartAuction := true
 
@@ -147,7 +147,7 @@ func TestHashBidMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	result := hex.EncodeToString(hash[:])
-	if result != "e04d23ec0424b22adec87879118715ce75997a4fd47897c398f3a8cad79b3041" {
+	if result != "a46d578984719e05af1b67a89807c43a7dcafb435b0b9a8fd85e62beb0ba46d4" {
 		t.Fatalf("Hash error %v", result)
 	}
 	pvr, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
@@ -156,7 +156,7 @@ func TestHashBidMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	result = hex.EncodeToString(sig)
-	if result != "dbe104e7b51c9b1e38cdda4e31c2036e531f7d3338d392bee2f526c4c892437f5e50ddd44224af8b3bd92916b93e4b0d7af2974175010323da7dedea19f30d621c" {
+	if result != "7e8d48ff6ee7d57d3bf226fc72ae38d534cec421bccba4a373b9e4e8bdcf666e477e5ada820c31effd8008a2c457775c97f57b212ca59ffd4eff8b13ac2029211b" {
 		t.Fatalf("Sign error %v", result)
 	}
 }
