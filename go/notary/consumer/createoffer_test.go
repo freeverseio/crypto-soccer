@@ -31,6 +31,9 @@ func TestCreateOffer(t *testing.T) {
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	teamId, _ := new(big.Int).SetString(in.TeamId, 10)
 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+	dummyRnd := big.NewInt(0)
+	offerExtraPrice := big.NewInt(0)
+	isOffer := true
 	assert.NilError(t, err)
 	hash, err := signer.HashBidMessage(
 		bc.Contracts.Market,
@@ -39,18 +42,45 @@ func TestCreateOffer(t *testing.T) {
 		big.NewInt(int64(in.Rnd)),
 		validUntil,
 		playerId,
-		big.NewInt(0),
-		big.NewInt(int64(in.Rnd)),
+		big.NewInt(2),
+		dummyRnd,
 		teamId,
-		true,
+		isOffer,
 	)
-	assert.Equal(t, hash.Hex(), "0x5c3817ae7930907579b9694a5f5439906c1695a6985e772f982ff7fea2f9ae7e")
+	assert.Error(t, err, "offers must have zero extraPrice")
+	hash, err = signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		validUntil,
+		playerId,
+		offerExtraPrice,
+		big.NewInt(2),
+		teamId,
+		isOffer,
+	)
+	assert.Error(t, err, "offers must have zero bidRnd")
+	hash, err = signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		validUntil,
+		playerId,
+		offerExtraPrice,
+		dummyRnd,
+		teamId,
+		isOffer,
+	)
+	assert.NilError(t, err)
+	assert.Equal(t, hash.Hex(), "0x1563f70ce76787ea99b420ad637df3757b492c98cd5a774d7111c861453c270b")
 	assert.NilError(t, err)
 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(signature), "030e2a64488d1fe9150cf0ca9c85ca275f3f867c905a4e325eb1715d9d39621207cd3001c929f00ed1b56370d21def0b1179a7b7c1d27602f80206636fc1b2961c")
+	assert.Equal(t, hex.EncodeToString(signature), "dbd05f0df6b470d071462ba49956eb472031de84509409823502decb119f2fb36cfb57d5d6f6de5f819731745a4f5533c1805065eebf1a7d56dc9bdced406b231c")
 	in.Signature = hex.EncodeToString(signature)
 
 	assert.NilError(t, consumer.CreateOffer(tx, in, *bc.Contracts))
