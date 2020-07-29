@@ -5,41 +5,36 @@ import (
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
-	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (graphql.ID, error) {
+func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (bool, error) {
 	log.Debugf("CreateOffer %v", args)
-
-	id, err := args.Input.ID(b.contracts)
-	if err != nil {
-		return graphql.ID(""), err
-	}
+	fmt.Printf("CreateOffer %v", args)
 
 	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
+		return false, errors.New("internal error: no channel")
 	}
 
 	isValid, err := args.Input.VerifySignature(b.contracts)
 	if err != nil {
-		return id, err
+		return false, err
 	}
 	if !isValid {
-		return id, errors.New("Invalid signature")
+		return false, errors.New("Invalid signature")
 	}
 
 	isOwner, err := args.Input.IsSignerOwner(b.contracts)
 	if err != nil {
-		return id, err
+		return false, err
 	}
 
 	if isOwner {
-		return id, fmt.Errorf("signer is the owner of playerId %v you can't make an offer for your player", args.Input.PlayerId)
+		return false, fmt.Errorf("signer is the owner of playerId %v you can't make an offer for your player", args.Input.PlayerId)
 	}
 
 	seller, err := args.Input.GetOwner(b.contracts)
 	args.Input.Seller = seller.Hex()
 
-	return id, b.push(args.Input)
+	return true, b.push(args.Input)
 }

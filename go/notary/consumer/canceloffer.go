@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -12,7 +13,11 @@ import (
 
 func CancelOffer(tx *sql.Tx, in input.CancelOfferInput) error {
 	service := postgres.NewOfferHistoryService(tx)
-	offer, err := service.Offer(string(in.OfferId))
+	offerId, err := strconv.ParseInt(string(in.OfferId), 10, 64)
+	if err != nil {
+		return err
+	}
+	offer, err := service.Offer(offerId)
 	if err != nil {
 		return err
 	}

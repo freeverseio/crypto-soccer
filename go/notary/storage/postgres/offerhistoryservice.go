@@ -18,11 +18,13 @@ func (b OfferHistoryService) Bid() storage.BidService {
 	return *NewBidHistoryService(b.tx)
 }
 
-func (b OfferHistoryService) Insert(offer storage.Offer) error {
-	if err := b.OfferService.Insert(offer); err != nil {
-		return err
+func (b OfferHistoryService) Insert(offer storage.Offer) (int64, error) {
+	id, err := b.OfferService.Insert(offer)
+	if err != nil {
+		return 0, err
 	}
-	return b.insertHistory(offer)
+	offer.ID = id
+	return id, b.insertHistory(offer)
 }
 
 func (b OfferHistoryService) Update(offer storage.Offer) error {

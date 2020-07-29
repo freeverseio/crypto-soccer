@@ -59,11 +59,8 @@ func TestCreateOffer(t *testing.T) {
 	signatureOffer, err := signer.Sign(hashOffer.Bytes(), offerer)
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(signatureOffer)
-	id, err := r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
+	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
 	assert.NilError(t, err)
-	id2, err := inOffer.ID(*bc.Contracts)
-	assert.NilError(t, err)
-	assert.Equal(t, id, id2)
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = strconv.FormatInt(offerValidUntil+1000, 10)

@@ -12,7 +12,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
-	"github.com/graph-gophers/graphql-go"
 )
 
 type CreateOfferInput struct {
@@ -24,14 +23,6 @@ type CreateOfferInput struct {
 	ValidUntil string
 	TeamId     string
 	Seller     string
-}
-
-func (b CreateOfferInput) ID(contracts contracts.Contracts) (graphql.ID, error) {
-	hash, err := b.Hash(contracts)
-	if err != nil {
-		return graphql.ID(""), err
-	}
-	return graphql.ID(hash.String()[2:]), nil
 }
 
 func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, error) {

@@ -11,7 +11,7 @@ const (
 )
 
 type Offer struct {
-	ID         string
+	ID         int64
 	PlayerID   string
 	CurrencyID int
 	Price      int64
@@ -33,8 +33,7 @@ func NewOffer() *Offer {
 }
 
 type OfferService interface {
-	PendingOffers() ([]Offer, error)
-	Offer(ID string) (*Offer, error)
-	Insert(offer Offer) error
+	Offer(ID int64) (*Offer, error)
+	Insert(offer Offer) (int64, error)
 	Update(offer Offer) error
 }
