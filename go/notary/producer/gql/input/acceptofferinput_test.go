@@ -22,19 +22,17 @@ func TestAcceptOfferInputHash(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
 }
-
-func TestAcceptOfferInputID(t *testing.T) {
+func TestAcceptOfferInputAuctionID(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "2000000000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	id, err := in.ID()
+	id, err := in.AuctionID()
 	assert.NilError(t, err)
 	assert.Equal(t, string(id), "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
 }
-
 func TestAcceptOfferValidSignature(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "2000000000"

@@ -1,5 +1,5 @@
 (*storage.Offer)({
-	ID: (string) "",
+	ID: (int64) 0,
 	PlayerID: (string) "",
 	CurrencyID: (int) 0,
 	Price: (int64) 0,

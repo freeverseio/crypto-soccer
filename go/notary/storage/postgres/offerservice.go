@@ -21,36 +21,7 @@ func (b OfferService) Bid() storage.BidService {
 	return NewBidService(b.tx)
 }
 
-func (b OfferService) PendingOffers() ([]storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var offers []storage.Offer
-	for rows.Next() {
-		var offer storage.Offer
-		err = rows.Scan(
-			&offer.ID,
-			&offer.PlayerID,
-			&offer.CurrencyID,
-			&offer.Price,
-			&offer.Rnd,
-			&offer.ValidUntil,
-			&offer.Signature,
-			&offer.State,
-			&offer.StateExtra,
-			&offer.Seller,
-			&offer.Buyer,
-			&offer.AuctionID,
-			&offer.TeamID,
-		)
-		offers = append(offers, offer)
-	}
-	return offers, err
-}
-
-func (b OfferService) Offer(ID string) (*storage.Offer, error) {
+func (b OfferService) Offer(ID int64) (*storage.Offer, error) {
 	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
@@ -134,10 +105,9 @@ func (b OfferService) OfferByAuctionId(auctionId string) (*storage.Offer, error)
 	return &offer, err
 }
 
-func (b OfferService) Insert(offer storage.Offer) error {
+func (b OfferService) Insert(offer storage.Offer) (int64, error) {
 	log.Debugf("[DBMS] + create Offer %v", b)
-	_, err := b.tx.Exec("INSERT INTO offers (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
-		offer.ID,
+	rows, err := b.tx.Query("INSERT INTO offers (player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;",
 		offer.PlayerID,
 		offer.CurrencyID,
 		offer.Price,
@@ -150,7 +120,16 @@ func (b OfferService) Insert(offer storage.Offer) error {
 		offer.Buyer,
 		offer.TeamID,
 	)
-	return err
+
+	defer rows.Close()
+	if !rows.Next() {
+		return int64(0), nil
+	}
+	var id int64
+	err = rows.Scan(
+		&id,
+	)
+	return id, err
 }
 
 func NewNullString(s string) sql.NullString {

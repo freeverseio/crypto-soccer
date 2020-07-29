@@ -23,6 +23,7 @@ func TestAcceptOfferReturnTheSignature(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
+	in.OfferId = "12345"
 
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
@@ -41,7 +42,7 @@ func TestAcceptOfferReturnTheSignature(t *testing.T) {
 
 	id, err := r.AcceptOffer(struct{ Input input.AcceptOfferInput }{in})
 	assert.NilError(t, err)
-	id2, err := in.ID()
+	id2, err := in.AuctionID()
 	assert.NilError(t, err)
 	assert.Equal(t, id, id2)
 }

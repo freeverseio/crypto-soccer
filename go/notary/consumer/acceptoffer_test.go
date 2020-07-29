@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+	"github.com/graph-gophers/graphql-go"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
@@ -28,6 +29,7 @@ func TestAcceptOffer(t *testing.T) {
 	inOffer.Price = 41234
 	inOffer.Rnd = 4232
 	inOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
+
 	extraPrice := big.NewInt(0)
 	dummyRnd := big.NewInt(0)
 	offerPlayerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
@@ -57,14 +59,11 @@ func TestAcceptOffer(t *testing.T) {
 	inOffer.Signature = hex.EncodeToString(offerSignature)
 
 	assert.NilError(t, consumer.CreateOffer(tx, inOffer, *bc.Contracts))
-	idOffer, err := inOffer.ID(*bc.Contracts)
-	assert.NilError(t, err)
 
 	offerService := postgres.NewOfferService(tx)
 
-	offer, err := offerService.Offer(string(idOffer))
+	offer, err := offerService.OfferByRndPrice(inOffer.Rnd, inOffer.Price)
 	assert.NilError(t, err)
-	assert.Equal(t, offer.ID, string(idOffer))
 
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "999999999999"
@@ -72,6 +71,8 @@ func TestAcceptOffer(t *testing.T) {
 	in.CurrencyId = inOffer.CurrencyId
 	in.Price = inOffer.Price
 	in.Rnd = inOffer.Rnd
+	in.OfferId = graphql.ID(string(offer.ID))
+
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
 	assert.NilError(t, err)
@@ -92,20 +93,20 @@ func TestAcceptOffer(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	assert.NilError(t, consumer.AcceptOffer(tx, in))
-	id, err := in.ID()
+	auctionId, err := in.AuctionID()
 	assert.NilError(t, err)
 
 	service := postgres.NewAuctionService(tx)
-	auction, err := service.Auction(string(id))
+	auction, err := service.Auction(string(auctionId))
 	assert.NilError(t, err)
 	assert.Assert(t, auction != nil)
 	assert.Equal(t, auction.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
 	assert.Equal(t, auction.Price, int64(41234))
 
-	offer, err = offerService.Offer(string(idOffer))
+	offer, err = offerService.Offer(offer.ID)
 	assert.NilError(t, err)
 	assert.Equal(t, string(offer.State), "accepted")
-	assert.Equal(t, offer.AuctionID, string(id))
+	assert.Equal(t, offer.AuctionID, string(auctionId))
 
 	bids, err := service.Bid().Bids(auction.ID)
 	assert.Equal(t, string(bids[0].State), "accepted")
@@ -155,14 +156,11 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	inOffer.Signature = hex.EncodeToString(offerSignature)
 
 	assert.NilError(t, consumer.CreateOffer(tx, inOffer, *bc.Contracts))
-	idOffer, err := inOffer.ID(*bc.Contracts)
-	assert.NilError(t, err)
 
 	offerService := postgres.NewOfferService(tx)
 
-	offer, err := offerService.Offer(string(idOffer))
+	offer, err := offerService.OfferByRndPrice(inOffer.Rnd, inOffer.Price)
 	assert.NilError(t, err)
-	assert.Equal(t, offer.ID, string(idOffer))
 
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "999999999999"
@@ -170,6 +168,8 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 4232
+	in.OfferId = graphql.ID(string(offer.ID))
+
 	auctionPlayerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	auctionValidUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
 	assert.NilError(t, err)

@@ -54,11 +54,10 @@ func TestCreateOffer(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	assert.NilError(t, consumer.CreateOffer(tx, in, *bc.Contracts))
-	id, err := in.ID(*bc.Contracts)
 	assert.NilError(t, err)
 
 	service := postgres.NewOfferService(tx)
-	offer, err := service.Offer(string(id))
+	offer, err := service.OfferByRndPrice(in.Rnd, in.Price)
 	assert.NilError(t, err)
 	assert.Assert(t, offer != nil)
 	assert.Equal(t, offer.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f")

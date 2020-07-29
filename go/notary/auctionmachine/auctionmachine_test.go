@@ -327,7 +327,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	}
 
 	offer := storage.Offer{
-		ID:         "Offeridi",
+		ID:         12345,
 		PlayerID:   playerID.String(),
 		CurrencyID: int(currencyID),
 		Price:      price.Int64(),
