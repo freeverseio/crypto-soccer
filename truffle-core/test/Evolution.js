@@ -545,7 +545,7 @@ contract('Evolution', (accounts) => {
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
         expectedGoals = [4, 0];
-        expectedPoints = [56, 10];
+        expectedPoints = [58, 10];
         expectedSums = [55000,33022];
         expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
@@ -569,7 +569,7 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
 
         var {0: nPenalties, 1: nPenaltiesFailed, 2: shooters} = getPenaltyData(matchLogsAndEvents);
-        nPenalties.should.be.equal(0);
+        nPenalties.should.be.equal(1);
         nPenaltiesFailed.should.be.equal(0);
 
         goals = [];
@@ -626,9 +626,9 @@ contract('Evolution', (accounts) => {
             sums.push(sum.toNumber());
             
         }   
-        expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
-        expectedSho = [ 6, 8, 1, 9, 8, 1 ];     
-        expectedAss = [ 6, 10, 6, 9, 8, 6 ];     
+        expectedFwds = [ 1, 3, 1, 3, 3, 1 ];     
+        expectedSho = [ 1, 8, 1, 9, 8, 1 ];     
+        expectedAss = [ 4, 14, 6, 9, 8, 6 ];     
         fwds = [];
         sho = [];
         ass = [];
@@ -1639,7 +1639,7 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
 
         var {0: nPenalties, 1: nPenaltiesFailed, 2: shooters} = getPenaltyData(matchLogsAndEvents);
-        nPenalties.should.be.equal(0);
+        nPenalties.should.be.equal(1);
         nPenaltiesFailed.should.be.equal(0);
 
 
@@ -1665,7 +1665,7 @@ contract('Evolution', (accounts) => {
 
         // check Training Points (and Goals)
         expectedGoals = [5, 5];
-        expectedPoints = [32, 22];
+        expectedPoints = [36, 22];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
