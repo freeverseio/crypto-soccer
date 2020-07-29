@@ -19,7 +19,12 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 
 	offerService := postgres.NewOfferHistoryService(tx)
 
-	offer, err := offerService.OfferByRndPrice(in.Rnd, in.Price)
+	offerID, err := strconv.ParseInt(string(in.OfferId), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	offer, err := offerService.Offer(offerID)
 	if err != nil {
 		return err
 	}
