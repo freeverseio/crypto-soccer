@@ -109,3 +109,19 @@ func (b CreateOfferInput) GetOwner(contracts contracts.Contracts) (common.Addres
 	}
 	return owner, nil
 }
+
+func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool, error) {
+	signerAddress, err := b.SignerAddress(contracts)
+	if err != nil {
+		return false, err
+	}
+	teamId, _ := new(big.Int).SetString(b.TeamId, 10)
+	if teamId == nil {
+		return false, errors.New("invalid teamId")
+	}
+	owner, err := contracts.Market.GetOwnerTeam(&bind.CallOpts{}, teamId)
+	if err != nil {
+		return false, err
+	}
+	return signerAddress == owner, nil
+}
