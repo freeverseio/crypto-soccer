@@ -141,6 +141,9 @@ func TestCreateOfferSameOwner(t *testing.T) {
 }
 
 func TestCreateOfferNotTeamOwner(t *testing.T) {
+	teamOwnedByOffered := big.NewInt(274877906945)
+	teamNotOwnedByOffered := big.NewInt(274877906948)
+
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	offerer, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
@@ -163,8 +166,7 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = offererRnd
-	inOffer.TeamId = "274877906948"
-	teamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
+	inOffer.TeamId = teamNotOwnedByOffered.String()
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
 	dummyRnd := int64(0)
@@ -177,7 +179,7 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 		playerId,
 		big.NewInt(0),
 		big.NewInt(dummyRnd),
-		teamId,
+		teamNotOwnedByOffered,
 		true,
 	)
 	assert.NilError(t, err)
@@ -187,4 +189,24 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
 	assert.Error(t, err, "signer is not the owner of teamId 274877906948")
 
+	// exactly same call but with a team truly owned by offerer
+	inOffer.TeamId = teamOwnedByOffered.String()
+	hashOffer, err = signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(inOffer.CurrencyId),
+		big.NewInt(int64(inOffer.Price)),
+		big.NewInt(int64(inOffer.Rnd)),
+		validUntil,
+		playerId,
+		big.NewInt(0),
+		big.NewInt(dummyRnd),
+		teamOwnedByOffered,
+		true,
+	)
+	assert.NilError(t, err)
+	signatureOffer, err = signer.Sign(hashOffer.Bytes(), offerer)
+	assert.NilError(t, err)
+	inOffer.Signature = hex.EncodeToString(signatureOffer)
+	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
+	assert.NilError(t, err)
 }
