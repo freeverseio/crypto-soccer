@@ -106,8 +106,8 @@ func main() {
 			googleCredentials,
 			marketdb,
 		)
-		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
-		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(*processWait)*time.Second)
+		go producer.NewProcessor(ch, time.Duration(30)*time.Second)
+		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(2)*time.Second)
 
 		var market marketpay.IMarketPay
 		if *marketID == "" {

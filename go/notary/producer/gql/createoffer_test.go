@@ -139,3 +139,52 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	assert.Error(t, err, "signer is the owner of playerId 274877906944 you can't make an offer for your player")
 
 }
+
+func TestCreateOfferNotTeamOwner(t *testing.T) {
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+	offerer, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(offerer.PublicKey),
+	)
+
+	offererRnd := int32(42321)
+	offerValidUntil := time.Now().Unix() + 100
+
+	ch := make(chan interface{}, 10)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, db)
+
+	inOffer := input.CreateOfferInput{}
+	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	inOffer.PlayerId = "274877906944"
+	inOffer.CurrencyId = 1
+	inOffer.Price = 41234
+	inOffer.Rnd = offererRnd
+	inOffer.TeamId = "274877906948"
+	teamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
+	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
+	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
+	dummyRnd := int64(0)
+	hashOffer, err := signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(inOffer.CurrencyId),
+		big.NewInt(int64(inOffer.Price)),
+		big.NewInt(int64(inOffer.Rnd)),
+		validUntil,
+		playerId,
+		big.NewInt(0),
+		big.NewInt(dummyRnd),
+		teamId,
+		true,
+	)
+	assert.NilError(t, err)
+	signatureOffer, err := signer.Sign(hashOffer.Bytes(), offerer)
+	assert.NilError(t, err)
+	inOffer.Signature = hex.EncodeToString(signatureOffer)
+	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
+	assert.Error(t, err, "signer is not the owner of teamId 274877906948")
+
+}
