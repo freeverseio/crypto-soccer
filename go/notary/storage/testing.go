@@ -386,4 +386,21 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		assert.Equal(t, *result, *offer)
 	})
 
+	t.Run("TestInsertSameOrderTwice", func(t *testing.T) {
+		offer := NewOffer()
+		offer.Rnd = 4
+		offer.PlayerID = "3"
+		offer.CurrencyID = 3
+		offer.Price = 3
+		offer.ValidUntil = 3
+		offer.Signature = "3"
+		offer.State = OfferStarted
+		offer.StateExtra = "3"
+		offer.Seller = "3"
+		offer.Buyer = "5"
+		_, err := service.Insert(*offer)
+		assert.NilError(t, err)
+		_, err = service.Insert(*offer)
+		assert.Error(t, err, "some error on duplication")
+	})
 }
