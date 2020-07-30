@@ -1,34 +1,25 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"time"
 
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/names"
-	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
-	"github.com/freeverseio/crypto-soccer/go/notary/producer"
-	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
-
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/shurcooL/graphql"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	postgresUniverseURL := flag.String("postgresUniverse", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres universe url")
-	postgresGameURL := flag.String("postgresGame", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres game url")
+	universeURL := flag.String("universeApi", "http://universe.api:4000/graphql", "gql universe url")
+	gameURL := flag.String("gameApi", "http://game.api:4000/graphql", "gql game url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
 	processWait := flag.Int("process_wait", 5, "secs to wait for next process")
 	flag.Parse()
 
-	log.Infof("[PARAM] postgres universe          : %v", *postgresUniverseURL)
-	log.Infof("[PARAM] postgres game              : %v", *postgresGameURL)
+	log.Infof("[PARAM] universe                   : %v", *universeURL)
+	log.Infof("[PARAM] game                       : %v", *gameURL)
 	log.Infof("[PARAM] Buffer size                : %v", *bufferSize)
 	log.Infof("[PARAM] Process wait               : %v", *processWait)
 	log.Infof("[PARAM] debug                      : %v", *debug)
@@ -39,71 +30,28 @@ func main() {
 	}
 
 	if err := func() error {
-		log.Info("Create the connection to DBMS")
-		marketdb, err := postgres.New(*postgresUniverseURL)
-		if err != nil {
-			return err
+		log.Info("Create the connection to GQL APIs")
+		// var allPlayers struct {
+		// 	TotalCount int
+		// 	Nodes      struct {
+		// 		PlayerId graphql.String
+		// 		Name     graphql.String
+		// 	}
+		// }
+		var query struct {
+			AllPlayers struct {
+				TotalCount graphql.Int
+				Nodes      []struct {
+					PlayerId graphql.String
+					Name     graphql.String
+				}
+			}
 		}
-		defer marketdb.Close()
-
-		namesdb, err := names.New(*namesDatabase)
-		if err != nil {
-			return err
-		}
-		defer namesdb.Close()
-
-		log.Info("Dial the Ethereum client: ", *ethereumClient)
-		client, err := ethclient.Dial(*ethereumClient)
-		if err != nil {
-			return err
-		}
-		defer client.Close()
-		contracts, err := contracts.NewByProxyAddress(
-			client,
-			*proxyAddress,
-		)
-		if err != nil {
-			return err
-		}
-
-		googleCredentials, err := ioutil.ReadFile(*googleKey)
-		if err != nil {
-			return err
-		}
-
-		ch := make(chan interface{}, *bufferSize)
-
-		go gql.ListenAndServe(
-			ch,
-			*contracts,
-			namesdb,
-			googleCredentials,
-			marketdb,
-		)
-		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
-		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(*processWait)*time.Second)
-
-		var market marketpay.IMarketPay
-		if *marketID == "" {
-			market = marketpay.NewSandbox()
-		} else {
-			market = marketpay.New(*marketID)
-		}
-
-		cn, err := consumer.New(
-			ch,
-			market,
-			marketdb,
-			*contracts,
-			privateKey,
-			googleCredentials,
-			namesdb,
-			*iapTestOn,
-		)
-		if err != nil {
-			return err
-		}
-		cn.Start()
+		universe := graphql.NewClient("http://localhost:4000/graphql", nil)
+		//game := graphql.NewClient("http://game.api:4000/graphql", nil)
+		universe.Query(context.Background(), &query, nil)
+		fmt.Println(query.AllPlayers.TotalCount)
+		fmt.Println(query.AllPlayers.Nodes[0])
 
 		return nil
 	}(); err != nil {
