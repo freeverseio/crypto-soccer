@@ -35,7 +35,7 @@ func (b StorageService) Offer(tx *sql.Tx, ID int64) (*storage.Offer, error) {
 	return &offer, err
 }
 
-func (b StorageService) OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*storage.Offer, error) {
+func offerByRndPrice(tx *sql.Tx, rnd int32, price int32) (*storage.Offer, error) {
 	rows, err := tx.Query("SELECT id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE rnd = $1 AND price = $2;", rnd, price)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (b StorageService) OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*st
 	return &offer, err
 }
 
-func (b StorageService) OfferByAuctionId(tx *sql.Tx, auctionId string) (*storage.Offer, error) {
+func offerByAuctionId(tx *sql.Tx, auctionId string) (*storage.Offer, error) {
 	rows, err := tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offers WHERE auction_id = $1;", auctionId)
 	if err != nil {
 		return nil, err
