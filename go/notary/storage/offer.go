@@ -31,9 +31,3 @@ func NewOffer() *Offer {
 	offer.State = OfferStarted
 	return &offer
 }
-
-type OfferService interface {
-	Offer(ID int64) (*Offer, error)
-	Insert(offer Offer) (int64, error)
-	Update(offer Offer) error
-}
