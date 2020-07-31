@@ -3,8 +3,8 @@ package postgres_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/storagetest"
 	"gotest.tools/assert"
 )
 
@@ -14,5 +14,5 @@ func TestAuctionServiceInterface(t *testing.T) {
 	defer tx.Rollback()
 
 	service := postgres.NewAuctionService(tx)
-	storage.TestAuctionServiceInterface(t, service)
+	storagetest.TestAuctionServiceInterface(t, service)
 }

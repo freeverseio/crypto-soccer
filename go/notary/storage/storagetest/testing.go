@@ -1,12 +1,13 @@
-package storage
+package storagetest
 
 import (
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
-func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
+func TestAuctionServiceInterface(t *testing.T, service storage.AuctionService) {
 	t.Run("TestAuctionByIDUnexistent", func(t *testing.T) {
 		auction, err := service.Auction("4343")
 		assert.NilError(t, err)
@@ -14,7 +15,7 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 	})
 
 	t.Run("TestAuctionInsert", func(t *testing.T) {
-		auction := NewAuction()
+		auction := storage.NewAuction()
 		auction.ID = "ciao"
 		auction.Rnd = 4
 		auction.PlayerID = "3"
@@ -22,7 +23,7 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 		auction.Price = 3
 		auction.ValidUntil = 3
 		auction.Signature = "3"
-		auction.State = AuctionStarted
+		auction.State = storage.AuctionStarted
 		auction.StateExtra = "3"
 		auction.PaymentURL = "3"
 		auction.Seller = "3"
@@ -34,58 +35,58 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 	})
 
 	t.Run("TestPendingAuctions", func(t *testing.T) {
-		auction := NewAuction()
+		auction := storage.NewAuction()
 		auction.ID = "ciao0"
-		auction.State = AuctionStarted
+		auction.State = storage.AuctionStarted
 		assert.NilError(t, service.Insert(*auction))
 		result, err := service.PendingAuctions()
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 2)
 
 		auction.ID = "ciao1"
-		auction.State = AuctionAssetFrozen
+		auction.State = storage.AuctionAssetFrozen
 		assert.NilError(t, service.Insert(*auction))
 		result, err = service.PendingAuctions()
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 3)
 
 		auction.ID = "ciao2"
-		auction.State = AuctionPaying
+		auction.State = storage.AuctionPaying
 		assert.NilError(t, service.Insert(*auction))
 		result, err = service.PendingAuctions()
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 4)
 
 		auction.ID = "ciao3"
-		auction.State = AuctionWithdrableBySeller
+		auction.State = storage.AuctionWithdrableBySeller
 		assert.NilError(t, service.Insert(*auction))
 		result, err = service.PendingAuctions()
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 5)
 
 		auction.ID = "ciao4"
-		auction.State = AuctionWithdrableByBuyer
+		auction.State = storage.AuctionWithdrableByBuyer
 		assert.NilError(t, service.Insert(*auction))
 		result, err = service.PendingAuctions()
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 6)
 
 		auction.ID = "ciao5"
-		auction.State = AuctionFailed
+		auction.State = storage.AuctionFailed
 		assert.NilError(t, service.Insert(*auction))
 		result, err = service.PendingAuctions()
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 6)
 
 		auction.ID = "ciao6"
-		auction.State = AuctionEnded
+		auction.State = storage.AuctionEnded
 		assert.NilError(t, service.Insert(*auction))
 		result, err = service.PendingAuctions()
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 6)
 
 		auction.ID = "ciao7"
-		auction.State = AuctionCancelled
+		auction.State = storage.AuctionCancelled
 		assert.NilError(t, service.Insert(*auction))
 		result, err = service.PendingAuctions()
 		assert.NilError(t, err)
@@ -93,17 +94,17 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 	})
 
 	t.Run("TestAuctionUpdate", func(t *testing.T) {
-		auction := NewAuction()
+		auction := storage.NewAuction()
 		auction.ID = "ciao20"
-		auction.State = AuctionStarted
+		auction.State = storage.AuctionStarted
 		auction.StateExtra = "priva"
 		assert.NilError(t, service.Insert(*auction))
 		result, err := service.Auction(auction.ID)
 		assert.NilError(t, err)
-		assert.Equal(t, result.State, AuctionStarted)
+		assert.Equal(t, result.State, storage.AuctionStarted)
 		assert.Equal(t, result.StateExtra, "priva")
 
-		auction.State = AuctionCancelled
+		auction.State = storage.AuctionCancelled
 		auction.StateExtra = "privato"
 		auction.PaymentURL = "http"
 		assert.NilError(t, service.Update(*auction))
@@ -114,21 +115,21 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 	})
 
 	t.Run("TestBid().Insert", func(t *testing.T) {
-		auction := NewAuction()
+		auction := storage.NewAuction()
 		auction.ID = "0"
 		assert.NilError(t, service.Insert(*auction))
 
-		bid := NewBid()
+		bid := storage.NewBid()
 		bid.AuctionID = auction.ID
 		assert.NilError(t, service.Bid().Insert(*bid))
 	})
 
 	t.Run("TestBidsByAuctionID", func(t *testing.T) {
-		auction := NewAuction()
+		auction := storage.NewAuction()
 		auction.ID = "03"
 		assert.NilError(t, service.Insert(*auction))
 
-		bid := NewBid()
+		bid := storage.NewBid()
 		bid.AuctionID = auction.ID
 		assert.NilError(t, service.Bid().Insert(*bid))
 		bid.ExtraPrice = 10
@@ -141,7 +142,7 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 		auction.ID = "1"
 		assert.NilError(t, service.Insert(*auction))
 
-		bid = NewBid()
+		bid = storage.NewBid()
 		bid.AuctionID = auction.ID
 		assert.NilError(t, service.Bid().Insert(*bid))
 
@@ -151,17 +152,17 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 	})
 
 	t.Run("TestBidUpdate", func(t *testing.T) {
-		auction := NewAuction()
+		auction := storage.NewAuction()
 		auction.ID = "04324"
 		assert.NilError(t, service.Insert(*auction))
 
-		bid := NewBid()
+		bid := storage.NewBid()
 		bid.AuctionID = auction.ID
 		bid.ExtraPrice = 10
-		bid.State = BidAccepted
+		bid.State = storage.BidAccepted
 		assert.NilError(t, service.Bid().Insert(*bid))
 
-		bid.State = BidPaid
+		bid.State = storage.BidPaid
 		bid.StateExtra = "vciao"
 		bid.PaymentID = "3"
 		bid.PaymentURL = "http"
@@ -175,31 +176,31 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 	})
 
 	t.Run("TestBidFindBids", func(t *testing.T) {
-		bids := []Bid{}
-		bids = append(bids, *NewBid())
-		bids = append(bids, *NewBid())
-		bids = append(bids, *NewBid())
-		bids = append(bids, *NewBid())
-		result := FindBids(bids, BidPaid)
+		bids := []storage.Bid{}
+		bids = append(bids, *storage.NewBid())
+		bids = append(bids, *storage.NewBid())
+		bids = append(bids, *storage.NewBid())
+		bids = append(bids, *storage.NewBid())
+		result := storage.FindBids(bids, storage.BidPaid)
 		assert.Equal(t, len(result), 0)
-		result = FindBids(bids, BidAccepted)
+		result = storage.FindBids(bids, storage.BidAccepted)
 		assert.Equal(t, len(result), 4)
-		result[0].State = BidPaid
-		result = FindBids(bids, BidPaid)
+		result[0].State = storage.BidPaid
+		result = storage.FindBids(bids, storage.BidPaid)
 		assert.Equal(t, len(result), 1)
 	})
 }
 
-func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderService) {
+func TestPlaystoreOrderServiceInterface(t *testing.T, service storage.PlaystoreOrderService) {
 	t.Run("insert", func(t *testing.T) {
-		order := NewPlaystoreOrder()
+		order := storage.NewPlaystoreOrder()
 		order.PurchaseToken = "ciao"
 		order.PackageName = "dsd"
 		order.ProductId = "444"
 		order.OrderId = "fdrd"
 		order.PlayerId = "4"
 		order.TeamId = "pippo"
-		order.State = PlaystoreOrderFailed
+		order.State = storage.PlaystoreOrderFailed
 		order.StateExtra = "prova"
 		order.Signature = "erere"
 
@@ -211,14 +212,14 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 	})
 
 	t.Run("pending orders", func(t *testing.T) {
-		order := NewPlaystoreOrder()
+		order := storage.NewPlaystoreOrder()
 		order.PurchaseToken = "ciao1"
 		order.PackageName = "dsd"
 		order.ProductId = "444"
 		order.OrderId = "fdrd"
 		order.PlayerId = "4"
 		order.TeamId = "pippo"
-		order.State = PlaystoreOrderFailed
+		order.State = storage.PlaystoreOrderFailed
 		order.StateExtra = "prova"
 		order.Signature = "erere"
 		assert.NilError(t, service.Insert(*order))
@@ -228,7 +229,7 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.Equal(t, len(orders), 0)
 
 		order.PurchaseToken = "43d"
-		order.State = PlaystoreOrderOpen
+		order.State = storage.PlaystoreOrderOpen
 		assert.NilError(t, service.Insert(*order))
 
 		orders, err = service.PendingOrders()
@@ -236,7 +237,7 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.Equal(t, len(orders), 1)
 
 		order.PurchaseToken = "43d1"
-		order.State = PlaystoreOrderAcknowledged
+		order.State = storage.PlaystoreOrderAcknowledged
 		assert.NilError(t, service.Insert(*order))
 
 		orders, err = service.PendingOrders()
@@ -244,7 +245,7 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.Equal(t, len(orders), 2)
 
 		order.PurchaseToken = "43d2"
-		order.State = PlaystoreOrderComplete
+		order.State = storage.PlaystoreOrderComplete
 		assert.NilError(t, service.Insert(*order))
 
 		orders, err = service.PendingOrders()
@@ -253,19 +254,19 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 	})
 
 	t.Run("update state", func(t *testing.T) {
-		order := NewPlaystoreOrder()
+		order := storage.NewPlaystoreOrder()
 		order.PurchaseToken = "ciao"
 		order.PackageName = "dsd"
 		order.ProductId = "444"
 		order.OrderId = "fdrd"
 		order.PlayerId = "4"
 		order.TeamId = "pippo"
-		order.State = PlaystoreOrderFailed
+		order.State = storage.PlaystoreOrderFailed
 		order.StateExtra = "prova"
 		order.Signature = "erere"
 		assert.NilError(t, service.UpdateState(*order))
 
-		order.State = PlaystoreOrderOpen
+		order.State = storage.PlaystoreOrderOpen
 		order.StateExtra = "recdia"
 		assert.NilError(t, service.UpdateState(*order))
 
@@ -277,14 +278,14 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 	})
 
 	t.Run("pending order by playerId", func(t *testing.T) {
-		order := NewPlaystoreOrder()
+		order := storage.NewPlaystoreOrder()
 		order.PurchaseToken = "ciao12"
 		order.PackageName = "dsd"
 		order.ProductId = "444"
 		order.OrderId = "fdrd"
 		order.PlayerId = "4343534"
 		order.TeamId = "pippo"
-		order.State = PlaystoreOrderFailed
+		order.State = storage.PlaystoreOrderFailed
 		order.StateExtra = "prova"
 		order.Signature = "erere"
 
@@ -298,14 +299,14 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 		assert.Equal(t, len(orders), 0)
 
 		order.PurchaseToken = "ciao432423"
-		order.State = PlaystoreOrderComplete
+		order.State = storage.PlaystoreOrderComplete
 		assert.NilError(t, service.Insert(*order))
 		orders, err = service.PendingOrdersByPlayerId(order.PlayerId)
 		assert.NilError(t, err)
 		assert.Equal(t, len(orders), 0)
 
 		order.PurchaseToken = "ciao4324233"
-		order.State = PlaystoreOrderAcknowledged
+		order.State = storage.PlaystoreOrderAcknowledged
 		assert.NilError(t, service.Insert(*order))
 		orders, err = service.PendingOrdersByPlayerId(order.PlayerId)
 		assert.NilError(t, err)
@@ -313,7 +314,7 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 	})
 }
 
-func TestOfferServiceInterface(t *testing.T, service OfferService, auctionService AuctionService) {
+func TestOfferServiceInterface(t *testing.T, service storage.OfferService, auctionService storage.AuctionService) {
 	t.Run("TestOfferByIDUnexistent", func(t *testing.T) {
 		offer, err := service.Offer(4343)
 		assert.NilError(t, err)
@@ -321,14 +322,14 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 	})
 
 	t.Run("TestOfferInsert", func(t *testing.T) {
-		offer := NewOffer()
+		offer := storage.NewOffer()
 		offer.Rnd = 4
 		offer.PlayerID = "3"
 		offer.CurrencyID = 3
 		offer.Price = 3
 		offer.ValidUntil = 3
 		offer.Signature = "3"
-		offer.State = OfferStarted
+		offer.State = storage.OfferStarted
 		offer.StateExtra = "3"
 		offer.Seller = "3"
 		offer.Buyer = "4"
@@ -343,7 +344,7 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 	})
 
 	t.Run("TestOfferUpdate", func(t *testing.T) {
-		auction := NewAuction()
+		auction := storage.NewAuction()
 		auction.ID = "ciao"
 		auction.Rnd = 4
 		auction.PlayerID = "3"
@@ -351,7 +352,7 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		auction.Price = 3
 		auction.ValidUntil = 3
 		auction.Signature = "3"
-		auction.State = AuctionStarted
+		auction.State = storage.AuctionStarted
 		auction.StateExtra = "3"
 		auction.PaymentURL = "3"
 		auction.Seller = "3"
@@ -361,8 +362,8 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		assert.NilError(t, err)
 		assert.Equal(t, *auctionResult, *auction)
 
-		offer := NewOffer()
-		offer.State = OfferStarted
+		offer := storage.NewOffer()
+		offer.State = storage.OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
 		offerId, err := service.Insert(*offer)
@@ -370,7 +371,7 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		assert.NilError(t, err)
 		result, err := service.Offer(offer.ID)
 		assert.NilError(t, err)
-		assert.Equal(t, result.State, OfferStarted)
+		assert.Equal(t, result.State, storage.OfferStarted)
 		assert.Equal(t, result.StateExtra, "priva")
 		assert.Equal(t, result.Seller, "yo")
 
@@ -386,21 +387,21 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		assert.Equal(t, *result, *offer)
 	})
 
-	t.Run("TestInsertSameOrderTwice", func(t *testing.T) {
-		offer := NewOffer()
-		offer.Rnd = 4
-		offer.PlayerID = "3"
-		offer.CurrencyID = 3
-		offer.Price = 3
-		offer.ValidUntil = 3
-		offer.Signature = "3"
-		offer.State = OfferStarted
-		offer.StateExtra = "3"
-		offer.Seller = "3"
-		offer.Buyer = "5"
-		_, err := service.Insert(*offer)
-		assert.NilError(t, err)
-		_, err = service.Insert(*offer)
-		assert.Error(t, err, "some error on duplication")
-	})
+	// t.Run("TestInsertSameOrderTwice", func(t *testing.T) {
+	// 	offer := storage.NewOffer()
+	// 	offer.Rnd = 4
+	// 	offer.PlayerID = "3"
+	// 	offer.CurrencyID = 3
+	// 	offer.Price = 3
+	// 	offer.ValidUntil = 3
+	// 	offer.Signature = "3"
+	// 	offer.State = storage.OfferStarted
+	// 	offer.StateExtra = "3"
+	// 	offer.Seller = "3"
+	// 	offer.Buyer = "5"
+	// 	_, err := service.Insert(*offer)
+	// 	assert.NilError(t, err)
+	// 	_, err = service.Insert(*offer)
+	// 	assert.Error(t, err, "some error on duplication")
+	// })
 }

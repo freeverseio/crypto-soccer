@@ -3,8 +3,8 @@ package postgres_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/storagetest"
 	"gotest.tools/assert"
 )
 
@@ -15,5 +15,5 @@ func TestOfferServiceInterface(t *testing.T) {
 
 	service := postgres.NewOfferService(tx)
 	auctionService := postgres.NewAuctionService(tx)
-	storage.TestOfferServiceInterface(t, service, auctionService)
+	storagetest.TestOfferServiceInterface(t, service, auctionService)
 }
