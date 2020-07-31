@@ -99,7 +99,7 @@ const Schema = `
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
-		createOffer(input: CreateOfferInput!): Boolean!
+		createOffer(input: CreateOfferInput!): ID!
 		acceptOffer(input: AcceptOfferInput!): ID!
 		cancelOffer(input: CancelOfferInput!): ID!
 	}

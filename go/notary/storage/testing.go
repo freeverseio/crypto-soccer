@@ -28,9 +28,13 @@ func TestAuctionServiceInterface(t *testing.T, service AuctionService) {
 		auction.Seller = "3"
 		assert.NilError(t, service.Insert(*auction))
 
-		result, err := service.Auction(auction.ID)
+		auctionByID, err := service.Auction(auction.ID)
 		assert.NilError(t, err)
-		assert.Equal(t, *result, *auction)
+		assert.Equal(t, *auctionByID, *auction)
+
+		auctionByPlayerID, err := service.AuctionsByPlayerId(auction.PlayerID)
+		assert.NilError(t, err)
+		assert.Equal(t, *auctionByID, auctionByPlayerID[0])
 	})
 
 	t.Run("TestPendingAuctions", func(t *testing.T) {
@@ -315,13 +319,14 @@ func TestPlaystoreOrderServiceInterface(t *testing.T, service PlaystoreOrderServ
 
 func TestOfferServiceInterface(t *testing.T, service OfferService, auctionService AuctionService) {
 	t.Run("TestOfferByIDUnexistent", func(t *testing.T) {
-		offer, err := service.Offer(4343)
+		offer, err := service.Offer("4343")
 		assert.NilError(t, err)
 		assert.Assert(t, offer == nil)
 	})
 
 	t.Run("TestOfferInsert", func(t *testing.T) {
 		offer := NewOffer()
+		offer.ID = "234234"
 		offer.Rnd = 4
 		offer.PlayerID = "3"
 		offer.CurrencyID = 3
@@ -333,11 +338,10 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		offer.Seller = "3"
 		offer.Buyer = "4"
 
-		offerId, err := service.Insert(*offer)
-		offer.ID = offerId
+		err := service.Insert(*offer)
 		assert.NilError(t, err)
 
-		result, err := service.Offer(offerId)
+		result, err := service.Offer(offer.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 	})
@@ -362,11 +366,11 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		assert.Equal(t, *auctionResult, *auction)
 
 		offer := NewOffer()
+		offer.ID = "5355353"
 		offer.State = OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
-		offerId, err := service.Insert(*offer)
-		offer.ID = offerId
+		err = service.Insert(*offer)
 		assert.NilError(t, err)
 		result, err := service.Offer(offer.ID)
 		assert.NilError(t, err)
@@ -398,9 +402,9 @@ func TestOfferServiceInterface(t *testing.T, service OfferService, auctionServic
 		offer.StateExtra = "3"
 		offer.Seller = "3"
 		offer.Buyer = "5"
-		_, err := service.Insert(*offer)
+		err := service.Insert(*offer)
 		assert.NilError(t, err)
-		_, err = service.Insert(*offer)
-		assert.Error(t, err, "some error on duplication")
+		err = service.Insert(*offer)
+		assert.Error(t, err, "pq: duplicate key value violates unique constraint \"offers_pkey\"")
 	})
 }

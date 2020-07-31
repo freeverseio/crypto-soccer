@@ -74,7 +74,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		return errors.New("invalid teamid")
 	}
 
-	isOffer := b.offer.ID != 0
+	isOffer := b.offer.ID != ""
 
 	var validUntil int64
 	if isOffer {

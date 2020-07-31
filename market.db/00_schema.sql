@@ -13,6 +13,7 @@ CREATE TABLE auctions (
     seller TEXT NOT NULL,
     PRIMARY KEY(id)
 );
+CREATE INDEX idx_auctions_player_id ON auctions (player_id);
 
 CREATE TABLE auctions_histories (
     inserted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -98,7 +99,7 @@ CREATE TABLE playstore_orders_histories(
 
 CREATE TYPE offer_state AS ENUM ('started', 'failed', 'cancelled', 'ended', 'accepted');
 CREATE TABLE offers (
-    id BIGINT GENERATED ALWAYS AS IDENTITY,
+    id TEXT NOT NULL,
     player_id TEXT NOT NULL,
     currency_id INT NOT NULL,
     price BIGINT NOT NULL,
@@ -113,10 +114,12 @@ CREATE TABLE offers (
     team_id TEXT NOT NULL,
     PRIMARY KEY(id)
 );
+CREATE INDEX idx_offers_player_id ON offers (player_id);
+CREATE INDEX idx_offers_auction_id ON offers (auction_id);
 
 CREATE TABLE offers_histories (
     inserted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id BIGINT NOT NULL REFERENCES offers(id),
+    id TEXT NOT NULL REFERENCES offers(id),
     player_id TEXT NOT NULL,
     currency_id INT NOT NULL,
     price BIGINT NOT NULL,

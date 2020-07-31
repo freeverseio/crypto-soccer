@@ -21,7 +21,7 @@ func (b OfferService) Bid() storage.BidService {
 	return NewBidService(b.tx)
 }
 
-func (b OfferService) Offer(ID int64) (*storage.Offer, error) {
+func (b OfferService) Offer(ID string) (*storage.Offer, error) {
 	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (b OfferService) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, e
 }
 
 func (b OfferService) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offers WHERE auction_id = $1;", auctionId)
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id FROM offers WHERE auction_id = $1;", auctionId)
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +105,42 @@ func (b OfferService) OfferByAuctionId(auctionId string) (*storage.Offer, error)
 	return &offer, err
 }
 
-func (b OfferService) Insert(offer storage.Offer) (int64, error) {
+func (b OfferService) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT id, COALESCE(auction_id, ''), currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id FROM offers WHERE player_id = $1;", playerId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var offers []storage.Offer
+	for rows.Next() {
+		var offer storage.Offer
+		offer.PlayerID = playerId
+		err = rows.Scan(
+			&offer.ID,
+			&offer.AuctionID,
+			&offer.CurrencyID,
+			&offer.Price,
+			&offer.Rnd,
+			&offer.ValidUntil,
+			&offer.Signature,
+			&offer.State,
+			&offer.StateExtra,
+			&offer.Seller,
+			&offer.Buyer,
+			&offer.TeamID,
+		)
+		if err != nil {
+			return offers, err
+		}
+		offers = append(offers, offer)
+	}
+	return offers, nil
+}
+
+func (b OfferService) Insert(offer storage.Offer) error {
 	log.Debugf("[DBMS] + create Offer %v", b)
-	rows, err := b.tx.Query("INSERT INTO offers (player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;",
+	_, err := b.tx.Exec("INSERT INTO offers (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+		offer.ID,
 		offer.PlayerID,
 		offer.CurrencyID,
 		offer.Price,
@@ -121,15 +154,7 @@ func (b OfferService) Insert(offer storage.Offer) (int64, error) {
 		offer.TeamID,
 	)
 
-	defer rows.Close()
-	if !rows.Next() {
-		return int64(0), nil
-	}
-	var id int64
-	err = rows.Scan(
-		&id,
-	)
-	return id, err
+	return err
 }
 
 func NewNullString(s string) sql.NullString {

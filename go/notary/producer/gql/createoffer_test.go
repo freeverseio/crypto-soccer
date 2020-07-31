@@ -210,3 +210,91 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
 	assert.NilError(t, err)
 }
+
+// func TestCreateOfferPlayerAlreadyOnSale(t *testing.T) {
+// 	tx, err := db.Begin()
+// 	assert.NilError(t, err)
+// 	defer tx.Rollback()
+
+// 	// Create auction for player
+// 	in := input.CreateAuctionInput{}
+// 	in.ValidUntil = big.NewInt(time.Now().Unix() + 48*3600).String()
+// 	in.PlayerId = "274877906948"
+// 	in.CurrencyId = 1
+// 	in.Price = 41234
+// 	in.Rnd = 4232
+// 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
+// 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+// 	assert.NilError(t, err)
+// 	hash, err := signer.HashSellMessage(
+// 		uint8(in.CurrencyId),
+// 		big.NewInt(int64(in.Price)),
+// 		big.NewInt(int64(in.Rnd)),
+// 		validUntil,
+// 		playerId,
+// 	)
+// 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+// 	assert.NilError(t, err)
+// 	signature, err := signer.Sign(hash.Bytes(), privateKey)
+// 	assert.NilError(t, err)
+// 	in.Signature = hex.EncodeToString(signature)
+
+// 	assert.NilError(t, consumer.CreateAuction(tx, in))
+// 	id, err := in.ID()
+// 	assert.NilError(t, err)
+
+// 	service := postgres.NewAuctionService(tx)
+// 	_, err = service.Auction(string(id))
+// 	assert.NilError(t, err)
+
+// 	//Actually commit to local database, because CreateOffer will use different DB TX
+// 	tx.Commit()
+
+// 	// Create offer
+// 	timezoneIdx := uint8(1)
+// 	countryIdx := big.NewInt(0)
+// 	offerer, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+// 	bc.Contracts.Assets.TransferFirstBotToAddr(
+// 		bind.NewKeyedTransactor(bc.Owner),
+// 		timezoneIdx,
+// 		countryIdx,
+// 		crypto.PubkeyToAddress(offerer.PublicKey),
+// 	)
+
+// 	offererRnd := int32(42321)
+// 	offerValidUntil := time.Now().Unix() + 100
+
+// 	ch := make(chan interface{}, 10)
+// 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, db)
+
+// 	inOffer := input.CreateOfferInput{}
+// 	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+// 	inOffer.PlayerId = "274877906948"
+// 	inOffer.CurrencyId = 1
+// 	inOffer.Price = 41234
+// 	inOffer.Rnd = offererRnd
+// 	inOffer.TeamId = "274877906945"
+// 	teamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
+// 	offerValidUntil, err = strconv.ParseInt(inOffer.ValidUntil, 10, 64)
+// 	dummyRnd := int64(0)
+// 	hashOffer, err := signer.HashBidMessage(
+// 		bc.Contracts.Market,
+// 		uint8(inOffer.CurrencyId),
+// 		big.NewInt(int64(inOffer.Price)),
+// 		big.NewInt(int64(inOffer.Rnd)),
+// 		offerValidUntil,
+// 		playerId,
+// 		big.NewInt(0),
+// 		big.NewInt(dummyRnd),
+// 		teamId,
+// 		true,
+// 	)
+// 	assert.NilError(t, err)
+// 	signatureOffer, err := signer.Sign(hashOffer.Bytes(), offerer)
+// 	assert.NilError(t, err)
+// 	inOffer.Signature = hex.EncodeToString(signatureOffer)
+
+// 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
+// 	assert.Error(t, err, "Player is already on sale 274877906948")
+
+// }

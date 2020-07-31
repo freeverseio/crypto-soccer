@@ -11,7 +11,7 @@ const (
 )
 
 type Offer struct {
-	ID         int64
+	ID         string
 	PlayerID   string
 	CurrencyID int
 	Price      int64
@@ -33,7 +33,9 @@ func NewOffer() *Offer {
 }
 
 type OfferService interface {
-	Offer(ID int64) (*Offer, error)
-	Insert(offer Offer) (int64, error)
+	Offer(ID string) (*Offer, error)
+	OfferByAuctionId(auctionId string) (*Offer, error)
+	OffersByPlayerId(playerId string) ([]Offer, error)
+	Insert(offer Offer) error
 	Update(offer Offer) error
 }

@@ -37,6 +37,7 @@ func NewAuction() *Auction {
 type AuctionService interface {
 	PendingAuctions() ([]Auction, error)
 	Auction(ID string) (*Auction, error)
+	AuctionsByPlayerId(ID string) ([]Auction, error)
 	Insert(auction Auction) error
 	Update(auction Auction) error
 	Bid() BidService

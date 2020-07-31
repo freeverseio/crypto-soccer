@@ -3,7 +3,6 @@ package consumer_test
 import (
 	"encoding/hex"
 	"math/big"
-	"strconv"
 	"testing"
 	"time"
 
@@ -75,7 +74,7 @@ func TestAcceptOffer(t *testing.T) {
 	in.CurrencyId = inOffer.CurrencyId
 	in.Price = inOffer.Price
 	in.Rnd = inOffer.Rnd
-	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
+	in.OfferId = graphql.ID(offer.ID)
 
 	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(
@@ -174,7 +173,7 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	in.CurrencyId = inOffer.CurrencyId
 	in.Price = inOffer.Price
 	in.Rnd = inOffer.Rnd
-	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
+	in.OfferId = graphql.ID(offer.ID)
 
 	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(
@@ -252,7 +251,7 @@ func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
 	in.CurrencyId = inOffer.CurrencyId
 	in.Price = inOffer.Price
 	in.Rnd = inOffer.Rnd
-	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
+	in.OfferId = graphql.ID(offer.ID)
 
 	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(
@@ -271,4 +270,208 @@ func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
 
 	err = consumer.AcceptOffer(tx, in)
 	assert.NilError(t, err)
+}
+
+func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	playerId := big.NewInt(274877906940)
+	extraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
+
+	// Creating lower offer
+	lowerOfferValidUntil := big.NewInt(time.Now().Unix() + 5*60)
+	lowerAuctionValidUntil := big.NewInt(time.Now().Unix() + 48*3600)
+	lowerOfererTeamId := big.NewInt(456678987944)
+
+	inLowerOffer := input.CreateOfferInput{}
+	inLowerOffer.ValidUntil = lowerOfferValidUntil.String()
+	inLowerOffer.PlayerId = playerId.String()
+	inLowerOffer.TeamId = lowerOfererTeamId.String()
+	inLowerOffer.CurrencyId = 1
+	inLowerOffer.Price = 1000
+	inLowerOffer.Rnd = 4232
+	inLowerOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
+	assert.NilError(t, err)
+
+	hashLowerOffer, err := signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(inLowerOffer.CurrencyId),
+		big.NewInt(int64(inLowerOffer.Price)),
+		big.NewInt(int64(inLowerOffer.Rnd)),
+		lowerOfferValidUntil.Int64(),
+		playerId,
+		extraPrice,
+		dummyRnd,
+		lowerOfererTeamId,
+		true,
+	)
+	// We cannot compare hashes because validUntil is different in every test (it uses time.now())
+	assert.NilError(t, err)
+	lowerOfferPrivateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	assert.NilError(t, err)
+	lowerOfferSignature, err := signer.Sign(hashLowerOffer.Bytes(), lowerOfferPrivateKey)
+	assert.NilError(t, err)
+	inLowerOffer.Signature = hex.EncodeToString(lowerOfferSignature)
+
+	assert.NilError(t, consumer.CreateOffer(tx, inLowerOffer, *bc.Contracts))
+
+	lowerOfferService := postgres.NewOfferService(tx)
+
+	lowerOffer, err := lowerOfferService.OfferByRndPrice(inLowerOffer.Rnd, inLowerOffer.Price)
+	assert.NilError(t, err)
+
+	// Creating highest offer
+	highestOfferValidUntil := big.NewInt(time.Now().Unix() + 5*60)
+	highestAuctionValidUntil := big.NewInt(time.Now().Unix() + 48*3600)
+	highesetOfererTeamId := big.NewInt(456678987944)
+
+	inHighestOffer := input.CreateOfferInput{}
+	inHighestOffer.ValidUntil = highestOfferValidUntil.String()
+	inHighestOffer.PlayerId = playerId.String()
+	inHighestOffer.TeamId = highesetOfererTeamId.String()
+	inHighestOffer.CurrencyId = 1
+	inHighestOffer.Price = 2000
+	inHighestOffer.Rnd = 4232
+	inHighestOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
+	assert.NilError(t, err)
+
+	hashHighestOffer, err := signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(inHighestOffer.CurrencyId),
+		big.NewInt(int64(inHighestOffer.Price)),
+		big.NewInt(int64(inHighestOffer.Rnd)),
+		highestOfferValidUntil.Int64(),
+		playerId,
+		extraPrice,
+		dummyRnd,
+		highesetOfererTeamId,
+		true,
+	)
+	// We cannot compare hashes because validUntil is different in every test (it uses time.now())
+	assert.NilError(t, err)
+	highestOfferPrivateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	assert.NilError(t, err)
+	highestOfferSignature, err := signer.Sign(hashHighestOffer.Bytes(), highestOfferPrivateKey)
+	assert.NilError(t, err)
+	inHighestOffer.Signature = hex.EncodeToString(highestOfferSignature)
+
+	assert.NilError(t, consumer.CreateOffer(tx, inHighestOffer, *bc.Contracts))
+
+	highestOfferService := postgres.NewOfferService(tx)
+
+	higherOffer, err := highestOfferService.OfferByRndPrice(inHighestOffer.Rnd, inHighestOffer.Price)
+	assert.NilError(t, err)
+	_, err = highestOfferService.OfferByRndPrice(inHighestOffer.Rnd, inHighestOffer.Price)
+	assert.NilError(t, err)
+
+	// Accepting lower offer
+	in := input.AcceptOfferInput{}
+	in.ValidUntil = lowerAuctionValidUntil.String()
+	in.PlayerId = inLowerOffer.PlayerId
+	in.CurrencyId = inLowerOffer.CurrencyId
+	in.Price = inLowerOffer.Price
+	in.Rnd = inLowerOffer.Rnd
+	in.OfferId = graphql.ID(lowerOffer.ID)
+
+	assert.NilError(t, err)
+	hash, err := signer.HashSellMessage(
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		lowerAuctionValidUntil.Int64(),
+		playerId,
+	)
+	assert.NilError(t, err)
+	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), privateKey)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	err = consumer.AcceptOffer(tx, in)
+	assert.Error(t, err, "You can only accept highest offer")
+
+	// Accepting hihgest offer
+	inHigher := input.AcceptOfferInput{}
+	inHigher.ValidUntil = highestAuctionValidUntil.String()
+	inHigher.PlayerId = inHighestOffer.PlayerId
+	inHigher.CurrencyId = inHighestOffer.CurrencyId
+	inHigher.Price = inHighestOffer.Price
+	inHigher.Rnd = inHighestOffer.Rnd
+	inHigher.OfferId = graphql.ID(higherOffer.ID)
+
+	hashHigher, err := signer.HashSellMessage(
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		highestAuctionValidUntil.Int64(),
+		playerId,
+	)
+	signature, err = signer.Sign(hashHigher.Bytes(), privateKey)
+	assert.NilError(t, err)
+	inHigher.Signature = hex.EncodeToString(signature)
+
+	err = consumer.AcceptOffer(tx, inHigher)
+	assert.NilError(t, err)
+
+	// Accepting unexistent offer
+	inUnexistent := input.AcceptOfferInput{}
+	inUnexistent.ValidUntil = big.NewInt(999999999999).String()
+	inUnexistent.PlayerId = playerId.String()
+	inUnexistent.CurrencyId = 1
+	inUnexistent.Price = 100
+	inUnexistent.Rnd = 45654
+	inUnexistent.OfferId = graphql.ID("23442566")
+
+	hashUnexistent, err := signer.HashSellMessage(
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		highestAuctionValidUntil.Int64(),
+		playerId,
+	)
+	signature, err = signer.Sign(hashUnexistent.Bytes(), privateKey)
+	assert.NilError(t, err)
+	inUnexistent.Signature = hex.EncodeToString(signature)
+
+	err = consumer.AcceptOffer(tx, inUnexistent)
+	assert.Error(t, err, "You can only accept highest offer")
+}
+
+func TestAcceptUnexistentOffers(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auctionValidUntil := big.NewInt(999999999999 + 3600*24*2)
+	playerId := big.NewInt(274877906940)
+
+	in := input.AcceptOfferInput{}
+	in.ValidUntil = big.NewInt(999999999999).String()
+	in.PlayerId = playerId.String()
+	in.CurrencyId = 1
+	in.Price = 100
+	in.Rnd = 45654
+	in.OfferId = graphql.ID("23442566")
+
+	assert.NilError(t, err)
+	hash, err := signer.HashSellMessage(
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		auctionValidUntil.Int64(),
+		playerId,
+	)
+	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), privateKey)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	err = consumer.AcceptOffer(tx, in)
+	assert.Error(t, err, "There are no offers for this playerId")
+
 }
