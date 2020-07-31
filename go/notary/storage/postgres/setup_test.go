@@ -11,7 +11,7 @@ import (
 
 var db *sql.DB
 
-func new(url string) (*sql.DB, error) {
+func connect(url string) (*sql.DB, error) {
 	var err error
 	db, err := sql.Open("postgres", url)
 	if err != nil {
@@ -25,7 +25,7 @@ func new(url string) (*sql.DB, error) {
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = new("postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable")
+	db, err = connect("postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
