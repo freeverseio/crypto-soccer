@@ -5,14 +5,11 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/storagetest"
-	"gotest.tools/assert"
 )
 
-func TestPlaystoreOrder(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
-
-	service := postgres.NewStorageService(db)
+func TestStorageHistoryService(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+	storagetest.TestAuctionServiceInterface(t, service)
+	storagetest.TestOfferServiceInterface(t, service)
 	storagetest.TestPlaystoreOrderServiceInterface(t, service)
 }
