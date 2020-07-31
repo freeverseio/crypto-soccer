@@ -13,6 +13,6 @@ func TestAuctionServiceInterface(t *testing.T) {
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
-	service := postgres.NewAuctionService(tx)
+	service := postgres.NewStorageService(db)
 	storagetest.TestAuctionServiceInterface(t, service)
 }

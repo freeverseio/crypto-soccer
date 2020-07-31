@@ -65,7 +65,7 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 	}
 	auction.Seller = signerAddress.Hex()
 	service := postgres.NewAuctionHistoryService(tx)
-	if err = service.Insert(*auction); err != nil {
+	if err = service.AuctionInsert(*auction); err != nil {
 		return err
 	}
 

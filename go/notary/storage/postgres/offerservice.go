@@ -17,9 +17,9 @@ func NewOfferService(tx *sql.Tx) *OfferService {
 	}
 }
 
-func (b OfferService) Bid() storage.BidService {
-	return NewBidService(b.tx)
-}
+// func (b OfferService) Bid() storage.BidService {
+// 	return NewBidService(b.tx)
+// }
 
 func (b OfferService) Offer(ID int64) (*storage.Offer, error) {
 	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE id = $1;", ID)

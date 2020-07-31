@@ -34,6 +34,8 @@ func NewAuction() *Auction {
 	return &auction
 }
 
+
+
 type AuctionService interface {
 	PendingAuctions() ([]Auction, error)
 	Auction(ID string) (*Auction, error)

@@ -29,7 +29,7 @@ func TestCreateBid(t *testing.T) {
 
 	auction := storage.NewAuction()
 	auction.ID = "3"
-	assert.NilError(t, service.Insert(*auction))
+	assert.NilError(t, service.AuctionInsert(*auction))
 
 	in := input.CreateBidInput{}
 	in.AuctionId = graphql.ID(auction.ID)

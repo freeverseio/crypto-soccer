@@ -14,9 +14,9 @@ func NewOfferHistoryService(tx *sql.Tx) *OfferHistoryService {
 	return &OfferHistoryService{*NewOfferService(tx)}
 }
 
-func (b OfferHistoryService) Bid() storage.BidService {
-	return *NewBidHistoryService(b.tx)
-}
+// func (b OfferHistoryService) Bid() storage.BidService {
+// 	return *NewBidHistoryService(b.tx)
+// }
 
 func (b OfferHistoryService) Insert(offer storage.Offer) (int64, error) {
 	id, err := b.OfferService.Insert(offer)

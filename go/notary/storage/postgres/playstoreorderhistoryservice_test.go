@@ -13,6 +13,6 @@ func TestPlaystoreHistoryOrder(t *testing.T) {
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
-	service := postgres.NewPlaystoreOrderHistoryService(tx)
+	service := postgres.NewStorageHistoryService(db)
 	storagetest.TestPlaystoreOrderServiceInterface(t, service)
 }

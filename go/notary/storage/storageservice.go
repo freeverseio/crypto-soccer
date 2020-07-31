@@ -1,0 +1,25 @@
+package storage
+
+import "database/sql"
+
+type StorageService interface {
+	DB() *sql.DB
+
+	// Auction
+	PendingAuctions(tx *sql.Tx) ([]Auction, error)
+	Auction(tx *sql.Tx, ID string) (*Auction, error)
+	AuctionInsert(tx *sql.Tx, auction Auction) error
+	AuctionUpdate(tx *sql.Tx, auction Auction) error
+
+	// Bid
+	Bids(tx *sql.Tx, auctionId string) ([]Bid, error)
+	BidInsert(tx *sql.Tx, bid Bid) error
+	BidUpdate(tx *sql.Tx, bid Bid) error
+
+	// PlayStore
+	PlayStoreOrder(tx *sql.Tx, orderId string) (*PlaystoreOrder, error)
+	PlayStorePendingOrders(tx *sql.Tx) ([]PlaystoreOrder, error)
+	PlayStoreInsert(tx *sql.Tx, order PlaystoreOrder) error
+	PlayStoreUpdateState(tx *sql.Tx, order PlaystoreOrder) error
+	PlayStorePendingOrdersByPlayerId(tx *sql.Tx, playerId string) ([]PlaystoreOrder, error)
+}
