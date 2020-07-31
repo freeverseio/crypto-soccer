@@ -1,10 +1,18 @@
 package postgres_test
 
-// func TestOfferServiceInterface(t *testing.T) {
-// 	tx, err := db.Begin()
-// 	assert.NilError(t, err)
-// 	defer tx.Rollback()
+import (
+	"testing"
 
-// 	service := postgres.NewOfferService(tx)
-// 	storagetest.TestOfferServiceInterface(t, service, auctionService)
-// }
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/storagetest"
+	"gotest.tools/assert"
+)
+
+func TestOfferServiceInterface(t *testing.T) {
+	tx, err := db.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	service := postgres.NewStorageService(db)
+	storagetest.TestOfferServiceInterface(t, service)
+}

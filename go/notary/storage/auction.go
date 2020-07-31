@@ -33,13 +33,3 @@ func NewAuction() *Auction {
 	auction.State = AuctionStarted
 	return &auction
 }
-
-
-
-type AuctionService interface {
-	PendingAuctions() ([]Auction, error)
-	Auction(ID string) (*Auction, error)
-	Insert(auction Auction) error
-	Update(auction Auction) error
-	Bid() BidService
-}
