@@ -6,7 +6,7 @@ type StorageService interface {
 	DB() *sql.DB
 
 	// Auction
-	PendingAuctions(tx *sql.Tx) ([]Auction, error)
+	AuctionPendingAuctions(tx *sql.Tx) ([]Auction, error)
 	Auction(tx *sql.Tx, ID string) (*Auction, error)
 	AuctionInsert(tx *sql.Tx, auction Auction) error
 	AuctionUpdate(tx *sql.Tx, auction Auction) error

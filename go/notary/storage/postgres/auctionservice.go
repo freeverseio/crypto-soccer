@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b StorageService) PendingAuctions(tx *sql.Tx) ([]storage.Auction, error) {
+func (b StorageService) AuctionPendingAuctions(tx *sql.Tx) ([]storage.Auction, error) {
 	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
 	if err != nil {
 		return nil, err

@@ -42,7 +42,7 @@ func TestAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, *result, *auction)
 	})
 
-	t.Run("TestPendingAuctions", func(t *testing.T) {
+	t.Run("TestAuctionPendingAuctions", func(t *testing.T) {
 		tx, err := service.DB().Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
@@ -51,56 +51,56 @@ func TestAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		auction.ID = "ciao0"
 		auction.State = storage.AuctionStarted
 		assert.NilError(t, service.AuctionInsert(tx, *auction))
-		result, err := service.PendingAuctions(tx)
+		result, err := service.AuctionPendingAuctions(tx)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 1)
 
 		auction.ID = "ciao1"
 		auction.State = storage.AuctionAssetFrozen
 		assert.NilError(t, service.AuctionInsert(tx, *auction))
-		result, err = service.PendingAuctions(tx)
+		result, err = service.AuctionPendingAuctions(tx)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 2)
 
 		auction.ID = "ciao2"
 		auction.State = storage.AuctionPaying
 		assert.NilError(t, service.AuctionInsert(tx, *auction))
-		result, err = service.PendingAuctions(tx)
+		result, err = service.AuctionPendingAuctions(tx)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 3)
 
 		auction.ID = "ciao3"
 		auction.State = storage.AuctionWithdrableBySeller
 		assert.NilError(t, service.AuctionInsert(tx, *auction))
-		result, err = service.PendingAuctions(tx)
+		result, err = service.AuctionPendingAuctions(tx)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 4)
 
 		auction.ID = "ciao4"
 		auction.State = storage.AuctionWithdrableByBuyer
 		assert.NilError(t, service.AuctionInsert(tx, *auction))
-		result, err = service.PendingAuctions(tx)
+		result, err = service.AuctionPendingAuctions(tx)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 5)
 
 		auction.ID = "ciao5"
 		auction.State = storage.AuctionFailed
 		assert.NilError(t, service.AuctionInsert(tx, *auction))
-		result, err = service.PendingAuctions(tx)
+		result, err = service.AuctionPendingAuctions(tx)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 5)
 
 		auction.ID = "ciao6"
 		auction.State = storage.AuctionEnded
 		assert.NilError(t, service.AuctionInsert(tx, *auction))
-		result, err = service.PendingAuctions(tx)
+		result, err = service.AuctionPendingAuctions(tx)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 5)
 
 		auction.ID = "ciao7"
 		auction.State = storage.AuctionCancelled
 		assert.NilError(t, service.AuctionInsert(tx, *auction))
-		result, err = service.PendingAuctions(tx)
+		result, err = service.AuctionPendingAuctions(tx)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 5)
 	})
