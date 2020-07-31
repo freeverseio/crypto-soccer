@@ -9,7 +9,5 @@ import (
 
 func TestStorageService(t *testing.T) {
 	service := postgres.NewStorageService(db)
-	storagetest.TestAuctionServiceInterface(t, service)
-	storagetest.TestOfferServiceInterface(t, service)
-	storagetest.TestPlaystoreOrderServiceInterface(t, service)
+	storagetest.TestStorageService(t, service)
 }

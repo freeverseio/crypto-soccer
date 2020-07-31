@@ -9,7 +9,5 @@ import (
 
 func TestStorageHistoryService(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
-	storagetest.TestAuctionServiceInterface(t, service)
-	storagetest.TestOfferServiceInterface(t, service)
-	storagetest.TestPlaystoreOrderServiceInterface(t, service)
+	storagetest.TestStorageService(t, service)
 }
