@@ -1,0 +1,100 @@
+version: '3'
+services:
+  ipfs.node0:
+    image: ipfs/go-ipfs:v0.6.0
+    restart: always
+    environment:
+      - IPFS_PATH=/data
+      # - IPFS_FD_MAX=4096
+      # - IPFS_PROFILE=test
+    volumes:
+      - ipfs.node-data0:/data
+    ports:
+      - "15001:5001"
+  ipfs.cluster0:
+    image: ipfs/ipfs-cluster:v0.13.0
+    restart: always
+    entrypoint: ["ipfs-cluster-follow"]
+    environment: 
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs.node0/tcp/5001
+      CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: /dns4/ipfs.node0/tcp/5001
+    command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.goalrevolution.live
+    depends_on: 
+      - ipfs.node0
+    volumes:
+      - ipfs.cluster-data0:/data
+    ports:
+      - "19096:9096"
+
+
+  ipfs.node1:
+    image: ipfs/go-ipfs:v0.6.0
+    restart: always
+    environment:
+      - IPFS_PATH=/data
+      # - IPFS_FD_MAX=4096
+      # - IPFS_PROFILE=test
+    volumes:
+      - ipfs.node-data1:/data
+    ports:
+      - "15002:5001"
+  ipfs.cluster1:
+    image: ipfs/ipfs-cluster:v0.13.0
+    restart: always
+    entrypoint: ["ipfs-cluster-follow"]
+    environment: 
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs.node1/tcp/5001
+      CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: /dns4/ipfs.node1/tcp/5001
+    command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.goalrevolution.live
+    depends_on: 
+      - ipfs.node1
+    volumes:
+      - ipfs.cluster-data1:/data
+    ports:
+      - "19097:9096"
+
+  ipfs.node2:
+    image: ipfs/go-ipfs:v0.6.0
+    restart: always
+    environment:
+      - IPFS_PATH=/data
+      # - IPFS_FD_MAX=4096
+      # - IPFS_PROFILE=test
+    volumes:
+      - ipfs.node-data2:/data
+    ports:
+      - "15003:5001"
+  ipfs.cluster2:
+    image: ipfs/ipfs-cluster:v0.13.0
+    restart: always
+    entrypoint: ["ipfs-cluster-follow"]
+    environment: 
+      CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs.node2/tcp/5001
+      CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
+      CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
+      CLUSTER_IPFSPROXY_NODEMULTIADDRESS: /dns4/ipfs.node2/tcp/5001
+    command: gr-ipfs-cluster run --init https://ipfs.io/ipns/goalrevolution.collab.ipfs.cluster.goalrevolution.live
+    depends_on: 
+      - ipfs.node2
+    volumes:
+      - ipfs.cluster-data2:/data
+    ports:
+      - "19098:9096"
+
+
+volumes:
+  ipfs.cluster-data0:
+  ipfs.node-data0:
+
+  ipfs.cluster-data1:
+  ipfs.node-data1:
+
+  ipfs.cluster-data2:
+  ipfs.node-data2:
+
+
+
