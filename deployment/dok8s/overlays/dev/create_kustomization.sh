@@ -30,9 +30,9 @@ kustomize edit set image freeverseio/universe.db:${TAG}
 kustomize edit set image freeverseio/authproxy:${TAG}
 kustomize edit set image freeverseio/dashboard:${TAG}
 kustomize edit set image freeverseio/webphoenix:${TAG}
-# kustomize edit set image freeverseio/game.api:${TAG}
-# kustomize edit set image freeverseio/game.db:${TAG}
-# kustomize edit set image freeverseio/gamelayer:${TAG}
+kustomize edit set image freeverseio/game.api:${TAG}
+kustomize edit set image freeverseio/game.db:${TAG}
+kustomize edit set image freeverseio/gamelayer:${TAG}
 
 # change to n replicas
 # kustomize edit set replicas horizon=1

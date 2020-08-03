@@ -29,12 +29,12 @@ images:
   newTag: 0.24.2
 - name: freeverseio/dashboard
   newTag: 0.24.2
-# - name: freeverseio/game.api
-#   newTag: 0.24.2
-# - name: freeverseio/game.db
-#   newTag: 0.24.2
-# - name: freeverseio/gamelayer
-#   newTag: 0.24.2
+- name: freeverseio/game.api
+  newTag: 0.24.2
+- name: freeverseio/game.db
+  newTag: 0.24.2
+- name: freeverseio/gamelayer
+  newTag: 0.24.2
 patchesJson6902:
 - target:
     group: networking.k8s.io
