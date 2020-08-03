@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
-
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -86,11 +84,10 @@ func TestCreateOffer(t *testing.T) {
 	assert.Equal(t, hex.EncodeToString(signature), "dbd05f0df6b470d071462ba49956eb472031de84509409823502decb119f2fb36cfb57d5d6f6de5f819731745a4f5533c1805065eebf1a7d56dc9bdced406b231c")
 	in.Signature = hex.EncodeToString(signature)
 
-	assert.NilError(t, consumer.CreateOffer(tx, in, *bc.Contracts))
+	assert.NilError(t, consumer.CreateOffer(service, tx, in, *bc.Contracts))
 	assert.NilError(t, err)
 
-	service := postgres.NewOfferService(tx)
-	offer, err := service.OfferByRndPrice(in.Rnd, in.Price)
+	offer, err := service.OfferByRndPrice(tx, in.Rnd, in.Price)
 	assert.NilError(t, err)
 	assert.Assert(t, offer != nil)
 	assert.Equal(t, offer.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f")
