@@ -42,8 +42,8 @@ func NewJob(universeURL *string, gameURL *string, debug *bool) {
 	if err := func() error {
 		start := time.Now()
 		log.Info("Create the clients to GQL APIs")
-		universe := graphql.NewClient("http://localhost:4000/graphql", nil)
-		game := graphql.NewClient("http://localhost:4040/graphql", nil)
+		universe := graphql.NewClient(*universeURL, nil)
+		game := graphql.NewClient(*gameURL, nil)
 
 		playerService := NewPlayerService(universe, game)
 		teamService := NewTeamService(universe, game)
