@@ -81,3 +81,30 @@ func TestDivisionCreationProcess(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, len(trainings), 128)
 }
+
+func TestSecondDivisionCreationProcess(t *testing.T) {
+	t.Parallel()
+	tx, err := universedb.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	namesdb, err := names.New("../../names/sql/names.db")
+	assert.NilError(t, err)
+	process := process.NewDivisionCreationProcessor(bc.Contracts, namesdb)
+
+	timezone := uint8(1)
+	event := assets.AssetsDivisionCreation{
+		Timezone:             timezone,
+		CountryIdxInTZ:       big.NewInt(0),
+		DivisionIdxInCountry: big.NewInt(0),
+	}
+	assert.NilError(t, process.Process(tx, event))
+
+	verse := storage.Verse{}
+	verse.VerseNumber = 3
+	verse.Root = "ciao"
+	assert.NilError(t, verse.Insert(tx))
+
+	event.DivisionIdxInCountry = big.NewInt(1)
+	assert.NilError(t, process.Process(tx, event))
+}
