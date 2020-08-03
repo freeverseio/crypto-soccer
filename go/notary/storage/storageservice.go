@@ -10,6 +10,7 @@ type StorageService interface {
 	Auction(tx *sql.Tx, ID string) (*Auction, error)
 	AuctionInsert(tx *sql.Tx, auction Auction) error
 	AuctionUpdate(tx *sql.Tx, auction Auction) error
+	AuctionsByPlayerId(tx *sql.Tx, ID string) ([]Auction, error)
 
 	// Bid
 	Bids(tx *sql.Tx, auctionId string) ([]Bid, error)
@@ -29,4 +30,5 @@ type StorageService interface {
 	OfferUpdate(tx *sql.Tx, offer Offer) error
 	OfferByAuctionId(tx *sql.Tx, auctionId string) (*Offer, error)
 	OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*Offer, error)
+	OffersByPlayerId(tx *sql.Tx, playerId string) ([]Offer, error)
 }

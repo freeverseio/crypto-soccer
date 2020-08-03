@@ -9,12 +9,14 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 var bc *testutils.BlockchainNode
 var db *sql.DB
+var service storage.StorageService
 
 func TestMain(m *testing.M) {
 	var err error
@@ -34,5 +36,6 @@ func TestMain(m *testing.M) {
 		countryIdx,
 		crypto.PubkeyToAddress(bc.Owner.PublicKey),
 	)
+	service = postgres.NewStorageService(db)
 	os.Exit(m.Run())
 }

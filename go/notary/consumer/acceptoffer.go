@@ -46,7 +46,7 @@ func highestOffer(offers []storage.Offer) (*storage.Offer, error) {
 }
 
 func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOfferInput) error {
-	offers, err := service.OffersByPlayerId(string(in.PlayerId))
+	offers, err := service.OffersByPlayerId(tx, string(in.PlayerId))
 
 	highestOffer, err := highestOffer(offers)
 	if err != nil {
