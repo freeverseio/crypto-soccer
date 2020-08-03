@@ -89,9 +89,11 @@ func TestMatchStartTimeByTimezone(t *testing.T) {
 		State:         storage.MatchBegin,
 	}
 	match.MatchIdx = 0
+	match.MatchDayIdx = 0
 	match.StartEpoch = 44
 	assert.NilError(t, match.Insert(tx))
-	match.MatchIdx = 3
+	match.MatchIdx = 0
+	match.MatchDayIdx = 1
 	match.StartEpoch = 2
 	assert.NilError(t, match.Insert(tx))
 

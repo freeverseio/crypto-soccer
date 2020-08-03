@@ -272,7 +272,7 @@ func MatchesByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, coun
 }
 
 func MatchesStartEpochByTimezone(tx *sql.Tx, timezone uint8) ([]int64, error) {
-	rows, err := tx.Query(`SELECT start_epoch FROM matches WHERE timezone_idx = $1 AND league_idx = '0';`, timezone)
+	rows, err := tx.Query(`SELECT start_epoch FROM matches WHERE timezone_idx = $1 AND league_idx = '0' AND match_idx = '0';`, timezone)
 	if err != nil {
 		return nil, err
 	}

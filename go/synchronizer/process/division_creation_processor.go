@@ -133,13 +133,13 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 				return err
 			}
 		} else {
-			// copy from the times of the timezone
+			// log.Info("[process|division creation] copying current match times")
 			matchesTimesByTimezone, err := storage.MatchesStartEpochByTimezone(tx, timezone)
 			if err != nil {
 				return err
 			}
 			if len(matchesTimesByTimezone) != 14 {
-				return errors.New("start epoch times have to be 14")
+				return fmt.Errorf("start epoch times have to be 14 but got %v", len(matchesTimesByTimezone))
 			}
 			for i := range matchesStart {
 				matchesStart[i] = big.NewInt(matchesTimesByTimezone[i])
