@@ -8,7 +8,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
 	log "github.com/sirupsen/logrus"
 )
@@ -41,8 +40,7 @@ func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput
 		return nil, errors.New("not owner of the team")
 	}
 
-	service := postgres.NewStorageService(b.db)
-	return b.createWorldPlayersBatch(service, string(args.Input.TeamId))
+	return b.createWorldPlayersBatch(b.service, string(args.Input.TeamId))
 }
 
 func (b *Resolver) createWorldPlayersBatch(service storage.StorageService, teamId string) ([]*worldplayer.WorldPlayer, error) {
@@ -52,7 +50,7 @@ func (b *Resolver) createWorldPlayersBatch(service storage.StorageService, teamI
 		return nil, err
 	}
 
-	tx, err := b.db.Begin()
+	tx, err := b.service.DB().Begin()
 	if err != nil {
 		return nil, err
 	}

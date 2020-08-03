@@ -1,11 +1,11 @@
 package gql
 
 import (
-	"database/sql"
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -14,7 +14,7 @@ type Resolver struct {
 	contracts         contracts.Contracts
 	namesdb           *names.Generator
 	googleCredentials []byte
-	db                *sql.DB
+	service           storage.StorageService
 }
 
 func NewResolver(
@@ -22,14 +22,14 @@ func NewResolver(
 	contracts contracts.Contracts,
 	namesdb *names.Generator,
 	googleCredentials []byte,
-	db *sql.DB,
+	service storage.StorageService,
 ) *Resolver {
 	resolver := Resolver{}
 	resolver.ch = ch
 	resolver.contracts = contracts
 	resolver.namesdb = namesdb
 	resolver.googleCredentials = googleCredentials
-	resolver.db = db
+	resolver.service = service
 	return &resolver
 }
 

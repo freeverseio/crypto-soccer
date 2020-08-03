@@ -30,7 +30,7 @@ func TestCreateOffer(t *testing.T) {
 	offerValidUntil := time.Now().Unix() + 100
 
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, db)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	inOffer := input.CreateOfferInput{}
 	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
@@ -104,7 +104,7 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	offerValidUntil := time.Now().Unix() + 100
 
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, db)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	inOffer := input.CreateOfferInput{}
 	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
@@ -158,7 +158,7 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	offerValidUntil := time.Now().Unix() + 100
 
 	ch := make(chan interface{}, 10)
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, db)
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	inOffer := input.CreateOfferInput{}
 	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
