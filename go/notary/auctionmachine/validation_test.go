@@ -3,14 +3,14 @@ package auctionmachine_test
 import (
 	"testing"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
 func TestValidationAuctionInvalidState(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -31,7 +31,7 @@ func TestValidationAuctionInvalidState(t *testing.T) {
 }
 
 func TestValidationAuctionValidOrderInvalidState(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -49,7 +49,7 @@ func TestValidationAuctionValidOrderInvalidState(t *testing.T) {
 }
 
 func TestValidationAuctionValidOrderPendingRelease(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -67,7 +67,7 @@ func TestValidationAuctionValidOrderPendingRelease(t *testing.T) {
 }
 
 func TestValidationAuctionValidOrderReleased(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
