@@ -89,10 +89,6 @@ func (b *Team) Insert(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	props := NewTeamProps(b)
-	if err := props.Update(tx); err != nil {
-		return err
-	}
 
 	return nil
 }

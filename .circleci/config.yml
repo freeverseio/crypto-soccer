@@ -46,10 +46,6 @@ commands:
     description: "Submit cryptosoccer schema in database"
     steps:
       - run: cd universe.db && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f $f; done
-  submit_game_db_schema:
-    description: "Submit game schema in database"
-    steps:
-      - run: cd game.db && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d game -h localhost -p 5432 -f $f; done
   submit_market_db_schema:
     description: "Submit cryptosoccer schema in database"
     steps:
@@ -109,7 +105,6 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - submit_game_db_schema
       - install_ipfs_cluster
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: 
@@ -130,7 +125,6 @@ jobs:
       - checkout
       - generate_contracts_code
       - submit_universe_db_schema
-      - submit_game_db_schema
       - install_ipfs_cluster
       - run: 
           command: |
