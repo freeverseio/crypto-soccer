@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b StorageService) Offer(tx *sql.Tx, ID int64) (*storage.Offer, error) {
+func (b StorageService) Offer(tx *sql.Tx, ID string) (*storage.Offer, error) {
 	rows, err := tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), team_id FROM offers WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (b StorageService) OfferByAuctionId(tx *sql.Tx, auctionId string) (*storage
 }
 
 func (b StorageService) OffersByPlayerId(tx *sql.Tx, playerId string) ([]storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT id, COALESCE(auction_id, ''), currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id FROM offers WHERE player_id = $1;", playerId)
+	rows, err := tx.Query("SELECT id, COALESCE(auction_id, ''), currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id FROM offers WHERE player_id = $1;", playerId)
 	if err != nil {
 		return nil, err
 	}

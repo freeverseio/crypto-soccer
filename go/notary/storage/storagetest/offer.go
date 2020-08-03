@@ -12,7 +12,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		tx, err := service.DB().Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
-		offer, err := service.Offer(tx, 4343)
+		offer, err := service.Offer(tx, "4343")
 		assert.NilError(t, err)
 		assert.Assert(t, offer == nil)
 	})
@@ -33,11 +33,10 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "3"
 		offer.Buyer = "4"
 
-		offerId, err := service.OfferInsert(tx, *offer)
-		offer.ID = offerId
+		err = service.OfferInsert(tx, *offer)
 		assert.NilError(t, err)
 
-		result, err := service.Offer(tx, offerId)
+		result, err := service.Offer(tx, offer.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 	})
@@ -68,8 +67,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.State = storage.OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
-		offerId, err := service.OfferInsert(tx, *offer)
-		offer.ID = offerId
+		err = service.OfferInsert(tx, *offer)
 		assert.NilError(t, err)
 		result, err := service.Offer(tx, offer.ID)
 		assert.NilError(t, err)
@@ -106,9 +104,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.StateExtra = "3"
 		offer.Seller = "3"
 		offer.Buyer = "5"
-		_, err = service.OfferInsert(tx, *offer)
+		err = service.OfferInsert(tx, *offer)
 		assert.NilError(t, err)
-		_, err = service.OfferInsert(tx, *offer)
+		err = service.OfferInsert(tx, *offer)
 		assert.Error(t, err, "some error on duplication")
 	})
 }

@@ -60,8 +60,8 @@ func (b StorageService) Auction(tx *sql.Tx, ID string) (*storage.Auction, error)
 	return &auction, err
 }
 
-func (b AuctionService) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
-	rows, err := b.tx.Query("SELECT id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE player_id = $1;", ID)
+func (b StorageService) AuctionsByPlayerId(tx *sql.Tx, ID string) ([]storage.Auction, error) {
+	rows, err := tx.Query("SELECT id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE player_id = $1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (b AuctionService) AuctionsByPlayerId(ID string) ([]storage.Auction, error)
 	return auctions, err
 }
 
-func (b AuctionService) AuctionInsert(tx sql.Tx, auction storage.Auction) error {
+func (b StorageService) AuctionInsert(tx *sql.Tx, auction storage.Auction) error {
 	log.Debugf("[DBMS] + create Auction %v", b)
 	_, err := tx.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, payment_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 		auction.ID,

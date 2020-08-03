@@ -6,13 +6,12 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func (b StorageHistoryService) OfferInsert(tx *sql.Tx, offer storage.Offer) (int64, error) {
-	id, err := b.StorageService.OfferInsert(tx, offer)
+func (b StorageHistoryService) OfferInsert(tx *sql.Tx, offer storage.Offer) error {
+	err := b.StorageService.OfferInsert(tx, offer)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	offer.ID = id
-	return id, offerInsertHistory(tx, offer)
+	return offerInsertHistory(tx, offer)
 }
 
 func (b StorageHistoryService) OfferUpdate(tx *sql.Tx, offer storage.Offer) error {

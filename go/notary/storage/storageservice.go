@@ -24,8 +24,8 @@ type StorageService interface {
 	PlayStorePendingOrdersByPlayerId(tx *sql.Tx, playerId string) ([]PlaystoreOrder, error)
 
 	// Offer
-	Offer(tx *sql.Tx, ID int64) (*Offer, error)
-	OfferInsert(tx *sql.Tx, offer Offer) (int64, error)
+	Offer(tx *sql.Tx, ID string) (*Offer, error)
+	OfferInsert(tx *sql.Tx, offer Offer) error
 	OfferUpdate(tx *sql.Tx, offer Offer) error
 	OfferByAuctionId(tx *sql.Tx, auctionId string) (*Offer, error)
 	OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*Offer, error)
