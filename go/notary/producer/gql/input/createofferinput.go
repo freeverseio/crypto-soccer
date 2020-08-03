@@ -16,7 +16,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 )
 
 type CreateOfferInput struct {
@@ -151,14 +150,13 @@ func (b CreateOfferInput) IsPlayerFrozen(contracts contracts.Contracts) (bool, e
 	return isFrozen, nil
 }
 
-func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, tx *sql.Tx) (bool, error) {
+func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, service storage.StorageService, tx *sql.Tx) (bool, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
 	}
 
-	auctionService := postgres.NewAuctionService(tx)
-	auctions, err := auctionService.AuctionsByPlayerId(b.PlayerId)
+	auctions, err := service.AuctionsByPlayerId(tx, b.PlayerId)
 	fmt.Printf("Auctions for player %v : %v\n\n", playerId, auctions)
 	if err != nil {
 		return false, err

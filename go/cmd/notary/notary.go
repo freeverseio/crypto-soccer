@@ -99,12 +99,14 @@ func main() {
 
 		ch := make(chan interface{}, *bufferSize)
 
+		storageService := postgres.NewStorageService(marketdb)
+
 		go gql.ListenAndServe(
 			ch,
 			*contracts,
 			namesdb,
 			googleCredentials,
-			marketdb,
+			storageService,
 		)
 		go producer.NewProcessor(ch, time.Duration(30)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(2)*time.Second)
@@ -125,6 +127,7 @@ func main() {
 			googleCredentials,
 			namesdb,
 			*iapTestOn,
+			storageService,
 		)
 		if err != nil {
 			return err

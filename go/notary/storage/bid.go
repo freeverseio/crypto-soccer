@@ -23,12 +23,6 @@ type Bid struct {
 	PaymentDeadline int64
 }
 
-type BidService interface {
-	Bids(auctionId string) ([]Bid, error)
-	Insert(bid Bid) error
-	Update(bid Bid) error
-}
-
 func NewBid() *Bid {
 	bid := Bid{}
 	bid.State = BidAccepted

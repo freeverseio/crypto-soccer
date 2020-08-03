@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 
@@ -46,11 +45,8 @@ func highestOffer(offers []storage.Offer) (*storage.Offer, error) {
 	return &offers[idx], nil
 }
 
-func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
-
-	offerService := postgres.NewOfferHistoryService(tx)
-
-	offers, err := offerService.OffersByPlayerId(string(in.PlayerId))
+func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOfferInput) error {
+	offers, err := service.OffersByPlayerId(tx, string(in.PlayerId))
 
 	highestOffer, err := highestOffer(offers)
 	if err != nil {
@@ -69,7 +65,7 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 	if offer != nil && offer.ValidUntil < time.Now().Unix() {
 		offer.State = storage.OfferEnded
 		offer.StateExtra = "Offer expired when accepting"
-		if err = offerService.Update(*offer); err != nil {
+		if err = service.OfferUpdate(tx, *offer); err != nil {
 			return err
 		}
 		return errors.New("Associated Offer is expired")
@@ -97,8 +93,7 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 		return err
 	}
 	auction.Seller = signerAddress.Hex()
-	service := postgres.NewAuctionHistoryService(tx)
-	if err = service.Insert(*auction); err != nil {
+	if err = service.AuctionInsert(tx, *auction); err != nil {
 		return err
 	}
 
@@ -108,7 +103,7 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 		offer.AuctionID = auction.ID
 		offer.Seller = auction.Seller
 
-		if err = offerService.Update(*offer); err != nil {
+		if err = service.OfferUpdate(tx, *offer); err != nil {
 			return err
 		}
 
@@ -120,13 +115,13 @@ func AcceptOffer(tx *sql.Tx, in input.AcceptOfferInput) error {
 			TeamId:     offer.TeamID,
 		}
 
-		err = CreateBid(tx, bid)
+		err = CreateBid(service, tx, bid)
 
 		if err != nil {
 			log.Error(err)
 			offer.State = storage.OfferFailed
 			offer.StateExtra = "Could not create bid"
-			offerService.Update(*offer)
+			service.OfferUpdate(tx, *offer)
 			return err
 		}
 	}
