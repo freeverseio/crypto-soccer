@@ -63,7 +63,7 @@ func offerByRndPrice(tx *sql.Tx, rnd int32, price int32) (*storage.Offer, error)
 	return &offer, err
 }
 
-func offerByAuctionId(tx *sql.Tx, auctionId string) (*storage.Offer, error) {
+func (b StorageService) OfferByAuctionId(tx *sql.Tx, auctionId string) (*storage.Offer, error) {
 	rows, err := tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, team_id FROM offers WHERE auction_id = $1;", auctionId)
 	if err != nil {
 		return nil, err

@@ -8,16 +8,14 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 )
 
-func CancelOffer(tx *sql.Tx, in input.CancelOfferInput) error {
-	service := postgres.NewOfferHistoryService(tx)
+func CancelOffer(service storage.StorageService, tx *sql.Tx, in input.CancelOfferInput) error {
 	offerId, err := strconv.ParseInt(string(in.OfferId), 10, 64)
 	if err != nil {
 		return err
 	}
-	offer, err := service.Offer(offerId)
+	offer, err := service.Offer(tx, offerId)
 	if err != nil {
 		return err
 	}
@@ -29,5 +27,5 @@ func CancelOffer(tx *sql.Tx, in input.CancelOfferInput) error {
 	}
 
 	offer.State = storage.OfferCancelled
-	return service.Update(*offer)
+	return service.OfferUpdate(tx, *offer)
 }

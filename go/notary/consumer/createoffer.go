@@ -6,13 +6,12 @@ import (
 	"strconv"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CreateOffer(tx *sql.Tx, in input.CreateOfferInput, contracts contracts.Contracts) error {
+func CreateOffer(service storage.StorageService, tx *sql.Tx, in input.CreateOfferInput, contracts contracts.Contracts) error {
 	offer := storage.NewOffer()
 	var err error
 	offer.Rnd = int64(in.Rnd)
@@ -31,8 +30,7 @@ func CreateOffer(tx *sql.Tx, in input.CreateOfferInput, contracts contracts.Cont
 	}
 	offer.Buyer = signerAddress.Hex()
 	offer.Seller = in.Seller
-	service := postgres.NewOfferHistoryService(tx)
-	if _, err = service.Insert(*offer); err != nil {
+	if _, err = service.OfferInsert(tx, *offer); err != nil {
 		return err
 	}
 

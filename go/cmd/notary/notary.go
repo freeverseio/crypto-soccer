@@ -116,6 +116,8 @@ func main() {
 			market = marketpay.New(*marketID)
 		}
 
+		storageService := postgres.NewStorageHistoryService(marketdb)
+
 		cn, err := consumer.New(
 			ch,
 			market,
@@ -125,6 +127,7 @@ func main() {
 			googleCredentials,
 			namesdb,
 			*iapTestOn,
+			storageService,
 		)
 		if err != nil {
 			return err
