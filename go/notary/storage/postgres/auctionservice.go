@@ -60,7 +60,38 @@ func (b StorageService) Auction(tx *sql.Tx, ID string) (*storage.Auction, error)
 	return &auction, err
 }
 
-func (b StorageService) AuctionInsert(tx *sql.Tx, auction storage.Auction) error {
+func (b AuctionService) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
+	rows, err := b.tx.Query("SELECT id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE player_id = $1;", ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var auctions []storage.Auction
+	for rows.Next() {
+		var auction storage.Auction
+		auction.PlayerID = ID
+		err = rows.Scan(
+			&auction.ID,
+			&auction.CurrencyID,
+			&auction.Price,
+			&auction.Rnd,
+			&auction.ValidUntil,
+			&auction.Signature,
+			&auction.State,
+			&auction.PaymentURL,
+			&auction.StateExtra,
+			&auction.Seller,
+		)
+		if err != nil {
+			return auctions, err
+		}
+		auctions = append(auctions, auction)
+	}
+
+	return auctions, err
+}
+
+func (b AuctionService) AuctionInsert(tx sql.Tx, auction storage.Auction) error {
 	log.Debugf("[DBMS] + create Auction %v", b)
 	_, err := tx.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, payment_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 		auction.ID,

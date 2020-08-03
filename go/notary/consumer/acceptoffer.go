@@ -14,17 +14,50 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
+func highestOffer(offers []storage.Offer) (*storage.Offer, error) {
+	length := len(offers)
+	if length == 0 {
+		return nil, errors.New("There are no offers for this playerId")
+	}
+	if length == 1 {
+		return &offers[0], nil
+	}
+
+	idx := -1
+	price := int64(-1)
+	for i, offer := range offers {
+		if offer.State == storage.OfferStarted {
+			if idx == -1 {
+				idx = i
+				price = offer.Price
+			} else {
+				if offer.Price > price {
+					idx = i
+					price = offer.Price
+				}
+			}
+		}
+	}
+	if idx == -1 {
+		return nil, errors.New("There are not acceptable offers")
+	}
+
+	return &offers[idx], nil
+}
+
 func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOfferInput) error {
-	offerID, err := strconv.ParseInt(string(in.OfferId), 10, 64)
+	offers, err := service.OffersByPlayerId(string(in.PlayerId))
+
+	highestOffer, err := highestOffer(offers)
 	if err != nil {
 		return err
 	}
 
-	offer, err := service.Offer(tx, offerID)
-	if err != nil {
-		return err
+	if highestOffer.ID != string(in.OfferId) {
+		return errors.New("You can only accept highest offer")
 	}
 
+	offer := highestOffer
 	if offer != nil && offer.State != storage.OfferStarted {
 		return errors.New("Auctions can only be created for offers in Started state")
 	}
@@ -64,7 +97,7 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 		return err
 	}
 
-	if offer != nil && offer.ID != 0 {
+	if offer != nil && offer.ID != "" {
 		offer.State = storage.OfferAccepted
 		offer.StateExtra = ""
 		offer.AuctionID = auction.ID

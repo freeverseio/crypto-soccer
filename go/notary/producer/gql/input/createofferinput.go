@@ -1,17 +1,22 @@
 package input
 
 import (
+	"database/sql"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/graph-gophers/graphql-go"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 )
 
 type CreateOfferInput struct {
@@ -23,6 +28,14 @@ type CreateOfferInput struct {
 	ValidUntil string
 	TeamId     string
 	Seller     string
+}
+
+func (b CreateOfferInput) ID(contracts contracts.Contracts) (graphql.ID, error) {
+	hash, err := b.Hash(contracts)
+	if err != nil {
+		return graphql.ID(""), err
+	}
+	return graphql.ID(hash.String()[2:]), nil
 }
 
 func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, error) {
@@ -124,4 +137,39 @@ func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool
 		return false, err
 	}
 	return signerAddress == owner, nil
+}
+
+func (b CreateOfferInput) IsPlayerFrozen(contracts contracts.Contracts) (bool, error) {
+	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return false, errors.New("invalid playerId")
+	}
+	isFrozen, err := contracts.Market.IsPlayerFrozenInAnyMarket(&bind.CallOpts{}, playerId)
+	if err != nil {
+		return false, err
+	}
+	return isFrozen, nil
+}
+
+func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, tx *sql.Tx) (bool, error) {
+	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return false, errors.New("invalid playerId")
+	}
+
+	auctionService := postgres.NewAuctionService(tx)
+	auctions, err := auctionService.AuctionsByPlayerId(b.PlayerId)
+	fmt.Printf("Auctions for player %v : %v\n\n", playerId, auctions)
+	if err != nil {
+		return false, err
+	}
+
+	isOnSale := false
+
+	for _, auction := range auctions {
+		if (auction.State != storage.AuctionCancelled) && (auction.State != storage.AuctionEnded) {
+			isOnSale = true
+		}
+	}
+	return isOnSale, nil
 }

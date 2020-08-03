@@ -168,7 +168,7 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	in.CurrencyId = inOffer.CurrencyId
 	in.Price = inOffer.Price
 	in.Rnd = inOffer.Rnd
-	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
+	in.OfferId = graphql.ID(offer.ID)
 
 	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(
@@ -244,7 +244,7 @@ func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
 	in.CurrencyId = inOffer.CurrencyId
 	in.Price = inOffer.Price
 	in.Rnd = inOffer.Rnd
-	in.OfferId = graphql.ID(strconv.FormatInt(offer.ID, 10))
+	in.OfferId = graphql.ID(offer.ID)
 
 	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(

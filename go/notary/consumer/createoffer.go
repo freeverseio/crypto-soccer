@@ -13,7 +13,11 @@ import (
 
 func CreateOffer(service storage.StorageService, tx *sql.Tx, in input.CreateOfferInput, contracts contracts.Contracts) error {
 	offer := storage.NewOffer()
-	var err error
+	id, err := in.ID(contracts)
+	if err != nil {
+		return err
+	}
+	offer.ID = string(id)
 	offer.Rnd = int64(in.Rnd)
 	offer.PlayerID = in.PlayerId
 	offer.CurrencyID = int(in.CurrencyId)
