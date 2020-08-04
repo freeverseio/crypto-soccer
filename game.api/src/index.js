@@ -16,7 +16,6 @@ console.log("--------------------------------------------------------");
 console.log("databaseUrl       : ", databaseUrl);
 console.log("server port       : ", port);
 console.log("--------------------------------------------------------");
-console.log("No omit default")
 const app = express();
 
 app.use(
