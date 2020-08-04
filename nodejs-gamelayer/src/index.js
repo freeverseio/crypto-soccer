@@ -48,11 +48,12 @@ const main = async () => {
       playerProps: {
         selectionSet: `{ playerId }`,
         resolve(player, args, context, info) {
-          return delegateToSchema({
+          return info.mergeInfo.delegateToSchema({
             schema: gameRemoteSchema,
             operation: 'query',
             fieldName: 'playerPropByPlayerId',
             args: {
+              playerId: player.playerId,
               condition: {
                 playerId: player.playerId
               }
@@ -67,11 +68,12 @@ const main = async () => {
       teamProps: {
         selectionSet: `{ teamId }`,
         resolve(team, args, context, info) {
-          return delegateToSchema({
+          return info.mergeInfo.delegateToSchema({
             schema: gameRemoteSchema,
             operation: 'query',
             fieldName: 'teamPropByTeamId',
             args: {
+              teamId: team.teamId,
               condition: {
                 teamId: team.teamId
               }
