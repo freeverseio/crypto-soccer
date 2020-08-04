@@ -27,6 +27,12 @@ images:
   newTag: dev
 - name: freeverseio/universe.db
   newTag: dev
+# - name: freeverseio/game.api
+#   newTag: dev
+# - name: freeverseio/game.db
+#   newTag: dev
+# - name: freeverseio/gamelayer
+#   newTag: dev
 patchesJson6902:
 - target:
     group: networking.k8s.io

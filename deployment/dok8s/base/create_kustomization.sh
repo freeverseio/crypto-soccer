@@ -15,3 +15,7 @@ kustomize edit add base universedb
 kustomize edit add base dashboard
 kustomize edit add base webphoenix
 kustomize edit add base oauth2-proxy
+# kustomize edit add base gamedb
+# kustomize edit add base gameapi
+# kustomize edit add base gamelayer
+

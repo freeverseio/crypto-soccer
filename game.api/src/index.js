@@ -1,0 +1,35 @@
+const express = require("express");
+const { postgraphile } = require("postgraphile");
+const program = require("commander");
+const version = require("../package.json").version;
+
+// Parsing command line arguments
+program
+  .version(version)
+  .option("-d, --databaseUrl <url>", "set the database url")
+  .option("-p, --port <port>", "server port", "4000")
+  .parse(process.argv);
+
+const { databaseUrl, port } = program;
+
+console.log("--------------------------------------------------------");
+console.log("databaseUrl       : ", databaseUrl);
+console.log("server port       : ", port);
+console.log("--------------------------------------------------------");
+console.log("No omit default")
+const app = express();
+
+app.use(
+  postgraphile(
+    databaseUrl,
+    "public",
+    {
+      watchPg: true,
+      graphiql: true,
+      enhanceGraphiql: true,
+      retryOnInitFail: true,
+    }
+  )
+);
+
+app.listen(port);
