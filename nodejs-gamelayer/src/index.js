@@ -35,11 +35,11 @@ const main = async () => {
 
   const linkTypeDefs = `
     extend type Player {
-      playerProps: PlayerProp
+      playerPropsByPlayerId: PlayerProp
     }
 
     extend type Team {
-      teamProps: TeamProp
+      teamPropsByTeamId: TeamProp
     }
   `;
 
