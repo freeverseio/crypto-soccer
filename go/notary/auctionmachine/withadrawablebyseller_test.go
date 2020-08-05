@@ -3,14 +3,14 @@ package auctionmachine_test
 import (
 	"testing"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
 func TestWithDrawableBySellerPendingValidate(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -27,7 +27,7 @@ func TestWithDrawableBySellerPendingValidate(t *testing.T) {
 }
 
 func TestWithDrawableBySellerPendingRelease(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -44,7 +44,7 @@ func TestWithDrawableBySellerPendingRelease(t *testing.T) {
 }
 
 func TestWithDrawableBySellerReleased(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
