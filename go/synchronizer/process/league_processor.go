@@ -121,7 +121,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		}
 	}
 
-	log.Debugf("Retriving user actions %v", event.IpfsCid)
+	log.Infof("Retriving user actions %v", event.IpfsCid)
 	userActions, err := b.useractionsPublisher.Retrive(event.IpfsCid)
 	if err != nil {
 		return err
@@ -134,7 +134,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return fmt.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
 	}
 
-	log.Debugf("Timezone %v loading matches from storage", timezoneIdx)
+	log.Infof("Timezone %v loading matches from storage", timezoneIdx)
 	matches, err := NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 	if err != nil {
 		return err
@@ -149,27 +149,28 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 	switch turnInDay {
 	case 0:
-		log.Debugf("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
+		log.Infof("Timezone %v reset trainings", timezoneIdx)
 		if err = storage.ResetTrainingsByTimezone(tx, timezoneIdx); err != nil {
 			return err
 		}
+		log.Infof("Timezone %v processing 1st half of %v matches", timezoneIdx, len(*matches))
 		if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
 			return err
 		}
 	case 1:
-		log.Debugf("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
+		log.Infof("Timezone %v processing 2nd half of %v matches", timezoneIdx, len(*matches))
 		if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
 			return err
 		}
 	default:
 		return fmt.Errorf("Unknown turn in day %v", turnInDay)
 	}
-	log.Debugf("Timezone %v save user action in history", timezoneIdx)
+	log.Infof("Timezone %v save user action in history", timezoneIdx)
 	useractionsHistoryService := postgres.NewUserActionsStorageService(tx)
 	if err := useractionsHistoryService.InsertHistory(event.Raw.BlockNumber, *userActions); err != nil {
 		return err
 	}
-	log.Debugf("Timezone %v save matches to storage", timezoneIdx)
+	log.Infof("Timezone %v save matches to storage", timezoneIdx)
 	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
 	}
