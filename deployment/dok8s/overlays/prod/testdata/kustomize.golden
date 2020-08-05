@@ -383,7 +383,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/game.api:0.24.2
+        image: freeverseio/game.api:dev
         imagePullPolicy: Always
         name: gameapi
         ports:
@@ -425,7 +425,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer:0.24.2
+        image: freeverseio/gamelayer:dev
         imagePullPolicy: Always
         name: gamelayer
       imagePullSecrets:
@@ -807,7 +807,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/game.db:0.24.2
+        image: freeverseio/game.db:dev
         imagePullPolicy: Always
         name: gamedb
         ports:
