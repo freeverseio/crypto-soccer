@@ -529,6 +529,16 @@ spec:
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - pool-4cpu-3b6j7
+                - pool-4cpu-3b6r7
       containers:
       - args:
         - -postgres
@@ -721,6 +731,16 @@ spec:
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - pool-4cpu-3b6j7
+                - pool-4cpu-3b6r7
       containers:
       - env:
         - name: PGDATA

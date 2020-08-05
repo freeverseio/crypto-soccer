@@ -14,6 +14,16 @@ spec:
       labels:
         app.kubernetes.io/app: synchronizer
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - pool-4cpu-3b6j7
+                - pool-4cpu-3b6r7
       containers:
       - name: synchronizer
         image: freeverseio/synchronizer:dev
@@ -33,6 +43,6 @@ spec:
                -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
                -staker, "$(STAKER_PRIVATE_KEY)",
                -delta, "$(BLOCKS_PER_STEP)"]
-
+      
       imagePullSecrets:
       - name: docker-secret

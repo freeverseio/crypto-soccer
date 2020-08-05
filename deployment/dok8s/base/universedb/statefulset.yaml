@@ -14,6 +14,16 @@ spec:
         app.kubernetes.io/app: universedb # has to match .spec.selector.matchLabels
     spec:
       terminationGracePeriodSeconds: 10
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - pool-4cpu-3b6j7
+                - pool-4cpu-3b6r7
       containers:
       - name: universedb
         image: freeverseio/universe.db:dev
