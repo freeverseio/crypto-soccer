@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -18,7 +18,7 @@ type Consumer struct {
 	db                *sql.DB
 	contracts         contracts.Contracts
 	pvc               *ecdsa.PrivateKey
-	market            marketpay.IMarketPay
+	market            marketpay.MarketPayService
 	googleCredentials []byte
 	namesdb           *names.Generator
 	iapTestOn         bool
@@ -26,7 +26,7 @@ type Consumer struct {
 
 func New(
 	ch chan interface{},
-	market marketpay.IMarketPay,
+	market marketpay.MarketPayService,
 	db *sql.DB,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
@@ -88,7 +88,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case producer.ProcessEvent:
-		log.Debug("Received ProcessEvent")
+		log.Info("[consumer] process auctions")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err
@@ -106,7 +106,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 	case producer.PlaystoreOrderEvent:
-		log.Debug("Received PlaystoreOrderEvent")
+		log.Info("[consumer] process playstore events")
 		tx, err := b.db.Begin()
 		if err != nil {
 			return err

@@ -10,12 +10,12 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	log "github.com/sirupsen/logrus"
 )
 
 type BidMachine struct {
-	market          marketpay.IMarketPay
+	market          marketpay.MarketPayService
 	auction         storage.Auction
 	bid             *storage.Bid
 	contracts       contracts.Contracts
@@ -24,7 +24,7 @@ type BidMachine struct {
 }
 
 func New(
-	market marketpay.IMarketPay,
+	market marketpay.MarketPayService,
 	auction storage.Auction,
 	bid *storage.Bid,
 	contracts contracts.Contracts,
@@ -103,7 +103,7 @@ func (b *BidMachine) processPaying() error {
 		return nil
 	}
 
-	log.Infof("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
+	log.Debugf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
 	order, err := b.market.GetOrder(b.bid.PaymentID)
 	if err != nil {
 		return err

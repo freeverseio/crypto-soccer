@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
@@ -39,8 +39,8 @@ func New(
 	}, nil
 }
 
-func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
-	log.Infof("Process auction %v in state %v", b.auction.ID, b.State())
+func (b *AuctionMachine) Process(market marketpay.MarketPayService) error {
+	log.Debugf("Process auction %v in state %v", b.auction.ID, b.State())
 	switch b.auction.State {
 	case storage.AuctionStarted:
 		return b.processStarted()

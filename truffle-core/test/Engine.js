@@ -238,8 +238,10 @@ contract('Engine', (accounts) => {
         }
         penaltiesPerMatch = 2 * totPens/nMatches;
         penaltiesFailedFreq = totPensFailed/totPens;
-        (Math.abs(penaltiesPerMatch - 0.4) < 0.03).should.be.equal(true);
-        (Math.abs(penaltiesFailedFreq - 0.25) < 0.03).should.be.equal(true);
+        // Temporarily disbled penalties: next lines
+        (penaltiesPerMatch  == 0).should.be.equal(true);
+        // (Math.abs(penaltiesPerMatch - 0.4) < 0.03).should.be.equal(true);
+        // (Math.abs(penaltiesFailedFreq - 0.25) < 0.03).should.be.equal(true);
     });
 
     it('create 442 team', async () => {

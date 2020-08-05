@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: synchronizer
+  name: synchronizer
+spec:
+  template:
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/instance-type: c-4

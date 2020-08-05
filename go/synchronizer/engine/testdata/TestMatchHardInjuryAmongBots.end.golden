@@ -39,9 +39,9 @@
 			GoalsAgainst: (uint32) 0,
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
-			TrainingPoints: (uint16) 86,
+			TrainingPoints: (uint16) 79,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=75) "461810013568657365524777595439861330859882380760545755575882399158154622100"
+			MatchLog: (string) (len=75) "461037017977816822380584902783286304009208028956144303487572015006446295188"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -1460,10 +1460,10 @@
 			Team: (int16) 0,
 			ManagesToShoot: (bool) true,
 			IsGoal: (bool) true,
-			PrimaryPlayer: (int16) 3,
-			SecondaryPlayer: (int16) 100,
+			PrimaryPlayer: (int16) 12,
+			SecondaryPlayer: (int16) 10,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
-			SecondaryPlayerID: (string) (len=3) "100"
+			SecondaryPlayerID: (string) (len=11) "21342314523"
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 41,
@@ -1592,10 +1592,10 @@
 			Team: (int16) 0,
 			ManagesToShoot: (bool) true,
 			IsGoal: (bool) true,
-			PrimaryPlayer: (int16) 3,
-			SecondaryPlayer: (int16) 100,
+			PrimaryPlayer: (int16) 12,
+			SecondaryPlayer: (int16) 10,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
-			SecondaryPlayerID: (string) (len=3) "100"
+			SecondaryPlayerID: (string) (len=11) "21342314523"
 		},
 		(matchevents.MatchEvent) {
 			Minute: (int16) 86,

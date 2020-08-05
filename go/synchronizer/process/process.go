@@ -169,12 +169,8 @@ func (p *EventProcessor) Dispatch(tx *sql.Tx, e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case proxy.ProxyNewDirectory:
-		log.Infof("[processor|consume] NewDirectory event: block %v , directory %v", v.Raw.BlockNumber, v.Addr.Hex())
 		var err error
-		p.contracts, err = contracts.NewByNewDirectoryEvent(p.contracts.Client, v)
-		if err != nil {
-			return err
-		}
+		p.contracts, err = ConsumeNewDirectory(tx, *p.contracts, v)
 		return err
 	case assets.AssetsAssetsInit:
 		assetsInitProcessor := NewAssetsInitProcessor(p.contracts)

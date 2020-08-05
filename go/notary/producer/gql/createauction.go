@@ -10,7 +10,7 @@ import (
 )
 
 func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) (graphql.ID, error) {
-	log.Debugf("CreateAuction %v", args)
+	log.Infof("[notary|producer|gql] create auction %+v", args.Input)
 
 	id, err := args.Input.ID()
 	if err != nil {

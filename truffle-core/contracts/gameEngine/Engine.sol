@@ -221,7 +221,7 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
     // If a shoot has probability p of being a penalty, then < penalties > = 12 p 
     // So, choose p = 0.4/12 = 4/120 = 1/30
     function computeIsPenalty(uint64 rnd) public pure returns (bool) {
-        return (rnd % 20) == 0;
+        return false; //(rnd % 20) == 0;
     }
 
     

@@ -9,7 +9,7 @@ import (
 )
 
 func (b *Resolver) DismissPlayer(args struct{ Input input.DismissPlayerInput }) (graphql.ID, error) {
-	log.Debugf("DismissPlayer %v", args)
+	log.Infof("[notary|producer|gql] dismiss player %+v", args.Input)
 
 	id := graphql.ID(args.Input.PlayerId)
 

@@ -33,6 +33,7 @@ spec:
                -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
                -staker, "$(STAKER_PRIVATE_KEY)",
                -delta, "$(BLOCKS_PER_STEP)"]
-
       imagePullSecrets:
       - name: docker-secret
+      nodeSelector:
+        beta.kubernetes.io/instance-type: c-4

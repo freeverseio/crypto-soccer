@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamelayer
+  labels:
+    app.kubernetes.io/app: gamelayer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: gamelayer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: gamelayer
+    spec:
+      containers:
+      - name: gamelayer
+        image: freeverseio/gamelayer:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        args: [-h, "http://horizon:4000/graphql",
+               -g, "http://gameapi:4000/graphql",
+              ]
+
+      imagePullSecrets:
+      - name: docker-secret
