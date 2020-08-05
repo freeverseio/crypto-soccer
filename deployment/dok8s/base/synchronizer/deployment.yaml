@@ -17,6 +17,9 @@ spec:
       containers:
       - name: synchronizer
         image: freeverseio/synchronizer:dev
+        resources:
+          requests:
+            cpu: "4"
         imagePullPolicy: Always
         env:
           - name: STAKER_PRIVATE_KEY
@@ -35,5 +38,3 @@ spec:
                -delta, "$(BLOCKS_PER_STEP)"]
       imagePullSecrets:
       - name: docker-secret
-      nodeSelector:
-        beta.kubernetes.io/instance-type: c-4
