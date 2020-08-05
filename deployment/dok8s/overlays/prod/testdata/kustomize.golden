@@ -557,7 +557,7 @@ spec:
         name: synchronizer
         resources:
           requests:
-            cpu: "4"
+            cpu: "3"
       imagePullSecrets:
       - name: docker-secret
 ---
