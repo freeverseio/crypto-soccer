@@ -61,21 +61,22 @@ contract Assets is AssetsView {
     function transferFirstBotToAddr(uint8 tz, uint256 countryIdxInTZ, address addr) public onlyRelay {
         require(_tzToNCountries[tz] > countryIdxInTZ, "Country does not exist in TZ");
         uint256 countryId = encodeTZCountryAndVal(tz, countryIdxInTZ, 0); 
-        uint256 firstBotIdx = _countryIdToNHumanTeams[countryId];
-        uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstBotIdx);
+        uint256 firstFreeBotIdx = _countryIdToNHumanTeams[countryId];
+        uint256 teamId = encodeTZCountryAndVal(tz, countryIdxInTZ, firstFreeBotIdx);
         require(isBotTeam(teamId), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
-        // when we arrive to all teams created (minus 16), we start trying to create a new division
-        // which may only fail during the 15 minutes of half time of this timezone.
-        // we allow new assignments, even if division creation fails, until we reach the limit.
+        // when we arrive to all teams created (minus 16), we start trying to create a new division.
+        // such creation will fail during the 15 minutes of half time of this timezone.
+        // Even in such case, we allow new assignments, until we reach the limit (no more bots available)
         // For example, bot = 127 requires a new division to be created.
-        if (firstBotIdx > ((getNDivisionsInCountry(tz, countryIdxInTZ) *  128) - 16)) { // 128 = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
+        uint256 teamsInCountry = getNDivisionsInCountry(tz, countryIdxInTZ) * 128; // 128 = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
+        if (firstFreeBotIdx > (teamsInCountry - 16)) { 
             if (!_addDivision(tz, countryIdxInTZ)) {
-                require((firstBotIdx % TEAMS_PER_DIVISION) != TEAMS_PER_DIVISION-1, "division creation was necessary to assign new bot, but it failed"); 
-            }
+                require(firstFreeBotIdx < teamsInCountry - 1,  "division creation was necessary to assign new bot, but it failed");
+           }
         }
         _teamIdToOwner[teamId] = addr;
-        _countryIdToNHumanTeams[countryId] = firstBotIdx + 1;
+        _countryIdToNHumanTeams[countryId] = firstFreeBotIdx + 1;
         emit TeamTransfer(teamId, addr);
     }
     
