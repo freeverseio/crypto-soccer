@@ -48,3 +48,6 @@ patchesJson6902:
     kind: Ingress
     name: dashboard-oauth2-proxy
   path: dashboard/ingress_patch.yaml
+patchesStrategicMerge:
+  - synchronizer/deployment.yaml
+  - universedb/statefulset.yaml

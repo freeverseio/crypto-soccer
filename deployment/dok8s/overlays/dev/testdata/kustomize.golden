@@ -531,16 +531,6 @@ spec:
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: In
-                values:
-                - pool-4cpu-3b6j7
-                - pool-4cpu-3b6r7
       containers:
       - args:
         - -postgres
@@ -569,6 +559,8 @@ spec:
         name: synchronizer
       imagePullSecrets:
       - name: docker-secret
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-4vcpu-8gb
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -733,16 +725,6 @@ spec:
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: In
-                values:
-                - pool-4cpu-3b6j7
-                - pool-4cpu-3b6r7
       containers:
       - env:
         - name: PGDATA
@@ -757,6 +739,8 @@ spec:
           name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-4vcpu-8gb
       terminationGracePeriodSeconds: 10
   volumeClaimTemplates:
   - metadata:
