@@ -4,16 +4,18 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 )
 
 type MockMarketPay struct {
-	orders      map[string]*Order
+	orders      map[string]*marketpay.Order
 	orderStatus OrderStatus
 }
 
 func NewMockMarketPay() *MockMarketPay {
 	return &MockMarketPay{
-		orders:      make(map[string]*Order),
+		orders:      make(map[string]*marketpay.Order),
 		orderStatus: DRAFT,
 	}
 }
@@ -26,8 +28,8 @@ func (m *MockMarketPay) SetOrderStatus(s OrderStatus) {
 	}
 }
 
-func (m *MockMarketPay) CreateOrder(name string, value string) (*Order, error) {
-	order := &Order{}
+func (m *MockMarketPay) CreateOrder(name string, value string) (*marketpay.Order, error) {
+	order := &marketpay.Order{}
 	order.Status = m.orderStatus.String()
 	order.Name = name
 	order.Amount = value
@@ -41,7 +43,7 @@ func (m *MockMarketPay) CreateOrder(name string, value string) (*Order, error) {
 	return order, nil
 }
 
-func (m *MockMarketPay) GetOrder(hash string) (*Order, error) {
+func (m *MockMarketPay) GetOrder(hash string) (*marketpay.Order, error) {
 	order, ok := m.orders[hash]
 	if !ok {
 		return nil, errors.New("Could not find order")
@@ -49,7 +51,7 @@ func (m *MockMarketPay) GetOrder(hash string) (*Order, error) {
 	return order, nil
 }
 
-func (m *MockMarketPay) IsPaid(order Order) bool {
+func (m *MockMarketPay) IsPaid(order marketpay.Order) bool {
 	return order.Status == PUBLISHED.String()
 }
 

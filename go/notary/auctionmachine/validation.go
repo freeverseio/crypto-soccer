@@ -3,12 +3,12 @@ package auctionmachine
 import (
 	"fmt"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *AuctionMachine) ProcessValidation(market marketpay.IMarketPay) error {
+func (b *AuctionMachine) ProcessValidation(market marketpay.MarketPayService) error {
 	if err := b.checkState(storage.AuctionValidation); err != nil {
 		return err
 	}

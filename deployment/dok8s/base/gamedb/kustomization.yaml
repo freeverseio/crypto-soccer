@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+commonLabels:
+  app.kubernetes.io/app: gamedb
+  app.kubernetes.io/component: gamedb
+resources:
+- service.yaml
+- statefulset.yaml

@@ -2,6 +2,7 @@ pragma solidity >= 0.6.3;
 
 import "../storage/Assets.sol";
 import "./SortIdxs.sol";
+import "./SortValues25.sol";
 import "../encoders/EncodingSkillsGetters.sol";
 import "../encoders/EncodingIDs.sol";
 
@@ -12,7 +13,7 @@ import "../encoders/EncodingIDs.sol";
  @dev because they use a storage pointer to the Assets contracts.
 */
 
-contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
+contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs, SortValues25 {
     uint8 constant public PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
@@ -143,6 +144,18 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         return ((rankingPoints << 28) + (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry)), prevPerfPoints);
     }
 
+
+    /// warning: getSumOfTopPlayerSkills rewrites the skills array
+    /// this function returns the sum of the skills of the top 18 players in the team
+    function getSumOfTopPlayerSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills) public pure returns (uint256 teamSkills) {
+        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            if (skills[p] != 0)
+                skills[p] = getSumOfSkills(skills[p]);
+        }
+        sort25(skills);
+        for (uint8 p = 0; p < 18; p++) { teamSkills += skills[p]; }
+    }
+
     function computeTeamRankingPointsPure(
         uint256[PLAYERS_PER_TEAM_MAX] memory skills,
         uint8 leagueRanking,
@@ -152,12 +165,6 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         pure
         returns (uint64, uint64)
     {
-        uint64 teamSkills;
-        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (skills[p] != 0)
-                teamSkills += uint64(getSumOfSkills(skills[p]));
-        }
-        
         /// Nomenclature:    R = rankingPoints, W = Weight_Skills, SK = TeamSkills, SK0 = TeamSkillsAtStart, I = 
         ///                  I = Inertia, I0 = inertia Max, P0 = prevPerfPoints, P1 = currenteLeaguePerfPoints
         /// 
@@ -172,7 +179,7 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs {
         uint64 perfPointsThisLeague = getPerfPoints(leagueRanking);
         // compute 10 * prevPerfPoints, and divide later
         prevPerfPoints = (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague);
-        uint64 result = teamSkills * ( WEIGHT_SKILLS * 10 + prevPerfPoints );
+        uint64 result = uint64(getSumOfTopPlayerSkills(skills)) * ( WEIGHT_SKILLS * 10 + prevPerfPoints );
         return (result, prevPerfPoints/10);
     }
 
