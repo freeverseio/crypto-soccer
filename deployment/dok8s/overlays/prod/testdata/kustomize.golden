@@ -697,8 +697,6 @@ spec:
             cpu: "3"
       imagePullSecrets:
       - name: docker-secret
-      nodeSelector:
-        beta.kubernetes.io/instance-type: c-4
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -946,8 +944,6 @@ spec:
           name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
-      nodeSelector:
-        beta.kubernetes.io/instance-type: c-4
       terminationGracePeriodSeconds: 10
   volumeClaimTemplates:
   - metadata:
