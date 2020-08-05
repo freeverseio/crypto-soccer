@@ -69,7 +69,7 @@ contract Assets is AssetsView {
         // which may only fail during the 15 minutes of half time of this timezone.
         // we allow new assignments, even if division creation fails, until we reach the limit.
         // For example, bot = 127 requires a new division to be created.
-        if ((firstBotIdx % TEAMS_PER_DIVISION) > (TEAMS_PER_DIVISION-16)) { 
+        if (firstBotIdx > ((getNDivisionsInCountry(tz, countryIdxInTZ) *  128) - 16)) { // 128 = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
             if (!_addDivision(tz, countryIdxInTZ)) {
                 require((firstBotIdx % TEAMS_PER_DIVISION) != TEAMS_PER_DIVISION-1, "division creation was necessary to assign new bot, but it failed"); 
             }
