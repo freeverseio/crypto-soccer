@@ -14,6 +14,18 @@ spec:
         app.kubernetes.io/app: universedb # has to match .spec.selector.matchLabels
     spec:
       terminationGracePeriodSeconds: 10
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/app
+                  operator: In
+                  values:
+                  - synchronizer
+              topologyKey: beta.kubernetes.io/os
       containers:
       - name: universedb
         image: freeverseio/universe.db:dev
@@ -28,8 +40,6 @@ spec:
           mountPath: /var/lib/postgresql/data
       imagePullSecrets:
       - name: docker-secret
-      nodeSelector:
-        beta.kubernetes.io/instance-type: c-4
   volumeClaimTemplates:
   - metadata:
       name: universedb-storage
