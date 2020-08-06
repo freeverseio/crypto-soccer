@@ -1,7 +1,7 @@
 version: '3'
 services:
   ipfs.node0:
-    image: ipfs/go-ipfs:v0.6.0
+    image: freeverseio/go-ipfs:v0.6.0
     restart: always
     environment:
       - IPFS_PATH=/data
@@ -30,7 +30,7 @@ services:
 
 
   ipfs.node1:
-    image: ipfs/go-ipfs:v0.6.0
+    image: freeverseio/go-ipfs:v0.6.0
     restart: always
     environment:
       - IPFS_PATH=/data
@@ -58,7 +58,7 @@ services:
       - "19097:9096"
 
   ipfs.node2:
-    image: ipfs/go-ipfs:v0.6.0
+    image: freeverseio/go-ipfs:v0.6.0
     restart: always
     environment:
       - IPFS_PATH=/data
