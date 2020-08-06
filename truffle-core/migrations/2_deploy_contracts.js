@@ -140,9 +140,18 @@ module.exports = function (deployer, network, accounts) {
     if (network == "upgradexdaidev") {    
       // we only need 2 external inputs:
       const versionNumber = 2;
-      const proxyAddr = "0x5fDDFE441EC3Fc9a4Bd99081bE075C7F984Eed3c";
+      const proxyAddr = "0x720C10669287462Bb96eFd9bb5220EcfcBfd88cf";
       console.log("Upgrading " + network + " to version number " + versionNumber);
       
+      console.log("Setting market and relay to null temporarily");
+      const nullAddr = "0x0000000000000000000000000000000000000000";
+      const assetsTmp = await Assets.at(proxyAddr).should.be.fulfilled;
+      const currentRelayAddr = await assetsTmp.relay().should.be.fulfilled;      
+      const currentMarketAddr = await assetsTmp.market().should.be.fulfilled;      
+      await assetsTmp.setRelay(nullAddr).should.be.fulfilled;
+      await assetsTmp.setMarket(nullAddr).should.be.fulfilled;
+
+
       console.log("Reading the directory info referred to by the proxy contract")
       const proxy = await Proxy.at(proxyAddr);
       const directoryAddr = await proxy.directory();
@@ -203,6 +212,10 @@ module.exports = function (deployer, network, accounts) {
         namesAndAddresses,
         inheritedArtfcts
       ).should.be.fulfilled;
+
+      console.log("Restoring previous market and relay");
+      await assetsTmp.setRelay(currentRelayAddr).should.be.fulfilled;
+      await assetsTmp.setMarket(currentMarketAddr).should.be.fulfilled;
     }
   });
 };
