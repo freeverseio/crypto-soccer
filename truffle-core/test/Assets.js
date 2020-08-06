@@ -510,38 +510,35 @@ contract('Assets', (accounts) => {
         }
     });
 
-//    it('gameDeployDay', async () => {
-//         const gameDeployDay =  await assets.gameDeployDay().should.be.fulfilled;
-//         currentBlockNum = await web3.eth.getBlockNumber()
-//         currentBlock = await web3.eth.getBlock(currentBlockNum)
-//         currentDay = Math.floor(currentBlock.timestamp / (3600 * 24));
-//         gameDeployDay.toNumber().should.be.equal(currentDay);
-//     });
+   it('gameDeployDay', async () => {
+        // upon deploy, we fixed the "deploy time" to be = blockChainTimeSec 
+        const gameDeployDay =  await assets.gameDeployDay().should.be.fulfilled;
+        gameDeployDay.toNumber().should.be.equal(Math.floor(blockChainTimeSec/(3600*24)));
+    });
 
-//    it('get skills of a GoalKeeper on creation', async () => {
-//         tz = 1;
-//         countryIdxInTZ = 0;
-//         playerIdxInCountry = 1;
-//         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-//         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-//         expectedSkills = [ 1589, 731, 1016, 995, 667 ];
-//         resultSkills = [];
-//         for (sk = 0; sk < N_SKILLS; sk++) {
-//             resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
-//         }
-//         debug.compareArrays(resultSkills, expectedSkills, toNum = true);
-//         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
-//         newId.should.be.bignumber.equal(playerId);
-//         gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
-//         dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
-//         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-//         (Math.abs(ageInDays.toNumber() - 10660) <= INGAMETIME_VS_REALTIME).should.be.equal(true); // we cannot guarantee exactness +/- 1
-//         // check that the ageInDay can be obtained by INGAMETIME_VS_REALTIME * (now - dayOfBirth), where
-//         // now is approximately gameDeployDay. There is an uncertainty of about INGAMETIME_VS_REALTIME days due to rounding.
-//         (Math.abs(INGAMETIME_VS_REALTIME*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < INGAMETIME_VS_REALTIME).should.be.equal(true);
-//     });
+   it('get skills of a GoalKeeper on creation', async () => {
+        tz = 1;
+        countryIdxInTZ = 0;
+        playerIdxInCountry = 1;
+        teamIdxInCountry = 2;
+        playerCreationDay = Math.floor(1596637573/(3600*24)); // August 5, 2020
+        shirtNum = 1;
 
-   it('get state of player on creation', async () => {
+        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+        teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
+        var {0: bday, 1: pot} = await assets.computeBirthDayAndPotential(teamId, playerCreationDay, shirtNum).should.be.fulfilled;
+        bday.toNumber().should.be.equal(17669);
+        pot.toNumber().should.be.equal(4);
+        var {0: skillsVec, 1: traits, 2: sumSkills} = await assets.computeSkills(teamId, shirtNum, pot.toNumber());
+        expectedSkills = [ 1555, 634, 848, 841, 1121 ];
+        expectedTraits = [ 4, 0, 0, 2];
+        debug.compareArrays(skillsVec, expectedSkills, toNum = true);
+        debug.compareArrays(traits, expectedTraits, toNum = true);
+        const sum = skillsVec.reduce((a, b) => a + b.toNumber(), 0);
+        sumSkills.toNumber().should.be.equal(sum);
+    });
+
+    it('get state of player on creation', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         // test for players on the first team
