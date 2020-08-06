@@ -40,8 +40,6 @@ spec:
           mountPath: /var/lib/postgresql/data
       imagePullSecrets:
       - name: docker-secret
-      nodeSelector:
-        beta.kubernetes.io/instance-type: c-4
   volumeClaimTemplates:
   - metadata:
       name: universedb-storage
