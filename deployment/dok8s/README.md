@@ -37,3 +37,25 @@ kubectl -n freeverse create secret generic blockchain-accounts --from-literal=re
 
 kubectl -n freeverse create secret generic google-iap-key --from-file=./key.json
 ```
+
+## Repeling pods from special hardware nodes
+
+### Requirements
+
+The cluster should have a pool of nodes with special hardware, in this case, nodes with more than 2 CPUs.
+
+The cluster admin should taint these nodes so the kube API can differentiate them.
+
+This command will give you the nodes in your cluster with more than 2 cpus: 
+```
+kubectl get nodes -o go-template --template='{{range .items}}{{if gt .status.capacity.cpu "2"}}{{printf "%v\n" .metadata.name}}{{end}}{{end}}'
+```
+
+This command will taint the nodes with more than 2 cpus:
+ ```
+ kubectl get nodes -o go-template --template='{{range .items}}{{if ge .status.capacity.cpu "2"}}{{printf "%v\n" .metadata.name}}{{end}}{{end}}' | xargs -I '{}' -n 1 $(echo "kubectl taint nodes {} cpu=dedicated:NoSchedule")
+ ```
+
+ Once your nodes are tainted, the kube scheduler will only schedule pods in this nodes if the pods have a corresponding toleration that matches the tainted nodes.
+
+ A custom admission controller should be created in order to mutate the pods of the namespace freeverse adding the toleration. So the expected result will be that only the pods of the namespace freeverse will go to the >2 cpu node.
