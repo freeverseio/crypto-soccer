@@ -178,8 +178,6 @@ contract('Assets', (accounts) => {
     });
     
     it('transferBot fails because addDivision fails at half time', async () => {
-        tx = await assets.transferFirstBotToAddr(timez = 1, countryIdxInTZ = 0, ALICE, {from: owners.relay}).should.be.fulfilled;
-
         // let's try to addDivision to the tz that is about to play 2nd half: 
         var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
         turn.toNumber().should.be.equal(0);
@@ -192,9 +190,14 @@ contract('Assets', (accounts) => {
         // we can transfer bots up until bot 127, which fails because it really needs another division to be created:
         result = await assets.getNHumansInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
-        for (bot = result.toNumber(); bot < 127; bot++) {
+        for (bot = 0; bot < 127; bot++) {
             tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
         }
+        nTeams = await assets.getNHumansInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nTeams.toNumber().should.be.equal(127);
+        // fail to transfer another bot
+        tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.rejected;
+
         // there have been a total of attempts:
         past = await assets.getPastEvents( 'DivisionCreationFailed', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
         assert.equal(past.length, 14, "attemps to create division not as expected");
@@ -202,6 +205,9 @@ contract('Assets', (accounts) => {
             past[i].args.timezone.toNumber().should.be.equal(tzToUpdate.toNumber());
             past[i].args.countryIdxInTZ.toNumber().should.be.equal(0);
         }
+
+        nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nDivs.toNumber().should.be.equal(1); // only 1 div created so far
 
         // one more assignment, and it fails:
         tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.rejected;
@@ -215,12 +221,43 @@ contract('Assets', (accounts) => {
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
         await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
 
-        // - seconds, update the verse, and move to next
+        // - second, update the verse, and move to next
         await updates.updateTZ(verse = 1, nullHash, {from:alice}).should.be.fulfilled;
         await timeTravel.advanceTimeAndBlock(3600);
         await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, nullHash, {from: owners.relay}).should.be.fulfilled;
         // - finally, retry assigning new bot
         tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nDivs.toNumber().should.be.equal(2); // a new div was created
+    });
+
+    it('transferBot creates 1 div only when required', async () => {
+        // make sure we are in before the 1st half, so we can calmly assign bots to users
+        var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        turn.toNumber().should.be.equal(0);
+
+        // we can transfer bots up until bot 113, which fails because it really needs another division to be created:
+        for (bot = 0; bot < 113; bot++) {
+            tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+            result = await assets.getNHumansInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+            result.toNumber().should.be.equal(bot+1);
+            nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+            nDivs.toNumber().should.be.equal(1); // only 1 div created so far
+        }
+        // the next transfer requires create division:
+        tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nDivs.toNumber().should.be.equal(2); 
+        // the next 127 transfers do not require create division (we will end up with 113+128 teams after the loop)
+        for (bot = 0; bot < 127; bot++) {
+            tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+            nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+            nDivs.toNumber().should.be.equal(2); // only 1 div created so far
+        }
+        // the next transfer requires create division:
+        tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nDivs.toNumber().should.be.equal(3); 
     });
 
     it('createCountry cannot create division immediately, but it can when possible', async () => {
