@@ -29,3 +29,8 @@ func (b *Assets) GetLeftishness(opts *bind.CallOpts, encodedSkills *big.Int) (*b
 	result := getLeftishnessNat(encodedSkills)
 	return result, nil
 }
+
+func (b *Assets) EncodeTZCountryAndVal(opts *bind.CallOpts, timeZone uint8, countryIdxInTZ *big.Int, val *big.Int) (*big.Int, error) {
+	result, err := encodeTZCountryAndValNat(timeZone, countryIdxInTZ, val)
+	return result, err
+}
