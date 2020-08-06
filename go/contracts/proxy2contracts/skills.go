@@ -38,13 +38,13 @@ func getForwardnessNat(encodedSkills *big.Int) *big.Int {
 	return and(right(encodedSkills, 120), 7)
 }
 
-// func getLeftishness(encodedSkills *big.Int) *big.Int {
-// 	return big.NewInt(encodedSkills.Rsh(123.And(7);
-// }
+func getLeftishnessNat(encodedSkills *big.Int) *big.Int {
+	return and(right(encodedSkills, 123), 7)
+}
 
-// func getAggressiveness(encodedSkills *big.Int) *big.Int {
-// 	return big.NewInt(encodedSkills.Rsh(126.And(7);
-// }
+func getAggressivenessNat(encodedSkills *big.Int) *big.Int {
+	return and(right(encodedSkills, 126), 7)
+}
 
 // func getAlignedEndOfFirstHalf(encodedSkills *big.Int) public pure returns (bool) {
 // 	return (encodedSkills.Rsh(172.And(1) == 1;

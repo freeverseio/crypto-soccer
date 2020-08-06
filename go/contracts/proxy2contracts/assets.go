@@ -24,3 +24,8 @@ func (b *Assets) GetForwardness(opts *bind.CallOpts, encodedSkills *big.Int) (*b
 	result := getForwardnessNat(encodedSkills)
 	return result, nil
 }
+
+func (b *Assets) GetLeftishness(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
+	result := getLeftishnessNat(encodedSkills)
+	return result, nil
+}
