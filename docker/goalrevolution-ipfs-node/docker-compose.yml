@@ -5,8 +5,7 @@ services:
     restart: always
     environment:
       - IPFS_PATH=/data
-      # - IPFS_FD_MAX=4096
-      # - IPFS_PROFILE=test
+      - IPFS_PROFILE=server
     volumes:
       - ipfs.node-data0:/data
     ports:
@@ -34,8 +33,7 @@ services:
     restart: always
     environment:
       - IPFS_PATH=/data
-      # - IPFS_FD_MAX=4096
-      # - IPFS_PROFILE=test
+      - IPFS_PROFILE=server
     volumes:
       - ipfs.node-data1:/data
     ports:
@@ -62,8 +60,7 @@ services:
     restart: always
     environment:
       - IPFS_PATH=/data
-      # - IPFS_FD_MAX=4096
-      # - IPFS_PROFILE=test
+      - IPFS_PROFILE=server
     volumes:
       - ipfs.node-data2:/data
     ports:
