@@ -264,12 +264,12 @@ const upgrade = async (versionNumber, superuser, Proxy, proxyAddress, Assets, Ma
 
     console.log(" - ");
     console.log(" - DeActivating, activating, and pointing to the new Directory address...DONE");
-    console.log(" - Upgrade done. Returning.");
 
     console.log("Restoring previous market and relay");
     await assetsTmp.setRelay(currentRelayAddr).should.be.fulfilled;
     await assetsTmp.setMarket(currentMarketAddr).should.be.fulfilled;
-    
+
+    console.log(" - Upgrade done. Returning.");
     return [proxy, assets, market, updates, challenges];
 }
 
