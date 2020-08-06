@@ -238,9 +238,9 @@ const upgrade = async (versionNumber, superuser, Proxy, proxyAddress, Assets, Ma
     const nullAddr = "0x0000000000000000000000000000000000000000";
     const assetsTmp = await Assets.at(proxyAddress).should.be.fulfilled;
     const currentRelayAddr = await assetsTmp.relay().should.be.fulfilled;      
-    const currentMarketAddr = await assetsTmp.market().should.be.fulfilled;      
-    await assetsTmp.setRelay(nullAddr).should.be.fulfilled;
-    await assetsTmp.setMarket(nullAddr).should.be.fulfilled;
+    const currentMarketAddr = await assetsTmp.market().should.be.fulfilled;   
+    await assetsTmp.setRelay(nullAddr, {from: superuser}).should.be.fulfilled;
+    await assetsTmp.setMarket(nullAddr, {from: superuser}).should.be.fulfilled;
 
     console.log(" - ");
     console.log(" - Calling addContracts...");
@@ -266,8 +266,8 @@ const upgrade = async (versionNumber, superuser, Proxy, proxyAddress, Assets, Ma
     console.log(" - DeActivating, activating, and pointing to the new Directory address...DONE");
 
     console.log("Restoring previous market and relay");
-    await assetsTmp.setRelay(currentRelayAddr).should.be.fulfilled;
-    await assetsTmp.setMarket(currentMarketAddr).should.be.fulfilled;
+    await assetsTmp.setRelay(currentRelayAddr, {from: superuser}).should.be.fulfilled;
+    await assetsTmp.setMarket(currentMarketAddr, {from: superuser}).should.be.fulfilled;
 
     console.log(" - Upgrade done. Returning.");
     return [proxy, assets, market, updates, challenges];
