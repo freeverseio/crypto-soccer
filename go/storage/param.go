@@ -1,6 +1,10 @@
 package storage
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+	"strconv"
+)
 
 type Param struct {
 	Name  string
@@ -56,4 +60,26 @@ func (b Param) InsertOrUpdate(tx *sql.Tx) error {
 						ON CONFLICT (name) DO UPDATE  
 						SET name = $1 , value = $2;`, b.Name, b.Value)
 	return err
+}
+
+func GetBlockNumber(tx *sql.Tx) (uint64, error) {
+	param, err := ParamByName(tx, "block_number")
+	if err != nil {
+		return 0, err
+	}
+	if param == nil {
+		return 0, nil
+	}
+	value, err := strconv.ParseUint(param.Value, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return value, nil
+}
+
+func SetBlockNumber(tx *sql.Tx, value uint64) error {
+	param := Param{}
+	param.Name = "block_number"
+	param.Value = fmt.Sprintf("%v", value)
+	return param.InsertOrUpdate(tx)
 }

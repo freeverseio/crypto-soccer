@@ -5,8 +5,6 @@ CREATE TABLE params (
 );
 comment on table params is E'@omit create,update,delete';
 
-INSERT INTO params (name, value) VALUES ('block_number', '0');
-
 CREATE TABLE timezones (
     timezone_idx INT NOT NULL,
     PRIMARY KEY(timezone_idx)
