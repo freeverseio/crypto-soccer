@@ -1,4 +1,4 @@
-package native
+package proxy2contracts
 
 import "math/big"
 
