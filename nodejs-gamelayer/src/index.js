@@ -63,30 +63,6 @@ const main = async () => {
           })
         }
       },
-      name: {
-        selectionSet: `{ playerId }`,
-        resolve(player, args, context, info) {
-          var playerProps = info.mergeInfo.delegateToSchema({
-            schema: gameRemoteSchema,
-            operation: 'query',
-            fieldName: 'playerPropByPlayerId',
-            args: {
-              playerId: player.playerId,
-              condition: {
-                playerId: player.playerId
-              }
-            },
-            context,
-            info,
-          })
-
-          if (playerProps && playerProps.playerName) {
-            return playerProps.playerName
-          } else {
-            return player.name
-          }
-        }
-      },
     },
     Team: {
       teamPropsByTeamId: {

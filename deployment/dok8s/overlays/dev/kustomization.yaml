@@ -6,6 +6,9 @@ commonLabels:
 resources:
 - ../../base
 - configmap.yaml
+- ../../base/gameapi
+- ../../base/gamedb
+- ../../base/gamelayer
 images:
 - name: freeverseio/authproxy
   newTag: dev
@@ -27,12 +30,12 @@ images:
   newTag: dev
 - name: freeverseio/universe.db
   newTag: dev
-- name: freeverseio/game.api
-  newTag: dev
-- name: freeverseio/game.db
-  newTag: dev
-- name: freeverseio/gamelayer
-  newTag: dev
+# - name: freeverseio/game.api
+#   newTag: dev
+# - name: freeverseio/game.db
+#   newTag: dev
+# - name: freeverseio/gamelayer
+#   newTag: dev
 patchesJson6902:
 - target:
     group: networking.k8s.io
