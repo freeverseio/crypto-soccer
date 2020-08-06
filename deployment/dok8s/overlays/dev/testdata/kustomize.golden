@@ -696,7 +696,7 @@ spec:
         name: synchronizer
         resources:
           requests:
-            cpu: "4"
+            cpu: "3"
       imagePullSecrets:
       - name: docker-secret
 ---
@@ -946,8 +946,6 @@ spec:
           name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
-      nodeSelector:
-        beta.kubernetes.io/instance-type: c-4
       terminationGracePeriodSeconds: 10
   volumeClaimTemplates:
   - metadata:
