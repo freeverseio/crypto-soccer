@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -12,6 +11,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 type Match struct {
@@ -137,13 +137,18 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	matchLogs := [2]*big.Int{}
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
+	// If we cannot encode a the team's TP assignment, we set it to zero, and see if the match can be played anyway.
+	// If it can, great, the team(s) with incorrect TP will not evolve, that's all.
+	// If it cannot, it will cancel, and return a valid 0-0
 	homeAssignedTP, err := b.HomeTeam.EncodeAssignedTrainingPoints(contracts)
 	if err != nil {
-		return errors.Wrap(err, "failed calculating home assignedTP")
+		log.Warningf("failed calculating home assignedTP: %v", err)
+		homeAssignedTP = big.NewInt(0)
 	}
 	visitorAssignedTP, err := b.VisitorTeam.EncodeAssignedTrainingPoints(contracts)
 	if err != nil {
-		return errors.Wrap(err, "failed calculating visitor assignedTP")
+		log.Warningf("failed calculating visitor assignedTP: %v", err)
+		visitorAssignedTP = big.NewInt(0)
 	}
 	var BCError uint8
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
@@ -157,13 +162,11 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
+	// We have two types of possible errors returned:
+	// - Virtual Machine errors (never expected), err != nil => halt
+	// - Controlled error that was properly dealt by BC code, BCError != nil, returns CANCELLED match with valid log and events
 	if err != nil {
-		errMsg := fmt.Sprintf("GAME CANCELLED!!!! Play1stHalfAndEvolve: Blockchain returned error: %v", err)
-		fmt.Println(errMsg)
-	}
-	if BCError != 0 {
-		errMsg := fmt.Sprintf("GAME CANCELLED!!!! Play1stHalfAndEvolve: Solidity code returned error code: %v", BCError)
-		fmt.Println(errMsg)
+		return errors.Wrap(err, "failed play1stHalfAndEvolve")
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
@@ -173,14 +176,19 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return errors.Wrap(err, "failed decoding visitor match log")
 	}
-	if err = b.processMatchEvents(
-		contracts,
-		logsAndEvents[:],
-		decodedHomeMatchLog,
-		decodedVisitorMatchLog,
-		is2ndHalf,
-	); err != nil {
-		return errors.Wrap(err, "failed processing match events")
+	if BCError != 0 {
+		// no events returned, no need to process them. Just log
+		log.Warningf("GAME CANCELLED!!!! Play1stHalfAndEvolve: Solidity code returned error code: %v", BCError)
+	} else {
+		if err = b.processMatchEvents(
+			contracts,
+			logsAndEvents[:],
+			decodedHomeMatchLog,
+			decodedVisitorMatchLog,
+			is2ndHalf,
+		); err != nil {
+			return errors.Wrap(err, "failed processing match events")
+		}
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
@@ -226,15 +234,12 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		matchLogs,
 		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
 	)
+	// We have two types of possible errors returned:
+	// - Virtual Machine errors (never expected), err != nil => halt
+	// - Controlled error that was properly dealt by BC code, BCError != nil, returns CANCELLED match with valid log and events
 	if err != nil {
-		errMsg := fmt.Sprintf("GAME CANCELLED!!!! Play2ndHalfAndEvolve: Blockchain returned error: %v", err)
-		fmt.Println(errMsg)
+		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
 	}
-	if BCError != 0 {
-		errMsg := fmt.Sprintf("GAME CANCELLED!!!! Play2ndHalfAndEvolve: Solidity code returned error code: %v", BCError)
-		fmt.Println(errMsg)
-	}
-
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
 		return errors.Wrap(err, "failed decoding home match log")
@@ -243,14 +248,19 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return errors.Wrap(err, "failed decoding visitor match log")
 	}
-	if err = b.processMatchEvents(
-		contracts,
-		logsAndEvents[:],
-		decodedHomeMatchLog,
-		decodedVisitorMatchLog,
-		is2ndHalf,
-	); err != nil {
-		return errors.Wrap(err, "failed processing match events")
+	if BCError != 0 {
+		// no events returned, no need to process them. Just log
+		log.Warningf("GAME CANCELLED!!!! Play2ndHalfAndEvolve: Solidity code returned error code: %v", BCError)
+	} else {
+		if err = b.processMatchEvents(
+			contracts,
+			logsAndEvents[:],
+			decodedHomeMatchLog,
+			decodedVisitorMatchLog,
+			is2ndHalf,
+		); err != nil {
+			return errors.Wrap(err, "failed processing match events")
+		}
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
