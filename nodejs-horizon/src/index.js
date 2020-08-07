@@ -128,7 +128,7 @@ const main = async () => {
     resolvers
   });
 
-  const server = new ApolloServer({ cors: false, schema });
+  const server = new ApolloServer({ cors: true, schema });
 
   server.listen().then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
