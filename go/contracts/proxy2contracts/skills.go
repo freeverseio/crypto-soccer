@@ -37,12 +37,12 @@ func largerThan(x *big.Int, n int64) bool {
 	return x.Cmp(big.NewInt(n)) == 1
 }
 
-func twoToPow(n uint64) uint64 {
+func twoToPow(n uint64) int64 {
 	return 2 << (n - 1)
 }
 
 func encodeTZCountryAndValGo(timeZone uint8, countryIdxInTZ *big.Int, val *big.Int) (*big.Int, error) {
-	if !(timeZone < twoToPow(5)) {
+	if !(timeZone < 32) {
 		return nil, errors.New("timezone out of bound")
 	}
 	if !lessThan(countryIdxInTZ, twoToPow(10)) {
@@ -53,6 +53,10 @@ func encodeTZCountryAndValGo(timeZone uint8, countryIdxInTZ *big.Int, val *big.I
 	}
 	encoded := orBN(left(big.NewInt(int64(timeZone)), 38), left(countryIdxInTZ, 28))
 	return orBN(encoded, val), nil
+}
+
+func getCurrentShirtNumGo(playerState *big.Int) *big.Int {
+	return and(right(playerState, 43), 31)
 }
 
 // func getSkill(encodedSkills *big.Int, uint8 skillIdx) *big.Int {

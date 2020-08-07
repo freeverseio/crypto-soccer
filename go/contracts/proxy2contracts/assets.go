@@ -34,3 +34,8 @@ func (b *Assets) EncodeTZCountryAndVal(opts *bind.CallOpts, timeZone uint8, coun
 	result, err := encodeTZCountryAndValGo(timeZone, countryIdxInTZ, val)
 	return result, err
 }
+
+func (b *Assets) GetCurrentShirtNum(opts *bind.CallOpts, playerState *big.Int) (*big.Int, error) {
+	result := getCurrentShirtNumGo(playerState)
+	return result, nil
+}
