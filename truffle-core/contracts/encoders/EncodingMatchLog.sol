@@ -48,6 +48,7 @@ import "../encoders/EncodingMatchLogBase3.sol";
  trainingPoints, 12b, offset 236
  bool isHomeStadium,  1b each, offset 248
  changesAtHalftime, 2b, offset 249
+ bool isCancelled, 1b, offset 251
 */
 
 contract EncodingMatchLog is EncodingMatchLogBase1, EncodingMatchLogBase2, EncodingMatchLogBase3 {

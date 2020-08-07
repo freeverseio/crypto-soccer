@@ -121,6 +121,9 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
         )
     {
         if (!matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
+        if (getIsCancelled(matchLogs[0]) || getIsCancelled(matchLogs[1])) {
+            return cancelHalf(skills, true, ERR_2NDHALF_CANCELLED_DUE_TO_1STHALF_CANCELLED);
+        }
 
         for (uint8 team = 0; team < 2; team++) {
             if (matchBools[IDX_IS_BOT_HOME + team]) {
@@ -199,6 +202,7 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
                     }
                 }
             }
+            matchLogsAndEvents[team] = setIsCancelled(matchLogsAndEvents[team], true);
             if (is2ndHalf) { matchLogsAndEvents[team] = addWinner(matchLogsAndEvents[team], WINNER_DRAW); }
         }
         return (skills, matchLogsAndEvents, err);
