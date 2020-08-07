@@ -48,4 +48,3 @@ patchesJson6902:
   path: dashboard/ingress_patch.yaml
 patchesStrategicMerge:
   - synchronizer/deployment.yaml
-  - universedb/statefulset.yaml

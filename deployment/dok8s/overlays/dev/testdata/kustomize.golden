@@ -725,6 +725,18 @@ spec:
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
     spec:
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/app
+                  operator: In
+                  values:
+                  - synchronizer
+              topologyKey: beta.kubernetes.io/os
+            weight: 100
       containers:
       - env:
         - name: PGDATA
@@ -739,8 +751,6 @@ spec:
           name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
-      nodeSelector:
-        beta.kubernetes.io/instance-type: s-4vcpu-8gb
       terminationGracePeriodSeconds: 10
   volumeClaimTemplates:
   - metadata:
