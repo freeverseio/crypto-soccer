@@ -158,12 +158,12 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed play1stHalfAndEvolve")
+		errMsg := fmt.Sprintf("GAME CANCELLED!!!! Play1stHalfAndEvolve: Blockchain returned error: %v", err)
+		fmt.Println(errMsg)
 	}
 	if BCError != 0 {
-		errMsg := fmt.Sprintf("BLOCKCHAIN ERROR!!!! Play1stHalfAndEvolve: Blockchain returned error code: %v", BCError)
+		errMsg := fmt.Sprintf("GAME CANCELLED!!!! Play1stHalfAndEvolve: Solidity code returned error code: %v", BCError)
 		fmt.Println(errMsg)
-		return errors.New(errMsg)
 	}
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
@@ -227,13 +227,14 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
+		errMsg := fmt.Sprintf("GAME CANCELLED!!!! Play2ndHalfAndEvolve: Blockchain returned error: %v", err)
+		fmt.Println(errMsg)
 	}
 	if BCError != 0 {
-		errMsg := fmt.Sprintf("BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: %v", BCError)
+		errMsg := fmt.Sprintf("GAME CANCELLED!!!! Play2ndHalfAndEvolve: Solidity code returned error code: %v", BCError)
 		fmt.Println(errMsg)
-		return errors.New(errMsg)
 	}
+
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
 		return errors.Wrap(err, "failed decoding home match log")
