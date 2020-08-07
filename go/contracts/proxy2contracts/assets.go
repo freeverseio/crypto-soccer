@@ -39,3 +39,8 @@ func (b *Assets) GetCurrentShirtNum(opts *bind.CallOpts, playerState *big.Int) (
 	result := getCurrentShirtNumGo(playerState)
 	return result, nil
 }
+
+func (b *Assets) GetGeneration(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
+	result := getGenerationGo(encodedSkills)
+	return result, nil
+}

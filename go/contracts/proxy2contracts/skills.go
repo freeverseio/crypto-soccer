@@ -119,9 +119,9 @@ func getAggressivenessNat(encodedSkills *big.Int) *big.Int {
 // 	return big.NewInt(encodedSkills.Rsh(204.And(1) == 1;
 // }
 
-// func getGeneration(encodedSkills *big.Int) *big.Int {
-// 	return (encodedSkills.Rsh(205).And(255;
-// }
+func getGenerationGo(encodedSkills *big.Int) *big.Int {
+	return and(right(encodedSkills, 205), 255)
+}
 
 // func getOutOfGameFirstHalf(encodedSkills *big.Int) public pure returns (bool) {
 // 	return big.NewInt(encodedSkills.Rsh(213.And(1) == 1;
