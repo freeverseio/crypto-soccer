@@ -466,6 +466,7 @@ spec:
         - http://relayactions:4000/graphql
         - -n
         - http://notary:4000/graphql
+        - $(horizon_extra_args)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
