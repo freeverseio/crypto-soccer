@@ -14,6 +14,10 @@ spec:
         app.kubernetes.io/app: xdai # has to match .spec.selector.matchLabels
     spec:
       terminationGracePeriodSeconds: 10
+      nodeSelector:
+        beta.kubernetes.io/instance-type: c-8
+        # for dev use:
+        # beta.kubernetes.io/instance-type: s-4vcpu-8gb
       containers:
       - name: xdai
         image: freeverseio/parity:v2.7.2-posdao-stable
