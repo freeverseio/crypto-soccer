@@ -57,11 +57,12 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
     )
         public 
         view 
-        returns (
-            uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
-            uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents,
-            uint8 err
-        )
+        returns 
+    (
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
+        uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents,
+        uint8 err
+    )
     {
         if (matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
 
@@ -114,11 +115,12 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
     )
         public 
         view 
-        returns(
-            uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
-            uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents,
-            uint8 err
-        )
+        returns
+    (
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
+        uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents,
+        uint8 err
+    )
     {
         if (!matchBools[IDX_IS_2ND_HALF]) { return (skills, matchLogsAndEvents, ERR_IS2NDHALF); }
         if (getIsCancelled(matchLogs[0]) || getIsCancelled(matchLogs[1])) {
@@ -174,17 +176,18 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
     function cancelHalf(
         uint256[PLAYERS_PER_TEAM_MAX][2] memory skills, 
         bool is2ndHalf,
-        uint8 err
+        uint8 error
     ) 
         public 
         pure
         returns 
-        (
-            uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
-            uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents, 
-            uint8
-        ) 
+    (
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory, 
+        uint256[2+5*ROUNDS_PER_MATCH] memory, 
+        uint8
+    ) 
     {
+        uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents;
         for (uint8 team = 0; team < 2; team++) {
             for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
                 if (skills[team][p] != 0) {
@@ -205,7 +208,7 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
             matchLogsAndEvents[team] = setIsCancelled(matchLogsAndEvents[team], true);
             if (is2ndHalf) { matchLogsAndEvents[team] = addWinner(matchLogsAndEvents[team], WINNER_DRAW); }
         }
-        return (skills, matchLogsAndEvents, err);
+        return (skills, matchLogsAndEvents, error);
     }
 
 }
