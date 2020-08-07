@@ -368,12 +368,40 @@ contract('Evolution', (accounts) => {
         for (player of m.VisitorTeam.Players){ 
             skills1.push(player.EncodedSkills);
         }
+
+        // we started with players that had 0, 1 or 2 games non stopping. We'll see that after cancelling this 2nd half, they all rested. 
+        // we also see that someone had a red card from last game, which will also be set to false.
+        expectedGamesNonStopping = [ 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ];
+        gamesNonStopping = [];
+        someoneWithRedCard = false;
+        for (teamSkills of [skills0, skills1]) {
+            for (skill of teamSkills) {
+                result = await assets.getGamesNonStopping(skill);
+                gamesNonStopping.push(result.toNumber());
+                result = await assets.getRedCardLastGame(skill);
+                if (result) someoneWithRedCard = true;
+            }
+        }
+        debug.compareArrays(gamesNonStopping, expectedGamesNonStopping, toNum = false);
+        someoneWithRedCard.should.be.equal(true);
+
         var {0: skills, 1: matchLogsAndEvents, 2: err} =  await play.play2ndHalfAndEvolve(
             m.Seed, m.StartTime, [skills0, skills1], [m.HomeTeam.TeamID, m.VisitorTeam.TeamID], 
             [m.HomeTeam.Tactic, m.VisitorTeam.Tactic], [m.HomeTeam.MatchLog, m.VisitorTeam.MatchLog],
             [is2nd = true, isHom = true, isPlay = false, isBotHome, isBotAway]
         ).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_HALFCHANGES);
+
+        for (teamSkills of skills) {
+            for (skill of teamSkills) {
+                assert.equal(false, await assets.getAlignedEndOfFirstHalf(skill));
+                assert.equal(false, await assets.getSubstitutedFirstHalf(skill));
+                assert.equal(false, await assets.getOutOfGameFirstHalf(skill));
+                assert.equal(false, await assets.getYellowCardFirstHalf(skill));
+                assert.equal(false, await assets.getRedCardLastGame(skill));
+                assert.equal(0, await assets.getGamesNonStopping(skill));
+            }
+        }
     });
 
     it('test from real usage that failed in half time because a new division was created in half time, with aligned1stHalf = false', async () => {
