@@ -21,16 +21,16 @@ func NewAssets(address common.Address, backend bind.ContractBackend) (*Assets, e
 }
 
 func (b *Assets) GetForwardness(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
-	result := getForwardnessNat(encodedSkills)
+	result := getForwardnessGo(encodedSkills)
 	return result, nil
 }
 
 func (b *Assets) GetLeftishness(opts *bind.CallOpts, encodedSkills *big.Int) (*big.Int, error) {
-	result := getLeftishnessNat(encodedSkills)
+	result := getLeftishnessGo(encodedSkills)
 	return result, nil
 }
 
 func (b *Assets) EncodeTZCountryAndVal(opts *bind.CallOpts, timeZone uint8, countryIdxInTZ *big.Int, val *big.Int) (*big.Int, error) {
-	result, err := encodeTZCountryAndValNat(timeZone, countryIdxInTZ, val)
+	result, err := encodeTZCountryAndValGo(timeZone, countryIdxInTZ, val)
 	return result, err
 }

@@ -13,19 +13,19 @@ func left(x *big.Int, n uint) *big.Int {
 	return new(big.Int).Lsh(x, n)
 }
 
-func andBigNormal(x *big.Int, n int64) *big.Int {
+func and(x *big.Int, n int64) *big.Int {
 	return new(big.Int).And(x, big.NewInt(n))
 }
 
-func andBigBig(x *big.Int, y *big.Int) *big.Int {
+func andBN(x *big.Int, y *big.Int) *big.Int {
 	return new(big.Int).And(x, y)
 }
 
-func orBigNormal(x *big.Int, n int64) *big.Int {
+func or(x *big.Int, n int64) *big.Int {
 	return new(big.Int).Or(x, big.NewInt(n))
 }
 
-func orBigBig(x *big.Int, y *big.Int) *big.Int {
+func orBN(x *big.Int, y *big.Int) *big.Int {
 	return new(big.Int).Or(x, y)
 }
 
@@ -37,21 +37,22 @@ func largerThan(x *big.Int, n int64) bool {
 	return x.Cmp(big.NewInt(n)) == 1
 }
 
-func encodeTZCountryAndValNat(timeZone uint8, countryIdxInTZ *big.Int, val *big.Int) (*big.Int, error) {
-	if !(timeZone < 2^5) {
+func twoToPow(n uint64) uint64 {
+	return 2 << (n - 1)
+}
+
+func encodeTZCountryAndValGo(timeZone uint8, countryIdxInTZ *big.Int, val *big.Int) (*big.Int, error) {
+	if !(timeZone < twoToPow(5)) {
 		return nil, errors.New("timezone out of bound")
 	}
-	if !lessThan(countryIdxInTZ, 2^10) {
+	if !lessThan(countryIdxInTZ, twoToPow(10)) {
 		return nil, errors.New("countryIdxInTZ out of bound")
 	}
-	if !lessThan(val, 2^28) {
+	if !lessThan(val, twoToPow(28)) {
 		return nil, errors.New("val out of bound")
 	}
-	// encoded := left(timeZone, 38)
-	// uint256 encoded  = uint256(timeZone) << 38;        /// 43 - 5
-	// encoded         |= countryIdxInTZ << 28;  /// 38 - 10
-	// return (encoded | val);            /// 28 - 28
-	return countryIdxInTZ, nil
+	encoded := orBN(left(big.NewInt(int64(timeZone)), 38), left(countryIdxInTZ, 28))
+	return orBN(encoded, val), nil
 }
 
 // func getSkill(encodedSkills *big.Int, uint8 skillIdx) *big.Int {
@@ -74,16 +75,16 @@ func encodeTZCountryAndValNat(timeZone uint8, countryIdxInTZ *big.Int, val *big.
 // 	return big.NewInt(encodedSkills.Rsh(116.And(15);
 // }
 
-func getForwardnessNat(encodedSkills *big.Int) *big.Int {
-	return andBigNormal(right(encodedSkills, 120), 7)
+func getForwardnessGo(encodedSkills *big.Int) *big.Int {
+	return and(right(encodedSkills, 120), 7)
 }
 
-func getLeftishnessNat(encodedSkills *big.Int) *big.Int {
-	return andBigNormal(right(encodedSkills, 123), 7)
+func getLeftishnessGo(encodedSkills *big.Int) *big.Int {
+	return and(right(encodedSkills, 123), 7)
 }
 
 func getAggressivenessNat(encodedSkills *big.Int) *big.Int {
-	return andBigNormal(right(encodedSkills, 126), 7)
+	return and(right(encodedSkills, 126), 7)
 }
 
 // func getAlignedEndOfFirstHalf(encodedSkills *big.Int) public pure returns (bool) {
