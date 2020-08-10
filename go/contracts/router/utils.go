@@ -97,4 +97,28 @@ func (b *Utils) FullDecodeMatchLog(opts *bind.CallOpts, log *big.Int, is2ndHalf 
 	return *decodedLog, nil
 }
 
-// decodeTactics
+func (b *Utils) DecodeTactics(opts *bind.CallOpts, tactics *big.Int) (struct {
+	Substitutions [3]uint8
+	SubsRounds    [3]uint8
+	Lineup        [14]uint8
+	ExtraAttack   [10]bool
+	TacticsId     uint8
+}, error) {
+	ret := new(struct {
+		Substitutions [3]uint8
+		SubsRounds    [3]uint8
+		Lineup        [14]uint8
+		ExtraAttack   [10]bool
+		TacticsId     uint8
+	})
+	ret.TacticsId = getTacticsIdGo(tactics)
+	ret.ExtraAttack = getFullExtraAttackGo(tactics)
+	for p := uint8(0); p < 3; p++ {
+		ret.Substitutions[p] = getSubstitutionGo(tactics, p)
+	}
+	ret.Lineup = getFullLineUpGo(tactics)
+	for p := uint8(0); p < 3; p++ {
+		ret.SubsRounds[p] = getSubsRoundGo(tactics, p)
+	}
+	return *ret, nil
+}
