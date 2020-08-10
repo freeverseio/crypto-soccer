@@ -24,7 +24,8 @@ spec:
         args: [-u, "http://universeapi:4000/graphql",
                -m, "http://trader:4000/graphql",
                -r, "http://relayactions:4000/graphql",
-               -n, "http://notary:4000/graphql"]
+               -n, "http://notary:4000/graphql",
+               "$(horizon_extra_args)"]
 
       imagePullSecrets:
       - name: docker-secret
