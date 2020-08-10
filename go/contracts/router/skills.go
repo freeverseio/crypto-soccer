@@ -1,4 +1,4 @@
-package proxy2contracts
+package router
 
 import (
 	"errors"
