@@ -29,7 +29,7 @@ const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 const UpdatesBase = artifacts.require('UpdatesBase');
 const Utils = artifacts.require('Utils');
 
-contract('Proxy', (accounts) => {
+contract('Storage', (accounts) => {
     const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
     const [company, superuser, COO, market, relay, trustedParty] = accounts;
     
