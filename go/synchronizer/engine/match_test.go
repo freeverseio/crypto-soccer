@@ -451,7 +451,7 @@ func TestFromTheField(t *testing.T) {
 		match.HomeTeam.Owner = "0x433"
 		match.VisitorTeam.Owner = "0x433"
 		assert.NilError(t, err)
-		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: VM execution error.")
+		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: one of the assigned TPs is too large")
 	})
 	t.Run("fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
