@@ -261,3 +261,45 @@ func getInGameSubsHappenedGo(log *big.Int, posInHalf uint8, is2ndHalf bool) uint
 	val := and(right(log, offset), 3)
 	return uint8(val.Uint64())
 }
+
+// TACTICS
+
+func getTacticsId(tactics *big.Int) uint8 {
+	val := and(tactics, 63)
+	return uint8(val.Uint64())
+}
+
+func getExtraAttack(tactics *big.Int, p uint8) bool {
+	return equals(and(right(tactics, 6+uint(p)), 1), 1)
+}
+
+func getFullExtraAttack(tactics *big.Int) [10]bool {
+	var extraAttack [10]bool
+	for p := uint8(0); p < 10; p++ {
+		extraAttack[p] = getExtraAttack(tactics, p)
+	}
+	return extraAttack
+}
+
+func getSubstitution(tactics *big.Int, p uint8) uint8 {
+	val := right(and(tactics, 86+4*int64(p)), 15)
+	return uint8(val.Uint64())
+}
+
+func getSubsRound(tactics *big.Int, p uint8) uint8 {
+	val := right(and(tactics, 98+4*int64(p)), 15)
+	return uint8(val.Uint64())
+}
+
+func getLinedUp(tactics *big.Int, p uint8) uint8 {
+	val := right(and(tactics, 16+5*int64(p)), 31)
+	return uint8(val.Uint64())
+}
+
+func getFullLineUp(tactics *big.Int) [14]uint8 {
+	var lineup [14]uint8
+	for p := uint8(0); p < 14; p++ {
+		lineup[p] = getLinedUp(tactics, p)
+	}
+	return lineup
+}

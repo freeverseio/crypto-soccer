@@ -96,3 +96,5 @@ func (b *Utils) FullDecodeMatchLog(opts *bind.CallOpts, log *big.Int, is2ndHalf 
 	}
 	return *decodedLog, nil
 }
+
+// decodeTactics
