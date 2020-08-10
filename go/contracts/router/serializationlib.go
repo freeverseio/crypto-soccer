@@ -282,17 +282,17 @@ func getFullExtraAttackGo(tactics *big.Int) [10]bool {
 }
 
 func getSubstitutionGo(tactics *big.Int, p uint8) uint8 {
-	val := right(and(tactics, 86+4*int64(p)), 15)
+	val := and(right(tactics, 86+4*uint(p)), 15)
 	return uint8(val.Uint64())
 }
 
 func getSubsRoundGo(tactics *big.Int, p uint8) uint8 {
-	val := right(and(tactics, 98+4*int64(p)), 15)
+	val := and(right(tactics, 98+4*uint(p)), 15)
 	return uint8(val.Uint64())
 }
 
 func getLinedUpGo(tactics *big.Int, p uint8) uint8 {
-	val := right(and(tactics, 16+5*int64(p)), 31)
+	val := and(right(tactics, 16+5*uint(p)), 31)
 	return uint8(val.Uint64())
 }
 
