@@ -63,3 +63,36 @@ func (b *Utils) FullDecodeSkills(opts *bind.CallOpts, encodedSkills *big.Int) (s
 	result.GenerationGamesNonStopInjuryWeeks[2] = getInjuryWeeksLeftGo(encodedSkills)
 	return result, nil
 }
+
+func (b *Utils) FullDecodeMatchLog(opts *bind.CallOpts, log *big.Int, is2ndHalf bool) ([15]uint32, error) {
+	var (
+		decodedLog = new([15]uint32)
+	)
+	decodedLog[0] = uint32(getTeamSumSkillsGo(log).Uint64())
+	decodedLog[1] = uint32(getWinnerGo(log))
+	decodedLog[2] = uint32(getNGoalsGo(log))
+	if is2ndHalf {
+		decodedLog[3] = uint32(getTrainingPointsGo(log))
+	} else {
+		decodedLog[3] = 0
+	}
+
+	decodedLog[4] = uint32(getOutOfGamePlayerGo(log, is2ndHalf).Uint64())
+	decodedLog[5] = uint32(getOutOfGameTypeGo(log, is2ndHalf).Uint64())
+	decodedLog[6] = uint32(getOutOfGameRoundGo(log, is2ndHalf).Uint64())
+
+	decodedLog[7] = uint32(getYellowCardGo(log, 0, is2ndHalf))
+	decodedLog[8] = uint32(getYellowCardGo(log, 1, is2ndHalf))
+
+	decodedLog[9] = uint32(getInGameSubsHappenedGo(log, 0, is2ndHalf))
+	decodedLog[10] = uint32(getInGameSubsHappenedGo(log, 1, is2ndHalf))
+	decodedLog[11] = uint32(getInGameSubsHappenedGo(log, 2, is2ndHalf))
+
+	/// getHalfTimeSubs: recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+	if is2ndHalf {
+		decodedLog[12] = uint32(getHalfTimeSubsGo(log, 0))
+		decodedLog[13] = uint32(getHalfTimeSubsGo(log, 1))
+		decodedLog[14] = uint32(getHalfTimeSubsGo(log, 2))
+	}
+	return *decodedLog, nil
+}

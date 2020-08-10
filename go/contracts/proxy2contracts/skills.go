@@ -142,36 +142,36 @@ func getYellowCardFirstHalfGo(encodedSkills *big.Int) bool {
 
 // MATCH LOG functions:
 
-func getAssister(log *big.Int, pos uint8) uint8 {
+func getAssisterGo(log *big.Int, pos uint8) uint8 {
 	val := and(right(log, (4+4*uint(pos))), 15)
 	return uint8(val.Uint64())
 }
 
-func getShooter(log *big.Int, pos uint8) uint8 {
+func getShooterGo(log *big.Int, pos uint8) uint8 {
 	val := and(right(log, (52+4*uint(pos))), 15)
 	return uint8(val.Uint64())
 }
 
-func getForwardPos(log *big.Int, pos uint8) uint8 {
+func getForwardPosGo(log *big.Int, pos uint8) uint8 {
 	val := and(right(log, (100+2*uint(pos))), 3)
 	return uint8(val.Uint64())
 }
 
-func getPenalty(log *big.Int, pos uint8) bool {
+func getPenaltyGo(log *big.Int, pos uint8) bool {
 	return equals(and(right(log, 124+uint(pos)), 1), 1)
 }
 
-func getIsHomeStadium(log *big.Int) bool {
+func getIsHomeStadiumGo(log *big.Int) bool {
 	return equals(and(right(log, 248), 1), 1)
 }
 
 /// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
-func getHalfTimeSubs(log *big.Int, pos uint8) uint8 {
+func getHalfTimeSubsGo(log *big.Int, pos uint8) uint8 {
 	val := and(right(log, (179+5*uint(pos))), 31)
 	return uint8(val.Uint64())
 }
 
-func getNGKAndDefs(log *big.Int, is2ndHalf bool) uint8 {
+func getNGKAndDefsGo(log *big.Int, is2ndHalf bool) uint8 {
 	offset := uint(194)
 	if is2ndHalf {
 		offset += 4
@@ -180,7 +180,7 @@ func getNGKAndDefs(log *big.Int, is2ndHalf bool) uint8 {
 	return uint8(val.Uint64())
 }
 
-func getNTot(log *big.Int, is2ndHalf bool) uint8 {
+func getNTotGo(log *big.Int, is2ndHalf bool) uint8 {
 	offset := uint(202)
 	if is2ndHalf {
 		offset += 4
@@ -189,30 +189,30 @@ func getNTot(log *big.Int, is2ndHalf bool) uint8 {
 	return uint8(val.Uint64())
 }
 
-func getWinner(log *big.Int) uint8 {
+func getWinnerGo(log *big.Int) uint8 {
 	val := and(right(log, 210), 3)
 	return uint8(val.Uint64())
 }
 
-func getTeamSumSkills(log *big.Int) *big.Int {
+func getTeamSumSkillsGo(log *big.Int) *big.Int {
 	return and(right(log, 212), 16777215) // 2^24 - 1
 }
 
-func addTrainingPoints(log *big.Int, points *big.Int) *big.Int {
+func addTrainingPointsGo(log *big.Int, points *big.Int) *big.Int {
 	return orBN(log, left(points, 236))
 }
 
-func getTrainingPoints(log *big.Int) uint16 {
+func getTrainingPointsGo(log *big.Int) uint16 {
 	val := and(right(log, 236), 4095) // 2^12-1
 	return uint16(val.Uint64())
 }
 
-func getNGoals(log *big.Int) uint8 {
+func getNGoalsGo(log *big.Int) uint8 {
 	val := and(log, 15)
 	return uint8(val.Uint64())
 }
 
-func getOutOfGamePlayer(log *big.Int, is2ndHalf bool) *big.Int {
+func getOutOfGamePlayerGo(log *big.Int, is2ndHalf bool) *big.Int {
 	var offset uint
 	if is2ndHalf {
 		offset = 141
@@ -222,7 +222,7 @@ func getOutOfGamePlayer(log *big.Int, is2ndHalf bool) *big.Int {
 	return and(right(log, offset), 15)
 }
 
-func getOutOfGameType(log *big.Int, is2ndHalf bool) *big.Int {
+func getOutOfGameTypeGo(log *big.Int, is2ndHalf bool) *big.Int {
 	var offset uint
 	if is2ndHalf {
 		offset = 141
@@ -232,7 +232,7 @@ func getOutOfGameType(log *big.Int, is2ndHalf bool) *big.Int {
 	return and(right(log, offset+4), 3)
 }
 
-func getOutOfGameRound(log *big.Int, is2ndHalf bool) *big.Int {
+func getOutOfGameRoundGo(log *big.Int, is2ndHalf bool) *big.Int {
 	var offset uint
 	if is2ndHalf {
 		offset = 141
@@ -242,7 +242,7 @@ func getOutOfGameRound(log *big.Int, is2ndHalf bool) *big.Int {
 	return and(right(log, offset+6), 15)
 }
 
-func getYellowCard(log *big.Int, posInHaf uint8, is2ndHalf bool) uint8 {
+func getYellowCardGo(log *big.Int, posInHaf uint8, is2ndHalf bool) uint8 {
 	offset := uint(posInHaf) * 4
 	if is2ndHalf {
 		offset += 159
@@ -253,7 +253,7 @@ func getYellowCard(log *big.Int, posInHaf uint8, is2ndHalf bool) uint8 {
 	return uint8(val.Uint64())
 }
 
-func getInGameSubsHappened(log *big.Int, posInHalf uint8, is2ndHalf bool) uint8 {
+func getInGameSubsHappenedGo(log *big.Int, posInHalf uint8, is2ndHalf bool) uint8 {
 	offset := 167 + 2*uint(posInHalf)
 	if is2ndHalf {
 		offset += 6
