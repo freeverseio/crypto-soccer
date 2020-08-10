@@ -74,8 +74,7 @@ func main() {
 		ch,
 		client,
 		auth,
-		bc.Updates,
-		bc.Assets,
+		*bc,
 		ipfscluster.NewUserActionsPublishService(*ipfsURL),
 		db,
 	).Start()
