@@ -139,3 +139,70 @@ func getOutOfGameFirstHalfGo(encodedSkills *big.Int) bool {
 func getYellowCardFirstHalfGo(encodedSkills *big.Int) bool {
 	return equals(and(right(encodedSkills, 214), 1), 1)
 }
+
+// MATCH LOG functions:
+
+func getAssister(log *big.Int, pos uint8) uint8 {
+	val := and(right(log, (4+4*uint(pos))), 15)
+	return uint8(val.Uint64())
+}
+
+func getShooter(log *big.Int, pos uint8) uint8 {
+	val := and(right(log, (52+4*uint(pos))), 15)
+	return uint8(val.Uint64())
+}
+
+func getForwardPos(log *big.Int, pos uint8) uint8 {
+	val := and(right(log, (100+2*uint(pos))), 3)
+	return uint8(val.Uint64())
+}
+
+func getPenalty(log *big.Int, pos uint8) bool {
+	return equals(and(right(log, 124+uint(pos)), 1), 1)
+}
+
+func getIsHomeStadium(log *big.Int) bool {
+	return equals(and(right(log, 248), 1), 1)
+}
+
+/// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+func getHalfTimeSubs(log *big.Int, pos uint8) uint8 {
+	val := and(right(log, (179+5*uint(pos))), 31)
+	return uint8(val.Uint64())
+}
+
+func getNGKAndDefs(log *big.Int, is2ndHalf bool) uint8 {
+	offset := uint(194)
+	if is2ndHalf {
+		offset += 4
+	}
+	val := and(right(log, offset), 15)
+	return uint8(val.Uint64())
+}
+
+func getNTot(log *big.Int, is2ndHalf bool) uint8 {
+	offset := uint(202)
+	if is2ndHalf {
+		offset += 4
+	}
+	val := and(right(log, offset), 15)
+	return uint8(val.Uint64())
+}
+
+func getWinner(log *big.Int) uint8 {
+	val := and(right(log, 210), 3)
+	return uint8(val.Uint64())
+}
+
+func getTeamSumSkills(log *big.Int) *big.Int {
+	return and(right(log, 212), 16777215) // 2^24 - 1
+}
+
+func addTrainingPoints(log *big.Int, points *big.Int) *big.Int {
+	return orBN(log, left(points, 236))
+}
+
+func getTrainingPoints(log *big.Int) uint16 {
+	val := and(right(log, 236), 4095) // 2^12-1
+	return uint16(val.Uint64())
+}
