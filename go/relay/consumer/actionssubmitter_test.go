@@ -19,7 +19,7 @@ func TestSubmitActionRoot(t *testing.T) {
 	p := consumer.NewActionsSubmitter(
 		bc.Client,
 		auth,
-		bc.Contracts.Updates,
+		*bc.Contracts,
 		memory.NewUserActionsPublishService(),
 	)
 	assert.NilError(t, p.Process(tx))
