@@ -206,3 +206,58 @@ func getTrainingPoints(log *big.Int) uint16 {
 	val := and(right(log, 236), 4095) // 2^12-1
 	return uint16(val.Uint64())
 }
+
+func getNGoals(log *big.Int) uint8 {
+	val := and(log, 15)
+	return uint8(val.Uint64())
+}
+
+func getOutOfGamePlayer(log *big.Int, is2ndHalf bool) *big.Int {
+	var offset uint
+	if is2ndHalf {
+		offset = 141
+	} else {
+		offset = 131
+	}
+	return and(right(log, offset), 15)
+}
+
+func getOutOfGameType(log *big.Int, is2ndHalf bool) *big.Int {
+	var offset uint
+	if is2ndHalf {
+		offset = 141
+	} else {
+		offset = 131
+	}
+	return and(right(log, offset+4), 3)
+}
+
+func getOutOfGameRound(log *big.Int, is2ndHalf bool) *big.Int {
+	var offset uint
+	if is2ndHalf {
+		offset = 141
+	} else {
+		offset = 131
+	}
+	return and(right(log, offset+6), 15)
+}
+
+func getYellowCard(log *big.Int, posInHaf uint8, is2ndHalf bool) uint8 {
+	offset := uint(posInHaf) * 4
+	if is2ndHalf {
+		offset += 159
+	} else {
+		offset += 151
+	}
+	val := and(right(log, offset), 15)
+	return uint8(val.Uint64())
+}
+
+func getInGameSubsHappened(log *big.Int, posInHalf uint8, is2ndHalf bool) uint8 {
+	offset := 167 + 2*uint(posInHalf)
+	if is2ndHalf {
+		offset += 6
+	}
+	val := and(right(log, offset), 3)
+	return uint8(val.Uint64())
+}
