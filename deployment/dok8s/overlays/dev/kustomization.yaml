@@ -6,6 +6,9 @@ commonLabels:
 resources:
 - ../../base
 - configmap.yaml
+- ../../base/gameapi
+- ../../base/gamedb
+- ../../base/gamelayer
 images:
 - name: freeverseio/authproxy
   newTag: dev

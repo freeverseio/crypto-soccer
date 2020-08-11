@@ -94,15 +94,15 @@ const main = async () => {
       },
     },
     Mutation: {
-      setPlayerName2: async (_, { playerId, name, signature }) => {
+      setPlayerName2: async (_, { input: { playerId, name, signature } }) => {
           await updatePlayerName({ playerId, playerName: name })
           return playerId 
         },
-      setTeamName2: async (_, { teamId, name, signature }) => {
+      setTeamName2: async (_, { input: { teamId, name, signature } }) => {
         await updateTeamName({ teamId, teamName: name })
         return teamId 
       },
-      setTeamManagerName2: async (_, { teamId, name, signature }) => {
+      setTeamManagerName2: async (_, { input: { teamId, name, signature } }) => {
         await updateTeamManagerName({ teamId, teamManagerName: name })
         return teamId 
       },

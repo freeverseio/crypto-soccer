@@ -5,9 +5,10 @@ const updateTeamManagerNameQuery = {
     INSERT INTO 
         team_props(
             team_id,
+            team_name,
             team_manager_name
         )
-    VALUES ($1, $2)
+    VALUES ($1, '', $2)
     ON CONFLICT (team_id) DO UPDATE
     SET
         team_manager_name = $2
