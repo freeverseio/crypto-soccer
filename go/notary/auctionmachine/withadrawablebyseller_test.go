@@ -21,7 +21,7 @@ func TestWithDrawableBySellerPendingValidate(t *testing.T) {
 	bids := []storage.Bid{*bid}
 	order.Status = "PENDING_VALIDATE"
 	offer := storage.NewOffer()
-	m, err := auctionmachine.New(*auction, bids, *offer, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
 	assert.Equal(t, m.State(), storage.AuctionValidation)
@@ -39,7 +39,7 @@ func TestWithDrawableBySellerPendingRelease(t *testing.T) {
 	bids := []storage.Bid{*bid}
 	order.Status = "PENDING_RELEASE"
 	offer := storage.NewOffer()
-	m, err := auctionmachine.New(*auction, bids, *offer, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
 	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)
@@ -57,7 +57,7 @@ func TestWithDrawableBySellerReleased(t *testing.T) {
 	bids := []storage.Bid{*bid}
 	order.Status = "RELEASED"
 	offer := storage.NewOffer()
-	m, err := auctionmachine.New(*auction, bids, *offer, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
 	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)

@@ -23,7 +23,7 @@ func TestPaying(t *testing.T) {
 
 	auction.State = storage.AuctionStarted
 	offer := storage.NewOffer()
-	m, err := auctionmachine.New(*auction, nil, *offer, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, nil, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.Error(t, m.ProcessPaying(v1.NewMockMarketPay()), "auction[f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a|started] is not in state paying")
 }
@@ -42,7 +42,7 @@ func TestPayingWithOffer(t *testing.T) {
 	auction.State = storage.AuctionStarted
 	offer := storage.NewOffer()
 	offer.ID = "12345"
-	m, err := auctionmachine.New(*auction, nil, *offer, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, nil, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.Error(t, m.ProcessPaying(v1.NewMockMarketPay()), "auction[f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a|started] is not in state paying")
 }
@@ -51,7 +51,7 @@ func TestPayingNilBids(t *testing.T) {
 	auction := storage.NewAuction()
 	auction.State = storage.AuctionPaying
 	offer := storage.NewOffer()
-	m, err := auctionmachine.New(*auction, nil, *offer, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, nil, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
@@ -65,7 +65,7 @@ func TestPayingNoBidsAvailable(t *testing.T) {
 	bid.State = storage.BidFailed
 	bids := []storage.Bid{*bid}
 	offer := storage.NewOffer()
-	m, err := auctionmachine.New(*auction, bids, *offer, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
@@ -79,7 +79,7 @@ func TestPayingWithBid(t *testing.T) {
 	bid.State = storage.BidAccepted
 	bids := []storage.Bid{*bid}
 	offer := storage.NewOffer()
-	m, err := auctionmachine.New(*auction, bids, *offer, *bc.Contracts, bc.Owner)
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionPaying)
