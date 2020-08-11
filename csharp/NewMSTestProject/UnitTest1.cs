@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Numerics;
 
 namespace NewMSTestProject
 {
@@ -7,9 +8,15 @@ namespace NewMSTestProject
     {
         [TestMethod]
         public void Test_AddMethod() {  
-            Serialization bm = new Serialization();  
-            double res = bm.Add(10, 10);  
-            Assert.AreEqual(res, 20);  
+            Serialization serial = new Serialization();  
+            double res = serial.Add(10, 20);  
+            Assert.AreEqual(res, 30);  
+        }  
+        [TestMethod]
+        public void Test_AddBNMethod() {  
+            Serialization serial = new Serialization();  
+            BigInteger res = serial.AddBN(new BigInteger(10), new BigInteger(20));  
+            Assert.AreEqual(res, new BigInteger(30));  
         }  
     }
 }
