@@ -178,8 +178,6 @@ contract('Assets', (accounts) => {
     });
     
     it('transferBot fails because addDivision fails at half time', async () => {
-        tx = await assets.transferFirstBotToAddr(timez = 1, countryIdxInTZ = 0, ALICE, {from: owners.relay}).should.be.fulfilled;
-
         // let's try to addDivision to the tz that is about to play 2nd half: 
         var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
         turn.toNumber().should.be.equal(0);
@@ -192,9 +190,14 @@ contract('Assets', (accounts) => {
         // we can transfer bots up until bot 127, which fails because it really needs another division to be created:
         result = await assets.getNHumansInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
-        for (bot = result.toNumber(); bot < 127; bot++) {
+        for (bot = 0; bot < 127; bot++) {
             tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
         }
+        nTeams = await assets.getNHumansInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nTeams.toNumber().should.be.equal(127);
+        // fail to transfer another bot
+        tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.rejected;
+
         // there have been a total of attempts:
         past = await assets.getPastEvents( 'DivisionCreationFailed', { fromBlock: 0, toBlock: 'latest' } ).should.be.fulfilled;
         assert.equal(past.length, 14, "attemps to create division not as expected");
@@ -202,6 +205,9 @@ contract('Assets', (accounts) => {
             past[i].args.timezone.toNumber().should.be.equal(tzToUpdate.toNumber());
             past[i].args.countryIdxInTZ.toNumber().should.be.equal(0);
         }
+
+        nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nDivs.toNumber().should.be.equal(1); // only 1 div created so far
 
         // one more assignment, and it fails:
         tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.rejected;
@@ -215,12 +221,43 @@ contract('Assets', (accounts) => {
         await deployUtils.addTrustedParties(stakers, owners.COO, parties);
         await deployUtils.enrol(stakers, defaultSetup.requiredStake, parties);
 
-        // - seconds, update the verse, and move to next
+        // - second, update the verse, and move to next
         await updates.updateTZ(verse = 1, nullHash, {from:alice}).should.be.fulfilled;
         await timeTravel.advanceTimeAndBlock(3600);
         await updates.submitActionsRoot(actionsRoot = web3.utils.keccak256("hiboys"), nullHash, nullHash, 2, nullHash, {from: owners.relay}).should.be.fulfilled;
         // - finally, retry assigning new bot
         tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nDivs.toNumber().should.be.equal(2); // a new div was created
+    });
+
+    it('transferBot creates 1 div only when required', async () => {
+        // make sure we are in before the 1st half, so we can calmly assign bots to users
+        var {0: tzToUpdate, 1: day, 2: turn} = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        turn.toNumber().should.be.equal(0);
+
+        // we can transfer bots up until bot 113, which fails because it really needs another division to be created:
+        for (bot = 0; bot < 113; bot++) {
+            tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+            result = await assets.getNHumansInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+            result.toNumber().should.be.equal(bot+1);
+            nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+            nDivs.toNumber().should.be.equal(1); // only 1 div created so far
+        }
+        // the next transfer requires create division:
+        tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nDivs.toNumber().should.be.equal(2); 
+        // the next 127 transfers do not require create division (we will end up with 113+128 teams after the loop)
+        for (bot = 0; bot < 127; bot++) {
+            tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+            nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+            nDivs.toNumber().should.be.equal(2); // only 1 div created so far
+        }
+        // the next transfer requires create division:
+        tx = await assets.transferFirstBotToAddr(tzToUpdate, countryIdxInTZ, ALICE, {from: owners.relay}).should.be.fulfilled;
+        nDivs = await assets.getNDivisionsInCountry(tzToUpdate, countryIdxInTZ).should.be.fulfilled;
+        nDivs.toNumber().should.be.equal(3); 
     });
 
     it('createCountry cannot create division immediately, but it can when possible', async () => {
@@ -511,37 +548,34 @@ contract('Assets', (accounts) => {
     });
 
    it('gameDeployDay', async () => {
+        // upon deploy, we fixed the "deploy time" to be = blockChainTimeSec 
         const gameDeployDay =  await assets.gameDeployDay().should.be.fulfilled;
-        currentBlockNum = await web3.eth.getBlockNumber()
-        currentBlock = await web3.eth.getBlock(currentBlockNum)
-        currentDay = Math.floor(currentBlock.timestamp / (3600 * 24));
-        gameDeployDay.toNumber().should.be.equal(currentDay);
+        gameDeployDay.toNumber().should.be.equal(Math.floor(blockChainTimeSec/(3600*24)));
     });
 
    it('get skills of a GoalKeeper on creation', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         playerIdxInCountry = 1;
+        teamIdxInCountry = 2;
+        playerCreationDay = Math.floor(1596637573/(3600*24)); // August 5, 2020
+        shirtNum = 1;
+
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        expectedSkills = [ 1589, 731, 1016, 995, 667 ];
-        resultSkills = [];
-        for (sk = 0; sk < N_SKILLS; sk++) {
-            resultSkills.push(await assets.getSkill(encodedSkills, sk).should.be.fulfilled);
-        }
-        debug.compareArrays(resultSkills, expectedSkills, toNum = true);
-        newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
-        newId.should.be.bignumber.equal(playerId);
-        gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
-        dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
-        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-        (Math.abs(ageInDays.toNumber() - 10660) <= INGAMETIME_VS_REALTIME).should.be.equal(true); // we cannot guarantee exactness +/- 1
-        // check that the ageInDay can be obtained by INGAMETIME_VS_REALTIME * (now - dayOfBirth), where
-        // now is approximately gameDeployDay. There is an uncertainty of about INGAMETIME_VS_REALTIME days due to rounding.
-        (Math.abs(INGAMETIME_VS_REALTIME*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < INGAMETIME_VS_REALTIME).should.be.equal(true);
+        teamId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
+        var {0: bday, 1: pot} = await assets.computeBirthDayAndPotential(teamId, playerCreationDay, shirtNum).should.be.fulfilled;
+        bday.toNumber().should.be.equal(17669);
+        pot.toNumber().should.be.equal(4);
+        var {0: skillsVec, 1: traits, 2: sumSkills} = await assets.computeSkills(teamId, shirtNum, pot.toNumber());
+        expectedSkills = [ 1555, 634, 848, 841, 1121 ];
+        expectedTraits = [ 4, 0, 0, 2];
+        debug.compareArrays(skillsVec, expectedSkills, toNum = true);
+        debug.compareArrays(traits, expectedTraits, toNum = true);
+        const sum = skillsVec.reduce((a, b) => a + b.toNumber(), 0);
+        sumSkills.toNumber().should.be.equal(sum);
     });
 
-   it('get state of player on creation', async () => {
+    it('get state of player on creation', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         // test for players on the first team

@@ -6,13 +6,13 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/helper"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
+func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error {
 	if err := b.checkState(storage.AuctionPaying); err != nil {
 		return err
 	}

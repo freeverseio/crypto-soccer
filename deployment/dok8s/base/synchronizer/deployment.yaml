@@ -17,6 +17,9 @@ spec:
       containers:
       - name: synchronizer
         image: freeverseio/synchronizer:dev
+        resources:
+          requests:
+            cpu: "3"
         imagePullPolicy: Always
         env:
           - name: STAKER_PRIVATE_KEY
@@ -33,6 +36,5 @@ spec:
                -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
                -staker, "$(STAKER_PRIVATE_KEY)",
                -delta, "$(BLOCKS_PER_STEP)"]
-
       imagePullSecrets:
       - name: docker-secret

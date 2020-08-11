@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/apex/log v1.6.0
 	github.com/awa/go-iap v1.3.0
+	github.com/cloudflare/cfssl v1.4.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/ethereum/go-ethereum v1.9.11
@@ -23,6 +24,7 @@ require (
 	github.com/prometheus/client_golang v1.4.1
 	github.com/prometheus/common v0.9.1
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.2

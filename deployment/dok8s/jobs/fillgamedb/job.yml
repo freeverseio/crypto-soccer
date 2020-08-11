@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fillgamedbjob
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: job-pod
+        image: freeverseio/jobs
+        env:
+        - name: JOB_NAME
+          value: ${JOB_NAME}
+        - name: UNIVERSE_URL
+          value: ${UNIVERSE_URL}
+        - name: GAME_URL
+          value: ${GAME_URL}
+        - name: DEBUG
+          value: ${DEBUG}
+      restartPolicy: Never

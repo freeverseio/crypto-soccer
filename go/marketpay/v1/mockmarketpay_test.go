@@ -3,15 +3,15 @@ package v1_test
 import (
 	"testing"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"gotest.tools/assert"
 )
 
 func TestMockMarketPaySetStatus(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("name", "value")
 	assert.NilError(t, err)
 	assert.Assert(t, !market.IsPaid(*order))
-	market.SetOrderStatus(marketpay.PUBLISHED)
+	market.SetOrderStatus(v1.PUBLISHED)
 	assert.Assert(t, market.IsPaid(*order))
 }

@@ -3,19 +3,18 @@ package consumer_test
 import (
 	"testing"
 
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"gotest.tools/assert"
-
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 )
 
 func TestConsumerNew(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	_, err := consumer.New(
 		ch,
-		marketpay.NewMockMarketPay(),
+		v1.NewMockMarketPay(),
 		db,
 		*bc.Contracts,
 		bc.Owner,
@@ -30,7 +29,7 @@ func TestConsumerConsumeSubmitPlayStorePlayerPurchaseInput(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	c, err := consumer.New(
 		ch,
-		marketpay.NewMockMarketPay(),
+		v1.NewMockMarketPay(),
 		db,
 		*bc.Contracts,
 		bc.Owner,
@@ -47,7 +46,7 @@ func TestConsumerConsumeCreateAuction(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	c, err := consumer.New(
 		ch,
-		marketpay.NewMockMarketPay(),
+		v1.NewMockMarketPay(),
 		db,
 		*bc.Contracts,
 		bc.Owner,
@@ -64,7 +63,7 @@ func TestConsumerConsumeCancelAuction(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	c, err := consumer.New(
 		ch,
-		marketpay.NewMockMarketPay(),
+		v1.NewMockMarketPay(),
 		db,
 		*bc.Contracts,
 		bc.Owner,
@@ -81,7 +80,7 @@ func TestConsumerConsumeCreateBid(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	c, err := consumer.New(
 		ch,
-		marketpay.NewMockMarketPay(),
+		v1.NewMockMarketPay(),
 		db,
 		*bc.Contracts,
 		bc.Owner,
@@ -98,7 +97,7 @@ func TestConsumerConsumeUnknownEvent(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	c, err := consumer.New(
 		ch,
-		marketpay.NewMockMarketPay(),
+		v1.NewMockMarketPay(),
 		db,
 		*bc.Contracts,
 		bc.Owner,

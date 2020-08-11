@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"net/http"
 	"runtime"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 
@@ -68,6 +69,7 @@ func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.C
 	matchesChannel := make(chan *engine.Match, len(*b))
 	g, _ := errgroup.WithContext(ctx)
 
+	start := time.Now()
 	for i := 0; i < numWorkers; i++ {
 		g.Go(func() error {
 			c, err := contracts.Clone()
@@ -91,7 +93,14 @@ func (b *Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.C
 		matchesChannel <- &(*b)[i]
 	}
 	close(matchesChannel)
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	elapsed := time.Now().Sub(start)
+	log.Infof("[precessor|1stHalfParallelProcess] %v workers, took %v secs", numWorkers, elapsed.Seconds())
+
+	return nil
 }
 
 func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
@@ -101,6 +110,7 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 	matchesChannel := make(chan *engine.Match, len(*b))
 	g, _ := errgroup.WithContext(ctx)
 
+	start := time.Now()
 	for i := 0; i < numWorkers; i++ {
 		g.Go(func() error {
 			c, err := contracts.Clone()
@@ -124,7 +134,14 @@ func (b *Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.C
 		matchesChannel <- &(*b)[i]
 	}
 	close(matchesChannel)
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	elapsed := time.Now().Sub(start)
+	log.Infof("[precessor|2ndHalfParallelProcess] %v workers, took %v secs", numWorkers, elapsed.Seconds())
+
+	return nil
 }
 
 func (b *Matches) SetSeed(seed [32]byte) {

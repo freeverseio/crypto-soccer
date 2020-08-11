@@ -21,9 +21,10 @@ program
   .option("-m, --marketUrl <url>", "graphql market url", "")
   .option("-r, --relayUrl <url>", "graphql relay url", "")
   .option("-n, --notaryUrl <url>", "graphql notary url", "")
+  .option("-c, --enableCors", "enable CORS")
   .parse(process.argv);
 
-const { universeUrl, marketUrl, relayUrl, notaryUrl } = program;
+const { universeUrl, marketUrl, relayUrl, notaryUrl, enableCors } = program;
 
 console.log("--------------------------------------------------------");
 console.log("universeUrl       : ", universeUrl);
@@ -155,7 +156,10 @@ const main = async () => {
     resolvers
   });
 
-  const server = new ApolloServer({ schema });
+  const server = new ApolloServer({
+    cors: enableCors ? true : false,
+    schema,
+  });
 
   server.listen().then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
@@ -164,11 +168,11 @@ const main = async () => {
 
 const run = () => {
   main()
-  .catch(e => {
-    console.error(e);
-    console.log("wainting ......");
-    setTimeout(run, 3000);
-  })
+    .catch(e => {
+      console.error(e);
+      console.log("wainting ......");
+      setTimeout(run, 3000);
+    })
 };
 
 run();

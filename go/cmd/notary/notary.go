@@ -10,13 +10,14 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -109,11 +110,11 @@ func main() {
 		go producer.NewProcessor(ch, time.Duration(30)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(2)*time.Second)
 
-		var market marketpay.IMarketPay
+		var market marketpay.MarketPayService
 		if *marketID == "" {
-			market = marketpay.NewSandbox()
+			market = v1.NewSandbox()
 		} else {
-			market = marketpay.New(*marketID)
+			market = v1.New(*marketID)
 		}
 
 		cn, err := consumer.New(

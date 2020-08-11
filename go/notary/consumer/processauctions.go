@@ -7,14 +7,14 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 func ProcessAuctions(
-	market marketpay.IMarketPay,
+	market marketpay.MarketPayService,
 	tx *sql.Tx,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
@@ -40,7 +40,7 @@ func ProcessAuctions(
 }
 
 func processAuction(
-	market marketpay.IMarketPay,
+	market marketpay.MarketPayService,
 	tx *sql.Tx,
 	auction storage.Auction,
 	pvc *ecdsa.PrivateKey,

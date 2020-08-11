@@ -197,6 +197,10 @@ jobs:
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev -t freeverseio/market.notary:${CIRCLE_SHA1} .
       - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:dev -t freeverseio/authproxy:${CIRCLE_SHA1} .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev -t freeverseio/universe.api:${CIRCLE_SHA1} .
+      - run: cd game.db && docker build -t freeverseio/game.db:dev -t freeverseio/game.db:${CIRCLE_SHA1} .
+      - run: cd game.api && docker build -t freeverseio/game.api:dev -t freeverseio/game.api:${CIRCLE_SHA1} .
+      - run: cd nodejs-gamelayer && docker build -t freeverseio/gamelayer:dev -t freeverseio/gamelayer:${CIRCLE_SHA1} .
+
       # push images
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer
@@ -209,6 +213,10 @@ jobs:
       - run: docker push freeverseio/relay.actions
       - run: docker push freeverseio/authproxy
       - run: docker push freeverseio/dashboard
+      - run: docker push freeverseio/game.db
+      - run: docker push freeverseio/game.api
+      - run: docker push freeverseio/gamelayer
+
   dockerization-production:
     executor: freeverse
     resource_class: xlarge
@@ -227,6 +235,9 @@ jobs:
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:${CIRCLE_TAG} .
       - run: cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} .
+      - run: cd game.db && docker build -t freeverseio/game.db:${CIRCLE_TAG} .
+      - run: cd game.api && docker build -t freeverseio/game.api:${CIRCLE_TAG} .
+      - run: cd nodejs-gamelayer && docker build -t freeverseio/gamelayer:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
       - run: docker push freeverseio/horizon:${CIRCLE_TAG}
@@ -238,6 +249,9 @@ jobs:
       - run: docker push freeverseio/relay.actions:${CIRCLE_TAG}
       - run: docker push freeverseio/authproxy:${CIRCLE_TAG}
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
+      - run: docker push freeverseio/game.db:${CIRCLE_TAG}
+      - run: docker push freeverseio/game.api:${CIRCLE_TAG}
+      - run: docker push freeverseio/gamelayer:${CIRCLE_TAG}
   deployk8s:
     docker:
       - image: cimg/base:2020.01

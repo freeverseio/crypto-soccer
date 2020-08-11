@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/helper"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -214,7 +214,7 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 		},
 	}
 
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	offer := storage.NewOffer()
 
 	machine, err := auctionmachine.New(auction, bids, *offer, *bc.Contracts, bc.Owner)
@@ -247,7 +247,7 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 	assert.Assert(t, machine.Bids()[0].PaymentDeadline != 0)
 
 	// set the market transaction as paid
-	market.SetOrderStatus(marketpay.PUBLISHED)
+	market.SetOrderStatus(v1.PUBLISHED)
 
 	// machine set the bid to paid and set the auction as withdrable by seller
 	assert.NilError(t, machine.Process(market))
@@ -382,7 +382,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		},
 	}
 
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 
 	machine, err := auctionmachine.New(auction, bids, offer, *bc.Contracts, bc.Owner)
 	if err != nil {
@@ -414,7 +414,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	assert.Assert(t, machine.Bids()[0].PaymentDeadline != 0)
 
 	// set the market transaction as paid
-	market.SetOrderStatus(marketpay.PUBLISHED)
+	market.SetOrderStatus(v1.PUBLISHED)
 
 	// machine set the bid to paid and set the auction as withdrable by seller
 	assert.NilError(t, machine.Process(market))
