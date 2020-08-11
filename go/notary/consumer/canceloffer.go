@@ -22,5 +22,5 @@ func CancelOffer(service storage.StorageService, tx *sql.Tx, in input.CancelOffe
 	}
 
 	offer.State = storage.OfferCancelled
-	return service.OfferUpdate(tx, offer)
+	return service.OfferUpdate(tx, *offer)
 }

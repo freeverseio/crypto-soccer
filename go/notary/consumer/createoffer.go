@@ -34,7 +34,7 @@ func CreateOffer(service storage.StorageService, tx *sql.Tx, in input.CreateOffe
 	}
 	offer.Buyer = signerAddress.Hex()
 	offer.Seller = in.Seller
-	if err = service.OfferInsert(tx, offer); err != nil {
+	if err = service.OfferInsert(tx, *offer); err != nil {
 		return err
 	}
 

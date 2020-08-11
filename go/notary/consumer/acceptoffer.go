@@ -65,7 +65,7 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 	if offer != nil && offer.ValidUntil < time.Now().Unix() {
 		offer.State = storage.OfferEnded
 		offer.StateExtra = "Offer expired when accepting"
-		if err = service.OfferUpdate(tx, offer); err != nil {
+		if err = service.OfferUpdate(tx, *offer); err != nil {
 			return err
 		}
 		return errors.New("Associated Offer is expired")
@@ -103,7 +103,7 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 		offer.AuctionID = auction.ID
 		offer.Seller = auction.Seller
 
-		if err = service.OfferUpdate(tx, offer); err != nil {
+		if err = service.OfferUpdate(tx, *offer); err != nil {
 			return err
 		}
 
@@ -121,7 +121,7 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 			log.Error(err)
 			offer.State = storage.OfferFailed
 			offer.StateExtra = "Could not create bid"
-			service.OfferUpdate(tx, offer)
+			service.OfferUpdate(tx, *offer)
 			return err
 		}
 	}
