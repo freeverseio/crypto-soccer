@@ -13,6 +13,5 @@ resources:
 - universedb
 - dashboard
 - oauth2-proxy
-# - gameapi
 # - gamedb
 # - gamelayer

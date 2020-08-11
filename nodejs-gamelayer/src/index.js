@@ -24,14 +24,12 @@ const createRemoteSchema = async uri => {
 program
   .version(version)
   .option("-h, --horizonUrl <url>", "graphql horizon url", "")
-  .option("-g, --gameUrl <url>", "graphql game url", "")
   .parse(process.argv);
 
-const { horizonUrl, gameUrl } = program;
+const { horizonUrl } = program;
 
 console.log("--------------------------------------------------------");
 console.log("horizonUrl       : ", horizonUrl);
-console.log("gameUrl         : ", gameUrl);
 console.log("--------------------------------------------------------");
 
 const main = async () => {

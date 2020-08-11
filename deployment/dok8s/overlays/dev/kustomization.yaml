@@ -6,7 +6,6 @@ commonLabels:
 resources:
 - ../../base
 - configmap.yaml
-- ../../base/gameapi
 - ../../base/gamedb
 - ../../base/gamelayer
 images:
@@ -29,8 +28,6 @@ images:
 - name: freeverseio/universe.api
   newTag: dev
 - name: freeverseio/universe.db
-  newTag: dev
-- name: freeverseio/game.api
   newTag: dev
 - name: freeverseio/game.db
   newTag: dev
