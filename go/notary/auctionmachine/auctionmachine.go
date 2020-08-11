@@ -15,7 +15,7 @@ import (
 type AuctionMachine struct {
 	auction   storage.Auction
 	bids      []storage.Bid
-	offer     storage.Offer
+	offer     *storage.Offer
 	contracts contracts.Contracts
 	freeverse *ecdsa.PrivateKey
 }
@@ -23,7 +23,7 @@ type AuctionMachine struct {
 func New(
 	auction storage.Auction,
 	bids []storage.Bid,
-	offer storage.Offer,
+	offer *storage.Offer,
 	contracts contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
 ) (*AuctionMachine, error) {
@@ -85,7 +85,7 @@ func (b AuctionMachine) Bids() []storage.Bid {
 	return b.bids
 }
 
-func (b AuctionMachine) Offer() storage.Offer {
+func (b AuctionMachine) Offer() *storage.Offer {
 	return b.offer
 }
 
