@@ -215,9 +215,8 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 	}
 
 	market := v1.NewMockMarketPay()
-	offer := storage.NewOffer()
 
-	machine, err := auctionmachine.New(auction, bids, offer, *bc.Contracts, bc.Owner)
+	machine, err := auctionmachine.New(auction, bids, nil, *bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
