@@ -1,21 +1,15 @@
 const { Pool } = require('pg');
+const postgreSQLConfig = require('../config');
 
 class PostgresSQLService {
   constructor() {
-    this.configPG = {
-      database: 'game',
-      host: 'gamedb',
-      max: 10,
-      password: 'freeverse',
-      port: 5432,
-      user: 'freeverse',
-    };
+    this.connectionString = postgreSQLConfig.connectionString;
     this.pool = null;
   }
 
   getPool() {
     if (!this.pool) {
-      this.pool = new Pool(this.configPG);
+      this.pool = new Pool({ connectionString: this.connectionString });
     }
 
     return this.pool;

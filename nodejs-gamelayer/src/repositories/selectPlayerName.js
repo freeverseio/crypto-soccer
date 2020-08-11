@@ -13,14 +13,11 @@ const selectPlayerNameQuery = {
 };
 
 const selectPlayerName = async ({ playerId }) => {
-  console.log("ei")
   const pool = await PostgresSQLService.getPool();
-  console.log("ei2")
   const values = [playerId];
 
   try {
     const { rows } = await pool.query(selectPlayerNameQuery, values);
-    console.log("Da rows", rows)
     return rows[0];
   } catch (e) {
     throw e;

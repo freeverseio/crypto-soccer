@@ -2,8 +2,13 @@ const { ApolloServer } = require("apollo-server");
 const { HttpLink } = require("apollo-link-http");
 const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require("graphql-tools");
 const selectPlayerName = require("./repositories/selectPlayerName.js")
+const selectTeamName = require("./repositories/selectTeamName.js")
+const selectTeamManagerName = require("./repositories/selectTeamManagerName.js")
 const fetch = require("node-fetch");
 const program = require("commander");
+const updatePlayerName = require("./repositories/updatePlayerName.js");
+const updateTeamName = require("./repositories/updateTeamName.js");
+const updateTeamManagerName = require("./repositories/updateTeamManagerName.js");
 const version = require("../package.json").version;
 
 const createRemoteSchema = async uri => {
@@ -31,150 +36,89 @@ console.log("--------------------------------------------------------");
 
 const main = async () => {
   const horizonRemoteSchema = await createRemoteSchema(horizonUrl);
-
+  
   const linkTypeDefs = `
-    extend type Player {
-      playerPropsByPlayerId: PlayerProp
-      otraCosa: String
+    input SetPlayerNameInput2 {
+      signature: String!
+      playerId: ID!
+      name: String!
     }
 
-    extend type Team {
-      teamPropsByTeamId: TeamProp
+    input SetTeamNameInput2 {
+      signature: String!
+      teamId: ID!
+      name: String!
+    }
+  
+    input SetTeamManagerNameInput2 {
+      signature: String!
+      teamId: ID!
+      name: String!
+    }
+
+    extend type Mutation {
+      setPlayerName2(input: SetPlayerNameInput2!): ID!
+      setTeamName2(input: SetTeamNameInput2!): ID!
+      setTeamManagerName2(input: SetTeamManagerNameInput2!): ID!
+
     }
   `;
 
   const resolvers = {
     Player: {
-      playerPropsByPlayerId: {
-        selectionSet: `{ playerId }`,
-        resolve(player, args, context, info) {
-          return info.mergeInfo.delegateToSchema({
-            schema: gameRemoteSchema,
-            operation: 'query',
-            fieldName: 'playerPropByPlayerId',
-            args: {
-              playerId: player.playerId,
-              condition: {
-                playerId: player.playerId
-              }
-            },
-            context,
-            info,
-          })
-        }
-      },
       name: {
         selectionSet: `{ playerId }`,
         resolve(player, args, context, info) {
-          return info.mergeInfo.delegateToSchema({
-            schema: gameRemoteSchema,
-            operation: 'query',
-            fieldName: 'playernamebyplayerid',
-            args: {
-              playerid: player.playerId
-            },
-            context,
-            info,
-          }).then(result => {
-            console.log("Name result: ", result)
-
-            if(result) {
-              return result
-            }
-
-            return player.name
-          })
-        }
-      },
-      otraCosa: {
-        selectionSet: `{ playerId }`,
-        resolve(player, args, context, info) {
-          console.log("entro otracosa resolve")
-          const playerName = selectPlayerName({ playerId: player.playerId })
-          console.log("Thi player name", playerName)
-          return playerName.then(result => { 
-            console.log("resuuult", result.player_name)
-            return result.player_name
+          return selectPlayerName({ playerId: player.playerId }).then(result => { 
+            return result && result.player_name ? result.player_name : player.name
           })
         }
       },
     },
     Team: {
-      teamPropsByTeamId: {
-        selectionSet: `{ teamId }`,
-        resolve(team, args, context, info) {
-          return info.mergeInfo.delegateToSchema({
-            schema: gameRemoteSchema,
-            operation: 'query',
-            fieldName: 'teamPropByTeamId',
-            args: {
-              teamId: team.teamId,
-              condition: {
-                teamId: team.teamId
-              }
-            },
-            context,
-            info,
-          })
-        }
-      },
       name: {
         selectionSet: `{ teamId }`,
         resolve(team, args, context, info) {
-          return info.mergeInfo.delegateToSchema({
-            schema: gameRemoteSchema,
-            operation: 'query',
-            fieldName: 'teamnamebyteamid',
-            args: {
-              teamid: team.teamId
-            },
-            context,
-            info,
-          }).then(result => {
-            if(result) {
-              return result
-            }
-
-            return team.name
+          return selectTeamName({ teamId: team.teamId }).then(result => { 
+            return result && result.team_name ? result.team_name : team.name
           })
         }
       },
       managerName: {
         selectionSet: `{ teamId }`,
         resolve(team, args, context, info) {
-          return info.mergeInfo.delegateToSchema({
-            schema: gameRemoteSchema,
-            operation: 'query',
-            fieldName: 'teammanagernamebyteamid',
-            args: {
-              teamid: team.teamId
-            },
-            context,
-            info,
-          }).then(result => {
-            if(result) {
-              return result
-            }
-
-            return team.name
+          return selectTeamManagerName({ teamId: team.teamId }).then(result => { 
+            return result && result.team_manager_name ? result.team_manager_name : team.managerName
           })
         }
       },
     },
-
+    Mutation: {
+      setPlayerName2: async (_, { playerId, name, signature }) => {
+          await updatePlayerName({ playerId, playerName: name })
+          return playerId 
+        },
+      setTeamName2: async (_, { teamId, name, signature }) => {
+        await updateTeamName({ teamId, teamName: name })
+        return teamId 
+      },
+      setTeamManagerName2: async (_, { teamId, name, signature }) => {
+        await updateTeamManagerName({ teamId, teamManagerName: name })
+        return teamId 
+      },
+    }
   };
 
   let schemas = [];
   horizonRemoteSchema && schemas.push(horizonRemoteSchema);
-  gameRemoteSchema && schemas.push(gameRemoteSchema);
   schemas.push(linkTypeDefs);
 
   const schema = mergeSchemas({
     schemas,
     resolvers,
   });
-
-  const server = new ApolloServer({ schema });
+  
+  const server = new ApolloServer({ schema, tracing: true });
 
   server.listen().then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);

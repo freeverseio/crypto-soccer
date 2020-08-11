@@ -24,6 +24,8 @@ spec:
         args: [-h, "http://horizon:4000/graphql",
                -g, "http://gameapi:4000/graphql",
               ]
-
+        env:
+          - name: PG_CONNECTION_STRING
+            value: postgresql://$(freeverse_username):$(freeverse_password)@gamedb:5432/game
       imagePullSecrets:
       - name: docker-secret
