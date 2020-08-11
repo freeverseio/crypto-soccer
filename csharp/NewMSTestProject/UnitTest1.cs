@@ -7,7 +7,7 @@ namespace NewMSTestProject
     {
         [TestMethod]
         public void Test_AddMethod() {  
-            BasicMaths bm = new BasicMaths();  
+            Serialization bm = new Serialization();  
             double res = bm.Add(10, 10);  
             Assert.AreEqual(res, 20);  
         }  
