@@ -87,166 +87,118 @@ public bool getYellowCardFirstHalf(BigInteger encodedSkills) {
 
 // // MATCH LOG functions:
 
-// public uint getAssisterGo(log , pos uint8) {
-// 	val := rightShiftAndMask(log, (4+4*uint(pos))), 15)
-// 	return uint8(val.Uint64())
-// }
+public uint getAssister(BigInteger log, int pos) {
+	return rightShiftAndMask(log, 4 + 4 * pos, 15);
+}
 
-// public uint getShooterGo(log , pos uint8) {
-// 	val := rightShiftAndMask(log, (52+4*uint(pos))), 15)
-// 	return uint8(val.Uint64())
-// }
+public uint getShooter(BigInteger log, int pos) {
+	return rightShiftAndMask(log, 52 + 4 * pos, 15);
+}
 
-// public uint getForwardPosGo(log , pos uint8) {
-// 	val := rightShiftAndMask(log, (100+2*uint(pos))), 3)
-// 	return uint8(val.Uint64())
-// }
+public uint getForwardPos(BigInteger log, int pos) {
+	return rightShiftAndMask(log, 100 + 2 * pos, 3);
+}
 
-// public uint getPenaltyGo(log , pos uint8) {
-// 	return equals(rightShiftAndMask(log, 124+uint(pos)), 1), 1)
-// }
+public bool getPenalty(BigInteger log, int pos) {
+	return rightShiftAndMask(log, 124+pos, 1) == 1;
+}
 
-// public uint getIsHomeStadiumGo(log) {
-// 	return equals(rightShiftAndMask(log, 248), 1), 1)
-// }
+public bool getIsHomeStadiumGo(BigInteger log) {
+	return rightShiftAndMask(log, 248, 1) == 1;
+}
 
-// /// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
-// public uint getHalfTimeSubsGo(log , pos uint8) {
-// 	val := rightShiftAndMask(log, (179+5*uint(pos))), 31)
-// 	return uint8(val.Uint64())
-// }
+/// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+public uint getHalfTimeSubs(BigInteger log, int pos) {
+	return rightShiftAndMask(log, 179 + 5 * pos, 31);
+}
 
-// public uint getNGKAndDefsGo(log , is2ndHalf bool) {
-// 	offset := uint(194)
-// 	if is2ndHalf {
-// 		offset += 4
-// 	}
-// 	val := rightShiftAndMask(log, offset), 15)
-// 	return uint8(val.Uint64())
-// }
+public uint getNGKAndDefs(BigInteger log, bool is2ndHalf) {
+	offset = is2ndHalf ? 194 : 194 + 4;
+    return rightShiftAndMask(log, offset, 15);
+}
 
-// public uint getNTotGo(log , is2ndHalf bool) {
-// 	offset := uint(202)
-// 	if is2ndHalf {
-// 		offset += 4
-// 	}
-// 	val := rightShiftAndMask(log, offset), 15)
-// 	return uint8(val.Uint64())
-// }
+public uint getNTot(BigInteger log, bool is2ndHalf) {
+	offset = is2ndHalf ? 202 : 202 + 4;
+	return rightShiftAndMask(log, offset, 15);
+}
 
-// public uint getWinnerGo(log) {
-// 	val := rightShiftAndMask(log, 210), 3)
-// 	return uint8(val.Uint64())
-// }
+public uint getWinner(BigInteger log) {
+	return rightShiftAndMask(log, 210, 3);
+}
 
-// public uint getTeamSumSkillsGo(log) {
-// 	return rightShiftAndMask(log, 212), 16777215) // 2^24 - 1
-// }
+public uint getTeamSumSkills(BigInteger log) {
+	return rightShiftAndMask(log, 212, 16777215); // 2^24 - 1
+}
 
-// public uint addTrainingPointsGo(log , points) {
-// 	return orBN(log, left(points, 236))
-// }
 
-// public uint getTrainingPointsGo(log) uint16 {
-// 	val := rightShiftAndMask(log, 236), 4095) // 2^12-1
-// 	return uint16(val.Uint64())
-// }
+public uint getTrainingPoints(BigInteger log) {
+	return rightShiftAndMask(log, 236, 4095); // 2^12-1
+}
 
-// public uint getNGoalsGo(log) {
-// 	val := and(log, 15)
-// 	return uint8(val.Uint64())
-// }
+public uint getNGoals(BigInteger log) {
+	return and(log, 15);
+}
 
-// public uint getOutOfGamePlayerGo(log , is2ndHalf bool) {
-// 	var offset uint
-// 	if is2ndHalf {
-// 		offset = 141
-// 	} else {
-// 		offset = 131
-// 	}
-// 	return rightShiftAndMask(log, offset), 15)
-// }
+    public uint getOutOfGamePlayer(BigInteger log, bool is2ndHalf) {
+        offset = is2ndHalf ? 141 : 131;
+        return rightShiftAndMask(log, offset, 15);
+    }
 
-// public uint getOutOfGameTypeGo(log , is2ndHalf bool) {
-// 	var offset uint
-// 	if is2ndHalf {
-// 		offset = 141
-// 	} else {
-// 		offset = 131
-// 	}
-// 	return rightShiftAndMask(log, offset+4), 3)
-// }
+    public uint getOutOfGameType(BigInteger log, bool is2ndHalf) {
+        offset = is2ndHalf ? 141 : 131;
+        return rightShiftAndMask(log, offset+4, 3);
+    }
 
-// public uint getOutOfGameRoundGo(log , is2ndHalf bool) {
-// 	var offset uint
-// 	if is2ndHalf {
-// 		offset = 141
-// 	} else {
-// 		offset = 131
-// 	}
-// 	return rightShiftAndMask(log, offset+6), 15)
-// }
+    public uint getOutOfGameRound(BigInteger log, bool is2ndHalf) {
+        offset = is2ndHalf ? 141 : 131;
+        return rightShiftAndMask(log, offset+6, 15);
+    }
 
-// public uint getYellowCardGo(log , posInHaf uint8, is2ndHalf bool) {
-// 	offset := uint(posInHaf) * 4
-// 	if is2ndHalf {
-// 		offset += 159
-// 	} else {
-// 		offset += 151
-// 	}
-// 	val := rightShiftAndMask(log, offset), 15)
-// 	return uint8(val.Uint64())
-// }
+    public uint getYellowCard(BigInteger log, int posInHalf, bool is2ndHalf) {
+        offset = 4 * posInHalf + (is2ndHalf ? 159 : 151);
+        return rightShiftAndMask(log, offset, 15);
+    }
 
-// public uint getInGameSubsHappenedGo(log , posInHalf uint8, is2ndHalf bool) {
-// 	offset := 167 + 2*uint(posInHalf)
-// 	if is2ndHalf {
-// 		offset += 6
-// 	}
-// 	val := rightShiftAndMask(log, offset), 3)
-// 	return uint8(val.Uint64())
-// }
+    public uint getInGameSubsHappened(BigInteger log, int posInHalf, bool is2ndHalf) {
+        offset = 167 + 2 * posInHalf + (is2ndHalf ? 6 : 0);
+        return rightShiftAndMask(log, offset, 3);
+    }
 
-// // TACTICS
+    // TACTICS
 
-// public uint getTacticsIdGo(tactics) {
-// 	val := and(tactics, 63)
-// 	return uint8(val.Uint64())
-// }
+    public uint getTacticsId(BigInteger tactics) {
+        return rightShiftAndMask(tactics, 0, 63);
+    }
 
-// public uint getExtraAttackGo(tactics , p uint8) {
-// 	return equals(rightShiftAndMask(tactics, 6+uint(p)), 1), 1)
-// }
+    public bool getExtraAttack(BigInteger tactics, int p) {
+        return rightShiftAndMask(tactics, 6+p, 1) == 1;
+    }
 
-// public uint getFullExtraAttackGo(tactics) [10]{
-// 	var extraAttack [10]bool
-// 	for p := uint8(0); p < 10; p++ {
-// 		extraAttack[p] = getExtraAttackGo(tactics, p)
-// 	}
-// 	return extraAttack
-// }
+    public bool[14] getFullExtraAttack(BigInteger tactics) {
+        bool[] extraAttack = new bool[10];
+        for (p = 0; p < 10; p++) {
+            extraAttack[p] = getExtraAttack(tactics, p);
+        }
+        return extraAttack;
+    }
 
-// public uint getSubstitutionGo(tactics , p uint8) {
-// 	val := rightShiftAndMask(tactics, 86+4*uint(p)), 15)
-// 	return uint8(val.Uint64())
-// }
+    public uint getSubstitution(BigInteger tactics, int p) {
+        return rightShiftAndMask(tactics, 86 + 4 * p, 15);
+    }
 
-// public uint getSubsRoundGo(tactics , p uint8) {
-// 	val := rightShiftAndMask(tactics, 98+4*uint(p)), 15)
-// 	return uint8(val.Uint64())
-// }
+    public uint getSubsRound(BigInteger tactics, int p) {
+        return rightShiftAndMask(tactics, 98 + 4 * p, 15);
+    }
 
-// public uint getLinedUpGo(tactics , p uint8) {
-// 	val := rightShiftAndMask(tactics, 16+5*uint(p)), 31)
-// 	return uint8(val.Uint64())
-// }
+    public uint getLinedUp(BigInteger tactics, int p) {
+        return rightShiftAndMask(tactics, 16 + 5 * p, 31);
+    }
 
-// public uint getFullLineUpGo(tactics) [14]{
-// 	var lineup [14]uint8
-// 	for p := uint8(0); p < 14; p++ {
-// 		lineup[p] = getLinedUpGo(tactics, p)
-// 	}
-// 	return lineup
-// }
-
+    public uint[14] getFullLineUp(BigInteger tactics) {
+        uint[] lineup = new uint[10];
+        for (p = 0; p < 14; p++) {
+            lineup[p] = getLinedUp(tactics, p);
+        }
+        return lineup;
+    }
 }  
