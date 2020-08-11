@@ -6,36 +6,23 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-type OfferHistoryService struct {
-	OfferService
-}
-
-func NewOfferHistoryService(tx *sql.Tx) *OfferHistoryService {
-	return &OfferHistoryService{*NewOfferService(tx)}
-}
-
-func (b OfferHistoryService) Bid() storage.BidService {
-	return *NewBidHistoryService(b.tx)
-}
-
-func (b OfferHistoryService) Insert(offer storage.Offer) error {
-	err := b.OfferService.Insert(offer)
+func (b StorageHistoryService) OfferInsert(tx *sql.Tx, offer storage.Offer) error {
+	err := b.StorageService.OfferInsert(tx, offer)
 	if err != nil {
 		return err
 	}
-
-	return b.insertHistory(offer)
+	return offerInsertHistory(tx, offer)
 }
 
-func (b OfferHistoryService) Update(offer storage.Offer) error {
-	if err := b.OfferService.Update(offer); err != nil {
+func (b StorageHistoryService) OfferUpdate(tx *sql.Tx, offer storage.Offer) error {
+	if err := b.StorageService.OfferUpdate(tx, offer); err != nil {
 		return err
 	}
-	return b.insertHistory(offer)
+	return offerInsertHistory(tx, offer)
 }
 
-func (b OfferHistoryService) insertHistory(offer storage.Offer) error {
-	_, err := b.tx.Exec("INSERT INTO offers_histories (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+func offerInsertHistory(tx *sql.Tx, offer storage.Offer) error {
+	_, err := tx.Exec("INSERT INTO offers_histories (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		offer.ID,
 		offer.PlayerID,
 		offer.CurrencyID,

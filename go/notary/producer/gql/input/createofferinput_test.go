@@ -265,7 +265,7 @@ func TestCreateOfferPlayerAlreadyOnSale(t *testing.T) {
 	assert.Equal(t, hex.EncodeToString(signature), "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b")
 	in.Signature = hex.EncodeToString(signature)
 
-	assert.NilError(t, consumer.CreateAuction(tx, in))
+	assert.NilError(t, consumer.CreateAuction(service, tx, in))
 
 	// try to create offer which will fail because asset is on sale
 	inOffer := input.CreateOfferInput{}
@@ -281,7 +281,7 @@ func TestCreateOfferPlayerAlreadyOnSale(t *testing.T) {
 	signatureOffer, err := signer.Sign(hashOffer.Bytes(), bc.Owner)
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(signatureOffer)
-	isPlayerOnSale, err := inOffer.IsPlayerOnSale(*bc.Contracts, tx)
+	isPlayerOnSale, err := inOffer.IsPlayerOnSale(*bc.Contracts, service, tx)
 	assert.NilError(t, err)
 	assert.Equal(t, true, isPlayerOnSale)
 }

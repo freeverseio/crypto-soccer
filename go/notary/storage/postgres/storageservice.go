@@ -4,12 +4,20 @@ import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
-	log "github.com/sirupsen/logrus"
 )
 
-type Storage struct {
+type StorageService struct {
 	db *sql.DB
+}
+
+func NewStorageService(db *sql.DB) *StorageService {
+	return &StorageService{
+		db: db,
+	}
+}
+
+func (b *StorageService) DB() *sql.DB {
+	return b.db
 }
 
 func New(url string) (*sql.DB, error) {
@@ -21,6 +29,5 @@ func New(url string) (*sql.DB, error) {
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
-	log.Info("[DBMS] ... connected")
 	return db, nil
 }

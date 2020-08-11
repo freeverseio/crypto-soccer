@@ -31,11 +31,3 @@ func NewOffer() *Offer {
 	offer.State = OfferStarted
 	return &offer
 }
-
-type OfferService interface {
-	Offer(ID string) (*Offer, error)
-	OfferByAuctionId(auctionId string) (*Offer, error)
-	OffersByPlayerId(playerId string) ([]Offer, error)
-	Insert(offer Offer) error
-	Update(offer Offer) error
-}

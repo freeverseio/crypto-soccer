@@ -6,18 +6,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-type PlaystoreOrderService struct {
-	tx *sql.Tx
-}
-
-func NewPlaystoreOrderService(tx *sql.Tx) *PlaystoreOrderService {
-	return &PlaystoreOrderService{
-		tx: tx,
-	}
-}
-
-func (b PlaystoreOrderService) UpdateState(order storage.PlaystoreOrder) error {
-	_, err := b.tx.Exec(`UPDATE playstore_orders SET 
+func (b StorageService) PlayStoreUpdateState(tx *sql.Tx, order storage.PlaystoreOrder) error {
+	_, err := tx.Exec(`UPDATE playstore_orders SET 
 		state=$1, 
 		state_extra=$2
 		WHERE order_id=$3;`,
@@ -28,8 +18,8 @@ func (b PlaystoreOrderService) UpdateState(order storage.PlaystoreOrder) error {
 	return err
 }
 
-func (b PlaystoreOrderService) PendingOrders() ([]storage.PlaystoreOrder, error) {
-	rows, err := b.tx.Query(`SELECT 
+func (b StorageService) PlayStorePendingOrders(tx *sql.Tx) ([]storage.PlaystoreOrder, error) {
+	rows, err := tx.Query(`SELECT 
 	order_id,
 	package_name,
 	product_id,
@@ -67,8 +57,8 @@ func (b PlaystoreOrderService) PendingOrders() ([]storage.PlaystoreOrder, error)
 	return orders, nil
 }
 
-func (b PlaystoreOrderService) PendingOrdersByPlayerId(playerId string) ([]storage.PlaystoreOrder, error) {
-	rows, err := b.tx.Query(`SELECT 
+func (b StorageService) PlayStorePendingOrdersByPlayerId(tx *sql.Tx, playerId string) ([]storage.PlaystoreOrder, error) {
+	rows, err := tx.Query(`SELECT 
 	order_id,
 	package_name,
 	product_id,
@@ -106,8 +96,8 @@ func (b PlaystoreOrderService) PendingOrdersByPlayerId(playerId string) ([]stora
 	return orders, nil
 }
 
-func (b PlaystoreOrderService) Order(orderId string) (*storage.PlaystoreOrder, error) {
-	rows, err := b.tx.Query(`SELECT 
+func (b StorageService) PlayStoreOrder(tx *sql.Tx, orderId string) (*storage.PlaystoreOrder, error) {
+	rows, err := tx.Query(`SELECT 
 	package_name,
 	product_id,
 	purchase_token,
@@ -146,8 +136,8 @@ func (b PlaystoreOrderService) Order(orderId string) (*storage.PlaystoreOrder, e
 	return &order, nil
 }
 
-func (b PlaystoreOrderService) Insert(order storage.PlaystoreOrder) error {
-	_, err := b.tx.Exec(`INSERT INTO playstore_orders (
+func (b StorageService) PlayStoreInsert(tx *sql.Tx, order storage.PlaystoreOrder) error {
+	_, err := tx.Exec(`INSERT INTO playstore_orders (
 		order_id, 
 		package_name,
 		product_id,
