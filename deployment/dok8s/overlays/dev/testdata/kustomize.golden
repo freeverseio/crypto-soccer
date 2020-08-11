@@ -704,6 +704,8 @@ spec:
             cpu: "3"
       imagePullSecrets:
       - name: docker-secret
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-4vcpu-8gb
 ---
 apiVersion: apps/v1
 kind: Deployment
