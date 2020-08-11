@@ -33,12 +33,12 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "3"
 		offer.Buyer = "4"
 
-		err = service.OfferInsert(tx, offer)
+		err = service.OfferInsert(tx, *offer)
 		assert.NilError(t, err)
 
 		result, err := service.Offer(tx, offer.ID)
 		assert.NilError(t, err)
-		assert.Equal(t, *result, offer)
+		assert.Equal(t, *result, *offer)
 	})
 
 	t.Run("TestOfferUpdate", func(t *testing.T) {
@@ -67,7 +67,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.State = storage.OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
-		err = service.OfferInsert(tx, offer)
+		err = service.OfferInsert(tx, *offer)
 		assert.NilError(t, err)
 		result, err := service.Offer(tx, offer.ID)
 		assert.NilError(t, err)
@@ -79,12 +79,12 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "yo2"
 		offer.AuctionID = "ciao"
 
-		assert.NilError(t, service.OfferUpdate(tx, offer))
+		assert.NilError(t, service.OfferUpdate(tx, *offer))
 		result, err = service.Offer(tx, offer.ID)
 
 		assert.Equal(t, result.AuctionID, "ciao")
 		assert.NilError(t, err)
-		assert.Equal(t, *result, offer)
+		assert.Equal(t, *result, *offer)
 	})
 
 	t.Run("TestInsertSameOrderTwice", func(t *testing.T) {
@@ -104,9 +104,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.StateExtra = "3"
 		offer.Seller = "3"
 		offer.Buyer = "5"
-		err = service.OfferInsert(tx, offer)
+		err = service.OfferInsert(tx, *offer)
 		assert.NilError(t, err)
-		err = service.OfferInsert(tx, offer)
+		err = service.OfferInsert(tx, *offer)
 		assert.Error(t, err, "some error on duplication")
 	})
 }

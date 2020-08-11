@@ -26,8 +26,8 @@ type StorageService interface {
 
 	// Offer
 	Offer(tx *sql.Tx, ID string) (*Offer, error)
-	OfferInsert(tx *sql.Tx, offer *Offer) error
-	OfferUpdate(tx *sql.Tx, offer *Offer) error
+	OfferInsert(tx *sql.Tx, offer Offer) error
+	OfferUpdate(tx *sql.Tx, offer Offer) error
 	OfferByAuctionId(tx *sql.Tx, auctionId string) (*Offer, error)
 	OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*Offer, error)
 	OffersByPlayerId(tx *sql.Tx, playerId string) ([]Offer, error)
