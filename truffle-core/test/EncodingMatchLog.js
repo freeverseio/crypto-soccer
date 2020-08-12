@@ -37,6 +37,32 @@ async function logWrapper(log) {
         inGameSubsHappened: [], // length = 3 * N_HALFS
         changesAtHalftime: 0
     }
+    const MAX_GOALS = 12;
+    const N_HALFS = 2;
+    for (i = 0; i < MAX_GOALS; i++) { result.assister[i] = Number(await encoding.getAssister(log, i).should.be.fulfilled); }
+    for (i = 0; i < MAX_GOALS; i++) { result.shooter[i] = Number(await encoding.getShooter(log, i).should.be.fulfilled); }
+    for (i = 0; i < MAX_GOALS; i++) { result.forwardPos[i] = Number(await encoding.getForwardPos(log, i).should.be.fulfilled); }
+    for (i = 0; i < 7; i++) { result.penalty[i] = Number(await encoding.getPenalty(log, i).should.be.fulfilled);}
+    for (i = 0; i < 3; i++) { result.halfTimeSubs[i] = Number(await encoding.getHalfTimeSubs(log, i).should.be.fulfilled);}
+    for (i = 0; i < N_HALFS; i++) { result.nGKAndDefs[i] = Number(await encoding.getNGKAndDefs(log, i).should.be.fulfilled);}
+    for (i = 0; i < N_HALFS; i++) { result.nTot[i] = Number(await encoding.getNTot(log, i).should.be.fulfilled);}
+    for (i = 0; i < N_HALFS; i++) { result.outOfGamePlayer[i] = Number(await encoding.getOutOfGamePlayer(log, i).should.be.fulfilled);}
+    for (i = 0; i < N_HALFS; i++) { result.outOfGameType[i] = Number(await encoding.getOutOfGameType(log, i).should.be.fulfilled);}
+    for (i = 0; i < N_HALFS; i++) { result.outOfGameRound[i] = Number(await encoding.getOutOfGameRound(log, i).should.be.fulfilled);}
+    i = 0;
+    for (half = 0; half < 2; half++) {
+        for (posInHalf = 0; posInHalf < 2; posInHalf++) {
+            result.yellowCard[i] = Number(await encoding.getYellowCard(log, posInHalf, half).should.be.fulfilled);
+            i++;
+        }
+    }
+    i = 0;
+    for (half = 0; half < 2; half++) {
+        for (posInHalf = 0; posInHalf < 3; posInHalf++) {
+            result.inGameSubsHappened[i] = Number(await encoding.getInGameSubsHappened(log, posInHalf, half).should.be.fulfilled);
+            i++;
+        }
+    }        
     result.isHomeStadium = await encoding.getIsHomeStadium(log).should.be.fulfilled;
     result.winner = Number(await encoding.getWinner(log).should.be.fulfilled);
     result.teamSumSkills = Number(await encoding.getTeamSumSkills(log).should.be.fulfilled);
@@ -158,7 +184,7 @@ contract('EncodingMatchLog', (accounts) => {
         writtenData = fs.readFileSync('test/testdata/encodingMatchLogTestData.json', 'utf8');
         assert.equal(
             web3.utils.keccak256(writtenData),
-            "0x2df0638cf5da6f466cfe2ce30bc695ccb212981f270add8ba80ef8884bfb2640",
+            "0xc386e4a9a37f1dc1675d085e98552a579cf2cfb1ba25dfa890893000841ceb8b",
             "written testdata for encoding MatchLog does not match expected result"
         );
     });
