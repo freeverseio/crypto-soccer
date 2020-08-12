@@ -10,6 +10,14 @@ public class Serialization {
     const int MASK_28b = 268435455;
     const ulong MASK_35b = 34359738367;
     const ulong MASK_43b = 8796093022207;
+    const uint ERR_TRAINING_SPLAYER = 2;
+    const uint ERR_TRAINING_SINGLESKILL = 3;
+    const uint ERR_TRAINING_SUMSKILLS = 4;
+    const uint ERR_TRAINING_PREVMATCH = 5;
+    const uint ERR_TRAINING_STAMINA = 6;
+    const uint PLAYERS_PER_TEAM_MAX = 25;
+
+
 
     private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
 
@@ -163,4 +171,32 @@ public class Serialization {
     public uint getCountryIdxInTZ(BigInteger encodedId) { return rightShiftAndMask(encodedId, 28, 1023); }
     public uint getValInCountry(BigInteger encodedId) { return rightShiftAndMask(encodedId, 0, MASK_28b); }
 
+    // Training points assignment
+    public (uint[] TPperSkill, uint specialPlayer, uint TP, uint err) decodeTP(BigInteger encoded) {
+        const uint MAX_PERCENT = 60;
+        uint[] TPperSkill = new uint[25];
+        uint specialPlayer = rightShiftAndMask(encoded, 234, 31);
+        uint err = 0;
+        uint TP = rightShiftAndMask(encoded, 225, 511);
+
+        if (specialPlayer > PLAYERS_PER_TEAM_MAX) return (TPperSkill, specialPlayer, TP, ERR_TRAINING_SPLAYER); // specialPlayer value too large
+
+        uint TPtemp = TP;
+        uint maxRHS = (TPtemp < 4) ? 100 * TPtemp : MAX_PERCENT * TPtemp;
+        for (int bucket = 0; bucket < 5; bucket++) {
+            if (bucket == 4) {
+                TPtemp = (TPtemp * 11)/10;
+                maxRHS = (TPtemp < 4) ? 100 * TPtemp : MAX_PERCENT * TPtemp;
+            }
+            uint sum = 0;
+            for (int sk = 5 * bucket; sk < 5 * (bucket+1); sk++) {
+                uint skill = rightShiftAndMask(encoded, 9 * sk, 511);
+                if (100*skill > maxRHS) return (TPperSkill, specialPlayer, TP, ERR_TRAINING_SINGLESKILL); // one of the assigned TPs is too large or too small
+                TPperSkill[sk] = skill;
+                sum += skill;
+            }
+            if (sum > TPtemp) return (TPperSkill, specialPlayer, TP, ERR_TRAINING_SUMSKILLS); // sum of Traning Points is too large"
+        }
+        return (TPperSkill, specialPlayer, TP, err);
+    }
 }  
