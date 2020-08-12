@@ -4,30 +4,6 @@ using System.IO;
 using Newtonsoft.Json;
 
 public class TestUtils {  
-
-    public class Item
-    {
-        public string encodedSkills;
-        public int[] skills;
-        public int birthday;
-        public bool isSpecial;
-        public string playerIdFromSkills;
-        public string internalPlayerId;
-        public int potential;
-        public int forwardness;
-        public int leftishness;
-        public int aggressiveness;
-        public bool alignedEndOfFirstHalf;
-        public bool redCardLastGame;
-        public int gamesNonStopping;
-        public int injuryWeeksLeft;
-        public bool substitutedFirstHalf;
-        public int sumOfSkills;
-        public int generation;
-        public bool outOfGameFirstHalf;
-        public bool yellowCardFistHalf;
-    }
-
     public dynamic LoadJson(string filename)
     {
         string workingDirectory = Environment.CurrentDirectory;
@@ -46,6 +22,4 @@ public class TestUtils {
         }
         return array;
     }
-
-
 }  
