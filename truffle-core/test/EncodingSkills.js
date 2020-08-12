@@ -36,7 +36,7 @@ async function skillsWrapper(skills) {
         sumOfSkills: 0,
         generation: 0,
         outOfGameFirstHalf: false,
-        yellowCardFistHalf: false
+        yellowCardFirstHalf: false
     }
     // result.currentShirtNumber = await encodingGet.getCurrentShirtNumber(skills).should.be.fulfilled;
     for (sk = 0; sk < 5; sk++) {result.skills[sk] = Number(await encodingGet.getSkill(skills, sk).should.be.fulfilled);}
@@ -56,7 +56,7 @@ async function skillsWrapper(skills) {
     result.sumOfSkills = Number(await encodingGet.getSumOfSkills(skills).should.be.fulfilled);
     result.generation = Number(await encodingGet.getGeneration(skills).should.be.fulfilled);
     result.outOfGameFirstHalf = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
-    result.yellowCardFistHalf = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
+    result.yellowCardFirstHalf = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
     return result;
 }
 
@@ -292,8 +292,8 @@ contract('EncodingSkills', (accounts) => {
         if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(false);
-        yellowCardFistHalf = true;
-        skills = await encodingSet.setYellowCardFirstHalf(skills, yellowCardFistHalf).should.be.fulfilled;
+        yellowCardFirstHalf = true;
+        skills = await encodingSet.setYellowCardFirstHalf(skills, yellowCardFirstHalf).should.be.fulfilled;
         if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         
         const fs = require('fs');
@@ -309,7 +309,7 @@ contract('EncodingSkills', (accounts) => {
         writtenData = fs.readFileSync('test/testdata/encodingSkillsTestData.json', 'utf8');
         assert.equal(
             web3.utils.keccak256(writtenData),
-            "0x0208835b45e4051c75c62411969a5bf07602981afee72f94fd2ba07686d4c15a",
+            "0xbd72acbf45e55931ee3847debd3ede92c6b68453c22e077786b7530f1528a8de",
             "written testdata for encoding skills does not match expected result"
         );
         
@@ -321,7 +321,7 @@ contract('EncodingSkills', (accounts) => {
         debug.compareArrays(_skills, sk, toNum = true);
         expectedTraits = [potential, forwardness, leftishness, aggressiveness];
         debug.compareArrays(_traits, expectedTraits, toNum = true);
-        expectedBools = [alignedEndOfFirstHalf, substitutedFirstHalf, redCardLastGame, outOfGameFirstHalf, yellowCardFistHalf];
+        expectedBools = [alignedEndOfFirstHalf, substitutedFirstHalf, redCardLastGame, outOfGameFirstHalf, yellowCardFirstHalf];
         debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false);
         expectedGenGameInj = [generation, gamesNonStopping, injuryWeeksLeft];
         debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true);
