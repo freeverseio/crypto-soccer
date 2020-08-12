@@ -8,25 +8,29 @@ namespace NewMSTestProject
     public class UnitTest1
     {
         [TestMethod]
-        public void Test_AddMethod() {  
-            Serialization serial = new Serialization();  
-            double res = serial.Add(10, 20);  
-            Assert.AreEqual(res, 30);  
-        }  
-        [TestMethod]
-        public void Test_AddBNMethod() {  
-            Serialization serial = new Serialization();  
-            BigInteger res = serial.AddBN(new BigInteger(10), new BigInteger(20));  
-            Assert.AreEqual(res, new BigInteger(30));  
-        }  
-
-        [TestMethod]
         public void getCurrentShirtNum() {  
             Serialization serial = new Serialization();
             uint shirt = 13;
             BigInteger state = new BigInteger(shirt * Math.Pow(2,43));
             uint res = serial.getCurrentShirtNum(state);  
             Assert.AreEqual(res, (uint) shirt);  
+        }  
+
+        [TestMethod]
+        public void Test_encodingState() {  
+            Serialization serial = new Serialization();
+            TestUtils tu = new TestUtils();
+            dynamic tests = tu.LoadJson("encodingStateTestData.json");
+            foreach(dynamic test in tests) {
+                BigInteger encoded;
+                bool succeeded = BigInteger.TryParse((string) test.encodedState, out encoded);
+                Assert.AreEqual(true, succeeded);
+                Assert.AreEqual((ulong) test.currentTeamId, serial.getCurrentTeamId(encoded));  
+                Assert.AreEqual((uint) test.currentShirtNum, serial.getCurrentShirtNum(encoded));  
+                Assert.AreEqual((ulong) test.prevPlayerTeamId, serial.getPrevPlayerTeamId(encoded));  
+                Assert.AreEqual((ulong) test.lastSaleBlocknum, serial.getLastSaleBlock(encoded));  
+                Assert.AreEqual((bool) test.isInTransit, serial.getIsInTransit(encoded));  
+            }
         }  
 
         [TestMethod]

@@ -9,12 +9,10 @@ public class Serialization {
     const int MASK_24b = 16777215;
     const ulong MASK_35b = 34359738367;
     const ulong MASK_43b = 8796093022207;
-    public double Add(double num1, double num2) {  return num1 + num2;   }  
-    public BigInteger AddBN(BigInteger x, BigInteger y) {  return BigInteger.Add(x, y);   }
 
     private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
 
-    private ulong rightShiftAndMask64b(BigInteger encoded, int bitsToDisplace, ulong mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
+    private ulong rightShiftAndMask64b(BigInteger encoded, int bitsToDisplace, ulong mask) { return (ulong) ((encoded >> bitsToDisplace) & mask); }
 
     // STATE
     public ulong getCurrentTeamId(BigInteger state) { return  rightShiftAndMask64b(state, 0, MASK_43b); }
@@ -24,7 +22,7 @@ public class Serialization {
 
     public ulong getLastSaleBlock(BigInteger state){ return  rightShiftAndMask64b(state, 91, MASK_35b); }
 
-    public bool getIsInTransitFromState(BigInteger state) { return  getCurrentShirtNum(state) == IN_TRANSIT_SHIRTNUM; }
+    public bool getIsInTransit(BigInteger state) { return  getCurrentShirtNum(state) == IN_TRANSIT_SHIRTNUM; }
 
     // SKILLS
     public uint getSkill(BigInteger encodedSkills, int skillIdx) { return  rightShiftAndMask(encodedSkills, skillIdx * 20, MASK_20b); } 
