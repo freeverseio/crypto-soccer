@@ -50,14 +50,14 @@ async function logWrapper(log) {
     for (i = 0; i < N_HALFS; i++) { result.outOfGameType[i] = Number(await encoding.getOutOfGameType(log, i).should.be.fulfilled);}
     for (i = 0; i < N_HALFS; i++) { result.outOfGameRound[i] = Number(await encoding.getOutOfGameRound(log, i).should.be.fulfilled);}
     i = 0;
-    for (half = 0; half < 2; half++) {
+    for (half = 0; half < N_HALFS; half++) {
         for (posInHalf = 0; posInHalf < 2; posInHalf++) {
             result.yellowCard[i] = Number(await encoding.getYellowCard(log, posInHalf, half).should.be.fulfilled);
             i++;
         }
     }
     i = 0;
-    for (half = 0; half < 2; half++) {
+    for (half = 0; half < N_HALFS; half++) {
         for (posInHalf = 0; posInHalf < 3; posInHalf++) {
             result.inGameSubsHappened[i] = Number(await encoding.getInGameSubsHappened(log, posInHalf, half).should.be.fulfilled);
             i++;

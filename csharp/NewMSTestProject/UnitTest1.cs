@@ -96,11 +96,26 @@ namespace NewMSTestProject
                 for (int i = 0; i < MAX_GOALS; i++) { Assert.AreEqual((uint) test.forwardPos[i], serial.getForwardPos(encoded, i)); }
                 for (int i = 0; i < 7; i++) { Assert.AreEqual((bool) test.penalty[i], serial.getPenalty(encoded, i)); }
                 for (int i = 0; i < 3; i++) { Assert.AreEqual((uint) test.halfTimeSubs[i], serial.getHalfTimeSubs(encoded, i)); }
-                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.nGKAndDefs[i], serial.getNGKAndDefs(encoded, i == 1)); }
-                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.nTot[i], serial.getNTot(encoded, i == 1)); }
-                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.outOfGamePlayer[i], serial.getOutOfGamePlayer(encoded, i == 1)); }
-                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.outOfGameType[i], serial.getOutOfGameType(encoded, i == 1)); }
-                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.outOfGameRound[i], serial.getOutOfGameRound(encoded, i == 1)); }
+                for (int h = 0; h < N_HALFS; h++) { Assert.AreEqual((uint) test.nGKAndDefs[h], serial.getNGKAndDefs(encoded, h == 1)); }
+                for (int h = 0; h < N_HALFS; h++) { Assert.AreEqual((uint) test.nTot[h], serial.getNTot(encoded, h == 1)); }
+                for (int h = 0; h < N_HALFS; h++) { Assert.AreEqual((uint) test.outOfGamePlayer[h], serial.getOutOfGamePlayer(encoded, h == 1)); }
+                for (int h = 0; h < N_HALFS; h++) { Assert.AreEqual((uint) test.outOfGameType[h], serial.getOutOfGameType(encoded, h == 1)); }
+                for (int h = 0; h < N_HALFS; h++) { Assert.AreEqual((uint) test.outOfGameRound[h], serial.getOutOfGameRound(encoded, h == 1)); }
+                int counter = 0;
+                for (int half = 0; half < N_HALFS; half++) {
+                    for (int posInHalf = 0; posInHalf < 2; posInHalf++) {
+                        Assert.AreEqual((uint) test.yellowCard[counter], serial.getYellowCard(encoded, posInHalf, half == 1));
+                        counter++;
+                    }
+                }
+                counter = 0;
+                for (int half = 0; half < N_HALFS; half++) {
+                    for (int posInHalf = 0; posInHalf < 3; posInHalf++) {
+                        Assert.AreEqual((uint) test.inGameSubsHappened[counter], serial.getInGameSubsHappened(encoded, posInHalf, half == 1));
+                        counter++;
+                    }
+                }
+
             }
         }  
         
