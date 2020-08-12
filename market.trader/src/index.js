@@ -17,6 +17,7 @@ const { databaseUrl, port , enableCors} = program;
 console.log("--------------------------------------------------------");
 console.log("databaseUrl       : ", databaseUrl);
 console.log("server port       : ", port);
+console.log("enable CORS       : ", enableCors);
 console.log("--------------------------------------------------------");
 
 const app = express();
