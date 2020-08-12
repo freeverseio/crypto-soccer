@@ -16,15 +16,6 @@ const EncodingSet = artifacts.require('EncodingSkillsSetters');
 const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
 
-
-// if (mode == WRITE_NEW_EXPECTED_RESULTS) {
-//     fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
-//         if (err) {
-//             console.log(err);
-//         }
-//     });
-// }
-
 async function skillsWrapper(skills) {
     var result = {
         encodedSkills: skills.toString(),
@@ -126,7 +117,8 @@ contract('EncodingSkills', (accounts) => {
     });
 
     it('encoding and decoding skills', async () => {
-        // mode = "WRITE_JSON";
+        const writeMode = false;
+        toWrite = [];
 
         sk = [2**16 - 16383, 2**16 - 13, 2**16 - 4, 2**16 - 56, 2**16 - 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
@@ -158,8 +150,7 @@ contract('EncodingSkills', (accounts) => {
         }
         debug.compareArrays(resultSkills, sk, toNum = true);
 
-        a = await skillsWrapper(skills);
-        console.log(a);
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
 
         result = await encodingGet.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
@@ -182,12 +173,14 @@ contract('EncodingSkills', (accounts) => {
         result.toNumber().should.be.equal(gamesNonStopping);
         gamesNonStopping = 7;        
         skills = await encodingSet.setGamesNonStopping(skills, gamesNonStopping).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getGamesNonStopping(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(gamesNonStopping);
         skillsdummy = await encodingSet.setGamesNonStopping(skills, 8).should.be.rejected;
-        
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
 
         skills = await encodingSet.setPotential(skills, potential+1).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getPotential(skills).should.be.fulfilled;
         potential = potential + 1;
         result.toNumber().should.be.equal(potential);
@@ -199,6 +192,7 @@ contract('EncodingSkills', (accounts) => {
         result.should.be.equal(substitutedFirstHalf);
         substitutedFirstHalf = !substitutedFirstHalf;
         skills = await encodingSet.setSubstitutedFirstHalf(skills, substitutedFirstHalf).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getSubstitutedFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(substitutedFirstHalf);
 
@@ -210,6 +204,7 @@ contract('EncodingSkills', (accounts) => {
         result =  await encodingGet.getIsSpecial(skills).should.be.fulfilled;
         result.should.be.equal(false);
         skills2 = await encodingSet.addIsSpecial(skills).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills2))}
         result =  await encodingGet.getIsSpecial(skills2).should.be.fulfilled;
         result.should.be.equal(true);
         
@@ -218,6 +213,7 @@ contract('EncodingSkills', (accounts) => {
         for (s = 0; s < N_SKILLS; s++) {
             skills = await encodingSet.setSkill(skills, sk[s], s).should.be.fulfilled;
         }
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         resultSkills = [];
         for (s = 0; s < N_SKILLS; s++) {
             result = await encodingGet.getSkill(skills, s).should.be.fulfilled;
@@ -227,66 +223,97 @@ contract('EncodingSkills', (accounts) => {
 
         alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
         skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(alignedEndOfFirstHalf);
 
         alignedEndOfFirstHalf = !alignedEndOfFirstHalf;
         skills = await encodingSet.setAlignedEndOfFirstHalf(skills, alignedEndOfFirstHalf).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(alignedEndOfFirstHalf);
         
         redCardLastGame = !redCardLastGame;
         skills = await encodingSet.setRedCardLastGame(skills, redCardLastGame).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
 
         redCardLastGame = !redCardLastGame;
         skills = await encodingSet.setRedCardLastGame(skills, redCardLastGame).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
         
         injuryWeeksLeft -= 2;
         skills = await encodingSet.setInjuryWeeksLeft(skills, injuryWeeksLeft).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
 
         injuryWeeksLeft += 1;
         skills = await encodingSet.setInjuryWeeksLeft(skills, injuryWeeksLeft).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(injuryWeeksLeft);
 
         skills = await encodingSet.setSumOfSkills(skills, sumSkills);
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
         
         generation -= 2;
         skills = await encodingSet.setGeneration(skills, generation).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getGeneration(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(generation);
 
         result = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(false);
         skills = await encodingSet.setOutOfGameFirstHalf(skills, true).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(true);
         skills = await encodingSet.setOutOfGameFirstHalf(skills, false).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(false);
         outOfGameFirstHalf = true;
         skills = await encodingSet.setOutOfGameFirstHalf(skills, outOfGameFirstHalf).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         
         result = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(false);
         skills = await encodingSet.setYellowCardFirstHalf(skills, true).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(true);
         skills = await encodingSet.setYellowCardFirstHalf(skills, false).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         result = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
         result.should.be.equal(false);
         yellowCardFistHalf = true;
         skills = await encodingSet.setYellowCardFirstHalf(skills, yellowCardFistHalf).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         
-                
+        const fs = require('fs');
+
+        if (writeMode) {
+            fs.writeFileSync('test/testdata/encodingSkillsTestData.json', JSON.stringify(toWrite), function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }             
+        
+        writtenData = fs.readFileSync('test/testdata/encodingSkillsTestData.json', 'utf8');
+        assert.equal(
+            web3.utils.keccak256(writtenData),
+            "0x0208835b45e4051c75c62411969a5bf07602981afee72f94fd2ba07686d4c15a",
+            "written testdata for encoding skills does not match expected result"
+        );
+        
+
         // testing full decode
         const {0: _skills, 1: _day, 2: _traits, 3: _playerId, 4: _alignedSubstRed, 5: _genNonstopInj} = await utils.fullDecodeSkills(skills).should.be.fulfilled     
         _day.toNumber().should.be.equal(dayOfBirth);
@@ -298,6 +325,11 @@ contract('EncodingSkills', (accounts) => {
         debug.compareArrays(_alignedSubstRed, expectedBools, toNum = false);
         expectedGenGameInj = [generation, gamesNonStopping, injuryWeeksLeft];
         debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true);
+    });
+
+    it2('testing full decode', async () =>  {
+
+
     });
 
     it2('encoding skills with wrong forwardness and leftishness', async () =>  {
