@@ -4,6 +4,7 @@ const program = require("commander");
 const version = require("../package.json").version;
 const mutationsPlugin = require("./mutations_plugin");
 const mutationsWrapperPlugin =  require("./mutation_wrapper_plugin");
+const ConnectionFilterPlugin = require("postgraphile-plugin-connection-filter");
 
 // Parsing command line arguments
 program
@@ -34,7 +35,11 @@ app.use(
       enhanceGraphiql: true,
       retryOnInitFail: true,
       // disableDefaultMutations: true,
-      appendPlugins: [mutationsPlugin, mutationsWrapperPlugin],
+      appendPlugins: [
+        ConnectionFilterPlugin,
+        mutationsPlugin,
+        mutationsWrapperPlugin,
+      ],
     }
   )
 );
