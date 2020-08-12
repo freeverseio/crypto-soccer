@@ -2,6 +2,7 @@ const express = require("express");
 const { postgraphile } = require("postgraphile");
 const program = require("commander");
 const version = require("../package.json").version;
+const ConnectionFilterPlugin = require("postgraphile-plugin-connection-filter");
 
 // Parsing command line arguments
 program
@@ -29,6 +30,7 @@ app.use(
       enhanceGraphiql: true,
       retryOnInitFail: true,
       disableDefaultMutations: true,
+      appendPlugins: [ConnectionFilterPlugin],
     }
   )
 );
