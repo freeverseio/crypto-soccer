@@ -36,28 +36,28 @@ const main = async () => {
   const horizonRemoteSchema = await createRemoteSchema(horizonUrl);
   
   const linkTypeDefs = `
-    input SetPlayerNameInput2 {
+    input SetGamePlayerNameInput {
       signature: String!
       playerId: ID!
       name: String!
     }
 
-    input SetTeamNameInput2 {
+    input SetGameTeamNameInput {
       signature: String!
       teamId: ID!
       name: String!
     }
   
-    input SetTeamManagerNameInput2 {
+    input SetGameTeamManagerNameInput {
       signature: String!
       teamId: ID!
       name: String!
     }
 
     extend type Mutation {
-      setPlayerName2(input: SetPlayerNameInput2!): ID!
-      setTeamName2(input: SetTeamNameInput2!): ID!
-      setTeamManagerName2(input: SetTeamManagerNameInput2!): ID!
+      setGamePlayerName(input: SetGamePlayerNameInput!): ID!
+      setGameTeamName(input: SetGameTeamNameInput!): ID!
+      setGameTeamManagerName(input: SetGameTeamManagerNameInput!): ID!
 
     }
   `;
@@ -92,15 +92,15 @@ const main = async () => {
       },
     },
     Mutation: {
-      setPlayerName2: async (_, { input: { playerId, name, signature } }) => {
+      setGamePlayerName: async (_, { input: { playerId, name, signature } }) => {
           await updatePlayerName({ playerId, playerName: name })
           return playerId 
         },
-      setTeamName2: async (_, { input: { teamId, name, signature } }) => {
+      setGameTeamName: async (_, { input: { teamId, name, signature } }) => {
         await updateTeamName({ teamId, teamName: name })
         return teamId 
       },
-      setTeamManagerName2: async (_, { input: { teamId, name, signature } }) => {
+      setGameTeamManagerName: async (_, { input: { teamId, name, signature } }) => {
         await updateTeamManagerName({ teamId, teamManagerName: name })
         return teamId 
       },
