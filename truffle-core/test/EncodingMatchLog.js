@@ -12,6 +12,43 @@ const Utils = artifacts.require('Utils');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
 
+
+async function logWrapper(log) {
+    // MAX_GOALS = 12
+    // N_HALFS = 2
+    var result = {
+        encodedLog: log.toString(),
+        assister: [],  // length = MAX_GOALS
+        shooter: [],  // length = MAX_GOALS
+        forwardPos: [],  // length = MAX_GOALS
+        penalty: [],  // length = 7
+        isHomeStadium: false, 
+        halfTimeSubs: [], // length = 3
+        nGKAndDefs: [], // length = N_HALFS
+        nTot: [], // length = N_HALFS
+        winner: 0,
+        teamSumSkills: 0,
+        trainingPoints: 0,
+        nGoals: 0,
+        outOfGamePlayer: [], // length = N_HALFS
+        outOfGameType: [], // length = N_HALFS
+        outOfGameRound: [], // length = N_HALFS
+        yellowCard: [], // length = 2 * N_HALFS
+        inGameSubsHappened: [], // length = 3 * N_HALFS
+        changesAtHalftime: 0
+    }
+    result.isHomeStadium = await encoding.getIsHomeStadium(log).should.be.fulfilled;
+    result.winner = Number(await encoding.getWinner(log).should.be.fulfilled);
+    result.teamSumSkills = Number(await encoding.getTeamSumSkills(log).should.be.fulfilled);
+    result.trainingPoints = Number(await encoding.getTrainingPoints(log).should.be.fulfilled);
+    result.nGoals = Number(await encoding.getNGoals(log).should.be.fulfilled);
+    result.changesAtHalftime = Number(await encoding.getChangesAtHalfTime(log).should.be.fulfilled);
+
+    return result;
+}
+
+
+
 contract('EncodingMatchLog', (accounts) => {
 
     const UNDEF = undefined;
@@ -23,6 +60,9 @@ contract('EncodingMatchLog', (accounts) => {
     });
     
     it('encode and decode matchlog', async () =>  {
+        const writeMode = true;
+        toWrite = [];
+
         nGoals = 15;
         assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => 15-i%4);
         shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 15-i%4);
@@ -51,6 +91,8 @@ contract('EncodingMatchLog', (accounts) => {
             halfTimeSubstitutions, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
         );
 
+        if (writeMode) { await toWrite.push(await logWrapper(log))}
+
         await logUtils.checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, 
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
@@ -63,6 +105,7 @@ contract('EncodingMatchLog', (accounts) => {
         result = await encoding.getTeamSumSkills(log).should.be.fulfilled;
         result.toNumber().should.be.equal(teamSumSkills)
         log = await encoding.setIsHomeStadium(log, !isHomeStadium).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await logWrapper(log))}
         result = await encoding.getIsHomeStadium(log).should.be.fulfilled;
         result.should.be.equal(!isHomeStadium)
         result = await encoding.getTeamSumSkills(log).should.be.fulfilled;
@@ -71,6 +114,7 @@ contract('EncodingMatchLog', (accounts) => {
         result = await encoding.getChangesAtHalfTime(log).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         result = await encoding.setChangesAtHalfTime(log, 3).should.be.fulfilled;
+        if (writeMode) { await toWrite.push(await logWrapper(result))}
         result = await encoding.getChangesAtHalfTime(result).should.be.fulfilled;
         result.toNumber().should.be.equal(3);
 
@@ -101,5 +145,21 @@ contract('EncodingMatchLog', (accounts) => {
             halfTimeSubstitutions[0], halfTimeSubstitutions[1], halfTimeSubstitutions[2]
         ]
         debug.compareArrays(result, expected, toNum = true);
+
+        const fs = require('fs');
+        if (writeMode) {
+            fs.writeFileSync('test/testdata/encodingMatchLogTestData.json', JSON.stringify(toWrite), function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }             
+        
+        writtenData = fs.readFileSync('test/testdata/encodingMatchLogTestData.json', 'utf8');
+        assert.equal(
+            web3.utils.keccak256(writtenData),
+            "0x2df0638cf5da6f466cfe2ce30bc695ccb212981f270add8ba80ef8884bfb2640",
+            "written testdata for encoding MatchLog does not match expected result"
+        );
     });
 });

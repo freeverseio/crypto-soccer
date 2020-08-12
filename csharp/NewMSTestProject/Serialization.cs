@@ -56,7 +56,7 @@ public class Serialization {
 
     public bool getPenalty(BigInteger log, int pos) { return rightShiftAndMask(log, 124+pos, 1) == 1; }
 
-    public bool getIsHomeStadiumGo(BigInteger log) { return rightShiftAndMask(log, 248, 1) == 1; }
+    public bool getIsHomeStadium(BigInteger log) { return rightShiftAndMask(log, 248, 1) == 1; }
 
     /// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
     public uint getHalfTimeSubs(BigInteger log, int pos) { return rightShiftAndMask(log, 179 + 5 * pos, 31); }
@@ -103,6 +103,9 @@ public class Serialization {
     public uint getInGameSubsHappened(BigInteger log, int posInHalf, bool is2ndHalf) {
         int offset = 167 + 2 * posInHalf + (is2ndHalf ? 6 : 0);
         return rightShiftAndMask(log, offset, 3); 
+    }
+    public uint getChangesAtHalfTime(BigInteger log) {
+        return rightShiftAndMask(log, 249, 3); 
     }
 
     // TACTICS
