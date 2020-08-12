@@ -29,6 +29,16 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
+        public void Test_encodingStateFromTheField() {  
+            Serialization serial = new Serialization();
+            TestUtils tu = new TestUtils();
+            dynamic tests = tu.LoadJson("encodingStateTestDataFromTheField.json");
+            foreach(dynamic test in tests) {
+                tu.AssertEncodedStateTest(test);
+            }
+        }  
+
+        [TestMethod]
         public void Test_encodingSkills() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
