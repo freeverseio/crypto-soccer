@@ -31,8 +31,15 @@ namespace NewMSTestProject
 
         [TestMethod]
         public void readJson() {  
+            Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
-            tu.LoadJson();
+            dynamic tests = tu.LoadJson("encodingSkillsTestData.json");
+            foreach(dynamic test in tests) {
+                BigInteger encodedSkills;
+                bool succeeded = BigInteger.TryParse((string) test.encodedSkills, out encodedSkills);
+                Assert.AreEqual(true, succeeded);  
+                Assert.AreEqual((uint) test.birthday, serial.getBirthDay(encodedSkills));  
+            }
         }  
     }
 }

@@ -28,32 +28,24 @@ public class TestUtils {
         public bool yellowCardFistHalf;
     }
 
-    public void LoadJson()
+    public dynamic LoadJson(string filename)
     {
         string workingDirectory = Environment.CurrentDirectory;
         string codeDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-        string[] paths = {codeDirectory, "testdata", "encodingSkillsTestData.json"};
+        string[] paths = {codeDirectory, "testdata", filename};
         string jsonFile = Path.Combine(paths);
 
         Console.WriteLine(jsonFile);
 
-        using (StreamReader r = new StreamReader(jsonFile)) {}
-        // {
-        //     string json = r.ReadToEnd();
-        //     // List<Item> items = JsonConvert.DeserializeObject<List<Item>>(json);
-        //     // dynamic array = JsonConvert.DeserializeObject(json);
-        //     // Console.WriteLine(json);
-        //     // JsonTextReader reader = new JsonTextReader(new StringReader(json));
-        //     // while (reader.Read())
-        //     // {
-        //     //     Console.WriteLine(reader);
-
-        //     //     // if (reader.Value != null)
-        //     //     // {
-        //     //     //     Console.WriteLine("Token: {0}, Value: {1}", reader.generation, reader.generation);
-        //     //     // }
-        //     // }        
-        // }
+        dynamic array;
+        using (StreamReader r = new StreamReader(jsonFile))
+        {
+            string json = r.ReadToEnd();
+            array = JsonConvert.DeserializeObject(json);
+            Console.WriteLine("Read a total of {0} tests", array.Count);
+        }
+        return array;
     }
+
 
 }  
