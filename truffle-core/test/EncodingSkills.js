@@ -17,6 +17,58 @@ const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
 
 
+// if (mode == WRITE_NEW_EXPECTED_RESULTS) {
+//     fs.writeFileSync('test/testdata/fullleague.json', JSON.stringify(leagueData), function(err) {
+//         if (err) {
+//             console.log(err);
+//         }
+//     });
+// }
+
+async function skillsWrapper(skills) {
+    var result = {
+        encodedSkills: skills.toString(),
+        skills: [],
+        birthday: 0,
+        isSpecial: false,
+        playerIdFromSkills: "",
+        internalPlayerId: "",
+        potential: 0,
+        forwardness: 0,
+        leftishness: 0,
+        aggressiveness: 0,
+        alignedEndOfFirstHalf: false,
+        redCardLastGame: false,
+        gamesNonStopping: 0,
+        injuryWeeksLeft: 0,
+        substitutedFirstHalf: false,
+        sumOfSkills: 0,
+        generation: 0,
+        outOfGameFirstHalf: false,
+        yellowCardFistHalf: false
+    }
+    // result.currentShirtNumber = await encodingGet.getCurrentShirtNumber(skills).should.be.fulfilled;
+    for (sk = 0; sk < 5; sk++) {result.skills[sk] = Number(await encodingGet.getSkill(skills, sk).should.be.fulfilled);}
+    result.birthday = Number(await encodingGet.getBirthDay(skills).should.be.fulfilled);
+    result.isSpecial = await encodingGet.getIsSpecial(skills).should.be.fulfilled;
+    result.playerIdFromSkills = String(await encodingGet.getPlayerIdFromSkills(skills).should.be.fulfilled);
+    result.internalPlayerId = String(await encodingGet.getInternalPlayerId(skills).should.be.fulfilled);
+    result.potential = Number(await encodingGet.getPotential(skills).should.be.fulfilled);
+    result.forwardness = Number(await encodingGet.getForwardness(skills).should.be.fulfilled);
+    result.leftishness = Number(await encodingGet.getLeftishness(skills).should.be.fulfilled);
+    result.aggressiveness = Number(await encodingGet.getAggressiveness(skills).should.be.fulfilled);
+    result.alignedEndOfFirstHalf = await encodingGet.getAlignedEndOfFirstHalf(skills).should.be.fulfilled;
+    result.redCardLastGame = await encodingGet.getRedCardLastGame(skills).should.be.fulfilled;
+    result.gamesNonStopping = Number(await encodingGet.getGamesNonStopping(skills).should.be.fulfilled);
+    result.injuryWeeksLeft = Number(await encodingGet.getInjuryWeeksLeft(skills).should.be.fulfilled);
+    result.substitutedFirstHalf = await encodingGet.getSubstitutedFirstHalf(skills).should.be.fulfilled;
+    result.sumOfSkills = Number(await encodingGet.getSumOfSkills(skills).should.be.fulfilled);
+    result.generation = Number(await encodingGet.getGeneration(skills).should.be.fulfilled);
+    result.outOfGameFirstHalf = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
+    result.yellowCardFistHalf = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
+    return result;
+}
+
 contract('EncodingSkills', (accounts) => {
 
     const it2 = async(text, f) => {};
@@ -31,7 +83,7 @@ contract('EncodingSkills', (accounts) => {
     });
 
 
-    it('encodeTactics incorrect lineup', async () =>  {
+    it2('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -43,7 +95,7 @@ contract('EncodingSkills', (accounts) => {
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
     })
     
-    it('encodeTactics', async () =>  {
+    it2('encodeTactics', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -74,6 +126,8 @@ contract('EncodingSkills', (accounts) => {
     });
 
     it('encoding and decoding skills', async () => {
+        // mode = "WRITE_JSON";
+
         sk = [2**16 - 16383, 2**16 - 13, 2**16 - 4, 2**16 - 56, 2**16 - 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
 
@@ -103,6 +157,9 @@ contract('EncodingSkills', (accounts) => {
             resultSkills.push(result);
         }
         debug.compareArrays(resultSkills, sk, toNum = true);
+
+        a = await skillsWrapper(skills);
+        console.log(a);
 
         result = await encodingGet.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
@@ -243,7 +300,7 @@ contract('EncodingSkills', (accounts) => {
         debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true);
     });
 
-    it('encoding skills with wrong forwardness and leftishness', async () =>  {
+    it2('encoding skills with wrong forwardness and leftishness', async () =>  {
         sk = [16383, 13, 4, 56, 456];
         dayOfBirth = 4;
         generation = 2;

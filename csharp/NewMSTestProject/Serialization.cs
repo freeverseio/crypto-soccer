@@ -7,9 +7,9 @@ public class Serialization {
 
     public uint getCurrentShirtNum(BigInteger playerState) { return  rightShiftAndMask(playerState, 43, 31); }
 
-    public uint getSkill(BigInteger playerState, int skillIdx) { return  rightShiftAndMask(playerState, skillIdx * 20, 1048575); } // 1048575 = 2**20 - 1
+    public uint getSkill(BigInteger encodedSkills, int skillIdx) { return  rightShiftAndMask(encodedSkills, skillIdx * 20, 1048575); } // 1048575 = 2**20 - 1
 
-    public uint getBirthDay(BigInteger playerState) { return  rightShiftAndMask(playerState, 100, 65535); }
+    public uint getBirthDay(BigInteger encodedSkills) { return  rightShiftAndMask(encodedSkills, 100, 65535); }
 
     public bool getIsSpecial(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 204, 1) == 1; }
 
