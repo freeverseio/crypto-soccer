@@ -28,5 +28,11 @@ namespace NewMSTestProject
             uint res = serial.getCurrentShirtNum(state);  
             Assert.AreEqual(res, (uint) shirt);  
         }  
+
+        [TestMethod]
+        public void readJson() {  
+            TestUtils tu = new TestUtils();
+            tu.LoadJson();
+        }  
     }
 }

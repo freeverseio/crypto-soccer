@@ -74,7 +74,7 @@ contract('EncodingSkills', (accounts) => {
     });
 
 
-    it2('encodeTactics incorrect lineup', async () =>  {
+    it('encodeTactics incorrect lineup', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -86,7 +86,7 @@ contract('EncodingSkills', (accounts) => {
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
     })
     
-    it2('encodeTactics', async () =>  {
+    it('encodeTactics', async () =>  {
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -327,12 +327,7 @@ contract('EncodingSkills', (accounts) => {
         debug.compareArrays(_genNonstopInj, expectedGenGameInj, toNum = true);
     });
 
-    it2('testing full decode', async () =>  {
-
-
-    });
-
-    it2('encoding skills with wrong forwardness and leftishness', async () =>  {
+    it('encoding skills with wrong forwardness and leftishness', async () =>  {
         sk = [16383, 13, 4, 56, 456];
         dayOfBirth = 4;
         generation = 2;
