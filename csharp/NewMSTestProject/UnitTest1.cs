@@ -89,10 +89,18 @@ namespace NewMSTestProject
                 Assert.AreEqual((uint) test.trainingPoints, serial.getTrainingPoints(encoded));  
                 Assert.AreEqual((uint) test.nGoals, serial.getNGoals(encoded));  
                 Assert.AreEqual((uint) test.changesAtHalftime, serial.getChangesAtHalfTime(encoded));  
-                // for (int i = 0; i < 10; i++) { Assert.AreEqual((bool) test.extraAttack[i], serial.getExtraAttack(encoded, i)); }
-                // for (int i = 0; i < 3; i++) { Assert.AreEqual((uint) test.substitution[i], serial.getSubstitution(encoded, i)); }
-                // for (int i = 0; i < 3; i++) { Assert.AreEqual((uint) test.subsRound[i], serial.getSubsRound(encoded, i)); }
-                // for (int i = 0; i < 14; i++) { Assert.AreEqual((uint) test.linedUp[i], serial.getLinedUp(encoded, i)); }
+                int MAX_GOALS = 12;
+                int N_HALFS = 2;
+                for (int i = 0; i < MAX_GOALS; i++) { Assert.AreEqual((uint) test.assister[i], serial.getAssister(encoded, i)); }
+                for (int i = 0; i < MAX_GOALS; i++) { Assert.AreEqual((uint) test.shooter[i], serial.getShooter(encoded, i)); }
+                for (int i = 0; i < MAX_GOALS; i++) { Assert.AreEqual((uint) test.forwardPos[i], serial.getForwardPos(encoded, i)); }
+                for (int i = 0; i < 7; i++) { Assert.AreEqual((bool) test.penalty[i], serial.getPenalty(encoded, i)); }
+                for (int i = 0; i < 3; i++) { Assert.AreEqual((uint) test.halfTimeSubs[i], serial.getHalfTimeSubs(encoded, i)); }
+                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.nGKAndDefs[i], serial.getNGKAndDefs(encoded, i == 1)); }
+                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.nTot[i], serial.getNTot(encoded, i == 1)); }
+                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.outOfGamePlayer[i], serial.getOutOfGamePlayer(encoded, i == 1)); }
+                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.outOfGameType[i], serial.getOutOfGameType(encoded, i == 1)); }
+                for (int i = 0; i < N_HALFS; i++) { Assert.AreEqual((uint) test.outOfGameRound[i], serial.getOutOfGameRound(encoded, i == 1)); }
             }
         }  
         

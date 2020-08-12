@@ -62,12 +62,12 @@ public class Serialization {
     public uint getHalfTimeSubs(BigInteger log, int pos) { return rightShiftAndMask(log, 179 + 5 * pos, 31); }
 
     public uint getNGKAndDefs(BigInteger log, bool is2ndHalf) {
-        int offset = is2ndHalf ? 194 : 194 + 4;
+        int offset = 194 + 4 * (is2ndHalf ? 1 : 0);
         return rightShiftAndMask(log, offset, 15); 
     }
 
     public uint getNTot(BigInteger log, bool is2ndHalf) {
-        int offset = is2ndHalf ? 202 : 202 + 4;
+        int offset = 202 + (is2ndHalf ? 4 : 0);
         return rightShiftAndMask(log, offset, 15); 
     }
 
