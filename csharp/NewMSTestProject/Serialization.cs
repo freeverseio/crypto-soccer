@@ -5,6 +5,7 @@ public class Serialization {
 
     private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
 
+    // STATE
     public uint getCurrentShirtNum(BigInteger playerState) { return  rightShiftAndMask(playerState, 43, 31); }
 
 
