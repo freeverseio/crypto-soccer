@@ -115,7 +115,8 @@ jobs:
             cd go/synchronizer/process
             go test ./... -v
       - run: cd go/utils && go test ./... -v
-      - run: cd go/synchronizer/engine && go test ./... -v
+      - run: cd go/synchronizer/engine/v1 && go test ./... -v
+      - run: cd go/synchronizer/engine/v2 && go test ./... -v
       - run: cd go/synchronizer/staker && go test ./... 
       - run: cd go/synchronizer/matchevents && go test ./... -v
       - run: cd go/synchronizer/leaderboard && go test ./... -v
