@@ -7,6 +7,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 
+const fs = require('fs');
 const debug = require('../utils/debugUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
@@ -38,7 +39,6 @@ async function skillsWrapper(skills) {
         outOfGameFirstHalf: false,
         yellowCardFirstHalf: false
     }
-    // result.currentShirtNumber = await encodingGet.getCurrentShirtNumber(skills).should.be.fulfilled;
     for (sk = 0; sk < 5; sk++) {result.skills[sk] = Number(await encodingGet.getSkill(skills, sk).should.be.fulfilled);}
     result.birthday = Number(await encodingGet.getBirthDay(skills).should.be.fulfilled);
     result.isSpecial = await encodingGet.getIsSpecial(skills).should.be.fulfilled;
@@ -57,6 +57,26 @@ async function skillsWrapper(skills) {
     result.generation = Number(await encodingGet.getGeneration(skills).should.be.fulfilled);
     result.outOfGameFirstHalf = await encodingGet.getOutOfGameFirstHalf(skills).should.be.fulfilled;
     result.yellowCardFirstHalf = await encodingGet.getYellowCardFirstHalf(skills).should.be.fulfilled;
+    return result;
+}
+
+function BNArrayToNumber(BNArray) {
+    numbers = [];
+    for (big of BNArray) { numbers.push(Number(big))}
+    return numbers;
+}
+
+async function tacticsWrapper(tactics) {
+    const {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = await utils.decodeTactics(encoded).should.be.fulfilled;
+
+    const result = {
+        encodedTactics: tactics.toString(),
+        tacticsId: Number(tact),
+        extraAttack: attk, // length 10
+        substitution: BNArrayToNumber(subs), // length 3
+        subsRound: BNArrayToNumber(roun), // length 3
+        linedUp: BNArrayToNumber(line), // length 14
+    }
     return result;
 }
 
@@ -87,6 +107,8 @@ contract('EncodingSkills', (accounts) => {
     })
     
     it('encodeTactics', async () =>  {
+        toWrite = [];
+
         PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
@@ -94,6 +116,9 @@ contract('EncodingSkills', (accounts) => {
         subsRounds = [3,7,1];
         extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        
+        await toWrite.push(await tacticsWrapper(encoded));
+
         decoded = await utils.decodeTactics(encoded).should.be.fulfilled;
 
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
@@ -108,6 +133,20 @@ contract('EncodingSkills', (accounts) => {
             subs[p].toNumber().should.be.equal(substitutions[p]);
             roun[p].toNumber().should.be.equal(subsRounds[p]);
         }
+
+
+        fs.writeFileSync('test/testdata/encodingTacticsTestData.json', JSON.stringify(toWrite), function(err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+        writtenData = fs.readFileSync('test/testdata/encodingTacticsTestData.json', 'utf8');
+        assert.equal(
+            web3.utils.keccak256(writtenData),
+            "0x92085e7390d3d97bf5ab567bc5a4dd98c2350e04db22f11340f958e0239a7e58",
+            "written testdata for encoding tactics does not match expected result"
+        );
+        
         // // try to provide a tacticsId beyond range
         encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 64).should.be.rejected;
         // try to provide a lineup beyond range
@@ -296,8 +335,6 @@ contract('EncodingSkills', (accounts) => {
         skills = await encodingSet.setYellowCardFirstHalf(skills, yellowCardFirstHalf).should.be.fulfilled;
         if (writeMode) { await toWrite.push(await skillsWrapper(skills))}
         
-        const fs = require('fs');
-
         if (writeMode) {
             fs.writeFileSync('test/testdata/encodingSkillsTestData.json', JSON.stringify(toWrite), function(err) {
                 if (err) {

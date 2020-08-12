@@ -7,6 +7,8 @@ public class Serialization {
 
     public uint getCurrentShirtNum(BigInteger playerState) { return  rightShiftAndMask(playerState, 43, 31); }
 
+
+    // SKILLS
     public uint getSkill(BigInteger encodedSkills, int skillIdx) { return  rightShiftAndMask(encodedSkills, skillIdx * 20, 1048575); } // 1048575 = 2**20 - 1
 
     public uint getBirthDay(BigInteger encodedSkills) { return  rightShiftAndMask(encodedSkills, 100, 65535); }
@@ -42,6 +44,7 @@ public class Serialization {
     public bool getOutOfGameFirstHalf(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 213, 1) == 1; }
 
     public bool getYellowCardFirstHalf(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 214, 1) == 1; }
+
 
     // // MATCH LOG functions:
 

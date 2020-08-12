@@ -30,33 +30,49 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
-        public void readJson() {  
+        public void Test_encodingSkills() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingSkillsTestData.json");
             foreach(dynamic test in tests) {
-                BigInteger encodedSkills;
-                bool succeeded = BigInteger.TryParse((string) test.encodedSkills, out encodedSkills);
-                Assert.AreEqual(true, succeeded);  
-                for (int sk = 0; sk < 5; sk++) { Assert.AreEqual((uint) test.skills[sk], serial.getSkill(encodedSkills, sk)); }
-                Assert.AreEqual((uint) test.birthday, serial.getBirthDay(encodedSkills));  
-                Assert.AreEqual((bool) test.isSpecial, serial.getIsSpecial(encodedSkills));  
-                Assert.AreEqual((uint) test.potential, serial.getPotential(encodedSkills));  
-                Assert.AreEqual((uint) test.forwardness, serial.getForwardness(encodedSkills));  
-                Assert.AreEqual((uint) test.leftishness, serial.getLeftishness(encodedSkills));  
-                Assert.AreEqual((uint) test.aggressiveness, serial.getAggressiveness(encodedSkills));  
-                Assert.AreEqual((bool) test.alignedEndOfFirstHalf, serial.getAlignedEndOfFirstHalf(encodedSkills));  
-                Assert.AreEqual((bool) test.redCardLastGame, serial.getRedCardLastGame(encodedSkills));  
-                Assert.AreEqual((uint) test.gamesNonStopping, serial.getGamesNonStopping(encodedSkills));  
-                Assert.AreEqual((uint) test.injuryWeeksLeft, serial.getInjuryWeeksLeft(encodedSkills));  
-                Assert.AreEqual((bool) test.substitutedFirstHalf, serial.getSubstitutedFirstHalf(encodedSkills));  
-                Assert.AreEqual((uint) test.sumOfSkills, serial.getSumOfSkills(encodedSkills));  
-                Assert.AreEqual((uint) test.generation, serial.getGeneration(encodedSkills));  
-                Assert.AreEqual((bool) test.outOfGameFirstHalf, serial.getOutOfGameFirstHalf(encodedSkills));  
-                Assert.AreEqual((bool) test.yellowCardFirstHalf, serial.getYellowCardFirstHalf(encodedSkills));  
-                
-
+                BigInteger encoded;
+                bool succeeded = BigInteger.TryParse((string) test.encodedSkills, out encoded);
+                Assert.AreEqual(true, succeeded);
+                for (int sk = 0; sk < 5; sk++) { Assert.AreEqual((uint) test.skills[sk], serial.getSkill(encoded, sk)); }
+                Assert.AreEqual((uint) test.birthday, serial.getBirthDay(encoded));  
+                Assert.AreEqual((bool) test.isSpecial, serial.getIsSpecial(encoded));  
+                Assert.AreEqual((uint) test.potential, serial.getPotential(encoded));  
+                Assert.AreEqual((uint) test.forwardness, serial.getForwardness(encoded));  
+                Assert.AreEqual((uint) test.leftishness, serial.getLeftishness(encoded));  
+                Assert.AreEqual((uint) test.aggressiveness, serial.getAggressiveness(encoded));  
+                Assert.AreEqual((bool) test.alignedEndOfFirstHalf, serial.getAlignedEndOfFirstHalf(encoded));  
+                Assert.AreEqual((bool) test.redCardLastGame, serial.getRedCardLastGame(encoded));  
+                Assert.AreEqual((uint) test.gamesNonStopping, serial.getGamesNonStopping(encoded));  
+                Assert.AreEqual((uint) test.injuryWeeksLeft, serial.getInjuryWeeksLeft(encoded));  
+                Assert.AreEqual((bool) test.substitutedFirstHalf, serial.getSubstitutedFirstHalf(encoded));  
+                Assert.AreEqual((uint) test.sumOfSkills, serial.getSumOfSkills(encoded));  
+                Assert.AreEqual((uint) test.generation, serial.getGeneration(encoded));  
+                Assert.AreEqual((bool) test.outOfGameFirstHalf, serial.getOutOfGameFirstHalf(encoded));  
+                Assert.AreEqual((bool) test.yellowCardFirstHalf, serial.getYellowCardFirstHalf(encoded));  
             }
         }  
+
+        [TestMethod]
+        public void Test_encodingTactics() {  
+            Serialization serial = new Serialization();
+            TestUtils tu = new TestUtils();
+            dynamic tests = tu.LoadJson("encodingTacticsTestData.json");
+            foreach(dynamic test in tests) {
+                BigInteger encoded;
+                bool succeeded = BigInteger.TryParse((string) test.encodedTactics, out encoded);
+                Assert.AreEqual(true, succeeded);  
+                Assert.AreEqual((uint) test.tacticsId, serial.getTacticsId(encoded));  
+                for (int i = 0; i < 10; i++) { Assert.AreEqual((bool) test.extraAttack[i], serial.getExtraAttack(encoded, i)); }
+                for (int i = 0; i < 3; i++) { Assert.AreEqual((uint) test.substitution[i], serial.getSubstitution(encoded, i)); }
+                for (int i = 0; i < 3; i++) { Assert.AreEqual((uint) test.subsRound[i], serial.getSubsRound(encoded, i)); }
+                for (int i = 0; i < 14; i++) { Assert.AreEqual((uint) test.linedUp[i], serial.getLinedUp(encoded, i)); }
+            }
+        }  
+
     }
 }
