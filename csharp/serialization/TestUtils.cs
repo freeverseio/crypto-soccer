@@ -1,3 +1,4 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Numerics;
 using System;
 using System.IO;
@@ -22,4 +23,18 @@ public class TestUtils {
         }
         return array;
     }
+
+    public void AssertEncodedStateTest(dynamic test)
+    {
+        Serialization serial = new Serialization();
+        BigInteger encoded;
+        bool succeeded = BigInteger.TryParse((string) test.encodedState, out encoded);
+        Assert.AreEqual(true, succeeded);
+        Assert.AreEqual((ulong) test.currentTeamId, serial.getCurrentTeamId(encoded));  
+        Assert.AreEqual((uint) test.currentShirtNum, serial.getCurrentShirtNum(encoded));  
+        Assert.AreEqual((ulong) test.prevPlayerTeamId, serial.getPrevPlayerTeamId(encoded));  
+        Assert.AreEqual((ulong) test.lastSaleBlocknum, serial.getLastSaleBlock(encoded));  
+        Assert.AreEqual((bool) test.isInTransit, serial.getIsInTransit(encoded));  
+    }
+
 }  

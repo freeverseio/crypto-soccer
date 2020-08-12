@@ -2,8 +2,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Numerics;
 using System;
 
+
 namespace NewMSTestProject
 {
+
     [TestClass]
     public class UnitTest1
     {
@@ -22,14 +24,7 @@ namespace NewMSTestProject
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingStateTestData.json");
             foreach(dynamic test in tests) {
-                BigInteger encoded;
-                bool succeeded = BigInteger.TryParse((string) test.encodedState, out encoded);
-                Assert.AreEqual(true, succeeded);
-                Assert.AreEqual((ulong) test.currentTeamId, serial.getCurrentTeamId(encoded));  
-                Assert.AreEqual((uint) test.currentShirtNum, serial.getCurrentShirtNum(encoded));  
-                Assert.AreEqual((ulong) test.prevPlayerTeamId, serial.getPrevPlayerTeamId(encoded));  
-                Assert.AreEqual((ulong) test.lastSaleBlocknum, serial.getLastSaleBlock(encoded));  
-                Assert.AreEqual((bool) test.isInTransit, serial.getIsInTransit(encoded));  
+                tu.AssertEncodedStateTest(test);
             }
         }  
 
