@@ -7,6 +7,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();;
 
+const fs = require('fs');
 const EncodingState = artifacts.require('EncodingState');
 const EncodingIDs = artifacts.require('EncodingIDs');
 const ConstantsGetters = artifacts.require('ConstantsGetters');
@@ -87,7 +88,6 @@ contract('EncodingState', (accounts) => {
         result = await encodingState.getIsInTransitFromState(newState).should.be.fulfilled;
         result.should.be.equal(false);
 
-        const fs = require('fs');
         if (writeMode) {
             fs.writeFileSync('test/testdata/encodingStateTestData.json', JSON.stringify(toWrite), function(err) {
                 if (err) {
@@ -100,6 +100,47 @@ contract('EncodingState', (accounts) => {
         assert.equal(
             web3.utils.keccak256(writtenData),
             "0xf42362d5f2917296bb8c0d6b15caebd08af89a3946fa69fd9e60190709bea73e",
+            "written testdata for encodingState State does not match expected result"
+        );
+    });
+
+
+    it('generate tests for libraries in other platforms with from-the-filed values', async () => {
+        const states = [
+            "222651104624647",
+            "28241970391324172840623950903902215",
+            "28242688396546958361315333791285253",
+            "28244686431770364964947079582449685",
+            "222651104624661",
+            "28257944769591111387902355435421877",
+            "27751156876308462410972948053622818",
+            "222651104624694",
+            "28271458123059950598912785531273270",
+            "26226336612319088111168700781953031",
+            "28283973696857125793360074281844766",
+            "28284894724246354116478113276755978",
+            "28285461700784346820556056145428534",
+            "28296162454483929647749041198465145",
+            "222651104624670",
+            "28324224079294450647670920964997150"
+        ]
+
+        toWrite = [];
+        for (state of states) {
+            await toWrite.push(await stateWrapper(state));
+        }
+
+        fitxer = 'test/testdata/encodingStateTestDataFromTheField.json';
+        fs.writeFileSync(fitxer, JSON.stringify(toWrite), function(err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+        
+        writtenData = fs.readFileSync(fitxer, 'utf8');
+        assert.equal(
+            web3.utils.keccak256(writtenData),
+            "0x262761b6cec41e5b8bbd36fd729295253774ab697e756a7f0529e9c97fa00c56",
             "written testdata for encodingState State does not match expected result"
         );
     });
