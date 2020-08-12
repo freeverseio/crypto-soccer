@@ -1,24 +1,46 @@
+using System;
 using System.Numerics;
 public class Serialization {  
+
+    const int IN_TRANSIT_SHIRTNUM = 26;
+    const int MASK_12b = 4095;
+    const int MASK_19b = 524287;
+    const int MASK_20b = 1048575;
+    const int MASK_24b = 16777215;
+    const ulong MASK_35b = 34359738367;
+    const ulong MASK_43b = 8796093022207;
     public double Add(double num1, double num2) {  return num1 + num2;   }  
     public BigInteger AddBN(BigInteger x, BigInteger y) {  return BigInteger.Add(x, y);   }
 
     private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
 
-    // STATE
-    public uint getCurrentShirtNum(BigInteger playerState) { return  rightShiftAndMask(playerState, 43, 31); }
+    private ulong rightShiftAndMask64b(BigInteger encoded, int bitsToDisplace, ulong mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
 
+    // STATE
+    public ulong getCurrentTeamId(BigInteger state) { return  rightShiftAndMask64b(state, 0, MASK_43b); }
+    public uint getCurrentShirtNum(BigInteger state) { return  rightShiftAndMask(state, 43, 31); }
+
+    public ulong getPrevPlayerTeamId(BigInteger state){ return  rightShiftAndMask64b(state, 48, MASK_43b); }
+
+    public ulong getLastSaleBlock(BigInteger state){ return  rightShiftAndMask64b(state, 91, MASK_35b); }
+
+    public bool getIsInTransitFromState(BigInteger state) { return  getCurrentShirtNum(state) == IN_TRANSIT_SHIRTNUM; }
 
     // SKILLS
-    public uint getSkill(BigInteger encodedSkills, int skillIdx) { return  rightShiftAndMask(encodedSkills, skillIdx * 20, 1048575); } // 1048575 = 2**20 - 1
+    public uint getSkill(BigInteger encodedSkills, int skillIdx) { return  rightShiftAndMask(encodedSkills, skillIdx * 20, MASK_20b); } 
 
     public uint getBirthDay(BigInteger encodedSkills) { return  rightShiftAndMask(encodedSkills, 100, 65535); }
 
     public bool getIsSpecial(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 204, 1) == 1; }
 
-    public BigInteger getPlayerIdFromSkills(BigInteger encodedSkills) {if (getIsSpecial(encodedSkills)) {    return encodedSkills;}return getInternalPlayerId(encodedSkills); }
+    public BigInteger getPlayerIdFromSkills(BigInteger encodedSkills) {
+        if (getIsSpecial(encodedSkills)) {    
+            return encodedSkills;
+        }
+        return getInternalPlayerId(encodedSkills); 
+    }
 
-    public BigInteger getInternalPlayerId(BigInteger encodedSkills) { return ((encodedSkills >> 129) & 8796093022207); } // 2**43 - 1 = 8796093022207
+    public BigInteger getInternalPlayerId(BigInteger encodedSkills) { return ((encodedSkills >> 129) & MASK_43b); }
 
     public uint getPotential(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 116, 15); }
 
@@ -38,7 +60,7 @@ public class Serialization {
 
     public bool getSubstitutedFirstHalf(BigInteger encodedSkills) {	return rightShiftAndMask(encodedSkills, 180, 1) == 1; }
 
-    public uint getSumOfSkills(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 181, 524287); } // 2**19-1
+    public uint getSumOfSkills(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 181, MASK_19b); }
 
     public uint getGeneration(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 205, 255); }
 
@@ -47,7 +69,7 @@ public class Serialization {
     public bool getYellowCardFirstHalf(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 214, 1) == 1; }
 
 
-    // // MATCH LOG functions:
+    // // MATCH LOG public uints:
 
     public uint getAssister(BigInteger log, int pos) { return rightShiftAndMask(log, 4 + 4 * pos, 15); }
 
@@ -74,10 +96,10 @@ public class Serialization {
 
     public uint getWinner(BigInteger log) { return rightShiftAndMask(log, 210, 3); }
 
-    public uint getTeamSumSkills(BigInteger log) { return rightShiftAndMask(log, 212, 16777215); } // 2^24 - 1 
+    public uint getTeamSumSkills(BigInteger log) { return rightShiftAndMask(log, 212, MASK_24b); } 
 
 
-    public uint getTrainingPoints(BigInteger log) { return rightShiftAndMask(log, 236, 4095); } // 2^12-1 
+    public uint getTrainingPoints(BigInteger log) { return rightShiftAndMask(log, 236, MASK_12b); } 
 
     public uint getNGoals(BigInteger log) { return rightShiftAndMask(log, 0, 15); }
 
