@@ -7,6 +7,7 @@ public class Serialization {
     const int MASK_19b = 524287;
     const int MASK_20b = 1048575;
     const int MASK_24b = 16777215;
+    const int MASK_28b = 268435455;
     const ulong MASK_35b = 34359738367;
     const ulong MASK_43b = 8796093022207;
 
@@ -156,4 +157,10 @@ public class Serialization {
         }
         return lineup; 
     }
+
+    // TeamId and PlayerId
+    public uint getTimezone(BigInteger encodedId) { return rightShiftAndMask(encodedId, 38, 31); }
+    public uint getCountryIdxInTZ(BigInteger encodedId) { return rightShiftAndMask(encodedId, 28, 1023); }
+    public uint getValInCountry(BigInteger encodedId) { return rightShiftAndMask(encodedId, 0, MASK_28b); }
+
 }  

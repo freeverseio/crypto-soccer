@@ -39,6 +39,21 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
+        public void Test_encodingTeamAndPlayerIDsFromTheField() {  
+            Serialization serial = new Serialization();
+            TestUtils tu = new TestUtils();
+            dynamic tests = tu.LoadJson("encodingPlayerIDsDataFromTheField.json");
+            foreach(dynamic test in tests) {
+                BigInteger encoded;
+                bool succeeded = BigInteger.TryParse((string) test.encodedId, out encoded);
+                Assert.AreEqual(true, succeeded);
+                Assert.AreEqual((uint) test.timezone, serial.getTimezone(encoded));
+                Assert.AreEqual((uint) test.country, serial.getCountryIdxInTZ(encoded));
+                Assert.AreEqual((uint) test.val, serial.getValInCountry(encoded));
+            }  
+        }
+
+        [TestMethod]
         public void Test_encodingSkills() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();

@@ -14,7 +14,7 @@ const fs = require('fs');
 async function idWrapper(id) {
     const {0: timeZone, 1: country, 2: value} = await encoding.decodeTZCountryAndVal(id).should.be.fulfilled;
     const result = {
-        encodedState: id.toString(),
+        encodedId: id.toString(),
         timezone: Number(timeZone), 
         country: Number(country),
         val: Number(value),
@@ -80,7 +80,7 @@ contract('EncodingIDs', (accounts) => {
         writtenData = fs.readFileSync(fitxer, 'utf8');
         assert.equal(
             web3.utils.keccak256(writtenData),
-            "0xb5a33fd0eb2421780928a5ad89f1e31e2586616c9eb1800921f4c746d540ac8d",
+            "0xc4a4d42318fad8c04c9061019d9a2b278d187dd863aa84a7da058e35109d5d35",
             "written testdata for playerId does not match expected result"
         );
     });
