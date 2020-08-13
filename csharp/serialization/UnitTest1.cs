@@ -10,7 +10,7 @@ namespace NewMSTestProject
     public class UnitTest1
     {
         [TestMethod]
-        public void getCurrentShirtNum() {  
+        public void GetCurrentShirtNum() {  
             Serialization serial = new Serialization();
             uint shirt = 13;
             BigInteger state = new BigInteger(shirt * Math.Pow(2,43));
@@ -19,27 +19,27 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
-        public void Test_encodingState() {  
+        public void DecodePlayerState() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingStateTestData.json");
             foreach(dynamic test in tests) {
-                tu.AssertEncodedStateTest(test);
+                tu.AssertDecodePlayerStateOK(test);
             }
         }  
 
         [TestMethod]
-        public void Test_encodingStateFromTheField() {  
+        public void DecodePlayerStateFromTheField() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingStateTestDataFromTheField.json");
             foreach(dynamic test in tests) {
-                tu.AssertEncodedStateTest(test);
+                tu.AssertDecodePlayerStateOK(test);
             }
         }  
 
         [TestMethod]
-        public void Test_encodingTeamAndPlayerIDsFromTheField() {  
+        public void DecodeTeamAndPlayerIDs() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingPlayerIDsDataFromTheField.json");
@@ -54,7 +54,7 @@ namespace NewMSTestProject
         }
 
         [TestMethod]
-        public void Test_encodingTPs() {  
+        public void DecodeTPs() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingTPsData.json");
@@ -63,7 +63,7 @@ namespace NewMSTestProject
                 bool succeeded = BigInteger.TryParse((string) test.encodedTPAssignment, out encoded);
                 Assert.AreEqual(true, succeeded);
                 (uint[] TPperSkill, uint specialPlayer, uint TP, uint err) = serial.decodeTP(encoded);
-                
+
                 for (int i = 0; i < 25; i++) { Assert.AreEqual((uint) test.TPperSkill[i], TPperSkill[i]); }
                 Assert.AreEqual((uint) test.specialPlayer, specialPlayer);
                 Assert.AreEqual((uint) test.TP, TP);
@@ -72,7 +72,7 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
-        public void Test_encodingSkills() {  
+        public void DecodePlayerSkills() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingSkillsTestData.json");
@@ -100,7 +100,7 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
-        public void Test_encodingTactics() {  
+        public void DecodeTactics() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingTacticsTestData.json");
@@ -117,7 +117,7 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
-        public void Test_encodingMatchLog() {  
+        public void DecodeMatchLog() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             dynamic tests = tu.LoadJson("encodingMatchLogTestData.json");

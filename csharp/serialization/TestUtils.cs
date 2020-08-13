@@ -24,7 +24,7 @@ public class TestUtils {
         return array;
     }
 
-    public void AssertEncodedStateTest(dynamic test)
+    public void AssertDecodePlayerStateOK(dynamic test)
     {
         Serialization serial = new Serialization();
         BigInteger encoded;
