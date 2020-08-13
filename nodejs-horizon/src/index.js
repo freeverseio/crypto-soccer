@@ -69,6 +69,11 @@ const main = async () => {
     extend type Bid {
       teamByTeamId: Team
     }
+
+    extend type Offer {
+      teamByBuyer: Team
+      teamBySeller: Team
+    }
   `;
 
   const resolvers = {
@@ -142,6 +147,39 @@ const main = async () => {
         }
       }
     },
+    Offer: {
+      teamByBuyer: {
+        fragment: `... on Offer { buyer }`,
+        resolve(offer, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'teamByTeamId',
+            args: {
+              teamId: offer.buyer,
+            },
+            context,
+            info,
+          })
+        }
+      }
+      },
+      teamBySeller: {
+        fragment: `... on Offer { seller }`,
+        resolve(offer, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'teamByTeamId',
+            args: {
+              teamId: offer.seller,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    }
   };
 
   let schemas = [];
