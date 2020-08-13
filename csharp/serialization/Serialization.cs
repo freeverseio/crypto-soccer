@@ -352,14 +352,14 @@ public class Serialization {
         BigInteger[] matchLogsAndEvents
     ) 
     {
-        MatchEvent[] events = new MatchEvent[0];
+        MatchEvent[] nilEvents = new MatchEvent[0];
         // Test on inputs:
-        if (teamIds.Length != 2) { return (events, "length of teamIds must be 2"); }
-        if (tactics.Length != 2) { return (events, "length of tactics must be 2"); }
-        if (matchLogsAndEvents.Length != (2 + 5 * ROUNDS_PER_MATCH)) { return (events, "length of matchLogsAndEvents must be 2 + 5 * ROUNDS_PER_MATCH"); }
-        if (playerIds.Length != 2) { return (events, "length of playerIds must be 2"); }
-        if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (events, "length of playerIds[0] must be PLAYERS_PER_TEAM_MAX"); }
-        if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (events, "length of playerIds[1] must be PLAYERS_PER_TEAM_MAX"); }
+        if (teamIds.Length != 2) { return (nilEvents, "length of teamIds must be 2"); }
+        if (tactics.Length != 2) { return (nilEvents, "length of tactics must be 2"); }
+        if (matchLogsAndEvents.Length != (2 + 5 * ROUNDS_PER_MATCH)) { return (nilEvents, "length of matchLogsAndEvents must be 2 + 5 * ROUNDS_PER_MATCH"); }
+        if (playerIds.Length != 2) { return (nilEvents, "length of playerIds must be 2"); }
+        if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (nilEvents, "length of playerIds[0] must be PLAYERS_PER_TEAM_MAX"); }
+        if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (nilEvents, "length of playerIds[1] must be PLAYERS_PER_TEAM_MAX"); }
 
         // toni 
         // Deserialize inputs:
@@ -367,30 +367,33 @@ public class Serialization {
         uint[][] purgedLineup = new uint[2][];
         uint[][] substitutions = new uint[2][];
         uint[][] subsRounds = new uint[2][];
+        uint[][] decodedLogs = new uint[2][];
+        
         for (int team = 0; team < 2; team++) {
             lineup[team] = getFullLineUp(tactics[team]);
             substitutions[team] = getFullSubstitutions(tactics[team]);
             subsRounds[team] = getFullSubsRounds(tactics[team]);
             purgedLineup[team] = RemoveFreeShirtsFromLineUp(lineup[team], playerIds[team]);
+            decodedLogs[team] = fullDecodeMatchLog(matchLogsAndEvents[team], is2ndHalf);
         }
 
         // Actual computation:
-        // (events, string err) = GenerateEvents(
-        //     verseSeed,
-        //     teamdIds[0],
-        //     teamdIds[1],
-        //     homeDecodedMatchLog,
-        //     visitorDecodedMatchLog,
-        //     matchLogsAndEvents,
-        //     RemoveFreeShirtsFromLineUp(decodedTactic0.Lineup, homeTeamPlayerIDs),
-        //     RemoveFreeShirtsFromLineUp(decodedTactic1.Lineup, visitorTeamPlayerIDs),
-        //     decodedTactic0.Substitutions,
-        //     decodedTactic1.Substitutions,
-        //     decodedTactic0.SubsRounds,
-        //     decodedTactic1.SubsRounds,
-        //     is2ndHalf,            
-        // );
-        // if (!(err == "")) { return (events, err); }
+        (MatchEvent[] events, string err) = GenerateEvents(
+            verseSeed,
+            teamIds[0],
+            teamIds[1],
+            decodedLogs[0],
+            decodedLogs[1],
+            matchLogsAndEvents,
+            purgedLineup[0],
+            purgedLineup[1],
+            substitutions[0],
+            substitutions[1],
+            subsRounds[0],
+            subsRounds[1],
+            is2ndHalf         
+        );
+        if (!(err == "")) { return (events, err); }
 
         // (events, string err) = populateWithPlayerID();
         // if (!(err == "")) { return (events, err); }
@@ -398,6 +401,25 @@ public class Serialization {
         return (events, "");
     }
 
+    public (MatchEvent[] events, string err) GenerateEvents(
+            BigInteger verseSeed,
+            BigInteger teamId0,
+            BigInteger teamId1,
+            uint[] matchlog0,
+            uint[] matchlog1,
+            BigInteger[] blockchainEvents,
+            uint[] lineup0,
+            uint[] lineup1,
+            uint[] substitutions0,
+            uint[] substitutions1,
+            uint[] subsRounds0,
+            uint[] subsRounds1,
+            bool is2ndHalf
+    ) 
+    {
+        MatchEvent[] events = new MatchEvent[0];
+        return (events, "");
+    }
     public struct MatchEvent {
         public int Minute { get; }
         public int Type { get; }
