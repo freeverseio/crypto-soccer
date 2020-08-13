@@ -25,6 +25,10 @@ public class Serialization {
 
     private ulong rightShiftAndMask64b(BigInteger encoded, int bitsToDisplace, ulong mask) { return (ulong) ((encoded >> bitsToDisplace) & mask); }
 
+    private BigInteger OrWithLeftShift(BigInteger original, uint val, int bitsToDisplace) { 
+        return original | ((new BigInteger(val)) << bitsToDisplace);
+    }
+
     // STATE
     public ulong getCurrentTeamId(BigInteger state) { return  rightShiftAndMask64b(state, 0, MASK_43b); }
     public uint getCurrentShirtNum(BigInteger state) { return  rightShiftAndMask(state, 43, 31); }
@@ -149,33 +153,35 @@ public class Serialization {
         uint tacticsId
     ) 
     {
-        BigInteger encoded = 0;
-        if (substitutions.Length != 3) { return (encoded, "length of substitutions must be 3"); }
-        if (subsRounds.Length != 3) { return (encoded, "length of subsRounds must be 3"); }
-        if (lineup.Length != 14) { return (encoded, "length of lineup must be 14"); }
-        if (extraAttack.Length != 10) { return (encoded, "length of extraAttack must be 10"); }
-        if (!(tacticsId < 64)) { return (encoded, "tacticsId must be less than 64"); }
+        // Test on inputs:
+        if (substitutions.Length != 3) { return (new BigInteger(0), "length of substitutions must be 3"); }
+        if (subsRounds.Length != 3) { return (new BigInteger(0), "length of subsRounds must be 3"); }
+        if (lineup.Length != 14) { return (new BigInteger(0), "length of lineup must be 14"); }
+        if (extraAttack.Length != 10) { return (new BigInteger(0), "length of extraAttack must be 10"); }
+        if (!(tacticsId < 64)) { return (new BigInteger(0), "tacticsId must be less than 64"); }
         for (int p = 0; p < substitutions.Length; p++) {
-            if (!(substitutions[p] < 12)) { return (encoded, "substitutions entries must be lesss than 12"); }
-            if (!(subsRounds[p] < ROUNDS_PER_HALF)) { return (encoded, "subsRounds entries must be lesss than ROUNDS_PER_HALF"); }
+            if (!(substitutions[p] < 12)) { return (new BigInteger(0), "substitutions entries must be lesss than 12"); }
+            if (!(subsRounds[p] < ROUNDS_PER_HALF)) { return (new BigInteger(0), "subsRounds entries must be lesss than ROUNDS_PER_HALF"); }
         }        
         for (int p = 0; p < lineup.Length; p++) {
-            if (!(lineup[p] <= PLAYERS_PER_TEAM_MAX)) { return (encoded, "lineup entries must be lesss than PLAYERS_PER_TEAM_MAX"); }
+            if (!(lineup[p] <= PLAYERS_PER_TEAM_MAX)) { return (new BigInteger(0), "lineup entries must be lesss than PLAYERS_PER_TEAM_MAX"); }
         }
+        // Start encoding:
+        BigInteger encoded = new BigInteger(tacticsId);
         for (int p = 0; p < 10; p++) {
-            encoded |= (extraAttack[p] ? 1 : 0) << (6 + p);
+            encoded = OrWithLeftShift(encoded, (uint) (extraAttack[p] ? 1 : 0), 6 + p);
         }          
         for (int p = 0; p < 11; p++) {
-            encoded |= lineup[p] << (16 + 5 * p);
+            encoded = OrWithLeftShift(encoded, lineup[p], 16 + 5 * p);
         }          
         for (int p = 0; p < 3; p++) {
             /// requirement: if there is no subst at "i", lineup[i + 11] = 25 + p (so that all lineups are different, and sortable)
             if (substitutions[p] == NO_SUBST) {
-                if (!(lineup[p + 11] == NO_LINEUP)) return (encoded, "incorrect lineup entry for no substituted player");
+                if (!(lineup[p + 11] == NO_LINEUP)) return (new BigInteger(0), "incorrect lineup entry for no substituted player");
             }
-            encoded |= lineup[p + 11] << (16 + 5 * (p + 11));
-            encoded |= substitutions[p] << (86 + 4 * p);
-            encoded |= subsRounds[p] << (98 + 4 * p);
+            encoded = OrWithLeftShift(encoded, lineup[p+11], 16 + 5 * (p + 11));
+            encoded = OrWithLeftShift(encoded, substitutions[p], 86 + 4 * p);
+            encoded = OrWithLeftShift(encoded, subsRounds[p], 98 + 4 * p);
         }          
         return (encoded, "");
     }
