@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
+	engine "github.com/freeverseio/crypto-soccer/go/synchronizer/engine/v2"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"gotest.tools/assert"
 	"gotest.tools/golden"

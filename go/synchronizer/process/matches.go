@@ -16,7 +16,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	sto "github.com/freeverseio/crypto-soccer/go/storage"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
+	engine "github.com/freeverseio/crypto-soccer/go/synchronizer/engine/v2"
 	log "github.com/sirupsen/logrus"
 )
 
