@@ -71,8 +71,8 @@ const main = async () => {
     }
 
     extend type Offer {
-      teamByBuyer: Team
-      teamBySeller: Team
+      teamByTeamId: Team
+      playerByPlayerId: Player
     }
   `;
 
@@ -148,30 +148,30 @@ const main = async () => {
       }
     },
     Offer: {
-      teamByBuyer: {
-        fragment: `... on Offer { buyer }`,
+      teamByTeamId: {
+        fragment: `... on Offer { teamId }`,
         resolve(offer, args, context, info) {
           return info.mergeInfo.delegateToSchema({
             schema: universeRemoteSchema,
             operation: 'query',
             fieldName: 'teamByTeamId',
             args: {
-              teamId: offer.buyer,
+              teamId: offer.teamId,
             },
             context,
             info,
           })
         }
       },
-      teamBySeller: {
-        fragment: `... on Offer { seller }`,
+      playerByPlayerId: {
+        fragment: `... on Offer { playerId }`,
         resolve(offer, args, context, info) {
           return info.mergeInfo.delegateToSchema({
             schema: universeRemoteSchema,
             operation: 'query',
-            fieldName: 'teamByTeamId',
+            fieldName: 'playerByPlayerId',
             args: {
-              teamId: offer.seller,
+              playerId: offer.playerId,
             },
             context,
             info,
