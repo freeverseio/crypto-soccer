@@ -3,6 +3,7 @@ using System.Numerics;
 using System;
 using System.IO;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 public class TestUtils {  
     public dynamic LoadJson(string filename)
@@ -37,4 +38,23 @@ public class TestUtils {
         Assert.AreEqual((bool) test.isInTransit, serial.getIsInTransit(encoded));  
     }
 
+    public uint[] DynamicToUintArray(dynamic arrIn) {
+        uint[] arrOut = new uint[arrIn.Count];
+        int i = 0;
+        foreach(dynamic entry in arrIn) {
+            arrOut[i] = (uint) entry;
+            i++;
+        }
+        return arrOut;
+    }
+
+    public bool[] DynamicToBoolArray(dynamic arrIn) {
+        bool[] arrOut = new bool[arrIn.Count];
+        int i = 0;
+        foreach(dynamic entry in arrIn) {
+            arrOut[i] = (bool) entry;
+            i++;
+        }
+        return arrOut;
+    }
 }  

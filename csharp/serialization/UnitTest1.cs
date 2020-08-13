@@ -117,6 +117,31 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
+        public void EncodeTactics() {  
+            Serialization serial = new Serialization();
+            TestUtils tu = new TestUtils();
+            dynamic tests = tu.LoadJson("encodingTacticsTestData.json");
+            foreach(dynamic test in tests) {
+                BigInteger encodedExpected;
+                bool succeeded = BigInteger.TryParse((string) test.encodedTactics, out encodedExpected);
+                Assert.AreEqual(true, succeeded); 
+                uint[] substitution = tu.DynamicToUintArray(test.substitution);
+                uint[] subsRound = tu.DynamicToUintArray(test.subsRound);
+                uint[] linedUp = tu.DynamicToUintArray(test.linedUp);
+                bool[] extraAttack = tu.DynamicToBoolArray(test.extraAttack);
+                (BigInteger encoded, string err) = serial.encodeTactics(
+                    substitution,
+                    subsRound,
+                    linedUp,
+                    extraAttack,
+                    (uint) test.tacticsId
+                );
+                Assert.AreEqual(err, "");  
+                Assert.AreEqual(encoded, encodedExpected);  
+            }
+        }  
+
+        [TestMethod]
         public void DecodeMatchLog() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
