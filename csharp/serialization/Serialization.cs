@@ -1,5 +1,9 @@
 using System;
 using System.Numerics;
+using System.Security.Cryptography;
+using System.IO;
+using System.Linq;
+
 public class Serialization {  
 
     // CONSTANTS
@@ -430,6 +434,9 @@ public class Serialization {
         if (!isOutOfGameDataOK(matchlog0)) { return (events, "incorrect matchlog entry"); }
         if (!isOutOfGameDataOK(matchlog1)) { return (events, "incorrect matchlog entry"); }
 
+        ulong seed0 = int_hash(verseSeed.ToString() + "_0_" + teamId0.ToString() + "_" + teamId1.ToString());
+        ulong seed1 = int_hash(verseSeed.ToString() + "_1_" + teamId0.ToString() + "_" + teamId1.ToString());
+        ulong seed2 = int_hash(verseSeed.ToString() + "_2_" + teamId0.ToString() + "_" + teamId1.ToString());
 
         return (events, "");
     }
@@ -507,4 +514,13 @@ public class Serialization {
         return true;
     }
 
+   public ulong int_hash(string x) {
+        HashAlgorithm hash = new FNV1aHash64();
+        if (hash.HashSize != 64) return 2;
+        // Do not use Encoding.Ascii.GetBytes (or any other Encoding) because the original testvectors treat the text as raw bytes
+        var s = new MemoryStream(x.ToCharArray().Select(c => (byte)c).ToArray());
+        // Compute hash & convert to ulong
+        var value = hash.ComputeHash(s);
+        return BitConverter.ToUInt64(value, 0);
+    }
 }
