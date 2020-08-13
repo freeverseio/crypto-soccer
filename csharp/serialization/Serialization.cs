@@ -530,7 +530,12 @@ public class Serialization {
         return BitConverter.ToUInt64(value, 0);
     }
 
-    public (MatchEvent[] events, uint[] rounds2mins) addEventsInRound(BigInteger seed0, BigInteger[] blockchainEvents, uint[] lineup0, uint[] lineup1) {
+    public uint GenerateRnd(BigInteger seed, string salt, uint max_val) {
+        ulong result = int_hash(seed.ToString() + salt);
+        return (uint) (result % ((ulong) max_val));
+    }
+
+    public (MatchEvent[] events, uint[] rounds2mins) addEventsInRound(BigInteger seed, BigInteger[] blockchainEvents, uint[] lineup0, uint[] lineup1) {
         uint nEvents = (uint) (blockchainEvents.Length - 2) / 5;
         MatchEvent[] events = new MatchEvent[nEvents];
         uint[] rounds2mins = new uint[nEvents];
@@ -538,6 +543,47 @@ public class Serialization {
         uint deltaMinutesInt = (uint) Math.Floor(deltaMinutes);
         uint lastMinute = 0;
         uint[][] lineups = new uint[2][]{lineup0, lineup1};
+        for (uint e = 0; e < nEvents; e++) {
+            // compute minute
+            string salt = "a" + e.ToString();
+            uint minute = ((uint) Math.Floor(((double) e) * deltaMinutes)) + GenerateRnd(seed, salt, deltaMinutesInt);
+            if (minute <= lastMinute) {
+                minute = lastMinute + 1;
+            }
+            lastMinute = minute;
+            rounds2mins[e] = minute;
+            // parse type of event and data
+            // note that both "shooter" and "assister" referred to the lineup players (0...10)
+            // so they need to be converted to shirtNums by using lineUp
+            uint teamThatAttacks = (uint) blockchainEvents[2+5*e];
+            uint managesToShoot = (uint) blockchainEvents[2+5*e+1];
+            uint shooter = (uint) blockchainEvents[2+5*e+2];
+            bool isGoal = blockchainEvents[2+5*e+3] == 1;
+            uint assister = (uint) blockchainEvents[2+5*e+4];
+            var thisEvent MatchEvent
+            // thisEvent.Minute = int16(minute)
+            // thisEvent.Type = int16(EVNT_ATTACK)
+            // thisEvent.Team = int16(teamThatAttacks.Int64())
+            // thisEvent.ManagesToShoot = managesToShoot.Int64() != 0
+            // thisEvent.IsGoal = isGoal.Int64() != 0
+            // if managesToShoot.Int64() == 1 {
+            //     // select the players from the team that attacks:
+            //     thisEvent.PrimaryPlayer = toShirtNum(uint8(shooter.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
+            //     if int16(assister.Int64()) == PENALTY {
+            //         thisEvent.SecondaryPlayer = PENALTY
+            //     } else {
+            //         thisEvent.SecondaryPlayer = toShirtNum(uint8(assister.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
+            //     }
+            // } else {
+            //     salt := "b" + strconv.Itoa(int(e))
+            //     // select the player from the team that defends:
+            //     thisEvent.PrimaryPlayer = toShirtNum(uint8(1+GenerateRnd(seed, salt, 9)), lineUps[1-thisEvent.Team], NULL, NOONE)
+            //     thisEvent.SecondaryPlayer = NULL
+            // }
+            // events = append(events, thisEvent)
+    	}
+
+
         return (events, rounds2mins);
     }
 
