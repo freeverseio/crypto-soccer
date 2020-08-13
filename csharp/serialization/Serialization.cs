@@ -30,6 +30,7 @@ public class Serialization {
     const int EVENT_NULL = -1;
     const uint EVENT_NOONE = 14;
     const uint EVENT_PENALTY = 100;
+    const uint EVENT_ATTACK = 0;
 
     // INTERNAL UTILITIES
 
@@ -447,15 +448,15 @@ public class Serialization {
         return (events, "");
     }
     public struct MatchEvent {
-        public int Minute { get; }
-        public int Type { get; }
-        public int Team { get; }
-        public bool ManagesToShoot { get; }
-        public bool IsGoal { get; }
-        public int PrimaryPlayer { get; }
-        public int SecondaryPlayer { get; }
-        public BigInteger PrimaryPlayerID { get; }
-        public BigInteger SecondaryPlayerID { get; }
+        public uint Minute;
+        public uint Type;
+        public uint Team;
+        public bool ManagesToShoot;
+        public bool IsGoal;
+        public int PrimaryPlayer;
+        public int SecondaryPlayer;
+        public BigInteger PrimaryPlayerID;
+        public BigInteger SecondaryPlayerID;
     }
 
     // This function makes sure that all players in lineUp exist in the Universe.
@@ -542,7 +543,7 @@ public class Serialization {
         double deltaMinutes = 45.0 / ((double) (nEvents - 1));
         uint deltaMinutesInt = (uint) Math.Floor(deltaMinutes);
         uint lastMinute = 0;
-        uint[][] lineups = new uint[2][]{lineup0, lineup1};
+        uint[][] lineUps = new uint[2][]{lineup0, lineup1};
         for (uint e = 0; e < nEvents; e++) {
             // compute minute
             string salt = "a" + e.ToString();
@@ -556,35 +557,49 @@ public class Serialization {
             // note that both "shooter" and "assister" referred to the lineup players (0...10)
             // so they need to be converted to shirtNums by using lineUp
             uint teamThatAttacks = (uint) blockchainEvents[2+5*e];
-            uint managesToShoot = (uint) blockchainEvents[2+5*e+1];
+            bool managesToShoot = blockchainEvents[2+5*e+1] == 1;
             uint shooter = (uint) blockchainEvents[2+5*e+2];
             bool isGoal = blockchainEvents[2+5*e+3] == 1;
             uint assister = (uint) blockchainEvents[2+5*e+4];
-            var thisEvent MatchEvent
-            // thisEvent.Minute = int16(minute)
-            // thisEvent.Type = int16(EVNT_ATTACK)
-            // thisEvent.Team = int16(teamThatAttacks.Int64())
-            // thisEvent.ManagesToShoot = managesToShoot.Int64() != 0
-            // thisEvent.IsGoal = isGoal.Int64() != 0
-            // if managesToShoot.Int64() == 1 {
-            //     // select the players from the team that attacks:
-            //     thisEvent.PrimaryPlayer = toShirtNum(uint8(shooter.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
-            //     if int16(assister.Int64()) == PENALTY {
-            //         thisEvent.SecondaryPlayer = PENALTY
-            //     } else {
-            //         thisEvent.SecondaryPlayer = toShirtNum(uint8(assister.Int64()), lineUps[thisEvent.Team], NULL, NOONE)
-            //     }
-            // } else {
-            //     salt := "b" + strconv.Itoa(int(e))
-            //     // select the player from the team that defends:
-            //     thisEvent.PrimaryPlayer = toShirtNum(uint8(1+GenerateRnd(seed, salt, 9)), lineUps[1-thisEvent.Team], NULL, NOONE)
-            //     thisEvent.SecondaryPlayer = NULL
-            // }
-            // events = append(events, thisEvent)
+            MatchEvent thisEvent = new MatchEvent();
+            thisEvent.Minute = minute;
+            thisEvent.Type = EVENT_ATTACK;
+            thisEvent.Team = teamThatAttacks;
+            thisEvent.ManagesToShoot = managesToShoot;
+            thisEvent.IsGoal = isGoal;
+            if (managesToShoot) {
+                // // select the players from the team that attacks:
+                thisEvent.PrimaryPlayer = toShirtNum(shooter, lineUps[thisEvent.Team]);
+                if (assister == EVENT_PENALTY) {
+                    thisEvent.SecondaryPlayer = (int) EVENT_PENALTY;
+                } else {
+                    thisEvent.SecondaryPlayer = toShirtNum(assister, lineUps[thisEvent.Team]);
+                }
+            } else {
+                string newSalt = "b" + e.ToString();
+                // select the player from the team that defends:
+                thisEvent.PrimaryPlayer = toShirtNum(1+GenerateRnd(seed, newSalt, 9), lineUps[1-thisEvent.Team]);
+                thisEvent.SecondaryPlayer = EVENT_NULL;
+            }
+            events[e] = thisEvent;
     	}
-
-
         return (events, rounds2mins);
+    }
+
+    public int toShirtNum(uint posInLineUp, uint[] lineUp) {
+        if (posInLineUp < EVENT_NOONE) {
+            return preventNoPlayer(lineUp[posInLineUp]);
+        } else {
+            return EVENT_NULL;
+        }
+    }
+
+    public int preventNoPlayer(uint inPlayer) {
+        if (inPlayer < 25) {
+            return (int) inPlayer;
+        } else {
+            return EVENT_NULL;
+        }
     }
 
 }
