@@ -3,6 +3,8 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.IO;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Serialization {  
 
@@ -27,10 +29,15 @@ public class Serialization {
     const uint MAX_PERCENT = 60;
     const uint ROUNDS_PER_MATCH = 12;
     const uint NIL_PLAYERID = 0;
-    const int EVENT_NULL = -1;
-    const uint EVENT_NOONE = 14;
-    const uint EVENT_PENALTY = 100;
-    const uint EVENT_ATTACK = 0;
+    const int EVNT_NULL = -1;
+    const uint EVNT_NOONE = 14;
+    const uint EVNT_PENALTY = 100;
+    const uint EVNT_ATTACK = 0;
+    const uint EVNT_YELLOW = 1;
+	const uint EVNT_RED  = 2;
+	const uint EVNT_SOFT = 3;
+	const uint EVNT_HARD = 4;
+	const uint EVNT_SUBST = 5;
 
     // INTERNAL UTILITIES
 
@@ -344,7 +351,7 @@ public class Serialization {
     }
 
 
-    // MATCH EVENTS => Creates the events that happen in ONE HALF of a match
+    // MATCH EVNTS => Creates the events that happen in ONE HALF of a match
     // From all inputs, only the last one is computed by the blockchain. The others are ready as soon as the user actions are submitted.
     // So, the frontend can prepare everything, and only wait for the backend to provide the last input.
     // - INPUTS
@@ -450,6 +457,17 @@ public class Serialization {
         return (events, "");
     }
     public struct MatchEvent {
+        public MatchEvent(uint minute, uint type, uint team, bool managesToShoot, bool isGoal, int primaryPlayer, int secondaryPlayer, BigInteger primaryPlayerID, BigInteger secondaryPlayerID) {
+            Minute = minute;
+            Type = type;
+            Team = team;
+            ManagesToShoot = managesToShoot;
+            IsGoal = isGoal;
+            PrimaryPlayer = primaryPlayer;
+            SecondaryPlayer = secondaryPlayer;
+            PrimaryPlayerID = primaryPlayerID;
+            SecondaryPlayerID = secondaryPlayerID;
+        }
         public uint Minute;
         public uint Type;
         public uint Team;
@@ -516,7 +534,7 @@ public class Serialization {
     // 				(type == 6) 						: getting inside field
     public bool isOutOfGameDataOK(uint[] matchLog) {
         uint outOfGamePlayer = matchLog[4];
-        bool thereWasAnOutOfGame = (outOfGamePlayer < EVENT_NOONE);
+        bool thereWasAnOutOfGame = (outOfGamePlayer < EVNT_NOONE);
         if (thereWasAnOutOfGame && (matchLog[5] > 3 || matchLog[5] == 0)) {
             return false;
         }
@@ -565,23 +583,23 @@ public class Serialization {
             uint assister = (uint) blockchainEvents[2+5*e+4];
             MatchEvent thisEvent = new MatchEvent();
             thisEvent.Minute = minute;
-            thisEvent.Type = EVENT_ATTACK;
+            thisEvent.Type = EVNT_ATTACK;
             thisEvent.Team = teamThatAttacks;
             thisEvent.ManagesToShoot = managesToShoot;
             thisEvent.IsGoal = isGoal;
             if (managesToShoot) {
                 // // select the players from the team that attacks:
                 thisEvent.PrimaryPlayer = toShirtNum(shooter, lineUps[thisEvent.Team]);
-                if (assister == EVENT_PENALTY) {
-                    thisEvent.SecondaryPlayer = (int) EVENT_PENALTY;
+                if (assister == EVNT_PENALTY) {
+                    thisEvent.SecondaryPlayer = (int) EVNT_PENALTY;
                 } else {
                     thisEvent.SecondaryPlayer = toShirtNum(assister, lineUps[thisEvent.Team]);
                 }
             } else {
-                string newSalt = "b" + e.ToString();
+                salt = "b" + e.ToString();
                 // select the player from the team that defends:
-                thisEvent.PrimaryPlayer = toShirtNum(1+GenerateRnd(seed, newSalt, 9), lineUps[1-thisEvent.Team]);
-                thisEvent.SecondaryPlayer = EVENT_NULL;
+                thisEvent.PrimaryPlayer = toShirtNum(1+GenerateRnd(seed, salt, 9), lineUps[1-thisEvent.Team]);
+                thisEvent.SecondaryPlayer = EVNT_NULL;
             }
             events[e] = thisEvent;
     	}
@@ -589,10 +607,10 @@ public class Serialization {
     }
 
     public int toShirtNum(uint posInLineUp, uint[] lineUp) {
-        if (posInLineUp < EVENT_NOONE) {
+        if (posInLineUp < EVNT_NOONE) {
             return preventNoPlayer(lineUp[posInLineUp]);
         } else {
-            return EVENT_NULL;
+            return EVNT_NULL;
         }
     }
 
@@ -600,7 +618,7 @@ public class Serialization {
         if (inPlayer < 25) {
             return (int) inPlayer;
         } else {
-            return EVENT_NULL;
+            return EVNT_NULL;
         }
     }
 
@@ -614,28 +632,31 @@ public class Serialization {
         if (matchLog[6] >= rounds2mins.Length) {
             return (new MatchEvent[0], "outOfGameRound larger than allowed");
         }
+        List<MatchEvent> newEvents = events.ToList();
 
-        // outOfGamePlayer := int16(matchLog[4])
-        // // convert player in the lineUp to shirtNum before storing it as match event:
-        // primaryPlayer := toShirtNum(uint8(outOfGamePlayer), lineUp, NULL, NOONE)
-        // thereWasAnOutOfGame := primaryPlayer != NULL
-        // outOfGameMinute := int16(0)
-        // if thereWasAnOutOfGame {
-        //     if matchLog[5] == 0 {
-        //         return events, errors.New("typeOfEvent = 0 is not allowed if thereWasAnOutOfGame")
-        //     }
-        //     var typeOfEvent int16
-        //     if matchLog[5] == 1 {
-        //         typeOfEvent = EVNT_SOFT
-        //     } else if matchLog[5] == 2 {
-        //         typeOfEvent = EVNT_HARD
-        //     } else if matchLog[5] == 3 {
-        //         typeOfEvent = EVNT_RED
-        //     }
-        //     outOfGameMinute = int16(rounds2mins[matchLog[6]])
-        //     thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
-        //     events = append(events, thisEvent)
-        // }
+
+        uint outOfGamePlayer = matchLog[4];
+        // convert player in the lineUp to shirtNum before storing it as match event:
+        int primaryPlayer = toShirtNum(outOfGamePlayer, lineUp);
+        bool thereWasAnOutOfGame = (primaryPlayer != EVNT_NULL);
+        uint outOfGameMinute = 0;
+        if (thereWasAnOutOfGame) {
+            if (matchLog[5] == 0) {
+                return (events, "typeOfEvent = 0 is not allowed if thereWasAnOutOfGame");
+            }
+            uint typeOfEvent;
+            if (matchLog[5] == 1) {
+                typeOfEvent = EVNT_SOFT;
+            } else if (matchLog[5] == 2) {
+                typeOfEvent = EVNT_HARD;
+            } else {
+                if (!(matchLog[5] == 3)) { return (events, "Incorrect value of matchLog[5]"); }
+                typeOfEvent = EVNT_RED;
+            }
+            outOfGameMinute = rounds2mins[matchLog[6]];
+            MatchEvent thisEvent = new MatchEvent(outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
+            newEvents.Add(thisEvent);
+        }
 
         // // First yellow card:
         // yellowCardPlayer := int16(matchLog[7])
@@ -684,7 +705,7 @@ public class Serialization {
         //     thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
         //     events = append(events, thisEvent)
         // }
-        return (events, "");
+        return (newEvents.ToArray(), "");
     }
 
 }
