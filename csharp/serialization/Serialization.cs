@@ -30,7 +30,7 @@ public class Serialization {
         return original | ((new BigInteger(val)) << bitsToDisplace);
     }
 
-    // STATE
+    // PLAYER STATE => contains info about current team, current shirt number, isInTransit...
     public ulong getCurrentTeamId(BigInteger state) { return  rightShiftAndMask64b(state, 0, MASK_43b); }
     public uint getCurrentShirtNum(BigInteger state) { return  rightShiftAndMask(state, 43, 31); }
 
@@ -40,7 +40,8 @@ public class Serialization {
 
     public bool getIsInTransit(BigInteger state) { return  getCurrentShirtNum(state) == IN_TRANSIT_SHIRTNUM; }
 
-    // SKILLS
+
+    // PLAYER SKILLS => contains info about (shoot, pass, defence...), birthday, leftishness, etc.
     public uint getSkill(BigInteger encodedSkills, int skillIdx) { return  rightShiftAndMask(encodedSkills, skillIdx * 20, MASK_20b); } 
 
     public uint getBirthDay(BigInteger encodedSkills) { return  rightShiftAndMask(encodedSkills, 100, 65535); }
@@ -83,7 +84,7 @@ public class Serialization {
     public bool getYellowCardFirstHalf(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 214, 1) == 1; }
 
 
-    // // MATCH LOG public uints:
+    // MATCH LOG => info about stuff that happened in a match
 
     public uint getAssister(BigInteger log, int pos) { return rightShiftAndMask(log, 4 + 4 * pos, 15); }
 
@@ -145,7 +146,7 @@ public class Serialization {
         return rightShiftAndMask(log, 249, 3); 
     }
 
-    // TACTICS
+    // TACTICS => lineup, extraAttack, and substituions
     public (BigInteger encoded, string err) encodeTactics(
         uint[] substitutions, 
         uint[] subsRounds, 
@@ -214,12 +215,16 @@ public class Serialization {
         return lineup; 
     }
 
-    // TeamId and PlayerId
+    // TEAMID and PLAYERID => info about (timezone, country idx in that timezone, idx in that country)
+    // - Teams always remain in the same (timezone, country), players
+    // - For players, (timezone, country) refer to where were they originally created. 
+    //  - To query about the current (timezone, country) for a player => use playerState to find currentTeamId
     public uint getTimezone(BigInteger encodedId) { return rightShiftAndMask(encodedId, 38, 31); }
     public uint getCountryIdxInTZ(BigInteger encodedId) { return rightShiftAndMask(encodedId, 28, 1023); }
     public uint getValInCountry(BigInteger encodedId) { return rightShiftAndMask(encodedId, 0, MASK_28b); }
 
-    // Training points assignment
+
+    // TRAINING POINTS ASSIGNMENT => encode and decode functions
     public (uint[] TPperSkill, uint specialPlayer, uint TP, uint err) decodeTP(BigInteger encoded) {
         uint[] TPperSkill = new uint[25];
         uint specialPlayer = rightShiftAndMask(encoded, 234, 31);
