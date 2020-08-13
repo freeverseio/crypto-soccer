@@ -658,28 +658,28 @@ public class Serialization {
             newEvents.Add(thisEvent);
         }
 
-        // // First yellow card:
-        // yellowCardPlayer := int16(matchLog[7])
-        // // convert player in the lineUp to shirtNum before storing it as match event:
-        // primaryPlayer = toShirtNum(uint8(yellowCardPlayer), lineUp, NULL, NOONE)
-        // thereWasYellowCard := primaryPlayer != NULL
-        // firstYellowCoincidesWithRed := false
-        // if thereWasYellowCard {
-        //     maxMinute := int16(45)
-        //     if yellowCardPlayer == outOfGamePlayer {
-        //         if outOfGameMinute > 0 {
-        //             maxMinute = outOfGameMinute - 1
-        //         } else {
-        //             maxMinute = outOfGameMinute
-        //         }
-        //         firstYellowCoincidesWithRed = true
-        //     }
-        //     salt := "c" + strconv.Itoa(int(yellowCardPlayer))
-        //     minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
-        //     typeOfEvent := EVNT_YELLOW
-        //     thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
-        //     events = append(events, thisEvent)
-        // }
+        // First yellow card:
+        uint yellowCardPlayer = matchLog[7];
+        // convert player in the lineUp to shirtNum before storing it as match event:
+        primaryPlayer = toShirtNum(yellowCardPlayer, lineUp);
+        bool thereWasYellowCard = (primaryPlayer != EVNT_NULL);
+        bool firstYellowCoincidesWithRed = false;
+        if (thereWasYellowCard) {
+            uint maxMinute = 45;
+            if (yellowCardPlayer == outOfGamePlayer) {
+                if (outOfGameMinute > 0) {
+                    maxMinute = outOfGameMinute - 1;
+                } else {
+                    maxMinute = outOfGameMinute;
+                }
+                firstYellowCoincidesWithRed = true;
+            }
+            string salt = "c" + yellowCardPlayer.ToString();
+            uint minute = GenerateRnd(seed, salt, maxMinute);
+            uint typeOfEvent = EVNT_YELLOW;
+            MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
+            newEvents.Add(thisEvent);
+        }
 
         // // Second second yellow card:
         // yellowCardPlayer = int16(matchLog[8])
