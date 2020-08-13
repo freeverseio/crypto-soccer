@@ -1,5 +1,5 @@
 (process.Matches) (len=2 cap=2) {
-(engine.Match) {
+(v2.Match) {
 Match: (storage.Match) {
 TimezoneIdx: (uint8) 0,
 CountryIdx: (uint32) 0,
@@ -21,7 +21,7 @@ StateExtra: (string) "",
 StartEpoch: (int64) 0
 },
 StartTime: (*big.Int)(1790899200),
-HomeTeam: (engine.Team) {
+HomeTeam: (v2.Team) {
 Team: (storage.Team) {
 TeamID: (string) (len=1) "0",
 TimezoneIdx: (uint8) 0,
@@ -44,8 +44,8 @@ TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
 MatchLog: (string) (len=1) "0"
 },
-Players: ([25]*engine.Player) (len=25 cap=25) {
-(*engine.Player)({
+Players: ([25]*v2.Player) (len=25 cap=25) {
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -69,7 +69,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -93,7 +93,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -117,7 +117,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -141,7 +141,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -165,7 +165,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -189,7 +189,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -213,7 +213,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -237,7 +237,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -261,7 +261,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -285,7 +285,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -309,7 +309,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -333,7 +333,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -357,7 +357,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -381,7 +381,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -405,7 +405,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -429,7 +429,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -453,7 +453,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -477,7 +477,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -501,7 +501,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -525,7 +525,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -549,7 +549,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -573,7 +573,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -597,7 +597,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -621,7 +621,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -646,7 +646,7 @@ YellowCard1stHalf: (bool) false
 }
 })
 },
-Training: (engine.Training) {
+Training: (v2.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -688,7 +688,7 @@ Endurance: (int) 0
 }
 }
 },
-VisitorTeam: (engine.Team) {
+VisitorTeam: (v2.Team) {
 Team: (storage.Team) {
 TeamID: (string) (len=1) "0",
 TimezoneIdx: (uint8) 0,
@@ -711,8 +711,8 @@ TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
 MatchLog: (string) (len=1) "0"
 },
-Players: ([25]*engine.Player) (len=25 cap=25) {
-(*engine.Player)({
+Players: ([25]*v2.Player) (len=25 cap=25) {
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -736,7 +736,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -760,7 +760,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -784,7 +784,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -808,7 +808,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -832,7 +832,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -856,7 +856,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -880,7 +880,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -904,7 +904,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -928,7 +928,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -952,7 +952,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -976,7 +976,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1000,7 +1000,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1024,7 +1024,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1048,7 +1048,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1072,7 +1072,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1096,7 +1096,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1120,7 +1120,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1144,7 +1144,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1168,7 +1168,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1192,7 +1192,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1216,7 +1216,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1240,7 +1240,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1264,7 +1264,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1288,7 +1288,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1313,7 +1313,7 @@ YellowCard1stHalf: (bool) false
 }
 })
 },
-Training: (engine.Training) {
+Training: (v2.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -1357,7 +1357,7 @@ Endurance: (int) 0
 },
 Events: (matchevents.MatchEvents) <nil>
 },
-(engine.Match) {
+(v2.Match) {
 Match: (storage.Match) {
 TimezoneIdx: (uint8) 0,
 CountryIdx: (uint32) 0,
@@ -1379,7 +1379,7 @@ StateExtra: (string) "",
 StartEpoch: (int64) 0
 },
 StartTime: (*big.Int)(1790899200),
-HomeTeam: (engine.Team) {
+HomeTeam: (v2.Team) {
 Team: (storage.Team) {
 TeamID: (string) (len=1) "0",
 TimezoneIdx: (uint8) 0,
@@ -1402,8 +1402,8 @@ TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
 MatchLog: (string) (len=1) "0"
 },
-Players: ([25]*engine.Player) (len=25 cap=25) {
-(*engine.Player)({
+Players: ([25]*v2.Player) (len=25 cap=25) {
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1427,7 +1427,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1451,7 +1451,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1475,7 +1475,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1499,7 +1499,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1523,7 +1523,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1547,7 +1547,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1571,7 +1571,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1595,7 +1595,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1619,7 +1619,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1643,7 +1643,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1667,7 +1667,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1691,7 +1691,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1715,7 +1715,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1739,7 +1739,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1763,7 +1763,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1787,7 +1787,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1811,7 +1811,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1835,7 +1835,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1859,7 +1859,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1883,7 +1883,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1907,7 +1907,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1931,7 +1931,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1955,7 +1955,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -1979,7 +1979,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2004,7 +2004,7 @@ YellowCard1stHalf: (bool) false
 }
 })
 },
-Training: (engine.Training) {
+Training: (v2.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
@@ -2046,7 +2046,7 @@ Endurance: (int) 0
 }
 }
 },
-VisitorTeam: (engine.Team) {
+VisitorTeam: (v2.Team) {
 Team: (storage.Team) {
 TeamID: (string) (len=1) "0",
 TimezoneIdx: (uint8) 0,
@@ -2069,8 +2069,8 @@ TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
 MatchLog: (string) (len=1) "0"
 },
-Players: ([25]*engine.Player) (len=25 cap=25) {
-(*engine.Player)({
+Players: ([25]*v2.Player) (len=25 cap=25) {
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2094,7 +2094,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2118,7 +2118,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2142,7 +2142,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2166,7 +2166,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2190,7 +2190,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2214,7 +2214,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2238,7 +2238,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2262,7 +2262,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2286,7 +2286,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2310,7 +2310,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2334,7 +2334,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2358,7 +2358,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2382,7 +2382,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2406,7 +2406,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2430,7 +2430,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2454,7 +2454,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2478,7 +2478,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2502,7 +2502,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2526,7 +2526,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2550,7 +2550,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2574,7 +2574,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2598,7 +2598,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2622,7 +2622,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2646,7 +2646,7 @@ Race: (string) "",
 YellowCard1stHalf: (bool) false
 }
 }),
-(*engine.Player)({
+(*v2.Player)({
 Player: (storage.Player) {
 PlayerId: (*big.Int)(21342314523),
 PreferredPosition: (string) "",
@@ -2671,7 +2671,7 @@ YellowCard1stHalf: (bool) false
 }
 })
 },
-Training: (engine.Training) {
+Training: (v2.Training) {
 Training: (storage.Training) {
 TeamID: (string) "",
 SpecialPlayerShirt: (int) -1,
