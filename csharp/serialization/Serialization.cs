@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 public class Serialization {  
 
+    // CONSTANTS
     const int IN_TRANSIT_SHIRTNUM = 26;
     const int MASK_12b = 4095;
     const int MASK_19b = 524287;
@@ -22,7 +23,11 @@ public class Serialization {
     const uint MAX_PERCENT = 60;
     const uint ROUNDS_PER_MATCH = 12;
     const uint NIL_PLAYERID = 0;
+    const int EVENT_NULL = -1;
+    const uint EVENT_NOONE = 14;
+    const uint EVENT_PENALTY = 100;
 
+    // INTERNAL UTILITIES
 
     private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
 
@@ -31,6 +36,8 @@ public class Serialization {
     private BigInteger OrWithLeftShift(BigInteger original, uint val, int bitsToDisplace) { 
         return original | ((new BigInteger(val)) << bitsToDisplace);
     }
+
+    // EXPOSED FUNCTIONS
 
     // PLAYER STATE => contains info about current team, current shirt number, isInTransit...
     public ulong getCurrentTeamId(BigInteger state) { return  rightShiftAndMask64b(state, 0, MASK_43b); }
@@ -361,7 +368,6 @@ public class Serialization {
         if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (nilEvents, "length of playerIds[0] must be PLAYERS_PER_TEAM_MAX"); }
         if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (nilEvents, "length of playerIds[1] must be PLAYERS_PER_TEAM_MAX"); }
 
-        // toni 
         // Deserialize inputs:
         uint[][] lineup = new uint[2][];
         uint[][] purgedLineup = new uint[2][];
@@ -418,6 +424,13 @@ public class Serialization {
     ) 
     {
         MatchEvent[] events = new MatchEvent[0];
+        // toni
+        // Minimal input checks
+        if ((blockchainEvents.Length-2) % 5 != 0) { return (events, "the length of blockchainEvents should be 2 + a multiple of"); }
+        if (!isOutOfGameDataOK(matchlog0)) { return (events, "incorrect matchlog entry"); }
+        if (!isOutOfGameDataOK(matchlog1)) { return (events, "incorrect matchlog entry"); }
+
+
         return (events, "");
     }
     public struct MatchEvent {
@@ -448,4 +461,50 @@ public class Serialization {
         }
         return lineUp;
     }
+
+    // INPUTS.MATCHLOG:
+    //  	0 teamSumSkills
+    //  	1 winner: 0 = home, 1 = away, 2 = draw
+    //  	2 nGoals
+    //  	3 trainingPoints
+    //  	4 uint8 memory outOfGamePlayer
+    //  	5 uint8 memory typesOutOfGames,
+    //     		 injuryHard:  1
+    //     		 injuryLow:   2
+    //     		 redCard:     3
+    //  	6 uint8 memory outOfGameRounds
+    //  	7,8 uint8[2] memory yellowCards
+    //  	9,10,11 uint8[3] memory ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
+    //  	12,13,14 uint8[3] memory halfTimeSubstitutions: 0...10 the player in the starting 11 that was changed during half time
+    // OUTPUTS:
+    //		an array of variable size, where each entry is a Matchevent struct
+    //			0: minute
+    // 			1: eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
+    // 				see: getInGameSubsHappened
+    // 			2: team: 0, 1
+    // 			3: managesToShoot
+    // 			4: isGoal
+    // 			5: primary player (0...11):
+    // 				(type == 0, 1) && managesToShoot 	: shooter
+    // 				(type == 0, 1) && !managesToShoot 	: tackler
+    // 				(type == 2) 						: yellowCarded
+    // 				(type == 3) 						: redCarded
+    // 				(type == 4,5) 						: injured
+    // 				(type == 6) 						: getting out of field
+    // 			6: secondary player (0...11):
+    // 				(type == 0, 1) && managesToShoot 	: assister
+    // 				(type == 0, 1) && !managesToShoot 	: null
+    // 				(type == 2) 						: null
+    // 				(type == 3) 						: null
+    // 				(type == 4,5) 						: null
+    // 				(type == 6) 						: getting inside field
+    public bool isOutOfGameDataOK(uint[] matchLog) {
+        uint outOfGamePlayer = matchLog[4];
+        bool thereWasAnOutOfGame = (outOfGamePlayer < EVENT_NOONE);
+        if (thereWasAnOutOfGame && (matchLog[5] > 3 || matchLog[5] == 0)) {
+            return false;
+        }
+        return true;
+    }
+
 }
