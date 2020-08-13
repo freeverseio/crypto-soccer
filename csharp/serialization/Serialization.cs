@@ -20,6 +20,7 @@ public class Serialization {
     const uint NO_SUBST = 11;
     const uint NO_LINEUP = 25;
     const uint MAX_PERCENT = 60;
+    const uint ROUNDS_PER_MATCH = 12;
 
 
     private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
@@ -282,4 +283,47 @@ public class Serialization {
         }
         return (encoded, "");
     }
-}  
+
+
+    // MATCH EVENTS => Creates the events that happen in ONE HALF of a match
+    // From all inputs, only the last one is computed by the blockchain. The others are ready as soon as the user actions are submitted.
+    // So, the frontend can prepare everything, and only wait for the backend to provide the last input.
+    // - INPUTS
+    //      - seed used in that halfMatch
+    //      - teamIds for home/visitor teams 
+    //      - encodedTactics for home/visitor teams for that halfMatch
+    //      - playerIds[25] for home/visitor teams for that halfMatch (note: 2nd half could differ from 1st half if trading happened)
+    //      - matchLogsAndEvents[2 + 5 * ROUNDS_PER_MATCH] => the only piece computed by the blockchain
+    //          - first 2 entries are matchLog[homeTeam], matchLog[visitorTeam]
+    //          - next, we have packs of 5 numbers, one for each round of the halfMatch
+    public (MatchEvent[] events, string err) processMatchEvents(
+        BigInteger seed, 
+        BigInteger[] teamIds, 
+        BigInteger[] tactics, 
+        BigInteger[][] playerIds, 
+        BigInteger[] matchLogsAndEvents
+    ) 
+    {
+        MatchEvent[] events = new MatchEvent[0];
+        // Test on inputs:
+        if (teamIds.Length != 2) { return (events, "length of teamIds must be 2"); }
+        if (tactics.Length != 2) { return (events, "length of tactics must be 2"); }
+        if (matchLogsAndEvents.Length != (2 + 5 * ROUNDS_PER_MATCH)) { return (events, "length of matchLogsAndEvents must be 2 + 5 * ROUNDS_PER_MATCH"); }
+        if (playerIds.Length != 2) { return (events, "length of playerIds must be 2"); }
+        if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (events, "length of playerIds[0] must be PLAYERS_PER_TEAM_MAX"); }
+        if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (events, "length of playerIds[1] must be PLAYERS_PER_TEAM_MAX"); }
+        return (events, "");
+    }
+
+    public struct MatchEvent {
+        public int Minute { get; }
+        public int Type { get; }
+        public int Team { get; }
+        public bool ManagesToShoot { get; }
+        public bool IsGoal { get; }
+        public int PrimaryPlayer { get; }
+        public int SecondaryPlayer { get; }
+        public BigInteger PrimaryPlayerID { get; }
+        public BigInteger SecondaryPlayerID { get; }
+    }
+}
