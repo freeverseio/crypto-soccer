@@ -14,7 +14,8 @@ func TestSetTeamNameInputHash(t *testing.T) {
 	in := input.SetTeamNameInput{}
 	hash, err := in.Hash()
 	assert.Error(t, err, "Invalid TeamId")
-
+	// s := hex.EncodeToString("0x01")
+	// fmt.Println("peruba 0x01", s)
 	in.TeamId = "3"
 	hash, err = in.Hash()
 	assert.NilError(t, err)
@@ -37,6 +38,7 @@ func TestSetTeamNameInputSign(t *testing.T) {
 	hash, err := in.Hash()
 	assert.NilError(t, err)
 	hash = helper.PrefixedHash(hash)
+	//assert.Equal(t, "sdfasdfa", hash.Hex())
 	sign, err := helper.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
 

@@ -53,6 +53,7 @@ func Sign(hash []byte, pvr *ecdsa.PrivateKey) ([]byte, error) {
 
 func PrefixedHash(hash common.Hash) common.Hash {
 	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
+	fmt.Printf("ss prefixed hsh %v\n", ss)
 	return crypto.Keccak256Hash([]byte(ss))
 }
 
