@@ -148,6 +148,34 @@ public class Serialization {
         return rightShiftAndMask(log, 249, 3); 
     }
 
+    public uint[] fullDecodeMatchLog(BigInteger log, bool is2ndHalf) {
+        uint[] decodedLog = new uint[15];
+        decodedLog[0] = getTeamSumSkills(log);
+        decodedLog[1] = getWinner(log);
+        decodedLog[2] = getNGoals(log);
+        if (is2ndHalf) decodedLog[3] = getTrainingPoints(log);
+        
+        decodedLog[4] = getOutOfGamePlayer(log, is2ndHalf);
+        decodedLog[5] = getOutOfGameType(log, is2ndHalf);
+        decodedLog[6] = getOutOfGameRound(log, is2ndHalf);
+    
+        decodedLog[7] = getYellowCard(log, 0, is2ndHalf);
+        decodedLog[8] = getYellowCard(log, 1, is2ndHalf);
+        
+        decodedLog[9]  = getInGameSubsHappened(log, 0, is2ndHalf);
+        decodedLog[10] = getInGameSubsHappened(log, 1, is2ndHalf);
+        decodedLog[11] = getInGameSubsHappened(log, 2, is2ndHalf);
+
+        /// getHalfTimeSubs: recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+        if (is2ndHalf) {
+            decodedLog[12]  = getHalfTimeSubs(log, 0);
+            decodedLog[13]  = getHalfTimeSubs(log, 1);
+            decodedLog[14]  = getHalfTimeSubs(log, 2);
+        }
+        return decodedLog;
+    }
+
+
     // TACTICS => lineup, extraAttack, and substitutions
     public (BigInteger encoded, string err) encodeTactics(
         uint[] substitutions, 
