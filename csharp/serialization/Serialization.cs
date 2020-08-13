@@ -681,30 +681,29 @@ public class Serialization {
             newEvents.Add(thisEvent);
         }
 
-        // // Second second yellow card:
-        // yellowCardPlayer = int16(matchLog[8])
-        // // convert player in the lineUp to shirtNum before storing it as match event:
-        // primaryPlayer = toShirtNum(uint8(yellowCardPlayer), lineUp, NULL, NOONE)
-        // thereWasYellowCard = primaryPlayer != NULL
-        // if thereWasYellowCard {
-        //     maxMinute := int16(45)
-        //     typeOfEvent := EVNT_YELLOW
-        //     if yellowCardPlayer == outOfGamePlayer {
-        //         if firstYellowCoincidesWithRed {
-        //             minute := outOfGameMinute
-        //             thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
-        //             events = append(events, thisEvent)
-        //             return events, nil
-        //         } else {
-        //             maxMinute = outOfGamePlayer
-        //         }
-        //     }
-        //     salt := "d" + strconv.Itoa(int(yellowCardPlayer))
-        //     minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
-        //     // convert player in the lineUp to shirtNum before storing it as match event:
-        //     thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
-        //     events = append(events, thisEvent)
-        // }
+        // Second second yellow card:
+        yellowCardPlayer = matchLog[8];
+        // convert player in the lineUp to shirtNum before storing it as match event:
+        primaryPlayer = toShirtNum(yellowCardPlayer, lineUp);
+        thereWasYellowCard = (primaryPlayer != EVNT_NULL);
+        if (thereWasYellowCard) {
+            uint maxMinute = 45;
+            uint typeOfEvent = EVNT_YELLOW;
+            if (yellowCardPlayer == outOfGamePlayer) {
+                if (firstYellowCoincidesWithRed) {
+                    MatchEvent newEvent = new MatchEvent(outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
+                    newEvents.Add(newEvent);
+                    return (events, "");
+                } else {
+                    maxMinute = outOfGamePlayer;
+                }
+            }
+            string salt = "d" + yellowCardPlayer.ToString();
+            uint minute = GenerateRnd(seed, salt, maxMinute);
+            // convert player in the lineUp to shirtNum before storing it as match event:
+            MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
+            newEvents.Add(thisEvent);
+        }
         return (newEvents.ToArray(), "");
     }
 
