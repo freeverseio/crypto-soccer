@@ -21,6 +21,7 @@ public class Serialization {
     const uint NO_LINEUP = 25;
     const uint MAX_PERCENT = 60;
     const uint ROUNDS_PER_MATCH = 12;
+    const uint NIL_PLAYERID = 0;
 
 
     private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
@@ -147,7 +148,7 @@ public class Serialization {
         return rightShiftAndMask(log, 249, 3); 
     }
 
-    // TACTICS => lineup, extraAttack, and substituions
+    // TACTICS => lineup, extraAttack, and substitutions
     public (BigInteger encoded, string err) encodeTactics(
         uint[] substitutions, 
         uint[] subsRounds, 
@@ -169,6 +170,7 @@ public class Serialization {
         for (int p = 0; p < lineup.Length; p++) {
             if (!(lineup[p] <= PLAYERS_PER_TEAM_MAX)) { return (new BigInteger(0), "lineup entries must be lesss than PLAYERS_PER_TEAM_MAX"); }
         }
+
         // Start encoding:
         BigInteger encoded = new BigInteger(tacticsId);
         for (int p = 0; p < 10; p++) {
@@ -214,6 +216,22 @@ public class Serialization {
             lineup[p] = getLinedUp(tactics, p);
         }
         return lineup; 
+    }
+
+    public uint[] getFullSubstitutions(BigInteger tactics) {
+        uint[] subs = new uint[3];
+        for (int p = 0; p < 3; p++) {
+            subs[p] = getSubstitution(tactics, p);
+        }
+        return subs; 
+    }
+
+    public uint[] getFullSubsRounds(BigInteger tactics) {
+        uint[] subs = new uint[3];
+        for (int p = 0; p < 3; p++) {
+            subs[p] = getSubsRound(tactics, p);
+        }
+        return subs; 
     }
 
     // TEAMID and PLAYERID => info about (timezone, country idx in that timezone, idx in that country)
@@ -262,6 +280,7 @@ public class Serialization {
         for (int p = 0; p < TPperSkill.Length; p++) {
             if (!(TPperSkill[p] < 65536)) { return (new BigInteger(0), "TPperSkill entries too large"); }
         }
+
         // Start encoding:
         BigInteger encoded = 0;
         encoded = OrWithLeftShift(encoded, TP, 225);
@@ -289,7 +308,7 @@ public class Serialization {
     // From all inputs, only the last one is computed by the blockchain. The others are ready as soon as the user actions are submitted.
     // So, the frontend can prepare everything, and only wait for the backend to provide the last input.
     // - INPUTS
-    //      - seed used in that halfMatch
+    //      - verseSeed used in that halfMatch
     //      - teamIds for home/visitor teams 
     //      - encodedTactics for home/visitor teams for that halfMatch
     //      - playerIds[25] for home/visitor teams for that halfMatch (note: 2nd half could differ from 1st half if trading happened)
@@ -297,7 +316,8 @@ public class Serialization {
     //          - first 2 entries are matchLog[homeTeam], matchLog[visitorTeam]
     //          - next, we have packs of 5 numbers, one for each round of the halfMatch
     public (MatchEvent[] events, string err) processMatchEvents(
-        BigInteger seed, 
+        bool is2ndHalf,
+        BigInteger verseSeed, 
         BigInteger[] teamIds, 
         BigInteger[] tactics, 
         BigInteger[][] playerIds, 
@@ -312,6 +332,41 @@ public class Serialization {
         if (playerIds.Length != 2) { return (events, "length of playerIds must be 2"); }
         if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (events, "length of playerIds[0] must be PLAYERS_PER_TEAM_MAX"); }
         if (playerIds[0].Length != PLAYERS_PER_TEAM_MAX) { return (events, "length of playerIds[1] must be PLAYERS_PER_TEAM_MAX"); }
+
+        // toni 
+        // Deserialize inputs:
+        uint[][] lineup = new uint[2][];
+        uint[][] purgedLineup = new uint[2][];
+        uint[][] substitutions = new uint[2][];
+        uint[][] subsRounds = new uint[2][];
+        for (int team = 0; team < 2; team++) {
+            lineup[team] = getFullLineUp(tactics[team]);
+            substitutions[team] = getFullSubstitutions(tactics[team]);
+            subsRounds[team] = getFullSubsRounds(tactics[team]);
+            purgedLineup[team] = RemoveFreeShirtsFromLineUp(lineup[team], playerIds[team]);
+        }
+
+        // Actual computation:
+        // (events, string err) = GenerateEvents(
+        //     verseSeed,
+        //     teamdIds[0],
+        //     teamdIds[1],
+        //     homeDecodedMatchLog,
+        //     visitorDecodedMatchLog,
+        //     matchLogsAndEvents,
+        //     RemoveFreeShirtsFromLineUp(decodedTactic0.Lineup, homeTeamPlayerIDs),
+        //     RemoveFreeShirtsFromLineUp(decodedTactic1.Lineup, visitorTeamPlayerIDs),
+        //     decodedTactic0.Substitutions,
+        //     decodedTactic1.Substitutions,
+        //     decodedTactic0.SubsRounds,
+        //     decodedTactic1.SubsRounds,
+        //     is2ndHalf,            
+        // );
+        // if (!(err == "")) { return (events, err); }
+
+        // (events, string err) = populateWithPlayerID();
+        // if (!(err == "")) { return (events, err); }
+
         return (events, "");
     }
 
@@ -325,5 +380,22 @@ public class Serialization {
         public int SecondaryPlayer { get; }
         public BigInteger PrimaryPlayerID { get; }
         public BigInteger SecondaryPlayerID { get; }
+    }
+
+    // This function makes sure that all players in lineUp exist in the Universe.
+    // To avoid, for example, selling a player after setting the lineUp.
+    // It sets to NOONE all lineUp entries pointing to playerIds that are larger than 2.
+    // (recall that playerID = 0 if not set, or = 1 if sold)
+    public uint[] RemoveFreeShirtsFromLineUp(uint[] lineUp, BigInteger[] playerIDs) {
+        BigInteger MIN_PLAYERID = new BigInteger(2);
+        for (int l = 0; l < lineUp.Length; l++) {
+            if (lineUp[l] < NO_LINEUP) {
+                BigInteger playerId = playerIDs[lineUp[l]];
+                if ((playerId == NIL_PLAYERID) || (playerId <= MIN_PLAYERID)) {
+                    lineUp[l] = NO_LINEUP;
+                }
+            }
+        }
+        return lineUp;
     }
 }
