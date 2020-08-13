@@ -162,7 +162,6 @@ const main = async () => {
             info,
           })
         }
-      }
       },
       teamBySeller: {
         fragment: `... on Offer { seller }`,
