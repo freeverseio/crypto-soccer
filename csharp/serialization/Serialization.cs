@@ -19,6 +19,7 @@ public class Serialization {
     const uint ROUNDS_PER_HALF = 12;
     const uint NO_SUBST = 11;
     const uint NO_LINEUP = 25;
+    const uint MAX_PERCENT = 60;
 
 
     private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
@@ -220,7 +221,6 @@ public class Serialization {
 
     // Training points assignment
     public (uint[] TPperSkill, uint specialPlayer, uint TP, uint err) decodeTP(BigInteger encoded) {
-        const uint MAX_PERCENT = 60;
         uint[] TPperSkill = new uint[25];
         uint specialPlayer = rightShiftAndMask(encoded, 234, 31);
         uint err = 0;
@@ -245,5 +245,36 @@ public class Serialization {
             if (sum > TPtemp) return (TPperSkill, specialPlayer, TP, ERR_TRAINING_SUMSKILLS); // sum of Traning Points is too large"
         }
         return (TPperSkill, specialPlayer, TP, err);
+    }
+
+
+    public (BigInteger encoded, string err) encodeTP(uint TP, uint[] TPperSkill, uint specialPlayer) {
+        // Test on inputs:
+        if (!(TP < 65536)) { return (new BigInteger(0), "TP value too large"); }
+        if (!(specialPlayer <= PLAYERS_PER_TEAM_MAX)) { return (new BigInteger(0), "specialPlayer value too large"); }
+        if (TPperSkill.Length != 25) { return (new BigInteger(0), "length of TPperSkill must be 25"); }
+        for (int p = 0; p < TPperSkill.Length; p++) {
+            if (!(TPperSkill[p] < 65536)) { return (new BigInteger(0), "TPperSkill entries too large"); }
+        }
+        // Start encoding:
+        BigInteger encoded = 0;
+        encoded = OrWithLeftShift(encoded, TP, 225);
+        encoded = OrWithLeftShift(encoded, specialPlayer, 234);
+        uint maxRHS = (TP < 4) ? 100 * TP : MAX_PERCENT * TP;
+        int lastBucket = (specialPlayer == PLAYERS_PER_TEAM_MAX ? 4 : 5);
+        for (int bucket = 0; bucket < lastBucket; bucket++) {
+            if (bucket == 4) {
+                TP = (TP * 11)/10;
+                maxRHS = (TP < 4) ? 100 * TP : MAX_PERCENT * TP;
+            }
+            uint sum = 0;
+            for (int sk = 5 * bucket; sk < 5 * (bucket+1); sk++) {
+                if (!(100*TPperSkill[sk] <= maxRHS)) { return (new BigInteger(0), "one of the assigned TPs is too large"); }
+                sum += TPperSkill[sk];
+                encoded = OrWithLeftShift(encoded, TPperSkill[sk], 9 * sk);
+            }
+            if (!(sum <= TP)) { return (new BigInteger(0), "sum of Traning Points is too large"); }
+        }
+        return (encoded, "");
     }
 }  
