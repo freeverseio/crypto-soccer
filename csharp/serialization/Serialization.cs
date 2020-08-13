@@ -416,8 +416,8 @@ public class Serialization {
             BigInteger verseSeed,
             BigInteger teamId0,
             BigInteger teamId1,
-            uint[] matchlog0,
-            uint[] matchlog1,
+            uint[] matchLog0,
+            uint[] matchLog1,
             BigInteger[] blockchainEvents,
             uint[] lineup0,
             uint[] lineup1,
@@ -432,8 +432,8 @@ public class Serialization {
         // toni
         // Minimal input checks
         if ((blockchainEvents.Length-2) % 5 != 0) { return (dummyEvents, "the length of blockchainEvents should be 2 + a multiple of"); }
-        if (!isOutOfGameDataOK(matchlog0)) { return (dummyEvents, "incorrect matchlog entry"); }
-        if (!isOutOfGameDataOK(matchlog1)) { return (dummyEvents, "incorrect matchlog entry"); }
+        if (!isOutOfGameDataOK(matchLog0)) { return (dummyEvents, "incorrect matchlog entry"); }
+        if (!isOutOfGameDataOK(matchLog1)) { return (dummyEvents, "incorrect matchlog entry"); }
 
         ulong seed0 = int_hash(verseSeed.ToString() + "_0_" + teamId0.ToString() + "_" + teamId1.ToString());
         ulong seed1 = int_hash(verseSeed.ToString() + "_1_" + teamId0.ToString() + "_" + teamId1.ToString());
@@ -444,6 +444,8 @@ public class Serialization {
         // - cards & injuries
         // - substitutions
         (MatchEvent[] events, uint[] rounds2mins) = addEventsInRound(seed0, blockchainEvents, lineup0, lineup1);
+        string err;
+    	(events, err) = addCardsAndInjuries(0, events, seed1, matchLog0, rounds2mins, lineup0);
 
         return (events, "");
     }
@@ -600,6 +602,89 @@ public class Serialization {
         } else {
             return EVENT_NULL;
         }
+    }
+
+    public (MatchEvent[] events, string err) addCardsAndInjuries(uint team, MatchEvent[] events, BigInteger seed, uint[] matchLog, uint[] rounds2mins, uint[] lineUp)  {
+        // matchLog[4,5,6] = outOfGamePlayer, outOfGameType, outOfGameRound
+        // note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
+        // eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
+        if (matchLog[5] > 3) {
+            return (new MatchEvent[0], "typeOfEvent larger than 3");
+        }
+        if (matchLog[6] >= rounds2mins.Length) {
+            return (new MatchEvent[0], "outOfGameRound larger than allowed");
+        }
+
+        // outOfGamePlayer := int16(matchLog[4])
+        // // convert player in the lineUp to shirtNum before storing it as match event:
+        // primaryPlayer := toShirtNum(uint8(outOfGamePlayer), lineUp, NULL, NOONE)
+        // thereWasAnOutOfGame := primaryPlayer != NULL
+        // outOfGameMinute := int16(0)
+        // if thereWasAnOutOfGame {
+        //     if matchLog[5] == 0 {
+        //         return events, errors.New("typeOfEvent = 0 is not allowed if thereWasAnOutOfGame")
+        //     }
+        //     var typeOfEvent int16
+        //     if matchLog[5] == 1 {
+        //         typeOfEvent = EVNT_SOFT
+        //     } else if matchLog[5] == 2 {
+        //         typeOfEvent = EVNT_HARD
+        //     } else if matchLog[5] == 3 {
+        //         typeOfEvent = EVNT_RED
+        //     }
+        //     outOfGameMinute = int16(rounds2mins[matchLog[6]])
+        //     thisEvent := MatchEvent{outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
+        //     events = append(events, thisEvent)
+        // }
+
+        // // First yellow card:
+        // yellowCardPlayer := int16(matchLog[7])
+        // // convert player in the lineUp to shirtNum before storing it as match event:
+        // primaryPlayer = toShirtNum(uint8(yellowCardPlayer), lineUp, NULL, NOONE)
+        // thereWasYellowCard := primaryPlayer != NULL
+        // firstYellowCoincidesWithRed := false
+        // if thereWasYellowCard {
+        //     maxMinute := int16(45)
+        //     if yellowCardPlayer == outOfGamePlayer {
+        //         if outOfGameMinute > 0 {
+        //             maxMinute = outOfGameMinute - 1
+        //         } else {
+        //             maxMinute = outOfGameMinute
+        //         }
+        //         firstYellowCoincidesWithRed = true
+        //     }
+        //     salt := "c" + strconv.Itoa(int(yellowCardPlayer))
+        //     minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
+        //     typeOfEvent := EVNT_YELLOW
+        //     thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
+        //     events = append(events, thisEvent)
+        // }
+
+        // // Second second yellow card:
+        // yellowCardPlayer = int16(matchLog[8])
+        // // convert player in the lineUp to shirtNum before storing it as match event:
+        // primaryPlayer = toShirtNum(uint8(yellowCardPlayer), lineUp, NULL, NOONE)
+        // thereWasYellowCard = primaryPlayer != NULL
+        // if thereWasYellowCard {
+        //     maxMinute := int16(45)
+        //     typeOfEvent := EVNT_YELLOW
+        //     if yellowCardPlayer == outOfGamePlayer {
+        //         if firstYellowCoincidesWithRed {
+        //             minute := outOfGameMinute
+        //             thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
+        //             events = append(events, thisEvent)
+        //             return events, nil
+        //         } else {
+        //             maxMinute = outOfGamePlayer
+        //         }
+        //     }
+        //     salt := "d" + strconv.Itoa(int(yellowCardPlayer))
+        //     minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
+        //     // convert player in the lineUp to shirtNum before storing it as match event:
+        //     thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, primaryPlayer, NULL, "", ""}
+        //     events = append(events, thisEvent)
+        // }
+        return (events, "");
     }
 
 }
