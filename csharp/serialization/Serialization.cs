@@ -427,16 +427,22 @@ public class Serialization {
             bool is2ndHalf
     ) 
     {
-        MatchEvent[] events = new MatchEvent[0];
+        MatchEvent[] dummyEvents = new MatchEvent[0];
         // toni
         // Minimal input checks
-        if ((blockchainEvents.Length-2) % 5 != 0) { return (events, "the length of blockchainEvents should be 2 + a multiple of"); }
-        if (!isOutOfGameDataOK(matchlog0)) { return (events, "incorrect matchlog entry"); }
-        if (!isOutOfGameDataOK(matchlog1)) { return (events, "incorrect matchlog entry"); }
+        if ((blockchainEvents.Length-2) % 5 != 0) { return (dummyEvents, "the length of blockchainEvents should be 2 + a multiple of"); }
+        if (!isOutOfGameDataOK(matchlog0)) { return (dummyEvents, "incorrect matchlog entry"); }
+        if (!isOutOfGameDataOK(matchlog1)) { return (dummyEvents, "incorrect matchlog entry"); }
 
         ulong seed0 = int_hash(verseSeed.ToString() + "_0_" + teamId0.ToString() + "_" + teamId1.ToString());
         ulong seed1 = int_hash(verseSeed.ToString() + "_1_" + teamId0.ToString() + "_" + teamId1.ToString());
         ulong seed2 = int_hash(verseSeed.ToString() + "_2_" + teamId0.ToString() + "_" + teamId1.ToString());
+
+        // There are mainly 3 types of events to reports, which are in different parts of the inputs:
+        // - per-round (always 12 per half)
+        // - cards & injuries
+        // - substitutions
+        (MatchEvent[] events, uint[] rounds2mins) = addEventsInRound(seed0, blockchainEvents, lineup0, lineup1);
 
         return (events, "");
     }
@@ -523,4 +529,16 @@ public class Serialization {
         var value = hash.ComputeHash(s);
         return BitConverter.ToUInt64(value, 0);
     }
+
+    public (MatchEvent[] events, uint[] rounds2mins) addEventsInRound(BigInteger seed0, BigInteger[] blockchainEvents, uint[] lineup0, uint[] lineup1) {
+        uint nEvents = (uint) (blockchainEvents.Length - 2) / 5;
+        MatchEvent[] events = new MatchEvent[nEvents];
+        uint[] rounds2mins = new uint[nEvents];
+        double deltaMinutes = 45.0 / ((double) (nEvents - 1));
+        uint deltaMinutesInt = (uint) Math.Floor(deltaMinutes);
+        uint lastMinute = 0;
+        uint[][] lineups = new uint[2][]{lineup0, lineup1};
+        return (events, rounds2mins);
+    }
+
 }
