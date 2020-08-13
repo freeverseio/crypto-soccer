@@ -54,8 +54,6 @@ CREATE TABLE teams (
 );
 comment on table teams is E'@omit create,update,delete';
 
-CREATE INDEX idx_team_owner ON teams (owner);
-
 CREATE TABLE teams_histories (
     block_number BIGINT NOT NULL,
     team_id TEXT NOT NULL,
