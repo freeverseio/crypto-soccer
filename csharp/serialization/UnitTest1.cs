@@ -72,6 +72,26 @@ namespace NewMSTestProject
         }  
 
         [TestMethod]
+        public void EncodeTPs() {  
+            Serialization serial = new Serialization();
+            TestUtils tu = new TestUtils();
+            dynamic tests = tu.LoadJson("encodingTPsData.json");
+            foreach(dynamic test in tests) {
+                BigInteger encodedExpected;
+                bool succeeded = BigInteger.TryParse((string) test.encodedTPAssignment, out encodedExpected);
+                Assert.AreEqual(true, succeeded); 
+                uint[] TPperSkill = tu.DynamicToUintArray(test.TPperSkill);
+                (BigInteger encoded, string err) = serial.encodeTP(
+                    (uint) test.TP,
+                    TPperSkill,
+                    (uint) test.specialPlayer
+                );
+                Assert.AreEqual(err, "");  
+                Assert.AreEqual(encoded, encodedExpected);  
+            }
+        }  
+
+        [TestMethod]
         public void DecodePlayerSkills() {  
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
