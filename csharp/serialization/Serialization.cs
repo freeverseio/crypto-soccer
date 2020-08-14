@@ -453,7 +453,18 @@ public class Serialization {
         (MatchEvent[] events, uint[] rounds2mins) = addEventsInRound(seed0, blockchainEvents, lineup0, lineup1);
         string err;
     	(events, err) = addCardsAndInjuries(0, events, seed1, matchLog0, rounds2mins, lineup0);
+        if (err != "") { return (events, err); }
+    	(events, err) = addCardsAndInjuries(1, events, seed2, matchLog1, rounds2mins, lineup1);
+        if (err != "") { return (events, err); }
 
+        events = addSubstitutions(0, events, matchLog0, rounds2mins, lineup0, substitutions0, subsRounds0);
+        events = addSubstitutions(1, events, matchLog1, rounds2mins, lineup1, substitutions1, subsRounds1);
+
+        if (is2ndHalf) {
+            for (uint e = 0; e < events.Length; e++) {
+                events[e].Minute += 45;
+            }
+        }
         return (events, "");
     }
     public struct MatchEvent {
@@ -693,7 +704,7 @@ public class Serialization {
                 if (firstYellowCoincidesWithRed) {
                     MatchEvent newEvent = new MatchEvent(outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
                     newEvents.Add(newEvent);
-                    return (events, "");
+                    return (newEvents.ToArray(), "");
                 } else {
                     maxMinute = outOfGamePlayer;
                 }
@@ -705,6 +716,46 @@ public class Serialization {
             newEvents.Add(thisEvent);
         }
         return (newEvents.ToArray(), "");
+    }
+
+    public MatchEvent[] addSubstitutions(uint team, MatchEvent[] events, uint[] matchLog, uint[] rounds2mins, uint[] lineup, uint[] substitutions, uint[] subsRounds) {
+        // matchLog:	9,10,11 ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
+        // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+        List<MatchEvent> newEvents = events.ToList();
+
+        for (uint i = 0; i < 3; i++) {
+            bool subHappened = (matchLog[9+i] == 1);
+            if (subHappened) {
+                uint minute = rounds2mins[subsRounds[i]];
+                int leavingPlayer = toShirtNum(substitutions[i], lineup);
+                int enteringPlayer = toShirtNum(11+i, lineup);
+                uint typeOfEvent = EVNT_SUBST;
+                MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer, new BigInteger(0), new BigInteger(0));
+                newEvents.Add(thisEvent);
+            }
+        }
+        return adjustSubstitutions(team, newEvents.ToArray());
+    }
+
+    // make sure that if a player that enters via a substitution appears in any other action (goal, pass, cards & injuries),
+    // then the substitution time must take place at least before that minute.
+    public MatchEvent[] adjustSubstitutions(uint team, MatchEvent[] events) {
+        MatchEvent[] adjustedEvents = (MatchEvent[]) events.Clone();
+
+        for (uint e = 0; e < events.Length; e++) {
+            if ((events[e].Type == EVNT_SUBST) && (events[e].Team == team)) {
+                int enteringPlayer = events[e].SecondaryPlayer;
+                if (enteringPlayer != EVNT_NULL) {
+                    uint enteringMin = events[e].Minute;
+                    for (uint e2 = 0; e2 < events.Length; e2++) {
+                        if ((e != e2) && (events[e2].Team == team) && (enteringPlayer == events[e2].PrimaryPlayer) && (enteringMin >= events[e2].Minute-1)) {
+                            adjustedEvents[e].Minute = events[e2].Minute - 1;
+                        }
+                    }
+                }
+            }
+        }
+        return adjustedEvents;
     }
 
 }
