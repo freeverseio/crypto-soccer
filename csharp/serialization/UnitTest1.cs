@@ -223,8 +223,12 @@ namespace NewMSTestProject
         public void matchEvents() {  
             // From TestMatchEvents2ndHalfHardcoded
             Serialization serial = new Serialization();
-            BigInteger verseSeed = new BigInteger(new byte[32]{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x2});
-            Console.WriteLine(verseSeed);
+            // Golang reads the seed emitted by the BC as [32]byte
+            byte[] seed = new byte[32]{0x2, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+            // Then, Go stores in the DB as a string, using this format: (which is eventually queried by phoenix)
+            string verseSeedPassedToPhoenix = BitConverter.ToString(seed).Replace("-", string.Empty); 
+            string verseSeed = "0201000000000000000000000000000000000000000000000000000000000000";
+            Assert.AreEqual(verseSeed, verseSeedPassedToPhoenix);
             BigInteger[] teamIds = new BigInteger[2]{1,2};
             BigInteger log = BigInteger.Parse("452312848584470512245079946786433186608365459112320500501947696564481818624");
             BigInteger[] matchLogsAndEvents = new BigInteger[2 + 5 * 12] { 
@@ -292,7 +296,7 @@ namespace NewMSTestProject
                 concat += "]";
             }
             Console.WriteLine(concat);
-            string expectedConcat = "[46, 0, 1, false, false, 16, -1][52, 0, 1, false, false, 0, -1][55, 0, 0, true, true, 8, 8][58, 0, 1, false, false, 15, -1][61, 0, 0, false, false, 1, -1][68, 0, 1, false, false, 13, -1][71, 0, 1, false, false, 8, -1][74, 0, 0, true, true, 10, 10][77, 0, 0, true, true, 8, 8][84, 0, 0, false, false, 4, -1][86, 0, 1, false, false, 11, -1][91, 0, 0, false, false, 2, -1][68, 2, 0, false, false, 12, -1][47, 1, 0, false, false, 13, -1][68, 2, 1, false, false, 18, -1][78, 1, 1, false, false, 0, -1][61, 5, 0, false, false, 11, 19][67, 5, 0, false, false, 16, 12][61, 5, 1, false, false, 1, 17][67, 5, 1, false, false, 4, 18]";
+            string expectedConcat = "[46, 0, 1, false, false, 14, -1][51, 0, 1, false, false, 13, -1][56, 0, 0, true, true, 8, 8][57, 0, 1, false, false, 15, -1][62, 0, 0, false, false, 8, -1][67, 0, 1, false, false, 0, -1][72, 0, 1, false, false, 9, -1][73, 0, 0, true, true, 10, 10][78, 0, 0, true, true, 8, 8][83, 0, 0, false, false, 1, -1][87, 0, 1, false, false, 13, -1][90, 0, 0, false, false, 6, -1][67, 2, 0, false, false, 12, -1][55, 1, 0, false, false, 13, -1][67, 2, 1, false, false, 18, -1][71, 1, 1, false, false, 0, -1][62, 5, 0, false, false, 11, 19][66, 5, 0, false, false, 16, 12][62, 5, 1, false, false, 1, 17][66, 5, 1, false, false, 4, 18]";
             Assert.AreEqual(concat, expectedConcat);
         }   
     }

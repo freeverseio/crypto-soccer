@@ -304,7 +304,7 @@ public class Serialization {
     //          - next, we have packs of 5 numbers, one for each round of the halfMatch
     public (MatchEvent[] events, string err) processMatchEvents(
         bool is2ndHalf,
-        BigInteger verseSeed, 
+        string verseSeed, 
         BigInteger[] teamIds, 
         BigInteger[] tactics, 
         BigInteger[][] playerIds, 
@@ -383,7 +383,7 @@ public class Serialization {
 
     // FROM THIS POINT: Private functions required by ProcessMatchEvents
     private (MatchEvent[] events, string err) GenerateEvents(
-            BigInteger verseSeed,
+            string verseSeed,
             BigInteger teamId0,
             BigInteger teamId1,
             uint[] matchLog0,
@@ -405,9 +405,9 @@ public class Serialization {
         if (!isOutOfGameDataOK(matchLog0)) { return (dummyEvents, "incorrect matchlog entry"); }
         if (!isOutOfGameDataOK(matchLog1)) { return (dummyEvents, "incorrect matchlog entry"); }
 
-        ulong seed0 = int_hash(verseSeed.ToString() + "_0_" + teamId0.ToString() + "_" + teamId1.ToString());
-        ulong seed1 = int_hash(verseSeed.ToString() + "_1_" + teamId0.ToString() + "_" + teamId1.ToString());
-        ulong seed2 = int_hash(verseSeed.ToString() + "_2_" + teamId0.ToString() + "_" + teamId1.ToString());
+        ulong seed0 = int_hash(verseSeed + "_0_" + teamId0.ToString() + "_" + teamId1.ToString());
+        ulong seed1 = int_hash(verseSeed + "_1_" + teamId0.ToString() + "_" + teamId1.ToString());
+        ulong seed2 = int_hash(verseSeed + "_2_" + teamId0.ToString() + "_" + teamId1.ToString());
 
         // There are mainly 3 types of events to reports, which are in different parts of the inputs:
         // - per-round (always 12 per half)

@@ -117,8 +117,11 @@ func Generate(
 		return emptyEvents, err
 	}
 
-	// verseSeedStr := new(big.Int).SetBytes(verseSeed[:]).String()
+	// TODO: we must apply this change when we want to enable the frontend to compute match events
+	// If verse < verseV2
 	verseSeedStr := string(verseSeed[:])
+	// else
+	// verseSeedStr := hex.EncodeToString(verseSeed[:])
 
 	seed0 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_0_" + teamId0 + "_" + teamId1))
 	seed1 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_1_" + teamId0 + "_" + teamId1))
