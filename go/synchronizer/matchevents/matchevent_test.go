@@ -17,6 +17,21 @@ func int_hash(s string) uint64 {
 	return h.Sum64()
 }
 
+func TestHash(t *testing.T) {
+	big := big.NewInt(123456789)
+	unsig := uint(123456789)
+	inputs := []string{"hola", big.String(), strconv.FormatUint(uint64(unsig), 10)}
+	expectedOutputs := []uint64{4623503348185510199, 492395637191921148, 492395637191921148}
+	for i := 0; i < len(inputs); i++ {
+		hash := int_hash(inputs[i])
+		if hash != expectedOutputs[i] {
+			fmt.Println("Processing Hash with Input and Result:")
+			fmt.Println(inputs[i])
+			fmt.Println(hash)
+			t.Fatal("Wrong hash")
+		}
+	}
+}
 func TestMatchEventsTwoYellows(t *testing.T) {
 	verseSeed := [32]byte{0x2, 0x1}
 	teamId0 := "1"

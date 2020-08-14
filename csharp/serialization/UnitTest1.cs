@@ -211,6 +211,8 @@ namespace NewMSTestProject
             Serialization serial = new Serialization();
             TestUtils tu = new TestUtils();
             Assert.AreEqual((ulong) 4623503348185510199, serial.int_hash("hola")); 
+            BigInteger big = new BigInteger(534298574);
+            Assert.AreEqual((ulong) 4623503348185510199, serial.int_hash(big.ToString())); 
         }   
     }
 }
