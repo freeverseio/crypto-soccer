@@ -18,7 +18,7 @@ class TeamNameValidation {
     return this.web3.utils.soliditySha3(params);
   }
 
-  verifySignature() {
+  async verifySignature() {
 
     // let keyPair = this.ec.keyFromPrivate("97ddae0f3a25b92268175400149d65d6887b9cefaf28ea2c078e05cdc15a3c0a");
     // let privKey = keyPair.getPrivate("hex");
@@ -60,10 +60,10 @@ class TeamNameValidation {
     const signatureObject = {
       messageHash: hash,
       // r: toHexString(this.signature.split('').map(c => c.charCodeAt(c) || 0).slice(0, 31)),
-      r: '0x' + this.signature.split('').slice(0, 63).join(''),
+      r: '0x' + this.signature.split('').slice(0, 66).join(''),
       // s: toHexString(this.signature.split('').map(c => c.charCodeAt(c) || 0).slice(31, 63)),
-      s: '0x' + this.signature.split('').slice(64, 127).join(''),
-      v: "0x1c",
+      s: '0x' + this.signature.split('').slice(66, 130).join(''),
+      v: '0x' + this.signature.split('').slice(130, 132).join(''),
       // signature: this.signature
     }
   //   const signatureObject2 = {
@@ -72,22 +72,27 @@ class TeamNameValidation {
   //     r: "0xb91467e570a6466aa9e9876cbcd013baba02900b8979d43fe208a4a4f339f5fd",
   //     s: "0x6007e74cd82e037b800186422fc2da167c747ef045e5d18a5f5d4300f8e1a029"
   // }
-  //   console.log("verifySignature -> signatureObject", signatureObject)
-  //   const pubKeyRecovered = this.web3.eth.accounts.recover(signatureObject)
-  //   console.log("verifySignature -> pubKeyRecovered", pubKeyRecovered)
+    console.log("verifySignature -> signatureObject", signatureObject)
+    const pubKeyRecovered = this.web3.eth.accounts.recover(signatureObject)
+    console.log("verifySignature -> pubKeyRecovered", pubKeyRecovered)
 
-
+    const resignature = await this.web3.eth.personal.sign(this.hash(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7").then(
+      console.log    )
+    console.log("verifySignature -> resignature", resignature)
 
   // const pubKeyRecovered = ethers.utils.recoverAddress(ethers.utils.arrayify(hash), signatureObject)
 
 
 
-  //   return pubKeyRecovered
+    return pubKeyRecovered
   }
 
   prefixedHash() {
     const params = this.web3.eth.abi.encodeParameters( ["uint256", "string"], [this.teamId || 0, this.name || ''] )
     const hash = this.web3.utils.soliditySha3(params);
+    const firstt = "\x19Ethereum Signed Message:\n" + Buffer.byteLength(hash)
+    console.log("prefixedHash -> firstt", firstt)
+    
     const prefixedHash = this.web3.utils.soliditySha3("\x19Ethereum Signed Message:\n32", hash)
 
     return prefixedHash
