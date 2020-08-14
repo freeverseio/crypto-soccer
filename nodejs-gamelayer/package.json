@@ -16,10 +16,12 @@
     "commander": "^3.0.2",
     "crypto": "1.0.1",
     "elliptic": "6.5.3",
+    "eth-crypto": "^1.6.0",
     "ethers": "^5.0.8",
     "graphql": "^14.5.8",
     "js-sha3": "0.8.0",
     "pg": "8.3.0",
+    "secp256k1": "^4.0.2",
     "web3": "1.2.11"
   },
   "devDependencies": {

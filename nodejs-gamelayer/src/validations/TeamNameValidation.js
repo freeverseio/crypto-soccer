@@ -3,6 +3,8 @@ const crypto = require('crypto')
 const elliptic = require('elliptic')
 let sha3 = require('js-sha3');
 const { ethers } = require('ethers')
+const EthCrypto = require('eth-crypto')
+const secp256k1 = require('secp256k1')
 class TeamNameValidation {
   constructor({ teamId, name, signature, web3}) {
     this.teamId = teamId
@@ -98,7 +100,19 @@ class TeamNameValidation {
     return prefixedHash
   }
 
+
+  anotherRecover() {
+    const signerAddress = EthCrypto.recover(this.signature, this.prefixedHash())
+    const signerPublicKey = EthCrypto.recover(this.signature, this.prefixedHash())
+    console.log("anotherRecover -> signerPublicKey", signerPublicKey)
+    console.log("anotherRecover -> signerAddress", signerAddress)
+
+    console.log(secp256k1.ecdsaVerify(fromHexString(this.signature).slice(0, 64), fromHexString(this.prefixedHash()).slice(0, 32), fromHexString(signerAddress).slice(0,64)))
+  }
 }
+
+const fromHexString = hexString =>
+  new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)))
 
 module.exports = TeamNameValidation;
  
