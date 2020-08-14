@@ -111,7 +111,7 @@ CREATE TABLE offers (
     seller TEXT NOT NULL,
     buyer TEXT NOT NULL,
     auction_id TEXT REFERENCES auctions(id),
-    team_id TEXT NOT NULL,
+    buyer_team_id TEXT NOT NULL,
     PRIMARY KEY(id)
 );
 CREATE INDEX idx_offers_player_id ON offers (player_id);
@@ -131,5 +131,5 @@ CREATE TABLE offers_histories (
     seller TEXT NOT NULL,
     buyer TEXT NOT NULL,
     auction_id TEXT REFERENCES auctions(id),
-    team_id TEXT NOT NULL
+    buyer_team_id TEXT NOT NULL
 );

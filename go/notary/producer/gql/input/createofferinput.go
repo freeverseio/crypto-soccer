@@ -19,14 +19,14 @@ import (
 )
 
 type CreateOfferInput struct {
-	Signature  string
-	PlayerId   string
-	CurrencyId int32
-	Price      int32
-	Rnd        int32
-	ValidUntil string
-	TeamId     string
-	Seller     string
+	Signature   string
+	PlayerId    string
+	CurrencyId  int32
+	Price       int32
+	Rnd         int32
+	ValidUntil  string
+	BuyerTeamId string
+	Seller      string
 }
 
 func (b CreateOfferInput) ID(contracts contracts.Contracts) (graphql.ID, error) {
@@ -38,7 +38,7 @@ func (b CreateOfferInput) ID(contracts contracts.Contracts) (graphql.ID, error) 
 }
 
 func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, error) {
-	teamId, _ := new(big.Int).SetString(b.TeamId, 10)
+	teamId, _ := new(big.Int).SetString(b.BuyerTeamId, 10)
 	if teamId == nil {
 		return common.Hash{}, errors.New("invalid teamId")
 	}
@@ -127,7 +127,7 @@ func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool
 	if err != nil {
 		return false, err
 	}
-	teamId, _ := new(big.Int).SetString(b.TeamId, 10)
+	teamId, _ := new(big.Int).SetString(b.BuyerTeamId, 10)
 	if teamId == nil {
 		return false, errors.New("invalid teamId")
 	}

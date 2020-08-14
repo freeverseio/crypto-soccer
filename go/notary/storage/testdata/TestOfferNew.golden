@@ -11,5 +11,5 @@
 	Seller: (string) "",
 	Buyer: (string) "",
 	AuctionID: (string) "",
-	TeamID: (string) ""
+	BuyerTeamID: (string) ""
 })

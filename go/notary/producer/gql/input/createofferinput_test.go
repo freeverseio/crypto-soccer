@@ -27,7 +27,7 @@ func TestCreateOfferInputHash(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	in.TeamId = "20"
+	in.BuyerTeamId = "20"
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0xad10a9049b75c277bbe800b39eab3c27a9ddbd38ec114c2c016ee2ec6f958377")
@@ -39,7 +39,7 @@ func TestCreateOfferValidSignature(t *testing.T) {
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
-	in.TeamId = "20"
+	in.BuyerTeamId = "20"
 	in.Rnd = 42321
 
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
@@ -54,7 +54,7 @@ func TestCreateOfferSignerAddress(t *testing.T) {
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
-	in.TeamId = "20"
+	in.BuyerTeamId = "20"
 	in.Rnd = 42321
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	address, err := in.SignerAddress(*bc.Contracts)
@@ -67,7 +67,7 @@ func TestCreateOfferIsSignerOwner(t *testing.T) {
 	in.ValidUntil = "2000000000"
 	in.PlayerId = "27487790694"
 	in.CurrencyId = 1
-	in.TeamId = "20"
+	in.BuyerTeamId = "20"
 	in.Price = 41234
 	in.Rnd = 42321
 
@@ -86,7 +86,7 @@ func TestCreateOfferGetOwner(t *testing.T) {
 	in.ValidUntil = "2000000000"
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
-	in.TeamId = "20"
+	in.BuyerTeamId = "20"
 	in.Price = 41234
 	in.Rnd = 42321
 
@@ -221,7 +221,7 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 	in.ValidUntil = "2000000000"
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
-	in.TeamId = "20"
+	in.BuyerTeamId = "20"
 	in.Price = 41234
 	in.Rnd = 42321
 
@@ -272,7 +272,7 @@ func TestCreateOfferPlayerAlreadyOnSale(t *testing.T) {
 	inOffer.ValidUntil = "2000000000"
 	inOffer.PlayerId = "274877906944"
 	inOffer.CurrencyId = 1
-	inOffer.TeamId = "20"
+	inOffer.BuyerTeamId = "20"
 	inOffer.Price = 41234
 	inOffer.Rnd = 42321
 

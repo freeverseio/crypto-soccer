@@ -38,8 +38,8 @@ func TestCreateOffer(t *testing.T) {
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = offererRnd
-	inOffer.TeamId = "274877906945"
-	teamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
+	inOffer.BuyerTeamId = "274877906945"
+	teamId, _ := new(big.Int).SetString(inOffer.BuyerTeamId, 10)
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
 	dummyRnd := int64(0)
@@ -91,7 +91,7 @@ func TestCreateOffer(t *testing.T) {
 	inBid.AuctionId = auctionId
 	inBid.ExtraPrice = 0
 	inBid.Rnd = offererRnd
-	inBid.TeamId = inOffer.TeamId
+	inBid.TeamId = inOffer.BuyerTeamId
 	inBid.Signature = inOffer.Signature
 
 	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
@@ -112,8 +112,8 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = offererRnd
-	inOffer.TeamId = "274877906945"
-	teamId, _ := new(big.Int).SetString(inOffer.TeamId, 10)
+	inOffer.BuyerTeamId = "274877906945"
+	teamId, _ := new(big.Int).SetString(inOffer.BuyerTeamId, 10)
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
 	dummyRnd := int64(0)
@@ -166,7 +166,7 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = offererRnd
-	inOffer.TeamId = teamNotOwnedByOffered.String()
+	inOffer.BuyerTeamId = teamNotOwnedByOffered.String()
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
 	dummyRnd := int64(0)
@@ -190,7 +190,7 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	assert.Error(t, err, "signer is not the owner of teamId 274877906948")
 
 	// exactly same call but with a team truly owned by offerer
-	inOffer.TeamId = teamOwnedByOffered.String()
+	inOffer.BuyerTeamId = teamOwnedByOffered.String()
 	hashOffer, err = signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
