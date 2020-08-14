@@ -30,7 +30,7 @@ func TestAcceptOffer(t *testing.T) {
 	inOffer := input.CreateOfferInput{}
 	inOffer.ValidUntil = offerValidUntil.String()
 	inOffer.PlayerId = playerId.String()
-	inOffer.TeamId = ofererTeamId.String()
+	inOffer.BuyerTeamId = ofererTeamId.String()
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = 4232
@@ -127,7 +127,7 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	inOffer := input.CreateOfferInput{}
 	inOffer.ValidUntil = offerValidUntil.String()
 	inOffer.PlayerId = playerId.String()
-	inOffer.TeamId = ofererTeamId.String()
+	inOffer.BuyerTeamId = ofererTeamId.String()
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = 4232
@@ -203,7 +203,7 @@ func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
 	inOffer := input.CreateOfferInput{}
 	inOffer.ValidUntil = offerValidUntil.String()
 	inOffer.PlayerId = playerId.String()
-	inOffer.TeamId = ofererTeamId.String()
+	inOffer.BuyerTeamId = ofererTeamId.String()
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = 4232
@@ -281,7 +281,7 @@ func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
 	inLowerOffer := input.CreateOfferInput{}
 	inLowerOffer.ValidUntil = lowerOfferValidUntil.String()
 	inLowerOffer.PlayerId = playerId.String()
-	inLowerOffer.TeamId = lowerOfererTeamId.String()
+	inLowerOffer.BuyerTeamId = lowerOfererTeamId.String()
 	inLowerOffer.CurrencyId = 1
 	inLowerOffer.Price = 1000
 	inLowerOffer.Rnd = 4232
@@ -321,7 +321,7 @@ func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
 	inHighestOffer := input.CreateOfferInput{}
 	inHighestOffer.ValidUntil = highestOfferValidUntil.String()
 	inHighestOffer.PlayerId = playerId.String()
-	inHighestOffer.TeamId = highesetOfererTeamId.String()
+	inHighestOffer.BuyerTeamId = highesetOfererTeamId.String()
 	inHighestOffer.CurrencyId = 1
 	inHighestOffer.Price = 2000
 	inHighestOffer.Rnd = 4232

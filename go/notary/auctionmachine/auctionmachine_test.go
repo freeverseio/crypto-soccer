@@ -326,19 +326,19 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	}
 
 	offer := storage.Offer{
-		ID:         "12345",
-		PlayerID:   playerID.String(),
-		CurrencyID: int(currencyID),
-		Price:      price.Int64(),
-		Rnd:        offerRnd.Int64(),
-		ValidUntil: offerValidUntil,
-		Signature:  "0x" + hex.EncodeToString(signOfferMsg),
-		State:      storage.OfferStarted,
-		StateExtra: "",
-		Seller:     crypto.PubkeyToAddress(alice.PublicKey).Hex(),
-		Buyer:      crypto.PubkeyToAddress(bob.PublicKey).Hex(),
-		AuctionID:  "",
-		TeamID:     buyerTeamID.String(),
+		ID:          "12345",
+		PlayerID:    playerID.String(),
+		CurrencyID:  int(currencyID),
+		Price:       price.Int64(),
+		Rnd:         offerRnd.Int64(),
+		ValidUntil:  offerValidUntil,
+		Signature:   "0x" + hex.EncodeToString(signOfferMsg),
+		State:       storage.OfferStarted,
+		StateExtra:  "",
+		Seller:      crypto.PubkeyToAddress(alice.PublicKey).Hex(),
+		Buyer:       crypto.PubkeyToAddress(bob.PublicKey).Hex(),
+		AuctionID:   "",
+		BuyerTeamID: buyerTeamID.String(),
 	}
 
 	hashAuctionMsg, err := signer.HashSellMessage(
