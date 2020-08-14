@@ -204,6 +204,13 @@ namespace NewMSTestProject
                 }
 
             }
-        }  
+        } 
+
+        [TestMethod]
+        public void hashes() {  
+            Serialization serial = new Serialization();
+            TestUtils tu = new TestUtils();
+            Assert.AreEqual((ulong) 4623503348185510199, serial.int_hash("hola")); 
+        }   
     }
 }
