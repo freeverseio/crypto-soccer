@@ -21,13 +21,13 @@ func TestCreateOffer(t *testing.T) {
 	in := input.CreateOfferInput{}
 	in.ValidUntil = "999999999999"
 	in.PlayerId = "274877906940"
-	in.TeamId = "456678987944"
+	in.BuyerTeamId = "456678987944"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 4232
 	in.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	teamId, _ := new(big.Int).SetString(in.TeamId, 10)
+	teamId, _ := new(big.Int).SetString(in.BuyerTeamId, 10)
 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
 	dummyRnd := big.NewInt(0)
 	offerExtraPrice := big.NewInt(0)

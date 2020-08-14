@@ -112,7 +112,7 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 			AuctionId:  graphql.ID(offer.AuctionID),
 			ExtraPrice: 0,
 			Rnd:        int32(offer.Rnd),
-			TeamId:     offer.TeamID,
+			TeamId:     offer.BuyerTeamID,
 		}
 
 		err = CreateBid(service, tx, bid)
