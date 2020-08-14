@@ -441,25 +441,25 @@ func TestFromTheField(t *testing.T) {
 	t.Run("0498232f79495530fa199c6d51fa51b2bfb22989b01e5f390eced6e729b04102.1st.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		assert.NilError(t, err)
 		match.HomeTeam.Owner = "0x433"
 		match.VisitorTeam.Owner = "0x433"
-		assert.NilError(t, err)
-		assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
+		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: VM execution error.")
 	})
 	t.Run("fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		assert.NilError(t, err)
 		match.HomeTeam.Owner = "0x433"
 		match.VisitorTeam.Owner = "0x433"
-		assert.NilError(t, err)
-		assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
+		assert.Error(t, match.Play2ndHalf(*bc.Contracts), "BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: 16")
 	})
 	t.Run("a102d90303aafcdae29c09bc6b338a50048b9cd4d8fa1942cf315bb7e3736aac.2nd.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		assert.NilError(t, err)
 		match.HomeTeam.Owner = "0x433"
 		match.VisitorTeam.Owner = "0x433"
-		assert.NilError(t, err)
-		assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
+		assert.Error(t, match.Play2ndHalf(*bc.Contracts), "BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: 13")
 	})
 }
