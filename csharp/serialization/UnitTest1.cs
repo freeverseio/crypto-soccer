@@ -209,10 +209,14 @@ namespace NewMSTestProject
         [TestMethod]
         public void hashes() {  
             Serialization serial = new Serialization();
-            TestUtils tu = new TestUtils();
-            Assert.AreEqual((ulong) 4623503348185510199, serial.int_hash("hola")); 
-            BigInteger big = new BigInteger(534298574);
-            Assert.AreEqual((ulong) 4623503348185510199, serial.int_hash(big.ToString())); 
+            // This test vector comes from Golang tests.
+            BigInteger big = new BigInteger(123456789);
+            uint unsig = 123456789;
+            string[] inputs = new string[3]{"hola", big.ToString(), unsig.ToString()};
+            ulong[] expectedOutputs = new ulong[3]{4623503348185510199, 492395637191921148, 492395637191921148};
+            for (uint i = 0; i < inputs.Length; i++) {
+                Assert.AreEqual(expectedOutputs[i], serial.int_hash(inputs[i])); 
+            }
         }   
     }
 }
