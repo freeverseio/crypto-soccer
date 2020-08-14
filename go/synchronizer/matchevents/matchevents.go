@@ -117,7 +117,9 @@ func Generate(
 		return emptyEvents, err
 	}
 
-	verseSeedStr := new(big.Int).SetBytes(verseSeed[:]).String()
+	// verseSeedStr := new(big.Int).SetBytes(verseSeed[:]).String()
+	verseSeedStr := string(verseSeed[:])
+
 	seed0 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_0_" + teamId0 + "_" + teamId1))
 	seed1 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_1_" + teamId0 + "_" + teamId1))
 	seed2 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_2_" + teamId0 + "_" + teamId1))
