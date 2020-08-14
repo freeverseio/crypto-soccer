@@ -334,6 +334,7 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 	verseSeed := [32]byte{0x2, 0x1}
 	teamId0 := "1"
 	teamId1 := "2"
+	// this decodedMatchLog comes from: '452312848584470512245079946786433186608365459112320500501947696564481818624'
 	matchLog := [15]uint32{
 		0,        //teamSumSkills,
 		0,        //winner,

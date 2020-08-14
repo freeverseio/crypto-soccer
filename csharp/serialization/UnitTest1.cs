@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Numerics;
 using System;
-
+using static Serialization;
 
 namespace NewMSTestProject
 {
@@ -217,6 +217,70 @@ namespace NewMSTestProject
             for (uint i = 0; i < inputs.Length; i++) {
                 Assert.AreEqual(expectedOutputs[i], serial.int_hash(inputs[i])); 
             }
+        }   
+
+        [TestMethod]
+        public void matchEvents() {  
+            // From TestMatchEvents2ndHalfHardcoded
+            Serialization serial = new Serialization();
+            BigInteger verseSeed = new BigInteger(new byte[]{0x2, 0x1});
+            BigInteger[] teamIds = new BigInteger[2]{1,2};
+            BigInteger log = BigInteger.Parse("452312848584470512245079946786433186608365459112320500501947696564481818624");
+            // matchLog := [15]uint32{
+            //     0,        //teamSumSkills,
+            //     0,        //winner,
+            //     0,        //nGoals,
+            //     0,        //trainingPoints1stHalf = 0,
+            //     12, 3, 5, //outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
+            //     4, 14, //yellowCards1[0], yellowCards1[1],
+            //     1, 1, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
+            //     0, 0, 0} // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+            BigInteger[] matchLogsAndEvents = new BigInteger[2 + 5 * 12] { 
+                log, log,
+                1, 0, 0, 0, 0,
+                1, 0, 0, 0, 0,
+                0, 1, 7, 1, 7,
+                1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                1, 0, 0, 0, 0,
+                1, 0, 0, 0, 0,
+                0, 1, 10, 1, 10,
+                0, 1, 7, 1, 7,
+                0, 0, 0, 0, 0,
+                1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+            };
+            uint NO_SUBS = 11;
+            BigInteger tact1, tact2;
+            string err;
+            (tact1, err) = serial.encodeTactics(
+                new uint[3]{5, 1, NO_SUBS},
+                new uint[3]{3, 4, 7},
+                new uint[14]{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21},
+                new bool[10]{false, false, false, false, false, false, false, false, false, false},
+                0
+            );            
+            Assert.AreEqual("", err);
+            (tact2, err) = serial.encodeTactics(
+                new uint[3]{5, 1, NO_SUBS},
+                new uint[3]{3, 4, 7},
+                new uint[14]{3, 4, 5, 6, 0, 1, 2, 14, 8, 0, 10, 17, 18, 19},
+                new bool[10]{false, false, false, false, false, false, false, false, false, false},
+                0
+            );
+            Assert.AreEqual("", err);
+            BigInteger[] tactics = new BigInteger[2]{tact1, tact2};
+            // NO_SUBS := uint8(11)
+            // lineup0 := [14]uint8{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21}
+            // lineup1 := [14]uint8{3, 4, 5, 6, 0, 1, 2, 14, 8, 0, 10, 17, 18, 19}
+            // substitutions := [3]uint8{5, 1, NO_SUBS}
+            // subsRounds := [3]uint8{4, 6, 7}
+            BigInteger[] ids = new BigInteger[25];
+            for (uint p = 0; p < ids.Length; p++) { ids[p] = p; }
+            BigInteger[][] playerIds = new BigInteger[2][]{ids, ids};
+            bool is2ndHalf = true;
+            MatchEvent[] events;
+            (events, err) = serial.processMatchEvents(is2ndHalf, verseSeed, teamIds, tactics, playerIds, matchLogsAndEvents);
         }   
     }
 }

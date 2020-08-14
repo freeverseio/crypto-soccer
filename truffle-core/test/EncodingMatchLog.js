@@ -188,4 +188,37 @@ contract('EncodingMatchLog', (accounts) => {
             "written testdata for encoding MatchLog does not match expected result"
         );
     });
+
+    it('encoding logs for library', async () =>  {
+        is2ndHalf = true
+        teamSumSkills = 0;
+        winner = 0;
+        nGoals = 0;
+        trainingPoints1stHalf = 0;
+        outOfGames = [14,12];
+        outOfGameTypes = [0,3];
+        outOfGameRounds = [0,5];
+        yellows1 = [14,14];
+        yellows2 = [4,14];
+        ingames1 = [0,0,0]
+        ingames2 = [1,1,0]
+        halfSubs = [0,0,0];
+
+        assistersIdx = [];
+        shootersIdx = [];
+        shooterForwardPos = [];
+        penalties  = Array.from(new Array(7), (x,i) => false);
+        nGKAndDefs1 = 5;
+        nGKAndDefs2 = 5;
+        nTot1 = 11;
+        nTot2 = 11;
+        trainingPoints = 0;
+
+        log = await logUtils.encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+            outOfGames, outOfGameRounds, outOfGameTypes, 
+            isHomeStadium, ingames1, ingames2, yellows1, yellows2, 
+            halfSubs, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
+        );
+        log.toString().should.be.equal('452312848584470512245079946786433186608365459112320500501947696564481818624');
+    });
 });
