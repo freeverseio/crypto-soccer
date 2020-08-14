@@ -38,127 +38,79 @@ public class Serialization {
 	const uint EVNT_SOFT = 3;
 	const uint EVNT_HARD = 4;
 	const uint EVNT_SUBST = 5;
+    BigInteger NIL_PLAYER_ID = new BigInteger(0);
 
-    // INTERNAL UTILITIES
 
-    private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
-
-    private ulong rightShiftAndMask64b(BigInteger encoded, int bitsToDisplace, ulong mask) { return (ulong) ((encoded >> bitsToDisplace) & mask); }
-
-    private BigInteger OrWithLeftShift(BigInteger original, uint val, int bitsToDisplace) { 
-        return original | ((new BigInteger(val)) << bitsToDisplace);
-    }
-
-    // EXPOSED FUNCTIONS
-
-    // PLAYER STATE => contains info about current team, current shirt number, isInTransit...
+    // ENCODING OF PLAYER STATE => contains info about current team, current shirt number, isInTransit...
     public ulong getCurrentTeamId(BigInteger state) { return  rightShiftAndMask64b(state, 0, MASK_43b); }
     public uint getCurrentShirtNum(BigInteger state) { return  rightShiftAndMask(state, 43, 31); }
-
     public ulong getPrevPlayerTeamId(BigInteger state){ return  rightShiftAndMask64b(state, 48, MASK_43b); }
-
     public ulong getLastSaleBlock(BigInteger state){ return  rightShiftAndMask64b(state, 91, MASK_35b); }
-
     public bool getIsInTransit(BigInteger state) { return  getCurrentShirtNum(state) == IN_TRANSIT_SHIRTNUM; }
 
 
-    // PLAYER SKILLS => contains info about (shoot, pass, defence...), birthday, leftishness, etc.
+    // ENCODING OF PLAYER SKILLS => contains info about (shoot, pass, defence...), birthday, leftishness, etc.
     public uint getSkill(BigInteger encodedSkills, int skillIdx) { return  rightShiftAndMask(encodedSkills, skillIdx * 20, MASK_20b); } 
-
     public uint getBirthDay(BigInteger encodedSkills) { return  rightShiftAndMask(encodedSkills, 100, 65535); }
-
     public bool getIsSpecial(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 204, 1) == 1; }
-
     public BigInteger getPlayerIdFromSkills(BigInteger encodedSkills) {
         if (getIsSpecial(encodedSkills)) {    
             return encodedSkills;
         }
         return getInternalPlayerId(encodedSkills); 
     }
-
     public BigInteger getInternalPlayerId(BigInteger encodedSkills) { return ((encodedSkills >> 129) & MASK_43b); }
-
     public uint getPotential(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 116, 15); }
-
     public uint getForwardness(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 120, 7); }
-
     public uint getLeftishness(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 123, 7); }
-
     public uint getAggressiveness(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 126, 7); }
-
     public bool getAlignedEndOfFirstHalf(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 172, 1) == 1; }
-
     public bool getRedCardLastGame(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 173, 1) == 1; }
-
     public uint getGamesNonStopping(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 174, 7); }
-
     public uint getInjuryWeeksLeft(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 177, 7); }
-
     public bool getSubstitutedFirstHalf(BigInteger encodedSkills) {	return rightShiftAndMask(encodedSkills, 180, 1) == 1; }
-
     public uint getSumOfSkills(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 181, MASK_19b); }
-
     public uint getGeneration(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 205, 255); }
-
     public bool getOutOfGameFirstHalf(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 213, 1) == 1; }
-
     public bool getYellowCardFirstHalf(BigInteger encodedSkills) { return rightShiftAndMask(encodedSkills, 214, 1) == 1; }
 
 
-    // MATCH LOG => info about stuff that happened in a match
-
+    // ENCODING OF MATCH LOG => info about stuff that happened in a match
     public uint getAssister(BigInteger log, int pos) { return rightShiftAndMask(log, 4 + 4 * pos, 15); }
-
     public uint getShooter(BigInteger log, int pos) { return rightShiftAndMask(log, 52 + 4 * pos, 15); }
-
     public uint getForwardPos(BigInteger log, int pos) { return rightShiftAndMask(log, 100 + 2 * pos, 3); }
-
     public bool getPenalty(BigInteger log, int pos) { return rightShiftAndMask(log, 124+pos, 1) == 1; }
-
     public bool getIsHomeStadium(BigInteger log) { return rightShiftAndMask(log, 248, 1) == 1; }
-
     /// recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
     public uint getHalfTimeSubs(BigInteger log, int pos) { return rightShiftAndMask(log, 179 + 5 * pos, 31); }
-
     public uint getNGKAndDefs(BigInteger log, bool is2ndHalf) {
         int offset = 194 + 4 * (is2ndHalf ? 1 : 0);
         return rightShiftAndMask(log, offset, 15); 
     }
-
     public uint getNTot(BigInteger log, bool is2ndHalf) {
         int offset = 202 + (is2ndHalf ? 4 : 0);
         return rightShiftAndMask(log, offset, 15); 
     }
-
     public uint getWinner(BigInteger log) { return rightShiftAndMask(log, 210, 3); }
-
     public uint getTeamSumSkills(BigInteger log) { return rightShiftAndMask(log, 212, MASK_24b); } 
-
-
     public uint getTrainingPoints(BigInteger log) { return rightShiftAndMask(log, 236, MASK_12b); } 
-
     public uint getNGoals(BigInteger log) { return rightShiftAndMask(log, 0, 15); }
-
     public uint getOutOfGamePlayer(BigInteger log, bool is2ndHalf) {
         int offset = is2ndHalf ? 141 : 131;
         return rightShiftAndMask(log, offset, 15); 
     }
-
     public uint getOutOfGameType(BigInteger log, bool is2ndHalf) {
         int offset = is2ndHalf ? 141 : 131;
         return rightShiftAndMask(log, offset+4, 3); 
     }
-
     public uint getOutOfGameRound(BigInteger log, bool is2ndHalf) {
         int offset = is2ndHalf ? 141 : 131;
         return rightShiftAndMask(log, offset+6, 15); 
     }
-
     public uint getYellowCard(BigInteger log, int posInHalf, bool is2ndHalf) {
         int offset = 4 * posInHalf + (is2ndHalf ? 159 : 151);
         return rightShiftAndMask(log, offset, 15); 
     }
-
     public uint getInGameSubsHappened(BigInteger log, int posInHalf, bool is2ndHalf) {
         int offset = 167 + 2 * posInHalf + (is2ndHalf ? 6 : 0);
         return rightShiftAndMask(log, offset, 3); 
@@ -166,7 +118,6 @@ public class Serialization {
     public uint getChangesAtHalfTime(BigInteger log) {
         return rightShiftAndMask(log, 249, 3); 
     }
-
     public uint[] fullDecodeMatchLog(BigInteger log, bool is2ndHalf) {
         uint[] decodedLog = new uint[15];
         decodedLog[0] = getTeamSumSkills(log);
@@ -195,7 +146,7 @@ public class Serialization {
     }
 
 
-    // TACTICS => lineup, extraAttack, and substitutions
+    // ENCODING OF TACTICS => lineup, extraAttack, and substitutions
     public (BigInteger encoded, string err) encodeTactics(
         uint[] substitutions, 
         uint[] subsRounds, 
@@ -237,12 +188,8 @@ public class Serialization {
         }          
         return (encoded, "");
     }
-
-
     public uint getTacticsId(BigInteger tactics) { return rightShiftAndMask(tactics, 0, 63); }
-
     public bool getExtraAttack(BigInteger tactics, int p) { return rightShiftAndMask(tactics, 6+p, 1) == 1; }
-
     public bool[] getFullExtraAttack(BigInteger tactics) { 
         bool[] extraAttack = new bool[10];
         for (int p = 0; p < 10; p++) {
@@ -250,13 +197,9 @@ public class Serialization {
         }
         return extraAttack; 
     }
-
     public uint getSubstitution(BigInteger tactics, int p) { return rightShiftAndMask(tactics, 86 + 4 * p, 15); }
-
     public uint getSubsRound(BigInteger tactics, int p) { return rightShiftAndMask(tactics, 98 + 4 * p, 15); }
-
     public uint getLinedUp(BigInteger tactics, int p) { return rightShiftAndMask(tactics, 16 + 5 * p, 31); }
-
     public uint[] getFullLineUp(BigInteger tactics) {
         uint[] lineup = new uint[14];
         for (int p = 0; p < 14; p++) {
@@ -264,7 +207,6 @@ public class Serialization {
         }
         return lineup; 
     }
-
     public uint[] getFullSubstitutions(BigInteger tactics) {
         uint[] subs = new uint[3];
         for (int p = 0; p < 3; p++) {
@@ -272,7 +214,6 @@ public class Serialization {
         }
         return subs; 
     }
-
     public uint[] getFullSubsRounds(BigInteger tactics) {
         uint[] subs = new uint[3];
         for (int p = 0; p < 3; p++) {
@@ -281,7 +222,7 @@ public class Serialization {
         return subs; 
     }
 
-    // TEAMID and PLAYERID => info about (timezone, country idx in that timezone, idx in that country)
+    // ENCODING OF TEAMID and PLAYERID => info about (timezone, country idx in that timezone, idx in that country)
     // - Teams always remain in the same (timezone, country), players
     // - For players, (timezone, country) refer to where were they originally created. 
     //  - To query about the current (timezone, country) for a player => use playerState to find currentTeamId
@@ -290,7 +231,7 @@ public class Serialization {
     public uint getValInCountry(BigInteger encodedId) { return rightShiftAndMask(encodedId, 0, MASK_28b); }
 
 
-    // TRAINING POINTS ASSIGNMENT => encode and decode functions
+    // ENCODING OF TRAINING POINTS ASSIGNMENT => encode and decode functions
     public (uint[] TPperSkill, uint specialPlayer, uint TP, uint err) decodeTP(BigInteger encoded) {
         uint[] TPperSkill = new uint[25];
         uint specialPlayer = rightShiftAndMask(encoded, 234, 31);
@@ -317,7 +258,6 @@ public class Serialization {
         }
         return (TPperSkill, specialPlayer, TP, err);
     }
-
 
     public (BigInteger encoded, string err) encodeTP(uint TP, uint[] TPperSkill, uint specialPlayer) {
         // Test on inputs:
@@ -351,7 +291,7 @@ public class Serialization {
     }
 
 
-    // MATCH EVNTS => Creates the events that happen in ONE HALF of a match
+    // ENCODING OF MATCH EVENTS => Creates the events that happen in ONE HALF of a match
     // From all inputs, only the last one is computed by the blockchain. The others are ready as soon as the user actions are submitted.
     // So, the frontend can prepare everything, and only wait for the backend to provide the last input.
     // - INPUTS
@@ -413,13 +353,36 @@ public class Serialization {
         );
         if (!(err == "")) { return (events, err); }
 
-        // (events, string err) = populateWithPlayerID();
-        // if (!(err == "")) { return (events, err); }
+        (events, err) = populateWithPlayerID(events, playerIds[0], playerIds[1]);
+        if (!(err == "")) { return (events, err); }
 
         return (events, "");
     }
+    public struct MatchEvent {
+        public MatchEvent(uint minute, uint type, uint team, bool managesToShoot, bool isGoal, int primaryPlayer, int secondaryPlayer, BigInteger primaryPlayerID, BigInteger secondaryPlayerID) {
+            Minute = minute;
+            Type = type;
+            Team = team;
+            ManagesToShoot = managesToShoot;
+            IsGoal = isGoal;
+            PrimaryPlayer = primaryPlayer;
+            SecondaryPlayer = secondaryPlayer;
+            PrimaryPlayerID = primaryPlayerID;
+            SecondaryPlayerID = secondaryPlayerID;
+        }
+        public uint Minute;
+        public uint Type;
+        public uint Team;
+        public bool ManagesToShoot;
+        public bool IsGoal;
+        public int PrimaryPlayer;
+        public int SecondaryPlayer;
+        public BigInteger PrimaryPlayerID;
+        public BigInteger SecondaryPlayerID;
+    }
 
-    public (MatchEvent[] events, string err) GenerateEvents(
+    // FROM THIS POINT: Private functions required by ProcessMatchEvents
+    private (MatchEvent[] events, string err) GenerateEvents(
             BigInteger verseSeed,
             BigInteger teamId0,
             BigInteger teamId1,
@@ -467,34 +430,12 @@ public class Serialization {
         }
         return (events, "");
     }
-    public struct MatchEvent {
-        public MatchEvent(uint minute, uint type, uint team, bool managesToShoot, bool isGoal, int primaryPlayer, int secondaryPlayer, BigInteger primaryPlayerID, BigInteger secondaryPlayerID) {
-            Minute = minute;
-            Type = type;
-            Team = team;
-            ManagesToShoot = managesToShoot;
-            IsGoal = isGoal;
-            PrimaryPlayer = primaryPlayer;
-            SecondaryPlayer = secondaryPlayer;
-            PrimaryPlayerID = primaryPlayerID;
-            SecondaryPlayerID = secondaryPlayerID;
-        }
-        public uint Minute;
-        public uint Type;
-        public uint Team;
-        public bool ManagesToShoot;
-        public bool IsGoal;
-        public int PrimaryPlayer;
-        public int SecondaryPlayer;
-        public BigInteger PrimaryPlayerID;
-        public BigInteger SecondaryPlayerID;
-    }
 
     // This function makes sure that all players in lineUp exist in the Universe.
     // To avoid, for example, selling a player after setting the lineUp.
     // It sets to NOONE all lineUp entries pointing to playerIds that are larger than 2.
     // (recall that playerID = 0 if not set, or = 1 if sold)
-    public uint[] RemoveFreeShirtsFromLineUp(uint[] lineUp, BigInteger[] playerIDs) {
+    private uint[] RemoveFreeShirtsFromLineUp(uint[] lineUp, BigInteger[] playerIDs) {
         BigInteger MIN_PLAYERID = new BigInteger(2);
         for (int l = 0; l < lineUp.Length; l++) {
             if (lineUp[l] < NO_LINEUP) {
@@ -543,7 +484,7 @@ public class Serialization {
     // 				(type == 3) 						: null
     // 				(type == 4,5) 						: null
     // 				(type == 6) 						: getting inside field
-    public bool isOutOfGameDataOK(uint[] matchLog) {
+    private bool isOutOfGameDataOK(uint[] matchLog) {
         uint outOfGamePlayer = matchLog[4];
         bool thereWasAnOutOfGame = (outOfGamePlayer < EVNT_NOONE);
         if (thereWasAnOutOfGame && (matchLog[5] > 3 || matchLog[5] == 0)) {
@@ -567,7 +508,7 @@ public class Serialization {
         return (uint) (result % ((ulong) max_val));
     }
 
-    public (MatchEvent[] events, uint[] rounds2mins) addEventsInRound(BigInteger seed, BigInteger[] blockchainEvents, uint[] lineup0, uint[] lineup1) {
+    private (MatchEvent[] events, uint[] rounds2mins) addEventsInRound(BigInteger seed, BigInteger[] blockchainEvents, uint[] lineup0, uint[] lineup1) {
         uint nEvents = (uint) (blockchainEvents.Length - 2) / 5;
         MatchEvent[] events = new MatchEvent[nEvents];
         uint[] rounds2mins = new uint[nEvents];
@@ -617,7 +558,7 @@ public class Serialization {
         return (events, rounds2mins);
     }
 
-    public int toShirtNum(uint posInLineUp, uint[] lineUp) {
+    private int toShirtNum(uint posInLineUp, uint[] lineUp) {
         if (posInLineUp < EVNT_NOONE) {
             return preventNoPlayer(lineUp[posInLineUp]);
         } else {
@@ -625,7 +566,7 @@ public class Serialization {
         }
     }
 
-    public int preventNoPlayer(uint inPlayer) {
+    private int preventNoPlayer(uint inPlayer) {
         if (inPlayer < 25) {
             return (int) inPlayer;
         } else {
@@ -633,7 +574,7 @@ public class Serialization {
         }
     }
 
-    public (MatchEvent[] events, string err) addCardsAndInjuries(uint team, MatchEvent[] events, BigInteger seed, uint[] matchLog, uint[] rounds2mins, uint[] lineUp)  {
+    private (MatchEvent[] events, string err) addCardsAndInjuries(uint team, MatchEvent[] events, BigInteger seed, uint[] matchLog, uint[] rounds2mins, uint[] lineUp)  {
         // matchLog[4,5,6] = outOfGamePlayer, outOfGameType, outOfGameRound
         // note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
         // eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
@@ -665,7 +606,7 @@ public class Serialization {
                 typeOfEvent = EVNT_RED;
             }
             outOfGameMinute = rounds2mins[matchLog[6]];
-            MatchEvent thisEvent = new MatchEvent(outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
+            MatchEvent thisEvent = new MatchEvent(outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, NIL_PLAYER_ID, NIL_PLAYER_ID);
             newEvents.Add(thisEvent);
         }
 
@@ -688,7 +629,7 @@ public class Serialization {
             string salt = "c" + yellowCardPlayer.ToString();
             uint minute = GenerateRnd(seed, salt, maxMinute);
             uint typeOfEvent = EVNT_YELLOW;
-            MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
+            MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, NIL_PLAYER_ID, NIL_PLAYER_ID);
             newEvents.Add(thisEvent);
         }
 
@@ -702,7 +643,7 @@ public class Serialization {
             uint typeOfEvent = EVNT_YELLOW;
             if (yellowCardPlayer == outOfGamePlayer) {
                 if (firstYellowCoincidesWithRed) {
-                    MatchEvent newEvent = new MatchEvent(outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
+                    MatchEvent newEvent = new MatchEvent(outOfGameMinute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, NIL_PLAYER_ID, NIL_PLAYER_ID);
                     newEvents.Add(newEvent);
                     return (newEvents.ToArray(), "");
                 } else {
@@ -712,13 +653,13 @@ public class Serialization {
             string salt = "d" + yellowCardPlayer.ToString();
             uint minute = GenerateRnd(seed, salt, maxMinute);
             // convert player in the lineUp to shirtNum before storing it as match event:
-            MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, new BigInteger(0), new BigInteger(0));
+            MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, primaryPlayer, EVNT_NULL, NIL_PLAYER_ID, NIL_PLAYER_ID);
             newEvents.Add(thisEvent);
         }
         return (newEvents.ToArray(), "");
     }
 
-    public MatchEvent[] addSubstitutions(uint team, MatchEvent[] events, uint[] matchLog, uint[] rounds2mins, uint[] lineup, uint[] substitutions, uint[] subsRounds) {
+    private MatchEvent[] addSubstitutions(uint team, MatchEvent[] events, uint[] matchLog, uint[] rounds2mins, uint[] lineup, uint[] substitutions, uint[] subsRounds) {
         // matchLog:	9,10,11 ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
         // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
         List<MatchEvent> newEvents = events.ToList();
@@ -730,7 +671,7 @@ public class Serialization {
                 int leavingPlayer = toShirtNum(substitutions[i], lineup);
                 int enteringPlayer = toShirtNum(11+i, lineup);
                 uint typeOfEvent = EVNT_SUBST;
-                MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer, new BigInteger(0), new BigInteger(0));
+                MatchEvent thisEvent = new MatchEvent(minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer, NIL_PLAYER_ID, NIL_PLAYER_ID);
                 newEvents.Add(thisEvent);
             }
         }
@@ -739,7 +680,7 @@ public class Serialization {
 
     // make sure that if a player that enters via a substitution appears in any other action (goal, pass, cards & injuries),
     // then the substitution time must take place at least before that minute.
-    public MatchEvent[] adjustSubstitutions(uint team, MatchEvent[] events) {
+    private MatchEvent[] adjustSubstitutions(uint team, MatchEvent[] events) {
         MatchEvent[] adjustedEvents = (MatchEvent[]) events.Clone();
 
         for (uint e = 0; e < events.Length; e++) {
@@ -758,4 +699,57 @@ public class Serialization {
         return adjustedEvents;
     }
 
+    private (MatchEvent[] events, string err) populateWithPlayerID(MatchEvent[] events, BigInteger[] homeTeamPlayerIDs, BigInteger[] visitorTeamPlayerIDs) {
+        for (uint e = 0; e < events.Length; e++) {
+            BigInteger[] primaryPlayerTeam;
+            BigInteger[] secondaryPlayerTeam;
+            BigInteger[] tacklerPlayerTeam;
+            if (events[e].Team == 0) {
+                primaryPlayerTeam = (BigInteger[]) homeTeamPlayerIDs.Clone();
+                secondaryPlayerTeam = (BigInteger[]) homeTeamPlayerIDs.Clone();
+                tacklerPlayerTeam = (BigInteger[]) visitorTeamPlayerIDs.Clone();
+            } else {
+                primaryPlayerTeam = (BigInteger[]) visitorTeamPlayerIDs.Clone();
+                secondaryPlayerTeam = (BigInteger[]) visitorTeamPlayerIDs.Clone();
+                tacklerPlayerTeam = (BigInteger[]) homeTeamPlayerIDs.Clone();
+            }
+
+            if (events[e].PrimaryPlayer != -1) {
+                if (events[e].Type == EVNT_ATTACK && !events[e].ManagesToShoot) {
+                    if (tacklerPlayerTeam[events[e].PrimaryPlayer] == NIL_PLAYER_ID) {
+                        return (events, "inconsistent event: " + e.ToString());
+                    }
+                    events[e].PrimaryPlayerID = tacklerPlayerTeam[events[e].PrimaryPlayer];
+                } else {
+                    if (primaryPlayerTeam[events[e].PrimaryPlayer] == NIL_PLAYER_ID) {
+                        return (events, "inconsistent event: " + e.ToString());
+                    }
+                    events[e].PrimaryPlayerID = primaryPlayerTeam[events[e].PrimaryPlayer];
+                }
+            }
+
+            if (events[e].SecondaryPlayer == -1) { 
+                // no secondary player
+            } else if (events[e].SecondaryPlayer == EVNT_PENALTY) {
+                 events[e].SecondaryPlayerID = new BigInteger(EVNT_PENALTY);
+            } else {
+                // default:
+                if (secondaryPlayerTeam[events[e].SecondaryPlayer] == NIL_PLAYER_ID) {
+                    return (events, "inconsistent event: " + e.ToString());
+                }
+                events[e].SecondaryPlayerID = secondaryPlayerTeam[events[e].SecondaryPlayer];
+            }
+        }
+        return (events, "");
+    }
+
+    // INTERNAL UTILITIES
+
+    private uint rightShiftAndMask(BigInteger encoded, int bitsToDisplace, int mask) { return (uint) ((encoded >> bitsToDisplace) & mask); }
+
+    private ulong rightShiftAndMask64b(BigInteger encoded, int bitsToDisplace, ulong mask) { return (ulong) ((encoded >> bitsToDisplace) & mask); }
+
+    private BigInteger OrWithLeftShift(BigInteger original, uint val, int bitsToDisplace) { 
+        return original | ((new BigInteger(val)) << bitsToDisplace);
+    }
 }
