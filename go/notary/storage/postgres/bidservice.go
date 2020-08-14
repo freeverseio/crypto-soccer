@@ -7,18 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type BidService struct {
-	tx *sql.Tx
-}
-
-func NewBidService(tx *sql.Tx) *BidService {
-	return &BidService{
-		tx: tx,
-	}
-}
-
-func (b BidService) Bids(ID string) ([]storage.Bid, error) {
-	rows, err := b.tx.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1;", ID)
+func (b StorageService) Bids(tx *sql.Tx, ID string) ([]storage.Bid, error) {
+	rows, err := tx.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +37,9 @@ func (b BidService) Bids(ID string) ([]storage.Bid, error) {
 	return bids, nil
 }
 
-func (b BidService) Insert(bid storage.Bid) error {
+func (b StorageService) BidInsert(tx *sql.Tx, bid storage.Bid) error {
 	log.Debugf("[DBMS] + create Bid %v", b)
-	_, err := b.tx.Exec(`INSERT INTO bids 
+	_, err := tx.Exec(`INSERT INTO bids 
 			(auction_id, 
 			extra_price,
 			rnd, 
@@ -75,9 +65,9 @@ func (b BidService) Insert(bid storage.Bid) error {
 	return err
 }
 
-func (b BidService) Update(bid storage.Bid) error {
+func (b StorageService) BidUpdate(tx *sql.Tx, bid storage.Bid) error {
 	log.Debugf("[DBMS] + update Bid %v", b)
-	_, err := b.tx.Exec(`UPDATE bids SET 
+	_, err := tx.Exec(`UPDATE bids SET 
 		state=$1, 
 		state_extra=$2,
 		payment_id=$3,

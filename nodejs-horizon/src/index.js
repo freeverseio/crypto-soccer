@@ -49,7 +49,17 @@ const main = async () => {
         after: Cursor
         orderBy: [AuctionsOrderBy!] = [PRIMARY_KEY_ASC]
         condition: AuctionCondition
-      ): AuctionsConnection!
+      ): AuctionsConnection!,
+      offersByPlayerId(
+        first: Int
+        last: Int
+        offset: Int
+        before: Cursor
+        after: Cursor
+        orderBy: [OffersOrderBy!] = [PRIMARY_KEY_ASC]
+        condition: AuctionCondition
+      ): OffersConnection!
+
     }
 
     extend type Auction {
@@ -58,6 +68,11 @@ const main = async () => {
 
     extend type Bid {
       teamByTeamId: Team
+    }
+
+    extend type Offer {
+      teamByTeamId: Team
+      playerByPlayerId: Player
     }
   `;
 
@@ -70,6 +85,23 @@ const main = async () => {
             schema: marketRemoteSchema,
             operation: 'query',
             fieldName: 'allAuctions',
+            args: {
+              condition: {
+                playerId: player.playerId
+              }
+            },
+            context,
+            info,
+          })
+        }
+      },
+      offersByPlayerId: {
+        fragment: `... on Player { playerId }`,
+        resolve(player, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: marketRemoteSchema,
+            operation: 'query',
+            fieldName: 'allOffers',
             args: {
               condition: {
                 playerId: player.playerId
@@ -115,6 +147,38 @@ const main = async () => {
         }
       }
     },
+    Offer: {
+      teamByTeamId: {
+        fragment: `... on Offer { teamId }`,
+        resolve(offer, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'teamByTeamId',
+            args: {
+              teamId: offer.teamId,
+            },
+            context,
+            info,
+          })
+        }
+      },
+      playerByPlayerId: {
+        fragment: `... on Offer { playerId }`,
+        resolve(offer, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'playerByPlayerId',
+            args: {
+              playerId: offer.playerId,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    }
   };
 
   let schemas = [];

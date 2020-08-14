@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
-
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
+func CreateAuction(service storage.StorageService, tx *sql.Tx, in input.CreateAuctionInput) error {
 	auction := storage.NewAuction()
 	id, err := in.ID()
 	if err != nil {
@@ -34,8 +32,7 @@ func CreateAuction(tx *sql.Tx, in input.CreateAuctionInput) error {
 		return err
 	}
 	auction.Seller = signerAddress.Hex()
-	service := postgres.NewAuctionHistoryService(tx)
-	if err = service.Insert(*auction); err != nil {
+	if err = service.AuctionInsert(tx, *auction); err != nil {
 		return err
 	}
 

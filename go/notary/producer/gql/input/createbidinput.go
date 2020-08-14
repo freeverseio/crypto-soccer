@@ -34,6 +34,7 @@ func (b CreateBidInput) Hash(contracts contracts.Contracts) (common.Hash, error)
 		return common.Hash{}, errors.New("invalid teamId")
 	}
 	isOffer2StartAuction := false
+
 	auctionHash := common.HexToHash(string(b.AuctionId))
 	hash, err := signer.HashBidMessage2(
 		contracts.Market,

@@ -47,5 +47,3 @@ build/
 
 # truffle
 .node-xmlhttprequest-*
-
-/my-scripts
