@@ -220,5 +220,18 @@ contract('EncodingMatchLog', (accounts) => {
             halfSubs, nGKAndDefs1, nGKAndDefs2, nTot1, nTot2, winner, teamSumSkills, trainingPoints
         );
         log.toString().should.be.equal('452312848584470512245079946786433186608365459112320500501947696564481818624');
+
+        result = await utils.fullDecodeMatchLog(log, is2ndHalf).should.be.fulfilled;
+        expected = [
+            0,        //teamSumSkills,
+            0,        //winner,
+            0,        //nGoals,
+            0,        //trainingPoints1stHalf = 0,
+            12, 3, 5, //outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
+            4, 14, //yellowCards1[0], yellowCards1[1],
+            1, 1, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
+            0, 0, 0 // halftimesubs: 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
+        ];
+        debug.compareArrays(result, expected, toNum = true);
     });
 });

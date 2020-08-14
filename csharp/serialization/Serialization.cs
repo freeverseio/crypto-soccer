@@ -512,14 +512,14 @@ public class Serialization {
         uint nEvents = (uint) (blockchainEvents.Length - 2) / 5;
         MatchEvent[] events = new MatchEvent[nEvents];
         uint[] rounds2mins = new uint[nEvents];
-        double deltaMinutes = 45.0 / ((double) (nEvents - 1));
-        uint deltaMinutesInt = (uint) Math.Floor(deltaMinutes);
+        uint deltaMinutes = 45 / (nEvents - 1);
+        Console.WriteLine(deltaMinutes);
         uint lastMinute = 0;
         uint[][] lineUps = new uint[2][]{lineup0, lineup1};
         for (uint e = 0; e < nEvents; e++) {
             // compute minute
             string salt = "a" + e.ToString();
-            uint minute = ((uint) Math.Floor(((double) e) * deltaMinutes)) + GenerateRnd(seed, salt, deltaMinutesInt);
+            uint minute = e * deltaMinutes + GenerateRnd(seed, salt, deltaMinutes);
             if (minute <= lastMinute) {
                 minute = lastMinute + 1;
             }

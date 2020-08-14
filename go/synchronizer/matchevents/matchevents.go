@@ -3,7 +3,6 @@ package matchevents
 import (
 	"errors"
 	"fmt"
-	"math"
 	"math/big"
 	"strconv"
 
@@ -118,9 +117,10 @@ func Generate(
 		return emptyEvents, err
 	}
 
-	seed0 := new(big.Int).SetUint64(int_hash(string(verseSeed[:]) + "_0_" + teamId0 + "_" + teamId1))
-	seed1 := new(big.Int).SetUint64(int_hash(string(verseSeed[:]) + "_1_" + teamId0 + "_" + teamId1))
-	seed2 := new(big.Int).SetUint64(int_hash(string(verseSeed[:]) + "_2_" + teamId0 + "_" + teamId1))
+	verseSeedStr := new(big.Int).SetBytes(verseSeed[:]).String()
+	seed0 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_0_" + teamId0 + "_" + teamId1))
+	seed1 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_1_" + teamId0 + "_" + teamId1))
+	seed2 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_2_" + teamId0 + "_" + teamId1))
 
 	// There are mainly 3 types of events to reports, which are in different parts of the inputs:
 	// - per-round (always 12 per half)
@@ -236,16 +236,15 @@ func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLo
 func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, lineup0 [14]uint8, lineup1 [14]uint8, NULL int16, NOONE int16, PENALTY int16) ([]MatchEvent, []uint64) {
 	var events []MatchEvent
 	nEvents := (len(blockchainEvents) - 2) / 5
-	deltaMinutes := float64(45.0 / ((nEvents - 1) * 1.0))
-	deltaMinutesInt := uint64(math.Floor(deltaMinutes))
-	lineUps := [2][len(lineup1)]uint8{lineup0, lineup1}
+	deltaMinutes := uint64(45 / (nEvents - 1))
 
+	lineUps := [2][len(lineup1)]uint8{lineup0, lineup1}
 	lastMinute := uint64(0)
 	var rounds2mins []uint64
 	for e := 0; e < nEvents; e++ {
 		// compute minute
 		salt := "a" + strconv.Itoa(int(e))
-		minute := uint64(math.Floor(float64(e)*deltaMinutes)) + GenerateRnd(seed, salt, deltaMinutesInt)
+		minute := uint64(e)*deltaMinutes + GenerateRnd(seed, salt, deltaMinutes)
 		if minute <= lastMinute {
 			minute = lastMinute + 1
 		}
