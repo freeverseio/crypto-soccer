@@ -126,6 +126,10 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "3"
 		offer.Buyer = "4"
 
+		offers, err := service.OfferPendingOffers(tx)
+		assert.NilError(t, err)
+		assert.Equal(t, len(offers), 0)
+
 		err = service.OfferInsert(tx, *offer)
 		assert.NilError(t, err)
 
@@ -133,8 +137,8 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 
-		offers, err := service.OfferPendingOffers(tx)
+		offers, err = service.OfferPendingOffers(tx)
 		assert.NilError(t, err)
-		assert.Equal(t, len(offers), 2)
+		assert.Equal(t, len(offers), 1)
 	})
 }
