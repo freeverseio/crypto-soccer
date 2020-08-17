@@ -1,15 +1,9 @@
 const { ApolloServer } = require("apollo-server");
 const { HttpLink } = require("apollo-link-http");
 const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require("graphql-tools");
-const selectPlayerName = require("./repositories/selectPlayerName.js")
-const selectTeamName = require("./repositories/selectTeamName.js")
-const selectTeamManagerName = require("./repositories/selectTeamManagerName.js")
 const fetch = require("node-fetch");
-const program = require("commander");
-const updatePlayerName = require("./repositories/updatePlayerName.js");
-const updateTeamName = require("./repositories/updateTeamName.js");
-const updateTeamManagerName = require("./repositories/updateTeamManagerName.js");
-const version = require("../package.json").version;
+const resolvers = require("./resolvers/resolvers.js")
+const { horizonConfig } = require('./config.js')
 
 const createRemoteSchema = async uri => {
   const link = new HttpLink({ uri, fetch });
@@ -20,14 +14,7 @@ const createRemoteSchema = async uri => {
   });
   return executableSchema;
 };
-
-program
-  .version(version)
-  .option("-h, --horizonUrl <url>", "graphql horizon url", "")
-  .parse(process.argv);
-
-const { horizonUrl } = program;
-
+const horizonUrl = horizonConfig.url
 console.log("--------------------------------------------------------");
 console.log("horizonUrl       : ", horizonUrl);
 console.log("--------------------------------------------------------");
@@ -61,51 +48,6 @@ const main = async () => {
 
     }
   `;
-
-  const resolvers = {
-    Player: {
-      name: {
-        selectionSet: `{ playerId }`,
-        resolve(player, args, context, info) {
-          return selectPlayerName({ playerId: player.playerId }).then(result => { 
-            return result && result.player_name ? result.player_name : player.name
-          })
-        }
-      },
-    },
-    Team: {
-      name: {
-        selectionSet: `{ teamId }`,
-        resolve(team, args, context, info) {
-          return selectTeamName({ teamId: team.teamId }).then(result => { 
-            return result && result.team_name ? result.team_name : team.name
-          })
-        }
-      },
-      managerName: {
-        selectionSet: `{ teamId }`,
-        resolve(team, args, context, info) {
-          return selectTeamManagerName({ teamId: team.teamId }).then(result => { 
-            return result && result.team_manager_name ? result.team_manager_name : team.managerName
-          })
-        }
-      },
-    },
-    Mutation: {
-      setGamePlayerName: async (_, { input: { playerId, name, signature } }) => {
-          await updatePlayerName({ playerId, playerName: name })
-          return playerId 
-        },
-      setGameTeamName: async (_, { input: { teamId, name, signature } }) => {
-        await updateTeamName({ teamId, teamName: name })
-        return teamId 
-      },
-      setGameTeamManagerName: async (_, { input: { teamId, name, signature } }) => {
-        await updateTeamManagerName({ teamId, teamManagerName: name })
-        return teamId 
-      },
-    }
-  };
 
   let schemas = [];
   horizonRemoteSchema && schemas.push(horizonRemoteSchema);

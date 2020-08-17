@@ -1,7 +1,14 @@
-const { PG_CONNECTION_STRING } = process.env;
+const { PG_CONNECTION_STRING, HORIZON_URL } = process.env;
 
 const postgreSQLConfig = {
   connectionString: PG_CONNECTION_STRING
 };
 
-module.exports = postgreSQLConfig;
+const horizonConfig = {
+  url: HORIZON_URL,
+}
+
+module.exports = {
+  postgreSQLConfig,
+  horizonConfig,
+};
