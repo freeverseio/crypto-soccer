@@ -29,14 +29,14 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, errors.New("Invalid signature")
 	}
 
-	// isPlayerOwner, err := args.Input.IsSignerOwner(b.contracts)
-	// if err != nil {
-	// 	return id, err
-	// }
+	isPlayerOwner, err := args.Input.IsSignerOwner(b.contracts)
+	if err != nil {
+		return id, err
+	}
 
-	// if isPlayerOwner {
-	// 	return id, fmt.Errorf("signer is the owner of playerId %v you can't make an offer for your player", args.Input.PlayerId)
-	// }
+	if isPlayerOwner {
+		return id, fmt.Errorf("signer is the owner of playerId %v you can't make an offer for your player", args.Input.PlayerId)
+	}
 
 	isTeamOwner, err := args.Input.IsSignerTeamOwner(b.contracts)
 	if err != nil {

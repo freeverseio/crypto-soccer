@@ -227,7 +227,6 @@ func PublicKeyBytesToAddress(publicKey []byte) common.Address {
 
 func VerifySignature(hash []byte, signature []byte) (bool, error) {
 	sigPublicKey, err := crypto.Ecrecover(hash, signature)
-	fmt.Println("Public key recovered", sigPublicKey)
 	if err != nil {
 		return false, err
 	}

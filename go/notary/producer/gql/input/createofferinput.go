@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 	"strconv"
 
@@ -124,7 +123,6 @@ func (b CreateOfferInput) GetOwner(contracts contracts.Contracts) (common.Addres
 
 func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress(contracts)
-	fmt.Printf("Signer address %v\n", signerAddress.Hex())
 	if err != nil {
 		return false, err
 	}
@@ -132,13 +130,10 @@ func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool
 	if teamId == nil {
 		return false, errors.New("invalid teamId")
 	}
-	fmt.Printf("teamid %v\n", teamId)
 	owner, err := contracts.Market.GetOwnerTeam(&bind.CallOpts{}, teamId)
 	if err != nil {
 		return false, err
 	}
-	fmt.Printf("owner address %v\n", string(owner.Hex()))
-
 	return signerAddress == owner, nil
 }
 
@@ -161,7 +156,6 @@ func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, service 
 	}
 
 	auctions, err := service.AuctionsByPlayerId(tx, b.PlayerId)
-	fmt.Printf("Auctions for player %v : %v\n\n", playerId, auctions)
 	if err != nil {
 		return false, err
 	}

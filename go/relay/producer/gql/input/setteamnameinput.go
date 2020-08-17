@@ -3,7 +3,6 @@ package input
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -29,24 +28,15 @@ func (b SetTeamNameInput) Hash() (common.Hash, error) {
 		{Type: uint256Ty},
 		{Type: stringTy},
 	}
-	fmt.Printf("arguments %v\n", arguments)
 	teamId, _ := new(big.Int).SetString(string(b.TeamId), 10)
 	if teamId == nil {
 		return common.Hash{}, errors.New("Invalid TeamId")
 	}
-	fmt.Printf("TeamId, %v\n", teamId)
-	fmt.Printf("name, %v\n", b.Name)
 
 	bytes, err := arguments.Pack(
 		teamId,
 		b.Name,
 	)
-
-	fmt.Printf("bytes, '%v'\n", bytes)
-	s := string(bytes)
-	fmt.Printf("bytes string, '%v'\n", s)
-	// shex := hex.EncodeToString(bytes)
-	// fmt.Printf("bytes string hex, '%x'\n", bytes)
 
 	if err != nil {
 		return common.Hash{}, err
@@ -72,10 +62,7 @@ func (b SetTeamNameInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	fmt.Printf("Pre prefixed hash %v\n", hash.Hex())
 	hash = helper.PrefixedHash(hash)
-	fmt.Printf("prefixed hash %v\n", hash.Hex())
-	fmt.Printf("signature %v\n", b.Signature)
 	sign, err := hex.DecodeString(b.Signature)
 	if err != nil {
 		return common.Address{}, err
