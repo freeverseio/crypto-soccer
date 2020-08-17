@@ -359,12 +359,11 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - args:
-        - -h
-        - http://horizon:4000/graphql
-        env:
+      - env:
         - name: PG_CONNECTION_STRING
           value: postgresql://$(freeverse_username):$(freeverse_password)@gamedb:5432/game
+        - name: HORIZON_URL
+          value: http://horizon:4000/graphql
         envFrom:
         - configMapRef:
             name: freeverse-configmap
