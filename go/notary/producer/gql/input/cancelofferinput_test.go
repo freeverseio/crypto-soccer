@@ -16,14 +16,14 @@ func TestCancelOfferHash(t *testing.T) {
 	hash, err := in.Hash()
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x4b60b7c7b3f67bb245d5360199fe2754fff8a649a3b483d945f0a77e9897072b")
-	in.OfferId = "43"
+	in.OfferId = "010e16d8e62e4b20676d603a68b30b37d724b2f0f002c4d40adc6ff65b7790c7"
 	hash, err = in.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x5757964f4d77a1fdc41d891587d2dd6fd593df7d2933a5d8f2ecab7ddf26c6fe")
+	assert.Equal(t, hash.Hex(), "0x55fa63286d2bceb791c06e92848e527ae453ee069cef3f3dea6768524dc9dcc6")
 }
 func TestCancelOfferValidSignature(t *testing.T) {
 	in := input.CancelOfferInput{}
-	in.OfferId = "4345345341"
+	in.OfferId = "010e16d8e62e4b20676d603a68b30b37d724b2f0f002c4d40adc6ff65b7790c7"
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	valid, err := in.VerifySignature()
 	assert.NilError(t, err)
