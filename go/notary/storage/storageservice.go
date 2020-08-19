@@ -26,6 +26,7 @@ type StorageService interface {
 
 	// Offer
 	Offer(tx *sql.Tx, ID string) (*Offer, error)
+	OfferPendingOffers(tx *sql.Tx) ([]Offer, error)
 	OfferInsert(tx *sql.Tx, offer Offer) error
 	OfferUpdate(tx *sql.Tx, offer Offer) error
 	OfferByAuctionId(tx *sql.Tx, auctionId string) (*Offer, error)

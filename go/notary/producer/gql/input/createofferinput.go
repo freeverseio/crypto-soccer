@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 	"strconv"
 
@@ -157,7 +156,6 @@ func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, service 
 	}
 
 	auctions, err := service.AuctionsByPlayerId(tx, b.PlayerId)
-	fmt.Printf("Auctions for player %v : %v\n\n", playerId, auctions)
 	if err != nil {
 		return false, err
 	}

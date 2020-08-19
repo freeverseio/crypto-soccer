@@ -7,6 +7,35 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func (b StorageService) OfferPendingOffers(tx *sql.Tx) ([]storage.Offer, error) {
+	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE state = 'started';")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var offers []storage.Offer
+	for rows.Next() {
+		var offer storage.Offer
+		err = rows.Scan(
+			&offer.ID,
+			&offer.PlayerID,
+			&offer.CurrencyID,
+			&offer.Price,
+			&offer.Rnd,
+			&offer.ValidUntil,
+			&offer.Signature,
+			&offer.State,
+			&offer.StateExtra,
+			&offer.Seller,
+			&offer.Buyer,
+			&offer.AuctionID,
+			&offer.BuyerTeamID,
+		)
+		offers = append(offers, offer)
+	}
+	return offers, err
+}
+
 func (b StorageService) Offer(tx *sql.Tx, ID string) (*storage.Offer, error) {
 	rows, err := tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE id = $1;", ID)
 	if err != nil {

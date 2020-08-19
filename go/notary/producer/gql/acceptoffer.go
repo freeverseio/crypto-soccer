@@ -3,7 +3,6 @@ package gql
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/graph-gophers/graphql-go"
@@ -12,11 +11,6 @@ import (
 
 func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (graphql.ID, error) {
 	log.Infof("[notary|producer|gql] create auction %+v", args.Input)
-
-	_, err := strconv.ParseInt(string(args.Input.OfferId), 10, 64)
-	if err != nil {
-		return graphql.ID(""), errors.New("Invalid OfferId")
-	}
 
 	id, err := args.Input.AuctionID()
 	if err != nil {

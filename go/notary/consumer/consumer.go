@@ -202,6 +202,22 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err = tx.Commit(); err != nil {
 			return err
 		}
+	case producer.ProcessOfferEvent:
+		log.Info("[consumer] process offer to expire")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := ProcessOffers(
+			b.service,
+			tx,
+		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}
