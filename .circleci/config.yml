@@ -84,6 +84,12 @@ jobs:
       - generate_contracts_code
       - run: cd dashboard && npm ci
       - run: cd dashboard && npm test -- --ci
+  gamelayer:
+    executor: freeverse
+    steps:
+      - checkout
+      - run: cd nodejs-gamelayer && npm ci
+      - run: cd nodejs-gamelayer && npm run test
   truffle_core:
     executor: freeverse
     parallelism: 20
@@ -198,7 +204,6 @@ jobs:
       - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:dev -t freeverseio/authproxy:${CIRCLE_SHA1} .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev -t freeverseio/universe.api:${CIRCLE_SHA1} .
       - run: cd game.db && docker build -t freeverseio/game.db:dev -t freeverseio/game.db:${CIRCLE_SHA1} .
-      - run: cd game.api && docker build -t freeverseio/game.api:dev -t freeverseio/game.api:${CIRCLE_SHA1} .
       - run: cd nodejs-gamelayer && docker build -t freeverseio/gamelayer:dev -t freeverseio/gamelayer:${CIRCLE_SHA1} .
 
       # push images
@@ -214,7 +219,6 @@ jobs:
       - run: docker push freeverseio/authproxy
       - run: docker push freeverseio/dashboard
       - run: docker push freeverseio/game.db
-      - run: docker push freeverseio/game.api
       - run: docker push freeverseio/gamelayer
 
   dockerization-production:
@@ -236,7 +240,6 @@ jobs:
       - run: cd go && docker build -f Dockerfile.authproxy -t freeverseio/authproxy:${CIRCLE_TAG} .
       - run: cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} .
       - run: cd game.db && docker build -t freeverseio/game.db:${CIRCLE_TAG} .
-      - run: cd game.api && docker build -t freeverseio/game.api:${CIRCLE_TAG} .
       - run: cd nodejs-gamelayer && docker build -t freeverseio/gamelayer:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
@@ -250,7 +253,6 @@ jobs:
       - run: docker push freeverseio/authproxy:${CIRCLE_TAG}
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
       - run: docker push freeverseio/game.db:${CIRCLE_TAG}
-      - run: docker push freeverseio/game.api:${CIRCLE_TAG}
       - run: docker push freeverseio/gamelayer:${CIRCLE_TAG}
   deployk8s:
     docker:
@@ -274,6 +276,8 @@ jobs:
           kustomize edit set image freeverseio/synchronizer:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/universe.api:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/universe.db:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/game.db:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/gamelayer:${CIRCLE_SHA1}
           kustomize build . -o app.yaml
           cat app.yaml
           kubectl -n freeverse apply -f app.yaml
@@ -283,6 +287,10 @@ workflows:
   build_and_test:
     jobs:
       - dashboard:
+          filters:
+            tags:
+              only: /.*/
+      - gamelayer:
           filters:
             tags:
               only: /.*/

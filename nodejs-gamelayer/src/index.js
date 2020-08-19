@@ -23,28 +23,21 @@ const main = async () => {
   const horizonRemoteSchema = await createRemoteSchema(horizonUrl);
   
   const linkTypeDefs = `
-    input SetGamePlayerNameInput {
-      signature: String!
-      playerId: ID!
-      name: String!
-    }
-
-    input SetGameTeamNameInput {
+    input SetTeamNameInput {
       signature: String!
       teamId: ID!
       name: String!
     }
   
-    input SetGameTeamManagerNameInput {
+    input SetTeamManagerNameInput {
       signature: String!
       teamId: ID!
       name: String!
     }
 
     extend type Mutation {
-      setGamePlayerName(input: SetGamePlayerNameInput!): ID!
-      setGameTeamName(input: SetGameTeamNameInput!): ID!
-      setGameTeamManagerName(input: SetGameTeamManagerNameInput!): ID!
+      setTeamName(input: SetTeamNameInput!): ID!
+      setTeamManagerName(input: SetTeamManagerNameInput!): ID!
 
     }
   `;
@@ -58,7 +51,7 @@ const main = async () => {
     resolvers,
   });
   
-  const server = new ApolloServer({ schema, tracing: true });
+  const server = new ApolloServer({ schema });
 
   server.listen().then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
