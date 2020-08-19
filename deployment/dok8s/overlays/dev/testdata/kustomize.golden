@@ -290,7 +290,7 @@ spec:
       - args:
         - -timeout=30
         - -gqlurl
-        - http://horizon:4000
+        - http://gamelayer:4000
         - $(authproxy_extra_args)
         envFrom:
         - configMapRef:
