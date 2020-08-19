@@ -23,7 +23,7 @@ func TestAcceptOfferReturnTheSignature(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	in.OfferId = "12345"
+	in.OfferId = "12abc345cd"
 
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)

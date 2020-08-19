@@ -109,4 +109,36 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		err = service.OfferInsert(tx, *offer)
 		assert.Error(t, err, "some error on duplication")
 	})
+
+	t.Run("TestPendingOffer", func(t *testing.T) {
+		tx, err := service.DB().Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+		offer := storage.NewOffer()
+		offer.Rnd = 4
+		offer.PlayerID = "3"
+		offer.CurrencyID = 3
+		offer.Price = 3
+		offer.ValidUntil = 3
+		offer.Signature = "3"
+		offer.State = storage.OfferStarted
+		offer.StateExtra = "3"
+		offer.Seller = "3"
+		offer.Buyer = "4"
+
+		offers, err := service.OfferPendingOffers(tx)
+		assert.NilError(t, err)
+		assert.Equal(t, len(offers), 0)
+
+		err = service.OfferInsert(tx, *offer)
+		assert.NilError(t, err)
+
+		result, err := service.Offer(tx, offer.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, *result, *offer)
+
+		offers, err = service.OfferPendingOffers(tx)
+		assert.NilError(t, err)
+		assert.Equal(t, len(offers), 1)
+	})
 }
