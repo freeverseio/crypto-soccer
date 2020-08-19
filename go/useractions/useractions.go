@@ -6,11 +6,13 @@ import (
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/freeverseio/crypto-soccer/go/useractions/orgmap"
 )
 
 type UserActions struct {
-	Tactics   []storage.Tactic   `json:"tactics"`
-	Trainings []storage.Training `json:"trainings"`
+	Tactics        []storage.Tactic        `json:"tactics"`
+	Trainings      []storage.Training      `json:"trainings"`
+	OrgMapDenyList []orgmap.OrgMapDenyList `json:"orgmapdenylist"`
 }
 
 type UserActionsPublishService interface {
@@ -51,6 +53,9 @@ func (b *UserActions) Marshal() ([]byte, error) {
 	if b.Trainings == nil {
 		b.Trainings = make([]storage.Training, 0)
 	}
+	if b.OrgMapDenyList == nil {
+		b.OrgMapDenyList = make([]orgmap.OrgMapDenyList, 0)
+	}
 	return json.Marshal(b)
 }
 
@@ -65,6 +70,10 @@ func (b *UserActions) Equal(actions *UserActions) bool {
 	if len(b.Trainings) != len(actions.Trainings) {
 		return false
 	}
+	if len(b.OrgMapDenyList) != len(actions.OrgMapDenyList) {
+		return false
+	}
+
 	for i := range b.Tactics {
 		if b.Tactics[i] != actions.Tactics[i] {
 			return false
@@ -72,6 +81,11 @@ func (b *UserActions) Equal(actions *UserActions) bool {
 	}
 	for i := range b.Trainings {
 		if b.Trainings[i] != actions.Trainings[i] {
+			return false
+		}
+	}
+	for i := range b.OrgMapDenyList {
+		if b.OrgMapDenyList[i] != actions.OrgMapDenyList[i] {
 			return false
 		}
 	}
