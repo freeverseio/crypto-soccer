@@ -79,6 +79,14 @@ const main = async () => {
       nodes: [Message]
     }
 
+    input CreateGameBidInput {
+  		signature: String!
+		  auctionId: ID!
+  		extraPrice: Int!
+  		rnd: Int!
+  		teamId: String!
+	  }
+
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
@@ -91,6 +99,8 @@ const main = async () => {
     extend type Query {
       getMessages(teamId: ID!, limit: Int, offset: Int): Messages!
       getNumUnreadMessages(teamId : ID!): Int!
+      getMessages(teamId: ID!, limit: Int, after: Int): [Message]
+      createGameBid(input: CreateGameBidInput!): ID!
     }
   `;
 
