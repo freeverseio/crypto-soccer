@@ -28,7 +28,6 @@ func (b SetTeamNameInput) Hash() (common.Hash, error) {
 		{Type: uint256Ty},
 		{Type: stringTy},
 	}
-
 	teamId, _ := new(big.Int).SetString(string(b.TeamId), 10)
 	if teamId == nil {
 		return common.Hash{}, errors.New("Invalid TeamId")
@@ -38,6 +37,7 @@ func (b SetTeamNameInput) Hash() (common.Hash, error) {
 		teamId,
 		b.Name,
 	)
+
 	if err != nil {
 		return common.Hash{}, err
 	}

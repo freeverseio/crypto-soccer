@@ -38,3 +38,5 @@ spec:
                -delta, "$(BLOCKS_PER_STEP)"]
       imagePullSecrets:
       - name: docker-secret
+      nodeSelector:
+        beta.kubernetes.io/instance-type: c-8
