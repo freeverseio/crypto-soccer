@@ -217,6 +217,19 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return 'Signer is not the team owner';
         }
       },
+      createGameBid: {
+        //BidValidation
+        resolve(root, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: horizonRemoteSchema,
+            operation: 'mutation',
+            fieldName: 'createBid',
+            args,
+            context,
+            info,
+          });
+        },
+      },
       setMessage: setMessageResolver,
       setBroadcastMessage: setBroadcastMessageResolver,
       setMailboxStart: setMailboxStartResolver,

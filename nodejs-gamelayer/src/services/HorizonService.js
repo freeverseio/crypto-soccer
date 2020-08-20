@@ -52,6 +52,39 @@ class HorizonService {
 
     return result && result.allTeams && result.allTeams.nodes ? result.allTeams.nodes : [];
   }
+
+  async getAuction({ auctionId }) {
+    const query = gql`
+    {
+        auctionById(id: "${auctionId}"){ 
+            price
+        }
+    }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.auctionById ? result.auctionById : {};
+  }
+
+  async getBidsPayed({ teamId }) {
+    const query = gql`
+    {
+      allBids(condition: { teamId: "${teamId}", state: PAID }){
+        nodes {
+          extraPrice
+          auctionByAuctionId{
+            id
+            state
+            price
+          }
+        }
+      }
+    }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allBids && result.allBids.nodes ? result.allBids.nodes : [];
+  }
 }
 
 module.exports = new HorizonService();
