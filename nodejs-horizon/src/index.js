@@ -98,15 +98,12 @@ const main = async () => {
       offersByPlayerId: {
         fragment: `... on Player { playerId }`,
         resolve(player, args, context, info) {
+          args.condition = { ...args.condition, playerId: player.playerId }
           return info.mergeInfo.delegateToSchema({
             schema: marketRemoteSchema,
             operation: 'query',
             fieldName: 'allOffers',
-            args: {
-              condition: {
-                playerId: player.playerId
-              }
-            },
+            args,
             context,
             info,
           })
