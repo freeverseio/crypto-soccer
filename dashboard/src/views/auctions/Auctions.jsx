@@ -6,17 +6,20 @@ import Config from '../../Config';
 
 const GET_AUCTIONS = gql`
 {
-    allAuctions {
-        nodes {
-            id
-            playerId
-            price
-            validUntil
-            seller
-            state
-            stateExtra
-        }
+  allAuctions {
+    nodes {
+      id
+      playerId
+      price
+      validUntil
+      seller
+      state
+      stateExtra
+      playerByPlayerId {
+        name
+      }
     }
+  }
 }
 `;
 
@@ -37,6 +40,7 @@ export default () => {
                 <Table.Row>
                     <Table.HeaderCell>id</Table.HeaderCell>
                     <Table.HeaderCell>playerId</Table.HeaderCell>
+                    <Table.HeaderCell>playerName</Table.HeaderCell>
                     <Table.HeaderCell>price</Table.HeaderCell>
                     <Table.HeaderCell>validUntil</Table.HeaderCell>
                     <Table.HeaderCell>seller</Table.HeaderCell>
@@ -49,6 +53,7 @@ export default () => {
                     <Table.Row key={order.id}>
                         <Table.Cell>{order.id}</Table.Cell>
                         <Table.Cell>{order.playerId}</Table.Cell>
+                        <Table.Cell>{order.playerByPlayerId.name}</Table.Cell>
                         <Table.Cell>{order.price}</Table.Cell>
                         <Table.Cell>{order.validUntil}</Table.Cell>
                         <Table.Cell>{order.seller}</Table.Cell>
