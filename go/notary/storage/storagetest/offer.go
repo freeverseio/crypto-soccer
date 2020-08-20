@@ -141,4 +141,67 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, err)
 		assert.Equal(t, len(offers), 1)
 	})
+
+	t.Run("TestOfferBy", func(t *testing.T) {
+		tx, err := service.DB().Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+		auction := storage.NewAuction()
+		auction.ID = "ciao"
+		auction.Rnd = 4
+		auction.PlayerID = "3"
+		auction.CurrencyID = 3
+		auction.Price = 3
+		auction.ValidUntil = 3
+		auction.Signature = "3"
+		auction.State = storage.AuctionStarted
+		auction.StateExtra = "3"
+		auction.PaymentURL = "3"
+		auction.Seller = "3"
+		assert.NilError(t, service.AuctionInsert(tx, *auction))
+
+		auctionResult, err := service.Auction(tx, auction.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, *auctionResult, *auction)
+
+		offer := storage.NewOffer()
+		offer.State = storage.OfferStarted
+		offer.StateExtra = "priva"
+		offer.Seller = "yo"
+		err = service.OfferInsert(tx, *offer)
+		assert.NilError(t, err)
+		result, err := service.Offer(tx, offer.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, result.State, storage.OfferStarted)
+		assert.Equal(t, result.StateExtra, "priva")
+		assert.Equal(t, result.Seller, "yo")
+
+		offer.StateExtra = "privato"
+		offer.Seller = "yo2"
+		offer.AuctionID = "ciao"
+
+		assert.NilError(t, service.OfferUpdate(tx, *offer))
+		result, err = service.Offer(tx, offer.ID)
+
+		assert.Equal(t, result.AuctionID, "ciao")
+		assert.NilError(t, err)
+		assert.Equal(t, *result, *offer)
+
+		result1, err := service.Offer(tx, offer.ID)
+		assert.NilError(t, err)
+		assert.Equal(t, *result1, *offer)
+
+		result2, err := service.OfferByAuctionId(tx, offer.AuctionID)
+		assert.NilError(t, err)
+		assert.Equal(t, *result2, *offer)
+
+		result3, err := service.OfferByRndPrice(tx, int32(offer.Rnd), int32(offer.Price))
+		assert.NilError(t, err)
+		assert.Equal(t, *result3, *offer)
+
+		offers, err := service.OffersByPlayerId(tx, offer.PlayerID)
+		assert.NilError(t, err)
+		assert.Equal(t, 1, len(offers))
+
+	})
 }

@@ -93,7 +93,7 @@ func (b StorageService) OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*st
 }
 
 func (b StorageService) OfferByAuctionId(tx *sql.Tx, auctionId string) (*storage.Offer, error) {
-	rows, err := tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE auction_id = $1;", auctionId)
+	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE auction_id = $1;", auctionId)
 	if err != nil {
 		return nil, err
 	}
