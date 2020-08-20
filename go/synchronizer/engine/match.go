@@ -23,7 +23,7 @@ type Match struct {
 	Events      matchevents.MatchEvents
 }
 
-const Version2StartEpoch = 1597400666
+const Version2StartEpoch = 1598918400
 
 const isHomeStadium = true
 const isPlayoff = false
