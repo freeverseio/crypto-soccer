@@ -118,6 +118,12 @@ const main = async () => {
       }
       return true;
     }),
+    new FilterRootFields((operation, fieldName, field) => {
+      if (fieldName == 'createBid') {
+        return false;
+      }
+      return true;
+    }),
   ]);
   transformedHorizonRemoteSchema && schemas.push(transformedHorizonRemoteSchema);
   schemas.push(linkTypeDefs);
