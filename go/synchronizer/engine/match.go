@@ -12,6 +12,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 type Match struct {
@@ -21,6 +22,8 @@ type Match struct {
 	VisitorTeam Team
 	Events      matchevents.MatchEvents
 }
+
+const Version2StartEpoch = 1597400666
 
 const isHomeStadium = true
 const isPlayoff = false
@@ -118,7 +121,12 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber 
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
-	err := b.play1stHalf(contracts)
+	var err error
+	if b.StartTime.Cmp(big.NewInt(Version2StartEpoch)) < 0 {
+		err = b.play1stHalfV1(contracts)
+	} else {
+		err = b.play1stHalfV2(contracts)
+	}
 	if err != nil {
 		b.State = storage.MatchCancelled
 		b.StateExtra = err.Error()
@@ -128,7 +136,7 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	return err
 }
 
-func (b *Match) play1stHalf(contracts contracts.Contracts) error {
+func (b *Match) play1stHalfV1(contracts contracts.Contracts) error {
 	is2ndHalf := false
 	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
@@ -195,18 +203,82 @@ func (b *Match) play1stHalf(contracts contracts.Contracts) error {
 	return nil
 }
 
-func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
-	err := b.play2ndHalf(contracts)
+func (b *Match) play1stHalfV2(contracts contracts.Contracts) error {
+	is2ndHalf := false
+	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
+	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
+	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
+	matchLogs := [2]*big.Int{}
+	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
+	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
+	// If we cannot encode a the team's TP assignment, we set it to zero, and see if the match can be played anyway.
+	// If it can, great, the team(s) with incorrect TP will not evolve, that's all.
+	// If it cannot, it will cancel, and return a valid 0-0
+	homeAssignedTP, err := b.HomeTeam.EncodeAssignedTrainingPoints(contracts)
 	if err != nil {
-		b.State = storage.MatchCancelled
-		b.StateExtra = err.Error()
-	} else {
-		b.State = storage.MatchEnd
+		log.Warningf("failed calculating home assignedTP: %v", err)
+		homeAssignedTP = big.NewInt(0)
 	}
-	return err
+	visitorAssignedTP, err := b.VisitorTeam.EncodeAssignedTrainingPoints(contracts)
+	if err != nil {
+		log.Warningf("failed calculating visitor assignedTP: %v", err)
+		visitorAssignedTP = big.NewInt(0)
+	}
+	var BCError uint8
+	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
+		&bind.CallOpts{},
+		b.Seed,
+		b.StartTime,
+		b.Skills(),
+		[2]*big.Int{homeTeamID, visitorTeamID},
+		[2]*big.Int{homeTactic, visitorTactic},
+		matchLogs,
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
+	)
+	// We have two types of possible errors returned:
+	// - Virtual Machine errors (never expected), err != nil => halt
+	// - Controlled error that was properly dealt by BC code, BCError != nil, returns CANCELLED match with valid log and events
+	if err != nil {
+		return errors.Wrap(err, "failed play1stHalfAndEvolve")
+	}
+	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	if err != nil {
+		return errors.Wrap(err, "failed decoding home match log")
+	}
+	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
+	if err != nil {
+		return errors.Wrap(err, "failed decoding visitor match log")
+	}
+	if BCError != 0 {
+		// no events returned, no need to process them. Just log
+		log.Warningf("GAME CANCELLED!!!! Play1stHalfAndEvolve: Solidity code returned error code: %v", BCError)
+	} else {
+		if err = b.processMatchEvents(
+			contracts,
+			logsAndEvents[:],
+			decodedHomeMatchLog,
+			decodedVisitorMatchLog,
+			is2ndHalf,
+		); err != nil {
+			return errors.Wrap(err, "failed processing match events")
+		}
+	}
+	b.HomeTeam.SetSkills(contracts, newSkills[0])
+	b.VisitorTeam.SetSkills(contracts, newSkills[1])
+	b.HomeTeam.MatchLog = logsAndEvents[0].String()
+	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
+	b.HomeGoals = uint8(decodedHomeMatchLog[2])
+	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
+	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
+	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
+	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
+	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
+	return nil
 }
 
-func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
+func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 	is2ndHalf := true
 	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
 	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
@@ -250,6 +322,84 @@ func (b *Match) play2ndHalf(contracts contracts.Contracts) error {
 		is2ndHalf,
 	); err != nil {
 		return errors.Wrap(err, "failed processing match events")
+	}
+	b.HomeTeam.SetSkills(contracts, newSkills[0])
+	b.VisitorTeam.SetSkills(contracts, newSkills[1])
+	b.HomeTeam.MatchLog = logsAndEvents[0].String()
+	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
+	b.HomeGoals = uint8(decodedHomeMatchLog[2])
+	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
+	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
+	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
+	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
+	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
+	b.updateStats()
+	return nil
+}
+
+func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
+	var err error
+	if b.StartTime.Cmp(big.NewInt(Version2StartEpoch)) < 0 {
+		err = b.play2ndHalfV1(contracts)
+	} else {
+		err = b.play2ndHalfV2(contracts)
+	}
+	if err != nil {
+		b.State = storage.MatchCancelled
+		b.StateExtra = err.Error()
+	} else {
+		b.State = storage.MatchEnd
+	}
+	return err
+}
+
+func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
+	is2ndHalf := true
+	homeTeamID, _ := new(big.Int).SetString(b.HomeTeam.TeamID, 10)
+	visitorTeamID, _ := new(big.Int).SetString(b.VisitorTeam.TeamID, 10)
+	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
+	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
+	matchLogs := [2]*big.Int{}
+	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
+	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
+	var BCError uint8
+	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
+		&bind.CallOpts{},
+		b.Seed,
+		b.StartTime,
+		b.Skills(),
+		[2]*big.Int{homeTeamID, visitorTeamID},
+		[2]*big.Int{homeTactic, visitorTactic},
+		matchLogs,
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+	)
+	// We have two types of possible errors returned:
+	// - Virtual Machine errors (never expected), err != nil => halt
+	// - Controlled error that was properly dealt by BC code, BCError != nil, returns CANCELLED match with valid log and events
+	if err != nil {
+		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
+	}
+	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	if err != nil {
+		return errors.Wrap(err, "failed decoding home match log")
+	}
+	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
+	if err != nil {
+		return errors.Wrap(err, "failed decoding visitor match log")
+	}
+	if BCError != 0 {
+		// no events returned, no need to process them. Just log
+		log.Warningf("GAME CANCELLED!!!! Play2ndHalfAndEvolve: Solidity code returned error code: %v", BCError)
+	} else {
+		if err = b.processMatchEvents(
+			contracts,
+			logsAndEvents[:],
+			decodedHomeMatchLog,
+			decodedVisitorMatchLog,
+			is2ndHalf,
+		); err != nil {
+			return errors.Wrap(err, "failed processing match events")
+		}
 	}
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
