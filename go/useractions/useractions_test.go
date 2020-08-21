@@ -16,7 +16,7 @@ func TestMarshal(t *testing.T) {
 	var ua useractions.UserActions
 	data, err := ua.Marshal()
 	assert.NilError(t, err)
-	assert.Equal(t, string(data), `{"tactics":[],"trainings":[],"orgmapdenylist":[]}`)
+	assert.Equal(t, string(data), `{"tactics":[],"trainings":[]}`)
 	ua.Tactics = append(ua.Tactics, storage.Tactic{TeamID: "ciao"})
 	ua.Trainings = append(ua.Trainings, storage.Training{TeamID: "pippo"})
 	data, err = ua.Marshal()
@@ -29,7 +29,7 @@ func TestMarshal(t *testing.T) {
 func TestUnmarshal(t *testing.T) {
 	t.Parallel()
 	var ua useractions.UserActions
-	err := ua.Unmarshal([]byte(`{"tactics":[],"trainings":[],"orgmapdenylist":[]}`))
+	err := ua.Unmarshal([]byte(`{"tactics":[],"trainings":[]}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,8 +38,5 @@ func TestUnmarshal(t *testing.T) {
 	}
 	if len(ua.Trainings) != 0 {
 		t.Fatal("Training not empty")
-	}
-	if len(ua.OrgMapDenyList) != 0 {
-		t.Fatal("OrgMapDenyList not empty")
 	}
 }
