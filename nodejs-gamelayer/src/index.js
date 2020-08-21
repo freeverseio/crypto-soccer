@@ -80,9 +80,9 @@ const main = async () => {
       nodes: [Message]
     }
 
-    input SetTeamMaximumBidInput {
+    input SetOwnerMaximumBidInput {
       signature: String!
-      teamId: ID!
+      owner: ID!
       maximumBid: Int!
     }
 
@@ -95,7 +95,7 @@ const main = async () => {
 	  }
 
     extend type Team {
-      maximumBidByOwner( owner: String! ): Int!
+      maximumBidByOwner: Int!
     }
 
     extend type Mutation {
@@ -113,6 +113,7 @@ const main = async () => {
       getMessages(teamId: ID!, limit: Int, after: Int): [Message]
       createGameBid(input: CreateGameBidInput!): ID!
       setTeamMaximumBid(input: SetTeamMaximumBidInput!): ID!
+      setOwnerMaximumBid(input: SetOwnerMaximumBidInput!): ID!
       createBid(input: CreateBidInput!): ID!
     }
   `;
