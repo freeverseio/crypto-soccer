@@ -1,6 +1,12 @@
 const Web3 = require('web3');
-const { selectTeamName, selectTeamManagerName, updateTeamName, updateTeamManagerName } = require('../repositories');
-const { TeamValidation } = require('../validations');
+const {
+  selectTeamName,
+  selectTeamManagerName,
+  updateTeamName,
+  updateTeamManagerName,
+  updateTeamMaximumBid,
+} = require('../repositories');
+const { TeamValidation, BidValidation } = require('../validations');
 const getMessagesResolver = require('./getMessagesResolver');
 const setMessageReadResolver = require('./setMessageReadResolver');
 const setMailboxStartResolver = require('./setMailboxStartResolver');
@@ -217,18 +223,36 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return 'Signer is not the team owner';
         }
       },
-      createGameBid: {
-        //BidValidation
-        resolve(root, args, context, info) {
-          return info.mergeInfo.delegateToSchema({
-            schema: horizonRemoteSchema,
-            operation: 'mutation',
-            fieldName: 'createBid',
-            args,
-            context,
-            info,
-          });
-        },
+      setTeamMaximumBid: async (_, { input: { teamId, maximumBid, signature } }) => {
+        const teamValidation = new TeamValidation({ teamId, name, signature, web3 });
+        const isSignerOwner = await teamValidation.isSignerOwner();
+
+        if (isSignerOwner) {
+          await updateTeamMaximumBid({ teamId, teamMaximumBid: name });
+          return teamId;
+        } else {
+          return 'Signer is not the team owner';
+        }
+      },
+      createBid: async (_, args, context, info) => {
+        const {
+          input: { teamId, rnd, auctionId, extraPrice, signature },
+        } = args;
+        const bidValidation = new BidValidation({ teamId, rnd, auctionId, extraPrice, signature, web3 });
+        const isAllowed = bidValidation.isAllowedToBid();
+
+        if (!isAllowed) {
+          return 'User not allowed to bid for that amount';
+        }
+
+        return info.mergeInfo.delegateToSchema({
+          schema: horizonRemoteSchema,
+          operation: 'mutation',
+          fieldName: 'createBid',
+          args,
+          context,
+          info,
+        });
       },
       setMessage: setMessageResolver,
       setBroadcastMessage: setBroadcastMessageResolver,
@@ -241,5 +265,3 @@ const resolvers = ({ horizonRemoteSchema }) => {
     },
   };
 };
-
-module.exports = resolvers;

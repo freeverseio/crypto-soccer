@@ -20,7 +20,7 @@ afterEach(() => {
 test('allowed to bid', async () => {
   const web3 = new Web3('')
   bidValidation = new BidValidation({ teamId: '234', rnd: 12345, auctionId: '555', extraPrice: 10, signature: '134ab', web3 });
-  const result = await bidValidation.isSignerAllowedToBid()
+  const result = await bidValidation.isAllowedToBid()
 
   expect(result).toBe(true)
   expect(repositories.selectTeamMaximumBid).toHaveBeenCalledWith({ teamId: '234' })
@@ -35,7 +35,7 @@ test('not allowed to bid because 0 is set', async () => {
   repositories.selectTeamMaximumBid.mockReturnValue(0)
 
   bidValidation = new BidValidation({ teamId: '234', rnd: 12345, auctionId: '555', extraPrice: 10, signature: '134ab', web3 });
-  const result = await bidValidation.isSignerAllowedToBid()
+  const result = await bidValidation.isAllowedToBid()
 
   expect(result).toBe(false)
   expect(repositories.selectTeamMaximumBid).toHaveBeenCalledWith({ teamId: '234' })
@@ -50,7 +50,7 @@ test('not allowed to bid because current maximum bid and computed maximum bid ar
   repositories.selectTeamMaximumBid.mockReturnValue(11)
 
   bidValidation = new BidValidation({ teamId: '234', rnd: 12345, auctionId: '555', extraPrice: 10, signature: '134ab', web3 });
-  const result = await bidValidation.isSignerAllowedToBid()
+  const result = await bidValidation.isAllowedToBid()
 
   expect(result).toBe(false)
   expect(repositories.selectTeamMaximumBid).toHaveBeenCalledWith({ teamId: '234' })
@@ -65,7 +65,7 @@ test('allowed to bid because current maximum bid is lower than total price but c
   HorizonService.getBidsPayed.mockReturnValue([{ extraPrice: 1, auctionByAuctionId: { price: 50 }}])
 
   bidValidation = new BidValidation({ teamId: '234', rnd: 12345, auctionId: '555', extraPrice: 10, signature: '134ab', web3 });
-  const result = await bidValidation.isSignerAllowedToBid()
+  const result = await bidValidation.isAllowedToBid()
 
   expect(result).toBe(true)
   expect(repositories.selectTeamMaximumBid).toHaveBeenCalledWith({ teamId: '234' })

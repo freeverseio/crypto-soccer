@@ -72,6 +72,7 @@ func (p *ActionsSubmitter) Process(tx *sql.Tx) error {
 	}
 	var cid string
 	if nextToUpdate.Day == 7 && nextToUpdate.TurnInDay == 1 {
+		//TODO: generate orgmapdenylist, maybe reaad from db???
 		upcomingUserActions.OrgMapDenyList = make([]orgmap.OrgMapDenyList, 0)
 		cid, err = p.useractionsPublishService.Publish(*upcomingUserActions)
 	} else {

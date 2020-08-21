@@ -6,6 +6,7 @@ const {
   mergeSchemas,
   transformSchema,
   FilterRootFields,
+  GraphQLField,
   FilterTypes,
 } = require('graphql-tools');
 const fetch = require('node-fetch');
@@ -79,7 +80,13 @@ const main = async () => {
       nodes: [Message]
     }
 
-    input CreateGameBidInput {
+    input SetTeamMaximumBidInput {
+      signature: String!
+      teamId: ID!
+      maximumBid: Int!
+    }
+
+    input CreateBidInput {
   		signature: String!
 		  auctionId: ID!
   		extraPrice: Int!
@@ -101,6 +108,8 @@ const main = async () => {
       getNumUnreadMessages(teamId : ID!): Int!
       getMessages(teamId: ID!, limit: Int, after: Int): [Message]
       createGameBid(input: CreateGameBidInput!): ID!
+      setTeamMaximumBid(input: SetTeamMaximumBidInput!): ID!
+      createBid(input: CreateBidInput!): ID!
     }
   `;
 

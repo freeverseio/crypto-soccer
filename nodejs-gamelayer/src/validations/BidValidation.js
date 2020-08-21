@@ -11,29 +11,28 @@ class BidValidation {
     this.web3 = web3  		
   }
 
-  async isSignerAllowedToBid() {
+  async isAllowedToBid() {
     const minimumDefaultBid = 10
     let maximumBid = await selectTeamMaximumBid({ teamId: this.teamId })
 
     if(parseInt(maximumBid) === 0) {
       return false
     }
-    maximumBid = maximumBid || minimumDefaultBid
-
+    maximumBid = parseInt(maximumBid) || minimumDefaultBid
 
     const auction = await HorizonService.getAuction({ auctionId: this.auctionId })
     const totalPrice = parseInt(auction.price) + parseInt(this.extraPrice)
 
-    if(parseInt(maximumBid) > totalPrice) {
+    if(maximumBid > totalPrice) {
       return true
     }
 
     const bidsPayed = await HorizonService.getBidsPayed({ teamId: this.teamId })
     const totalAmountSpent = bidsPayed.reduce((acc, curr) => acc += parseInt(curr.extraPrice) + parseInt(curr.auctionByAuctionId.price), 0)
-    const newMaximumBid = totalAmountSpent * 1.5
+    const newMaximumBid = parseInt(totalAmountSpent) * 1.5
     await updateTeamMaximumBid({ teamId: this.teamId, teamMaximumBid: newMaximumBid })
 
-    if(parseInt(newMaximumBid) > totalPrice) {
+    if(newMaximumBid > totalPrice) {
       return true
     }
     
