@@ -163,7 +163,7 @@ func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, service 
 	isOnSale := false
 
 	for _, auction := range auctions {
-		if (auction.State != storage.AuctionCancelled) && (auction.State != storage.AuctionEnded) {
+		if (auction.State != storage.AuctionCancelled) && (auction.State != storage.AuctionEnded) && (auction.State != storage.AuctionFailed) {
 			isOnSale = true
 		}
 	}
