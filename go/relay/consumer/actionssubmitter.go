@@ -7,8 +7,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"github.com/freeverseio/crypto-soccer/go/useractions/orgmap"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
@@ -72,6 +72,7 @@ func (p *ActionsSubmitter) Process(tx *sql.Tx) error {
 	}
 	var cid string
 	if nextToUpdate.Day == 7 && nextToUpdate.TurnInDay == 1 {
+		//TODO: generate orgmapdenylist or read it from somewhere, maybe db??
 		upcomingUserActions.OrgMapDenyList = make([]orgmap.OrgMapDenyList, 0)
 		cid, err = p.useractionsPublishService.Publish(*upcomingUserActions)
 	} else {
