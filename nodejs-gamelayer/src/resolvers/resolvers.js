@@ -17,6 +17,7 @@ const teamByHomeTeamId = require('./teamByHomeTeamId');
 const teamByVisitorTeamId = require('./teamByVisitorTeamId');
 const teamByBuyerTeamId = require('./teamByBuyerTeamId');
 const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
+const { MINIMUM_DEFAULT_BID } = require('../config.js');
 
 const web3 = new Web3('');
 
@@ -190,6 +191,14 @@ const resolvers = ({ horizonRemoteSchema }) => {
         },
       },
     },
+    maximumBidByOwner: {
+      selectionSet: `{ owner }`,
+      resolve(team, args, context, info) {
+        return selectOwnerMaximumBid({ owner: team.owner }).then((result) => {
+          return result && result.maximum_bid ? result.maximum_bid : MINIMUM_DEFAULT_BID;
+        });
+      },
+    },
     Mutation: {
       setTeamName: async (_, { input: { teamId, name, signature } }) => {
         const teamValidation = new TeamValidation({
@@ -234,6 +243,10 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return 'Signer is not the team owner';
         }
       },
+      setOwnerMaximumBid: async (_, { input: { owner, maximumBid } }) => {
+        await updateOwnerMaximumBid({ owner, maximumBid });
+        return owner;
+      },
       createBid: async (_, args, context, info) => {
         const {
           input: { teamId, rnd, auctionId, extraPrice, signature },
@@ -265,3 +278,5 @@ const resolvers = ({ horizonRemoteSchema }) => {
     },
   };
 };
+
+module.exports = resolvers;

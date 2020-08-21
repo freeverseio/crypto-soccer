@@ -94,6 +94,10 @@ const main = async () => {
   		teamId: String!
 	  }
 
+    extend type Team {
+      maximumBidByOwner( owner: String! ): Int!
+    }
+
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!

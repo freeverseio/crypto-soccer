@@ -11,4 +11,5 @@ const horizonConfig = {
 module.exports = {
   postgreSQLConfig,
   horizonConfig,
+  MINIMUM_DEFAULT_BID: 10,
 };
