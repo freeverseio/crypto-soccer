@@ -1361,13 +1361,13 @@
 			Team: (int16) 0,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 8,
+			PrimaryPlayer: (int16) 9,
 			SecondaryPlayer: (int16) -1,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
 			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 7,
+			Minute: (int16) 5,
 			Type: (int16) 0,
 			Team: (int16) 0,
 			ManagesToShoot: (bool) false,
@@ -1378,12 +1378,12 @@
 			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 10,
+			Minute: (int16) 8,
 			Type: (int16) 0,
 			Team: (int16) 1,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 10,
+			PrimaryPlayer: (int16) 4,
 			SecondaryPlayer: (int16) -1,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
 			SecondaryPlayerID: (string) ""
@@ -1394,13 +1394,13 @@
 			Team: (int16) 0,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 9,
+			PrimaryPlayer: (int16) 4,
 			SecondaryPlayer: (int16) -1,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
 			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 16,
+			Minute: (int16) 18,
 			Type: (int16) 0,
 			Team: (int16) 0,
 			ManagesToShoot: (bool) true,
@@ -1422,20 +1422,31 @@
 			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 26,
+			Minute: (int16) 25,
 			Type: (int16) 0,
 			Team: (int16) 0,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 5,
+			PrimaryPlayer: (int16) 7,
 			SecondaryPlayer: (int16) -1,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
 			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 29,
+			Minute: (int16) 28,
 			Type: (int16) 0,
 			Team: (int16) 0,
+			ManagesToShoot: (bool) false,
+			IsGoal: (bool) false,
+			PrimaryPlayer: (int16) 10,
+			SecondaryPlayer: (int16) -1,
+			PrimaryPlayerID: (string) (len=11) "21342314523",
+			SecondaryPlayerID: (string) ""
+		},
+		(matchevents.MatchEvent) {
+			Minute: (int16) 34,
+			Type: (int16) 0,
+			Team: (int16) 1,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 4,
@@ -1444,18 +1455,7 @@
 			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 32,
-			Type: (int16) 0,
-			Team: (int16) 1,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 9,
-			SecondaryPlayer: (int16) -1,
-			PrimaryPlayerID: (string) (len=11) "21342314523",
-			SecondaryPlayerID: (string) ""
-		},
-		(matchevents.MatchEvent) {
-			Minute: (int16) 39,
+			Minute: (int16) 38,
 			Type: (int16) 0,
 			Team: (int16) 0,
 			ManagesToShoot: (bool) true,
@@ -1466,7 +1466,7 @@
 			SecondaryPlayerID: (string) (len=3) "100"
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 41,
+			Minute: (int16) 40,
 			Type: (int16) 0,
 			Team: (int16) 0,
 			ManagesToShoot: (bool) false,
@@ -1477,12 +1477,12 @@
 			SecondaryPlayerID: (string) ""
 		},
 		(matchevents.MatchEvent) {
-			Minute: (int16) 46,
+			Minute: (int16) 45,
 			Type: (int16) 0,
 			Team: (int16) 0,
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 4,
+			PrimaryPlayer: (int16) 3,
 			SecondaryPlayer: (int16) -1,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
 			SecondaryPlayerID: (string) ""
