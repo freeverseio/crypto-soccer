@@ -750,7 +750,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/game.db:dev
+        image: freeverseio/game.db:0.24.4
         imagePullPolicy: Always
         name: gamedb
         ports:
