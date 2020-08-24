@@ -1,6 +1,7 @@
 package matchevents
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -117,11 +118,9 @@ func Generate(
 		return emptyEvents, err
 	}
 
-	// TODO: we must apply this change when we want to enable the frontend to compute match events
-	// If verse < verseV2
-	verseSeedStr := string(verseSeed[:])
-	// else
-	// verseSeedStr := hex.EncodeToString(verseSeed[:])
+	// before: verseSeedStr := string(verseSeed[:])
+	// now: hex.EncodeToString(verseSeed[:]), because this is precisely the string exposed to frontend from the backend DB
+	verseSeedStr := hex.EncodeToString(verseSeed[:])
 
 	seed0 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_0_" + teamId0 + "_" + teamId1))
 	seed1 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_1_" + teamId0 + "_" + teamId1))
