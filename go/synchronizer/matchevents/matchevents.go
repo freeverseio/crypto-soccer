@@ -1,6 +1,8 @@
 package matchevents
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -12,6 +14,12 @@ import (
 )
 
 type MatchEvents []MatchEvent
+
+func IntHash(s string) uint64 {
+	h := sha256.Sum256([]byte(s))
+	// retain only the first 8 bytes and convert to uint64
+	return binary.LittleEndian.Uint64(h[:8])
+}
 
 func NewMatchEvents(
 	contracts contracts.Contracts,
@@ -122,9 +130,9 @@ func Generate(
 	// now: hex.EncodeToString(verseSeed[:]), because this is precisely the string exposed to frontend from the backend DB
 	verseSeedStr := hex.EncodeToString(verseSeed[:])
 
-	seed0 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_0_" + teamId0 + "_" + teamId1))
-	seed1 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_1_" + teamId0 + "_" + teamId1))
-	seed2 := new(big.Int).SetUint64(int_hash(verseSeedStr + "_2_" + teamId0 + "_" + teamId1))
+	seed0 := new(big.Int).SetUint64(IntHash(verseSeedStr + "_0_" + teamId0 + "_" + teamId1))
+	seed1 := new(big.Int).SetUint64(IntHash(verseSeedStr + "_1_" + teamId0 + "_" + teamId1))
+	seed2 := new(big.Int).SetUint64(IntHash(verseSeedStr + "_2_" + teamId0 + "_" + teamId1))
 
 	// There are mainly 3 types of events to reports, which are in different parts of the inputs:
 	// - per-round (always 12 per half)
