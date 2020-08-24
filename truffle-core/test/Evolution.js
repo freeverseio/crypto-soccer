@@ -368,12 +368,60 @@ contract('Evolution', (accounts) => {
         for (player of m.VisitorTeam.Players){ 
             skills1.push(player.EncodedSkills);
         }
+        // we set injury weeks to 1, to check that they all become 0 after this 2nd half.
+        for (p = 0; p < 8; p++) {
+            skills0[p] = await evo.setInjuryWeeksLeft(skills0[p], 1);
+        }
+
+        // we started with players that had 0, 1 or 2 games non stopping. We'll see that after cancelling this 2nd half, they all rested. 
+        // we also see that someone had a red card from last game, which will also be set to false.
+        expectedGamesNonStopping = [ 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ];
+        gamesNonStopping = [];
+        someoneWithRedCard = false;
+        for (teamSkills of [skills0, skills1]) {
+            for (skill of teamSkills) {
+                result = await assets.getGamesNonStopping(skill);
+                gamesNonStopping.push(result.toNumber());
+                result = await assets.getRedCardLastGame(skill);
+                if (result) someoneWithRedCard = true;
+            }
+        }
+        debug.compareArrays(gamesNonStopping, expectedGamesNonStopping, toNum = false);
+        someoneWithRedCard.should.be.equal(true);
+
+        assert.equal(false, await evo.getIsCancelled(m.HomeTeam.MatchLog));
+        assert.equal(false, await evo.getIsCancelled(m.VisitorTeam.MatchLog));
+
         var {0: skills, 1: matchLogsAndEvents, 2: err} =  await play.play2ndHalfAndEvolve(
             m.Seed, m.StartTime, [skills0, skills1], [m.HomeTeam.TeamID, m.VisitorTeam.TeamID], 
             [m.HomeTeam.Tactic, m.VisitorTeam.Tactic], [m.HomeTeam.MatchLog, m.VisitorTeam.MatchLog],
             [is2nd = true, isHom = true, isPlay = false, isBotHome, isBotAway]
         ).should.be.fulfilled;
         err.toNumber().should.be.equal(Err.ERR_PLAYHALF_HALFCHANGES);
+
+        for (teamSkills of skills) {
+            for (skill of teamSkills) {
+                assert.equal(false, await assets.getAlignedEndOfFirstHalf(skill));
+                assert.equal(false, await assets.getSubstitutedFirstHalf(skill));
+                assert.equal(false, await assets.getOutOfGameFirstHalf(skill));
+                assert.equal(false, await assets.getYellowCardFirstHalf(skill));
+                assert.equal(false, await assets.getRedCardLastGame(skill));
+                assert.equal(0, await assets.getGamesNonStopping(skill));
+                assert.equal(0, await assets.getInjuryWeeksLeft(skill));
+            }
+        }
+        assert.equal(true, await evo.getIsCancelled(matchLogsAndEvents[0]));
+        assert.equal(true, await evo.getIsCancelled(matchLogsAndEvents[1]));
+
+        // check that the result is a valid 0-0, with no events
+        const DRAW = 2;
+        assert.equal(DRAW, Number(await evo.getWinner(matchLogsAndEvents[0])));
+        assert.equal(DRAW, Number(await evo.getWinner(matchLogsAndEvents[1])));
+        assert.equal(0, Number(await evo.getNGoals(matchLogsAndEvents[0])));
+        assert.equal(0, Number(await evo.getNGoals(matchLogsAndEvents[1])));
+        for (event = 2; event < matchLogsAndEvents.length; event++) {
+            assert.equal(0, matchLogsAndEvents[event]);
+        }
     });
 
     it('test from real usage that failed in half time because a new division was created in half time, with aligned1stHalf = false', async () => {
@@ -545,7 +593,7 @@ contract('Evolution', (accounts) => {
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
         expectedGoals = [4, 0];
-        expectedPoints = [56, 10];
+        expectedPoints = [58, 10];
         expectedSums = [55000,33022];
         expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
@@ -569,7 +617,7 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
 
         var {0: nPenalties, 1: nPenaltiesFailed, 2: shooters} = getPenaltyData(matchLogsAndEvents);
-        nPenalties.should.be.equal(0);
+        nPenalties.should.be.equal(1);
         nPenaltiesFailed.should.be.equal(0);
 
         goals = [];
@@ -626,9 +674,9 @@ contract('Evolution', (accounts) => {
             sums.push(sum.toNumber());
             
         }   
-        expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
-        expectedSho = [ 6, 8, 1, 9, 8, 1 ];     
-        expectedAss = [ 6, 10, 6, 9, 8, 6 ];     
+        expectedFwds = [ 1, 3, 1, 3, 3, 1 ];     
+        expectedSho = [ 1, 8, 1, 9, 8, 1 ];     
+        expectedAss = [ 4, 14, 6, 9, 8, 6 ];     
         fwds = [];
         sho = [];
         ass = [];
@@ -1454,7 +1502,66 @@ contract('Evolution', (accounts) => {
         }
     });
     
-    it('test that we can a 1st half and include apply training points too', async () => {
+
+    it('test cancelling 1st half does what it should', async () => {
+        const [TP, TPperSkill] = getDefaultTPs();
+        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the assignedTPs:
+        prev2ndHalfLog = 0;
+        teamIds = [1,2]
+        verseSeed = '0x234ab3'
+        
+        lineUpNew = [...lineupConsecutive];
+        lineUpNew[0] = 16;
+        subst = [6, 10, 0]
+        tacticsNew = await engine.encodeTactics(subst, subsRounds, setNoSubstInLineUp(lineUpNew, subst), 
+        extraAttackNull, tacticId433).should.be.fulfilled;
+        
+        // We will add players with non-null gamesNonStopping, RedCardsLastGame, and Injury weeks
+        // They should all be reset when a 1st half is cancelled, except for injury weeks left, which is only updates in 2nd half.
+        teamState = [...teamStateAll50Half1];
+        teamState[0] = await evo.setGamesNonStopping(teamState[0], 3).should.be.fulfilled; 
+        teamState[1] = await evo.setRedCardLastGame(teamState[0], true).should.be.fulfilled; 
+        teamState[2] = await evo.setInjuryWeeksLeft(teamState[0], 5).should.be.fulfilled; 
+
+        assert.equal(false, await evo.getIsCancelled(prev2ndHalfLog));
+
+        var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play1stHalfAndEvolve(
+            verseSeed, now, [teamState, teamState], teamIds, [tacticsNew, tacticsNew], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff, isBotHome, isBotAway], [assignment, assignment]
+        ).should.be.fulfilled;
+        
+        err.toNumber().should.be.equal(Err.ERR_TRAINING_PREVMATCH);
+
+        assert.equal(true, await evo.getIsCancelled(matchLogsAndEvents[0]));
+        assert.equal(true, await evo.getIsCancelled(matchLogsAndEvents[1]));
+
+        // everything is reset, except for injury weeks left:
+        for (teamSkills of skills) {
+            for (skill of teamSkills) {
+                assert.equal(false, await assets.getAlignedEndOfFirstHalf(skill));
+                assert.equal(false, await assets.getSubstitutedFirstHalf(skill));
+                assert.equal(false, await assets.getOutOfGameFirstHalf(skill));
+                assert.equal(false, await assets.getYellowCardFirstHalf(skill));
+                assert.equal(false, await assets.getRedCardLastGame(skill));
+                assert.equal(0, Number(await assets.getGamesNonStopping(skill)));
+            }
+        }
+        assert.equal(5, Number(await assets.getInjuryWeeksLeft(skills[team=0][2])));
+        assert.equal(5, Number(await assets.getInjuryWeeksLeft(skills[team=1][2])));
+
+        // The winner is still not set (it is only at the end of 2nd half)
+        assert.equal(0, Number(await evo.getWinner(matchLogsAndEvents[0])));
+        assert.equal(0, Number(await evo.getWinner(matchLogsAndEvents[1])));
+        // check that the result is a valid 0-0, with no events
+        assert.equal(0, Number(await evo.getNGoals(matchLogsAndEvents[0])));
+        assert.equal(0, Number(await evo.getNGoals(matchLogsAndEvents[1])));
+        for (event = 2; event < matchLogsAndEvents.length; event++) {
+            assert.equal(0, matchLogsAndEvents[event]);
+        }
+    });
+
+    it('test that we can play a 1st half and include apply training points too', async () => {
         const [TP, TPperSkill] = getDefaultTPs();
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the assignedTPs:
@@ -1577,6 +1684,49 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(skills[1], emptyTeam, toNum = true, isBigNumber = false);
     });
         
+    it('test that if 1st half is cancelled, then 2nd half is cancelled properly', async () => {
+        // play half 2 works:
+        teamState = [...teamStateAll50Half2];
+        verseSeed = '0x234ab3';
+        teamIds = [1,2];
+        var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play2ndHalfAndEvolve(
+            verseSeed, now, [teamState, teamState], teamIds, [tactics1NoChanges, tactics1NoChanges], [0,0], 
+            [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]
+        ).should.be.fulfilled;
+        err.toNumber().should.be.equal(0);
+
+        // play half 2 with exactly the same params fails because 1st half was cancelled:
+        log = await evo.setIsCancelled(0, true);    
+        assert.equal(true, await evo.getIsCancelled(log));
+
+        var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play2ndHalfAndEvolve(
+            verseSeed, now, [teamState, teamState], teamIds, [tactics1NoChanges, tactics1NoChanges], [log, log], 
+            [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]
+        ).should.be.fulfilled;
+
+        err.toNumber().should.be.equal(Err.ERR_2NDHALF_CANCELLED_DUE_TO_1STHALF_CANCELLED);
+        // everything is reset, except for injury weeks left:
+        for (teamSkills of skills) {
+            for (skill of teamSkills) {
+                assert.equal(false, await assets.getAlignedEndOfFirstHalf(skill));
+                assert.equal(false, await assets.getSubstitutedFirstHalf(skill));
+                assert.equal(false, await assets.getOutOfGameFirstHalf(skill));
+                assert.equal(false, await assets.getYellowCardFirstHalf(skill));
+                assert.equal(false, await assets.getRedCardLastGame(skill));
+                assert.equal(0, Number(await assets.getGamesNonStopping(skill)));
+                assert.equal(0, Number(await assets.getInjuryWeeksLeft(skill)));
+            }
+        }
+        // check that the result is a valid 0-0, with no events
+        DRAW = 2;
+        assert.equal(DRAW, Number(await evo.getWinner(matchLogsAndEvents[0])));
+        assert.equal(DRAW, Number(await evo.getWinner(matchLogsAndEvents[1])));
+        assert.equal(0, Number(await evo.getNGoals(matchLogsAndEvents[0])));
+        assert.equal(0, Number(await evo.getNGoals(matchLogsAndEvents[1])));
+        for (event = 2; event < matchLogsAndEvents.length; event++) {
+            assert.equal(0, matchLogsAndEvents[event]);
+        }
+    });
     
     it('test that we can play a 2nd half, include the training points, and check gamesNonStopping', async () => {
         const [TP, TPperSkill] = getDefaultTPs();
@@ -1639,7 +1789,7 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
 
         var {0: nPenalties, 1: nPenaltiesFailed, 2: shooters} = getPenaltyData(matchLogsAndEvents);
-        nPenalties.should.be.equal(0);
+        nPenalties.should.be.equal(1);
         nPenaltiesFailed.should.be.equal(0);
 
 
@@ -1665,7 +1815,7 @@ contract('Evolution', (accounts) => {
 
         // check Training Points (and Goals)
         expectedGoals = [5, 5];
-        expectedPoints = [32, 22];
+        expectedPoints = [36, 22];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {

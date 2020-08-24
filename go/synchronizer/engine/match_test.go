@@ -131,13 +131,13 @@ func TestPlay2ndHalf(t *testing.T) {
 	assert.Equal(t, m.VisitorGoals, uint8(0))
 	assert.Equal(t, m.HomeTeamSumSkills, uint32(310768))
 	assert.Equal(t, m.VisitorTeamSumSkills, uint32(0))
-	assert.Equal(t, m.HomeTeam.MatchLog, "1366658250087751806343630264773503904750106548312615650419628309850513174956")
+	assert.Equal(t, m.HomeTeam.MatchLog, "1367431245678592349487822957430078931600781052235089130055218559588686578092")
 	assert.Equal(t, m.VisitorTeam.MatchLog, "453417127998752878579313895046885332805772749864698495872613665095326629888")
 	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "0")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "155218553469186416027682967445911512183820227384804656612901864")
 	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "0")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "4600807814280360774460723191042511563333025959642222")
-	assert.Equal(t, m.HomeTeam.TrainingPoints, uint16(88))
+	assert.Equal(t, m.HomeTeam.TrainingPoints, uint16(95))
 	assert.Equal(t, m.VisitorTeam.TrainingPoints, uint16(10))
 }
 
@@ -436,39 +436,30 @@ func TestMatchEventsGeneration(t *testing.T) {
 }
 
 func TestFromTheField(t *testing.T) {
+	// These tests used to fail badly, returning error. Now they fail gracefully, returning 0-0 and valid skills, logs, etc.
 	t.Parallel()
-	// test remove because with new matchLog, this does not make sense:
-	// t.Run("b65d48b5a6a4075098e6a996bece8f5aeec8b2ac73c6d62a8de8a18bc28a5230.1st.error.json", func(t *testing.T) {
-	// 	input := golden.Get(t, t.Name())
-	// 	match, err := engine.NewMatchFromJson(input)
-	// 	assert.NilError(t, err)
-	// 	assert.NilError(t, match.Play1stHalf(*bc.Contracts))
-	// })
-	// the following should fail because user saw 45 TPs when he actually had only 44 available:
 	t.Run("0498232f79495530fa199c6d51fa51b2bfb22989b01e5f390eced6e729b04102.1st.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		assert.NilError(t, err)
 		match.HomeTeam.Owner = "0x433"
 		match.VisitorTeam.Owner = "0x433"
-		assert.NilError(t, err)
-		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: VM execution error.")
+		assert.Error(t, match.Play1stHalf(*bc.Contracts), "failed calculating visitor assignedTP: one of the assigned TPs is too large")
 	})
 	t.Run("fe6e996fc594c5043f29040561cc95c02c0f68ccdc80047a30e42e74f3b402f8.2nd.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		assert.NilError(t, err)
 		match.HomeTeam.Owner = "0x433"
 		match.VisitorTeam.Owner = "0x433"
-		assert.NilError(t, err)
 		assert.Error(t, match.Play2ndHalf(*bc.Contracts), "BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: 16")
-		// assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
 	})
 	t.Run("a102d90303aafcdae29c09bc6b338a50048b9cd4d8fa1942cf315bb7e3736aac.2nd.error.json", func(t *testing.T) {
 		input := golden.Get(t, t.Name())
 		match, err := engine.NewMatchFromJson(input)
+		assert.NilError(t, err)
 		match.HomeTeam.Owner = "0x433"
 		match.VisitorTeam.Owner = "0x433"
-		assert.NilError(t, err)
 		assert.Error(t, match.Play2ndHalf(*bc.Contracts), "BLOCKCHAIN ERROR!!!! play2ndHalfAndEvolve: Blockchain returned error code: 13")
-		// assert.NilError(t, match.Play2ndHalf(*bc.Contracts))
 	})
 }

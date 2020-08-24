@@ -10,12 +10,12 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	log "github.com/sirupsen/logrus"
 )
 
 type BidMachine struct {
-	market          marketpay.IMarketPay
+	market          marketpay.MarketPayService
 	auction         storage.Auction
 	bid             *storage.Bid
 	contracts       contracts.Contracts
@@ -24,7 +24,7 @@ type BidMachine struct {
 }
 
 func New(
-	market marketpay.IMarketPay,
+	market marketpay.MarketPayService,
 	auction storage.Auction,
 	bid *storage.Bid,
 	contracts contracts.Contracts,

@@ -3,14 +3,14 @@ package auctionmachine_test
 import (
 	"testing"
 
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
 func TestValidationAuctionInvalidState(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -20,18 +20,19 @@ func TestValidationAuctionInvalidState(t *testing.T) {
 	bids := []storage.Bid{*bid}
 
 	auction.State = storage.AuctionWithdrableBySeller
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	offer := storage.NewOffer()
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.Error(t, m.ProcessValidation(market), "auction[|withadrable_by_seller] is not in state validation")
 
 	auction.State = storage.AuctionAssetFrozen
-	m, err = auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	m, err = auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.Error(t, m.ProcessValidation(market), "auction[|asset_frozen] is not in state validation")
 }
 
 func TestValidationAuctionValidOrderInvalidState(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -42,14 +43,15 @@ func TestValidationAuctionValidOrderInvalidState(t *testing.T) {
 
 	order.Status = "DRAFT"
 	auction.State = storage.AuctionValidation
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	offer := storage.NewOffer()
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessValidation(market))
 	assert.Equal(t, m.State(), storage.AuctionValidation)
 }
 
 func TestValidationAuctionValidOrderPendingRelease(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -60,14 +62,15 @@ func TestValidationAuctionValidOrderPendingRelease(t *testing.T) {
 
 	order.Status = "PENDING_RELEASE"
 	auction.State = storage.AuctionValidation
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	offer := storage.NewOffer()
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessValidation(market))
 	assert.Equal(t, m.State(), storage.AuctionValidation)
 }
 
 func TestValidationAuctionValidOrderReleased(t *testing.T) {
-	market := marketpay.NewMockMarketPay()
+	market := v1.NewMockMarketPay()
 	order, err := market.CreateOrder("Bellaciao", "1000.0")
 	assert.NilError(t, err)
 	auction := storage.NewAuction()
@@ -78,7 +81,8 @@ func TestValidationAuctionValidOrderReleased(t *testing.T) {
 
 	order.Status = "RELEASED"
 	auction.State = storage.AuctionValidation
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	offer := storage.NewOffer()
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessValidation(market))
 	assert.Equal(t, m.State(), storage.AuctionEnded)

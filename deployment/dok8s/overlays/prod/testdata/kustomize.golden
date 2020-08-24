@@ -52,6 +52,42 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/app: gamedb
+    app.kubernetes.io/component: gamedb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: gamedb
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app.kubernetes.io/app: gamedb
+    app.kubernetes.io/component: gamedb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/app: gamelayer
+    app.kubernetes.io/component: gamelayer
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: gamelayer
+spec:
+  ports:
+  - port: 4000
+  selector:
+    app.kubernetes.io/app: gamelayer
+    app.kubernetes.io/component: gamelayer
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
     app.kubernetes.io/app: horizon
     app.kubernetes.io/component: horizon
     app.kubernetes.io/part-of: cryptosoccer
@@ -251,12 +287,12 @@ spec:
       - args:
         - -timeout=30
         - -gqlurl
-        - http://horizon:4000
+        - http://gamelayer:4000
         - $(authproxy_extra_args)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/authproxy:0.24.3
+        image: freeverseio/authproxy:0.24.4
         imagePullPolicy: Always
         name: authproxy
       imagePullSecrets:
@@ -288,9 +324,49 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/dashboard:0.24.3
+      - image: freeverseio/dashboard:0.24.4
         imagePullPolicy: Always
         name: dashboard
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/app: gamelayer
+    app.kubernetes.io/component: gamelayer
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: gamelayer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: gamelayer
+      app.kubernetes.io/component: gamelayer
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: gamelayer
+        app.kubernetes.io/component: gamelayer
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - env:
+        - name: PG_CONNECTION_STRING
+          value: postgresql://$(freeverse_username):$(freeverse_password)@gamedb:5432/game
+        - name: HORIZON_URL
+          value: http://horizon:4000/graphql
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/gamelayer:0.24.4
+        imagePullPolicy: Always
+        name: gamelayer
       imagePullSecrets:
       - name: docker-secret
 ---
@@ -329,10 +405,11 @@ spec:
         - http://relayactions:4000/graphql
         - -n
         - http://notary:4000/graphql
+        - $(horizon_extra_args)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/horizon:0.24.3
+        image: freeverseio/horizon:0.24.4
         imagePullPolicy: Always
         name: horizon
       imagePullSecrets:
@@ -387,7 +464,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.notary:0.24.3
+        image: freeverseio/market.notary:0.24.4
         imagePullPolicy: Always
         name: notary
         ports:
@@ -496,7 +573,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/relay.actions:0.24.3
+        image: freeverseio/relay.actions:0.24.4
         imagePullPolicy: Always
         name: relayactions
         ports:
@@ -552,9 +629,12 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/synchronizer:0.24.3
+        image: freeverseio/synchronizer:0.24.4
         imagePullPolicy: Always
         name: synchronizer
+        resources:
+          requests:
+            cpu: "3"
       imagePullSecrets:
       - name: docker-secret
       nodeSelector:
@@ -594,7 +674,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.trader:0.24.3
+        image: freeverseio/market.trader:0.24.4
         imagePullPolicy: Always
         name: trader
       imagePullSecrets:
@@ -632,13 +712,70 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/universe.api:0.24.3
+        image: freeverseio/universe.api:0.24.4
         imagePullPolicy: Always
         name: universeapi
         ports:
         - containerPort: 4000
       imagePullSecrets:
       - name: docker-secret
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/app: gamedb
+    app.kubernetes.io/component: gamedb
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: gamedb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: gamedb
+      app.kubernetes.io/component: gamedb
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  serviceName: gamedb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: gamedb
+        app.kubernetes.io/component: gamedb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: freeverseio/game.db:dev
+        imagePullPolicy: Always
+        name: gamedb
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: gamedb-storage
+      imagePullSecrets:
+      - name: docker-secret
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/app: gamedb
+        app.kubernetes.io/component: gamedb
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+      name: gamedb-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 50Gi
+      storageClassName: do-block-storage
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -670,7 +807,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/market.db:0.24.3
+        image: freeverseio/market.db:0.24.4
         imagePullPolicy: Always
         name: marketdb
         ports:
@@ -739,7 +876,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/universe.db:0.24.3
+        image: freeverseio/universe.db:0.24.4
         imagePullPolicy: Always
         name: universedb
         ports:

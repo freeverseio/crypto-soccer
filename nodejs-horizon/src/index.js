@@ -21,9 +21,10 @@ program
   .option("-m, --marketUrl <url>", "graphql market url", "")
   .option("-r, --relayUrl <url>", "graphql relay url", "")
   .option("-n, --notaryUrl <url>", "graphql notary url", "")
+  .option("-c, --enableCors", "enable CORS")
   .parse(process.argv);
 
-const { universeUrl, marketUrl, relayUrl, notaryUrl } = program;
+const { universeUrl, marketUrl, relayUrl, notaryUrl, enableCors } = program;
 
 console.log("--------------------------------------------------------");
 console.log("universeUrl       : ", universeUrl);
@@ -48,7 +49,17 @@ const main = async () => {
         after: Cursor
         orderBy: [AuctionsOrderBy!] = [PRIMARY_KEY_ASC]
         condition: AuctionCondition
-      ): AuctionsConnection!
+      ): AuctionsConnection!,
+      offersByPlayerId(
+        first: Int
+        last: Int
+        offset: Int
+        before: Cursor
+        after: Cursor
+        orderBy: [OffersOrderBy!] = [PRIMARY_KEY_ASC]
+        condition: AuctionCondition
+      ): OffersConnection!
+
     }
 
     extend type Auction {
@@ -57,6 +68,11 @@ const main = async () => {
 
     extend type Bid {
       teamByTeamId: Team
+    }
+
+    extend type Offer {
+      teamByBuyerTeamId: Team
+      playerByPlayerId: Player
     }
   `;
 
@@ -74,6 +90,20 @@ const main = async () => {
                 playerId: player.playerId
               }
             },
+            context,
+            info,
+          })
+        }
+      },
+      offersByPlayerId: {
+        fragment: `... on Player { playerId }`,
+        resolve(player, args, context, info) {
+          args.condition = { ...args.condition, playerId: player.playerId }
+          return info.mergeInfo.delegateToSchema({
+            schema: marketRemoteSchema,
+            operation: 'query',
+            fieldName: 'allOffers',
+            args,
             context,
             info,
           })
@@ -114,6 +144,38 @@ const main = async () => {
         }
       }
     },
+    Offer: {
+      teamByBuyerTeamId: {
+        fragment: `... on Offer { buyerTeamId }`,
+        resolve(offer, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'teamByTeamId',
+            args: {
+              teamId: offer.buyerTeamId,
+            },
+            context,
+            info,
+          })
+        }
+      },
+      playerByPlayerId: {
+        fragment: `... on Offer { playerId }`,
+        resolve(offer, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'playerByPlayerId',
+            args: {
+              playerId: offer.playerId,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    }
   };
 
   let schemas = [];
@@ -128,7 +190,10 @@ const main = async () => {
     resolvers
   });
 
-  const server = new ApolloServer({ schema });
+  const server = new ApolloServer({
+    cors: enableCors ? true : false,
+    schema,
+  });
 
   server.listen().then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
@@ -137,11 +202,11 @@ const main = async () => {
 
 const run = () => {
   main()
-  .catch(e => {
-    console.error(e);
-    console.log("wainting ......");
-    setTimeout(run, 3000);
-  })
+    .catch(e => {
+      console.error(e);
+      console.log("wainting ......");
+      setTimeout(run, 3000);
+    })
 };
 
 run();

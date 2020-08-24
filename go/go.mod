@@ -3,7 +3,9 @@ module github.com/freeverseio/crypto-soccer/go
 go 1.12
 
 require (
+	github.com/apex/log v1.6.0
 	github.com/awa/go-iap v1.3.0
+	github.com/cloudflare/cfssl v1.4.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/ethereum/go-ethereum v1.9.11
@@ -22,12 +24,14 @@ require (
 	github.com/prometheus/client_golang v1.4.1
 	github.com/prometheus/common v0.9.1
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.2
-	github.com/stretchr/testify v1.5.0
+	github.com/stretchr/testify v1.6.1
 	github.com/urfave/cli v1.22.2
 	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6
+	golang.org/x/mod v0.3.0
 	golang.org/x/oauth2 v0.0.0-20190523182746-aaccbc9213b0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/api v0.5.1-0.20190526001144-9f3a303b451f

@@ -6,13 +6,13 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/helper"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
+func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error {
 	if err := b.checkState(storage.AuctionPaying); err != nil {
 		return err
 	}
@@ -57,7 +57,6 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.IMarketPay) error {
 
 func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	// transfer the auction
-	isOffer2StartAuction := false
 	bidHiddenPrice, err := signer.BidHiddenPrice(b.contracts.Market, big.NewInt(bid.ExtraPrice), big.NewInt(bid.Rnd))
 	if err != nil {
 		return err
@@ -74,6 +73,16 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	if playerId == nil {
 		return errors.New("invalid teamid")
 	}
+
+	isOffer := b.offer != nil
+
+	var validUntil int64
+	if isOffer {
+		validUntil = b.offer.ValidUntil
+	} else {
+		validUntil = b.auction.ValidUntil
+	}
+
 	var sig [2][32]byte
 	var sigV uint8
 	_, err = signer.HashBidMessage(
@@ -86,7 +95,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		big.NewInt(bid.ExtraPrice),
 		big.NewInt(bid.Rnd),
 		teamId,
-		isOffer2StartAuction,
+		isOffer,
 	)
 	if err != nil {
 		return err
@@ -100,13 +109,13 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	tx, err := b.contracts.Market.CompletePlayerAuction(
 		auth,
 		auctionHiddenPrice,
-		big.NewInt(b.auction.ValidUntil),
+		big.NewInt(validUntil),
 		playerId,
 		bidHiddenPrice,
 		teamId,
 		sig,
 		sigV,
-		isOffer2StartAuction,
+		isOffer,
 	)
 	if err != nil {
 		b.SetState(storage.AuctionWithdrableByBuyer, err.Error())

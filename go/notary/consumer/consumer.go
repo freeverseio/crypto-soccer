@@ -6,10 +6,11 @@ import (
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,21 +19,23 @@ type Consumer struct {
 	db                *sql.DB
 	contracts         contracts.Contracts
 	pvc               *ecdsa.PrivateKey
-	market            marketpay.IMarketPay
+	market            marketpay.MarketPayService
 	googleCredentials []byte
 	namesdb           *names.Generator
 	iapTestOn         bool
+	service           storage.StorageService
 }
 
 func New(
 	ch chan interface{},
-	market marketpay.IMarketPay,
+	market marketpay.MarketPayService,
 	db *sql.DB,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
 	namesdb *names.Generator,
 	iapTestOn bool,
+	service storage.StorageService,
 ) (*Consumer, error) {
 	consumer := Consumer{}
 	consumer.ch = ch
@@ -43,6 +46,7 @@ func New(
 	consumer.googleCredentials = googleCredentials
 	consumer.namesdb = namesdb
 	consumer.iapTestOn = iapTestOn
+	consumer.service = service
 	return &consumer, nil
 }
 
@@ -54,7 +58,7 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err != nil {
 			return err
 		}
-		if err := CreateAuction(tx, in); err != nil {
+		if err := CreateAuction(b.service, tx, in); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -67,7 +71,7 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err != nil {
 			return err
 		}
-		if err := CancelAuction(tx, in); err != nil {
+		if err := CancelAuction(b.service, tx, in); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -80,7 +84,7 @@ func (b *Consumer) Consume(event interface{}) error {
 		if err != nil {
 			return err
 		}
-		if err := CreateBid(tx, in); err != nil {
+		if err := CreateBid(b.service, tx, in); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -94,6 +98,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 		if err := ProcessAuctions(
+			b.service,
 			b.market,
 			tx,
 			b.contracts,
@@ -112,6 +117,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 		if err := ProcessPlaystoreOrders(
+			b.service,
 			tx,
 			b.contracts,
 			b.pvc,
@@ -132,6 +138,7 @@ func (b *Consumer) Consume(event interface{}) error {
 			return err
 		}
 		if err := SubmitPlayStorePlayerPurchase(
+			b.service,
 			tx,
 			in,
 		); err != nil {
@@ -153,6 +160,62 @@ func (b *Consumer) Consume(event interface{}) error {
 	case input.CompletePlayerTransitInput:
 		log.Debug("Received CompletePlayerTransit")
 		if err := CompletePlayerTransit(b.contracts, b.pvc, in); err != nil {
+			return err
+		}
+	case input.CreateOfferInput:
+		log.Debug("Received CreateOfferInput")
+
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := CreateOffer(b.service, tx, in, b.contracts); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case input.AcceptOfferInput:
+		log.Debug("Received CreateAuctionInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := AcceptOffer(b.service, tx, in); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case input.CancelOfferInput:
+		log.Debug("Received CancelOfferInput")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := CancelOffer(b.service, tx, in); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	case producer.ProcessOfferEvent:
+		log.Info("[consumer] process offer to expire")
+		tx, err := b.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := ProcessOffers(
+			b.service,
+			tx,
+		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
 			return err
 		}
 	default:

@@ -46,6 +46,31 @@ const Schema = `
 		playerId: ID!
 	}
 
+	input CreateOfferInput {
+		signature: String!
+		playerId: String!
+		currencyId: Int!
+		price: Int!
+		validUntil: String!
+		rnd: Int!
+		buyerTeamId: String!
+	}
+
+	input CancelOfferInput {
+		signature: String!
+		offerId:   ID!
+	}
+
+	input AcceptOfferInput {
+		signature: String!
+		playerId: String!
+		currencyId: Int!
+		price: Int!
+		validUntil: String!
+		rnd: Int!
+		offerId: ID!
+  }
+
 	type WorldPlayer {
 		playerId: ID!
 		name: String!
@@ -74,5 +99,8 @@ const Schema = `
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
+		createOffer(input: CreateOfferInput!): ID!
+		acceptOffer(input: AcceptOfferInput!): ID!
+		cancelOffer(input: CancelOfferInput!): ID!
 	}
 `

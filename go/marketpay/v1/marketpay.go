@@ -9,15 +9,9 @@ import (
 
 	"fmt"
 
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	log "github.com/sirupsen/logrus"
 )
-
-type IMarketPay interface {
-	CreateOrder(name string, value string) (*Order, error)
-	GetOrder(hash string) (*Order, error)
-	IsPaid(order Order) bool
-	ValidateOrder(hash string) (string, error)
-}
 
 type MarketPay struct {
 	endpoint    string
@@ -47,7 +41,7 @@ func NewSandbox() *MarketPay {
 func (b *MarketPay) CreateOrder(
 	name string,
 	value string,
-) (*Order, error) {
+) (*marketpay.Order, error) {
 	log.Infof("[Marketpay] Create order name %v value %v", name, value)
 
 	url := b.endpoint + "/express"
@@ -90,7 +84,7 @@ func (b *MarketPay) CreateOrder(
 		return nil, err
 	}
 
-	order := &Order{}
+	order := &marketpay.Order{}
 	err = json.Unmarshal(body, order)
 	if err != nil {
 		return nil, err
@@ -100,7 +94,7 @@ func (b *MarketPay) CreateOrder(
 	return order, nil
 }
 
-func (b *MarketPay) GetOrder(hash string) (*Order, error) {
+func (b *MarketPay) GetOrder(hash string) (*marketpay.Order, error) {
 	url := b.endpoint + "/express/hash/" + hash
 	method := "GET"
 
@@ -128,7 +122,7 @@ func (b *MarketPay) GetOrder(hash string) (*Order, error) {
 		return nil, err
 	}
 
-	order := &Order{}
+	order := &marketpay.Order{}
 	err = json.Unmarshal(body, order)
 	if err != nil {
 		log.Error(order)
@@ -137,7 +131,7 @@ func (b *MarketPay) GetOrder(hash string) (*Order, error) {
 	return order, nil
 }
 
-func (b *MarketPay) IsPaid(order Order) bool {
+func (b *MarketPay) IsPaid(order marketpay.Order) bool {
 	return order.Status == "PUBLISHED"
 }
 

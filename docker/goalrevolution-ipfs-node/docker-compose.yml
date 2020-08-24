@@ -1,12 +1,11 @@
 version: '3'
 services:
   ipfs.node0:
-    image: ipfs/go-ipfs:v0.6.0
+    image: freeverseio/go-ipfs:v0.6.0
     restart: always
     environment:
       - IPFS_PATH=/data
-      # - IPFS_FD_MAX=4096
-      # - IPFS_PROFILE=test
+      - IPFS_PROFILE=server
     volumes:
       - ipfs.node-data0:/data
     ports:
@@ -30,12 +29,11 @@ services:
 
 
   ipfs.node1:
-    image: ipfs/go-ipfs:v0.6.0
+    image: freeverseio/go-ipfs:v0.6.0
     restart: always
     environment:
       - IPFS_PATH=/data
-      # - IPFS_FD_MAX=4096
-      # - IPFS_PROFILE=test
+      - IPFS_PROFILE=server
     volumes:
       - ipfs.node-data1:/data
     ports:
@@ -58,12 +56,11 @@ services:
       - "19097:9096"
 
   ipfs.node2:
-    image: ipfs/go-ipfs:v0.6.0
+    image: freeverseio/go-ipfs:v0.6.0
     restart: always
     environment:
       - IPFS_PATH=/data
-      # - IPFS_FD_MAX=4096
-      # - IPFS_PROFILE=test
+      - IPFS_PROFILE=server
     volumes:
       - ipfs.node-data2:/data
     ports:

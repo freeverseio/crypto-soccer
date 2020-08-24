@@ -151,6 +151,12 @@ func HashBidMessage(
 	teamID *big.Int,
 	isOffer2StartAuction bool,
 ) (common.Hash, error) {
+	if isOffer2StartAuction && extraPrice.Cmp(big.NewInt(0)) != 0 {
+		return [32]byte{}, fmt.Errorf("offers must have zero extraPrice")
+	}
+	if isOffer2StartAuction && bidRnd.Cmp(big.NewInt(0)) != 0 {
+		return [32]byte{}, fmt.Errorf("offers must have zero bidRnd")
+	}
 	var hash [32]byte
 	auctionHashMsg, err := HashSellMessage(
 		currencyID,
