@@ -406,9 +406,9 @@ public class Serialization {
         if (!isOutOfGameDataOK(matchLog0)) { return (dummyEvents, "incorrect matchlog entry"); }
         if (!isOutOfGameDataOK(matchLog1)) { return (dummyEvents, "incorrect matchlog entry"); }
 
-        ulong seed0 = int_hash(verseSeed + "_0_" + teamId0.ToString() + "_" + teamId1.ToString());
-        ulong seed1 = int_hash(verseSeed + "_1_" + teamId0.ToString() + "_" + teamId1.ToString());
-        ulong seed2 = int_hash(verseSeed + "_2_" + teamId0.ToString() + "_" + teamId1.ToString());
+        ulong seed0 = intHash(verseSeed + "_0_" + teamId0.ToString() + "_" + teamId1.ToString());
+        ulong seed1 = intHash(verseSeed + "_1_" + teamId0.ToString() + "_" + teamId1.ToString());
+        ulong seed2 = intHash(verseSeed + "_2_" + teamId0.ToString() + "_" + teamId1.ToString());
 
         // There are mainly 3 types of events to reports, which are in different parts of the inputs:
         // - per-round (always 12 per half)
@@ -426,7 +426,7 @@ public class Serialization {
 
         if (is2ndHalf) {
             for (uint e = 0; e < events.Length; e++) {
-                events[e].Minute += 45;
+                events[e].Minute += 145;
             }
         }
         return (events, "");
@@ -494,7 +494,7 @@ public class Serialization {
         return true;
     }
 
-   public ulong int_hash(string x) {
+   public ulong intHash(string x) {
         SHA256 sha256Hash = SHA256.Create();
         byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(x));  
         // retain only the first 8 bytes and convert to uint64
@@ -502,7 +502,7 @@ public class Serialization {
     }
 
     public uint GenerateRnd(BigInteger seed, string salt, uint max_val) {
-        ulong result = int_hash(seed.ToString() + salt);
+        ulong result = intHash(seed.ToString() + salt);
         return (uint) (result % ((ulong) max_val));
     }
 

@@ -215,11 +215,11 @@ namespace NewMSTestProject
             string[] inputs = new string[3]{"hola", big.ToString(), unsig.ToString()};
             ulong[] expectedOutputs = new ulong[3]{17557146467953090994, 16974410884257473045, 16974410884257473045};
             for (uint i = 0; i < inputs.Length; i++) {
-                Assert.AreEqual(expectedOutputs[i], serial.int_hash(inputs[i])); 
+                Assert.AreEqual(expectedOutputs[i], serial.intHash(inputs[i])); 
             }
         }   
 
-        // [TestMethod]
+        [TestMethod]
         public void matchEvents() {  
             // From TestMatchEvents2ndHalfHardcoded
             Serialization serial = new Serialization();
@@ -296,7 +296,7 @@ namespace NewMSTestProject
                 concat += "]";
             }
             Console.WriteLine(concat);
-            string expectedConcat = "[46, 0, 1, false, false, 14, -1][51, 0, 1, false, false, 13, -1][56, 0, 0, true, true, 8, 8][57, 0, 1, false, false, 15, -1][62, 0, 0, false, false, 8, -1][67, 0, 1, false, false, 0, -1][72, 0, 1, false, false, 9, -1][73, 0, 0, true, true, 10, 10][78, 0, 0, true, true, 8, 8][83, 0, 0, false, false, 1, -1][87, 0, 1, false, false, 13, -1][90, 0, 0, false, false, 6, -1][67, 2, 0, false, false, 12, -1][55, 1, 0, false, false, 13, -1][67, 2, 1, false, false, 18, -1][71, 1, 1, false, false, 0, -1][62, 5, 0, false, false, 11, 19][66, 5, 0, false, false, 16, 12][62, 5, 1, false, false, 1, 17][66, 5, 1, false, false, 4, 18]";
+            string expectedConcat = "[146, 0, 1, false, false, 16, -1][151, 0, 1, false, false, 7, -1][154, 0, 0, true, true, 8, 8][159, 0, 1, false, false, 16, -1][161, 0, 0, false, false, 6, -1][168, 0, 1, false, false, 13, -1][169, 0, 1, false, false, 11, -1][176, 0, 0, true, true, 10, 10][180, 0, 0, true, true, 8, 8][182, 0, 0, false, false, 5, -1][187, 0, 1, false, false, 13, -1][191, 0, 0, false, false, 8, -1][168, 2, 0, false, false, 12, -1][166, 1, 0, false, false, 13, -1][168, 2, 1, false, false, 18, -1][179, 1, 1, false, false, 0, -1][161, 5, 0, false, false, 11, 19][167, 5, 0, false, false, 16, 12][161, 5, 1, false, false, 1, 17][167, 5, 1, false, false, 4, 18]";
             Assert.AreEqual(concat, expectedConcat);
         }   
     }
