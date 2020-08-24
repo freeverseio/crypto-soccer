@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;  
 
 public class Serialization {  
 
@@ -494,13 +495,10 @@ public class Serialization {
     }
 
    public ulong int_hash(string x) {
-        HashAlgorithm hash = new FNV1aHash64();
-        if (hash.HashSize != 64) return 2;
-        // Do not use Encoding.Ascii.GetBytes (or any other Encoding) because the original testvectors treat the text as raw bytes
-        var s = new MemoryStream(x.ToCharArray().Select(c => (byte)c).ToArray());
-        // Compute hash & convert to ulong
-        var value = hash.ComputeHash(s);
-        return BitConverter.ToUInt64(value, 0);
+        SHA256 sha256Hash = SHA256.Create();
+        byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(x));  
+        // retain only the first 8 bytes and convert to uint64
+        return BitConverter.ToUInt64(bytes, 0);
     }
 
     public uint GenerateRnd(BigInteger seed, string salt, uint max_val) {

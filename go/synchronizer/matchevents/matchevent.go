@@ -1,9 +1,10 @@
 package matchevents
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"fmt"
-	"hash/fnv"
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -51,9 +52,9 @@ func MarchEventTypeByMatchEvent(event int16) (storage.MatchEventType, error) {
 }
 
 func int_hash(s string) uint64 {
-	h := fnv.New64a()
-	h.Write([]byte(s))
-	return h.Sum64()
+	h := sha256.Sum256([]byte(s))
+	// retain only the first 8 bytes and convert to uint64
+	return binary.LittleEndian.Uint64(h[:8])
 }
 
 func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
