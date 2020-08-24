@@ -5,6 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/relay/consumer"
+	"github.com/freeverseio/crypto-soccer/go/storage/postgres"
 	"github.com/freeverseio/crypto-soccer/go/useractions/memory"
 	"gotest.tools/assert"
 )
@@ -22,5 +23,7 @@ func TestSubmitActionRoot(t *testing.T) {
 		*bc.Contracts,
 		memory.NewUserActionsPublishService(),
 	)
-	assert.NilError(t, p.Process(tx))
+	teamStorageService := postgres.NewTeamStorageService(tx)
+
+	assert.NilError(t, p.Process(tx, teamStorageService))
 }
