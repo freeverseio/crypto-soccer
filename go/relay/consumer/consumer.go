@@ -62,7 +62,8 @@ func (b *Consumer) Start() {
 				log.Error(err)
 				break
 			}
-			if err = actionsSubmitter.Process(tx); err != nil {
+			teamStorageService := postgres.NewTeamStorageService(tx)
+			if err = actionsSubmitter.Process(tx, teamStorageService); err != nil {
 				tx.Rollback()
 				log.Error(err)
 				break

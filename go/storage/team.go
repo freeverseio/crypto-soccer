@@ -41,6 +41,7 @@ type TeamStorageService interface {
 	UpdateManagerName(teamId string, name string) error
 	UpdateLeaderboardPosition(teamId string, position int) error
 	TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error)
+	TeamsByZombie() ([]Team, error)
 }
 
 func NewTeam() *Team {
@@ -264,4 +265,36 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 		return team, err
 	}
 	return team, nil
+}
+
+func TeamsByZombie(tx *sql.Tx) ([]Team, error) {
+	rows, err := tx.Query("SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count > 10")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var teamsIds []string
+	for rows.Next() {
+		var teamID string
+		err = rows.Scan(
+			&teamID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		teamsIds = append(teamsIds, teamID)
+	}
+	rows.Close()
+	var teams []Team
+	for i := 0; i < len(teamsIds); i++ {
+		teamID := teamsIds[i]
+		var team Team
+		team, err = TeamByTeamId(tx, teamID)
+
+		if err != nil {
+			return teams, err
+		}
+		teams = append(teams, team)
+	}
+	return teams, nil
 }

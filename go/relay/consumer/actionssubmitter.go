@@ -7,12 +7,13 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/go/useractions/orgmap"
+	"github.com/freeverseio/crypto-soccer/go/storage"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
+	"github.com/freeverseio/crypto-soccer/go/useractions/orgmap"
 	"github.com/freeverseio/crypto-soccer/go/useractions/postgres"
 )
 
@@ -41,7 +42,7 @@ func NewActionsSubmitter(
 	}
 }
 
-func (p *ActionsSubmitter) Process(tx *sql.Tx) error {
+func (p *ActionsSubmitter) Process(tx *sql.Tx, teamStorageService storage.TeamStorageService) error {
 	nextUpdate, err := p.NextUpdateSinceEpochSec()
 	now := NowSinceEpochSec()
 	if now < nextUpdate {
@@ -72,8 +73,13 @@ func (p *ActionsSubmitter) Process(tx *sql.Tx) error {
 	}
 	var cid string
 	if nextToUpdate.Day == 7 && nextToUpdate.TurnInDay == 1 {
-		//TODO: generate orgmapdenylist or read it from somewhere, maybe db??
-		upcomingUserActions.OrgMapDenyList = make([]orgmap.OrgMapDenyList, 0)
+		zombies, err := teamStorageService.TeamsByZombie()
+		if err != nil {
+			return err
+		}
+		upcomingUserActions.OrgMapDenyList = orgmap.Map(zombies, func(z storage.Team) orgmap.OrgMapDenyList {
+			return orgmap.OrgMapDenyList{TeamID: z.TeamID}
+		})
 		cid, err = p.useractionsPublishService.Publish(*upcomingUserActions)
 	} else {
 		cid, err = p.useractionsPublishService.Publish(*upcomingUserActions)
