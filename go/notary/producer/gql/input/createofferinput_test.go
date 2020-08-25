@@ -285,3 +285,16 @@ func TestCreateOfferPlayerAlreadyOnSale(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, true, isPlayerOnSale)
 }
+
+func TestCreateOfferInputHashBigIntPlayer(t *testing.T) {
+	in := input.CreateOfferInput{}
+	in.ValidUntil = "2000000000"
+	in.PlayerId = "25723578238440869144533393071649442553899076447028039543423578"
+	in.CurrencyId = 1
+	in.Price = 41234
+	in.Rnd = 42321
+	in.BuyerTeamId = "20"
+	hash, err := in.Hash(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, hash.Hex(), "0x03892cbcf2b2ed94602fa91b185a2202dec2e178af2ce3a73f438eebf6b0874c")
+}
