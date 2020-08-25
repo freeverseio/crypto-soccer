@@ -20,7 +20,7 @@ func TestCreateAuctionReturnTheSignature(t *testing.T) {
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
-	in.PlayerId = "274877906944"
+	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
@@ -57,7 +57,7 @@ func TestCreateAuction(t *testing.T) {
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = "999999999999"
-	in.PlayerId = "274877906944"
+	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 4232
