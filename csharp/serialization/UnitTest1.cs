@@ -296,7 +296,7 @@ namespace NewMSTestProject
                 concat += "]";
             }
             Console.WriteLine(concat);
-            string expectedConcat = "[146, 0, 1, false, false, 16, -1][151, 0, 1, false, false, 7, -1][154, 0, 0, true, true, 8, 8][159, 0, 1, false, false, 16, -1][161, 0, 0, false, false, 6, -1][168, 0, 1, false, false, 13, -1][169, 0, 1, false, false, 11, -1][176, 0, 0, true, true, 10, 10][180, 0, 0, true, true, 8, 8][182, 0, 0, false, false, 5, -1][187, 0, 1, false, false, 13, -1][191, 0, 0, false, false, 8, -1][168, 2, 0, false, false, 12, -1][166, 1, 0, false, false, 13, -1][168, 2, 1, false, false, 18, -1][179, 1, 1, false, false, 0, -1][161, 5, 0, false, false, 11, 19][167, 5, 0, false, false, 16, 12][161, 5, 1, false, false, 1, 17][167, 5, 1, false, false, 4, 18]";
+            string expectedConcat = "[148, 0, 1, false, false, 9, -1][149, 0, 1, false, false, 8, -1][153, 0, 0, true, true, 8, 8][159, 0, 1, false, false, 11, -1][162, 0, 0, false, false, 14, -1][166, 0, 1, false, false, 0, -1][171, 0, 1, false, false, 7, -1][175, 0, 0, true, true, 10, 10][180, 0, 0, true, true, 8, 8][182, 0, 0, false, false, 4, -1][185, 0, 1, false, false, 7, -1][190, 0, 0, false, false, 6, -1][166, 2, 0, false, false, 12, -1][156, 1, 0, false, false, 13, -1][166, 2, 1, false, false, 18, -1][170, 1, 1, false, false, 0, -1][162, 5, 0, false, false, 11, 19][165, 5, 0, false, false, 16, 12][162, 5, 1, false, false, 1, 17][165, 5, 1, false, false, 4, 18]";
             Assert.AreEqual(concat, expectedConcat);
         }   
     }

@@ -497,7 +497,7 @@ public class Serialization {
    public ulong intHash(string x) {
         SHA256 sha256Hash = SHA256.Create();
         byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(x));  
-        // retain only the first 8 bytes and convert to uint64
+        // interface: BigInteger(bytes, isUnsigned, isBigEndian)
         BigInteger biggy = new BigInteger(bytes, true, true);
         return (ulong) (biggy >> 192);
     }
