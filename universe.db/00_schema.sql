@@ -48,6 +48,7 @@ CREATE TABLE teams (
     training_points INT NOT NULL DEFAULT 0,
     tactic TEXT NOT NULL DEFAULT '',
     match_log TEXT NOT NULL,
+    is_zombie BOOLEAN NOT NULL DEFAULT false,
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
@@ -74,6 +75,7 @@ CREATE TABLE teams_histories (
     training_points INT NOT NULL DEFAULT 0,
     tactic TEXT NOT NULL DEFAULT '',
     match_log TEXT NOT NULL,
+    is_zombie BOOLEAN NOT NULL DEFAULT false,
     PRIMARY KEY(block_number, team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)

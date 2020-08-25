@@ -55,3 +55,11 @@ func (b TeamStorageService) UpdateLeaderboardPosition(teamId string, position in
 func (b TeamStorageService) TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error) {
 	return storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(b.tx, timezoneIdx, countryIdx, leagueIdx)
 }
+
+func (b TeamStorageService) TeamUpdateZombies() error {
+	return storage.TeamUpdateZombies(b.tx)
+}
+
+func (b TeamStorageService) TeamCleanZombies() error {
+	return storage.TeamCleanZombies(b.tx)
+}

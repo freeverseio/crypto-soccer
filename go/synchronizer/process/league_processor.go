@@ -204,16 +204,34 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	if err != nil {
 		return err
 	}
+	err = storage.TeamCleanZombies(tx)
+	if err != nil {
+		return err
+	}
+	err = storage.TeamUpdateZombies(tx)
+	if err != nil {
+		return err
+	}
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
 		}
+		var teamsWithoutZombies []storage.Team
+		var zombies []storage.Team
+
+		for _, team := range teams {
+			if team.IsZombie {
+				zombies = append(zombies, team)
+			} else {
+				teamsWithoutZombies = append(teamsWithoutZombies, team)
+			}
+		}
 		// ordening by points
-		sort.Slice(teams[:], func(i, j int) bool {
-			return teams[i].LeaderboardPosition < teams[j].LeaderboardPosition
+		sort.Slice(teamsWithoutZombies[:], func(i, j int) bool {
+			return teamsWithoutZombies[i].LeaderboardPosition < teamsWithoutZombies[j].LeaderboardPosition
 		})
-		for position, team := range teams {
+		for position, team := range teamsWithoutZombies {
 			teamState, err := b.GetTeamState(tx, team.TeamID)
 			if err != nil {
 				return err
@@ -238,6 +256,13 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 				return err
 			}
 		}
+		// sort zombies by team id
+		sort.Slice(zombies[:], func(i, j int) bool {
+			teamID0, _ := new(big.Int).SetString(zombies[i].TeamID, 10)
+			teamID1, _ := new(big.Int).SetString(zombies[j].TeamID, 10)
+			return teamID0.Cmp(teamID1) == -1
+		})
+		orgMap.teams = append(orgMap.teams, zombies...)
 	}
 
 	orgMap.Sort()

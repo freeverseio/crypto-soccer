@@ -221,6 +221,20 @@ func TestUpdateTeamOwner(t *testing.T) {
 	assert.Equal(t, team, result)
 }
 
+func TestZombies(t *testing.T) {
+	tx, err := s.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	err = storage.TeamUpdateZombies(tx)
+	assert.NilError(t, err)
+
+	err = storage.TeamCleanZombies(tx)
+	assert.NilError(t, err)
+}
+
 // func TestTeamAddSameTimeTwice(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 // 	if err != nil {
