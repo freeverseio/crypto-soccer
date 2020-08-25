@@ -45,8 +45,8 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 	if err != nil {
 		return common.Hash{}, errors.New("invalid validUntil")
 	}
-	playerId, err := strconv.ParseInt(b.PlayerId, 10, 64)
-	if err != nil {
+	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
 	}
 	dummyRnd := int64(0)
@@ -57,7 +57,7 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
 		validUntil,
-		big.NewInt(int64(playerId)),
+		playerId,
 		big.NewInt(0),
 		big.NewInt(dummyRnd),
 		teamId,
