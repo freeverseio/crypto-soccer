@@ -2,7 +2,6 @@ package matchevents
 
 import (
 	"crypto/sha256"
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -18,7 +17,8 @@ type MatchEvents []MatchEvent
 func IntHash(s string) uint64 {
 	h := sha256.Sum256([]byte(s))
 	// retain only the first 8 bytes and convert to uint64
-	return binary.LittleEndian.Uint64(h[:8])
+	biggy := new(big.Int).SetBytes(h[:])
+	return new(big.Int).Rsh(biggy, 192).Uint64()
 }
 
 func NewMatchEvents(

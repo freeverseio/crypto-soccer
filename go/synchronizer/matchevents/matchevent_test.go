@@ -14,7 +14,7 @@ func TestHash(t *testing.T) {
 	big := big.NewInt(123456789)
 	unsig := uint(123456789)
 	inputs := []string{"hola", big.String(), strconv.FormatUint(uint64(unsig), 10)}
-	expectedOutputs := []uint64{17557146467953090994, 16974410884257473045, 16974410884257473045}
+	expectedOutputs := []uint64{12835779950565107699, 1577017243092947435, 1577017243092947435}
 	for i := 0; i < len(inputs); i++ {
 		hash := matchevents.IntHash(inputs[i])
 		if hash != expectedOutputs[i] {

@@ -498,7 +498,8 @@ public class Serialization {
         SHA256 sha256Hash = SHA256.Create();
         byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(x));  
         // retain only the first 8 bytes and convert to uint64
-        return BitConverter.ToUInt64(bytes, 0);
+        BigInteger biggy = new BigInteger(bytes, true, true);
+        return (ulong) (biggy >> 192);
     }
 
     public uint GenerateRnd(BigInteger seed, string salt, uint max_val) {
