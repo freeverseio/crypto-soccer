@@ -1,27 +1,31 @@
-const { ApolloServer } = require("apollo-server");
-const { HttpLink } = require("apollo-link-http");
-const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require("graphql-tools");
-const fetch = require("node-fetch");
-const resolvers = require("./resolvers/resolvers.js")
-const { horizonConfig } = require('./config.js')
+const { ApolloServer } = require('apollo-server');
+const { HttpLink } = require('apollo-link-http');
+const {
+  introspectSchema,
+  makeRemoteExecutableSchema,
+  mergeSchemas,
+} = require('graphql-tools');
+const fetch = require('node-fetch');
+const resolvers = require('./resolvers/resolvers.js');
+const { horizonConfig } = require('./config.js');
 
-const createRemoteSchema = async uri => {
+const createRemoteSchema = async (uri) => {
   const link = new HttpLink({ uri, fetch });
   const schema = await introspectSchema(link);
   const executableSchema = makeRemoteExecutableSchema({
     schema,
-    link
+    link,
   });
   return executableSchema;
 };
-const horizonUrl = horizonConfig.url
-console.log("--------------------------------------------------------");
-console.log("horizonUrl       : ", horizonUrl);
-console.log("--------------------------------------------------------");
+const horizonUrl = horizonConfig.url;
+console.log('--------------------------------------------------------');
+console.log('horizonUrl       : ', horizonUrl);
+console.log('--------------------------------------------------------');
 
 const main = async () => {
   const horizonRemoteSchema = await createRemoteSchema(horizonUrl);
-  
+
   const linkTypeDefs = `
     input SetTeamNameInput {
       signature: String!
@@ -50,7 +54,7 @@ const main = async () => {
     schemas,
     resolvers,
   });
-  
+
   const server = new ApolloServer({ schema });
 
   server.listen().then(({ url }) => {
@@ -59,12 +63,11 @@ const main = async () => {
 };
 
 const run = () => {
-  main()
-  .catch(e => {
+  main().catch((e) => {
     console.error(e);
-    console.log("wainting ......");
+    console.log('wainting ......');
     setTimeout(run, 3000);
-  })
+  });
 };
 
 run();
