@@ -27,8 +27,6 @@ images:
   newTag: dev
 - name: freeverseio/universe.db
   newTag: dev
-- name: freeverseio/game.api
-  newTag: dev
 - name: freeverseio/game.db
   newTag: dev
 - name: freeverseio/gamelayer
@@ -52,3 +50,5 @@ patchesJson6902:
     kind: Ingress
     name: dashboard-oauth2-proxy
   path: dashboard/ingress_patch.yaml
+patchesStrategicMerge:
+  - synchronizer/deployment.yaml

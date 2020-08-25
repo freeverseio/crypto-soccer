@@ -7,12 +7,10 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 )
 
-func CancelAuction(tx *sql.Tx, in input.CancelAuctionInput) error {
-	service := postgres.NewAuctionHistoryService(tx)
-	auction, err := service.Auction(string(in.AuctionId))
+func CancelAuction(service storage.StorageService, tx *sql.Tx, in input.CancelAuctionInput) error {
+	auction, err := service.Auction(tx, string(in.AuctionId))
 	if err != nil {
 		return err
 	}
@@ -24,5 +22,5 @@ func CancelAuction(tx *sql.Tx, in input.CancelAuctionInput) error {
 	}
 
 	auction.State = storage.AuctionCancelled
-	return service.Update(*auction)
+	return service.AuctionUpdate(tx, *auction)
 }

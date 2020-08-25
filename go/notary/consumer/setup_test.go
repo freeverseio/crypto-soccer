@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 
@@ -16,6 +17,7 @@ var bc *testutils.BlockchainNode
 var db *sql.DB
 var googleCredentials []byte
 var namesdb *names.Generator
+var service storage.StorageService
 
 func TestMain(m *testing.M) {
 	var err error
@@ -31,5 +33,6 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	service = postgres.NewStorageService(db)
 	os.Exit(m.Run())
 }

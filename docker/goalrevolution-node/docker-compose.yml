@@ -3,6 +3,7 @@ services:
   ethereum: 
     image: freeverseio/parity:v2.7.2-posdao-stable
     command: --min-peers 10 --max-peers 30
+    restart: always
     volumes:
       - ethereum-data:/home/parity/.local/share/io.parity.ethereum
   ipfs.node:
@@ -54,6 +55,7 @@ services:
       - ipfs.cluster
   universe.api:
     image: "freeverseio/universe.api:${TAG}"
+    restart: always
     depends_on:
       - ethereum
     command: >

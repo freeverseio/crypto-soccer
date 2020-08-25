@@ -21,6 +21,7 @@ func TestConsumerNew(t *testing.T) {
 		googleCredentials,
 		namesdb,
 		false,
+		service,
 	)
 	assert.NilError(t, err)
 }
@@ -36,6 +37,7 @@ func TestConsumerConsumeSubmitPlayStorePlayerPurchaseInput(t *testing.T) {
 		googleCredentials,
 		namesdb,
 		false,
+		service,
 	)
 	assert.NilError(t, err)
 	in := input.SubmitPlayStorePlayerPurchaseInput{}
@@ -53,6 +55,7 @@ func TestConsumerConsumeCreateAuction(t *testing.T) {
 		googleCredentials,
 		namesdb,
 		false,
+		service,
 	)
 	assert.NilError(t, err)
 	in := input.CreateAuctionInput{}
@@ -70,6 +73,7 @@ func TestConsumerConsumeCancelAuction(t *testing.T) {
 		googleCredentials,
 		namesdb,
 		false,
+		service,
 	)
 	assert.NilError(t, err)
 	in := input.CancelAuctionInput{}
@@ -87,6 +91,7 @@ func TestConsumerConsumeCreateBid(t *testing.T) {
 		googleCredentials,
 		namesdb,
 		false,
+		service,
 	)
 	assert.NilError(t, err)
 	in := input.CreateBidInput{}
@@ -104,8 +109,27 @@ func TestConsumerConsumeUnknownEvent(t *testing.T) {
 		googleCredentials,
 		namesdb,
 		false,
+		service,
 	)
 	assert.NilError(t, err)
 	in := struct{}{}
 	assert.Error(t, c.Consume(in), "unknown event: {}")
+}
+
+func TestConsumerConsumeCreateOffer(t *testing.T) {
+	ch := make(chan interface{}, 10)
+	c, err := consumer.New(
+		ch,
+		v1.NewMockMarketPay(),
+		db,
+		*bc.Contracts,
+		bc.Owner,
+		googleCredentials,
+		namesdb,
+		false,
+		service,
+	)
+	assert.NilError(t, err)
+	in := input.CreateOfferInput{}
+	assert.Error(t, c.Consume(in), "invalid teamId")
 }

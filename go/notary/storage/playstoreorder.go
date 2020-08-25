@@ -23,14 +23,6 @@ type PlaystoreOrder struct {
 	StateExtra    string
 }
 
-type PlaystoreOrderService interface {
-	Order(orderId string) (*PlaystoreOrder, error)
-	PendingOrders() ([]PlaystoreOrder, error)
-	Insert(order PlaystoreOrder) error
-	UpdateState(order PlaystoreOrder) error
-	PendingOrdersByPlayerId(playerId string) ([]PlaystoreOrder, error)
-}
-
 func NewPlaystoreOrder() *PlaystoreOrder {
 	order := PlaystoreOrder{}
 	order.State = PlaystoreOrderOpen

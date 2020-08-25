@@ -26,5 +26,7 @@ contract ErrorCodes {
     uint8 internal constant ERR_PLAYHALF_TOO_MANY_LINEDUP = 15;
     uint8 internal constant ERR_PLAYHALF_HALFCHANGES = 16;
     uint8 internal constant ERR_PLAYHALF_PLAYER_TWICE = 17;
-    
+
+    uint8 internal constant ERR_2NDHALF_CANCELLED_DUE_TO_1STHALF_CANCELLED = 18;
+
 }

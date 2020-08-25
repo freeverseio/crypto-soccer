@@ -40,4 +40,12 @@ contract EncodingMatchLogBase3 is EncodingMatchLogBase4 {
     function setIsHomeStadium(uint256 log, bool val)  public pure returns (uint256) {
         return (log & ~(uint256(1) << 248)) | (uint256(val ? 1: 0) << 248);
     }
+
+    function setIsCancelled(uint256 log, bool val) public pure returns (uint256) {
+        return (log & ~(uint256(1) << 251)) | (uint256(val ? 1: 0) << 251);
+    }
+
+    function getIsCancelled(uint256 log) public pure returns (bool) {
+        return ((log >> 251) & 1) == 1;
+    }    
 }
