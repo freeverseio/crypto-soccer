@@ -1,7 +1,7 @@
 const PostgresSQLService = require('../services/PostgresSQLService');
 
 const updateTeamManagerNameQuery = {
-    text: `
+  text: `
     INSERT INTO 
         team_props(
             team_id,
@@ -13,7 +13,7 @@ const updateTeamManagerNameQuery = {
     SET
         team_manager_name = $2
     `,
-  };
+};
 
 const updateTeamManagerName = async ({ teamId, teamManagerName }) => {
   const pool = await PostgresSQLService.getPool();

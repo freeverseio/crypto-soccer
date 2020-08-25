@@ -1,5 +1,5 @@
-const TeamValidation = require("./TeamValidation.js");
+const TeamValidation = require('./TeamValidation.js');
 
 module.exports = {
-    TeamValidation,
+  TeamValidation,
 };
