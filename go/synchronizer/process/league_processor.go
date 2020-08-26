@@ -256,7 +256,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 				return err
 			}
 		}
-		// sort zombies by team id
+		// sort zombies by team id or by team ranking
 		sort.Slice(zombies[:], func(i, j int) bool {
 			teamID0, _ := new(big.Int).SetString(zombies[i].TeamID, 10)
 			teamID1, _ := new(big.Int).SetString(zombies[j].TeamID, 10)
