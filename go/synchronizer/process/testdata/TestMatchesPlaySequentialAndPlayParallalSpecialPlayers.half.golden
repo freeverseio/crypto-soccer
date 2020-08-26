@@ -42,7 +42,8 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "452313210304731052874510216384546863227876772543978085303767934482287427584"
+MatchLog: (string) (len=75) "452313210304731052874510216384546863227876772543978085303767934482287427584",
+IsZombie: (bool) false
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -709,7 +710,8 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "452313210377133253396643281956770464104620216908015055603154124044907883123"
+MatchLog: (string) (len=75) "452313210377133253396643281956770464104620216908015055603154124044907883123",
+IsZombie: (bool) false
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -1566,7 +1568,8 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "452313210304731052874510216378837872457052933019744941425969953936756441088"
+MatchLog: (string) (len=75) "452313210304731052874510216378837872457052933019744941425969953936756441088",
+IsZombie: (bool) false
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -2233,7 +2236,8 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "452313210377133253396643282236513045402412997064660749035899805833745137825"
+MatchLog: (string) (len=75) "452313210377133253396643282236513045402412997064660749035899805833745137825",
+IsZombie: (bool) false
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
