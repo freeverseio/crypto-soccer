@@ -14,6 +14,16 @@ func (b StorageHistoryService) AuctionInsert(tx *sql.Tx, auction storage.Auction
 }
 
 func (b StorageHistoryService) AuctionUpdate(tx *sql.Tx, auction storage.Auction) error {
+	currentAuction, err := b.StorageService.Auction(tx, auction.ID)
+	if err != nil {
+		return err
+	}
+	if currentAuction == nil {
+		return nil
+	}
+	if *currentAuction == auction {
+		return nil
+	}
 	if err := b.StorageService.AuctionUpdate(tx, auction); err != nil {
 		return err
 	}

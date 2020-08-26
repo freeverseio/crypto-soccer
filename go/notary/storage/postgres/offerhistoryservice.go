@@ -15,6 +15,16 @@ func (b StorageHistoryService) OfferInsert(tx *sql.Tx, offer storage.Offer) erro
 }
 
 func (b StorageHistoryService) OfferUpdate(tx *sql.Tx, offer storage.Offer) error {
+	currentOffer, err := b.StorageService.Offer(tx, offer.ID)
+	if err != nil {
+		return err
+	}
+	if currentOffer == nil {
+		return nil
+	}
+	if *currentOffer == offer {
+		return nil
+	}
 	if err := b.StorageService.OfferUpdate(tx, offer); err != nil {
 		return err
 	}
