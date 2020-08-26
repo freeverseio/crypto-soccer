@@ -420,8 +420,8 @@ contract('Engine', (accounts) => {
 
     it('computeExceptionalEvents clashing with redcards after changing player', async () => {
         // there is a red card with this seed, to player 11, which is by definition one of the players to join during the game. 
-        // the round for which he saw the card (6) should be after the proposed change round (6 too) 
-        for (p = 30; p < 30+1; p++) {
+        // the round for which he saw the card (6) should be after the proposed change round (9) 
+        for (p = 71; p < 71+1; p++) {
             seedForRedCard = web3.utils.toBN(web3.utils.keccak256(p.toString()));
         }
         substis = [2, 9, 1];
@@ -430,7 +430,7 @@ contract('Engine', (accounts) => {
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, isBotHome, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [0, 11];
-        expectedOutRounds = [0, 6]; // note that it'd be 0, 9 otherwise
+        expectedOutRounds = [0, 9]; // note that it'd be 0, 9 otherwise
         expectedYellows1 = [0, 0];
         expectedYellows2 = [11, 14];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
