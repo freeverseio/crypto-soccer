@@ -48,7 +48,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 	}
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 		// if a new league is starting shuffle the teams
-		err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
+		err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx, verse)
 		if err != nil {
 			return err
 		}
@@ -197,20 +197,26 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	return nil
 }
 
-func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
+func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, verse *big.Int) error {
 	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap OrgMap
 	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
-	err = storage.TeamCleanZombies(tx)
-	if err != nil {
-		return err
-	}
-	err = storage.TeamUpdateZombies(tx)
-	if err != nil {
-		return err
+	zombieVerse := big.NewInt(6285)
+	if verse.Cmp(zombieVerse) >= 0 {
+		if verse.Cmp(zombieVerse) == 0 {
+			log.Info("[1200] Start detecting zombies and shuffling them after bots")
+		}
+		err = storage.TeamCleanZombies(tx)
+		if err != nil {
+			return err
+		}
+		err = storage.TeamUpdateZombies(tx)
+		if err != nil {
+			return err
+		}
 	}
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
