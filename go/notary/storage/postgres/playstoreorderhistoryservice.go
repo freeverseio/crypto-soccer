@@ -7,6 +7,16 @@ import (
 )
 
 func (b StorageHistoryService) PlayStoreUpdateState(tx *sql.Tx, order storage.PlaystoreOrder) error {
+	currentOrder, err := b.StorageService.PlayStoreOrder(tx, order.OrderId)
+	if err != nil {
+		return err
+	}
+	if currentOrder == nil {
+		return nil
+	}
+	if *currentOrder == order {
+		return nil
+	}
 	if err := b.StorageService.PlayStoreUpdateState(tx, order); err != nil {
 		return err
 	}

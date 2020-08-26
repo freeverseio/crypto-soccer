@@ -114,3 +114,73 @@ func TestStorageHistoryUpdateChangedBid(t *testing.T) {
 	tx.QueryRow("SELECT count(*) FROM bids_histories;").Scan(&count)
 	assert.Equal(t, count, 2)
 }
+
+func TestStorageHistoryUpdateUnChangedPlaystoreOrder(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+
+	tx, err := service.DB().Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	order := storage.NewPlaystoreOrder()
+	assert.NilError(t, service.PlayStoreInsert(tx, *order))
+	assert.NilError(t, service.PlayStoreUpdateState(tx, *order))
+
+	var count int
+	tx.QueryRow("SELECT count(*) FROM playstore_orders_histories;").Scan(&count)
+	assert.Equal(t, count, 1)
+}
+
+func TestStorageHistoryUpdateChangedPlaystoreOrder(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+
+	tx, err := service.DB().Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	order := storage.NewPlaystoreOrder()
+	assert.NilError(t, service.PlayStoreInsert(tx, *order))
+	order.PlayerId = "234234234"
+	assert.NilError(t, service.PlayStoreUpdateState(tx, *order))
+
+	var count int
+	tx.QueryRow("SELECT count(*) FROM playstore_orders_histories;").Scan(&count)
+	assert.Equal(t, count, 2)
+}
+
+func TestStorageHistoryUpdateUnChangedOffer(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+
+	tx, err := service.DB().Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	order := storage.NewOffer()
+	assert.NilError(t, service.OfferInsert(tx, *order))
+	assert.NilError(t, service.OfferUpdate(tx, *order))
+
+	var count int
+	tx.QueryRow("SELECT count(*) FROM offers_histories;").Scan(&count)
+	assert.Equal(t, count, 1)
+}
+
+func TestStorageHistoryUpdateChangedOffer(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+
+	tx, err := service.DB().Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction := storage.NewAuction()
+	assert.NilError(t, service.AuctionInsert(tx, *auction))
+
+	order := storage.NewOffer()
+	assert.NilError(t, service.OfferInsert(tx, *order))
+	order.AuctionID = auction.ID
+	order.Seller = "me"
+	assert.NilError(t, service.OfferUpdate(tx, *order))
+
+	var count int
+	tx.QueryRow("SELECT count(*) FROM offers_histories;").Scan(&count)
+	assert.Equal(t, count, 2)
+}
