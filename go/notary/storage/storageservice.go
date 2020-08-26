@@ -13,6 +13,7 @@ type StorageService interface {
 	AuctionsByPlayerId(tx *sql.Tx, ID string) ([]Auction, error)
 
 	// Bid
+	Bid(tx *sql.Tx, auctionId string, extraPrice int64) (*Bid, error)
 	Bids(tx *sql.Tx, auctionId string) ([]Bid, error)
 	BidInsert(tx *sql.Tx, bid Bid) error
 	BidUpdate(tx *sql.Tx, bid Bid) error

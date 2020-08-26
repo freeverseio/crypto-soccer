@@ -48,6 +48,23 @@ func TestStorageHistoryUpdateUnchangedAuction(t *testing.T) {
 	assert.Equal(t, count, 1)
 }
 
+func TestStorageHistoryUpdateChangedAuction(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+
+	tx, err := service.DB().Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction := storage.NewAuction()
+	assert.NilError(t, service.AuctionInsert(tx, *auction))
+	auction.State = storage.AuctionCancelled
+	assert.NilError(t, service.AuctionUpdate(tx, *auction))
+
+	var count int
+	tx.QueryRow("SELECT count(*) FROM auctions_histories;").Scan(&count)
+	assert.Equal(t, count, 2)
+}
+
 func TestStorageHistoryUpdateUnexistentAuction(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
@@ -57,4 +74,43 @@ func TestStorageHistoryUpdateUnexistentAuction(t *testing.T) {
 
 	auction := storage.NewAuction()
 	assert.NilError(t, service.AuctionUpdate(tx, *auction))
+}
+
+func TestStorageHistoryUpdateUnchangedBid(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+
+	tx, err := service.DB().Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction := storage.NewAuction()
+	assert.NilError(t, service.AuctionInsert(tx, *auction))
+	bid := storage.NewBid()
+	bid.AuctionID = auction.ID
+	assert.NilError(t, service.BidInsert(tx, *bid))
+	assert.NilError(t, service.BidUpdate(tx, *bid))
+
+	var count int
+	tx.QueryRow("SELECT count(*) FROM bids_histories;").Scan(&count)
+	assert.Equal(t, count, 1)
+}
+
+func TestStorageHistoryUpdateChangedBid(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+
+	tx, err := service.DB().Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction := storage.NewAuction()
+	assert.NilError(t, service.AuctionInsert(tx, *auction))
+	bid := storage.NewBid()
+	bid.AuctionID = auction.ID
+	assert.NilError(t, service.BidInsert(tx, *bid))
+	bid.State = storage.BidPaid
+	assert.NilError(t, service.BidUpdate(tx, *bid))
+
+	var count int
+	tx.QueryRow("SELECT count(*) FROM bids_histories;").Scan(&count)
+	assert.Equal(t, count, 2)
 }
