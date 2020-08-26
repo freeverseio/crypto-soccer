@@ -215,6 +215,11 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         /// first compute the type of event        
         uint8 typeOfEvent = forceRedCard ? RED_CARD : computeTypeOfEvent(rnds[1]);
 
+        /// explicitly reduce red card frequency by 3
+        if (typeOfEvent == RED_CARD && ((rnds[1] >> 10) % 3 != 0)) { 
+            return setOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
+        }
+
         /// for GKs, make sure they do not see a red card, and if they are injured, allow it at the end of 2nd half only.
         /// note that it a GK is substituted, the same applies to the entry GK.
         /// note that in-game events end up in round = ROUNDS_PER_MATCH - 1, so we leave endOfGame for round = ROUNDS_PER_MATCH
