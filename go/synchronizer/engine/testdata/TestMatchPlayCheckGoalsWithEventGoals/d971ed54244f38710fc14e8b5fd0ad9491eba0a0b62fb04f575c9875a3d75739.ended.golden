@@ -39,9 +39,9 @@
 			GoalsAgainst: (uint32) 4,
 			PrevPerfPoints: (uint64) 0,
 			RankingPoints: (uint64) 0,
-			TrainingPoints: (uint16) 54,
+			TrainingPoints: (uint16) 57,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=75) "458276319366698396343477934239698871986414074777966687858964009276758326854"
+			MatchLog: (string) (len=75) "458607603191344343405274802519552205382582931339757593817583154540776291910"
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -226,9 +226,9 @@
 					Shoot: (uint64) 1146,
 					Endurance: (uint64) 1187,
 					ShirtNumber: (uint8) 0,
-					EncodedSkills: (*big.Int)(205703391591486196665318928971288188289586730849859069675570298),
+					EncodedSkills: (*big.Int)(205703391579513575252304172265363602139974940352837670283510906),
 					EncodedState: (*big.Int)(<nil>),
-					RedCard: (bool) true,
+					RedCard: (bool) false,
 					InjuryMatchesLeft: (uint8) 0,
 					Tiredness: (int) 1,
 					CountryOfBirth: (string) "",
@@ -1354,7 +1354,7 @@
 			}
 		}
 	},
-	Events: (matchevents.MatchEvents) (len=28 cap=32) {
+	Events: (matchevents.MatchEvents) (len=27 cap=32) {
 		(matchevents.MatchEvent) {
 			Minute: (int16) 3,
 			Type: (int16) 0,
@@ -1648,17 +1648,6 @@
 			ManagesToShoot: (bool) false,
 			IsGoal: (bool) false,
 			PrimaryPlayer: (int16) 8,
-			SecondaryPlayer: (int16) -1,
-			PrimaryPlayerID: (string) (len=11) "21342314523",
-			SecondaryPlayerID: (string) ""
-		},
-		(matchevents.MatchEvent) {
-			Minute: (int16) 178,
-			Type: (int16) 2,
-			Team: (int16) 0,
-			ManagesToShoot: (bool) false,
-			IsGoal: (bool) false,
-			PrimaryPlayer: (int16) 7,
 			SecondaryPlayer: (int16) -1,
 			PrimaryPlayerID: (string) (len=11) "21342314523",
 			SecondaryPlayerID: (string) ""
