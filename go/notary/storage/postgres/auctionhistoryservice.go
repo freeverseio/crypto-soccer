@@ -18,6 +18,9 @@ func (b StorageHistoryService) AuctionUpdate(tx *sql.Tx, auction storage.Auction
 	if err != nil {
 		return err
 	}
+	if currentAuction == nil {
+		return nil
+	}
 	if *currentAuction == auction {
 		return nil
 	}

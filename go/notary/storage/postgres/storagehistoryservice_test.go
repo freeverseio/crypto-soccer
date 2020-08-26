@@ -47,3 +47,14 @@ func TestStorageHistoryUpdateUnchangedAuction(t *testing.T) {
 	tx.QueryRow("SELECT count(*) FROM auctions_histories;").Scan(&count)
 	assert.Equal(t, count, 1)
 }
+
+func TestStorageHistoryUpdateUnexistentAuction(t *testing.T) {
+	service := postgres.NewStorageHistoryService(db)
+
+	tx, err := service.DB().Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+
+	auction := storage.NewAuction()
+	assert.NilError(t, service.AuctionUpdate(tx, *auction))
+}
