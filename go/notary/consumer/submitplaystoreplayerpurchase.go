@@ -1,8 +1,6 @@
 package consumer
 
 import (
-	"database/sql"
-
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -12,7 +10,6 @@ import (
 
 func SubmitPlayStorePlayerPurchase(
 	service storage.StorageService,
-	tx *sql.Tx,
 	in input.SubmitPlayStorePlayerPurchaseInput,
 ) error {
 	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)
@@ -31,7 +28,7 @@ func SubmitPlayStorePlayerPurchase(
 	order.TeamId = string(in.TeamId)
 	order.Signature = in.Signature
 
-	if err := service.PlayStoreInsert(tx, *order); err != nil {
+	if err := service.PlayStoreInsert(*order); err != nil {
 		return err
 	}
 

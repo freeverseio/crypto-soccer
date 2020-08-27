@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"database/sql"
 	"fmt"
 	"strconv"
 
@@ -9,7 +8,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CreateAuction(service storage.StorageService, tx *sql.Tx, in input.CreateAuctionInput) error {
+func CreateAuction(service storage.StorageService, in input.CreateAuctionInput) error {
 	auction := storage.NewAuction()
 	id, err := in.ID()
 	if err != nil {
@@ -32,7 +31,7 @@ func CreateAuction(service storage.StorageService, tx *sql.Tx, in input.CreateAu
 		return err
 	}
 	auction.Seller = signerAddress.Hex()
-	if err = service.AuctionInsert(tx, *auction); err != nil {
+	if err = service.AuctionInsert(*auction); err != nil {
 		return err
 	}
 

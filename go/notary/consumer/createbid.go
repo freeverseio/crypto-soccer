@@ -1,15 +1,14 @@
 package consumer
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CreateBid(service storage.StorageService, tx *sql.Tx, in input.CreateBidInput) error {
-	auction, err := service.Auction(tx, string(in.AuctionId))
+func CreateBid(service storage.StorageService, in input.CreateBidInput) error {
+	auction, err := service.Auction(string(in.AuctionId))
 	if err != nil {
 		return err
 	}
@@ -30,5 +29,5 @@ func CreateBid(service storage.StorageService, tx *sql.Tx, in input.CreateBidInp
 	bid.PaymentURL = ""
 	bid.PaymentDeadline = 0
 
-	return service.BidInsert(tx, *bid)
+	return service.BidInsert(*bid)
 }

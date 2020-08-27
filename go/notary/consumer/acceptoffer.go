@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -45,8 +44,8 @@ func highestOffer(offers []storage.Offer) (*storage.Offer, error) {
 	return &offers[idx], nil
 }
 
-func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOfferInput) error {
-	offers, err := service.OffersByPlayerId(tx, string(in.PlayerId))
+func AcceptOffer(service storage.StorageService, in input.AcceptOfferInput) error {
+	offers, err := service.OffersByPlayerId(string(in.PlayerId))
 
 	highestOffer, err := highestOffer(offers)
 	if err != nil {
@@ -65,7 +64,7 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 	if offer != nil && offer.ValidUntil < time.Now().Unix() {
 		offer.State = storage.OfferEnded
 		offer.StateExtra = "Offer expired when accepting"
-		if err = service.OfferUpdate(tx, *offer); err != nil {
+		if err = service.OfferUpdate(*offer); err != nil {
 			return err
 		}
 		return errors.New("Associated Offer is expired")
@@ -93,7 +92,7 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 		return err
 	}
 	auction.Seller = signerAddress.Hex()
-	if err = service.AuctionInsert(tx, *auction); err != nil {
+	if err = service.AuctionInsert(*auction); err != nil {
 		return err
 	}
 
@@ -103,7 +102,7 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 		offer.AuctionID = auction.ID
 		offer.Seller = auction.Seller
 
-		if err = service.OfferUpdate(tx, *offer); err != nil {
+		if err = service.OfferUpdate(*offer); err != nil {
 			return err
 		}
 
@@ -115,13 +114,13 @@ func AcceptOffer(service storage.StorageService, tx *sql.Tx, in input.AcceptOffe
 			TeamId:     offer.BuyerTeamID,
 		}
 
-		err = CreateBid(service, tx, bid)
+		err = CreateBid(service, bid)
 
 		if err != nil {
 			log.Error(err)
 			offer.State = storage.OfferFailed
 			offer.StateExtra = "Could not create bid"
-			service.OfferUpdate(tx, *offer)
+			service.OfferUpdate(*offer)
 			return err
 		}
 	}

@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"database/sql"
 	"fmt"
 	"strconv"
 
@@ -11,7 +10,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CreateOffer(service storage.StorageService, tx *sql.Tx, in input.CreateOfferInput, contracts contracts.Contracts) error {
+func CreateOffer(service storage.StorageService, in input.CreateOfferInput, contracts contracts.Contracts) error {
 	offer := storage.NewOffer()
 	id, err := in.ID(contracts)
 	if err != nil {
@@ -35,7 +34,7 @@ func CreateOffer(service storage.StorageService, tx *sql.Tx, in input.CreateOffe
 	offer.Buyer = signerAddress.Hex()
 	offer.Seller = in.Seller
 	offer.BuyerTeamID = in.BuyerTeamId
-	if err = service.OfferInsert(tx, *offer); err != nil {
+	if err = service.OfferInsert(*offer); err != nil {
 		return err
 	}
 

@@ -12,13 +12,14 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"gotest.tools/assert"
 )
 
 func TestAcceptOffer(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+	service := postgres.NewStorageService(db)
+	assert.NilError(t, service.Begin())
+	defer service.Rollback()
 	// The two main time parameters:
 	// - the offer should not expire before the seller accepts the offer
 	// - then, an auction starts that may end days layer (e.g. 2 days)
@@ -60,9 +61,9 @@ func TestAcceptOffer(t *testing.T) {
 	assert.Equal(t, hex.EncodeToString(offerSignature), "dbd05f0df6b470d071462ba49956eb472031de84509409823502decb119f2fb36cfb57d5d6f6de5f819731745a4f5533c1805065eebf1a7d56dc9bdced406b231c")
 	inOffer.Signature = hex.EncodeToString(offerSignature)
 
-	assert.NilError(t, consumer.CreateOffer(service, tx, inOffer, *bc.Contracts))
+	assert.NilError(t, consumer.CreateOffer(service, inOffer, *bc.Contracts))
 
-	offer, err := service.OfferByRndPrice(tx, inOffer.Rnd, inOffer.Price)
+	offer, err := service.OfferByRndPrice(inOffer.Rnd, inOffer.Price)
 	assert.NilError(t, err)
 
 	in := input.AcceptOfferInput{}
@@ -90,22 +91,22 @@ func TestAcceptOffer(t *testing.T) {
 	assert.Equal(t, hex.EncodeToString(signature), "a063ae70f54381e09eeb4e46f50e52066a4c255945b37a0f0155e541afbc92df7aae2ec4ffc730091013dd062dfb005d255ccf7e39644f1d7d1ac57b214d1cea1c")
 	in.Signature = hex.EncodeToString(signature)
 
-	assert.NilError(t, consumer.AcceptOffer(service, tx, in))
+	assert.NilError(t, consumer.AcceptOffer(service, in))
 	auctionId, err := in.AuctionID()
 	assert.NilError(t, err)
 
-	auction, err := service.Auction(tx, string(auctionId))
+	auction, err := service.Auction(string(auctionId))
 	assert.NilError(t, err)
 	assert.Assert(t, auction != nil)
 	assert.Equal(t, auction.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
 	assert.Equal(t, auction.Price, int64(41234))
 
-	offer, err = service.Offer(tx, offer.ID)
+	offer, err = service.Offer(offer.ID)
 	assert.NilError(t, err)
 	assert.Equal(t, string(offer.State), "accepted")
 	assert.Equal(t, offer.AuctionID, string(auctionId))
 
-	bids, err := service.Bids(tx, auction.ID)
+	bids, err := service.Bids(auction.ID)
 	assert.Equal(t, string(bids[0].State), "accepted")
 	assert.Equal(t, bids[0].Rnd, int64(inOffer.Rnd))
 	assert.Equal(t, bids[0].ExtraPrice, int64(0))
@@ -114,9 +115,9 @@ func TestAcceptOffer(t *testing.T) {
 }
 
 func TestAcceptOfferWithExpiredOffer(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+	service := postgres.NewStorageService(db)
+	assert.NilError(t, service.Begin())
+	defer service.Rollback()
 
 	// in this example the offer expired 5 min ago
 	offerValidUntil := big.NewInt(time.Now().Unix() - 5*60)
@@ -132,7 +133,6 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	inOffer.Price = 41234
 	inOffer.Rnd = 4232
 	inOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
-	assert.NilError(t, err)
 	extraPrice := big.NewInt(0)
 	dummyRnd := big.NewInt(0)
 
@@ -156,9 +156,9 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(offerSignature)
 
-	assert.NilError(t, consumer.CreateOffer(service, tx, inOffer, *bc.Contracts))
+	assert.NilError(t, consumer.CreateOffer(service, inOffer, *bc.Contracts))
 
-	offer, err := service.OfferByRndPrice(tx, inOffer.Rnd, inOffer.Price)
+	offer, err := service.OfferByRndPrice(inOffer.Rnd, inOffer.Price)
 	assert.NilError(t, err)
 
 	in := input.AcceptOfferInput{}
@@ -184,15 +184,15 @@ func TestAcceptOfferWithExpiredOffer(t *testing.T) {
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
-	err = consumer.AcceptOffer(service, tx, in)
+	err = consumer.AcceptOffer(service, in)
 	assert.Error(t, err, "Associated Offer is expired")
 
 }
 
 func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+	service := postgres.NewStorageService(db)
+	assert.NilError(t, service.Begin())
+	defer service.Rollback()
 
 	// in this example the offer expires in 5 min
 	offerValidUntil := big.NewInt(time.Now().Unix() + 5*60)
@@ -208,7 +208,6 @@ func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
 	inOffer.Price = 41234
 	inOffer.Rnd = 4232
 	inOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
-	assert.NilError(t, err)
 	extraPrice := big.NewInt(0)
 	dummyRnd := big.NewInt(0)
 
@@ -232,9 +231,9 @@ func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(offerSignature)
 
-	assert.NilError(t, consumer.CreateOffer(service, tx, inOffer, *bc.Contracts))
+	assert.NilError(t, consumer.CreateOffer(service, inOffer, *bc.Contracts))
 
-	offer, err := service.OfferByRndPrice(tx, inOffer.Rnd, inOffer.Price)
+	offer, err := service.OfferByRndPrice(inOffer.Rnd, inOffer.Price)
 	assert.NilError(t, err)
 
 	in := input.AcceptOfferInput{}
@@ -260,14 +259,14 @@ func TestAcceptOfferWithNonExpiredOffer(t *testing.T) {
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
-	err = consumer.AcceptOffer(service, tx, in)
+	err = consumer.AcceptOffer(service, in)
 	assert.NilError(t, err)
 }
 
 func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+	service := postgres.NewStorageService(db)
+	assert.NilError(t, service.Begin())
+	defer service.Rollback()
 
 	playerId := big.NewInt(274877906940)
 	extraPrice := big.NewInt(0)
@@ -286,7 +285,6 @@ func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
 	inLowerOffer.Price = 1000
 	inLowerOffer.Rnd = 4232
 	inLowerOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
-	assert.NilError(t, err)
 
 	hashLowerOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
@@ -308,9 +306,9 @@ func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
 	assert.NilError(t, err)
 	inLowerOffer.Signature = hex.EncodeToString(lowerOfferSignature)
 
-	assert.NilError(t, consumer.CreateOffer(service, tx, inLowerOffer, *bc.Contracts))
+	assert.NilError(t, consumer.CreateOffer(service, inLowerOffer, *bc.Contracts))
 
-	lowerOffer, err := service.OfferByRndPrice(tx, inLowerOffer.Rnd, inLowerOffer.Price)
+	lowerOffer, err := service.OfferByRndPrice(inLowerOffer.Rnd, inLowerOffer.Price)
 	assert.NilError(t, err)
 
 	// Creating highest offer
@@ -348,11 +346,11 @@ func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
 	assert.NilError(t, err)
 	inHighestOffer.Signature = hex.EncodeToString(highestOfferSignature)
 
-	assert.NilError(t, consumer.CreateOffer(service, tx, inHighestOffer, *bc.Contracts))
+	assert.NilError(t, consumer.CreateOffer(service, inHighestOffer, *bc.Contracts))
 
-	higherOffer, err := service.OfferByRndPrice(tx, inHighestOffer.Rnd, inHighestOffer.Price)
+	higherOffer, err := service.OfferByRndPrice(inHighestOffer.Rnd, inHighestOffer.Price)
 	assert.NilError(t, err)
-	_, err = service.OfferByRndPrice(tx, inHighestOffer.Rnd, inHighestOffer.Price)
+	_, err = service.OfferByRndPrice(inHighestOffer.Rnd, inHighestOffer.Price)
 	assert.NilError(t, err)
 
 	// Accepting lower offer
@@ -379,7 +377,7 @@ func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
-	err = consumer.AcceptOffer(service, tx, in)
+	err = consumer.AcceptOffer(service, in)
 	assert.Error(t, err, "You can only accept highest offer")
 
 	// Accepting hihgest offer
@@ -402,7 +400,7 @@ func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
 	assert.NilError(t, err)
 	inHigher.Signature = hex.EncodeToString(signature)
 
-	err = consumer.AcceptOffer(service, tx, inHigher)
+	err = consumer.AcceptOffer(service, inHigher)
 	assert.NilError(t, err)
 
 	// Accepting unexistent offer
@@ -425,14 +423,14 @@ func TestAcceptOfferWithNonHighestOffer(t *testing.T) {
 	assert.NilError(t, err)
 	inUnexistent.Signature = hex.EncodeToString(signature)
 
-	err = consumer.AcceptOffer(service, tx, inUnexistent)
+	err = consumer.AcceptOffer(service, inUnexistent)
 	assert.Error(t, err, "You can only accept highest offer")
 }
 
 func TestAcceptUnexistentOffers(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+	service := postgres.NewStorageService(db)
+	assert.NilError(t, service.Begin())
+	defer service.Rollback()
 
 	auctionValidUntil := big.NewInt(999999999999 + 3600*24*2)
 	playerId := big.NewInt(274877906940)
@@ -445,7 +443,6 @@ func TestAcceptUnexistentOffers(t *testing.T) {
 	in.Rnd = 45654
 	in.OfferId = graphql.ID("23442566")
 
-	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
@@ -459,7 +456,7 @@ func TestAcceptUnexistentOffers(t *testing.T) {
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
-	err = consumer.AcceptOffer(service, tx, in)
+	err = consumer.AcceptOffer(service, in)
 	assert.Error(t, err, "There are no offers for this playerId")
 
 }

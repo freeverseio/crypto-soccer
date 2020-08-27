@@ -1,7 +1,6 @@
 package input
 
 import (
-	"database/sql"
 	"encoding/hex"
 	"errors"
 	"math/big"
@@ -149,13 +148,13 @@ func (b CreateOfferInput) IsPlayerFrozen(contracts contracts.Contracts) (bool, e
 	return isFrozen, nil
 }
 
-func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, service storage.StorageService, tx *sql.Tx) (bool, error) {
+func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, service storage.StorageService) (bool, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
 	}
 
-	auctions, err := service.AuctionsByPlayerId(tx, b.PlayerId)
+	auctions, err := service.AuctionsByPlayerId(b.PlayerId)
 	if err != nil {
 		return false, err
 	}

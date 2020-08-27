@@ -11,13 +11,14 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/consumer"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
 	"gotest.tools/assert"
 )
 
 func TestProcessOffers(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
+	service := postgres.NewStorageService(db)
+	assert.NilError(t, service.Begin())
+	defer service.Rollback()
 
 	in := input.CreateOfferInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()-100000, 10)
@@ -82,23 +83,23 @@ func TestProcessOffers(t *testing.T) {
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
-	assert.NilError(t, consumer.CreateOffer(service, tx, in, *bc.Contracts))
+	assert.NilError(t, consumer.CreateOffer(service, in, *bc.Contracts))
 	assert.NilError(t, err)
 
-	offer, err := service.OfferByRndPrice(tx, in.Rnd, in.Price)
+	offer, err := service.OfferByRndPrice(in.Rnd, in.Price)
 	assert.NilError(t, err)
 	assert.Assert(t, offer != nil)
 	assert.Equal(t, offer.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f")
 
 	// Process pending offers
-	offers, err := service.OfferPendingOffers(tx)
+	offers, err := service.OfferPendingOffers()
 	assert.NilError(t, err)
 	assert.Equal(t, len(offers), 1)
 
-	err = consumer.ProcessOffers(service, tx)
+	err = consumer.ProcessOffers(service)
 	assert.NilError(t, err)
 
-	offers, err = service.OfferPendingOffers(tx)
+	offers, err = service.OfferPendingOffers()
 	assert.NilError(t, err)
 	assert.Equal(t, len(offers), 0)
 }
