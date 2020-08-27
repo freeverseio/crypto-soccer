@@ -40,21 +40,39 @@ type StorageService struct {
 }
 
 func (b *StorageService) Begin() (*sql.Tx, error) {
+	if b.BeginFunc == nil {
+		panic("null implementation")
+	}
 	return b.BeginFunc()
 }
 func (b *StorageService) AuctionPendingAuctions(tx *sql.Tx) ([]storage.Auction, error) {
+	if b.AuctionPendingAuctionsFunc == nil {
+		panic("null implementation")
+	}
 	return b.AuctionPendingAuctionsFunc(tx)
 }
 func (b *StorageService) Auction(tx *sql.Tx, ID string) (*storage.Auction, error) {
+	if b.AuctionFunc == nil {
+		panic("null implementation")
+	}
 	return b.AuctionFunc(tx, ID)
 }
 func (b *StorageService) AuctionInsert(tx *sql.Tx, auction storage.Auction) error {
+	if b.AuctionInsertFunc == nil {
+		panic("null implementation")
+	}
 	return b.AuctionInsertFunc(tx, auction)
 }
 func (b *StorageService) AuctionUpdate(tx *sql.Tx, auction storage.Auction) error {
+	if b.AuctionUpdateFunc == nil {
+		panic("null implementation")
+	}
 	return b.AuctionUpdateFunc(tx, auction)
 }
 func (b *StorageService) AuctionsByPlayerId(tx *sql.Tx, ID string) ([]storage.Auction, error) {
+	if b.AuctionsByPlayerIdFunc == nil {
+		panic("null implementation")
+	}
 	return b.AuctionsByPlayerIdFunc(tx, ID)
 }
 func (b *StorageService) Bid(tx *sql.Tx, auctionId string, extraPrice int64) (*storage.Bid, error) {

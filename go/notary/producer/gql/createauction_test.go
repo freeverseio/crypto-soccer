@@ -1,6 +1,7 @@
 package gql_test
 
 import (
+	"database/sql"
 	"encoding/hex"
 	"math/big"
 	"strconv"
@@ -11,11 +12,17 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/mockup"
 	"gotest.tools/assert"
 )
 
 func TestCreateAuctionReturnTheSignature(t *testing.T) {
 	ch := make(chan interface{}, 10)
+	service := &mockup.StorageService{
+		BeginFunc:         func() (*sql.Tx, error) { return nil, nil },
+		AuctionInsertFunc: func(tx *sql.Tx, auction storage.Auction) error { return nil },
+	}
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	in := input.CreateAuctionInput{}
