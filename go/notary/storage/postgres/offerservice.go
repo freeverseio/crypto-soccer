@@ -7,8 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b StorageService) OfferPendingOffers(tx *sql.Tx) ([]storage.Offer, error) {
-	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE state = 'started';")
+func (b *StorageService) OfferPendingOffers() ([]storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE state = 'started';")
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +36,8 @@ func (b StorageService) OfferPendingOffers(tx *sql.Tx) ([]storage.Offer, error) 
 	return offers, err
 }
 
-func (b StorageService) Offer(tx *sql.Tx, ID string) (*storage.Offer, error) {
-	rows, err := tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE id = $1;", ID)
+func (b *StorageService) Offer(ID string) (*storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +64,8 @@ func (b StorageService) Offer(tx *sql.Tx, ID string) (*storage.Offer, error) {
 	return &offer, err
 }
 
-func (b StorageService) OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*storage.Offer, error) {
-	rows, err := tx.Query("SELECT id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE rnd = $1 AND price = $2;", rnd, price)
+func (b *StorageService) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE rnd = $1 AND price = $2;", rnd, price)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +92,8 @@ func (b StorageService) OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*st
 	return &offer, err
 }
 
-func (b StorageService) OfferByAuctionId(tx *sql.Tx, auctionId string) (*storage.Offer, error) {
-	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE auction_id = $1;", auctionId)
+func (b *StorageService) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE auction_id = $1;", auctionId)
 	if err != nil {
 		return nil, err
 	}
@@ -120,8 +120,8 @@ func (b StorageService) OfferByAuctionId(tx *sql.Tx, auctionId string) (*storage
 	return &offer, err
 }
 
-func (b StorageService) OffersByPlayerId(tx *sql.Tx, playerId string) ([]storage.Offer, error) {
-	rows, err := tx.Query("SELECT id, COALESCE(auction_id, ''), currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE player_id = $1;", playerId)
+func (b *StorageService) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT id, COALESCE(auction_id, ''), currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE player_id = $1;", playerId)
 	if err != nil {
 		return nil, err
 	}
@@ -152,9 +152,9 @@ func (b StorageService) OffersByPlayerId(tx *sql.Tx, playerId string) ([]storage
 	return offers, nil
 }
 
-func (b StorageService) OfferInsert(tx *sql.Tx, offer storage.Offer) error {
+func (b *StorageService) OfferInsert(offer storage.Offer) error {
 	log.Debugf("[DBMS] + create Offer %v", b)
-	_, err := tx.Exec("INSERT INTO offers (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+	_, err := b.tx.Exec("INSERT INTO offers (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		offer.ID,
 		offer.PlayerID,
 		offer.CurrencyID,
@@ -182,9 +182,9 @@ func NewNullString(s string) sql.NullString {
 	}
 }
 
-func (b StorageService) OfferUpdate(tx *sql.Tx, offer storage.Offer) error {
+func (b *StorageService) OfferUpdate(offer storage.Offer) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
-	_, err := tx.Exec(`UPDATE offers SET 
+	_, err := b.tx.Exec(`UPDATE offers SET 
 		state=$1, 
 		state_extra=$2,
 		auction_id=$3,
