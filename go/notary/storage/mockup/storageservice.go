@@ -81,7 +81,7 @@ func (b *StorageService) PlayStoreInsert(tx *sql.Tx, order storage.PlaystoreOrde
 func (b *StorageService) PlayStoreUpdateState(tx *sql.Tx, order storage.PlaystoreOrder) error {
 	return b.PlayStoreUpdateStateFunc(tx, order)
 }
-func (b *StorageService) PlayStorePendingOrdersByPlayerId(tx *sql.Tx, playerId string) ([]PlaystoreOrder, error) {
+func (b *StorageService) PlayStorePendingOrdersByPlayerId(tx *sql.Tx, playerId string) ([]storage.PlaystoreOrder, error) {
 	return b.PlayStorePendingOrdersByPlayerIdFunc(tx, playerId)
 }
 func (b *StorageService) Offer(tx *sql.Tx, ID string) (*storage.Offer, error) {
