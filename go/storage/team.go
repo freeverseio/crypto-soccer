@@ -42,8 +42,6 @@ type TeamStorageService interface {
 	UpdateManagerName(teamId string, name string) error
 	UpdateLeaderboardPosition(teamId string, position int) error
 	TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error)
-	TeamUpdateZombies() error
-	TeamCleanZombies() error
 }
 
 func NewTeam() *Team {
@@ -269,16 +267,4 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 		return team, err
 	}
 	return team, nil
-}
-
-func TeamUpdateZombies(tx *sql.Tx) error {
-	log.Debugf("[DBMS] TeamUpdateZombies")
-	_, err := tx.Exec("UPDATE teams SET is_zombie=true WHERE team_id IN (SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count >= 9);")
-	return err
-}
-
-func TeamCleanZombies(tx *sql.Tx) error {
-	log.Debugf("[DBMS] TeamCleanZombies")
-	_, err := tx.Exec("UPDATE teams SET is_zombie=false WHERE team_id NOT IN (SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count >= 9);")
-	return err
 }

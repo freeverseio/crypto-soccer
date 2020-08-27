@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/freeverseio/crypto-soccer/go/storage/postgres"
 	"gotest.tools/assert"
 )
 
@@ -227,11 +228,11 @@ func TestZombies(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-
-	err = storage.TeamUpdateZombies(tx)
+	teamStorageService := postgres.NewTeamStorageService(tx)
+	err = teamStorageService.TeamUpdateZombies()
 	assert.NilError(t, err)
 
-	err = storage.TeamCleanZombies(tx)
+	err = teamStorageService.TeamCleanZombies()
 	assert.NilError(t, err)
 }
 

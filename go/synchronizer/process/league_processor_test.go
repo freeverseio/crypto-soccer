@@ -244,8 +244,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	verse := big.NewInt(1)
-// 	err = processor.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, uint32(countryIdx.Uint64()), verse)
+// 	err = processor.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, uint32(countryIdx.Uint64()))
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
