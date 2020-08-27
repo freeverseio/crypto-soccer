@@ -9,8 +9,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql"
-	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql/input"
-	"github.com/freeverseio/crypto-soccer/go/storage/postgres"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
 	log "github.com/sirupsen/logrus"
 )
@@ -68,39 +66,6 @@ func (b *Consumer) Start() {
 				break
 			}
 			if err = tx.Commit(); err != nil {
-				log.Error(err)
-			}
-		case input.SetTeamNameInput:
-			log.Infof("[relay|consumer] Set Team %v Name %v", ev.TeamId, ev.Name)
-			tx, err := b.db.Begin()
-			if err != nil {
-				log.Error(err)
-				break
-			}
-			teamStorageService := postgres.NewTeamStorageService(tx)
-			if err := SetTeamName(teamStorageService, ev); err != nil {
-				tx.Rollback()
-				log.Error(err)
-				break
-			}
-			if err := tx.Commit(); err != nil {
-				log.Error(err)
-			}
-
-		case input.SetTeamManagerNameInput:
-			log.Infof("[relay|consumer] Set Team %v Managet Name %v", ev.TeamId, ev.Name)
-			tx, err := b.db.Begin()
-			if err != nil {
-				log.Error(err)
-				break
-			}
-			teamStorageService := postgres.NewTeamStorageService(tx)
-			if err := SetTeamManagerName(teamStorageService, ev); err != nil {
-				tx.Rollback()
-				log.Error(err)
-				break
-			}
-			if err := tx.Commit(); err != nil {
 				log.Error(err)
 			}
 		default:
