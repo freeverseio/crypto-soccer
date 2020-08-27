@@ -9,7 +9,7 @@ import (
 
 func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 	t.Run("TestAuctionByIDUnexistent", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -19,7 +19,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestAuctionInsert", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -43,7 +43,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestAuctionPendingAuctions", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -106,7 +106,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestAuctionUpdate", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -131,7 +131,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestBid().Insert", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -145,7 +145,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestBidsByAuctionID", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -176,7 +176,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestBidUpdate", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -204,7 +204,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestBidFindBids", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 

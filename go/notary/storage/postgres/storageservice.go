@@ -16,8 +16,8 @@ func NewStorageService(db *sql.DB) *StorageService {
 	}
 }
 
-func (b *StorageService) DB() *sql.DB {
-	return b.db
+func (b *StorageService) Begin() (*sql.Tx, error) {
+	return b.db.Begin()
 }
 
 func New(url string) (*sql.DB, error) {

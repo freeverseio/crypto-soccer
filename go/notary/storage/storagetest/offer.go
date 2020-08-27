@@ -9,7 +9,7 @@ import (
 
 func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 	t.Run("TestOfferByIDUnexistent", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 		offer, err := service.Offer(tx, "4343")
@@ -18,7 +18,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestOfferInsert", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 		offer := storage.NewOffer()
@@ -42,7 +42,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestOfferUpdate", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 		auction := storage.NewAuction()
@@ -89,7 +89,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 
 	t.Run("TestInsertSameOrderTwice", func(t *testing.T) {
 		t.Skip("TODO reactive me when id is the hash")
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -111,7 +111,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestPendingOffer", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 		offer := storage.NewOffer()
@@ -143,7 +143,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestOfferBy", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 		auction := storage.NewAuction()
