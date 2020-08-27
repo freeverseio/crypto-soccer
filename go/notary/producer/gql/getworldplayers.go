@@ -50,7 +50,7 @@ func (b *Resolver) createWorldPlayersBatch(service storage.StorageService, teamI
 		return nil, err
 	}
 
-	tx, err := b.service.DB().Begin()
+	tx, err := b.service.Begin()
 	if err != nil {
 		return nil, err
 	}

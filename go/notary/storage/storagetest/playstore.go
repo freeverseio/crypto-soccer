@@ -9,7 +9,7 @@ import (
 
 func testPlaystoreOrderServiceInterface(t *testing.T, service storage.StorageService) {
 	t.Run("insert", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -32,7 +32,7 @@ func testPlaystoreOrderServiceInterface(t *testing.T, service storage.StorageSer
 	})
 
 	t.Run("pending orders", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -78,7 +78,7 @@ func testPlaystoreOrderServiceInterface(t *testing.T, service storage.StorageSer
 	})
 
 	t.Run("update state", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
@@ -109,7 +109,7 @@ func testPlaystoreOrderServiceInterface(t *testing.T, service storage.StorageSer
 	})
 
 	t.Run("pending order by playerId", func(t *testing.T) {
-		tx, err := service.DB().Begin()
+		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 

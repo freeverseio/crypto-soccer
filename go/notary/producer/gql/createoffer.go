@@ -47,7 +47,7 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, fmt.Errorf("signer is not the owner of teamId %v", args.Input.BuyerTeamId)
 	}
 
-	tx, err := b.service.DB().Begin()
+	tx, err := b.service.Begin()
 	if err != nil {
 		return id, err
 	}

@@ -17,7 +17,7 @@ func TestStorageHistoryServiceStart(t *testing.T) {
 func TestStorageHistoryInsertAuction(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -35,7 +35,7 @@ func TestStorageHistoryInsertAuction(t *testing.T) {
 func TestStorageHistoryUpdateUnchangedAuction(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -51,7 +51,7 @@ func TestStorageHistoryUpdateUnchangedAuction(t *testing.T) {
 func TestStorageHistoryUpdateChangedAuction(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -68,7 +68,7 @@ func TestStorageHistoryUpdateChangedAuction(t *testing.T) {
 func TestStorageHistoryUpdateUnexistentAuction(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -79,7 +79,7 @@ func TestStorageHistoryUpdateUnexistentAuction(t *testing.T) {
 func TestStorageHistoryUpdateUnchangedBid(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -98,7 +98,7 @@ func TestStorageHistoryUpdateUnchangedBid(t *testing.T) {
 func TestStorageHistoryUpdateChangedBid(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -118,7 +118,7 @@ func TestStorageHistoryUpdateChangedBid(t *testing.T) {
 func TestStorageHistoryUpdateUnChangedPlaystoreOrder(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -134,7 +134,7 @@ func TestStorageHistoryUpdateUnChangedPlaystoreOrder(t *testing.T) {
 func TestStorageHistoryUpdateChangedPlaystoreOrder(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -151,7 +151,7 @@ func TestStorageHistoryUpdateChangedPlaystoreOrder(t *testing.T) {
 func TestStorageHistoryUpdateUnChangedOffer(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
@@ -167,7 +167,7 @@ func TestStorageHistoryUpdateUnChangedOffer(t *testing.T) {
 func TestStorageHistoryUpdateChangedOffer(t *testing.T) {
 	service := postgres.NewStorageHistoryService(db)
 
-	tx, err := service.DB().Begin()
+	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
 

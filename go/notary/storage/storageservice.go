@@ -3,7 +3,7 @@ package storage
 import "database/sql"
 
 type StorageService interface {
-	DB() *sql.DB
+	Begin() (*sql.Tx, error)
 
 	// Auction
 	AuctionPendingAuctions(tx *sql.Tx) ([]Auction, error)
