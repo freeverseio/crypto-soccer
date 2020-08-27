@@ -48,7 +48,7 @@ func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) 
 		return id, fmt.Errorf("blockchain says no")
 	}
 
-	tx, err := b.service.DB().Begin()
+	tx, err := b.service.Begin()
 	if err != nil {
 		return id, err
 	}
