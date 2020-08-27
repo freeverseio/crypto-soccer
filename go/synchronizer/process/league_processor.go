@@ -279,15 +279,14 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 	if err != nil {
 		return err
 	}
-	teamStorageService := storagepostgres.NewTeamStorageService(tx)
 	if err != nil {
 		return err
 	}
-	err = teamStorageService.TeamCleanZombies()
+	err = storage.TeamCleanZombies(tx)
 	if err != nil {
 		return err
 	}
-	err = teamStorageService.TeamUpdateZombies()
+	err = storage.TeamUpdateZombies(tx)
 	if err != nil {
 		return err
 	}

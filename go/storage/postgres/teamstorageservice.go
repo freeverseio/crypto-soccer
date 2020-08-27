@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
-	"gopkg.in/src-d/go-log.v1"
 )
 
 type TeamStorageService struct {
@@ -58,13 +57,11 @@ func (b TeamStorageService) TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx ui
 }
 
 func (b TeamStorageService) TeamUpdateZombies() error {
-	log.Debugf("[DBMS] TeamUpdateZombies")
-	_, err := b.tx.Exec("UPDATE teams SET is_zombie=true WHERE team_id IN (SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count >= 9);")
-	return err
+
+	return storage.TeamUpdateZombies(b.tx)
 }
 
 func (b TeamStorageService) TeamCleanZombies() error {
-	log.Debugf("[DBMS] TeamCleanZombies")
-	_, err := b.tx.Exec("UPDATE teams SET is_zombie=false WHERE team_id NOT IN (SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count >= 9);")
-	return err
+
+	return storage.TeamCleanZombies(b.tx)
 }
