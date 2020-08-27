@@ -5,7 +5,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/go/complementarydata"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer"
 	"github.com/freeverseio/crypto-soccer/go/relay/producer/gql"
@@ -20,7 +19,6 @@ type Consumer struct {
 	contracts                 contracts.Contracts
 	useractionsPublishService useractions.UserActionsPublishService
 	db                        *sql.DB
-	complementaryData         complementarydata.ComplementaryData
 }
 
 func NewConsumer(
@@ -38,7 +36,6 @@ func NewConsumer(
 		contracts,
 		useractionsPublishService,
 		db,
-		complementarydata.ComplementaryData{},
 	}
 }
 
