@@ -14,6 +14,16 @@ func (b StorageHistoryService) BidInsert(tx *sql.Tx, bid storage.Bid) error {
 }
 
 func (b StorageHistoryService) BidUpdate(tx *sql.Tx, bid storage.Bid) error {
+	currentBids, err := b.StorageService.Bid(tx, bid.AuctionID, bid.ExtraPrice)
+	if err != nil {
+		return err
+	}
+	if currentBids == nil {
+		return nil
+	}
+	if *currentBids == bid {
+		return nil
+	}
 	if err := b.StorageService.BidUpdate(tx, bid); err != nil {
 		return err
 	}
