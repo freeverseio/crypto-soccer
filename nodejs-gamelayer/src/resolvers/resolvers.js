@@ -4,6 +4,7 @@ const {
   selectTeamManagerName,
   updateTeamName,
   updateTeamManagerName,
+  selectLeaderboard,
 } = require('../repositories');
 const { TeamValidation } = require('../validations');
 
@@ -62,6 +63,14 @@ const resolvers = {
       } else {
         return 'Signer is not the team owner';
       }
+    },
+  },
+  Query: {
+    selectLeaderboard: async (
+      _,
+      { input: { timezoneIdx, countryIdx, leagueIdx } }
+    ) => {
+      return selectLeaderboard({ timezoneIdx, countryIdx, leagueIdx });
     },
   },
 };

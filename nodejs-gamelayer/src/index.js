@@ -8,6 +8,7 @@ const {
 const fetch = require('node-fetch');
 const resolvers = require('./resolvers/resolvers.js');
 const { horizonConfig } = require('./config.js');
+const initSchedule = require('./jobs/initSchedule.js');
 
 const createRemoteSchema = async (uri) => {
   const link = new HttpLink({ uri, fetch });
@@ -39,10 +40,20 @@ const main = async () => {
       name: String!
     }
 
+    input SelectLeaderboardInput {
+      timezone_idx: Int!
+      country_idx: Int!
+      league_idx: Int!
+    }
+
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
 
+    }
+
+    extend type Query {
+      selectLeaderboard(input: SelectLeaderboardInput): String
     }
   `;
 
@@ -60,6 +71,8 @@ const main = async () => {
   server.listen().then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
   });
+
+  initSchedule();
 };
 
 const run = () => {
