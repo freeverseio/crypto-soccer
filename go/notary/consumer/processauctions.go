@@ -11,7 +11,7 @@ import (
 )
 
 func ProcessAuctions(
-	service storage.StorageService,
+	service storage.Tx,
 	market marketpay.MarketPayService,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
@@ -36,7 +36,7 @@ func ProcessAuctions(
 }
 
 func processAuction(
-	service storage.StorageService,
+	service storage.Tx,
 	market marketpay.MarketPayService,
 	auction storage.Auction,
 	pvc *ecdsa.PrivateKey,

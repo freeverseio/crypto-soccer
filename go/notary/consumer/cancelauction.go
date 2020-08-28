@@ -8,7 +8,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CancelAuction(service storage.StorageService, in input.CancelAuctionInput) error {
+func CancelAuction(service storage.Tx, in input.CancelAuctionInput) error {
 	auction, err := service.Auction(string(in.AuctionId))
 	if err != nil {
 		return err

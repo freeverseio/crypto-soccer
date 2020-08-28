@@ -10,7 +10,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CreateOffer(service storage.StorageService, in input.CreateOfferInput, contracts contracts.Contracts) error {
+func CreateOffer(service storage.Tx, in input.CreateOfferInput, contracts contracts.Contracts) error {
 	offer := storage.NewOffer()
 	id, err := in.ID(contracts)
 	if err != nil {

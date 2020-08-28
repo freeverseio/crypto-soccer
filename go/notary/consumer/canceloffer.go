@@ -8,7 +8,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CancelOffer(service storage.StorageService, in input.CancelOfferInput) error {
+func CancelOffer(service storage.Tx, in input.CancelOfferInput) error {
 	offer, err := service.Offer(string(in.OfferId))
 	if err != nil {
 		return err

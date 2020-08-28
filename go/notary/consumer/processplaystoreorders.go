@@ -12,7 +12,7 @@ import (
 )
 
 func ProcessPlaystoreOrders(
-	service storage.StorageService,
+	service storage.Tx,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,

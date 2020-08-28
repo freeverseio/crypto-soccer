@@ -47,143 +47,69 @@ func New(
 }
 
 func (b *Consumer) Consume(event interface{}) error {
+	tx, err := b.service.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+	}()
+
 	switch in := event.(type) {
 	case input.CreateAuctionInput:
 		log.Debug("Received CreateAuctionInput")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := CreateAuction(b.service, in); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		return CreateAuction(tx, in)
 	case input.CancelAuctionInput:
-		log.Debug("Received CancelAuctionInput")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := CancelAuction(b.service, in); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		return CancelAuction(tx, in)
 	case input.CreateBidInput:
 		log.Debug("Received CreateBidInput")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := CreateBid(b.service, in); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		return CreateBid(tx, in)
 	case producer.ProcessEvent:
 		log.Info("[consumer] process auctions")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := ProcessAuctions(
-			b.service,
+		return ProcessAuctions(
+			tx,
 			b.market,
 			b.contracts,
 			b.pvc,
-		); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		)
 	case producer.PlaystoreOrderEvent:
 		log.Info("[consumer] process playstore events")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := ProcessPlaystoreOrders(
-			b.service,
+		return ProcessPlaystoreOrders(
+			tx,
 			b.contracts,
 			b.pvc,
 			b.googleCredentials,
 			b.namesdb,
 			b.iapTestOn,
-		); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		)
 	case input.SubmitPlayStorePlayerPurchaseInput:
 		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := SubmitPlayStorePlayerPurchase(
-			b.service,
-			in,
-		); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		return SubmitPlayStorePlayerPurchase(tx, in)
 	case input.DismissPlayerInput:
 		log.Debug("Received DismissPlayerInput")
-		if err := DismissPlayer(
-			b.contracts,
-			b.pvc,
-			in,
-		); err != nil {
-			return err
-		}
+		return DismissPlayer(b.contracts, b.pvc, in)
 	case input.CompletePlayerTransitInput:
 		log.Debug("Received CompletePlayerTransit")
-		if err := CompletePlayerTransit(b.contracts, b.pvc, in); err != nil {
-			return err
-		}
+		return CompletePlayerTransit(b.contracts, b.pvc, in)
 	case input.CreateOfferInput:
 		log.Debug("Received CreateOfferInput")
-
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := CreateOffer(b.service, in, b.contracts); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		return CreateOffer(tx, in, b.contracts)
 	case input.AcceptOfferInput:
 		log.Debug("Received CreateAuctionInput")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := AcceptOffer(b.service, in); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		return AcceptOffer(tx, in)
 	case input.CancelOfferInput:
 		log.Debug("Received CancelOfferInput")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := CancelOffer(b.service, in); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		return CancelOffer(tx, in)
 	case producer.ProcessOfferEvent:
 		log.Info("[consumer] process offer to expire")
-		if err := b.service.Begin(); err != nil {
-			return err
-		}
-		if err := ProcessOffers(
-			b.service,
-		); err != nil {
-			b.service.Rollback()
-			return err
-		}
-		return b.service.Commit()
+		return ProcessOffers(tx)
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}
-	return nil
 }
 
 func (b *Consumer) Start() {

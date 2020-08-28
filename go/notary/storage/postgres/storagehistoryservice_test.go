@@ -26,10 +26,8 @@ func TestStorageHistoryInsertAuction(t *testing.T) {
 		t.Errorf("wrong type %T", tx)
 	case *postgres.StorageHistoryTx:
 		assert.Equal(t, tx.AuctionsHistoriesCount(), 0)
-
 		auction := storage.NewAuction()
 		assert.NilError(t, tx.AuctionInsert(*auction))
-
 		assert.Equal(t, tx.AuctionsHistoriesCount(), 1)
 	}
 }
@@ -45,11 +43,9 @@ func TestStorageHistoryUpdateUnchangedAuction(t *testing.T) {
 	default:
 		t.Errorf("wrong type %T", tx)
 	case *postgres.StorageHistoryTx:
-
 		auction := storage.NewAuction()
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		assert.NilError(t, tx.AuctionUpdate(*auction))
-
 		assert.Equal(t, tx.AuctionsHistoriesCount(), 1)
 	}
 }
@@ -65,12 +61,10 @@ func TestStorageHistoryUpdateChangedAuction(t *testing.T) {
 	default:
 		t.Errorf("wrong type %T", tx)
 	case *postgres.StorageHistoryTx:
-
 		auction := storage.NewAuction()
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		auction.State = storage.AuctionCancelled
 		assert.NilError(t, tx.AuctionUpdate(*auction))
-
 		assert.Equal(t, tx.AuctionsHistoriesCount(), 2)
 	}
 }
@@ -103,7 +97,6 @@ func TestStorageHistoryUpdateUnchangedBid(t *testing.T) {
 		bid.AuctionID = auction.ID
 		assert.NilError(t, tx.BidInsert(*bid))
 		assert.NilError(t, tx.BidUpdate(*bid))
-
 		assert.Equal(t, tx.BidsHistoriesCount(), 1)
 	}
 }
@@ -144,7 +137,6 @@ func TestStorageHistoryUpdateUnChangedPlaystoreOrder(t *testing.T) {
 		order := storage.NewPlaystoreOrder()
 		assert.NilError(t, tx.PlayStoreInsert(*order))
 		assert.NilError(t, tx.PlayStoreUpdateState(*order))
-
 		assert.Equal(t, tx.PlaystoreHistoriesCount(), 1)
 	}
 }
@@ -164,7 +156,6 @@ func TestStorageHistoryUpdateChangedPlaystoreOrder(t *testing.T) {
 		assert.NilError(t, tx.PlayStoreInsert(*order))
 		order.PlayerId = "234234234"
 		assert.NilError(t, tx.PlayStoreUpdateState(*order))
-
 		assert.Equal(t, tx.PlaystoreHistoriesCount(), 2)
 	}
 }
@@ -200,13 +191,11 @@ func TestStorageHistoryUpdateChangedOffer(t *testing.T) {
 	case *postgres.StorageHistoryTx:
 		auction := storage.NewAuction()
 		assert.NilError(t, tx.AuctionInsert(*auction))
-
 		order := storage.NewOffer()
 		assert.NilError(t, tx.OfferInsert(*order))
 		order.AuctionID = auction.ID
 		order.Seller = "me"
 		assert.NilError(t, tx.OfferUpdate(*order))
-
 		assert.Equal(t, tx.OffersHistoriesCount(), 2)
 	}
 }

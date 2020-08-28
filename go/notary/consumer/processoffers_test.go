@@ -17,8 +17,9 @@ import (
 
 func TestProcessOffers(t *testing.T) {
 	service := postgres.NewStorageService(db)
-	assert.NilError(t, service.Begin())
-	defer service.Rollback()
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
 
 	in := input.CreateOfferInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()-100000, 10)
@@ -83,23 +84,23 @@ func TestProcessOffers(t *testing.T) {
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
-	assert.NilError(t, consumer.CreateOffer(service, in, *bc.Contracts))
+	assert.NilError(t, consumer.CreateOffer(tx, in, *bc.Contracts))
 	assert.NilError(t, err)
 
-	offer, err := service.OfferByRndPrice(in.Rnd, in.Price)
+	offer, err := tx.OfferByRndPrice(in.Rnd, in.Price)
 	assert.NilError(t, err)
 	assert.Assert(t, offer != nil)
 	assert.Equal(t, offer.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f")
 
 	// Process pending offers
-	offers, err := service.OfferPendingOffers()
+	offers, err := tx.OfferPendingOffers()
 	assert.NilError(t, err)
 	assert.Equal(t, len(offers), 1)
 
-	err = consumer.ProcessOffers(service)
+	err = consumer.ProcessOffers(tx)
 	assert.NilError(t, err)
 
-	offers, err = service.OfferPendingOffers()
+	offers, err = tx.OfferPendingOffers()
 	assert.NilError(t, err)
 	assert.Equal(t, len(offers), 0)
 }

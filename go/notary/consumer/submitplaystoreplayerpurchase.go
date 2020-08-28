@@ -9,7 +9,7 @@ import (
 )
 
 func SubmitPlayStorePlayerPurchase(
-	service storage.StorageService,
+	service storage.Tx,
 	in input.SubmitPlayStorePlayerPurchaseInput,
 ) error {
 	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)

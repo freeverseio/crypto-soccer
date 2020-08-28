@@ -13,23 +13,25 @@ import (
 
 func TestCreateBidWithNoAuction(t *testing.T) {
 	service := postgres.NewStorageService(db)
-	assert.NilError(t, service.Begin())
-	defer service.Rollback()
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
 
 	in := input.CreateBidInput{}
-	assert.Error(t, consumer.CreateBid(service, in), "No auction for bid {  0 0 }")
+	assert.Error(t, consumer.CreateBid(tx, in), "No auction for bid {  0 0 }")
 }
 
 func TestCreateBid(t *testing.T) {
 	service := postgres.NewStorageService(db)
-	assert.NilError(t, service.Begin())
-	defer service.Rollback()
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
 
 	auction := storage.NewAuction()
 	auction.ID = "3"
-	assert.NilError(t, service.AuctionInsert(*auction))
+	assert.NilError(t, tx.AuctionInsert(*auction))
 
 	in := input.CreateBidInput{}
 	in.AuctionId = graphql.ID(auction.ID)
-	assert.NilError(t, consumer.CreateBid(service, in))
+	assert.NilError(t, consumer.CreateBid(tx, in))
 }

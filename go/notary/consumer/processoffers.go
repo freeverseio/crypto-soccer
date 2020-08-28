@@ -8,7 +8,7 @@ import (
 )
 
 func ProcessOffers(
-	service storage.StorageService,
+	service storage.Tx,
 ) error {
 	offers, err := service.OfferPendingOffers()
 	if err != nil {
@@ -27,7 +27,7 @@ func ProcessOffers(
 }
 
 func processOffer(
-	service storage.StorageService,
+	service storage.Tx,
 	offer storage.Offer,
 ) error {
 	if offer.ValidUntil < time.Now().Unix() {

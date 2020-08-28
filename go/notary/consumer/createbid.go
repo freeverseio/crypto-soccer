@@ -7,8 +7,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CreateBid(service storage.StorageService, in input.CreateBidInput) error {
-	auction, err := service.Auction(string(in.AuctionId))
+func CreateBid(tx storage.Tx, in input.CreateBidInput) error {
+	auction, err := tx.Auction(string(in.AuctionId))
 	if err != nil {
 		return err
 	}
@@ -29,5 +29,5 @@ func CreateBid(service storage.StorageService, in input.CreateBidInput) error {
 	bid.PaymentURL = ""
 	bid.PaymentDeadline = 0
 
-	return service.BidInsert(*bid)
+	return tx.BidInsert(*bid)
 }
