@@ -1,14 +1,13 @@
 package gql_test
 
 import (
-	"database/sql"
 	"encoding/hex"
+	"errors"
 	"math/big"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
@@ -17,13 +16,54 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestCreateAuctionReturnTheSignature(t *testing.T) {
-	ch := make(chan interface{}, 10)
-	service := &mockup.StorageService{
-		BeginFunc:         func() (*sql.Tx, error) { return nil, nil },
-		AuctionInsertFunc: func(tx *sql.Tx, auction storage.Auction) error { return nil },
+func TestCreateAuctionCallRollbackOnError(t *testing.T) {
+	rollbackCounter := 0
+
+	mock := mockup.Tx{
+		AuctionInsertFunc: func(auction storage.Auction) error { return errors.New("error") },
+		RollbackFunc:      func() error { rollbackCounter++; return nil },
 	}
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	in := input.CreateAuctionInput{}
+	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
+	in.PlayerId = "274877906948"
+	in.CurrencyId = 1
+	in.Price = 41234
+	in.Rnd = 42321
+	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
+	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+	assert.NilError(t, err)
+	hash, err := signer.HashSellMessage(
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		validUntil,
+		playerId,
+	)
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
+	_, err = r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
+	assert.Error(t, err, "error")
+	assert.Equal(t, rollbackCounter, 1)
+}
+
+func TestCreateAuctionReturnTheSignature(t *testing.T) {
+	mock := mockup.Tx{
+		AuctionInsertFunc: func(auction storage.Auction) error { return nil },
+		CommitFunc:        func() error { return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
@@ -55,44 +95,4 @@ func TestCreateAuctionReturnTheSignature(t *testing.T) {
 
 	id, _ = r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
 	assert.NilError(t, err)
-}
-
-func TestCreateAuction(t *testing.T) {
-	tx, err := db.Begin()
-	assert.NilError(t, err)
-	defer tx.Rollback()
-
-	in := input.CreateAuctionInput{}
-	in.ValidUntil = "999999999999"
-	in.PlayerId = "274877906948"
-	in.CurrencyId = 1
-	in.Price = 41234
-	in.Rnd = 4232
-	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
-	assert.NilError(t, err)
-	hash, err := signer.HashSellMessage(
-		uint8(in.CurrencyId),
-		big.NewInt(int64(in.Price)),
-		big.NewInt(int64(in.Rnd)),
-		validUntil,
-		playerId,
-	)
-	assert.Equal(t, hash.Hex(), "0xf1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a")
-	assert.NilError(t, err)
-	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
-	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), privateKey)
-	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(signature), "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b")
-	in.Signature = hex.EncodeToString(signature)
-
-	assert.NilError(t, gql.CreateAuction(service, tx, in))
-	id, err := in.ID()
-	assert.NilError(t, err)
-
-	auction, err := service.Auction(tx, string(id))
-	assert.NilError(t, err)
-	assert.Assert(t, auction != nil)
-	assert.Equal(t, auction.Seller, "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
 }

@@ -1,8 +1,6 @@
 package mockup
 
 import (
-	"database/sql"
-
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
@@ -11,6 +9,9 @@ type StorageService struct {
 }
 
 type Tx struct {
+	RollbackFunc func() error
+	CommitFunc   func() error
+
 	// Auction
 	AuctionPendingAuctionsFunc func() ([]storage.Auction, error)
 	AuctionFunc                func(ID string) (*storage.Auction, error)
@@ -44,7 +45,14 @@ type Tx struct {
 func (b *StorageService) Begin() (storage.Tx, error) {
 	return b.BeginFunc()
 }
-func (b *Tx) AuctionPendingAuctions(tx *sql.Tx) ([]storage.Auction, error) {
+
+func (b *Tx) Commit() error {
+	return b.CommitFunc()
+}
+func (b *Tx) Rollback() error {
+	return b.RollbackFunc()
+}
+func (b *Tx) AuctionPendingAuctions() ([]storage.Auction, error) {
 	return b.AuctionPendingAuctionsFunc()
 }
 func (b *Tx) Auction(ID string) (*storage.Auction, error) {
@@ -74,7 +82,7 @@ func (b *Tx) BidUpdate(bid storage.Bid) error {
 func (b *Tx) PlayStoreOrder(orderId string) (*storage.PlaystoreOrder, error) {
 	return b.PlayStoreOrderFunc(orderId)
 }
-func (b *Tx) PlayStorePendingOrders(tx *sql.Tx) ([]storage.PlaystoreOrder, error) {
+func (b *Tx) PlayStorePendingOrders() ([]storage.PlaystoreOrder, error) {
 	return b.PlayStorePendingOrdersFunc()
 }
 func (b *Tx) PlayStoreInsert(order storage.PlaystoreOrder) error {

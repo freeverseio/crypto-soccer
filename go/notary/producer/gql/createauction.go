@@ -51,7 +51,7 @@ func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) 
 	if err != nil {
 		return id, err
 	}
-	if err := CreateAuction(tx, args.Input); err != nil {
+	if err := createAuction(tx, args.Input); err != nil {
 		tx.Rollback()
 		return id, err
 	}
@@ -59,7 +59,7 @@ func (b *Resolver) CreateAuction(args struct{ Input input.CreateAuctionInput }) 
 	return id, tx.Commit()
 }
 
-func CreateAuction(tx storage.Tx, in input.CreateAuctionInput) error {
+func createAuction(tx storage.Tx, in input.CreateAuctionInput) error {
 	auction := storage.NewAuction()
 	id, err := in.ID()
 	if err != nil {
