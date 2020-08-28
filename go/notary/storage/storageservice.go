@@ -1,36 +1,39 @@
 package storage
 
-import "database/sql"
-
 type StorageService interface {
-	Begin() (*sql.Tx, error)
+	Begin() (Tx, error)
+}
+
+type Tx interface {
+	Rollback() error
+	Commit() error
 
 	// Auction
-	AuctionPendingAuctions(tx *sql.Tx) ([]Auction, error)
-	Auction(tx *sql.Tx, ID string) (*Auction, error)
-	AuctionInsert(tx *sql.Tx, auction Auction) error
-	AuctionUpdate(tx *sql.Tx, auction Auction) error
-	AuctionsByPlayerId(tx *sql.Tx, ID string) ([]Auction, error)
+	AuctionPendingAuctions() ([]Auction, error)
+	Auction(ID string) (*Auction, error)
+	AuctionInsert(auction Auction) error
+	AuctionUpdate(auction Auction) error
+	AuctionsByPlayerId(ID string) ([]Auction, error)
 
 	// Bid
-	Bid(tx *sql.Tx, auctionId string, extraPrice int64) (*Bid, error)
-	Bids(tx *sql.Tx, auctionId string) ([]Bid, error)
-	BidInsert(tx *sql.Tx, bid Bid) error
-	BidUpdate(tx *sql.Tx, bid Bid) error
+	Bid(auctionId string, extraPrice int64) (*Bid, error)
+	Bids(auctionId string) ([]Bid, error)
+	BidInsert(bid Bid) error
+	BidUpdate(bid Bid) error
 
 	// PlayStore
-	PlayStoreOrder(tx *sql.Tx, orderId string) (*PlaystoreOrder, error)
-	PlayStorePendingOrders(tx *sql.Tx) ([]PlaystoreOrder, error)
-	PlayStoreInsert(tx *sql.Tx, order PlaystoreOrder) error
-	PlayStoreUpdateState(tx *sql.Tx, order PlaystoreOrder) error
-	PlayStorePendingOrdersByPlayerId(tx *sql.Tx, playerId string) ([]PlaystoreOrder, error)
+	PlayStoreOrder(orderId string) (*PlaystoreOrder, error)
+	PlayStorePendingOrders() ([]PlaystoreOrder, error)
+	PlayStoreInsert(order PlaystoreOrder) error
+	PlayStoreUpdateState(order PlaystoreOrder) error
+	PlayStorePendingOrdersByPlayerId(playerId string) ([]PlaystoreOrder, error)
 
 	// Offer
-	Offer(tx *sql.Tx, ID string) (*Offer, error)
-	OfferPendingOffers(tx *sql.Tx) ([]Offer, error)
-	OfferInsert(tx *sql.Tx, offer Offer) error
-	OfferUpdate(tx *sql.Tx, offer Offer) error
-	OfferByAuctionId(tx *sql.Tx, auctionId string) (*Offer, error)
-	OfferByRndPrice(tx *sql.Tx, rnd int32, price int32) (*Offer, error)
-	OffersByPlayerId(tx *sql.Tx, playerId string) ([]Offer, error)
+	Offer(ID string) (*Offer, error)
+	OfferPendingOffers() ([]Offer, error)
+	OfferInsert(offer Offer) error
+	OfferUpdate(offer Offer) error
+	OfferByAuctionId(auctionId string) (*Offer, error)
+	OfferByRndPrice(rnd int32, price int32) (*Offer, error)
+	OffersByPlayerId(playerId string) ([]Offer, error)
 }

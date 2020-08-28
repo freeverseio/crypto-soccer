@@ -12,7 +12,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
-		offer, err := service.Offer(tx, "4343")
+		offer, err := tx.Offer("4343")
 		assert.NilError(t, err)
 		assert.Assert(t, offer == nil)
 	})
@@ -33,10 +33,10 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "3"
 		offer.Buyer = "4"
 
-		err = service.OfferInsert(tx, *offer)
+		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
 
-		result, err := service.Offer(tx, offer.ID)
+		result, err := tx.Offer(offer.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 	})
@@ -57,9 +57,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		auction.StateExtra = "3"
 		auction.PaymentURL = "3"
 		auction.Seller = "3"
-		assert.NilError(t, service.AuctionInsert(tx, *auction))
+		assert.NilError(t, tx.AuctionInsert(*auction))
 
-		auctionResult, err := service.Auction(tx, auction.ID)
+		auctionResult, err := tx.Auction(auction.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, *auctionResult, *auction)
 
@@ -67,9 +67,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.State = storage.OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
-		err = service.OfferInsert(tx, *offer)
+		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
-		result, err := service.Offer(tx, offer.ID)
+		result, err := tx.Offer(offer.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, result.State, storage.OfferStarted)
 		assert.Equal(t, result.StateExtra, "priva")
@@ -79,8 +79,8 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "yo2"
 		offer.AuctionID = "ciao"
 
-		assert.NilError(t, service.OfferUpdate(tx, *offer))
-		result, err = service.Offer(tx, offer.ID)
+		assert.NilError(t, tx.OfferUpdate(*offer))
+		result, err = tx.Offer(offer.ID)
 
 		assert.Equal(t, result.AuctionID, "ciao")
 		assert.NilError(t, err)
@@ -104,9 +104,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.StateExtra = "3"
 		offer.Seller = "3"
 		offer.Buyer = "5"
-		err = service.OfferInsert(tx, *offer)
+		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
-		err = service.OfferInsert(tx, *offer)
+		err = tx.OfferInsert(*offer)
 		assert.Error(t, err, "some error on duplication")
 	})
 
@@ -126,18 +126,18 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "3"
 		offer.Buyer = "4"
 
-		offers, err := service.OfferPendingOffers(tx)
+		offers, err := tx.OfferPendingOffers()
 		assert.NilError(t, err)
 		assert.Equal(t, len(offers), 0)
 
-		err = service.OfferInsert(tx, *offer)
+		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
 
-		result, err := service.Offer(tx, offer.ID)
+		result, err := tx.Offer(offer.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 
-		offers, err = service.OfferPendingOffers(tx)
+		offers, err = tx.OfferPendingOffers()
 		assert.NilError(t, err)
 		assert.Equal(t, len(offers), 1)
 	})
@@ -158,9 +158,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		auction.StateExtra = "3"
 		auction.PaymentURL = "3"
 		auction.Seller = "3"
-		assert.NilError(t, service.AuctionInsert(tx, *auction))
+		assert.NilError(t, tx.AuctionInsert(*auction))
 
-		auctionResult, err := service.Auction(tx, auction.ID)
+		auctionResult, err := tx.Auction(auction.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, *auctionResult, *auction)
 
@@ -168,9 +168,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.State = storage.OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
-		err = service.OfferInsert(tx, *offer)
+		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
-		result, err := service.Offer(tx, offer.ID)
+		result, err := tx.Offer(offer.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, result.State, storage.OfferStarted)
 		assert.Equal(t, result.StateExtra, "priva")
@@ -180,26 +180,26 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "yo2"
 		offer.AuctionID = "ciao"
 
-		assert.NilError(t, service.OfferUpdate(tx, *offer))
-		result, err = service.Offer(tx, offer.ID)
+		assert.NilError(t, tx.OfferUpdate(*offer))
+		result, err = tx.Offer(offer.ID)
 
 		assert.Equal(t, result.AuctionID, "ciao")
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 
-		result1, err := service.Offer(tx, offer.ID)
+		result1, err := tx.Offer(offer.ID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result1, *offer)
 
-		result2, err := service.OfferByAuctionId(tx, offer.AuctionID)
+		result2, err := tx.OfferByAuctionId(offer.AuctionID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result2, *offer)
 
-		result3, err := service.OfferByRndPrice(tx, int32(offer.Rnd), int32(offer.Price))
+		result3, err := tx.OfferByRndPrice(int32(offer.Rnd), int32(offer.Price))
 		assert.NilError(t, err)
 		assert.Equal(t, *result3, *offer)
 
-		offers, err := service.OffersByPlayerId(tx, offer.PlayerID)
+		offers, err := tx.OffersByPlayerId(offer.PlayerID)
 		assert.NilError(t, err)
 		assert.Equal(t, 1, len(offers))
 

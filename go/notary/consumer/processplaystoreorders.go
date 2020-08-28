@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"crypto/ecdsa"
-	"database/sql"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -13,15 +12,14 @@ import (
 )
 
 func ProcessPlaystoreOrders(
-	service storage.StorageService,
-	tx *sql.Tx,
+	service storage.Tx,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
 	namesdb *names.Generator,
 	iapTestOn bool,
 ) error {
-	orders, err := service.PlayStorePendingOrders(tx)
+	orders, err := service.PlayStorePendingOrders()
 	if err != nil {
 		return err
 	}
@@ -47,7 +45,7 @@ func ProcessPlaystoreOrders(
 			log.Error(err)
 			continue
 		}
-		if err := service.PlayStoreUpdateState(tx, machine.Order()); err != nil {
+		if err := service.PlayStoreUpdateState(machine.Order()); err != nil {
 			return err
 		}
 	}

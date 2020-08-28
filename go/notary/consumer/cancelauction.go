@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -9,8 +8,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CancelAuction(service storage.StorageService, tx *sql.Tx, in input.CancelAuctionInput) error {
-	auction, err := service.Auction(tx, string(in.AuctionId))
+func CancelAuction(service storage.Tx, in input.CancelAuctionInput) error {
+	auction, err := service.Auction(string(in.AuctionId))
 	if err != nil {
 		return err
 	}
@@ -22,5 +21,5 @@ func CancelAuction(service storage.StorageService, tx *sql.Tx, in input.CancelAu
 	}
 
 	auction.State = storage.AuctionCancelled
-	return service.AuctionUpdate(tx, *auction)
+	return service.AuctionUpdate(*auction)
 }

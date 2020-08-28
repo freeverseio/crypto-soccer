@@ -123,7 +123,6 @@ func main() {
 		cn, err := consumer.New(
 			ch,
 			market,
-			marketdb,
 			*contracts,
 			privateKey,
 			googleCredentials,

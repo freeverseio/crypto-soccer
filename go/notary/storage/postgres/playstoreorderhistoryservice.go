@@ -6,8 +6,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func (b StorageHistoryService) PlayStoreUpdateState(tx *sql.Tx, order storage.PlaystoreOrder) error {
-	currentOrder, err := b.StorageService.PlayStoreOrder(tx, order.OrderId)
+func (b *StorageHistoryTx) PlayStoreUpdateState(order storage.PlaystoreOrder) error {
+	currentOrder, err := b.Tx.PlayStoreOrder(order.OrderId)
 	if err != nil {
 		return err
 	}
@@ -17,17 +17,17 @@ func (b StorageHistoryService) PlayStoreUpdateState(tx *sql.Tx, order storage.Pl
 	if *currentOrder == order {
 		return nil
 	}
-	if err := b.StorageService.PlayStoreUpdateState(tx, order); err != nil {
+	if err := b.Tx.PlayStoreUpdateState(order); err != nil {
 		return err
 	}
-	return playStoreInsertHistory(tx, order)
+	return playStoreInsertHistory(b.Tx.tx, order)
 }
 
-func (b StorageHistoryService) PlayStoreInsert(tx *sql.Tx, order storage.PlaystoreOrder) error {
-	if err := b.StorageService.PlayStoreInsert(tx, order); err != nil {
+func (b *StorageHistoryTx) PlayStoreInsert(order storage.PlaystoreOrder) error {
+	if err := b.Tx.PlayStoreInsert(order); err != nil {
 		return err
 	}
-	return playStoreInsertHistory(tx, order)
+	return playStoreInsertHistory(b.Tx.tx, order)
 }
 
 func playStoreInsertHistory(tx *sql.Tx, order storage.PlaystoreOrder) error {
