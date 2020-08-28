@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"crypto/ecdsa"
-	"database/sql"
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -16,7 +15,6 @@ import (
 
 type Consumer struct {
 	ch                chan interface{}
-	db                *sql.DB
 	contracts         contracts.Contracts
 	pvc               *ecdsa.PrivateKey
 	market            marketpay.MarketPayService
@@ -29,7 +27,6 @@ type Consumer struct {
 func New(
 	ch chan interface{},
 	market marketpay.MarketPayService,
-	db *sql.DB,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	googleCredentials []byte,
@@ -39,7 +36,6 @@ func New(
 ) (*Consumer, error) {
 	consumer := Consumer{}
 	consumer.ch = ch
-	consumer.db = db
 	consumer.contracts = contracts
 	consumer.pvc = pvc
 	consumer.market = market
@@ -51,177 +47,69 @@ func New(
 }
 
 func (b *Consumer) Consume(event interface{}) error {
+	tx, err := b.service.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+	}()
+
 	switch in := event.(type) {
 	case input.CreateAuctionInput:
 		log.Debug("Received CreateAuctionInput")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := CreateAuction(b.service, tx, in); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		return CreateAuction(tx, in)
 	case input.CancelAuctionInput:
-		log.Debug("Received CancelAuctionInput")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := CancelAuction(b.service, tx, in); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		return CancelAuction(tx, in)
 	case input.CreateBidInput:
 		log.Debug("Received CreateBidInput")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := CreateBid(b.service, tx, in); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		return CreateBid(tx, in)
 	case producer.ProcessEvent:
 		log.Info("[consumer] process auctions")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := ProcessAuctions(
-			b.service,
-			b.market,
+		return ProcessAuctions(
 			tx,
+			b.market,
 			b.contracts,
 			b.pvc,
-		); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		)
 	case producer.PlaystoreOrderEvent:
 		log.Info("[consumer] process playstore events")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := ProcessPlaystoreOrders(
-			b.service,
+		return ProcessPlaystoreOrders(
 			tx,
 			b.contracts,
 			b.pvc,
 			b.googleCredentials,
 			b.namesdb,
 			b.iapTestOn,
-		); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		)
 	case input.SubmitPlayStorePlayerPurchaseInput:
 		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := SubmitPlayStorePlayerPurchase(
-			b.service,
-			tx,
-			in,
-		); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		return SubmitPlayStorePlayerPurchase(tx, in)
 	case input.DismissPlayerInput:
 		log.Debug("Received DismissPlayerInput")
-		if err := DismissPlayer(
-			b.contracts,
-			b.pvc,
-			in,
-		); err != nil {
-			return err
-		}
+		return DismissPlayer(b.contracts, b.pvc, in)
 	case input.CompletePlayerTransitInput:
 		log.Debug("Received CompletePlayerTransit")
-		if err := CompletePlayerTransit(b.contracts, b.pvc, in); err != nil {
-			return err
-		}
+		return CompletePlayerTransit(b.contracts, b.pvc, in)
 	case input.CreateOfferInput:
 		log.Debug("Received CreateOfferInput")
-
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := CreateOffer(b.service, tx, in, b.contracts); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		return CreateOffer(tx, in, b.contracts)
 	case input.AcceptOfferInput:
 		log.Debug("Received CreateAuctionInput")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := AcceptOffer(b.service, tx, in); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		return AcceptOffer(tx, in)
 	case input.CancelOfferInput:
 		log.Debug("Received CancelOfferInput")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := CancelOffer(b.service, tx, in); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		return CancelOffer(tx, in)
 	case producer.ProcessOfferEvent:
 		log.Info("[consumer] process offer to expire")
-		tx, err := b.db.Begin()
-		if err != nil {
-			return err
-		}
-		if err := ProcessOffers(
-			b.service,
-			tx,
-		); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
-			return err
-		}
+		return ProcessOffers(tx)
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}
-	return nil
 }
 
 func (b *Consumer) Start() {

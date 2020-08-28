@@ -52,7 +52,7 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, err
 	}
 
-	isPlayerOnSale, err := args.Input.IsPlayerOnSale(b.contracts, b.service, tx)
+	isPlayerOnSale, err := args.Input.IsPlayerOnSale(b.contracts, tx)
 	if err != nil {
 		return id, err
 	}

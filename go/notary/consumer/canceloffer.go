@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -9,8 +8,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func CancelOffer(service storage.StorageService, tx *sql.Tx, in input.CancelOfferInput) error {
-	offer, err := service.Offer(tx, string(in.OfferId))
+func CancelOffer(service storage.Tx, in input.CancelOfferInput) error {
+	offer, err := service.Offer(string(in.OfferId))
 	if err != nil {
 		return err
 	}
@@ -22,5 +21,5 @@ func CancelOffer(service storage.StorageService, tx *sql.Tx, in input.CancelOffe
 	}
 
 	offer.State = storage.OfferCancelled
-	return service.OfferUpdate(tx, *offer)
+	return service.OfferUpdate(*offer)
 }

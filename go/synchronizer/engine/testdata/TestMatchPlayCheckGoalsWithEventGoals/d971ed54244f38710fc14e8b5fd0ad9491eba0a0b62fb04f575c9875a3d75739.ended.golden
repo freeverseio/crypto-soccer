@@ -41,7 +41,8 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 57,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=75) "458607603191344343405274802519552205382582931339757593817583154540776291910"
+			MatchLog: (string) (len=75) "458607603191344343405274802519552205382582931339757593817583154540776291910",
+			IsZombie: (bool) false
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({
@@ -708,7 +709,8 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 27,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=75) "455294764944884872787306119457318134634565908901630588837748451234307205476"
+			MatchLog: (string) (len=75) "455294764944884872787306119457318134634565908901630588837748451234307205476",
+			IsZombie: (bool) false
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
 			(*engine.Player)({

@@ -6,16 +6,16 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func (b StorageHistoryService) OfferInsert(tx *sql.Tx, offer storage.Offer) error {
-	err := b.StorageService.OfferInsert(tx, offer)
+func (b *StorageHistoryTx) OfferInsert(offer storage.Offer) error {
+	err := b.Tx.OfferInsert(offer)
 	if err != nil {
 		return err
 	}
-	return offerInsertHistory(tx, offer)
+	return offerInsertHistory(b.Tx.tx, offer)
 }
 
-func (b StorageHistoryService) OfferUpdate(tx *sql.Tx, offer storage.Offer) error {
-	currentOffer, err := b.StorageService.Offer(tx, offer.ID)
+func (b *StorageHistoryTx) OfferUpdate(offer storage.Offer) error {
+	currentOffer, err := b.Tx.Offer(offer.ID)
 	if err != nil {
 		return err
 	}
@@ -25,10 +25,10 @@ func (b StorageHistoryService) OfferUpdate(tx *sql.Tx, offer storage.Offer) erro
 	if *currentOffer == offer {
 		return nil
 	}
-	if err := b.StorageService.OfferUpdate(tx, offer); err != nil {
+	if err := b.Tx.OfferUpdate(offer); err != nil {
 		return err
 	}
-	return offerInsertHistory(tx, offer)
+	return offerInsertHistory(b.Tx.tx, offer)
 }
 
 func offerInsertHistory(tx *sql.Tx, offer storage.Offer) error {
