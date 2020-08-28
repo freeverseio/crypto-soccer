@@ -208,28 +208,18 @@ func TestLeagueProcessMatch(t *testing.T) {
 // 		t.Fatal(err)
 // 	}
 // 	defer tx.Rollback()
-// 	relaytx, err := relaydb.Begin()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer relaytx.Rollback()
-
-// 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	namesdb, err := names.New("../../names/sql/names.db")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
 // 	timezoneIdx := uint8(1)
 // 	countryIdx := big.NewInt(0)
 // 	leagueIdx := uint32(0)
-// 	proc, err := process.NewEventProcessor(bc.Contracts, namesdb)
+// 	proc := process.NewEventProcessor(bc.Client,
+// 		bc.Contracts.ProxyAddress,
+// 		namesdb,
+// 		useractionsPublishService,
+// 		nil)
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	if _, err = proc.Process(tx, relaytx, 0); err != nil {
+// 	if _, err = proc.Process(tx, 0); err != nil {
 // 		t.Fatal(err)
 // 	}
 // 	// teamId := big.NewInt(274877906944)
@@ -244,17 +234,16 @@ func TestLeagueProcessMatch(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	if _, err = proc.Process(tx, relaytx, 0); err != nil {
+// 	if _, err = proc.Process(tx, 0); err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	processor, err := process.NewLeagueProcessor(
+// 	processor := process.NewLeagueProcessor(
 // 		bc.Contracts,
-// 		namesdb,
+// 		useractionsPublishService,
 // 	)
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-
 // 	err = processor.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, uint32(countryIdx.Uint64()))
 // 	if err != nil {
 // 		t.Fatal(err)

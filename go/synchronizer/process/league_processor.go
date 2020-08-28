@@ -48,9 +48,20 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 	}
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 		// if a new league is starting shuffle the teams
-		err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
-		if err != nil {
-			return err
+		zombieVerse := big.NewInt(6285)
+		if verse.Cmp(zombieVerse) >= 0 {
+			if verse.Cmp(zombieVerse) == 0 {
+				log.Info("[6285] Start detecting zombies and shuffling them after bots")
+			}
+			err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombies(tx, timezoneIdx, countryIdx)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
+			if err != nil {
+				return err
+			}
 		}
 		leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 		if err != nil {
@@ -241,6 +252,104 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	}
 
 	orgMap.Sort()
+
+	// create the new leagues
+	for i := 0; i < orgMap.Size(); i++ {
+		team := orgMap.At(i)
+		team.LeagueIdx = uint32(i / 8)
+		team.TeamIdxInLeague = uint32(i % 8)
+		// calculate the real Ranking points
+		// the blockchain returns R * A, where:
+		// - R is the real Ranking points, normalized so that an average team starts with 40 points
+		// - A is denominator, not applied to avoid losing precision in division, A = 10*(5*18*1000)*2^28 = 241591910400000
+		// previously we divided by a factor that incorrectly missed the "5" accounting for the 5 skills
+		// instead of fixing it here, we leave the factor as it was, and tell the frontend to divide by an extra 5.
+		team.RankingPoints = team.RankingPoints / uint64(48318382080000) // 48318382080000 * 5 = 241591910400000
+		if err := team.Update(tx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
+	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
+	var orgMap OrgMap
+	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+	err = storage.TeamCleanZombies(tx)
+	if err != nil {
+		return err
+	}
+	err = storage.TeamUpdateZombies(tx)
+	if err != nil {
+		return err
+	}
+	var timezoneCountryZombies []storage.Team
+	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
+		if err != nil {
+			return err
+		}
+		var teamsWithoutZombies []storage.Team
+		var zombies []storage.Team
+
+		for _, team := range teams {
+			if team.IsZombie {
+				zombies = append(zombies, team)
+			} else {
+				teamsWithoutZombies = append(teamsWithoutZombies, team)
+			}
+		}
+		// ordening by points
+		sort.Slice(teamsWithoutZombies[:], func(i, j int) bool {
+			return teamsWithoutZombies[i].LeaderboardPosition < teamsWithoutZombies[j].LeaderboardPosition
+		})
+		for position, team := range teamsWithoutZombies {
+			teamState, err := b.GetTeamState(tx, team.TeamID)
+			if err != nil {
+				return err
+			}
+			if !team.IsBot() {
+				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
+				teamID, _ := new(big.Int).SetString(team.TeamID, 10)
+				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
+					&bind.CallOpts{},
+					teamState,
+					uint8(position),
+					team.PrevPerfPoints,
+					teamID,
+					team.IsBot(),
+				)
+				if err != nil {
+					return err
+				}
+			}
+			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
+			if err := orgMap.Append(team); err != nil {
+				return err
+			}
+		}
+		timezoneCountryZombies = append(timezoneCountryZombies, zombies...)
+	}
+
+	orgMap.Sort()
+
+	// sort zombies by team ranking or teamid
+	sort.Slice(timezoneCountryZombies[:], func(i, j int) bool {
+		if timezoneCountryZombies[i].RankingPoints == timezoneCountryZombies[j].RankingPoints {
+			teamID0, _ := new(big.Int).SetString(timezoneCountryZombies[i].TeamID, 10)
+			teamID1, _ := new(big.Int).SetString(timezoneCountryZombies[j].TeamID, 10)
+			return teamID0.Cmp(teamID1) == -1
+		}
+		return timezoneCountryZombies[i].RankingPoints > timezoneCountryZombies[j].RankingPoints
+	})
+	orgMap.teams = append(orgMap.teams, timezoneCountryZombies...)
 
 	// create the new leagues
 	for i := 0; i < orgMap.Size(); i++ {
