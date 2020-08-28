@@ -1,7 +1,10 @@
 package storage
 
 type StorageService interface {
-	Begin() error
+	Begin() (Tx, error)
+}
+
+type Tx interface {
 	Rollback() error
 	Commit() error
 

@@ -6,15 +6,15 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func (b *StorageHistoryService) BidInsert(bid storage.Bid) error {
-	if err := b.StorageService.BidInsert(bid); err != nil {
+func (b *StorageHistoryTx) BidInsert(bid storage.Bid) error {
+	if err := b.Tx.BidInsert(bid); err != nil {
 		return err
 	}
-	return bidInsertHistory(b.StorageService.tx, bid)
+	return bidInsertHistory(b.Tx.tx, bid)
 }
 
-func (b *StorageHistoryService) BidUpdate(bid storage.Bid) error {
-	currentBids, err := b.StorageService.Bid(bid.AuctionID, bid.ExtraPrice)
+func (b *StorageHistoryTx) BidUpdate(bid storage.Bid) error {
+	currentBids, err := b.Tx.Bid(bid.AuctionID, bid.ExtraPrice)
 	if err != nil {
 		return err
 	}
@@ -24,10 +24,10 @@ func (b *StorageHistoryService) BidUpdate(bid storage.Bid) error {
 	if *currentBids == bid {
 		return nil
 	}
-	if err := b.StorageService.BidUpdate(bid); err != nil {
+	if err := b.Tx.BidUpdate(bid); err != nil {
 		return err
 	}
-	return bidInsertHistory(b.StorageService.tx, bid)
+	return bidInsertHistory(b.Tx.tx, bid)
 }
 
 func bidInsertHistory(tx *sql.Tx, bid storage.Bid) error {

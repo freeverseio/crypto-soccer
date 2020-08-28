@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *StorageService) Bid(auctionId string, extraPrice int64) (*storage.Bid, error) {
+func (b *Tx) Bid(auctionId string, extraPrice int64) (*storage.Bid, error) {
 	rows, err := b.tx.Query("SELECT rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1 AND extra_price=$2;", auctionId, extraPrice)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (b *StorageService) Bid(auctionId string, extraPrice int64) (*storage.Bid, 
 	return &bid, nil
 }
 
-func (b *StorageService) Bids(ID string) ([]storage.Bid, error) {
+func (b *Tx) Bids(ID string) ([]storage.Bid, error) {
 	rows, err := b.tx.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1;", ID)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (b *StorageService) Bids(ID string) ([]storage.Bid, error) {
 	return bids, nil
 }
 
-func (b *StorageService) BidInsert(bid storage.Bid) error {
+func (b *Tx) BidInsert(bid storage.Bid) error {
 	log.Debugf("[DBMS] + create Bid %v", b)
 	_, err := b.tx.Exec(`INSERT INTO bids 
 			(auction_id, 
@@ -93,7 +93,7 @@ func (b *StorageService) BidInsert(bid storage.Bid) error {
 	return err
 }
 
-func (b *StorageService) BidUpdate(bid storage.Bid) error {
+func (b *Tx) BidUpdate(bid storage.Bid) error {
 	log.Debugf("[DBMS] + update Bid %v", b)
 	_, err := b.tx.Exec(`UPDATE bids SET 
 		state=$1, 

@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *StorageService) AuctionPendingAuctions() ([]storage.Auction, error) {
+func (b *Tx) AuctionPendingAuctions() ([]storage.Auction, error) {
 	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (b *StorageService) AuctionPendingAuctions() ([]storage.Auction, error) {
 	return auctions, err
 }
 
-func (b *StorageService) Auction(ID string) (*storage.Auction, error) {
+func (b *Tx) Auction(ID string) (*storage.Auction, error) {
 	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (b *StorageService) Auction(ID string) (*storage.Auction, error) {
 	return &auction, err
 }
 
-func (b *StorageService) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
+func (b *Tx) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
 	rows, err := b.tx.Query("SELECT id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE player_id = $1;", ID)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (b *StorageService) AuctionsByPlayerId(ID string) ([]storage.Auction, error
 	return auctions, err
 }
 
-func (b *StorageService) AuctionInsert(auction storage.Auction) error {
+func (b *Tx) AuctionInsert(auction storage.Auction) error {
 	log.Debugf("[DBMS] + create Auction %v", b)
 	_, err := b.tx.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, payment_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 		auction.ID,
@@ -107,7 +107,7 @@ func (b *StorageService) AuctionInsert(auction storage.Auction) error {
 	return err
 }
 
-func (b *StorageService) AuctionUpdate(auction storage.Auction) error {
+func (b *Tx) AuctionUpdate(auction storage.Auction) error {
 	log.Debugf("[DBMS] + update Auction %v", b)
 	_, err := b.tx.Exec(`UPDATE auctions SET 
 		state=$1, 

@@ -4,7 +4,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func (b *StorageService) PlayStoreUpdateState(order storage.PlaystoreOrder) error {
+func (b *Tx) PlayStoreUpdateState(order storage.PlaystoreOrder) error {
 	_, err := b.tx.Exec(`UPDATE playstore_orders SET 
 		state=$1, 
 		state_extra=$2
@@ -16,7 +16,7 @@ func (b *StorageService) PlayStoreUpdateState(order storage.PlaystoreOrder) erro
 	return err
 }
 
-func (b *StorageService) PlayStorePendingOrders() ([]storage.PlaystoreOrder, error) {
+func (b *Tx) PlayStorePendingOrders() ([]storage.PlaystoreOrder, error) {
 	rows, err := b.tx.Query(`SELECT 
 	order_id,
 	package_name,
@@ -55,7 +55,7 @@ func (b *StorageService) PlayStorePendingOrders() ([]storage.PlaystoreOrder, err
 	return orders, nil
 }
 
-func (b *StorageService) PlayStorePendingOrdersByPlayerId(playerId string) ([]storage.PlaystoreOrder, error) {
+func (b *Tx) PlayStorePendingOrdersByPlayerId(playerId string) ([]storage.PlaystoreOrder, error) {
 	rows, err := b.tx.Query(`SELECT 
 	order_id,
 	package_name,
@@ -94,7 +94,7 @@ func (b *StorageService) PlayStorePendingOrdersByPlayerId(playerId string) ([]st
 	return orders, nil
 }
 
-func (b *StorageService) PlayStoreOrder(orderId string) (*storage.PlaystoreOrder, error) {
+func (b *Tx) PlayStoreOrder(orderId string) (*storage.PlaystoreOrder, error) {
 	rows, err := b.tx.Query(`SELECT 
 	package_name,
 	product_id,
@@ -134,7 +134,7 @@ func (b *StorageService) PlayStoreOrder(orderId string) (*storage.PlaystoreOrder
 	return &order, nil
 }
 
-func (b *StorageService) PlayStoreInsert(order storage.PlaystoreOrder) error {
+func (b *Tx) PlayStoreInsert(order storage.PlaystoreOrder) error {
 	_, err := b.tx.Exec(`INSERT INTO playstore_orders (
 		order_id, 
 		package_name,
