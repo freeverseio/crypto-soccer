@@ -121,3 +121,14 @@ func (b *Tx) AuctionUpdate(auction storage.Auction) error {
 	)
 	return err
 }
+
+func (b *Tx) AuctionCancel(ID string) error {
+	log.Debugf("[DBMS] + cancel Auction %v", b)
+	_, err := b.tx.Exec(`UPDATE auctions SET 
+		state=$1 
+		WHERE id=$2;`,
+		storage.AuctionCancelled,
+		ID,
+	)
+	return err
+}

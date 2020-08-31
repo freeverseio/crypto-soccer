@@ -229,4 +229,36 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		result = storage.FindBids(bids, storage.BidPaid)
 		assert.Equal(t, len(result), 1)
 	})
+
+	t.Run("TestCancelAuctionNotExistent", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+
+		assert.NilError(t, tx.AuctionCancel("3"))
+	})
+
+	t.Run("TestCancelAuctionInStateStarted", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+
+		auction := storage.NewAuction()
+		auction.ID = "0"
+		auction.State = storage.AuctionStarted
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		assert.NilError(t, tx.AuctionCancel(auction.ID))
+	})
+
+	t.Run("TestCancelAuctionInState", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+
+		auction := storage.NewAuction()
+		auction.ID = "0"
+		auction.State = storage.AuctionPaying
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		assert.Assert(t, tx.AuctionCancel(auction.ID) != nil)
+	})
 }
