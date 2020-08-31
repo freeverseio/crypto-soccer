@@ -13,12 +13,36 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestCancelAuctionOfUnexistentAuction(t *testing.T) {
+func TestCancelAuctionStorageReturnsError(t *testing.T) {
 	counter := 0
 
 	mock := mockup.Tx{
-		AuctionCancelFunc: func(auction storage.Auction) error { return errors.New("error") },
+		AuctionCancelFunc: func(ID string) error { return errors.New("error") },
 		RollbackFunc:      func() error { counter++; return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	in := input.CancelAuctionInput{}
+	hash, err := in.Hash()
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
+	_, err = r.CancelAuction(struct{ Input input.CancelAuctionInput }{in})
+	assert.Error(t, err, "error")
+	assert.Equal(t, counter, 1)
+}
+
+func TestCancelAuctionStorageReturnsOK(t *testing.T) {
+	counter := 0
+
+	mock := mockup.Tx{
+		AuctionCancelFunc: func(ID string) error { return nil },
+		CommitFunc:        func() error { counter++; return nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
