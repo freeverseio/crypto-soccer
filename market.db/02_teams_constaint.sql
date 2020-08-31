@@ -1,0 +1,1 @@
+create unique index concurrently player_already_on_auction on auctions (player_id) WHERE state not in ('ended', 'failed', 'cancelled');
