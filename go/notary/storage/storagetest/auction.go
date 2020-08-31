@@ -56,6 +56,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, len(result), 1)
 
 		auction.ID = "ciao1"
+		auction.PlayerID = "3"
 		auction.State = storage.AuctionAssetFrozen
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingAuctions()
@@ -63,6 +64,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, len(result), 2)
 
 		auction.ID = "ciao2"
+		auction.PlayerID = "4"
 		auction.State = storage.AuctionPaying
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingAuctions()
@@ -70,6 +72,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, len(result), 3)
 
 		auction.ID = "ciao3"
+		auction.PlayerID = "5"
 		auction.State = storage.AuctionWithdrableBySeller
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingAuctions()
@@ -77,6 +80,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, len(result), 4)
 
 		auction.ID = "ciao4"
+		auction.PlayerID = "6"
 		auction.State = storage.AuctionWithdrableByBuyer
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingAuctions()
@@ -84,6 +88,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, len(result), 5)
 
 		auction.ID = "ciao5"
+		auction.PlayerID = "7"
 		auction.State = storage.AuctionFailed
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingAuctions()
@@ -91,6 +96,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, len(result), 5)
 
 		auction.ID = "ciao6"
+		auction.PlayerID = "8"
 		auction.State = storage.AuctionEnded
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingAuctions()
@@ -98,6 +104,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, len(result), 5)
 
 		auction.ID = "ciao7"
+		auction.PlayerID = "9"
 		auction.State = storage.AuctionCancelled
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingAuctions()
@@ -164,6 +171,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, len(bids), 2)
 
 		auction.ID = "1"
+		auction.PlayerID = "343"
 		assert.NilError(t, tx.AuctionInsert(*auction))
 
 		bid = storage.NewBid()
