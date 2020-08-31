@@ -13,6 +13,7 @@ type Tx interface {
 	Auction(ID string) (*Auction, error)
 	AuctionInsert(auction Auction) error
 	AuctionUpdate(auction Auction) error
+	AuctionCancel(ID string) error
 	AuctionsByPlayerId(ID string) ([]Auction, error)
 
 	// Bid

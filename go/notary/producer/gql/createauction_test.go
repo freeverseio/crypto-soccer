@@ -33,16 +33,7 @@ func TestCreateAuctionCallRollbackOnError(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
-	assert.NilError(t, err)
-	hash, err := signer.HashSellMessage(
-		uint8(in.CurrencyId),
-		big.NewInt(int64(in.Price)),
-		big.NewInt(int64(in.Rnd)),
-		validUntil,
-		playerId,
-	)
+	hash, err := in.Hash()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
 	assert.NilError(t, err)
@@ -71,16 +62,7 @@ func TestCreateAuctionCallCommit(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
-	assert.NilError(t, err)
-	hash, err := signer.HashSellMessage(
-		uint8(in.CurrencyId),
-		big.NewInt(int64(in.Price)),
-		big.NewInt(int64(in.Rnd)),
-		validUntil,
-		playerId,
-	)
+	hash, err := in.Hash()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
 	assert.NilError(t, err)

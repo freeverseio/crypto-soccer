@@ -17,6 +17,7 @@ type Tx struct {
 	AuctionFunc                func(ID string) (*storage.Auction, error)
 	AuctionInsertFunc          func(auction storage.Auction) error
 	AuctionUpdateFunc          func(auction storage.Auction) error
+	AuctionCancelFunc          func(ID string) error
 	AuctionsByPlayerIdFunc     func(ID string) ([]storage.Auction, error)
 
 	// Bid
@@ -63,6 +64,9 @@ func (b *Tx) AuctionInsert(auction storage.Auction) error {
 }
 func (b *Tx) AuctionUpdate(auction storage.Auction) error {
 	return b.AuctionUpdateFunc(auction)
+}
+func (b *Tx) AuctionCancel(ID string) error {
+	return b.AuctionCancelFunc(ID)
 }
 func (b *Tx) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
 	return b.AuctionsByPlayerIdFunc(ID)
