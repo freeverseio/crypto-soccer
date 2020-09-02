@@ -36,6 +36,7 @@ func TestCreateOffer(t *testing.T) {
 	mock := mockup.Tx{
 		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
 		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		BidInsertFunc:          func(bid storage.Bid) error { return nil },
 		CommitFunc:             func() error { return nil },
 	}
 	service := &mockup.StorageService{
