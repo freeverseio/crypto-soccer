@@ -148,7 +148,7 @@ func (b CreateOfferInput) IsPlayerFrozen(contracts contracts.Contracts) (bool, e
 	return isFrozen, nil
 }
 
-func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, tx storage.Tx) (bool, error) {
+func (b CreateOfferInput) IsPlayerOnSale(tx storage.Tx) (bool, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
