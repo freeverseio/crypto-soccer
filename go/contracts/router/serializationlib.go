@@ -427,6 +427,10 @@ func EncodeMatchEvents(
 ) (*big.Int, error) {
 	eventsLog := big.NewInt(0)
 	var err error
+	nRounds := len(teamThatAttacks)
+	if len(shooter) != nRounds || len(assister) != nRounds || len(isGoal) != nRounds || len(managesToShoot) != nRounds {
+		return eventsLog, errors.New("inputs to EncodeMatchEvents have different size")
+	}
 	for r := uint(0); r < uint(len(teamThatAttacks)); r++ {
 		eventsLog, err = SetTeamThatAttacks(eventsLog, r, teamThatAttacks[r])
 		if err != nil {
