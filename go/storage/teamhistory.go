@@ -41,7 +41,7 @@ func (b TeamHistory) Insert(tx *sql.Tx) error {
 			tactic,
 			match_log,
 			is_zombie,
-			leaderboard_position,
+			leaderboard_position
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21);`,
 		b.BlockNumber,
 		b.TeamID,
