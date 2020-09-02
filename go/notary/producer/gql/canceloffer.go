@@ -29,7 +29,7 @@ func (b *Resolver) CancelOffer(args struct{ Input input.CancelOfferInput }) (gra
 	if err != nil {
 		return id, err
 	}
-	if err := tx.OfferCancel(args.Input.OfferId); err != nil {
+	if err := tx.OfferCancel(string(args.Input.OfferId)); err != nil {
 		tx.Rollback()
 		return id, err
 	}
