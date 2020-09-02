@@ -451,3 +451,53 @@ func EncodeMatchEvents(
 	}
 	return eventsLog, nil
 }
+
+func DecodeMatchEvents(eventsLog *big.Int, nRounds uint) (
+	[]uint,
+	[]uint,
+	[]uint,
+	[]bool,
+	[]bool,
+	error,
+) {
+	var teamThatAttacks []uint
+	var shooter []uint
+	var assister []uint
+	var isGoal []bool
+	var managesToShoot []bool
+	var err error
+	var in uint
+	var bo bool
+	for r := uint(0); r < nRounds; r++ {
+		in, err = GetTeamThatAttacks(eventsLog, r)
+		if err != nil {
+			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+		}
+		teamThatAttacks = append(teamThatAttacks, in)
+
+		in, err = GetShooter(eventsLog, r)
+		if err != nil {
+			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+		}
+		shooter = append(shooter, in)
+
+		in, err = GetAssister(eventsLog, r)
+		if err != nil {
+			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+		}
+		assister = append(assister, in)
+
+		bo, err = GetIsGoal(eventsLog, r)
+		if err != nil {
+			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+		}
+		isGoal = append(isGoal, bo)
+
+		bo, err = GetManagesToShoot(eventsLog, r)
+		if err != nil {
+			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+		}
+		managesToShoot = append(managesToShoot, bo)
+	}
+	return teamThatAttacks, shooter, assister, isGoal, managesToShoot, nil
+}

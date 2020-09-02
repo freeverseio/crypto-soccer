@@ -77,4 +77,14 @@ func TestSerializationEventsArray(t *testing.T) {
 	eventsLog2, _ := router.EncodeMatchEvents(teamThatAttacks, shooter, assister, isGoal, managesToShoot)
 	assert.Equal(t, eventsLog2.Cmp(eventsLog), 0)
 
+	teamThatAttacks2, shooter2, assister2, isGoal2, managesToShoot2, err2 := router.DecodeMatchEvents(eventsLog, N_ROUNDS)
+	assert.Equal(t, err2, nil)
+	assert.Equal(t, len(teamThatAttacks2), N_ROUNDS)
+	for r := uint(0); r < N_ROUNDS; r++ {
+		assert.Equal(t, teamThatAttacks2[r], teamThatAttacks[r])
+		assert.Equal(t, shooter2[r], shooter[r])
+		assert.Equal(t, assister2[r], assister[r])
+		assert.Equal(t, isGoal2[r], isGoal[r])
+		assert.Equal(t, managesToShoot2[r], managesToShoot[r])
+	}
 }
