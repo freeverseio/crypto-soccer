@@ -88,7 +88,6 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 	})
 
 	t.Run("TestInsertSameOrderTwice", func(t *testing.T) {
-		t.Skip("TODO reactive me when id is the hash")
 		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
@@ -107,7 +106,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
 		err = tx.OfferInsert(*offer)
-		assert.Error(t, err, "some error on duplication")
+		assert.Assert(t, err != nil)
 	})
 
 	t.Run("TestPendingOffer", func(t *testing.T) {
@@ -202,6 +201,36 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offers, err := tx.OffersByPlayerId(offer.PlayerID)
 		assert.NilError(t, err)
 		assert.Equal(t, 1, len(offers))
+	})
 
+	t.Run("Error on cancel offe not in started state", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+
+		auction := storage.NewAuction()
+		auction.ID = "ciao"
+		auction.Rnd = 4
+		auction.PlayerID = "3"
+		auction.CurrencyID = 3
+		auction.Price = 3
+		auction.ValidUntil = 3
+		auction.Signature = "3"
+		auction.State = storage.AuctionStarted
+		auction.StateExtra = "3"
+		auction.PaymentURL = "3"
+		auction.Seller = "3"
+		assert.NilError(t, tx.AuctionInsert(*auction))
+
+		offer := storage.NewOffer()
+		offer.State = storage.OfferAccepted
+		offer.StateExtra = "priva"
+		offer.Seller = "yo"
+		err = tx.OfferInsert(*offer)
+		assert.NilError(t, err)
+
+		offer.State = storage.OfferCancelled
+		err = tx.OfferUpdate(*offer)
+		assert.Assert(t, err != nil)
 	})
 }

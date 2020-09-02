@@ -38,6 +38,7 @@ type Tx struct {
 	OfferPendingOffersFunc func() ([]storage.Offer, error)
 	OfferInsertFunc        func(offer storage.Offer) error
 	OfferUpdateFunc        func(offer storage.Offer) error
+	OfferCancelFunc        func(ID string) error
 	OfferByAuctionIdFunc   func(auctionId string) (*storage.Offer, error)
 	OfferByRndPriceFunc    func(rnd int32, price int32) (*storage.Offer, error)
 	OffersByPlayerIdFunc   func(playerId string) ([]storage.Offer, error)
@@ -109,6 +110,9 @@ func (b *Tx) OfferInsert(offer storage.Offer) error {
 }
 func (b *Tx) OfferUpdate(offer storage.Offer) error {
 	return b.OfferUpdateFunc(offer)
+}
+func (b *Tx) OfferCancel(ID string) error {
+	return b.OfferCancelFunc(ID)
 }
 func (b *Tx) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
 	return b.OfferByAuctionIdFunc(auctionId)

@@ -25,5 +25,14 @@ func (b *Resolver) CancelOffer(args struct{ Input input.CancelOfferInput }) (gra
 		return id, errors.New("Invalid signature")
 	}
 
-	return id, b.push(args.Input)
+	tx, err := b.service.Begin()
+	if err != nil {
+		return id, err
+	}
+	if err := tx.OfferCancel(string(args.Input.OfferId)); err != nil {
+		tx.Rollback()
+		return id, err
+	}
+
+	return id, tx.Commit()
 }

@@ -34,6 +34,7 @@ type Tx interface {
 	OfferPendingOffers() ([]Offer, error)
 	OfferInsert(offer Offer) error
 	OfferUpdate(offer Offer) error
+	OfferCancel(ID string) error
 	OfferByAuctionId(auctionId string) (*Offer, error)
 	OfferByRndPrice(rnd int32, price int32) (*Offer, error)
 	OffersByPlayerId(playerId string) ([]Offer, error)
