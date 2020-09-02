@@ -311,7 +311,12 @@ func SetTeamThatAttacks(eventsLog *big.Int, round uint, teamThatAttacks uint) (*
 	if !(round < N_ROUNDS) {
 		return eventsLog, errors.New("round is too large")
 	}
+	if !(teamThatAttacks < 2) {
+		return eventsLog, errors.New("teamThatAttacks is too large")
+	}
+	MASK_1B := big.NewInt(1)
+	// MASK_4B := big.NewInt(15)
+	bigVal := big.NewInt(int64(teamThatAttacks))
+	return orBN(andBN(eventsLog, left(MASK_1B, 11*round)), left(bigVal, 11*round)), nil
 	//       return (log & ~(uint256(1) << (11*round))) | (uint256(teamThatAttacks) << (11*round));
-
-	return eventsLog, nil
 }

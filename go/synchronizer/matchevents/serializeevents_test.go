@@ -14,5 +14,5 @@ func Test1(t *testing.T) {
 	teamThatAttacks := uint(1)
 	eventsLog2, err := router.SetTeamThatAttacks(eventsLog, round, teamThatAttacks)
 	assert.NilError(t, err)
-	assert.Equal(t, eventsLog2, eventsLog)
+	assert.Equal(t, eventsLog2 == eventsLog, false)
 }
