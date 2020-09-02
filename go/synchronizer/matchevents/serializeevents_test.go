@@ -36,5 +36,41 @@ func TestSerializationEvents(t *testing.T) {
 	eventsLog, _ = router.SetManagesToShoot(eventsLog, round, isGoal)
 	newBool, _ = router.GetManagesToShoot(eventsLog, round)
 	assert.Equal(t, newBool, managesToShoot)
+}
 
+func TestSerializationEventsArray(t *testing.T) {
+	const N_ROUNDS = 12
+	var teamThatAttacks [N_ROUNDS]uint
+	var shooter [N_ROUNDS]uint
+	var assister [N_ROUNDS]uint
+	var isGoal [N_ROUNDS]bool
+	var managesToShoot [N_ROUNDS]bool
+
+	for r := uint(0); r < N_ROUNDS; r++ {
+		teamThatAttacks[r] = r % 2
+		shooter[r] = 14 - r%3
+		assister[r] = 14 - r%4
+		isGoal[r] = r%2 == 1
+		managesToShoot[r] = r%2 == 0
+	}
+	eventsLog := big.NewInt(0)
+	for r := uint(0); r < N_ROUNDS; r++ {
+		eventsLog, _ = router.SetTeamThatAttacks(eventsLog, r, teamThatAttacks[r])
+		eventsLog, _ = router.SetShooter(eventsLog, r, shooter[r])
+		eventsLog, _ = router.SetAssister(eventsLog, r, assister[r])
+		eventsLog, _ = router.SetIsGoal(eventsLog, r, isGoal[r])
+		eventsLog, _ = router.SetManagesToShoot(eventsLog, r, managesToShoot[r])
+	}
+	for r := uint(0); r < N_ROUNDS; r++ {
+		val, _ := router.GetTeamThatAttacks(eventsLog, r)
+		assert.Equal(t, val, teamThatAttacks[r])
+		val, _ = router.GetShooter(eventsLog, r)
+		assert.Equal(t, val, shooter[r])
+		val, _ = router.GetAssister(eventsLog, r)
+		assert.Equal(t, val, assister[r])
+		val2, _ := router.GetIsGoal(eventsLog, r)
+		assert.Equal(t, val2, isGoal[r])
+		val2, _ = router.GetManagesToShoot(eventsLog, r)
+		assert.Equal(t, val2, managesToShoot[r])
+	}
 }
