@@ -91,37 +91,7 @@ comment on table tactics_histories is E'@omit create,update,delete';
 CREATE TABLE trainings (
     team_id TEXT NOT NULL REFERENCES teams(team_id),
 
-    special_player_shirt INT NOT NULL CHECK (special_player_shirt >= -1 AND special_player_shirt <= 24),
-
-    goalkeepers_defence INT NOT NULL DEFAULT 0 CHECK (goalkeepers_defence >= 0),
-    goalkeepers_speed INT NOT NULL DEFAULT 0 CHECK (goalkeepers_speed >= 0),
-    goalkeepers_pass INT NOT NULL DEFAULT 0 CHECK (goalkeepers_pass >= 0),
-    goalkeepers_shoot INT NOT NULL DEFAULT 0 CHECK (goalkeepers_shoot >= 0),
-    goalkeepers_endurance INT NOT NULL DEFAULT 0 CHECK (goalkeepers_endurance >= 0),
-
-    defenders_defence INT NOT NULL DEFAULT 0 CHECK (defenders_defence >= 0),
-    defenders_speed INT NOT NULL DEFAULT 0 CHECK (defenders_speed >= 0),
-    defenders_pass INT NOT NULL DEFAULT 0 CHECK (defenders_pass >= 0),
-    defenders_shoot INT NOT NULL DEFAULT 0 CHECK (defenders_shoot >= 0),
-    defenders_endurance INT NOT NULL DEFAULT 0 CHECK (defenders_endurance >= 0),
-
-    midfielders_defence INT NOT NULL DEFAULT 0 CHECK (midfielders_defence >= 0),
-    midfielders_speed INT NOT NULL DEFAULT 0 CHECK (midfielders_speed >= 0),
-    midfielders_pass INT NOT NULL DEFAULT 0 CHECK (midfielders_pass >= 0),
-    midfielders_shoot INT NOT NULL DEFAULT 0 CHECK (midfielders_shoot >= 0),
-    midfielders_endurance INT NOT NULL DEFAULT 0 CHECK (midfielders_endurance >= 0),
-
-    attackers_defence INT NOT NULL DEFAULT 0 CHECK (attackers_defence >= 0),
-    attackers_speed INT NOT NULL DEFAULT 0 CHECK (attackers_speed >= 0),
-    attackers_pass INT NOT NULL DEFAULT 0 CHECK (attackers_pass >= 0),
-    attackers_shoot INT NOT NULL DEFAULT 0 CHECK (attackers_shoot >= 0),
-    attackers_endurance INT NOT NULL DEFAULT 0 CHECK (attackers_endurance >= 0),
-
-    special_player_defence INT NOT NULL DEFAULT 0 CHECK (special_player_defence >= 0),
-    special_player_speed INT NOT NULL DEFAULT 0 CHECK (special_player_speed >= 0),
-    special_player_pass INT NOT NULL DEFAULT 0 CHECK (special_player_pass >= 0),
-    special_player_shoot INT NOT NULL DEFAULT 0 CHECK (special_player_shoot >= 0),
-    special_player_endurance INT NOT NULL DEFAULT 0 CHECK (special_player_endurance >= 0),
+    serialized_training TEXT NOT NULL DEFAULT '',
 
     PRIMARY KEY (team_id)
  );
@@ -132,37 +102,7 @@ CREATE TABLE trainings_histories (
     block_number BIGINT NOT NULL,
     team_id TEXT NOT NULL REFERENCES teams(team_id),
 
-    special_player_shirt INT NOT NULL CHECK (special_player_shirt >= -1 AND special_player_shirt <= 24),
-
-    goalkeepers_defence INT NOT NULL DEFAULT 0 CHECK (goalkeepers_defence >= 0),
-    goalkeepers_speed INT NOT NULL DEFAULT 0 CHECK (goalkeepers_speed >= 0),
-    goalkeepers_pass INT NOT NULL DEFAULT 0 CHECK (goalkeepers_pass >= 0),
-    goalkeepers_shoot INT NOT NULL DEFAULT 0 CHECK (goalkeepers_shoot >= 0),
-    goalkeepers_endurance INT NOT NULL DEFAULT 0 CHECK (goalkeepers_endurance >= 0),
-
-    defenders_defence INT NOT NULL DEFAULT 0 CHECK (defenders_defence >= 0),
-    defenders_speed INT NOT NULL DEFAULT 0 CHECK (defenders_speed >= 0),
-    defenders_pass INT NOT NULL DEFAULT 0 CHECK (defenders_pass >= 0),
-    defenders_shoot INT NOT NULL DEFAULT 0 CHECK (defenders_shoot >= 0),
-    defenders_endurance INT NOT NULL DEFAULT 0 CHECK (defenders_endurance >= 0),
-
-    midfielders_defence INT NOT NULL DEFAULT 0 CHECK (midfielders_defence >= 0),
-    midfielders_speed INT NOT NULL DEFAULT 0 CHECK (midfielders_speed >= 0),
-    midfielders_pass INT NOT NULL DEFAULT 0 CHECK (midfielders_pass >= 0),
-    midfielders_shoot INT NOT NULL DEFAULT 0 CHECK (midfielders_shoot >= 0),
-    midfielders_endurance INT NOT NULL DEFAULT 0 CHECK (midfielders_endurance >= 0),
-
-    attackers_defence INT NOT NULL DEFAULT 0 CHECK (attackers_defence >= 0),
-    attackers_speed INT NOT NULL DEFAULT 0 CHECK (attackers_speed >= 0),
-    attackers_pass INT NOT NULL DEFAULT 0 CHECK (attackers_pass >= 0),
-    attackers_shoot INT NOT NULL DEFAULT 0 CHECK (attackers_shoot >= 0),
-    attackers_endurance INT NOT NULL DEFAULT 0 CHECK (attackers_endurance >= 0),
-
-    special_player_defence INT NOT NULL DEFAULT 0 CHECK (special_player_defence >= 0),
-    special_player_speed INT NOT NULL DEFAULT 0 CHECK (special_player_speed >= 0),
-    special_player_pass INT NOT NULL DEFAULT 0 CHECK (special_player_pass >= 0),
-    special_player_shoot INT NOT NULL DEFAULT 0 CHECK (special_player_shoot >= 0),
-    special_player_endurance INT NOT NULL DEFAULT 0 CHECK (special_player_endurance >= 0),
+    serialized_training TEXT NOT NULL DEFAULT '',
 
     PRIMARY KEY (block_number, team_id)
 );
