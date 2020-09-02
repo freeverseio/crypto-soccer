@@ -140,7 +140,7 @@ func Generate(
 
 	if is2ndHalf {
 		for e := range events {
-			events[e].Minute += 45
+			events[e].Minute += 145
 		}
 	}
 
