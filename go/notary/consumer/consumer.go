@@ -60,14 +60,6 @@ func (b *Consumer) Consume(event interface{}) error {
 	}()
 
 	switch in := event.(type) {
-	case input.CreateAuctionInput:
-		log.Debug("Received CreateAuctionInput")
-		return CreateAuction(tx, in)
-	case input.CancelAuctionInput:
-		return CancelAuction(tx, in)
-	case input.CreateBidInput:
-		log.Debug("Received CreateBidInput")
-		return CreateBid(tx, in)
 	case producer.ProcessEvent:
 		log.Info("[consumer] process auctions")
 		return ProcessAuctions(
@@ -86,24 +78,12 @@ func (b *Consumer) Consume(event interface{}) error {
 			b.namesdb,
 			b.iapTestOn,
 		)
-	case input.SubmitPlayStorePlayerPurchaseInput:
-		log.Debug("Received SubmitPlayStorePlayerPurchaseInput")
-		return SubmitPlayStorePlayerPurchase(tx, in)
 	case input.DismissPlayerInput:
 		log.Debug("Received DismissPlayerInput")
 		return DismissPlayer(b.contracts, b.pvc, in)
 	case input.CompletePlayerTransitInput:
 		log.Debug("Received CompletePlayerTransit")
 		return CompletePlayerTransit(b.contracts, b.pvc, in)
-	case input.CreateOfferInput:
-		log.Debug("Received CreateOfferInput")
-		return CreateOffer(tx, in, b.contracts)
-	case input.AcceptOfferInput:
-		log.Debug("Received CreateAuctionInput")
-		return AcceptOffer(tx, in)
-	case input.CancelOfferInput:
-		log.Debug("Received CancelOfferInput")
-		return CancelOffer(tx, in)
 	case producer.ProcessOfferEvent:
 		log.Info("[consumer] process offer to expire")
 		return ProcessOffers(tx)
