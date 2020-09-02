@@ -17,6 +17,10 @@ func and(x *big.Int, n int64) *big.Int {
 	return new(big.Int).And(x, big.NewInt(n))
 }
 
+func notBN(x *big.Int) *big.Int {
+	return new(big.Int).Not(x)
+}
+
 func andBN(x *big.Int, y *big.Int) *big.Int {
 	return new(big.Int).And(x, y)
 }
@@ -43,6 +47,15 @@ func equals(x *big.Int, n int64) bool {
 
 func twoToPow(n uint64) int64 {
 	return 2 << (n - 1)
+}
+
+func setValAtPos(serialized *big.Int, val uint, pos uint, mask *big.Int) *big.Int {
+	bigVal := big.NewInt(int64(val))
+	return orBN(andBN(serialized, notBN(left(mask, pos))), left(bigVal, pos))
+}
+
+func getValAtPos(serialized *big.Int, pos uint, mask *big.Int) int64 {
+	return andBN(right(serialized, pos), mask).Int64()
 }
 
 func encodeTZCountryAndValGo(timeZone uint8, countryIdxInTZ *big.Int, val *big.Int) (*big.Int, error) {
@@ -314,11 +327,7 @@ func SetTeamThatAttacks(eventsLog *big.Int, round uint, teamThatAttacks uint) (*
 	if !(teamThatAttacks < 2) {
 		return eventsLog, errors.New("teamThatAttacks is too large")
 	}
-	MASK_1B := big.NewInt(1)
-	// MASK_4B := big.NewInt(15)
-	bigVal := big.NewInt(int64(teamThatAttacks))
-	return orBN(andBN(eventsLog, left(MASK_1B, 11*round)), left(bigVal, 11*round)), nil
-	//       return (log & ~(uint256(1) << (11*round))) | (uint256(teamThatAttacks) << (11*round));
+	return setValAtPos(eventsLog, teamThatAttacks, 11*round, big.NewInt(1)), nil
 }
 
 func GetTeamThatAttacks(eventsLog *big.Int, round uint) (uint, error) {
@@ -326,6 +335,25 @@ func GetTeamThatAttacks(eventsLog *big.Int, round uint) (uint, error) {
 	if !(round < N_ROUNDS) {
 		return 0, errors.New("round is too large")
 	}
-	MASK_1B := big.NewInt(1)
-	return uint(andBN(right(eventsLog, 11*round), MASK_1B).Int64()), nil
+	return uint(getValAtPos(eventsLog, 11*round, big.NewInt(1))), nil
+}
+
+func SetShooter(eventsLog *big.Int, round uint, player uint) (*big.Int, error) {
+	N_ROUNDS := uint(12)
+	MAX_PLAYER := uint(15)
+	if !(round < N_ROUNDS) {
+		return eventsLog, errors.New("round is too large")
+	}
+	if !(player < MAX_PLAYER) {
+		return eventsLog, errors.New("player is too large")
+	}
+	return setValAtPos(eventsLog, player, 11*round+1, big.NewInt(15)), nil
+}
+
+func GetShooter(eventsLog *big.Int, round uint) (uint, error) {
+	N_ROUNDS := uint(12)
+	if !(round < N_ROUNDS) {
+		return 0, errors.New("round is too large")
+	}
+	return uint(getValAtPos(eventsLog, 11*round+1, big.NewInt(15))), nil
 }
