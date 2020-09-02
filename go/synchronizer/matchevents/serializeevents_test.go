@@ -32,4 +32,9 @@ func TestSerializationEvents(t *testing.T) {
 	newBool, _ := router.GetIsGoal(eventsLog, round)
 	assert.Equal(t, newBool, isGoal)
 
+	managesToShoot := true
+	eventsLog, _ = router.SetManagesToShoot(eventsLog, round, isGoal)
+	newBool, _ = router.GetManagesToShoot(eventsLog, round)
+	assert.Equal(t, newBool, managesToShoot)
+
 }
