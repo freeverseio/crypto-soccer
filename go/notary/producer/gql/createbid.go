@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -28,5 +29,30 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql
 		return graphql.ID(id), errors.New("Invalid signature")
 	}
 
-	return id, b.push(args.Input)
+	tx, err := b.service.Begin()
+	if err != nil {
+		return id, err
+	}
+	if err := createBid(tx, args.Input); err != nil {
+		tx.Rollback()
+		return id, err
+	}
+
+	return id, tx.Commit()
+}
+
+func createBid(tx storage.Tx, in input.CreateBidInput) error {
+	bid := storage.NewBid()
+	bid.AuctionID = string(in.AuctionId)
+	bid.ExtraPrice = int64(in.ExtraPrice)
+	bid.Rnd = int64(in.Rnd)
+	bid.TeamID = in.TeamId
+	bid.Signature = in.Signature
+	bid.State = storage.BidAccepted
+	bid.StateExtra = ""
+	bid.PaymentID = ""
+	bid.PaymentURL = ""
+	bid.PaymentDeadline = 0
+
+	return tx.BidInsert(*bid)
 }
