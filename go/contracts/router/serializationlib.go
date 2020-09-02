@@ -417,3 +417,37 @@ func GetManagesToShoot(eventsLog *big.Int, round uint) (bool, error) {
 	}
 	return getValAtPos(eventsLog, 11*round+10, big.NewInt(1)) == int64(1), nil
 }
+
+func EncodeMatchEvents(
+	teamThatAttacks []uint,
+	shooter []uint,
+	assister []uint,
+	isGoal []bool,
+	managesToShoot []bool,
+) (*big.Int, error) {
+	eventsLog := big.NewInt(0)
+	var err error
+	for r := uint(0); r < uint(len(teamThatAttacks)); r++ {
+		eventsLog, err = SetTeamThatAttacks(eventsLog, r, teamThatAttacks[r])
+		if err != nil {
+			return eventsLog, err
+		}
+		eventsLog, err = SetShooter(eventsLog, r, shooter[r])
+		if err != nil {
+			return eventsLog, err
+		}
+		eventsLog, err = SetAssister(eventsLog, r, assister[r])
+		if err != nil {
+			return eventsLog, err
+		}
+		eventsLog, err = SetIsGoal(eventsLog, r, isGoal[r])
+		if err != nil {
+			return eventsLog, err
+		}
+		eventsLog, err = SetManagesToShoot(eventsLog, r, managesToShoot[r])
+		if err != nil {
+			return eventsLog, err
+		}
+	}
+	return eventsLog, nil
+}

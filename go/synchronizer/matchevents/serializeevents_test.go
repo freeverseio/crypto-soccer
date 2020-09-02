@@ -40,18 +40,18 @@ func TestSerializationEvents(t *testing.T) {
 
 func TestSerializationEventsArray(t *testing.T) {
 	const N_ROUNDS = 12
-	var teamThatAttacks [N_ROUNDS]uint
-	var shooter [N_ROUNDS]uint
-	var assister [N_ROUNDS]uint
-	var isGoal [N_ROUNDS]bool
-	var managesToShoot [N_ROUNDS]bool
+	var teamThatAttacks []uint
+	var shooter []uint
+	var assister []uint
+	var isGoal []bool
+	var managesToShoot []bool
 
 	for r := uint(0); r < N_ROUNDS; r++ {
-		teamThatAttacks[r] = r % 2
-		shooter[r] = 14 - r%3
-		assister[r] = 14 - r%4
-		isGoal[r] = r%2 == 1
-		managesToShoot[r] = r%2 == 0
+		teamThatAttacks = append(teamThatAttacks, r%2)
+		shooter = append(shooter, 14-r%3)
+		assister = append(assister, 14-r%4)
+		isGoal = append(isGoal, r%2 == 1)
+		managesToShoot = append(managesToShoot, r%2 == 0)
 	}
 	eventsLog := big.NewInt(0)
 	for r := uint(0); r < N_ROUNDS; r++ {
@@ -73,4 +73,8 @@ func TestSerializationEventsArray(t *testing.T) {
 		val2, _ = router.GetManagesToShoot(eventsLog, r)
 		assert.Equal(t, val2, managesToShoot[r])
 	}
+
+	eventsLog2, _ := router.EncodeMatchEvents(teamThatAttacks, shooter, assister, isGoal, managesToShoot)
+	assert.Equal(t, eventsLog2.Cmp(eventsLog), 0)
+
 }
