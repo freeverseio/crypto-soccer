@@ -39,8 +39,10 @@ func (b TeamHistory) Insert(tx *sql.Tx) error {
 			ranking_points,
 			training_points,
 			tactic,
-			match_log
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19);`,
+			match_log,
+			is_zombie,
+			leaderboard_position,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21);`,
 		b.BlockNumber,
 		b.TeamID,
 		b.Name,
@@ -60,6 +62,8 @@ func (b TeamHistory) Insert(tx *sql.Tx) error {
 		b.TrainingPoints,
 		b.Tactic,
 		b.MatchLog,
+		b.IsZombie,
+		b.LeaderboardPosition,
 	)
 	if err != nil {
 		return err
@@ -87,7 +91,9 @@ func TeamHistoryByTeamId(tx *sql.Tx, teamID string) ([]TeamHistory, error) {
 	name,
 	training_points,
 	tactic,
-	match_log
+	match_log,
+	is_zombie,
+	leaderboard_position
 	FROM teams_histories WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return nil, err
@@ -116,6 +122,8 @@ func TeamHistoryByTeamId(tx *sql.Tx, teamID string) ([]TeamHistory, error) {
 			&team.TrainingPoints,
 			&team.Tactic,
 			&team.MatchLog,
+			&team.IsZombie,
+			&team.LeaderboardPosition,
 		); err != nil {
 			return nil, err
 		}
