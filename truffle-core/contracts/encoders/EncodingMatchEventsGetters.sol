@@ -33,4 +33,5 @@ contract EncodingMatchEventsGetters  {
    function getManagesToShootFromEvents(uint256 log, uint8 round) public pure returns (bool) {
       return ((log >> (11*round + 10)) & 1) == 1;
    }
+
 }
