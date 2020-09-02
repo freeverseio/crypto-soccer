@@ -17,7 +17,7 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestCreateOffer(t *testing.T) {
+func TestCreateOffer1(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	offerer, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
@@ -36,6 +36,7 @@ func TestCreateOffer(t *testing.T) {
 	mock := mockup.Tx{
 		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
 		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
 		CommitFunc:             func() error { return nil },
 	}
 	service := &mockup.StorageService{
@@ -115,6 +116,15 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	offererRnd := int32(42321)
 	offerValidUntil := time.Now().Unix() + 100
 
+	mock := mockup.Tx{
+		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		CommitFunc:             func() error { return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
 	ch := make(chan interface{}, 10)
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
@@ -173,6 +183,7 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	mock := mockup.Tx{
 		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
 		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
 		CommitFunc:             func() error { return nil },
 	}
 	service := &mockup.StorageService{
@@ -229,4 +240,87 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	inOffer.Signature = hex.EncodeToString(signatureOffer)
 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
 	assert.NilError(t, err)
+}
+
+func TestCreateOfferExConsumer(t *testing.T) {
+	ch := make(chan interface{}, 10)
+	mock := mockup.Tx{
+		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
+		CommitFunc:             func() error { return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
+
+	in := input.CreateOfferInput{}
+	in.ValidUntil = "999999999999"
+	in.PlayerId = "274877906940"
+	in.BuyerTeamId = "456678987944"
+	in.CurrencyId = 1
+	in.Price = 41234
+	in.Rnd = 4232
+	in.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
+	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
+	teamId, _ := new(big.Int).SetString(in.BuyerTeamId, 10)
+	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+	dummyRnd := big.NewInt(0)
+	offerExtraPrice := big.NewInt(0)
+	isOffer := true
+	assert.NilError(t, err)
+	// an offer cannot be signed with non null extraPrice:
+	hash, err := signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		validUntil,
+		playerId,
+		big.NewInt(2),
+		dummyRnd,
+		teamId,
+		isOffer,
+	)
+	assert.Error(t, err, "offers must have zero extraPrice")
+	// an offer cannot be signed with non null bid.Rnd:
+	hash, err = signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		validUntil,
+		playerId,
+		offerExtraPrice,
+		big.NewInt(2),
+		teamId,
+		isOffer,
+	)
+	assert.Error(t, err, "offers must have zero bidRnd")
+	// it should now work:
+	hash, err = signer.HashBidMessage(
+		bc.Contracts.Market,
+		uint8(in.CurrencyId),
+		big.NewInt(int64(in.Price)),
+		big.NewInt(int64(in.Rnd)),
+		validUntil,
+		playerId,
+		offerExtraPrice,
+		dummyRnd,
+		teamId,
+		isOffer,
+	)
+	assert.NilError(t, err)
+	assert.Equal(t, hash.Hex(), "0x1563f70ce76787ea99b420ad637df3757b492c98cd5a774d7111c861453c270b")
+	assert.NilError(t, err)
+	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), privateKey)
+	assert.NilError(t, err)
+	assert.Equal(t, hex.EncodeToString(signature), "dbd05f0df6b470d071462ba49956eb472031de84509409823502decb119f2fb36cfb57d5d6f6de5f819731745a4f5533c1805065eebf1a7d56dc9bdced406b231c")
+	in.Signature = hex.EncodeToString(signature)
+
+	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{in})
+	assert.Error(t, err, "signer is not the owner of teamId 456678987944")
 }
