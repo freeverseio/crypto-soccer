@@ -303,3 +303,15 @@ func getFullLineUpGo(tactics *big.Int) [14]uint8 {
 	}
 	return lineup
 }
+
+// MATCH EVENTS
+
+func SetTeamThatAttacks(eventsLog *big.Int, round uint, teamThatAttacks uint) (*big.Int, error) {
+	N_ROUNDS := uint(12)
+	if !(round < N_ROUNDS) {
+		return eventsLog, errors.New("round is too large")
+	}
+	//       return (log & ~(uint256(1) << (11*round))) | (uint256(teamThatAttacks) << (11*round));
+
+	return eventsLog, nil
+}
