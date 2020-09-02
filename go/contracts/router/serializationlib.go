@@ -357,3 +357,43 @@ func GetShooter(eventsLog *big.Int, round uint) (uint, error) {
 	}
 	return uint(getValAtPos(eventsLog, 11*round+1, big.NewInt(15))), nil
 }
+
+func SetAssister(eventsLog *big.Int, round uint, player uint) (*big.Int, error) {
+	N_ROUNDS := uint(12)
+	MAX_PLAYER := uint(15)
+	if !(round < N_ROUNDS) {
+		return eventsLog, errors.New("round is too large")
+	}
+	if !(player < MAX_PLAYER) {
+		return eventsLog, errors.New("player is too large")
+	}
+	return setValAtPos(eventsLog, player, 11*round+6, big.NewInt(15)), nil
+}
+
+func GetAssister(eventsLog *big.Int, round uint) (uint, error) {
+	N_ROUNDS := uint(12)
+	if !(round < N_ROUNDS) {
+		return 0, errors.New("round is too large")
+	}
+	return uint(getValAtPos(eventsLog, 11*round+6, big.NewInt(15))), nil
+}
+
+func SetIsGoal(eventsLog *big.Int, round uint, isGoal bool) (*big.Int, error) {
+	N_ROUNDS := uint(12)
+	if !(round < N_ROUNDS) {
+		return eventsLog, errors.New("round is too large")
+	}
+	val := uint(0)
+	if isGoal {
+		val = 1
+	}
+	return setValAtPos(eventsLog, val, 11*round+5, big.NewInt(1)), nil
+}
+
+func GetIsGoal(eventsLog *big.Int, round uint) (bool, error) {
+	N_ROUNDS := uint(12)
+	if !(round < N_ROUNDS) {
+		return false, errors.New("round is too large")
+	}
+	return getValAtPos(eventsLog, 11*round+5, big.NewInt(1)) == int64(1), nil
+}
