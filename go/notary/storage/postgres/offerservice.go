@@ -198,3 +198,14 @@ func (b *Tx) OfferUpdate(offer storage.Offer) error {
 	)
 	return err
 }
+
+func (b *Tx) OfferCancel(ID string) error {
+	log.Debugf("[DBMS] + update Offer %v", b)
+	_, err := b.tx.Exec(`UPDATE offers SET 
+		state=$1, 
+		WHERE id=$2;`,
+		storage.OfferCancelled,
+		ID,
+	)
+	return err
+}
