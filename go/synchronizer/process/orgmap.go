@@ -12,6 +12,13 @@ type OrgMap struct {
 	teams []storage.Team
 }
 
+func (b *OrgMap) AppendOrgMap(newOrgMap OrgMap) error {
+	for _, team := range newOrgMap.teams {
+		b.Append(team)
+	}
+	return nil
+}
+
 func (b *OrgMap) Append(team storage.Team) error {
 	if teamID, _ := new(big.Int).SetString(team.TeamID, 10); teamID == nil {
 		return errors.New("invalid TeamID")

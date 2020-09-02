@@ -68,7 +68,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 				return err
 			}
 		}
-		leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
+		leagueCount, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 		if err != nil {
 			return err
 		}
@@ -221,7 +221,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap OrgMap
-	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
+	leagueCount, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
@@ -285,13 +285,16 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap OrgMap
-	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
+	var zombieOrgMap OrgMap
+
+	leagueCount, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
 	if err != nil {
 		return err
 	}
+	// Suggest to make Clean set ALL = false
 	err = storage.TeamCleanZombies(tx)
 	if err != nil {
 		return err
@@ -300,27 +303,17 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 	if err != nil {
 		return err
 	}
-	var timezoneCountryZombies []storage.Team
+
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
 		}
-		var teamsWithoutZombies []storage.Team
-		var zombies []storage.Team
-
-		for _, team := range teams {
-			if team.IsZombie {
-				zombies = append(zombies, team)
-			} else {
-				teamsWithoutZombies = append(teamsWithoutZombies, team)
-			}
-		}
 		// ordening by points
-		sort.Slice(teamsWithoutZombies[:], func(i, j int) bool {
-			return teamsWithoutZombies[i].LeaderboardPosition < teamsWithoutZombies[j].LeaderboardPosition
+		sort.Slice(teams[:], func(i, j int) bool {
+			return teams[i].LeaderboardPosition < teams[j].LeaderboardPosition
 		})
-		for position, team := range teamsWithoutZombies {
+		for position, team := range teams {
 			teamState, err := b.GetTeamState(tx, team.TeamID)
 			if err != nil {
 				return err
@@ -341,25 +334,21 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 				}
 			}
 			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
-			if err := orgMap.Append(team); err != nil {
-				return err
+			if team.IsZombie {
+				if err := zombieOrgMap.Append(team); err != nil {
+					return err
+				}
+			} else {
+				if err := orgMap.Append(team); err != nil {
+					return err
+				}
 			}
 		}
-		timezoneCountryZombies = append(timezoneCountryZombies, zombies...)
 	}
 
 	orgMap.Sort()
-
-	// sort zombies by team ranking or teamid
-	sort.Slice(timezoneCountryZombies[:], func(i, j int) bool {
-		if timezoneCountryZombies[i].RankingPoints == timezoneCountryZombies[j].RankingPoints {
-			teamID0, _ := new(big.Int).SetString(timezoneCountryZombies[i].TeamID, 10)
-			teamID1, _ := new(big.Int).SetString(timezoneCountryZombies[j].TeamID, 10)
-			return teamID0.Cmp(teamID1) == -1
-		}
-		return timezoneCountryZombies[i].RankingPoints > timezoneCountryZombies[j].RankingPoints
-	})
-	orgMap.teams = append(orgMap.teams, timezoneCountryZombies...)
+	zombieOrgMap.Sort()
+	orgMap.AppendOrgMap(zombieOrgMap)
 
 	// create the new leagues
 	for i := 0; i < orgMap.Size(); i++ {

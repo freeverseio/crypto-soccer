@@ -42,7 +42,7 @@ func TestLeagueCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezone.TimezoneIdx, countryIdx)
+	count, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezone.TimezoneIdx, countryIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
