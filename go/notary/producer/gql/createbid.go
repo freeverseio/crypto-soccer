@@ -2,7 +2,6 @@ package gql
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -43,15 +42,6 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql
 }
 
 func createBid(tx storage.Tx, in input.CreateBidInput) error {
-	auction, err := tx.Auction(string(in.AuctionId))
-	if err != nil {
-		return err
-	}
-
-	if auction == nil {
-		return fmt.Errorf("No auction for bid %v", in)
-	}
-
 	bid := storage.NewBid()
 	bid.AuctionID = string(in.AuctionId)
 	bid.ExtraPrice = int64(in.ExtraPrice)
