@@ -105,4 +105,7 @@ func TestSerializationEventsArray(t *testing.T) {
 		eventsFromPlayHalf = append(eventsFromPlayHalf, big.NewInt(bool2int64(isGoal[r])))
 		eventsFromPlayHalf = append(eventsFromPlayHalf, big.NewInt(int64(assister[r])))
 	}
+	serializedEvents, err := router.SerializeEventsFromPlayHalf(eventsFromPlayHalf)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, eventsLog.Cmp(serializedEvents), 0)
 }

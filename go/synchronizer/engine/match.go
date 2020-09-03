@@ -370,6 +370,8 @@ func (b *Match) processMatchEvents(
 	logsAndEvents []*big.Int,
 	is2ndHalf bool,
 ) error {
+	// serializedEvents := serializedEvents()
+
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
 		return errors.Wrap(err, "failed decoding home match log")

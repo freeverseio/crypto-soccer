@@ -516,23 +516,23 @@ func SerializeEventsFromPlayHalf(
 	}
 	nRounds := uint(len(matchEvents) / 5)
 	for round := uint(0); round < nRounds; round++ {
-		eventsLog, err = SetTeamThatAttacks(eventsLog, round, uint(matchEvents[2+5*round].Int64()))
+		eventsLog, err = SetTeamThatAttacks(eventsLog, round, uint(matchEvents[5*round].Int64()))
 		if err != nil {
 			return eventsLog, err
 		}
-		eventsLog, err = SetManagesToShoot(eventsLog, round, equals(matchEvents[3+5*round], 1))
+		eventsLog, err = SetManagesToShoot(eventsLog, round, equals(matchEvents[1+5*round], 1))
 		if err != nil {
 			return eventsLog, err
 		}
-		eventsLog, err = SetShooter(eventsLog, round, uint(matchEvents[4+5*round].Int64()))
+		eventsLog, err = SetShooter(eventsLog, round, uint(matchEvents[2+5*round].Int64()))
 		if err != nil {
 			return eventsLog, err
 		}
-		eventsLog, err = SetIsGoal(eventsLog, round, equals(matchEvents[5+5*round], 1))
+		eventsLog, err = SetIsGoal(eventsLog, round, equals(matchEvents[3+5*round], 1))
 		if err != nil {
 			return eventsLog, err
 		}
-		eventsLog, err = SetAssister(eventsLog, round, uint(matchEvents[6+5*round].Int64()))
+		eventsLog, err = SetAssister(eventsLog, round, uint(matchEvents[4+5*round].Int64()))
 		if err != nil {
 			return eventsLog, err
 		}
