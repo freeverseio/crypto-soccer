@@ -175,33 +175,19 @@ func (b *Match) play1stHalfV1(contracts contracts.Contracts) error {
 		fmt.Println(errMsg)
 		return errors.New(errMsg)
 	}
-	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
-	if err != nil {
-		return errors.Wrap(err, "failed decoding home match log")
-	}
-	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
-	if err != nil {
-		return errors.Wrap(err, "failed decoding visitor match log")
-	}
+
 	if err = b.processMatchEvents(
 		contracts,
 		logsAndEvents[:],
-		decodedHomeMatchLog,
-		decodedVisitorMatchLog,
 		is2ndHalf,
 	); err != nil {
 		return errors.Wrap(err, "failed processing match events")
 	}
+
 	b.HomeTeam.SetSkills(contracts, newSkills[0])
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeGoals = uint8(decodedHomeMatchLog[2])
-	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
-	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
-	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
-	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
-	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
 	return nil
 }
 
@@ -247,14 +233,6 @@ func (b *Match) play1stHalfV2(contracts contracts.Contracts) error {
 	if err != nil {
 		return errors.Wrap(err, "failed play1stHalfAndEvolve")
 	}
-	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
-	if err != nil {
-		return errors.Wrap(err, "failed decoding home match log")
-	}
-	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
-	if err != nil {
-		return errors.Wrap(err, "failed decoding visitor match log")
-	}
 	if BCError != 0 {
 		// no events returned, no need to process them. Just log
 		log.Warningf("GAME CANCELLED!!!! Play1stHalfAndEvolve: Solidity code returned error code: %v", BCError)
@@ -262,8 +240,6 @@ func (b *Match) play1stHalfV2(contracts contracts.Contracts) error {
 		if err = b.processMatchEvents(
 			contracts,
 			logsAndEvents[:],
-			decodedHomeMatchLog,
-			decodedVisitorMatchLog,
 			is2ndHalf,
 		); err != nil {
 			return errors.Wrap(err, "failed processing match events")
@@ -273,12 +249,6 @@ func (b *Match) play1stHalfV2(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeGoals = uint8(decodedHomeMatchLog[2])
-	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
-	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
-	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
-	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
-	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
 	return nil
 }
 
@@ -312,19 +282,9 @@ func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 		fmt.Println(errMsg)
 		return errors.New(errMsg)
 	}
-	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
-	if err != nil {
-		return errors.Wrap(err, "failed decoding home match log")
-	}
-	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
-	if err != nil {
-		return errors.Wrap(err, "failed decoding visitor match log")
-	}
 	if err = b.processMatchEvents(
 		contracts,
 		logsAndEvents[:],
-		decodedHomeMatchLog,
-		decodedVisitorMatchLog,
 		is2ndHalf,
 	); err != nil {
 		return errors.Wrap(err, "failed processing match events")
@@ -333,12 +293,6 @@ func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeGoals = uint8(decodedHomeMatchLog[2])
-	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
-	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
-	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
-	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
-	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
 	b.updateStats()
 	return nil
 }
@@ -387,14 +341,6 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 	if err != nil {
 		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
 	}
-	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
-	if err != nil {
-		return errors.Wrap(err, "failed decoding home match log")
-	}
-	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
-	if err != nil {
-		return errors.Wrap(err, "failed decoding visitor match log")
-	}
 	if BCError != 0 {
 		// no events returned, no need to process them. Just log
 		log.Warningf("GAME CANCELLED!!!! Play2ndHalfAndEvolve: Solidity code returned error code: %v", BCError)
@@ -402,8 +348,6 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 		if err = b.processMatchEvents(
 			contracts,
 			logsAndEvents[:],
-			decodedHomeMatchLog,
-			decodedVisitorMatchLog,
 			is2ndHalf,
 		); err != nil {
 			return errors.Wrap(err, "failed processing match events")
@@ -413,12 +357,6 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
-	b.HomeGoals = uint8(decodedHomeMatchLog[2])
-	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
-	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
-	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
-	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
-	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
 	b.updateStats()
 	return nil
 }
@@ -430,10 +368,16 @@ func (b *Match) Skills() [2][25]*big.Int {
 func (b *Match) processMatchEvents(
 	contracts contracts.Contracts,
 	logsAndEvents []*big.Int,
-	decodedHomeMatchLog [15]uint32,
-	decodedVisitorMatchLog [15]uint32,
 	is2ndHalf bool,
 ) error {
+	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
+	if err != nil {
+		return errors.Wrap(err, "failed decoding home match log")
+	}
+	decodedVisitorMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[1], is2ndHalf)
+	if err != nil {
+		return errors.Wrap(err, "failed decoding visitor match log")
+	}
 	homeTactic, _ := new(big.Int).SetString(b.HomeTeam.Tactic, 10)
 	visitorTactic, _ := new(big.Int).SetString(b.VisitorTeam.Tactic, 10)
 	events, err := matchevents.NewMatchEvents(
@@ -454,6 +398,12 @@ func (b *Match) processMatchEvents(
 		return err
 	}
 	b.Events = append(b.Events, events...)
+	b.HomeGoals = uint8(decodedHomeMatchLog[2])
+	b.VisitorGoals = uint8(decodedVisitorMatchLog[2])
+	b.HomeTeam.TrainingPoints = uint16(decodedHomeMatchLog[3])
+	b.VisitorTeam.TrainingPoints = uint16(decodedVisitorMatchLog[3])
+	b.HomeTeamSumSkills = uint32(decodedHomeMatchLog[0])
+	b.VisitorTeamSumSkills = uint32(decodedVisitorMatchLog[0])
 	return nil
 }
 
