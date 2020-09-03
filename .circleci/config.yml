@@ -287,42 +287,52 @@ workflows:
   build_and_test:
     jobs:
       - dashboard:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*/
       - gamelayer:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*/
       - truffle_core:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*/
       - synchronizer:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*/
       - go1:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*/
       - universe-api:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*
       - relay-actions:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*/
       - market-notary:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*/
       - deployment-test:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /.*/
       - dockerization-development:
+          docker-password: DOCKER_PASSWD
           filters:
            branches:
               only:
@@ -336,6 +346,7 @@ workflows:
             - universe-api
             - dashboard
       - dockerization-production:
+          docker-password: DOCKER_PASSWD
           filters:
             tags:
               only: /[0-9]+\.[0-9]+\.[0-9]+(.+)?/
