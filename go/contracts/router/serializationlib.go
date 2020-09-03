@@ -458,10 +458,10 @@ func EncodeMatchEvents(
 
 func DecodeMatchEvents(eventsLog *big.Int, nRounds uint) (
 	[]uint,
-	[]uint,
+	[]bool,
 	[]uint,
 	[]bool,
-	[]bool,
+	[]uint,
 	error,
 ) {
 	var teamThatAttacks []uint
@@ -475,33 +475,68 @@ func DecodeMatchEvents(eventsLog *big.Int, nRounds uint) (
 	for r := uint(0); r < nRounds; r++ {
 		in, err = GetTeamThatAttacks(eventsLog, r)
 		if err != nil {
-			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+			return teamThatAttacks, managesToShoot, shooter, isGoal, assister, err
 		}
 		teamThatAttacks = append(teamThatAttacks, in)
 
 		in, err = GetShooter(eventsLog, r)
 		if err != nil {
-			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+			return teamThatAttacks, managesToShoot, shooter, isGoal, assister, err
 		}
 		shooter = append(shooter, in)
 
 		in, err = GetAssister(eventsLog, r)
 		if err != nil {
-			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+			return teamThatAttacks, managesToShoot, shooter, isGoal, assister, err
 		}
 		assister = append(assister, in)
 
 		bo, err = GetIsGoal(eventsLog, r)
 		if err != nil {
-			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+			return teamThatAttacks, managesToShoot, shooter, isGoal, assister, err
 		}
 		isGoal = append(isGoal, bo)
 
 		bo, err = GetManagesToShoot(eventsLog, r)
 		if err != nil {
-			return teamThatAttacks, shooter, assister, isGoal, managesToShoot, err
+			return teamThatAttacks, managesToShoot, shooter, isGoal, assister, err
 		}
 		managesToShoot = append(managesToShoot, bo)
 	}
-	return teamThatAttacks, shooter, assister, isGoal, managesToShoot, nil
+	return teamThatAttacks, managesToShoot, shooter, isGoal, assister, nil
+}
+
+func SerializeEventsFromPlayHalf(
+	matchEvents []*big.Int,
+) (*big.Int, error) {
+	eventsLog := big.NewInt(0)
+	var err error
+	if !(len(matchEvents)%5 == 0) {
+		return eventsLog, errors.New("the length of matchEvents should be a multiple of 5")
+	}
+	nRounds := uint(len(matchEvents) / 5)
+	for round := uint(0); round < nRounds; round++ {
+		eventsLog, err = SetTeamThatAttacks(eventsLog, round, uint(matchEvents[2+5*round].Int64()))
+		if err != nil {
+			return eventsLog, err
+		}
+		eventsLog, err = SetManagesToShoot(eventsLog, round, equals(matchEvents[3+5*round], 1))
+		if err != nil {
+			return eventsLog, err
+		}
+		eventsLog, err = SetShooter(eventsLog, round, uint(matchEvents[4+5*round].Int64()))
+		if err != nil {
+			return eventsLog, err
+		}
+		eventsLog, err = SetIsGoal(eventsLog, round, equals(matchEvents[5+5*round], 1))
+		if err != nil {
+			return eventsLog, err
+		}
+		eventsLog, err = SetAssister(eventsLog, round, uint(matchEvents[6+5*round].Int64()))
+		if err != nil {
+			return eventsLog, err
+		}
+
+	}
+	return eventsLog, nil
 }
