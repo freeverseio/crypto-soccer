@@ -18,7 +18,8 @@ HomeTeamSumSkills: (uint32) 54956,
 VisitorTeamSumSkills: (uint32) 54967,
 State: (storage.MatchState) (len=3) "end",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(2780316225565730373218158004995074391537)
 },
 StartTime: (*big.Int)(1790899200),
 HomeTeam: (engine.Team) {
@@ -1687,7 +1688,8 @@ HomeTeamSumSkills: (uint32) 54956,
 VisitorTeamSumSkills: (uint32) 54967,
 State: (storage.MatchState) (len=3) "end",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(3848683313827403864175502293163640358577)
 },
 StartTime: (*big.Int)(1790899200),
 HomeTeam: (engine.Team) {

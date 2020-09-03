@@ -47,6 +47,7 @@
 	"State": "begin",
 	"StateExtra": "",
 	"StartEpoch": 0,
+	"SerializedEvents": 0,
 	"StartTime": 1790899200,
 	"HomeTeam": {
 		"TeamID": "0",

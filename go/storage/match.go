@@ -28,13 +28,14 @@ type Match struct {
 	HomeTeamID           *big.Int
 	VisitorTeamID        *big.Int
 	Seed                 [32]byte
-	HomeGoals            uint8
-	VisitorGoals         uint8
-	HomeTeamSumSkills    uint32
-	VisitorTeamSumSkills uint32
+	HomeGoals            uint8  // to remove
+	VisitorGoals         uint8  // to remove
+	HomeTeamSumSkills    uint32 // to remove
+	VisitorTeamSumSkills uint32 // to remove
 	State                MatchState
 	StateExtra           string
 	StartEpoch           int64
+	SerializedEvents     *big.Int
 }
 
 type MatchStorageService interface {

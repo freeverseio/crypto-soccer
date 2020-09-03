@@ -9,6 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/contracts/router"
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"github.com/pkg/errors"
@@ -34,6 +35,7 @@ func NewMatch() *Match {
 	mp.HomeTeam = *NewTeam()
 	mp.VisitorTeam = *NewTeam()
 	mp.State = storage.MatchBegin
+	mp.SerializedEvents = big.NewInt(0)
 	return &mp
 }
 
@@ -345,6 +347,7 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 		// no events returned, no need to process them. Just log
 		log.Warningf("GAME CANCELLED!!!! Play2ndHalfAndEvolve: Solidity code returned error code: %v", BCError)
 	} else {
+		// there is no need to do this when we stop storing deserialized stuff
 		if err = b.processMatchEvents(
 			contracts,
 			logsAndEvents[:],
@@ -357,6 +360,12 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 	b.VisitorTeam.SetSkills(contracts, newSkills[1])
 	b.HomeTeam.MatchLog = logsAndEvents[0].String()
 	b.VisitorTeam.MatchLog = logsAndEvents[1].String()
+
+	serializedEvents, err := router.SerializeEventsFromPlayHalf(logsAndEvents[2:])
+	if err != nil {
+		return err
+	}
+	b.SerializedEvents = serializedEvents
 	b.updateStats()
 	return nil
 }
@@ -370,8 +379,6 @@ func (b *Match) processMatchEvents(
 	logsAndEvents []*big.Int,
 	is2ndHalf bool,
 ) error {
-	// serializedEvents := serializedEvents()
-
 	decodedHomeMatchLog, err := contracts.Utils.FullDecodeMatchLog(&bind.CallOpts{}, logsAndEvents[0], is2ndHalf)
 	if err != nil {
 		return errors.Wrap(err, "failed decoding home match log")

@@ -97,7 +97,8 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
             if (err > 0) return cancelHalf(skills, false, err);
         }
 
-        return (skills, serializeEvents(matchLogsAndEvents), 0);
+        return (skills, matchLogsAndEvents, 0);
+        // return (skills, serializeEvents(matchLogsAndEvents), 0);
     }
     
     
@@ -158,7 +159,8 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
 
-        return (skills, serializeEvents(matchLogsAndEvents), 0);
+        return (skills, matchLogsAndEvents, 0);
+        // return (skills, serializeEvents(matchLogsAndEvents), 0);
     }
 
     function getBotTactics() public pure returns(uint256) { 
@@ -213,11 +215,6 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
         return (skills, matchLogsAndEvents, error);
     }
 
-    /// for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
-    function serializeEvents(uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents) public pure returns (uint256[2+5*ROUNDS_PER_MATCH] memory) {
-        return matchLogsAndEvents;
-    }
-
     // /// for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
     // function serializeEvents(uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents) public pure returns (uint256[2+5*ROUNDS_PER_MATCH] memory) {
     //     uint256 serializedEvents;
@@ -231,8 +228,8 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
     //     uint256[2+5*ROUNDS_PER_MATCH] memory serializedMatchLogAndEvents;
     //     serializedMatchLogAndEvents[0] = matchLogsAndEvents[0];
     //     serializedMatchLogAndEvents[1] = matchLogsAndEvents[1];
-    //     serializedMatchLogAndEvents[2] = serializedEvents;
-    //     serializedMatchLogAndEvents[3] = 2; // this is the flag that shows that events are now serialized (otherise it'd be 0/1)
+    //     serializedMatchLogAndEvents[2] = 2; // this is the flag that shows that events are now serialized (otherise it'd be 0/1)
+    //     serializedMatchLogAndEvents[3] = serializedEvents; 
     // }
 
 }

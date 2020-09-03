@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 )
 
@@ -341,11 +342,13 @@ func GetTeamThatAttacks(eventsLog *big.Int, round uint) (uint, error) {
 func SetShooter(eventsLog *big.Int, round uint, player uint) (*big.Int, error) {
 	N_ROUNDS := uint(12)
 	MAX_PLAYER := uint(15)
+	META_PLAYER := uint(100)
+
 	if !(round < N_ROUNDS) {
 		return eventsLog, errors.New("round is too large")
 	}
-	if !(player < MAX_PLAYER) {
-		return eventsLog, errors.New("player is too large")
+	if (player > MAX_PLAYER) && (player != META_PLAYER) {
+		return eventsLog, errors.New("player is too large: " + fmt.Sprint(player))
 	}
 	return setValAtPos(eventsLog, player, 11*round+1, big.NewInt(15)), nil
 }
@@ -361,11 +364,13 @@ func GetShooter(eventsLog *big.Int, round uint) (uint, error) {
 func SetAssister(eventsLog *big.Int, round uint, player uint) (*big.Int, error) {
 	N_ROUNDS := uint(12)
 	MAX_PLAYER := uint(15)
+	META_PLAYER := uint(100)
+
 	if !(round < N_ROUNDS) {
 		return eventsLog, errors.New("round is too large")
 	}
-	if !(player < MAX_PLAYER) {
-		return eventsLog, errors.New("player is too large")
+	if (player > MAX_PLAYER) && (player != META_PLAYER) {
+		return eventsLog, errors.New("player is too large: " + fmt.Sprint(player))
 	}
 	return setValAtPos(eventsLog, player, 11*round+6, big.NewInt(15)), nil
 }
@@ -509,6 +514,12 @@ func DecodeMatchEvents(eventsLog *big.Int, nRounds uint) (
 func SerializeEventsFromPlayHalf(
 	matchEvents []*big.Int,
 ) (*big.Int, error) {
+	// // In the future, when we enable serialization directly from Solidity, the following "if" will be executed
+	isAlreadyCompressed := equals(matchEvents[0], 2)
+	if isAlreadyCompressed {
+		return matchEvents[1], nil
+	}
+
 	eventsLog := big.NewInt(0)
 	var err error
 	if !(len(matchEvents)%5 == 0) {
