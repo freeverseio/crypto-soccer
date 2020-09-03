@@ -34,8 +34,8 @@ contract('EncodingIDs', (accounts) => {
     it('encoding of TZ and country in teamId and playerId', async () =>  {
         N_ROUNDS = 12;
         teamThatAttacks = Array.from(new Array(N_ROUNDS), (x,i) => i%2);
-        shooter = Array.from(new Array(N_ROUNDS), (x,i) => 15-i%5);
-        assister = Array.from(new Array(N_ROUNDS), (x,i) => 15-i%4);
+        shooter = Array.from(new Array(N_ROUNDS), (x,i) => 14-i%5);
+        assister = Array.from(new Array(N_ROUNDS), (x,i) => 14-i%4);
         isGoal = Array.from(new Array(N_ROUNDS), (x,i) => i%2 == 0);
         managesToShoot = Array.from(new Array(N_ROUNDS), (x,i) => i%2 == 1);
 
@@ -54,7 +54,7 @@ contract('EncodingIDs', (accounts) => {
             assert.equal(await encodingGet.getShooterFromEvents(encoded, r), shooter[r]);
             assert.equal(await encodingGet.getAssisterFromEvents(encoded, r), assister[r]);
         }
-        
+        assert.equal(encoded.toString(), "4666666260639135463621236164240476920764");
     });
 
 });

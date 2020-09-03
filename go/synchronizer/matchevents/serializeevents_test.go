@@ -48,10 +48,10 @@ func TestSerializationEventsArray(t *testing.T) {
 
 	for r := uint(0); r < N_ROUNDS; r++ {
 		teamThatAttacks = append(teamThatAttacks, r%2)
-		shooter = append(shooter, 14-r%3)
+		shooter = append(shooter, 14-r%5)
 		assister = append(assister, 14-r%4)
-		isGoal = append(isGoal, r%2 == 1)
-		managesToShoot = append(managesToShoot, r%2 == 0)
+		isGoal = append(isGoal, r%2 == 0)
+		managesToShoot = append(managesToShoot, r%2 == 1)
 	}
 	eventsLog := big.NewInt(0)
 	for r := uint(0); r < N_ROUNDS; r++ {
@@ -61,6 +61,8 @@ func TestSerializationEventsArray(t *testing.T) {
 		eventsLog, _ = router.SetIsGoal(eventsLog, r, isGoal[r])
 		eventsLog, _ = router.SetManagesToShoot(eventsLog, r, managesToShoot[r])
 	}
+	assert.Equal(t, eventsLog.String(), "4666666260639135463621236164240476920764")
+
 	for r := uint(0); r < N_ROUNDS; r++ {
 		val, _ := router.GetTeamThatAttacks(eventsLog, r)
 		assert.Equal(t, val, teamThatAttacks[r])
