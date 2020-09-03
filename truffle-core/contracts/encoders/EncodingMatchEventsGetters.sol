@@ -26,7 +26,7 @@ contract EncodingMatchEventsGetters  {
       return ((log >> (11*round + 5)) & 1) == 1;
    }
 
-   function getAssisterFromEvents(uint256 log, uint8 round) public pure returns (uint256) {
+   function getAssisterFromEvents(uint256 log, uint8 round) public pure returns (uint8) {
       return uint8((log >> (11*round + 6)) & 15);
    }
 
