@@ -63,7 +63,6 @@ func (b *AuthProxy) SetBackdoor(active bool) {
 var opid uint64
 
 func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
-
 	// check if token is well formed
 	auth := strings.TrimSpace(r.Header.Get("Authorization"))
 	if !strings.HasPrefix(auth, "Bearer") {
@@ -94,7 +93,7 @@ func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (st
 	}
 	isTransferFirstBot, err := MatchTransferFirstBotMutation(r)
 	if err != nil {
-		return "", errors.Wrap(err, "failed checking for the transfer first bot match")
+		log.Warningf("failed checking for the transfer first bot match %v", err)
 	}
 	if isTransferFirstBot {
 		if countTeams != 0 {
