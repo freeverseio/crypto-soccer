@@ -93,7 +93,7 @@ func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (st
 	}
 	isTransferFirstBot, err := MatchTransferFirstBotMutation(r)
 	if err != nil {
-		log.Warningf("failed checking for the transfer first bot match %v", err)
+		return "", errors.Wrap(err, "failed checking for the transfer first bot match")
 	}
 	if isTransferFirstBot {
 		if countTeams != 0 {
