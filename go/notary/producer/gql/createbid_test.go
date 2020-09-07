@@ -19,7 +19,7 @@ func TestCreateBidUnexistentAuction(t *testing.T) {
 	assert.Error(t, err, "signature must be 65 bytes long")
 }
 
-func TestCreateBid(t *testing.T) {
+func TestCreateBidSignerIsNotOwnerOfTargetTeam(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
@@ -39,7 +39,6 @@ func TestCreateBid(t *testing.T) {
 	in.TeamId = "274877906945"
 	in.Signature = "4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1c"
 
-	id, err := r.CreateBid(struct{ Input input.CreateBidInput }{in})
-	assert.NilError(t, err)
-	assert.Equal(t, string(id), "c0ad1683b9afe071d698763b7143e7cff7bcc661c7074497d870964dd58d9976")
+	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{in})
+	assert.Error(t, err, "signer is not the owner of teamId 274877906945")
 }
