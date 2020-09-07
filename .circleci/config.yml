@@ -146,7 +146,6 @@ jobs:
       # - run: cd go/testutils && go test ./...
       - run: cd go/names && go test ./...
       - run: cd go/universe && go test ./...
-      - run: cd go/complementarydata && go test ./...
   deployment-test:
     docker:
       - image: cimg/base:2020.01
@@ -287,42 +286,52 @@ workflows:
   build_and_test:
     jobs:
       - dashboard:
+          context: dockerhub
           filters:
             tags:
               only: /.*/
       - gamelayer:
+          context: dockerhub
           filters:
             tags:
               only: /.*/
       - truffle_core:
+          context: dockerhub
           filters:
             tags:
               only: /.*/
       - synchronizer:
+          context: dockerhub
           filters:
             tags:
               only: /.*/
       - go1:
+          context: dockerhub
           filters:
             tags:
               only: /.*/
       - universe-api:
+          context: dockerhub
           filters:
             tags:
               only: /.*
       - relay-actions:
+          context: dockerhub
           filters:
             tags:
               only: /.*/
       - market-notary:
+          context: dockerhub
           filters:
             tags:
               only: /.*/
       - deployment-test:
+          context: dockerhub
           filters:
             tags:
               only: /.*/
       - dockerization-development:
+          context: dockerhub
           filters:
            branches:
               only:
@@ -336,6 +345,7 @@ workflows:
             - universe-api
             - dashboard
       - dockerization-production:
+          context: dockerhub
           filters:
             tags:
               only: /[0-9]+\.[0-9]+\.[0-9]+(.+)?/
@@ -357,4 +367,5 @@ workflows:
           requires:
             - dockerization-development
             - truffle_core
+
 
