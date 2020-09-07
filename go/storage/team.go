@@ -186,6 +186,26 @@ func TeamsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countr
 	return teams, nil
 }
 
+func TeamIdsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]string, error) {
+	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var teamsIds []string
+	for rows.Next() {
+		var teamID string
+		err = rows.Scan(
+			&teamID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		teamsIds = append(teamsIds, teamID)
+	}
+	return teamsIds, nil
+}
+
 func TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, teamIdxInLeague uint32) (*big.Int, error) {
 	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND team_idx_in_league = $4);", timezoneIdx, countryIdx, leagueIdx, teamIdxInLeague)
 	if err != nil {
