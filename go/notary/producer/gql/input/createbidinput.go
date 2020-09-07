@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
@@ -60,4 +61,32 @@ func (b CreateBidInput) VerifySignature(contracts contracts.Contracts) (bool, er
 		return false, err
 	}
 	return helper.VerifySignature(hash, sign)
+}
+
+func (b CreateBidInput) SignerAddress(contracts contracts.Contracts) (common.Address, error) {
+	hash, err := b.Hash(contracts)
+	if err != nil {
+		return common.Address{}, err
+	}
+	sign, err := hex.DecodeString(b.Signature)
+	if err != nil {
+		return common.Address{}, err
+	}
+	return helper.AddressFromSignature(hash, sign)
+}
+
+func (b CreateBidInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
+	signerAddress, err := b.SignerAddress(contracts)
+	if err != nil {
+		return false, err
+	}
+	teamId, _ := new(big.Int).SetString(b.TeamId, 10)
+	if teamId == nil {
+		return false, errors.New("invalid teamd")
+	}
+	owner, err := contracts.Market.GetOwnerTeam(&bind.CallOpts{}, teamId)
+	if err != nil {
+		return false, err
+	}
+	return signerAddress == owner, nil
 }
