@@ -30,6 +30,11 @@ type LeagueProcessor struct {
 	useractionsPublisher useractions.UserActionsPublishService
 }
 
+type TeamWithState struct {
+	storage.Team
+	TeamState [25]*big.Int
+}
+
 func NewLeagueProcessor(
 	contracts *contracts.Contracts,
 	useractionsPublisher useractions.UserActionsPublishService,
@@ -282,11 +287,6 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	return nil
 }
 
-type TeamWithState struct {
-	storage.Team
-	teamState [25]*big.Int
-}
-
 func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]TeamWithState, []storage.Team, error) {
 	teamIds, err := storage.TeamIdsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
@@ -322,11 +322,11 @@ func (b *LeagueProcessor) GenerateOrgMap(teamsWithState []TeamWithState, teams [
 	})
 	for position, team := range teams {
 		if !team.IsBot() {
-			log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamsWithState[position].teamState)
+			log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamsWithState[position].TeamState)
 			teamID, _ := new(big.Int).SetString(team.TeamID, 10)
 			team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 				&bind.CallOpts{},
-				teamsWithState[position].teamState,
+				teamsWithState[position].TeamState,
 				uint8(position),
 				team.PrevPerfPoints,
 				teamID,
