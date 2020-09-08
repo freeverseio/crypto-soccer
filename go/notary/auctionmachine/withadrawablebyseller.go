@@ -28,6 +28,8 @@ func (b *AuctionMachine) ProcessWithdrawableBySeller(market marketpay.MarketPayS
 	switch order.Status {
 	case "PENDING_VALIDATE":
 		b.SetState(storage.AuctionValidation, "")
+	case "PUBLISHED":
+		log.Debugf("Auction[%v|%v] order in state %v", b.auction.ID, b.auction.State, order.Status)
 	default:
 		log.Errorf("Auction[%v|%v] order in unknown state %v", b.auction.ID, b.auction.State, order.Status)
 	}
