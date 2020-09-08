@@ -23,9 +23,11 @@ func TestConsumerNew(t *testing.T) {
 		postgres.NewStorageService(db),
 	)
 	assert.NilError(t, err)
+	in := struct{}{}
+	assert.Error(t, c.Consume(in), "unknown event: {}")
 }
 
-func TestConsumerConsumeUnknownEvent(t *testing.T) {
+func TestConsumerConsumeCreateOffer(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	c, err := consumer.New(
 		ch,
@@ -36,24 +38,6 @@ func TestConsumerConsumeUnknownEvent(t *testing.T) {
 		namesdb,
 		false,
 		postgres.NewStorageService(db),
-	)
-	assert.NilError(t, err)
-	in := struct{}{}
-	assert.Error(t, c.Consume(in), "unknown event: {}")
-}
-
-func TestConsumerConsumeCreateOffer(t *testing.T) {
-	ch := make(chan interface{}, 10)
-	c, err := consumer.New(
-		ch,
-		v1.NewMockMarketPay(),
-		db,
-		*bc.Contracts,
-		bc.Owner,
-		googleCredentials,
-		namesdb,
-		false,
-		service,
 	)
 	assert.NilError(t, err)
 	in := input.CreateOfferInput{}
