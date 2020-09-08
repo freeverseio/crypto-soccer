@@ -14,9 +14,9 @@ import "./MarketView.sol";
  @dev until some of the 25 are sold or retired.
  @dev The serialized structs appearing here are "AcquisitonConstraints" and "AuctionData"
  @dev Both use validUntil (in seconds) which uses 32b, hence allowing 2**32/(3600*24*365) = 136 years after 1970
- @dev AuctionData encodes, (8b of zeroes, 184b for sellerHiddenPrice, 32b for freezeTime, 32b for validUntil 
- @dev   where sellerHiddenPrice has the leftmost 72 bit killed, 
- @dev   => validUntil + (now << 32) (uint256(sellerHiddenPrice) << 72)) >> 8;
+ @dev AuctionData encodes, (8b of zeroes, 216b for sellerDigest, 32b for validUntil 
+ @dev   where sellerDigest has the leftmost 40 bit killed, 
+ @dev   => validUntil + (uint256(sellerDigest) << 40)) >> 8;
  @dev "Constraints" can be added to teams that participate in "Top Critical" championships, where
  @dev they want to make sure that they can't change their teams too much since the moment they sign up.
  @dev AcquisitonConstraints: serializes the number of trades left (4b), and until when, for the 6 possible constraints
@@ -115,8 +115,9 @@ contract Market is MarketView {
         external 
         onlyMarket 
     {
-        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreezePlayer requirements not met");
-        _playerIdToAuctionData[playerId] = validUntil + (now << 32) + ((uint256(sellerHiddenPrice) << 72) >> 8);
+        (bool OK, bytes32 sellerDigest) = areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV);
+        require(OK, "FreezePlayer requirements not met");
+        _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerDigest) << 40) >> 8);
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
@@ -153,8 +154,7 @@ contract Market is MarketView {
     }
     
     function completePlayerAuction(
-        bytes32 sellerHiddenPrice,
-        uint256 validUntil,
+        bytes32 sellerDigest,
         uint256 playerId,
         bytes32 buyerHiddenPrice,
         uint256 buyerTeamId,
@@ -166,14 +166,13 @@ contract Market is MarketView {
         onlyMarket 
     {
         require(areCompletePlayerAuctionRequirementsOK(
-            sellerHiddenPrice,
-            validUntil,
-            playerId,
-            buyerHiddenPrice,
-            buyerTeamId,
-            sig,
-            sigV,
-            isOffer2StartAuction)
+                sellerDigest,
+                playerId,
+                buyerHiddenPrice,
+                buyerTeamId,
+                sig,
+                sigV
+            )
             , "requirements to complete auction are not met"    
         );
         transferPlayer(playerId, buyerTeamId);
@@ -193,33 +192,30 @@ contract Market is MarketView {
         external 
         onlyMarket 
     {
-        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreezeTeam requirements not met");
-        _teamIdToAuctionData[teamId] = validUntil + (now << 32) + ((uint256(sellerHiddenPrice) << 72) >> 8);
+        (bool OK, bytes32 sellerDigest) = areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV);
+        require(OK, "FreezeTeam requirements not met");
+        _teamIdToAuctionData[teamId] = validUntil + (now << 32) + ((uint256(sellerDigest) << 72) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
     }
 
     function completeTeamAuction(
-        bytes32 sellerHiddenPrice,
-        uint256 validUntil,
+        bytes32 sellerDigest,
         uint256 teamId,
         bytes32 buyerHiddenPrice,
         bytes32[2] calldata sig,
         uint8 sigV,
-        address buyerAddress,
-        bool isOffer2StartAuction
+        address buyerAddress
     ) 
         external 
         onlyMarket 
     {
         bool ok = areCompleteTeamAuctionRequirementsOK(
-            sellerHiddenPrice,
-            validUntil,
+            sellerDigest,
             teamId,
             buyerHiddenPrice,
             sig,
             sigV,
-            buyerAddress,
-            isOffer2StartAuction
+            buyerAddress
         );
         require(ok, "requirements to complete auction are not met");
         transferTeam(teamId, buyerAddress);
