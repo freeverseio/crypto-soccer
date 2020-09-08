@@ -369,4 +369,3 @@ workflows:
             - dockerization-development
             - truffle_core
 
-
