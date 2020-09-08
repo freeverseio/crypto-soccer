@@ -27,7 +27,7 @@ func TestConsumerNew(t *testing.T) {
 	assert.Error(t, c.Consume(in), "unknown event: {}")
 }
 
-func TestConsumerConsumeUnknownEvent(t *testing.T) {{
+func TestConsumerConsumeUnknownEvent(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	c, err := consumer.New(
 		ch,
