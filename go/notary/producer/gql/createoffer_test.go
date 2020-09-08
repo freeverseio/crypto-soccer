@@ -109,7 +109,7 @@ func TestCreateOffer1(t *testing.T) {
 	inBid.Signature = inOffer.Signature
 
 	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
-	assert.NilError(t, err)
+	assert.Error(t, err, "signer is not the owner of teamId 274877906945")
 }
 
 func TestCreateOfferSameOwner(t *testing.T) {
