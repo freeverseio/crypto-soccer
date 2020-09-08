@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/freeverseio/crypto-soccer/go/marketpay/mock"
 	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -83,4 +84,17 @@ func TestPayingWithBid(t *testing.T) {
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionPaying)
+}
+
+func TestPayingFailing(t *testing.T) {
+	service := mock.MarketPayMock{}
+	auction := storage.NewAuction()
+	auction.State = storage.AuctionPaying
+	bid := storage.NewBid()
+	bid.State = storage.BidAccepted
+	bids := []storage.Bid{*bid}
+	offer := storage.NewOffer()
+	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
+	assert.NilError(t, err)
+	assert.NilError(t, m.ProcessPaying(&service))
 }
