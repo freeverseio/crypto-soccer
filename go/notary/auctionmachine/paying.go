@@ -43,7 +43,8 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error 
 
 	if bid.State == storage.BidPaid {
 		if err := b.transferAuction(*bid); err != nil {
-			return err
+			b.SetState(storage.AuctionWithdrableByBuyer, err.Error())
+			return nil
 		}
 		order, err := market.GetOrder(bid.PaymentID)
 		if err != nil {
@@ -122,7 +123,6 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		isOffer,
 	)
 	if err != nil {
-		b.SetState(storage.AuctionWithdrableByBuyer, err.Error())
 		return errors.Wrapf(err, "CompletePlayerAuction auctionHiddenPrice: %v, validUntil %v, playerId, %v, bidHiddenPrice: 0x%v, teamId: %v, sig[0]: 0x%v, sig[1]: 0x%v , sigV: %v, isOffer: %v",
 			auctionHiddenPrice.Hex(),
 			big.NewInt(validUntil),
@@ -137,11 +137,9 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	}
 	receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
 	if err != nil {
-		b.SetState(storage.AuctionWithdrableByBuyer, "Timeout waiting for the receipt")
 		return errors.Wrap(err, "WaitReceipt")
 	}
 	if receipt.Status == 0 {
-		b.SetState(storage.AuctionWithdrableByBuyer, "Mined but receipt.Status == 0")
 		return errors.New("Status != 0")
 	}
 	return nil
