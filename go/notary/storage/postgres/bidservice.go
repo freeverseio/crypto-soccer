@@ -67,7 +67,7 @@ func (b *Tx) Bids(ID string) ([]storage.Bid, error) {
 
 func (b *Tx) BidInsert(bid storage.Bid) error {
 	log.Debugf("[DBMS] + create Bid %v", b)
-	_, err := tx.Exec(`INSERT INTO bids 
+	_, err := b.tx.Exec(`INSERT INTO bids 
 			(auction_id, 
 			extra_price,
 			rnd, 
@@ -95,7 +95,7 @@ func (b *Tx) BidInsert(bid storage.Bid) error {
 
 func (b *Tx) BidUpdate(bid storage.Bid) error {
 	log.Debugf("[DBMS] + update Bid %v", b)
-	_, err := tx.Exec(`UPDATE bids SET 
+	_, err := b.tx.Exec(`UPDATE bids SET 
 		state=$1, 
 		state_extra=$2,
 		payment_id=$3,
