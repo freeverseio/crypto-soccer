@@ -11,7 +11,6 @@ type StorageService struct {
 	db *sql.DB
 }
 
-
 type Tx struct {
 	tx *sql.Tx
 }
