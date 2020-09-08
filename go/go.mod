@@ -36,6 +36,7 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/api v0.5.1-0.20190526001144-9f3a303b451f
 	google.golang.org/appengine v1.6.5
+	gopkg.in/src-d/go-log.v1 v1.0.1
 	gopkg.in/yaml.v2 v2.2.5
 	gotest.tools v2.2.0+incompatible
 )

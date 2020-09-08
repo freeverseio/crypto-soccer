@@ -69,6 +69,7 @@
 		"TrainingPoints": 0,
 		"Tactic": "340596594427581673436941882753025",
 		"MatchLog": "0",
+		"IsZombie": false,
 		"Players": [
 			{
 				"PlayerId": null,
@@ -682,6 +683,7 @@
 		"TrainingPoints": 0,
 		"Tactic": "340596594427581673436941882753025",
 		"MatchLog": "0",
+		"IsZombie": false,
 		"Players": [
 			{
 				"PlayerId": null,

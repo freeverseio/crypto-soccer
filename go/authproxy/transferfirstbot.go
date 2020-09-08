@@ -28,6 +28,7 @@ func MatchTransferFirstBotMutation(r *http.Request) (bool, error) {
 		return false, nil
 	}
 	body, err := ioutil.ReadAll(r.Body)
+
 	if err != nil {
 		return false, errors.Wrap(err, "failed reading the body")
 	}
@@ -37,7 +38,7 @@ func MatchTransferFirstBotMutation(r *http.Request) (bool, error) {
 	}
 	err = json.Unmarshal(body, &query)
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, string(body))
 	}
 	return IsTransferFirstBotMutation(query.Data)
 }

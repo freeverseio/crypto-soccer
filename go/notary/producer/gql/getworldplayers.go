@@ -50,7 +50,7 @@ func (b *Resolver) createWorldPlayersBatch(service storage.StorageService, teamI
 		return nil, err
 	}
 
-	tx, err := b.service.DB().Begin()
+	tx, err := b.service.Begin()
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (b *Resolver) createWorldPlayersBatch(service storage.StorageService, teamI
 
 	sellablePlayers := []*worldplayer.WorldPlayer{}
 	for i := range players {
-		orders, err := service.PlayStorePendingOrdersByPlayerId(tx, string(players[i].PlayerId()))
+		orders, err := tx.PlayStorePendingOrdersByPlayerId(string(players[i].PlayerId()))
 		if err != nil {
 			return nil, err
 		}

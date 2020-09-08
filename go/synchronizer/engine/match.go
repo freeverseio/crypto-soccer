@@ -154,6 +154,8 @@ func (b *Match) play1stHalfV1(contracts contracts.Contracts) error {
 		return errors.Wrap(err, "failed calculating visitor assignedTP")
 	}
 	var BCError uint8
+	isHomeBotOrZombie := b.HomeTeam.IsBot() || b.HomeTeam.IsZombie
+	isVisitorBotOrZombie := b.VisitorTeam.IsBot() || b.VisitorTeam.IsZombie
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -162,7 +164,7 @@ func (b *Match) play1stHalfV1(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, isHomeBotOrZombie, isVisitorBotOrZombie},
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	if err != nil {
@@ -226,6 +228,8 @@ func (b *Match) play1stHalfV2(contracts contracts.Contracts) error {
 		visitorAssignedTP = big.NewInt(0)
 	}
 	var BCError uint8
+	isHomeBotOrZombie := b.HomeTeam.IsBot() || b.HomeTeam.IsZombie
+	isVisitorBotOrZombie := b.VisitorTeam.IsBot() || b.VisitorTeam.IsZombie
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -234,7 +238,7 @@ func (b *Match) play1stHalfV2(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, isHomeBotOrZombie, isVisitorBotOrZombie},
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	// We have two types of possible errors returned:
@@ -288,6 +292,8 @@ func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	var BCError uint8
+	isHomeBotOrZombie := b.HomeTeam.IsBot() || b.HomeTeam.IsZombie
+	isVisitorBotOrZombie := b.VisitorTeam.IsBot() || b.VisitorTeam.IsZombie
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -296,7 +302,7 @@ func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, isHomeBotOrZombie, isVisitorBotOrZombie},
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
@@ -363,6 +369,8 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	var BCError uint8
+	isHomeBotOrZombie := b.HomeTeam.IsBot() || b.HomeTeam.IsZombie
+	isVisitorBotOrZombie := b.VisitorTeam.IsBot() || b.VisitorTeam.IsZombie
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -371,7 +379,7 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, isHomeBotOrZombie, isVisitorBotOrZombie},
 	)
 	// We have two types of possible errors returned:
 	// - Virtual Machine errors (never expected), err != nil => halt

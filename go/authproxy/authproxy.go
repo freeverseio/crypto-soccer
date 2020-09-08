@@ -63,7 +63,6 @@ func (b *AuthProxy) SetBackdoor(active bool) {
 var opid uint64
 
 func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
-
 	// check if token is well formed
 	auth := strings.TrimSpace(r.Header.Get("Authorization"))
 	if !strings.HasPrefix(auth, "Bearer") {

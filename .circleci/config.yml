@@ -89,6 +89,7 @@ jobs:
     steps:
       - checkout
       - run: cd nodejs-gamelayer && npm ci
+      - run: cd nodejs-gamelayer && npm run lint
       - run: cd nodejs-gamelayer && npm run test
   truffle_core:
     executor: freeverse

@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -9,10 +8,9 @@ import (
 )
 
 func ProcessOffers(
-	service storage.StorageService,
-	tx *sql.Tx,
+	service storage.Tx,
 ) error {
-	offers, err := service.OfferPendingOffers(tx)
+	offers, err := service.OfferPendingOffers()
 	if err != nil {
 		return err
 	}
@@ -20,7 +18,6 @@ func ProcessOffers(
 	for _, offer := range offers {
 		if err := processOffer(
 			service,
-			tx,
 			offer,
 		); err != nil {
 			log.Error(err)
@@ -30,14 +27,13 @@ func ProcessOffers(
 }
 
 func processOffer(
-	service storage.StorageService,
-	tx *sql.Tx,
+	service storage.Tx,
 	offer storage.Offer,
 ) error {
 	if offer.ValidUntil < time.Now().Unix() {
 		offer.State = storage.OfferEnded
 		offer.StateExtra = "Offer expired"
-		if err := service.OfferUpdate(tx, offer); err != nil {
+		if err := service.OfferUpdate(offer); err != nil {
 			return err
 		}
 	}

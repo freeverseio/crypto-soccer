@@ -25,5 +25,14 @@ func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) 
 		return id, errors.New("Invalid signature")
 	}
 
-	return id, b.push(args.Input)
+	tx, err := b.service.Begin()
+	if err != nil {
+		return id, err
+	}
+	if err := tx.AuctionCancel(string(args.Input.AuctionId)); err != nil {
+		tx.Rollback()
+		return id, err
+	}
+
+	return id, tx.Commit()
 }
