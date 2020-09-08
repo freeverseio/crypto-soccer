@@ -23,8 +23,6 @@ func TestConsumerNew(t *testing.T) {
 		postgres.NewStorageService(db),
 	)
 	assert.NilError(t, err)
-	in := struct{}{}
-	assert.Error(t, c.Consume(in), "unknown event: {}")
 }
 
 func TestConsumerConsumeUnknownEvent(t *testing.T) {
