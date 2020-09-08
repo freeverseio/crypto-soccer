@@ -2,6 +2,7 @@ package gql
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -27,6 +28,14 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql
 	}
 	if !isValid {
 		return graphql.ID(id), errors.New("Invalid signature")
+	}
+
+	isOwner, err := args.Input.IsSignerOwner(b.contracts)
+	if err != nil {
+		return id, err
+	}
+	if !isOwner {
+		return id, fmt.Errorf("signer is not the owner of teamId %v", args.Input.TeamId)
 	}
 
 	tx, err := b.service.Begin()
