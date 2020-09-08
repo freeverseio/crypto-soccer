@@ -2,7 +2,6 @@ package gql
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
