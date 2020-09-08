@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/marketpay/mock"
 	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
@@ -87,14 +88,38 @@ func TestPayingWithBid(t *testing.T) {
 }
 
 func TestPayingFailing(t *testing.T) {
-	service := mock.MarketPayMock{}
+	service := mock.MarketPayMock{
+		CreateOrderFunc: func(name string, value string) (*marketpay.Order, error) {
+			return &marketpay.Order{
+				Status: "PUBLISHED",
+			}, nil
+		},
+		GetOrderFunc: func(hash string) (*marketpay.Order, error) {
+			return &marketpay.Order{}, nil
+		},
+		IsPaidFunc: func(order marketpay.Order) bool {
+			return true
+		},
+	}
+
 	auction := storage.NewAuction()
+	auction.ID = "ciao"
 	auction.State = storage.AuctionPaying
+	auction.PlayerID = "43253543"
+	auction.CurrencyID = 1
+	auction.Price = 20
+	auction.Rnd = 44
+	auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
 	bid := storage.NewBid()
-	bid.State = storage.BidAccepted
+	bid.AuctionID = auction.ID
+	bid.State = storage.BidPaying
+	bid.PaymentDeadline = time.Now().Unix() + 10000
+	bid.TeamID = "4343"
+	bid.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
 	bids := []storage.Bid{*bid}
 	offer := storage.NewOffer()
 	m, err := auctionmachine.New(*auction, bids, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(&service))
+	assert.Equal(t, m.State(), storage.AuctionWithdrableByBuyer)
 }
