@@ -66,7 +66,7 @@ func main() {
 		*timeout,
 		*gracetime,
 		serverService,
-		domain,
+		*domain,
 	)
 	ap.SetDebug(*debug)
 	ap.SetBackdoor(*backdoor)
