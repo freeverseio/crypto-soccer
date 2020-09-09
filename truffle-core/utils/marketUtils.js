@@ -169,7 +169,7 @@ async function transferTeamViaAuction(contractOwner, market, sellerTeamId, selle
   sellerRnd = 42321;
   extraPrice = 332;
   buyerRnd = 1243523;
-  ifOffer = false;
+  isOffer = false;
   auctionDurationAfterOfferIsAccepted = isOffer ? 3600*24 : 0;
 
   now = await market.getBlockchainNowTime().should.be.fulfilled;
@@ -308,7 +308,7 @@ async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUnti
     sigSeller.r,
     sigSeller.s
   ];
-  ifOffer = auctionDurationAfterOfferIsAccepted > 0;
+  isOffer = auctionDurationAfterOfferIsAccepted > 0;
   if (isOffer) {
     tx = await market.freezeTeamViaOffer(
       sellerHiddenPrice,
