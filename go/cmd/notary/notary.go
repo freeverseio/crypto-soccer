@@ -100,7 +100,7 @@ func main() {
 
 		ch := make(chan interface{}, *bufferSize)
 
-		storageService := postgres.NewStorageService(marketdb)
+		storageService := postgres.NewStorageHistoryService(marketdb)
 
 		go gql.ListenAndServe(
 			ch,
