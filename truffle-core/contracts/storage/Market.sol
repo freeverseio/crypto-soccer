@@ -159,8 +159,7 @@ contract Market is MarketView {
         bytes32 buyerHiddenPrice,
         uint256 buyerTeamId,
         bytes32[2] calldata sig,
-        uint8 sigV,
-        bool isOffer2StartAuction
+        uint8 sigV
      ) 
         external 
         onlyMarket 

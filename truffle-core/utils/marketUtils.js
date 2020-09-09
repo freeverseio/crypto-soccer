@@ -45,7 +45,7 @@ async function signDismissPlayerMTx(validUntil, asssetId, sellerAccount) {
 
 
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerTeamId, buyerAccount) {
+async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, buyerTeamId, buyerAccount) {
   const sellerHiddenPrice = concatHash(
     ['uint8', 'uint256', 'uint256'],
     [currencyId, price, sellerRnd]
@@ -60,11 +60,11 @@ async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd,
   )
   const sellerTxHash = getMessageHash(sellerTxMsg);
   buyerTxMsg = concatHash(
-      ['bytes32', 'bytes32', 'uint256', 'bool'],
-      [sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction]
+      ['bytes32', 'bytes32', 'uint256'],
+      [sellerTxHash, buyerHiddenPrice, buyerTeamId]
   )
   const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  return sigBuyer;
+  return [sigBuyer, sellerTxHash];
 }
 
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
@@ -251,7 +251,7 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
   tx = await completePlayerAuction(
     contractOwner, 
     currencyId, price,  sellerRnd, validUntil, playerId, 
-    extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    extraPrice, buyerRnd, buyerTeamId, buyerAccount
   ).should.be.fulfilled;
   let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
   finalOwner.should.be.equal(buyerAccount.address);
@@ -260,7 +260,7 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
 async function completePlayerAuction(
   contractOwner, 
   currencyId, price, sellerRnd, validUntil, playerId, 
-  extraPrice, buyerRnd, isOffer2StartAuctionSig, isOffer2StartAuctionBC, buyerTeamId, buyerAccount
+  extraPrice, buyerRnd, buyerTeamId, buyerAccount
 ) {
   // Add some amount to the price where seller started, and a rnd to obfuscate it
   const buyerHiddenPrice = concatHash(
@@ -268,7 +268,7 @@ async function completePlayerAuction(
     [extraPrice, buyerRnd]
   );
 
-  let sigBuyer = await signAgreeToBuyPlayerMTx(
+  var {0: sigBuyer, 1: sellerTxHash} = await signAgreeToBuyPlayerMTx(
     currencyId,
     price,
     extraPrice,
@@ -276,7 +276,6 @@ async function completePlayerAuction(
     buyerRnd,
     validUntil,
     playerId.toString(),
-    isOffer2StartAuctionSig,
     buyerTeamId.toString(),
     buyerAccount
   ).should.be.fulfilled;
@@ -291,20 +290,13 @@ async function completePlayerAuction(
     sigBuyer.s
   ];
 
-  const sellerHiddenPrice = concatHash(
-    ["uint8", "uint256", "uint256"],
-    [currencyId, price, sellerRnd]
-  );
-
   tx = await market.completePlayerAuction(
-    sellerHiddenPrice,
-    validUntil,
+    sellerTxHash,
     playerId.toString(),
     buyerHiddenPrice,
     buyerTeamId.toString(),
     sigBuyerRS,
     sigBuyer.v,
-    isOffer2StartAuctionBC,
     {from: contractOwner}
   ).should.be.fulfilled;
 
