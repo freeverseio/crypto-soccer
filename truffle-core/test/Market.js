@@ -151,15 +151,15 @@ contract("Market", accounts => {
   it("normal players, go above 25, and get rid of player", async () => {
     playerIds = [];
     nPlayersToBuy = 9;
-    auctionTimeAfterOfferIsAccepted = 0;
+    auctionDurationAfterOfferIsAccepted = 0;
     for (i = 0; i < nPlayersToBuy; i++) {
       playerIds.push(playerId.add(web3.utils.toBN(i))); 
-      tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, auctionTimeAfterOfferIsAccepted, playerIds[i], sellerAccount).should.be.fulfilled;
+      tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, auctionDurationAfterOfferIsAccepted, playerIds[i], sellerAccount).should.be.fulfilled;
     }
     for (i = 0; i < nPlayersToBuy; i++) {
       tx = await marketUtils.completePlayerAuction(
         owners.market, 
-        currencyId, price,  sellerRnd, validUntil, auctionTimeAfterOfferIsAccepted, playerIds[i], 
+        currencyId, price,  sellerRnd, validUntil, auctionDurationAfterOfferIsAccepted, playerIds[i], 
         extraPrice, buyerRnd, buyerTeamId, buyerAccount
       ).should.be.fulfilled;
     }
@@ -538,7 +538,7 @@ contract("Market", accounts => {
   // *************************************************************************
    
   it('players: deterministic sign (values used in market.notary test)', async () => {
-    auctionTimeAfterOfferIsAccepted = 0;
+    auctionDurationAfterOfferIsAccepted = 0;
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
     sellerTeamPlayerIds = await market.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
@@ -559,7 +559,7 @@ contract("Market", accounts => {
 
     const sellerHiddenPrice = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
     sellerHiddenPrice.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-    const message = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, playerIdToSell, validUntil, auctionTimeAfterOfferIsAccepted).should.be.fulfilled;
+    const message = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, playerIdToSell, validUntil, auctionDurationAfterOfferIsAccepted).should.be.fulfilled;
     const sigSeller = sellerAccount.sign(message);
 
     message.should.be.equal('0xb323734126607840676946c05a8f307fa0bda39e8f63b546ccc9f8c0742cebac');
@@ -577,7 +577,7 @@ contract("Market", accounts => {
   });
 
   it('teams: deterministic sign (values used in market.notary test)', async () => {
-    auctionTimeAfterOfferIsAccepted = 0;
+    auctionDurationAfterOfferIsAccepted = 0;
     sellerTeamId.should.be.bignumber.equal('274877906944');
 
     const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
@@ -592,7 +592,7 @@ contract("Market", accounts => {
 
     const sellerHiddenPrice = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
     sellerHiddenPrice.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-    const message = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, sellerTeamId, validUntil, auctionTimeAfterOfferIsAccepted).should.be.fulfilled;
+    const message = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, sellerTeamId, validUntil, auctionDurationAfterOfferIsAccepted).should.be.fulfilled;
     const sigSeller = sellerAccount.sign(message);
 
     message.should.be.equal('0xb323734126607840676946c05a8f307fa0bda39e8f63b546ccc9f8c0742cebac');

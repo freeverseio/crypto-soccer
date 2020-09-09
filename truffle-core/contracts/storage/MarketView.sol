@@ -57,14 +57,14 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         bytes32[2] memory sig,
         uint8 sigV,
         uint32 validUntil,
-        uint32 auctionTimeAfterOfferIsAccepted
+        uint32 auctionDurationAfterOfferIsAccepted
     ) 
         public 
         view 
         returns (bool ok, bytes32 msgHash)
     {
         address teamOwner = getOwnerTeam(teamId);
-        msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, teamId, validUntil, auctionTimeAfterOfferIsAccepted));
+        msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, teamId, validUntil, auctionDurationAfterOfferIsAccepted));
         ok =    /// check validUntil has not expired
                 (now < validUntil) &&
                 /// check player is not already frozen
@@ -145,14 +145,14 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
 
     /// ValidUntil:
     /// - if it is a simple put for sale => it just means deadline for freezing the player
-    /// - if it is an offer, validUntil = (auctionTimeAfterOfferIsAccepted << 32) + validUntil
+    /// - if it is an offer, validUntil = (auctionDurationAfterOfferIsAccepted << 32) + validUntil
     function areFreezePlayerRequirementsOK(
         bytes32 sellerHiddenPrice,
         uint256 playerId,
         bytes32[2] memory sig,
         uint8 sigV,
         uint32 validUntil,
-        uint32 auctionTimeAfterOfferIsAccepted
+        uint32 auctionDurationAfterOfferIsAccepted
     ) 
         public 
         view 
@@ -171,7 +171,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
             (validUntil < now + MAX_VALID_UNTIL);
         
         /// If this is an academy player, just check that the msg arrives from the owner of the Academy.
-        bytes32 sellerDigest = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, playerId, validUntil, auctionTimeAfterOfferIsAccepted));
+        bytes32 sellerDigest = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, playerId, validUntil, auctionDurationAfterOfferIsAccepted));
         if (currentTeamId == ACADEMY_TEAM) { 
             return(areOK && (msg.sender == _market), sellerDigest); 
         }
@@ -198,8 +198,8 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         return keccak256(abi.encode(extraPrice, rnd));
     }
 
-    function buildPutAssetForSaleTxMsg(bytes32 hiddenPrice, uint256 assetId, uint32 validUntil, uint32 auctionTimeAfterOfferIsAccepted) public pure returns (bytes32) {
-        return keccak256(abi.encode(hiddenPrice, assetId, validUntil, auctionTimeAfterOfferIsAccepted));
+    function buildPutAssetForSaleTxMsg(bytes32 hiddenPrice, uint256 assetId, uint32 validUntil, uint32 auctionDurationAfterOfferIsAccepted) public pure returns (bytes32) {
+        return keccak256(abi.encode(hiddenPrice, assetId, validUntil, auctionDurationAfterOfferIsAccepted));
     }
 
     function buildOfferToBuyTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 playerId, uint256 buyerTeamId) public pure returns (bytes32) {
