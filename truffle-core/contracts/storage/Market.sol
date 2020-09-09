@@ -105,6 +105,9 @@ contract Market is MarketView {
     
     /// Freezes the player, preventing it from trading in any other market for "validUntil" time.
     /// This is suposed to be triggered only when a valid buyer has been found.
+    /// ValidUntil:
+    /// - if it is a simple put for sale => it just means deadline for freezing the player
+    /// - if it is an offer, validUntil = (auctionTimeAfterOfferIsAccepted << 32) + validUntil
     function freezePlayer(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -117,7 +120,12 @@ contract Market is MarketView {
     {
         (bool OK, bytes32 sellerDigest) = areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV);
         require(OK, "FreezePlayer requirements not met");
-        _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerDigest) << 40) >> 8);
+        uint256 auctionTimeAfterOfferIsAccepted = (validUntil >> 32);
+        if (auctionTimeAfterOfferIsAccepted == 0) {
+            _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerDigest) << 40) >> 8);
+        } else {
+            _playerIdToAuctionData[playerId] = (now + auctionTimeAfterOfferIsAccepted) + ((uint256(sellerDigest) << 40) >> 8);
+        }
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
@@ -193,7 +201,12 @@ contract Market is MarketView {
     {
         (bool OK, bytes32 sellerDigest) = areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV);
         require(OK, "FreezeTeam requirements not met");
-        _teamIdToAuctionData[teamId] = validUntil + (now << 32) + ((uint256(sellerDigest) << 72) >> 8);
+        uint256 auctionTimeAfterOfferIsAccepted = (validUntil >> 32);
+        if (auctionTimeAfterOfferIsAccepted == 0) {
+            _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerDigest) << 40) >> 8);
+        } else {
+            _teamIdToAuctionData[teamId] = (now + auctionTimeAfterOfferIsAccepted) + ((uint256(sellerDigest) << 40) >> 8);
+        }
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
     }
 

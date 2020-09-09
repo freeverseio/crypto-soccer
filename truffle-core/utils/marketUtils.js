@@ -83,11 +83,11 @@ async function signAgreeToBuyTeamMTx(currencyId, price, extraPrice, sellerRnd, b
   )
   const sellerTxHash = getMessageHash(sellerTxMsg);
   buyerTxMsg = concatHash(
-      ['bytes32', 'bytes32', 'bool'],
-      [sellerTxHash, buyerHiddenPrice, isOffer2StartAuction]
+      ['bytes32', 'bytes32'],
+      [sellerTxHash, buyerHiddenPrice]
   )
   const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  return sigBuyer;
+  return [sigBuyer, sellerTxHash];
 }
 
 
@@ -359,7 +359,7 @@ async function completeTeamAuction(
     ["uint256", "uint256"],
     [extraPrice, buyerRnd]
   );
-  let sigBuyer = await signAgreeToBuyTeamMTx(
+  var {0: sigBuyer, 1: sellerTxHash} = await signAgreeToBuyTeamMTx(
     currencyId,
     price,
     extraPrice,
@@ -381,21 +381,13 @@ async function completeTeamAuction(
     sigBuyer.s
   ];
 
-  // The correctness of the seller message can also be checked in the BC:
-  const sellerHiddenPrice = concatHash(
-    ["uint8", "uint256", "uint256"],
-    [currencyId, price, sellerRnd]
-  );
-  
   tx = await market.completeTeamAuction(
-    sellerHiddenPrice,
-    validUntil,
+    sellerTxHash,
     sellerTeamId.toNumber(),
     buyerHiddenPrice,
     sigBuyerRS,
     sigBuyer.v,
     recoveredBuyerAddr,
-    isOffer2StartAuctionBC,
     {from: contractOwner}
   ).should.be.fulfilled;
   return tx;

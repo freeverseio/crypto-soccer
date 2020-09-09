@@ -64,6 +64,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     {
         address teamOwner = getOwnerTeam(teamId);
         msgHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, teamId));
+        validUntil = validUntil & MASK_32B; 
         ok =    /// check validUntil has not expired
                 (now < validUntil) &&
                 /// check player is not already frozen
@@ -142,6 +143,9 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 isPlayerFrozenFiat(playerId);
     }
 
+    /// ValidUntil:
+    /// - if it is a simple put for sale => it just means deadline for freezing the player
+    /// - if it is an offer, validUntil = (auctionTimeAfterOfferIsAccepted << 32) + validUntil
     function areFreezePlayerRequirementsOK(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -156,6 +160,8 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         uint256 state = getPlayerState(playerId);
         require(!getIsInTransitFromState(state), "cannot freeze a player that is in transit");
         uint256 currentTeamId = getCurrentTeamIdFromPlayerState(state);
+        // 
+        validUntil = validUntil & MASK_32B; 
         bool areOK = 
             /// check validUntil has not expired
             (now < validUntil) &&
@@ -233,13 +239,13 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     }
 
     function isPlayerFrozenFiat(uint256 playerId) public view returns (bool) {
-        return (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
+        return (_playerIdToAuctionData[playerId] & MASK_32B) + POST_AUCTION_TIME > now;
     }
 
     function isTeamFrozen(uint256 teamId) public view returns (bool) {
         if (teamId == ACADEMY_TEAM) return false;
         require(wasTeamCreatedVirtually(teamId), "unexistent team");
-        return (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
+        return (_teamIdToAuctionData[teamId] & MASK_32B) + POST_AUCTION_TIME > now;
     }
     
     function getOwnerTeam(uint256 teamId) public view returns(address) {
@@ -334,6 +340,10 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     function isPlayerDismissed(uint256 playerId) public view returns(bool) {
         uint256 state = getPlayerState(playerId);
         return getCurrentShirtNum(state) == PLAYERS_PER_TEAM_MAX;
+    }
+
+    function getAuctionEndTime(uint256 auctionData) public pure returns (uint256) {
+        return (auctionData & MASK_32B);
     }
 
 }
