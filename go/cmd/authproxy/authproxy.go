@@ -37,6 +37,7 @@ import (
 func main() {
 
 	gqlurl := flag.String("gqlurl", "http://dev1.gorengine.com:4000/graphql", "graphql url")
+	domain := flag.String("domain", "*.goalrevolution.live", "domain")
 	serviceport := flag.Int("serviceport", 8080, "service port")
 	metricsport := flag.Int("metricsport", 4000, "metrics port")
 	debug := flag.Bool("debug", false, "debug")
@@ -48,6 +49,7 @@ func main() {
 
 	log.Info("-timeout=", *timeout)
 	log.Info("-gqlurl=", *gqlurl)
+	log.Info("-domain=", *domain)
 	log.Info("-serviceport=", *serviceport)
 	log.Info("-metricsport=", *metricsport)
 	log.Info("-debug=", *debug)
@@ -64,6 +66,7 @@ func main() {
 		*timeout,
 		*gracetime,
 		serverService,
+		domain,
 	)
 	ap.SetDebug(*debug)
 	ap.SetBackdoor(*backdoor)

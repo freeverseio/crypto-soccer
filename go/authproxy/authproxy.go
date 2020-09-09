@@ -33,6 +33,7 @@ type AuthProxy struct {
 	cache         *gocache.Cache
 	gracetime     int
 	debug         bool
+	domain        string
 	serverService ServerService
 }
 
@@ -40,6 +41,7 @@ func New(
 	timeout int,
 	gracetime int,
 	serverService ServerService,
+	domain string,
 
 ) *AuthProxy {
 	return &AuthProxy{
@@ -49,6 +51,7 @@ func New(
 		// default expiration time of 5 minutes, and purges expired items every 2 minute
 		cache:         gocache.New(5*time.Minute, 2*time.Minute),
 		serverService: serverService,
+		domain:        domain,
 	}
 }
 
@@ -122,6 +125,12 @@ func (b *AuthProxy) Gqlproxy(w http.ResponseWriter, r *http.Request) {
 		// metricsOpsFailed.Inc()
 		log.Error("[", op, "] ", err)
 		http.Error(w, fmt.Sprintf("Internal error traceid:%v", op), http.StatusInternalServerError)
+	}
+
+	//enable cors
+	w.Header().Set("Access-Control-Allow-Origin", b.domain)
+	if (*r).Method == "OPTIONS" {
+		return
 	}
 
 	// set the maximum time for the whole operation
