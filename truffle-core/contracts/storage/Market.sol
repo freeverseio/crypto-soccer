@@ -129,14 +129,14 @@ contract Market is MarketView {
         uint256 playerId,
         bytes32[2] calldata sig,
         uint8 sigV,
-        uint32 validUntil,
+        uint32 offerValidUntil,
         uint32 auctionTimeAfterOfferIsAccepted
     ) 
         external 
         onlyMarket 
     {
         require(auctionTimeAfterOfferIsAccepted > MIN_AUCTION_TIME, "auctionTimeAfterOfferIsAccepted not large enough");
-        (bool OK, bytes32 sellerDigest) = areFreezePlayerRequirementsOK(sellerHiddenPrice, playerId, sig, sigV, validUntil, auctionTimeAfterOfferIsAccepted);
+        (bool OK, bytes32 sellerDigest) = areFreezePlayerRequirementsOK(sellerHiddenPrice, playerId, sig, sigV, offerValidUntil, auctionTimeAfterOfferIsAccepted);
         require(OK, "FreezePlayer via offer requirements not met");
         _playerIdToAuctionData[playerId] = (now + uint256(auctionTimeAfterOfferIsAccepted)) + ((uint256(sellerDigest) << 40) >> 8);
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
@@ -223,14 +223,14 @@ contract Market is MarketView {
         uint256 teamId,
         bytes32[2] calldata sig,
         uint8 sigV,
-        uint32 validUntil,
+        uint32 offerValidUntil,
         uint32 auctionTimeAfterOfferIsAccepted
     ) 
         external 
         onlyMarket 
     {
         require(auctionTimeAfterOfferIsAccepted > MIN_AUCTION_TIME, "auctionTimeAfterOfferIsAccepted not large enough");
-        (bool OK, bytes32 sellerDigest) = areFreezeTeamRequirementsOK(sellerHiddenPrice, teamId, sig, sigV, validUntil, auctionTimeAfterOfferIsAccepted);
+        (bool OK, bytes32 sellerDigest) = areFreezeTeamRequirementsOK(sellerHiddenPrice, teamId, sig, sigV, offerValidUntil, auctionTimeAfterOfferIsAccepted);
         require(OK, "FreezeTeam via put for sale requirements not met");
         _teamIdToAuctionData[teamId] = (now + uint256(auctionTimeAfterOfferIsAccepted)) + ((uint256(sellerDigest) << 40) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
