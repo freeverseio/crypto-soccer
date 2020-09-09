@@ -1381,21 +1381,6 @@ contract("Market", accounts => {
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId, {from: owners.market}).should.be.fulfilled;
   });
   
-  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroAuctionDurationAfterOfferIsAccepted, playerId, sellerAccount).should.be.fulfilled;
-    isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
-    isPlayerFrozen.should.be.equal(true);
-    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
-    });
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil, zeroAuctionDurationAfterOfferIsAccepted, playerId, 
-      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
-    ).should.be.rejected;
-  });
-  
-  
   // OTHER TESTS
   
   it("test accounts from truffle and web3", async () => {
@@ -1471,20 +1456,20 @@ contract("Market", accounts => {
 
     const sellerHiddenPrice = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
     sellerHiddenPrice.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-    const message = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, sellerTeamId).should.be.fulfilled;
-
-    message.should.be.equal('0x909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d');
+    const message = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, sellerTeamId, validUntil, auctionDurationAfterOfferIsAccepted).should.be.fulfilled;
     const sigSeller = sellerAccount.sign(message);
-    sigSeller.messageHash.should.be.equal('0x55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a');
-    sigSeller.signature.should.be.equal('0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c');
+
+    message.should.be.equal('0x737e8bd5377c9b0b26ccc87631d4438a3355363ab9c849c94f46bcf1b4243b5b');
+    sigSeller.messageHash.should.be.equal('0x8ac26a392cbc547778df6d0eef4acd2ea78f5528ea9463bf6176f4324bd0d2eb');
+    sigSeller.signature.should.be.equal('0x83f884c11855534a2de0e8cf7ccdd875d8b5d3b7cbdc1e7722df40f81d53934f5652acf5cfd5616242ee84b2279b95e96f533cf2bc9513f68fc3ba98257f8a9b1c');
 
     const prefixed = await market.prefixed(message).should.be.fulfilled;
-    const isOffer2StartAuction = true;
-    const buyerMsg = await market.buildAgreeToBuyTeamTxMsg(prefixed, buyerHiddenPrice, isOffer2StartAuction).should.be.fulfilled;
-    buyerMsg.should.be.equal('0xdd3d39b424073a7a74a333d3b35bc2b0adea64c4a51c47c4669d190111e7b5e5');
+    const buyerMsg = await market.buildAgreeToBuyTeamTxMsg(prefixed, buyerHiddenPrice).should.be.fulfilled;
     const sigBuyer = buyerAccount.sign(buyerMsg);
-    sigBuyer.messageHash.should.be.equal('0xeb0feff7cbf76cd8f6a6bb07b2d92305e1978c66a157b7738e249689682942f7');
-    sigBuyer.signature.should.be.equal('0x7c6b08dfff430bd5dd1785463846f3961f3844b9b4d1cccc941ad2d5441b4496556ffc4518f9be660e2c34ba3d74ef67665af727c25eae6758695354b36462f71b');
+
+    buyerMsg.should.be.equal('0x868d0109fa221f66605af26a0abe541ac3b5f1e64cfb37e7df04c47aa84d1a63');
+    sigBuyer.messageHash.should.be.equal('0xc54953b7ff1e4746aa3c2b89f11d78f22e47d0e56ca46154972748828d3677e8');
+    sigBuyer.signature.should.be.equal('0xa012060fba96cc84e2193fc4e2bc6407e59f076c255cbc2f45714dabfb7609560905966b5d3f32c3ac96670ccb4b50a2d8e583a12be20834aaa89d4a1cc965b11c');
   });
 
 });
