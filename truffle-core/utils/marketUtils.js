@@ -244,12 +244,13 @@ async function transferTeamViaAuction(contractOwner, market, sellerTeamId, selle
 
 
 
-async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTeamId, isOffer, sellerAccount, buyerAccount) {
+async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTeamId, sellerAccount, buyerAccount) {
   currencyId = 1;
   price = 41234;
   sellerRnd = 42321;
   extraPrice = 332;
   buyerRnd = 1243523;
+  isOffer = false;
   auctionTimeAfterOfferIsAccepted = isOffer ? 3600*24 : 0;
 
   now = await market.getBlockchainNowTime().should.be.fulfilled;
