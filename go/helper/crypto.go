@@ -4,7 +4,9 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
@@ -76,4 +78,55 @@ func RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
 	vect, err = hex.DecodeString(signature[128:130])
 	v = vect[0]
 	return r, s, v, err
+}
+
+func ComputeSellPlayerDigest(
+	currencyId uint8,
+	price *big.Int,
+	rnd *big.Int,
+	validUntil uint32,
+	auctionDurationAfterOfferIsAccepted uint32,
+	playerId *big.Int,
+) (common.Hash, error) {
+	var hash [32]byte
+	sellHiddenPrice, err := signer.HashPrivateMsg(
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	uint32Ty, _ := abi.NewType("uint32", "uint32", nil)
+	arguments := abi.Arguments{
+		{
+			Type: bytes32Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: uint32Ty,
+		},
+		{
+			Type: uint32Ty,
+		},
+	}
+
+	bytes, err := arguments.Pack(
+		sellHiddenPrice,
+		playerId,
+		validUntil,
+		auctionDurationAfterOfferIsAccepted,
+	)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
+
+	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
+	return crypto.Keccak256Hash([]byte(ss)), nil
 }

@@ -110,7 +110,7 @@ func HashSellMessage(
 
 func HashBidMessage2(
 	market *market.Market,
-	auctionHashMsg [32]byte,
+	sellerDigest [32]byte,
 	extraPrice *big.Int,
 	bidRnd *big.Int,
 	teamID *big.Int,
@@ -127,10 +127,9 @@ func HashBidMessage2(
 	}
 	hash, err = market.BuildAgreeToBuyPlayerTxMsg(
 		&bind.CallOpts{},
-		auctionHashMsg,
+		sellerDigest,
 		bidHiddenPrice,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		return hash, err
@@ -181,7 +180,6 @@ func HashBidMessage(
 		auctionHashMsg,
 		bidHiddenPrice,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		return hash, err

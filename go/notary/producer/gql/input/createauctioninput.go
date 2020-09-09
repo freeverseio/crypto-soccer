@@ -32,6 +32,7 @@ func (b CreateAuctionInput) ID() (graphql.ID, error) {
 	return graphql.ID(hash.String()[2:]), nil
 }
 
+// sellerDigest = prefixed(hash(sellerHiddenPrice, playerId, validUntil, auctionDurationAfterOfferIsAccepted));
 func (b CreateAuctionInput) Hash() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
@@ -41,11 +42,13 @@ func (b CreateAuctionInput) Hash() (common.Hash, error) {
 	if err != nil {
 		return common.Hash{}, err
 	}
+	auctionDurationAfterOfferIsAccepted := uint32(0)
 	hash, err := signer.HashSellMessage(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
 		validUntil,
+		auctionDurationAfterOfferIsAccepted,
 		playerId,
 	)
 	return hash, err
