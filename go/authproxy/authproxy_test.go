@@ -92,10 +92,11 @@ func TestA(t *testing.T) {
 	timeout := 10
 	gracetime := 10
 	domain := "*"
+	allowHeaders := "Authorization, Content-Type"
 
 	t.Run("no authorization", func(t *testing.T) {
 		serverService := authproxy.MockServerService{}
-		ap := authproxy.New(timeout, gracetime, serverService, domain)
+		ap := authproxy.New(timeout, gracetime, serverService, domain, allowHeaders)
 
 		req, err := http.NewRequest("GET", "/health-check", nil)
 		assert.Nil(t, err)
@@ -109,7 +110,7 @@ func TestA(t *testing.T) {
 
 	t.Run("malformed token", func(t *testing.T) {
 		serverService := authproxy.MockServerService{}
-		ap := authproxy.New(timeout, gracetime, serverService, domain)
+		ap := authproxy.New(timeout, gracetime, serverService, domain, allowHeaders)
 
 		req, err := http.NewRequest("GET", "/health-check", nil)
 		assert.Nil(t, err)
@@ -124,7 +125,7 @@ func TestA(t *testing.T) {
 
 	t.Run("no backdoor and godtoken token", func(t *testing.T) {
 		serverService := authproxy.MockServerService{}
-		ap := authproxy.New(timeout, gracetime, serverService, domain)
+		ap := authproxy.New(timeout, gracetime, serverService, domain, allowHeaders)
 
 		req, err := http.NewRequest("GET", "/health-check", nil)
 		assert.Nil(t, err)
@@ -143,7 +144,7 @@ func TestA(t *testing.T) {
 		serverService.NewRequestFn = func() (*http.Request, error) {
 			return httptest.NewRequest(http.MethodGet, "/health-check", http.NoBody), nil
 		}
-		ap := authproxy.New(timeout, gracetime, serverService, domain)
+		ap := authproxy.New(timeout, gracetime, serverService, domain, allowHeaders)
 		ap.SetBackdoor(true)
 
 		req, err := http.NewRequest("GET", "/health-check", nil)
@@ -159,7 +160,7 @@ func TestA(t *testing.T) {
 
 	t.Run("options method", func(t *testing.T) {
 		serverService := authproxy.MockServerService{}
-		ap := authproxy.New(timeout, gracetime, serverService, domain)
+		ap := authproxy.New(timeout, gracetime, serverService, domain, allowHeaders)
 
 		req, err := http.NewRequest("OPTIONS", "/health-check", nil)
 		req.Header.Set("Origin", "https://k8s.gorengine.com")
