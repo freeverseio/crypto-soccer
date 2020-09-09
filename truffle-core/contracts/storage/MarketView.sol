@@ -102,7 +102,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         /// the next line will verify that the teamId is the same that was used by the seller to sign
         bytes32 msgHash = prefixed(buildAgreeToBuyTeamTxMsg(sellerDigest, buyerHiddenPrice));
         require(buyerAddress != address(0),"aa");
-        require(buyerAddress != recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s]),"aaa");
+        require(buyerAddress == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s]),"aaa");
         require((uint256(sellerDigest) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32),"aaaa");
 
         ok =    /// check buyerAddress is legit and signature is valid
@@ -133,6 +133,12 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(sellerDigest, buyerHiddenPrice, buyerTeamId));
         address buyerTeamOwner = getOwnerTeam(buyerTeamId);
         uint256 state = getPlayerState(playerId);
+
+        require(buyerTeamOwner != NULL_ADDR,"a");
+        require(buyerTeamId != getCurrentTeamIdFromPlayerState(state),"aa");
+        require(buyerTeamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s]),"aaa");
+        require((uint256(sellerDigest) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32),"aaaa");
+
         ok =    /// cannot be a player in transit
                 !getIsInTransitFromState(state) &&
                 /// origin and target teams must be different

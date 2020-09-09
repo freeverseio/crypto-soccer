@@ -241,10 +241,10 @@ async function completePlayerAuction(
   var {0: sigBuyer, 1: sellerTxHash} = await signAgreeToBuyPlayerMTx(
     currencyId,
     price,
-    extraPrice,
-    sellerRnd,
-    buyerRnd,
-    validUntil,
+    extraPrice, // 0
+    sellerRnd, // offererRnd
+    buyerRnd,  // 0
+    validUntil, // offerValidUntil
     auctionDurationAfterOfferIsAccepted,
     playerId.toString(),
     buyerTeamId.toString(),
