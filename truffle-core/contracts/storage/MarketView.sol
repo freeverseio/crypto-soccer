@@ -101,6 +101,10 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     {
         /// the next line will verify that the teamId is the same that was used by the seller to sign
         bytes32 msgHash = prefixed(buildAgreeToBuyTeamTxMsg(sellerDigest, buyerHiddenPrice));
+        require(buyerAddress != address(0),"aa");
+        require(buyerAddress != recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s]),"aaa");
+        require((uint256(sellerDigest) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32),"aaaa");
+
         ok =    /// check buyerAddress is legit and signature is valid
                 (buyerAddress != address(0)) && 
                 /// /// check that they signed what they input data says they signed:

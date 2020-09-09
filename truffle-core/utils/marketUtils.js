@@ -93,12 +93,12 @@ async function freezeAcademyPlayer(contractOwner, currencyId, price, sellerRnd, 
   let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
   isPlayerFrozen.should.be.equal(false);
 
-  tx = await market.freezePlayer(
+  tx = await market.freezePlayerViaPutForSale(
     sellerHiddenPrice,
-    validUntil,
     playerId,
     sigSellerRS = [NULL_BYTES32, NULL_BYTES32],
     sigSellerV = 0,
+    validUntil,
     {from: contractOwner}
   ).should.be.fulfilled;
   return tx;
