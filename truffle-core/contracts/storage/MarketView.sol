@@ -181,7 +181,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
             (validUntil < now + MAX_VALID_UNTIL);
         
         /// If this is an academy player, just check that the msg arrives from the owner of the Academy.
-        bytes32 sellerDigest = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, playerId, validUntil, auctionDurationAfterOfferIsAccepted));
+        bytes32 sellerDigest = computeSellPlayerDigest(sellerHiddenPrice, playerId, validUntil, auctionDurationAfterOfferIsAccepted);
         if (currentTeamId == ACADEMY_TEAM) { 
             return(areOK && (msg.sender == _market), sellerDigest); 
         }
@@ -197,6 +197,19 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
             (prevOwner == recoverAddr(sellerDigest, sigV, sig[IDX_r], sig[IDX_s]));
 
         return(areOK, sellerDigest);   
+    }
+
+    function computeSellPlayerDigest(
+        bytes32 sellerHiddenPrice, 
+        uint256 playerId, 
+        uint32 validUntil, 
+        uint32 auctionDurationAfterOfferIsAccepted
+    ) 
+        public 
+        pure 
+        returns(bytes32) 
+    {
+        return prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, playerId, validUntil, auctionDurationAfterOfferIsAccepted));
     }
     
     /// this function is not used in the contract. It's only for external helps
