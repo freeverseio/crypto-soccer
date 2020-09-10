@@ -47,7 +47,7 @@ func TestCreateOffer1(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	inOffer := input.CreateOfferInput{}
-	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	inOffer.OfferValidUntil = strconv.FormatInt(offerValidUntil, 10)
 	inOffer.AuctionDurationAfterOfferIsAccepted = "3600"
 	inOffer.PlayerId = "274877906944"
 	inOffer.CurrencyId = 1
@@ -56,7 +56,7 @@ func TestCreateOffer1(t *testing.T) {
 	inOffer.BuyerTeamId = "274877906945"
 	teamId, _ := new(big.Int).SetString(inOffer.BuyerTeamId, 10)
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 32)
+	offerValidUntil, err := strconv.ParseInt(inOffer.OfferValidUntil, 10, 32)
 	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(inOffer.AuctionDurationAfterOfferIsAccepted, 10, 32)
 	dummyRnd := int64(0)
 	hashOffer, err := signer.HashBidMessage(
@@ -64,7 +64,7 @@ func TestCreateOffer1(t *testing.T) {
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
-		uint32(validUntil),
+		uint32(offerValidUntil),
 		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		big.NewInt(0),
@@ -86,13 +86,12 @@ func TestCreateOffer1(t *testing.T) {
 	in.Rnd = offererRnd
 	auctionId, err := in.ID()
 
-	validUntilAuction, err := strconv.ParseInt(in.ValidUntil, 10, 32)
-	assert.NilError(t, err)
-	hash, err := signer.HashSellMessage(
+	hash, err := signer.ComputeSellPlayerDigest(
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
-		validUntilAuction,
+		uint32(offerValidUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 	)
 
@@ -101,6 +100,7 @@ func TestCreateOffer1(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	_, err = r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
+	//TODO FIX TEST signer is not owner
 	assert.NilError(t, err)
 
 	inBid := input.CreateBidInput{}
@@ -132,28 +132,30 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	inOffer := input.CreateOfferInput{}
-	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	inOffer.OfferValidUntil = strconv.FormatInt(offerValidUntil, 10)
 	inOffer.PlayerId = "274877906944"
+	inOffer.AuctionDurationAfterOfferIsAccepted = "3600"
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = offererRnd
 	inOffer.BuyerTeamId = "274877906945"
 	teamId, _ := new(big.Int).SetString(inOffer.BuyerTeamId, 10)
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
+	validUntil, err := strconv.ParseInt(inOffer.OfferValidUntil, 10, 64)
 	dummyRnd := int64(0)
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(inOffer.AuctionDurationAfterOfferIsAccepted, 10, 32)
 
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		big.NewInt(0),
 		big.NewInt(dummyRnd),
 		teamId,
-		true,
 	)
 
 	assert.NilError(t, err)
@@ -195,26 +197,28 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	inOffer := input.CreateOfferInput{}
-	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	inOffer.OfferValidUntil = strconv.FormatInt(offerValidUntil, 10)
 	inOffer.PlayerId = "274877906944"
+	inOffer.AuctionDurationAfterOfferIsAccepted = "3600"
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
 	inOffer.Rnd = offererRnd
 	inOffer.BuyerTeamId = teamNotOwnedByOffered.String()
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
+	validUntil, err := strconv.ParseInt(inOffer.OfferValidUntil, 10, 64)
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(inOffer.AuctionDurationAfterOfferIsAccepted, 10, 32)
 	dummyRnd := int64(0)
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		big.NewInt(0),
 		big.NewInt(dummyRnd),
 		teamNotOwnedByOffered,
-		true,
 	)
 	assert.NilError(t, err)
 	signatureOffer, err := signer.Sign(hashOffer.Bytes(), offerer)
@@ -230,12 +234,12 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		big.NewInt(0),
 		big.NewInt(dummyRnd),
 		teamOwnedByOffered,
-		true,
 	)
 	assert.NilError(t, err)
 	signatureOffer, err = signer.Sign(hashOffer.Bytes(), offerer)
@@ -259,19 +263,20 @@ func TestCreateOfferExConsumer(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "999999999999"
+	in.OfferValidUntil = "2000000000"
 	in.PlayerId = "274877906940"
 	in.BuyerTeamId = "456678987944"
 	in.CurrencyId = 1
 	in.Price = 41234
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.Rnd = 4232
 	in.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	teamId, _ := new(big.Int).SetString(in.BuyerTeamId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 32)
+	validUntil, err := strconv.ParseInt(in.OfferValidUntil, 10, 32)
 	dummyRnd := big.NewInt(0)
 	offerExtraPrice := big.NewInt(0)
-	isOffer := true
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(in.AuctionDurationAfterOfferIsAccepted, 10, 32)
 	assert.NilError(t, err)
 	// an offer cannot be signed with non null extraPrice:
 	hash, err := signer.HashBidMessage(
@@ -279,12 +284,12 @@ func TestCreateOfferExConsumer(t *testing.T) {
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		big.NewInt(2),
 		dummyRnd,
 		teamId,
-		isOffer,
 	)
 	assert.Error(t, err, "offers must have zero extraPrice")
 	// an offer cannot be signed with non null bid.Rnd:
@@ -293,12 +298,12 @@ func TestCreateOfferExConsumer(t *testing.T) {
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		offerExtraPrice,
 		big.NewInt(2),
 		teamId,
-		isOffer,
 	)
 	assert.Error(t, err, "offers must have zero bidRnd")
 	// it should now work:
@@ -307,21 +312,21 @@ func TestCreateOfferExConsumer(t *testing.T) {
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		offerExtraPrice,
 		dummyRnd,
 		teamId,
-		isOffer,
 	)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x1563f70ce76787ea99b420ad637df3757b492c98cd5a774d7111c861453c270b")
+	assert.Equal(t, hash.Hex(), "0xf267303605d5830a9e84676ee347975885e8028c8bb96db34b485ccdcb5847a5")
 	assert.NilError(t, err)
 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(signature), "dbd05f0df6b470d071462ba49956eb472031de84509409823502decb119f2fb36cfb57d5d6f6de5f819731745a4f5533c1805065eebf1a7d56dc9bdced406b231c")
+	assert.Equal(t, hex.EncodeToString(signature), "eb0c4e7333029ffc3218fe7ed3cf6b820fb2595bd6398567255790b0d0506f4c6140ac60accf5a0659c8c5467f45dfb27612d165ba1eb5ed9c5a18958b656cdc1c")
 	in.Signature = hex.EncodeToString(signature)
 
 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{in})

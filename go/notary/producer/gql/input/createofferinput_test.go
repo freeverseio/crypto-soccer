@@ -26,9 +26,10 @@ func TestCreateOfferInputHash(t *testing.T) {
 	in.Price = 41234
 	in.Rnd = 42321
 	in.BuyerTeamId = "20"
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xad10a9049b75c277bbe800b39eab3c27a9ddbd38ec114c2c016ee2ec6f958377")
+	assert.Equal(t, hash.Hex(), "0x0bf3af350e12d847e9be42e8404e035f8d4ec27557c3157a2cb79ed22a0bf8a4")
 }
 
 func TestCreateOfferValidSignature(t *testing.T) {
@@ -39,6 +40,7 @@ func TestCreateOfferValidSignature(t *testing.T) {
 	in.Price = 41234
 	in.BuyerTeamId = "20"
 	in.Rnd = 42321
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	valid, err := in.VerifySignature(*bc.Contracts)
@@ -53,11 +55,12 @@ func TestCreateOfferSignerAddress(t *testing.T) {
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.BuyerTeamId = "20"
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.Rnd = 42321
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	address, err := in.SignerAddress(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, address.Hex(), "0x38540BCaa818e3303aB9d74E1945fC527A3d8463")
+	assert.Equal(t, address.Hex(), "0x2eA35fB768f3BB32074C14b14295F6476844dDC1")
 }
 
 func TestCreateOfferIsSignerOwner(t *testing.T) {
@@ -67,6 +70,7 @@ func TestCreateOfferIsSignerOwner(t *testing.T) {
 	in.CurrencyId = 1
 	in.BuyerTeamId = "20"
 	in.Price = 41234
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.Rnd = 42321
 
 	hash, err := in.Hash(*bc.Contracts)
@@ -86,6 +90,7 @@ func TestCreateOfferGetOwner(t *testing.T) {
 	in.CurrencyId = 1
 	in.BuyerTeamId = "20"
 	in.Price = 41234
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.Rnd = 42321
 
 	hash, err := in.Hash(*bc.Contracts)
@@ -222,6 +227,7 @@ func TestCreateOfferPlayerFrozenShouldFail(t *testing.T) {
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
 	in.BuyerTeamId = "20"
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.Price = 41234
 	in.Rnd = 42321
 
@@ -294,9 +300,10 @@ func TestCreateOfferInputHashBigIntPlayer(t *testing.T) {
 	in.PlayerId = "25723578238440869144533393071649442553899076447028039543423578"
 	in.CurrencyId = 1
 	in.Price = 41234
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.Rnd = 42321
 	in.BuyerTeamId = "20"
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x03892cbcf2b2ed94602fa91b185a2202dec2e178af2ce3a73f438eebf6b0874c")
+	assert.Equal(t, hash.Hex(), "0x4f1fab77a9694fdaeb18b3daed526767d63997bf54f102bd8315abaf27f04d23")
 }

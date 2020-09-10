@@ -18,7 +18,7 @@ func TestCreateBidInputHash(t *testing.T) {
 	auction.Rnd = 42321
 	auctionId, err := auction.ID()
 	assert.NilError(t, err)
-	assert.Equal(t, string(auctionId), "55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a")
+	assert.Equal(t, string(auctionId), "aa5d5b3de11b03fe9def7911646e0661ce335d423fc5c740b3db49b11b9f7604")
 
 	in := input.CreateBidInput{}
 	in.AuctionId = auctionId
@@ -28,12 +28,12 @@ func TestCreateBidInputHash(t *testing.T) {
 
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xc0ad1683b9afe071d698763b7143e7cff7bcc661c7074497d870964dd58d9976")
+	assert.Equal(t, hash.Hex(), "0x0dd3cc175ce499ed8845a45af76e875a54e036b638ba96e726143ff567c2b280")
 }
 
 func TestCreateBidInputSign(t *testing.T) {
 	auction := storage.NewAuction()
-	auction.ValidUntil = int64(2000000000)
+	auction.ValidUntil = uint32(2000000000)
 	auction.PlayerID = "274877906944"
 	auction.CurrencyID = 1
 	auction.Price = 41234

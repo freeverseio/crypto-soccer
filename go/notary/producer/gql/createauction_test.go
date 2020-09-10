@@ -89,7 +89,7 @@ func TestCreateAuctionReturnIDOfTheAuction(t *testing.T) {
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
-	in.AuctionDurationAfterOfferIsAccepted = "3600"
+	in.AuctionDurationAfterOfferIsAccepted = "0"
 	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -97,7 +97,7 @@ func TestCreateAuctionReturnIDOfTheAuction(t *testing.T) {
 
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 32)
-	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(in.ValidUntil, 10, 32)
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(in.AuctionDurationAfterOfferIsAccepted, 10, 32)
 
 	assert.NilError(t, err)
 	digest, err := signer.ComputeSellPlayerDigest(

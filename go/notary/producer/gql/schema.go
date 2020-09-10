@@ -51,7 +51,8 @@ const Schema = `
 		playerId: String!
 		currencyId: Int!
 		price: Int!
-		validUntil: String!
+		offerValidUntil: String!
+		auctionDurationAfterOfferIsAccepted: String!
 		rnd: Int!
 		buyerTeamId: String!
 	}

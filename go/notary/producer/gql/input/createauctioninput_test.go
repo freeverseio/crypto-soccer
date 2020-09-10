@@ -20,7 +20,7 @@ func TestCreateAuctionInputHash(t *testing.T) {
 	in.Rnd = 42321
 	hash, err := in.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	assert.Equal(t, hash.Hex(), "0x1c3347f517a3d812ca8bdf38072c66accf71ca1a0f04851fd4a0f1fba593f684")
 }
 
 func TestCreateAuctionInputID(t *testing.T) {
@@ -32,7 +32,7 @@ func TestCreateAuctionInputID(t *testing.T) {
 	in.Rnd = 42321
 	id, err := in.ID()
 	assert.NilError(t, err)
-	assert.Equal(t, string(id), "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	assert.Equal(t, string(id), "1c3347f517a3d812ca8bdf38072c66accf71ca1a0f04851fd4a0f1fba593f684")
 }
 
 func TestCreateAuctionValidSignature(t *testing.T) {
@@ -59,7 +59,7 @@ func TestCreateAuctionSignerAddress(t *testing.T) {
 	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
 	address, err := in.SignerAddress()
 	assert.NilError(t, err)
-	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
+	assert.Equal(t, address.Hex(), "0x77d1Dcc8517B06aEdA8bC720Ce43f4600cF892DD")
 }
 
 func TestCreateAuctionIsSignerOwner(t *testing.T) {

@@ -92,9 +92,11 @@ func createOffer(service storage.Tx, in input.CreateOfferInput, contracts contra
 	offer.PlayerID = in.PlayerId
 	offer.CurrencyID = int(in.CurrencyId)
 	offer.Price = int64(in.Price)
-	if offer.ValidUntil, err = strconv.ParseInt(in.ValidUntil, 10, 32); err != nil {
+	offerValidUntil, err := strconv.ParseInt(in.OfferValidUntil, 10, 32)
+	if err != nil {
 		fmt.Printf("%d of type %T", offer.ValidUntil, offer.ValidUntil)
 	}
+	offer.ValidUntil = uint32(offerValidUntil)
 	offer.Signature = in.Signature
 	offer.State = storage.OfferStarted
 	offer.StateExtra = ""

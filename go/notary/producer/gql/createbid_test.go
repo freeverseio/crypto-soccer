@@ -64,7 +64,7 @@ func TestCreateBidStorageReturnsOK(t *testing.T) {
 	assert.NilError(t, err)
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x9241b9eca0e492acd33651f4d05267ba57efed0d9f4a9bafa0e975c506c6f640")
+	assert.Equal(t, hash.Hex(), "0x3ae702bb2b1aef83256e6ee0005024c3b5d07693f6e941d5cae50bc4798668b5")
 	assert.Equal(t, string(id), hash.Hex()[2:])
 
 	assert.Equal(t, counter, 1)
