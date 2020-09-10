@@ -116,7 +116,7 @@ contract("Market", accounts => {
     sigSeller.signature.should.be.equal('0x2148732eeca5265898a5fe8dd3ba1c1af5b3d5b815fb23d9d6e383b376a2c91c694170ebd18b64b122905f82d3d6961a78a784b8966fcb350d51c6c5e7917d2d1b');
   });
 
-  it("getSellerDigest", async () => {
+  it("computeSellPlayerDigest", async () => {
     currencyId = 1;
     playerId = 11114324213423;
     price = 4324213423;

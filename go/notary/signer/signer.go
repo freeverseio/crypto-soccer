@@ -63,58 +63,12 @@ func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) (common.Hash
 	return crypto.Keccak256Hash(bytes), nil
 }
 
-func HashSellMessage(
-	currencyId uint8,
-	price *big.Int,
-	rnd *big.Int,
-	validUntil int64,
-	playerId *big.Int,
-) (common.Hash, error) {
-	var hash [32]byte
-	hashPrivateMessage, err := HashPrivateMsg(
-		currencyId,
-		price,
-		rnd,
-	)
-	if err != nil {
-		return [32]byte{}, err
-	}
-
-	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
-	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
-	arguments := abi.Arguments{
-		{
-			Type: bytes32Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
-	}
-
-	bytes, err := arguments.Pack(
-		hashPrivateMessage,
-		big.NewInt(validUntil),
-		playerId,
-	)
-	if err != nil {
-		return [32]byte{}, err
-	}
-	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
-
-	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
-	return crypto.Keccak256Hash([]byte(ss)), nil
-}
-
 func HashBidMessage2(
 	market *market.Market,
 	sellerDigest [32]byte,
 	extraPrice *big.Int,
 	bidRnd *big.Int,
 	teamID *big.Int,
-	isOffer2StartAuction bool,
 ) (common.Hash, error) {
 	var hash [32]byte
 	bidHiddenPrice, err := market.HashBidHiddenPrice(
@@ -143,25 +97,26 @@ func HashBidMessage(
 	currencyID uint8,
 	price *big.Int,
 	auctionRnd *big.Int,
-	validUntil int64,
+	validUntil uint32,
+	auctionDurationAfterOfferIsAccepted uint32,
 	playerID *big.Int,
 	extraPrice *big.Int,
 	bidRnd *big.Int,
 	teamID *big.Int,
-	isOffer2StartAuction bool,
 ) (common.Hash, error) {
-	if isOffer2StartAuction && extraPrice.Cmp(big.NewInt(0)) != 0 {
+	if auctionDurationAfterOfferIsAccepted > 0 && extraPrice.Cmp(big.NewInt(0)) != 0 {
 		return [32]byte{}, fmt.Errorf("offers must have zero extraPrice")
 	}
-	if isOffer2StartAuction && bidRnd.Cmp(big.NewInt(0)) != 0 {
+	if auctionDurationAfterOfferIsAccepted > 0 && bidRnd.Cmp(big.NewInt(0)) != 0 {
 		return [32]byte{}, fmt.Errorf("offers must have zero bidRnd")
 	}
 	var hash [32]byte
-	auctionHashMsg, err := HashSellMessage(
+	auctionHashMsg, err := ComputeSellPlayerDigest(
 		currencyID,
 		price,
 		auctionRnd,
 		validUntil,
+		auctionDurationAfterOfferIsAccepted,
 		playerID,
 	)
 	if err != nil {
@@ -238,4 +193,55 @@ func AddressFromSignature(hash, signature []byte) (common.Address, error) {
 		return common.Address{}, err
 	}
 	return PublicKeyBytesToAddress(sigPublicKey), nil
+}
+
+func ComputeSellPlayerDigest(
+	currencyId uint8,
+	price *big.Int,
+	rnd *big.Int,
+	validUntil uint32,
+	auctionDurationAfterOfferIsAccepted uint32,
+	playerId *big.Int,
+) (common.Hash, error) {
+	var hash [32]byte
+	sellHiddenPrice, err := HashPrivateMsg(
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	uint32Ty, _ := abi.NewType("uint32", "uint32", nil)
+	arguments := abi.Arguments{
+		{
+			Type: bytes32Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: uint32Ty,
+		},
+		{
+			Type: uint32Ty,
+		},
+	}
+
+	bytes, err := arguments.Pack(
+		sellHiddenPrice,
+		playerId,
+		validUntil,
+		auctionDurationAfterOfferIsAccepted,
+	)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
+
+	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
+	return crypto.Keccak256Hash([]byte(ss)), nil
 }

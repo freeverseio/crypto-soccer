@@ -75,34 +75,37 @@ func TestAuctionHiddenPrice(t *testing.T) {
 }
 
 func TestAuctionMsg(t *testing.T) {
-	validUntil := int64(2000000000)
+	validUntil := uint32(2000000000)
+	auctionDurationAfterOfferIsAccepted := uint32(4358487)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
 
-	hash, err := signer.HashSellMessage(
+	sellDigest, err := signer.ComputeSellPlayerDigest(
 		currencyId,
 		price,
 		rnd,
 		validUntil,
+		auctionDurationAfterOfferIsAccepted,
 		playerId,
 	)
+
 	assert.NilError(t, err)
-	result := hex.EncodeToString(hash[:])
-	if result != "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796" {
+	result := hex.EncodeToString(sellDigest[:])
+	if result != "1e5f3296caef0abef206907a7d9dea17fc035e3e5b5f23e7340c8743f7da7eae" {
 		t.Fatalf("Hash error %v", result)
 	}
 	pvr, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	if err != nil {
 		t.Fatal(err)
 	}
-	sig, err := signer.Sign(hash.Bytes(), pvr)
+	sig, err := signer.Sign(sellDigest.Bytes(), pvr)
 	if err != nil {
 		t.Fatal(err)
 	}
 	result = hex.EncodeToString(sig)
-	if result != "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c" {
+	if result != "c711ade1d48b670d0228eb8c6b22a1cc865ce6bce005755dacad656c976de73a14ec926dec760a0b56e2d62f9132fc81364b12d40f09c5fd23f4ff27457dd3cc1b" {
 		t.Fatalf("Sign error %v", result)
 	}
 }
@@ -121,15 +124,15 @@ func TestPublicKeyBytesToAddress(t *testing.T) {
 }
 
 func TestHashBidMessage(t *testing.T) {
-	validUntil := int64(2000000000)
-	playerId := big.NewInt(274877906944)
 	currencyId := uint8(1)
+	validUntil := uint32(2000000000)
+	auctionDurationAfterOfferIsAccepted := uint32(4358487)
+	playerId := big.NewInt(274877906944)
 	price := big.NewInt(41234)
 	auctionRnd := big.NewInt(42321)
 	extraPrice := big.NewInt(0)
 	bidRnd := big.NewInt(0)
 	teamID := big.NewInt(274877906945)
-	isOffer2StartAuction := true
 
 	hash, err := signer.HashBidMessage(
 		bc.Contracts.Market,
@@ -137,17 +140,17 @@ func TestHashBidMessage(t *testing.T) {
 		price,
 		auctionRnd,
 		validUntil,
+		auctionDurationAfterOfferIsAccepted,
 		playerId,
 		extraPrice,
 		bidRnd,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	result := hex.EncodeToString(hash[:])
-	if result != "a46d578984719e05af1b67a89807c43a7dcafb435b0b9a8fd85e62beb0ba46d4" {
+	if result != "aaf31b6fdf4fa69a5ebfe9874944435c0ac4c8d5c4e0f0448c56640b67789b51" {
 		t.Fatalf("Hash error %v", result)
 	}
 	pvr, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
@@ -156,13 +159,14 @@ func TestHashBidMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	result = hex.EncodeToString(sig)
-	if result != "7e8d48ff6ee7d57d3bf226fc72ae38d534cec421bccba4a373b9e4e8bdcf666e477e5ada820c31effd8008a2c457775c97f57b212ca59ffd4eff8b13ac2029211b" {
+	if result != "8c276603fcde4ec77007791c8f873eea5e63623f98c55d8277e8ece703dd38174b01cc8fe0f34bab1dd62183162e95434eb3f4ce04b096f1d912c2a0bc44beef1c" {
 		t.Fatalf("Sign error %v", result)
 	}
 }
 
 func TestHashBidMessage2(t *testing.T) {
-	validUntil := int64(2000000000)
+	validUntil := uint32(2000000000)
+	auctionDurationAfterOfferIsAccepted := uint32(4358487)
 	playerId := big.NewInt(274877906944)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
@@ -170,17 +174,17 @@ func TestHashBidMessage2(t *testing.T) {
 	extraPrice := big.NewInt(332)
 	bidRnd := big.NewInt(1243523)
 	teamID := big.NewInt(274877906945)
-	isOffer2StartAuction := false
 
-	auctionHash, err := signer.HashSellMessage(
+	auctionHash, err := signer.ComputeSellPlayerDigest(
 		currencyId,
 		price,
 		auctionRnd,
 		validUntil,
+		auctionDurationAfterOfferIsAccepted,
 		playerId,
 	)
 	assert.NilError(t, err)
-	assert.Equal(t, auctionHash.Hex(), "0x55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a")
+	assert.Equal(t, auctionHash.Hex(), "0xa45cdd39cee0c176eac975fd5d9aae4a5185f6a53f0f4599a3f540dcf86e6c9a")
 
 	hash, err := signer.HashBidMessage2(
 		bc.Contracts.Market,
@@ -188,13 +192,12 @@ func TestHashBidMessage2(t *testing.T) {
 		extraPrice,
 		bidRnd,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	result := hex.EncodeToString(hash[:])
-	if result != "c0ad1683b9afe071d698763b7143e7cff7bcc661c7074497d870964dd58d9976" {
+	if result != "4b39c53df99608ec7fa2a43f239ff506b012323c71dec569c57136b7331c0090" {
 		t.Fatalf("Hash error %v", result)
 	}
 	pvr, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
@@ -203,7 +206,7 @@ func TestHashBidMessage2(t *testing.T) {
 		t.Fatal(err)
 	}
 	result = hex.EncodeToString(sig)
-	if result != "4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1c" {
+	if result != "4f98470529ce128a0bea9a8136cbc6cc776306a4e8f375382ebd0c428825e1b718aabc4f599d58093c204390f0099f29b4d26b8495179403ec21fb2b3e023fb51c" {
 		t.Fatalf("Sign error %v", result)
 	}
 }
@@ -233,4 +236,25 @@ func TestAuctionHiddenPrice2(t *testing.T) {
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x233c8f4c0d172a80f6dcca6359a08182a64d4201d33359e112e99c0025b3ed86")
+}
+
+func TestComputeSellPlayerDigest(t *testing.T) {
+	currencyId := uint8(1)
+	playerId := big.NewInt(11114324213423)
+	price := big.NewInt(4324213423)
+	rnd := big.NewInt(434324324213423)
+	validUntil := uint32(235985749)
+	auctionDurationAfterOfferIsAccepted := uint32(4358487)
+
+	digest, err := signer.ComputeSellPlayerDigest(
+		currencyId,
+		price,
+		rnd,
+		validUntil,
+		auctionDurationAfterOfferIsAccepted,
+		playerId,
+	)
+	assert.NilError(t, err)
+	assert.Equal(t, digest.Hex(), "0xf778fa056bd74980669505bf4666bbde172de50abe33d569f3ce597bdd81198b")
+
 }
