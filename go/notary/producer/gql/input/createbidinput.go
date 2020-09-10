@@ -35,7 +35,7 @@ func (b CreateBidInput) Hash(contracts contracts.Contracts) (common.Hash, error)
 	}
 
 	auctionHash := common.HexToHash(string(b.AuctionId))
-	hash, err := signer.HashBidMessage2(
+	hash, err := signer.HashBidMessageFromSellerDigest(
 		contracts.Market,
 		auctionHash,
 		big.NewInt(int64(b.ExtraPrice)),

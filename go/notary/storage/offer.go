@@ -11,19 +11,20 @@ const (
 )
 
 type Offer struct {
-	ID          string
-	PlayerID    string
-	CurrencyID  int
-	Price       int64
-	Rnd         int64
-	ValidUntil  int64
-	Signature   string
-	State       OfferState
-	StateExtra  string
-	Seller      string
-	Buyer       string
-	AuctionID   string
-	BuyerTeamID string
+	ID                                  string
+	PlayerID                            string
+	CurrencyID                          int
+	Price                               int64
+	Rnd                                 int64
+	ValidUntil                          uint32
+	AuctionDurationAfterOfferIsAccepted uint32
+	Signature                           string
+	State                               OfferState
+	StateExtra                          string
+	Seller                              string
+	Buyer                               string
+	AuctionID                           string
+	BuyerTeamID                         string
 }
 
 func NewOffer() *Offer {

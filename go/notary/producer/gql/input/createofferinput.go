@@ -22,7 +22,7 @@ type CreateOfferInput struct {
 	CurrencyId                          int32
 	Price                               int32
 	Rnd                                 int32
-	ValidUntil                          string
+	OfferValidUntil                     string
 	AuctionDurationAfterOfferIsAccepted string
 	BuyerTeamId                         string
 	Seller                              string
@@ -41,9 +41,9 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 	if teamId == nil {
 		return common.Hash{}, errors.New("invalid teamId")
 	}
-	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 32)
+	offerValudUntil, err := strconv.ParseInt(b.OfferValidUntil, 10, 32)
 	if err != nil {
-		return common.Hash{}, errors.New("invalid validUntil")
+		return common.Hash{}, errors.New("invalid offerValudUntil")
 	}
 	auctionDurationAfterOfferIsAccepted, err := strconv.ParseUint(b.AuctionDurationAfterOfferIsAccepted, 10, 32)
 	if err != nil {
@@ -56,12 +56,13 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 	}
 	dummyRnd := int64(0)
 
+	// for offers, dummyRnd = extraPrice = 0
 	hash, err := signer.HashBidMessage(
 		contracts.Market,
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
-		uint32(validUntil),
+		uint32(offerValudUntil),
 		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		big.NewInt(0),

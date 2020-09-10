@@ -20,7 +20,7 @@ type BidMachine struct {
 	bid             *storage.Bid
 	contracts       contracts.Contracts
 	freeverse       *ecdsa.PrivateKey
-	PostAuctionTime int64
+	PostAuctionTime uint32
 }
 
 func New(
@@ -49,7 +49,7 @@ func New(
 		bid,
 		contracts,
 		freeverse,
-		PostAuctionTime.Int64(),
+		uint32(PostAuctionTime.Int64()),
 	}, nil
 }
 
@@ -98,7 +98,7 @@ func (b *BidMachine) Process() error {
 
 func (b *BidMachine) processPaying() error {
 	now := time.Now().Unix()
-	if now > b.bid.PaymentDeadline {
+	if uint32(now) > b.bid.PaymentDeadline {
 		b.setState(storage.BidFailed, "expired")
 		return nil
 	}

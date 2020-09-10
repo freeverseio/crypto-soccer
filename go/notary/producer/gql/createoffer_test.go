@@ -48,6 +48,7 @@ func TestCreateOffer1(t *testing.T) {
 
 	inOffer := input.CreateOfferInput{}
 	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	inOffer.AuctionDurationAfterOfferIsAccepted = "3600"
 	inOffer.PlayerId = "274877906944"
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
@@ -55,19 +56,20 @@ func TestCreateOffer1(t *testing.T) {
 	inOffer.BuyerTeamId = "274877906945"
 	teamId, _ := new(big.Int).SetString(inOffer.BuyerTeamId, 10)
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
+	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 32)
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(inOffer.AuctionDurationAfterOfferIsAccepted, 10, 32)
 	dummyRnd := int64(0)
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		big.NewInt(0),
 		big.NewInt(dummyRnd),
 		teamId,
-		true,
 	)
 	assert.NilError(t, err)
 	signatureOffer, err := signer.Sign(hashOffer.Bytes(), offerer)

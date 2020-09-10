@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -18,7 +19,7 @@ func (b *AuctionMachine) processStarted() error {
 
 	// check if expired
 	now := time.Now().Unix()
-	if now > b.auction.ValidUntil {
+	if uint32(now) > b.auction.ValidUntil {
 		b.SetState(storage.AuctionEnded, "expired")
 		return nil
 	}
@@ -70,14 +71,30 @@ func (b *AuctionMachine) processStarted() error {
 	}
 	auth := bind.NewKeyedTransactor(b.freeverse)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
-	tx, err := b.contracts.Market.FreezePlayer(
-		auth,
-		auctionHiddenPrice,
-		big.NewInt(b.auction.ValidUntil),
-		playerId,
-		sig,
-		sigV,
-	)
+
+	isOffer := b.auction.AuctionDurationAfterOfferIsAccepted > 0
+	var tx *types.Transaction
+
+	if isOffer {
+		tx, err = b.contracts.Market.FreezePlayerViaOffer(
+			auth,
+			auctionHiddenPrice,
+			playerId,
+			sig,
+			sigV,
+			b.auction.ValidUntil,
+			b.auction.AuctionDurationAfterOfferIsAccepted,
+		)
+	} else {
+		tx, err = b.contracts.Market.FreezePlayerViaPutForSale(
+			auth,
+			auctionHiddenPrice,
+			playerId,
+			sig,
+			sigV,
+			b.auction.ValidUntil,
+		)
+	}
 	if err != nil {
 		b.SetState(storage.AuctionFailed, "Failed to freeze: "+err.Error())
 		return err

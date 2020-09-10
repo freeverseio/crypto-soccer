@@ -20,7 +20,7 @@ import (
 
 func TestCreateOfferInputHash(t *testing.T) {
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "2000000000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -33,7 +33,7 @@ func TestCreateOfferInputHash(t *testing.T) {
 
 func TestCreateOfferValidSignature(t *testing.T) {
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "2000000000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -48,7 +48,7 @@ func TestCreateOfferValidSignature(t *testing.T) {
 
 func TestCreateOfferSignerAddress(t *testing.T) {
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "2000000000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -62,7 +62,7 @@ func TestCreateOfferSignerAddress(t *testing.T) {
 
 func TestCreateOfferIsSignerOwner(t *testing.T) {
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "2000000000"
 	in.PlayerId = "27487790694"
 	in.CurrencyId = 1
 	in.BuyerTeamId = "20"
@@ -81,7 +81,7 @@ func TestCreateOfferIsSignerOwner(t *testing.T) {
 
 func TestCreateOfferGetOwner(t *testing.T) {
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "2000000000"
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
 	in.BuyerTeamId = "20"
@@ -98,7 +98,7 @@ func TestCreateOfferGetOwner(t *testing.T) {
 	assert.Equal(t, crypto.PubkeyToAddress(bc.Owner.PublicKey).Hex(), owner.Hex())
 }
 
-func TestCreateOfferPlayerFrozen(t *testing.T) {
+func TestCreateOfferPlayerFrozenShouldFail(t *testing.T) {
 
 	bc, err := testutils.NewBlockchain()
 	assert.NilError(t, err)
@@ -134,7 +134,8 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 	}
 
 	now := time.Now().Unix()
-	validUntil := now + 8
+	validUntil := uint32(now + 8)
+	auctionDuration := uint32(0)
 	playerID := big.NewInt(274877906944)
 	currencyID := uint8(1)
 	price := big.NewInt(41234)
@@ -142,13 +143,13 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 	extraPrice := big.NewInt(332)
 	bidRnd := big.NewInt(1243523)
 	teamID := big.NewInt(274877906945)
-	isOffer2StartAuction := false
 
-	hashAuctionMsg, err := signer.HashSellMessage(
+	hashAuctionMsg, err := signer.ComputeSellPlayerDigest(
 		currencyID,
 		price,
 		auctionRnd,
 		validUntil,
+		auctionDuration,
 		playerID,
 	)
 	if err != nil {
@@ -176,11 +177,11 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 		price,
 		auctionRnd,
 		validUntil,
+		auctionDuration,
 		playerID,
 		extraPrice,
 		bidRnd,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -216,7 +217,8 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 
 	// try to create offer which will fail because asset is frozen
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "2000000000"
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
 	in.BuyerTeamId = "20"
@@ -287,7 +289,8 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 
 func TestCreateOfferInputHashBigIntPlayer(t *testing.T) {
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "2000000000"
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.PlayerId = "25723578238440869144533393071649442553899076447028039543423578"
 	in.CurrencyId = 1
 	in.Price = 41234

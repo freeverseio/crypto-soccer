@@ -20,7 +20,7 @@ type Bid struct {
 	StateExtra      string
 	PaymentID       string
 	PaymentURL      string
-	PaymentDeadline int64
+	PaymentDeadline uint32
 }
 
 func NewBid() *Bid {

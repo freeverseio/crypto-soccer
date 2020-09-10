@@ -39,7 +39,7 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error 
 		return err
 	}
 	if bid.State == storage.BidPaid {
-		if err := b.transferAuction(*bid); err != nil {
+		if err := b.completePlayerAuction(*bid); err != nil {
 			return err
 		}
 		order, err := market.GetOrder(bid.PaymentID)
@@ -55,13 +55,9 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error 
 	return nil
 }
 
-func (b AuctionMachine) transferAuction(bid storage.Bid) error {
+func (b AuctionMachine) completePlayerAuction(bid storage.Bid) error {
 	// transfer the auction
 	bidHiddenPrice, err := signer.BidHiddenPrice(b.contracts.Market, big.NewInt(bid.ExtraPrice), big.NewInt(bid.Rnd))
-	if err != nil {
-		return err
-	}
-	auctionHiddenPrice, err := signer.HashPrivateMsg(uint8(b.auction.CurrencyID), big.NewInt(b.auction.Price), big.NewInt(b.auction.Rnd))
 	if err != nil {
 		return err
 	}
@@ -74,15 +70,6 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		return errors.New("invalid teamid")
 	}
 
-	isOffer := b.offer != nil
-
-	var validUntil int64
-	if isOffer {
-		validUntil = b.offer.ValidUntil
-	} else {
-		validUntil = b.auction.ValidUntil
-	}
-
 	var sig [2][32]byte
 	var sigV uint8
 	_, err = signer.HashBidMessage(
@@ -91,11 +78,11 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		big.NewInt(b.auction.Price),
 		big.NewInt(b.auction.Rnd),
 		b.auction.ValidUntil,
+		b.auction.AuctionDurationAfterOfferIsAccepted,
 		playerId,
 		big.NewInt(bid.ExtraPrice),
 		big.NewInt(bid.Rnd),
 		teamId,
-		isOffer,
 	)
 	if err != nil {
 		return err
@@ -106,16 +93,18 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	}
 	auth := bind.NewKeyedTransactor(b.freeverse)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
+
+	var auctionId [32]byte
+	copy(auctionId[:], b.auction.ID)
+
 	tx, err := b.contracts.Market.CompletePlayerAuction(
 		auth,
-		auctionHiddenPrice,
-		big.NewInt(validUntil),
+		auctionId,
 		playerId,
 		bidHiddenPrice,
 		teamId,
 		sig,
 		sigV,
-		isOffer,
 	)
 	if err != nil {
 		b.SetState(storage.AuctionWithdrableByBuyer, err.Error())

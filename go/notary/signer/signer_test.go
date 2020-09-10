@@ -186,7 +186,7 @@ func TestHashBidMessage2(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, auctionHash.Hex(), "0xa45cdd39cee0c176eac975fd5d9aae4a5185f6a53f0f4599a3f540dcf86e6c9a")
 
-	hash, err := signer.HashBidMessage2(
+	hash, err := signer.HashBidMessageFromSellerDigest(
 		bc.Contracts.Market,
 		auctionHash,
 		extraPrice,

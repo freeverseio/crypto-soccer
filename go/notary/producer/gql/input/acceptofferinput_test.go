@@ -65,9 +65,9 @@ func TestAcceptOfferIsSignerOwner(t *testing.T) {
 	in.Price = 41234
 	in.Rnd = 42321
 
-	hash, err := in.Digest()
+	digest, err := in.Digest()
 	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	signature, err := signer.Sign(digest.Bytes(), bc.Owner)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 	isOwner, err := in.IsSignerOwner(*bc.Contracts)

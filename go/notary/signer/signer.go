@@ -63,7 +63,7 @@ func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) (common.Hash
 	return crypto.Keccak256Hash(bytes), nil
 }
 
-func HashBidMessage2(
+func HashBidMessageFromSellerDigest(
 	market *market.Market,
 	sellerDigest [32]byte,
 	extraPrice *big.Int,
@@ -92,6 +92,7 @@ func HashBidMessage2(
 	return hash, err
 }
 
+// bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(sellerDigest, buyerHiddenPrice, buyerTeamId));
 func HashBidMessage(
 	market *market.Market,
 	currencyID uint8,
