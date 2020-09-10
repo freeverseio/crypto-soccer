@@ -35,6 +35,7 @@ type AuthProxy struct {
 	debug         bool
 	domain        string
 	serverService ServerService
+	allowHeaders        string
 }
 
 func New(
@@ -42,6 +43,7 @@ func New(
 	gracetime int,
 	serverService ServerService,
 	domain string,
+	allowHeaders string,
 
 ) *AuthProxy {
 	return &AuthProxy{
@@ -52,6 +54,7 @@ func New(
 		cache:         gocache.New(5*time.Minute, 2*time.Minute),
 		serverService: serverService,
 		domain:        domain,
+		allowHeaders:  allowHeaders,
 	}
 }
 
@@ -129,6 +132,8 @@ func (b *AuthProxy) Gqlproxy(w http.ResponseWriter, r *http.Request) {
 
 	//enable cors
 	w.Header().Set("Access-Control-Allow-Origin", b.domain)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", b.allowHeaders)
 	if (*r).Method == "OPTIONS" {
 		return
 	}

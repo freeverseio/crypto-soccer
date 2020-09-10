@@ -3,7 +3,7 @@ data:
   BLOCKS_PER_STEP: "10000"
   PROXY_CONTRACT_ADDRESS: 0x720C10669287462Bb96eFd9bb5220EcfcBfd88cf
   authproxy_extra_args: -backdoor
-  domain: '*.gorengine.com'
+  domain: https://market.gorengine.com
   freeverse_password: freeverse
   freeverse_username: freeverse
   horizon_extra_args: --enableCors
@@ -294,6 +294,8 @@ spec:
         - http://gamelayer:4000
         - -domain
         - $(domain)
+        - -allowHeaders
+        - Accept, Content-Type, Content-Length, Accept-Encoding, Authorization
         - $(authproxy_extra_args)
         envFrom:
         - configMapRef:
