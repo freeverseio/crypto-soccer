@@ -27,13 +27,13 @@ type AcceptOfferInput struct {
 }
 
 func (b AcceptOfferInput) AuctionID() (graphql.ID, error) {
-	hash, err := b.Hash()
+	digest, err := b.Digest()
 	if err != nil {
 		return graphql.ID(""), err
 	}
-	return graphql.ID(hash.String()[2:]), nil
+	return graphql.ID(digest.String()[2:]), nil
 }
-func (b AcceptOfferInput) Hash() (common.Hash, error) {
+func (b AcceptOfferInput) Digest() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
@@ -59,7 +59,7 @@ func (b AcceptOfferInput) Hash() (common.Hash, error) {
 }
 
 func (b AcceptOfferInput) VerifySignature() (bool, error) {
-	hash, err := b.Hash()
+	digest, err := b.Digest()
 	if err != nil {
 		return false, err
 	}
@@ -67,11 +67,11 @@ func (b AcceptOfferInput) VerifySignature() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return helper.VerifySignature(hash, sign)
+	return helper.VerifySignature(digest, sign)
 }
 
 func (b AcceptOfferInput) SignerAddress() (common.Address, error) {
-	hash, err := b.Hash()
+	digest, err := b.Digest()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -79,7 +79,7 @@ func (b AcceptOfferInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
+	return helper.AddressFromSignature(digest, sign)
 }
 
 func (b AcceptOfferInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {

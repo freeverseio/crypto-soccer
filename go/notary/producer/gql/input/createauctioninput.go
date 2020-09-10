@@ -16,12 +16,13 @@ import (
 )
 
 type CreateAuctionInput struct {
-	Signature  string
-	PlayerId   string
-	CurrencyId int32
-	Price      int32
-	Rnd        int32
-	ValidUntil string
+	Signature                           string
+	PlayerId                            string
+	CurrencyId                          int32
+	Price                               int32
+	Rnd                                 int32
+	ValidUntil                          string
+	AuctionDurationAfterOfferIsAccepted string
 }
 
 func (b CreateAuctionInput) ID() (graphql.ID, error) {

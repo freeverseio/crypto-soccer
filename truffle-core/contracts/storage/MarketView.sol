@@ -211,6 +211,19 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     {
         return prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, playerId, validUntil, auctionDurationAfterOfferIsAccepted));
     }
+
+    function computeSellPlayerDigestNoPrefix(
+        bytes32 sellerHiddenPrice, 
+        uint256 playerId, 
+        uint32 validUntil, 
+        uint32 auctionDurationAfterOfferIsAccepted
+    ) 
+        public 
+        pure 
+        returns(bytes32) 
+    {
+        return buildPutAssetForSaleTxMsg(sellerHiddenPrice, playerId, validUntil, auctionDurationAfterOfferIsAccepted);
+    }
     
     /// this function is not used in the contract. It's only for external helps
     function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) external pure returns (bytes32) {

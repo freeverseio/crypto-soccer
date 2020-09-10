@@ -70,9 +70,16 @@ func createAuction(tx storage.Tx, in input.CreateAuctionInput) error {
 	auction.PlayerID = in.PlayerId
 	auction.CurrencyID = int(in.CurrencyId)
 	auction.Price = int64(in.Price)
-	if auction.ValidUntil, err = strconv.ParseInt(in.ValidUntil, 10, 64); err != nil {
+	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 32)
+	if err != nil {
 		return fmt.Errorf("invalid validUntil %v", in.ValidUntil)
 	}
+	auction.ValidUntil = uint32(validUntil)
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(in.AuctionDurationAfterOfferIsAccepted, 10, 32)
+	if err != nil {
+		return fmt.Errorf("invalid validUntil %v", in.ValidUntil)
+	}
+	auction.AuctionDurationAfterOfferIsAccepted = uint32(auctionDurationAfterOfferIsAccepted)
 	auction.Signature = in.Signature
 	auction.State = storage.AuctionStarted
 	auction.StateExtra = ""

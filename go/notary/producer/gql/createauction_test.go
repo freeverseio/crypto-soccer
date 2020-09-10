@@ -29,6 +29,7 @@ func TestCreateAuctionCallRollbackOnError(t *testing.T) {
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -58,6 +59,7 @@ func TestCreateAuctionCallCommit(t *testing.T) {
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -87,23 +89,27 @@ func TestCreateAuctionReturnIDOfTheAuction(t *testing.T) {
 
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
+	in.AuctionDurationAfterOfferIsAccepted = "3600"
 	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 32)
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(in.ValidUntil, 10, 32)
+
 	assert.NilError(t, err)
-	hash, err := signer.HashSellMessage(
+	digest, err := signer.ComputeSellPlayerDigest(
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 	)
 	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	signature, err := signer.Sign(digest.Bytes(), bc.Owner)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 

@@ -246,7 +246,7 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 // 	in.Price = 41234
 // 	in.Rnd = 4232
 // 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-// 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+// 	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 32)
 // 	assert.NilError(t, err)
 // 	hash, err := signer.HashSellMessage(
 // 		uint8(in.CurrencyId),

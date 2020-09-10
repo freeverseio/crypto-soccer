@@ -84,7 +84,7 @@ func TestCreateOffer1(t *testing.T) {
 	in.Rnd = offererRnd
 	auctionId, err := in.ID()
 
-	validUntilAuction, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+	validUntilAuction, err := strconv.ParseInt(in.ValidUntil, 10, 32)
 	assert.NilError(t, err)
 	hash, err := signer.HashSellMessage(
 		uint8(in.CurrencyId),
@@ -266,7 +266,7 @@ func TestCreateOfferExConsumer(t *testing.T) {
 	in.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
 	teamId, _ := new(big.Int).SetString(in.BuyerTeamId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 32)
 	dummyRnd := big.NewInt(0)
 	offerExtraPrice := big.NewInt(0)
 	isOffer := true

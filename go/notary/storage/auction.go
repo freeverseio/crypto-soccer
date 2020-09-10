@@ -15,17 +15,18 @@ const (
 )
 
 type Auction struct {
-	ID         string
-	PlayerID   string
-	CurrencyID int
-	Price      int64
-	Rnd        int64
-	ValidUntil int64
-	Signature  string
-	State      AuctionState
-	StateExtra string
-	PaymentURL string
-	Seller     string
+	ID                                  string
+	PlayerID                            string
+	CurrencyID                          int
+	Price                               int64
+	Rnd                                 int64
+	ValidUntil                          uint32
+	AuctionDurationAfterOfferIsAccepted uint32
+	Signature                           string
+	State                               AuctionState
+	StateExtra                          string
+	PaymentURL                          string
+	Seller                              string
 }
 
 func NewAuction() *Auction {
