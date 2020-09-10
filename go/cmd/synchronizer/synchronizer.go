@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -26,7 +27,21 @@ func main() {
 	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	delta := flag.Int("delta", 10, "number of block to process at maximum")
+	basePath := flag.String("base-path", "./data", "Specify the base data storage path")
+	configFile := flag.String("config-file", "config.json", "config JSON file")
 	flag.Parse()
+
+	viper.SetDefault("ContentDir", "content")
+	viper.SetDefault("LayoutDir", "layouts")
+	viper.SetDefault("Taxonomies", map[string]string{"tag": "tags", "category": "categories"})
+	viper.SetConfigName(*configFile) // name of config file (without extension)
+	viper.SetConfigType("json")      // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath(*basePath)   // optionally look for config in the working directory
+	if _, err := os.Stat(*basePath + "/" + *configFile); os.IsNotExist(err) {
+		log.Warningf("No config file %v/%v... default configuration", *basePath, *configFile)
+	} else if err := viper.ReadInConfig(); err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
 
 	if _, err := os.Stat(*namesDatabase); err != nil {
 		if os.IsNotExist(err) {
