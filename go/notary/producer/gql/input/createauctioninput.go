@@ -38,20 +38,20 @@ func (b CreateAuctionInput) Hash() (common.Hash, error) {
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
 	}
-	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
+	validUntil, err := strconv.ParseUint(b.ValidUntil, 10, 32)
 	if err != nil {
 		return common.Hash{}, err
 	}
 	auctionDurationAfterOfferIsAccepted := uint32(0)
-	hash, err := signer.HashSellMessage(
+	sellPlayerDigest, err := signer.ComputeSellPlayerDigest(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
-		validUntil,
+		uint32(validUntil),
 		auctionDurationAfterOfferIsAccepted,
 		playerId,
 	)
-	return hash, err
+	return sellPlayerDigest, err
 }
 
 func (b CreateAuctionInput) VerifySignature() (bool, error) {
@@ -112,21 +112,23 @@ func (b CreateAuctionInput) IsValidForBlockchain(contracts contracts.Contracts) 
 		return false, err
 	}
 
-	validUntil, _ := new(big.Int).SetString(b.ValidUntil, 10)
-	if validUntil == nil {
+	validUntil, err := strconv.ParseUint(b.ValidUntil, 10, 32)
+	if err != nil {
 		return false, errors.New("invalid valid until")
 	}
+	auctionDurationAfterOfferIsAccepted := uint32(0)
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
 	}
-	isValid, err := contracts.Market.AreFreezePlayerRequirementsOK(
+	isValid, _, err := contracts.Market.AreFreezePlayerRequirementsOK(
 		&bind.CallOpts{},
 		sellerHiddenPrice,
-		validUntil,
 		playerId,
 		sig,
 		sigV,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 	)
 	if err != nil {
 		return false, err

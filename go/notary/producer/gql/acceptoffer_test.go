@@ -20,23 +20,27 @@ func TestAcceptOfferReturnTheSignature(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = "274877906944"
+	in.AuctionDurationAfterOfferIsAccepted = "7299"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 	in.OfferId = "12abc345cd"
 
 	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 32)
 	assert.NilError(t, err)
-	hash, err := signer.HashSellMessage(
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseInt(in.AuctionDurationAfterOfferIsAccepted, 10, 32)
+	assert.NilError(t, err)
+	sellPlayerDigest, err := signer.ComputeSellPlayerDigest(
 		uint8(in.CurrencyId),
 		big.NewInt(int64(in.Price)),
 		big.NewInt(int64(in.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 	)
 	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	signature, err := signer.Sign(sellPlayerDigest.Bytes(), bc.Owner)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 

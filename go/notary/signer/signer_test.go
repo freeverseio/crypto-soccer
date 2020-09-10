@@ -64,14 +64,14 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa")
 
-	bcHash, err := bc.Contracts.Market.HashPrivateMsg(
+	sellerHiddenPrice, err := bc.Contracts.Market.HashPrivateMsg(
 		&bind.CallOpts{},
 		currencyId,
 		price,
 		rnd,
 	)
 	assert.NilError(t, err)
-	assert.Equal(t, "0x"+hex.EncodeToString(bcHash[:]), hash.Hex())
+	assert.Equal(t, "0x"+hex.EncodeToString(sellerHiddenPrice[:]), hash.Hex())
 }
 
 func TestAuctionMsg(t *testing.T) {

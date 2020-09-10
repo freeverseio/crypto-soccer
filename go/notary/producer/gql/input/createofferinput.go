@@ -17,14 +17,15 @@ import (
 )
 
 type CreateOfferInput struct {
-	Signature   string
-	PlayerId    string
-	CurrencyId  int32
-	Price       int32
-	Rnd         int32
-	ValidUntil  string
-	BuyerTeamId string
-	Seller      string
+	Signature                           string
+	PlayerId                            string
+	CurrencyId                          int32
+	Price                               int32
+	Rnd                                 int32
+	ValidUntil                          string
+	AuctionDurationAfterOfferIsAccepted string
+	BuyerTeamId                         string
+	Seller                              string
 }
 
 func (b CreateOfferInput) ID(contracts contracts.Contracts) (graphql.ID, error) {
@@ -40,10 +41,15 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 	if teamId == nil {
 		return common.Hash{}, errors.New("invalid teamId")
 	}
-	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
+	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 32)
 	if err != nil {
 		return common.Hash{}, errors.New("invalid validUntil")
 	}
+	auctionDurationAfterOfferIsAccepted, err := strconv.ParseUint(b.AuctionDurationAfterOfferIsAccepted, 10, 32)
+	if err != nil {
+		return common.Hash{}, errors.New("invalid auctionDurationAfterOfferIsAccepted")
+	}
+
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
@@ -55,12 +61,12 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
-		validUntil,
+		uint32(validUntil),
+		uint32(auctionDurationAfterOfferIsAccepted),
 		playerId,
 		big.NewInt(0),
 		big.NewInt(dummyRnd),
 		teamId,
-		true,
 	)
 	if err != nil {
 		return common.Hash{}, err
