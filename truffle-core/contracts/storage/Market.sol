@@ -116,8 +116,9 @@ contract Market is MarketView {
         external 
         onlyMarket 
     {
-        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, playerId, sig, sigV, validUntil, offerValidUntil), "FreezePlayer requirements not met");
-        _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
+        (bool OK, bytes32 sellerDigest) = areFreezePlayerRequirementsOK(sellerHiddenPrice, playerId, sig, sigV, validUntil, offerValidUntil);
+        require(OK, "FreezePlayer requirements not met");
+        _playerIdToAuctionData[playerId] = validUntil + ((uint256(sellerDigest) << 40) >> 8);
         emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
@@ -191,8 +192,9 @@ contract Market is MarketView {
         external 
         onlyMarket 
     {
-        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, teamId, sig, sigV, validUntil, offerValidUntil), "FreezeTeam requirements not met");
-        _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerHiddenPrice) << 40) >> 8);
+        (bool OK, bytes32 sellerDigest) = areFreezeTeamRequirementsOK(sellerHiddenPrice, teamId, sig, sigV, validUntil, offerValidUntil);
+        require(OK, "FreezeTeam requirements not met");
+        _teamIdToAuctionData[teamId] = validUntil + ((uint256(sellerDigest) << 40) >> 8);
         emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
     }
 

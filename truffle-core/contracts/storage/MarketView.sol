@@ -61,10 +61,10 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     ) 
         public 
         view 
-        returns (bool ok)
+        returns (bool ok, bytes32 sellerDigest)
     {
         address teamOwner = getOwnerTeam(teamId);
-        bytes32 sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, teamId, validUntil, offerValidUntil);
+        sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, teamId, validUntil, offerValidUntil);
         if (offerValidUntil == 0) {
             /// check validUntil has not expired
             ok = (validUntil > now);
@@ -81,13 +81,13 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 (teamOwner == recoverAddr(sellerDigest, sigV, sig[IDX_r], sig[IDX_s])) &&    
                 /// check that auction time is less that the required 32 bit (2^32 - 1)
                 (validUntil < now + MAX_VALID_UNTIL);
-        if (!ok) return false;
-        if (teamId == ACADEMY_TEAM) return true;
+        if (!ok) return (false, sellerDigest);
+        if (teamId == ACADEMY_TEAM) return (true, sellerDigest);
         
         /// check that the team itself does not have players already for sale:   
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = getPlayerIdsInTeam(teamId);
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozenInAnyMarket(playerIds[p])) return false;
+            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozenInAnyMarket(playerIds[p])) return (false, sellerDigest);
         }
     }
 
@@ -110,7 +110,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 /// /// check that they signed what they input data says they signed:
                 (buyerAddress == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) && 
                 /// check buyer and seller refer to the exact same auction
-                ((uint256(sellerDigest) & MASK_32B) == (_teamIdToAuctionData[teamId] >> 32)) &&
+                ((uint256(sellerDigest) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32)) &&
                 /// /// check player is still frozen
                 isTeamFrozen(teamId);
     }
@@ -140,7 +140,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 /// check asset is owned by buyer
                 (buyerTeamOwner != NULL_ADDR) && 
                 /// check buyer and seller refer to the exact same auction
-                ((uint256(sellerDigest) & MASK_32B) == (_playerIdToAuctionData[playerId] >> 32)) &&
+                ((uint256(sellerDigest) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
                 /// check signatures are valid by requiring that they own the asset:
                 (buyerTeamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&
                 /// check player is still frozen
@@ -157,7 +157,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     ) 
         public 
         view 
-        returns (bool areOK)
+        returns (bool areOK, bytes32 sellerDigest)
     {
         uint256 state = getPlayerState(playerId);
         require(!getIsInTransitFromState(state), "cannot freeze a player that is in transit");
@@ -176,12 +176,12 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
             /// check that auction time is less that the required 32 bit
             (validUntil < now + MAX_VALID_UNTIL);
         
+        sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
         /// If this is an academy player, just check that the msg arrives from the owner of the Academy.
-        if (currentTeamId == ACADEMY_TEAM) { return(areOK && (msg.sender == _market)); }
+        if (currentTeamId == ACADEMY_TEAM) { return(areOK && (msg.sender == _market), sellerDigest); }
 
         /// Otherwise, check that the signature is from the owner, and that the team is OK.
         address prevOwner = getOwnerTeam(currentTeamId);
-        bytes32 sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
         areOK = areOK &&
             /// check that the team it belongs to not already frozen
             !isTeamFrozen(currentTeamId) &&
