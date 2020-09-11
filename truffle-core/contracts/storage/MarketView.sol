@@ -204,6 +204,10 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         return prefixed(keccak256(abi.encode(hiddenPrice, assetId, validUntil, offerValidUntil)));
     }
 
+    function computePutAssetForSaleDigestNoPrefix(bytes32 hiddenPrice, uint256 assetId, uint32 validUntil, uint32 offerValidUntil) public pure returns (bytes32) {
+        return keccak256(abi.encode(hiddenPrice, assetId, validUntil, offerValidUntil));
+    }
+
     function buildOfferToBuyTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 playerId, uint256 buyerTeamId) public pure returns (bytes32) {
         return keccak256(abi.encode(hiddenPrice, validUntil, playerId, buyerTeamId));
     }
