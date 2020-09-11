@@ -42,6 +42,7 @@ func TestAcceptOfferValidSignature(t *testing.T) {
 	assert.Assert(t, valid)
 }
 
+// The data in this test come from JS + Solidity
 func TestAcceptOfferSignerAddress(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "235985749"
