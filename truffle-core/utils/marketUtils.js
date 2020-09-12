@@ -91,13 +91,13 @@ async function signAgreeToBuyTeamMTx(currencyId, price, extraPrice, sellerRnd, b
     ['uint256', 'uint256'],
     [extraPrice, buyerRnd]
   )
-  const sellerDigest = computePutAssetForSaleDigest(currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId);
+  const auctionId = computeAuctionId(currencyId, price, sellerRnd, teamId, validUntil, offerValidUntil);
   buyerTxMsg = concatHash(
       ['bytes32', 'bytes32'],
-      [sellerDigest, buyerHiddenPrice]
+      [auctionId, buyerHiddenPrice]
   )
   const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  return [sigBuyer, sellerDigest];
+  return [sigBuyer, auctionId];
 }
 
 
@@ -376,7 +376,7 @@ async function completeTeamAuction(
     ["uint256", "uint256"],
     [extraPrice, buyerRnd]
   );
-  var {0: sigBuyer, 1: sellerDigest} = await signAgreeToBuyTeamMTx(
+  var {0: sigBuyer, 1: auctionId} = await signAgreeToBuyTeamMTx(
     currencyId,
     price,
     extraPrice,
@@ -399,7 +399,7 @@ async function completeTeamAuction(
   ];
 
   tx = await market.completeTeamAuction(
-    sellerDigest,
+    auctionId,
     sellerTeamId.toNumber(),
     buyerHiddenPrice,
     sigBuyerRS,
