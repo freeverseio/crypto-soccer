@@ -625,7 +625,7 @@ contract('Assets', (accounts) => {
         shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);
     });
 
-    it("computePutAssetForSaleDigest and computeAuctionId", async () => {
+    it2("computePutAssetForSaleDigest and computeAuctionId", async () => {
         currencyId = 1;
         playerId = 11114324213423;
         price = 345;
@@ -669,7 +669,7 @@ contract('Assets', (accounts) => {
         auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
     });
 
-    it2('transferPlayer', async () => {
+    it('transferPlayer', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 

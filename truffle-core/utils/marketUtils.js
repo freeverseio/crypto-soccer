@@ -61,13 +61,12 @@ async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd,
     ['uint256', 'uint256'],
     [extraPrice, buyerRnd]
   )
-  const sellerDigest = computePutAssetForSaleDigest(currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId);
+  auctionId = computeAuctionId(currencyId, price, sellerRnd, playerId, validUntil, offerValidUntil);
   buyerTxMsg = concatHash(
       ['bytes32', 'bytes32', 'uint256'],
-      [sellerDigest, buyerHiddenPrice, buyerTeamId]
+      [auctionId, buyerHiddenPrice, buyerTeamId]
   )
   const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  auctionId = computeAuctionId(currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId);
   return [sigBuyer, auctionId];
 }
 
@@ -285,7 +284,6 @@ async function completePlayerAuction(
     [extraPrice, buyerRnd]
   );
 
-  console.log(validUntil, offerValidUntil);
   var {0: sigBuyer, 1: auctionId} = await signAgreeToBuyPlayerMTx(
     currencyId,
     price,
@@ -298,7 +296,6 @@ async function completePlayerAuction(
     buyerTeamId.toString(),
     buyerAccount
   ).should.be.fulfilled;
-  console.log(auctionId);
 
   // Freeverse checks the signature
   recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
