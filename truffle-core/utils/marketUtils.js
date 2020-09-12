@@ -41,14 +41,15 @@ async function signDismissPlayerMTx(validUntil, asssetId, sellerAccount) {
   return sigSeller;
 }
 
-function computePutAssetForSaleDigestNoPrefix(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId) {
-  const sellerHiddenPrice = hidePrice(currencyId, price, sellerRnd);
-
-  const sellerTxMsg = concatHash(
+function computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, assetId, validUntil, offerValidUntil) {
+  return concatHash(
     ['bytes32', 'uint256', 'uint32', 'uint32'],
     [sellerHiddenPrice, assetId, validUntil, offerValidUntil]
   );
-  return sellerTxMsg;
+}
+
+function computePutAssetForSaleDigestNoPrefix(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId) {
+  return computePutAssetForSaleDigestNoPrefixFromHiddenPrice(hidePrice(currencyId, price, sellerRnd), assetId, validUntil, offerValidUntil);
 }
 
 function computePutAssetForSaleDigest(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId) {
@@ -427,6 +428,7 @@ module.exports = {
   freezeAcademyPlayer,
   computePutAssetForSaleDigest,
   computePutAssetForSaleDigestNoPrefix,
+  computePutAssetForSaleDigestNoPrefixFromHiddenPrice,
   computeAuctionId,
   hidePrice
 }
