@@ -61,17 +61,19 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     ) 
         public 
         view 
-        returns (bool ok, bytes32 sellerDigest)
+        returns (bool ok, bytes32 auctionId)
     {
         address teamOwner = getOwnerTeam(teamId);
-        sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, teamId, validUntil, offerValidUntil);
         if (offerValidUntil == 0) {
             /// check validUntil has not expired
             ok = (validUntil > now);
+            auctionId = computeAuctionId(sellerHiddenPrice, teamId, validUntil);
         } else {
             /// check offerValidUntil has not expired, and that validUntil is at least 3min larger
             ok = (offerValidUntil > now) && (validUntil > offerValidUntil + 180);
+            auctionId = computeAuctionId(sellerHiddenPrice, teamId, offerValidUntil);
         }
+        bytes32 sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, teamId, validUntil, offerValidUntil);
         ok =    ok &&
                 /// check player is not already frozen
                 (!isTeamFrozen(teamId)) &&  
@@ -81,18 +83,18 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 (teamOwner == recoverAddr(sellerDigest, sigV, sig[IDX_r], sig[IDX_s])) &&    
                 /// check that auction time is less that the required 32 bit (2^32 - 1)
                 (validUntil < now + MAX_VALID_UNTIL);
-        if (!ok) return (false, sellerDigest);
-        if (teamId == ACADEMY_TEAM) return (true, sellerDigest);
+        if (!ok) return (false, auctionId);
+        if (teamId == ACADEMY_TEAM) return (true, auctionId);
         
         /// check that the team itself does not have players already for sale:   
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = getPlayerIdsInTeam(teamId);
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozenInAnyMarket(playerIds[p])) return (false, sellerDigest);
+            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozenInAnyMarket(playerIds[p])) return (false, auctionId);
         }
     }
 
     function areCompleteTeamAuctionRequirementsOK(
-        bytes32 sellerDigest,
+        bytes32 auctionId,
         uint256 teamId,
         bytes32 buyerHiddenPrice,
         bytes32[2] memory sig,
@@ -104,19 +106,19 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         returns(bool ok) 
     {
         /// the next line will verify that the teamId is the same that was used by the seller to sign
-        bytes32 msgHash = prefixed(buildAgreeToBuyTeamTxMsg(sellerDigest, buyerHiddenPrice));
+        bytes32 msgHash = prefixed(buildAgreeToBuyTeamTxMsg(auctionId, buyerHiddenPrice));
         ok =    /// check buyerAddress is legit and signature is valid
                 (buyerAddress != address(0)) && 
                 /// /// check that they signed what they input data says they signed:
                 (buyerAddress == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) && 
                 /// check buyer and seller refer to the exact same auction
-                ((uint256(sellerDigest) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32)) &&
+                ((uint256(auctionId) & KILL_LEFTMOST_40BIT_MASK) == (_teamIdToAuctionData[teamId] >> 32)) &&
                 /// /// check player is still frozen
                 isTeamFrozen(teamId);
     }
 
     function areCompletePlayerAuctionRequirementsOK(
-        bytes32 sellerDigest,
+        bytes32 auctionId,
         uint256 playerId,
         bytes32 buyerHiddenPrice,
         uint256 buyerTeamId,
@@ -130,7 +132,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         /// the next line will verify that the playerId is the same that was used by the seller to sign
         (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(buyerTeamId);
         if (isConstrained && nRemain == 0) return false;
-        bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(sellerDigest, buyerHiddenPrice, buyerTeamId));
+        bytes32 msgHash = prefixed(buildAgreeToBuyPlayerTxMsg(auctionId, buyerHiddenPrice, buyerTeamId));
         address buyerTeamOwner = getOwnerTeam(buyerTeamId);
         uint256 state = getPlayerState(playerId);
         ok =    /// cannot be a player in transit
@@ -140,7 +142,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 /// check asset is owned by buyer
                 (buyerTeamOwner != NULL_ADDR) && 
                 /// check buyer and seller refer to the exact same auction
-                ((uint256(sellerDigest) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
+                ((uint256(auctionId) & KILL_LEFTMOST_40BIT_MASK) == (_playerIdToAuctionData[playerId] >> 32)) &&
                 /// check signatures are valid by requiring that they own the asset:
                 (buyerTeamOwner == recoverAddr(msgHash, sigV, sig[IDX_r], sig[IDX_s])) &&
                 /// check player is still frozen
@@ -157,32 +159,33 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     ) 
         public 
         view 
-        returns (bool areOK, bytes32 sellerDigest)
+        returns (bool ok, bytes32 auctionId)
     {
         uint256 state = getPlayerState(playerId);
         require(!getIsInTransitFromState(state), "cannot freeze a player that is in transit");
-        uint256 currentTeamId = getCurrentTeamIdFromPlayerState(state);
         if (offerValidUntil == 0) {
             /// check validUntil has not expired
-            areOK = (validUntil > now);
+            ok = (validUntil > now);
+            auctionId = computeAuctionId(sellerHiddenPrice, playerId, validUntil);
         } else {
             /// check offerValidUntil has not expired, and that validUntil is at least 3min larger
-            areOK = (offerValidUntil > now) && (validUntil > offerValidUntil + 180);
-
+            ok = (offerValidUntil > now) && (validUntil > offerValidUntil + 180);
+            auctionId = computeAuctionId(sellerHiddenPrice, playerId, offerValidUntil);
         }
-        areOK = areOK &&
+        ok = ok &&
             /// check player is not already frozen
             (!isPlayerFrozenInAnyMarket(playerId)) &&  
             /// check that auction time is less that the required 32 bit
             (validUntil < now + MAX_VALID_UNTIL);
         
-        sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
         /// If this is an academy player, just check that the msg arrives from the owner of the Academy.
-        if (currentTeamId == ACADEMY_TEAM) { return(areOK && (msg.sender == _market), sellerDigest); }
+        uint256 currentTeamId = getCurrentTeamIdFromPlayerState(state);
+        if (currentTeamId == ACADEMY_TEAM) { return(ok && (msg.sender == _market), auctionId); }
 
         /// Otherwise, check that the signature is from the owner, and that the team is OK.
         address prevOwner = getOwnerTeam(currentTeamId);
-        areOK = areOK &&
+        bytes32 sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
+        ok = ok &&
             /// check that the team it belongs to not already frozen
             !isTeamFrozen(currentTeamId) &&
             /// check asset is owned by legit address
@@ -200,24 +203,24 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         return keccak256(abi.encode(extraPrice, rnd));
     }
 
-    function computePutAssetForSaleDigest(bytes32 hiddenPrice, uint256 assetId, uint32 validUntil, uint32 offerValidUntil) public pure returns (bytes32) {
-        return prefixed(keccak256(abi.encode(hiddenPrice, assetId, validUntil, offerValidUntil)));
+    function computeAuctionId(bytes32 hiddenPrice, uint256 assetId, uint32 time) public pure returns (bytes32) {
+        return keccak256(abi.encode(hiddenPrice, assetId, time));
     }
 
-    function computePutAssetForSaleDigestNoPrefix(bytes32 hiddenPrice, uint256 assetId, uint32 validUntil, uint32 offerValidUntil) public pure returns (bytes32) {
-        return keccak256(abi.encode(hiddenPrice, assetId, validUntil, offerValidUntil));
+    function computePutAssetForSaleDigest(bytes32 hiddenPrice, uint256 assetId, uint32 validUntil, uint32 offerValidUntil) public pure returns (bytes32) {
+        return prefixed(keccak256(abi.encode(hiddenPrice, assetId, validUntil, offerValidUntil)));
     }
 
     function buildOfferToBuyTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 playerId, uint256 buyerTeamId) public pure returns (bytes32) {
         return keccak256(abi.encode(hiddenPrice, validUntil, playerId, buyerTeamId));
     }
 
-    function buildAgreeToBuyPlayerTxMsg(bytes32 sellerDigest, bytes32 buyerHiddenPrice, uint256 buyerTeamId) public pure returns (bytes32) {
-        return keccak256(abi.encode(sellerDigest, buyerHiddenPrice, buyerTeamId));
+    function buildAgreeToBuyPlayerTxMsg(bytes32 auctionId, bytes32 buyerHiddenPrice, uint256 buyerTeamId) public pure returns (bytes32) {
+        return keccak256(abi.encode(auctionId, buyerHiddenPrice, buyerTeamId));
     }
 
-    function buildAgreeToBuyTeamTxMsg(bytes32 sellerDigest, bytes32 buyerHiddenPrice) public pure returns (bytes32) {
-        return keccak256(abi.encode(sellerDigest, buyerHiddenPrice));
+    function buildAgreeToBuyTeamTxMsg(bytes32 auctionId, bytes32 buyerHiddenPrice) public pure returns (bytes32) {
+        return keccak256(abi.encode(auctionId, buyerHiddenPrice));
     }
 
     /// FUNCTIONS FOR SIGNATURE MANAGEMENT

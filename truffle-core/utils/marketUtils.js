@@ -143,11 +143,11 @@ async function freezeAcademyPlayer(contractOwner, currencyId, price, sellerRnd, 
 
   tx = await market.freezePlayer(
     sellerHiddenPrice,
-    validUntil,
-    offValidUntil = 0,
     playerId,
     sigSellerRS = [NULL_BYTES32, NULL_BYTES32],
     sigSellerV = 0,
+    validUntil,
+    offValidUntil = 0,
     {from: contractOwner}
   ).should.be.fulfilled;
   return tx;
