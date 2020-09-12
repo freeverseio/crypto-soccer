@@ -61,17 +61,15 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     ) 
         public 
         view 
-        returns (bool ok, bytes32 auctionId)
+        returns (bool ok)
     {
         address teamOwner = getOwnerTeam(teamId);
         if (offerValidUntil == 0) {
             /// check validUntil has not expired
             ok = (validUntil > now);
-            auctionId = computeAuctionId(sellerHiddenPrice, teamId, validUntil);
         } else {
             /// check offerValidUntil has not expired, and that validUntil is at least 3min larger
             ok = (offerValidUntil > now) && (validUntil > offerValidUntil + 180);
-            auctionId = computeAuctionId(sellerHiddenPrice, teamId, offerValidUntil);
         }
         bytes32 sellerDigest = computePutAssetForSaleDigest(sellerHiddenPrice, teamId, validUntil, offerValidUntil);
         ok =    ok &&
@@ -83,13 +81,13 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
                 (teamOwner == recoverAddr(sellerDigest, sigV, sig[IDX_r], sig[IDX_s])) &&    
                 /// check that auction time is less that the required 32 bit (2^32 - 1)
                 (validUntil < now + MAX_VALID_UNTIL);
-        if (!ok) return (false, auctionId);
-        if (teamId == ACADEMY_TEAM) return (true, auctionId);
+        if (!ok) return false;
+        if (teamId == ACADEMY_TEAM) return true;
         
         /// check that the team itself does not have players already for sale:   
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = getPlayerIdsInTeam(teamId);
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozenInAnyMarket(playerIds[p])) return (false, auctionId);
+            if (!isFreeShirt(playerIds[p], p) && isPlayerFrozenInAnyMarket(playerIds[p])) return false;
         }
     }
 
@@ -159,18 +157,16 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
     ) 
         public 
         view 
-        returns (bool ok, bytes32 auctionId)
+        returns (bool ok)
     {
         uint256 state = getPlayerState(playerId);
         require(!getIsInTransitFromState(state), "cannot freeze a player that is in transit");
         if (offerValidUntil == 0) {
             /// check validUntil has not expired
             ok = (validUntil > now);
-            auctionId = computeAuctionId(sellerHiddenPrice, playerId, validUntil);
         } else {
             /// check offerValidUntil has not expired, and that validUntil is at least 3min larger
             ok = (offerValidUntil > now) && (validUntil > offerValidUntil + 180);
-            auctionId = computeAuctionId(sellerHiddenPrice, playerId, offerValidUntil);
         }
         ok = ok &&
             /// check player is not already frozen
@@ -180,7 +176,7 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         
         /// If this is an academy player, just check that the msg arrives from the owner of the Academy.
         uint256 currentTeamId = getCurrentTeamIdFromPlayerState(state);
-        if (currentTeamId == ACADEMY_TEAM) { return(ok && (msg.sender == _market), auctionId); }
+        if (currentTeamId == ACADEMY_TEAM) { return(ok && (msg.sender == _market)); }
 
         /// Otherwise, check that the signature is from the owner, and that the team is OK.
         address prevOwner = getOwnerTeam(currentTeamId);
@@ -203,8 +199,8 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
         return keccak256(abi.encode(extraPrice, rnd));
     }
 
-    function computeAuctionId(bytes32 hiddenPrice, uint256 assetId, uint32 time) public pure returns (bytes32) {
-        return keccak256(abi.encode(hiddenPrice, assetId, time));
+    function computeAuctionId(bytes32 hiddenPrice, uint256 assetId, uint32 validUntil, uint32 offerValidUntil) public pure returns (bytes32) {
+        return (offerValidUntil == 0) ? keccak256(abi.encode(hiddenPrice, assetId, validUntil)) : keccak256(abi.encode(hiddenPrice, assetId, offerValidUntil));
     }
 
     function computePutAssetForSaleDigest(bytes32 hiddenPrice, uint256 assetId, uint32 validUntil, uint32 offerValidUntil) public pure returns (bytes32) {

@@ -19,10 +19,8 @@ function prefix(msg) {
 }
 
 async function signPutAssetForSaleMTx(currencyId, price, rnd, validUntil, offerValidUntil, asssetId, sellerAccount) {
-  const hiddenPrice = concatHash(
-      ['uint8', 'uint256', 'uint256'],
-      [currencyId, price, rnd]
-  )
+  const hiddenPrice = hidePrice(currencyId, price, rnd);
+
   const sellerTxMsg = concatHash(
       ['bytes32', 'uint256', 'uint32', 'uint32'],
       [hiddenPrice, asssetId, validUntil, offerValidUntil]
@@ -44,10 +42,8 @@ async function signDismissPlayerMTx(validUntil, asssetId, sellerAccount) {
 }
 
 function computePutAssetForSaleDigestNoPrefix(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId) {
-  const sellerHiddenPrice = concatHash(
-    ['uint8', 'uint256', 'uint256'],
-    [currencyId, price, sellerRnd]
-  );
+  const sellerHiddenPrice = hidePrice(currencyId, price, sellerRnd);
+
   const sellerTxMsg = concatHash(
     ['bytes32', 'uint256', 'uint32', 'uint32'],
     [sellerHiddenPrice, assetId, validUntil, offerValidUntil]
@@ -71,7 +67,23 @@ async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd,
       [sellerDigest, buyerHiddenPrice, buyerTeamId]
   )
   const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  return [sigBuyer, sellerDigest];
+  auctionId = computeAuctionId(currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId);
+  return [sigBuyer, auctionId];
+}
+
+function hidePrice(currencyId, price, rnd) {
+  return concatHash(
+    ['uint8', 'uint256', 'uint256'],
+    [currencyId, price, rnd]
+  );
+}
+
+function computeAuctionId(currencyId, price, sellerRnd, assetId, validUntil, offerValidUntil) {
+  const sellerHiddenPrice = hidePrice(currencyId, price, sellerRnd);
+
+  return (offerValidUntil == 0) ?
+    concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId, validUntil]) :
+    concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId, offerValidUntil]);
 }
 
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
@@ -273,7 +285,8 @@ async function completePlayerAuction(
     [extraPrice, buyerRnd]
   );
 
-  var {0: sigBuyer, 1: sellerDigest} = await signAgreeToBuyPlayerMTx(
+  console.log(validUntil, offerValidUntil);
+  var {0: sigBuyer, 1: auctionId} = await signAgreeToBuyPlayerMTx(
     currencyId,
     price,
     extraPrice,
@@ -285,6 +298,7 @@ async function completePlayerAuction(
     buyerTeamId.toString(),
     buyerAccount
   ).should.be.fulfilled;
+  console.log(auctionId);
 
   // Freeverse checks the signature
   recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
@@ -297,7 +311,7 @@ async function completePlayerAuction(
   ];
 
   tx = await market.completePlayerAuction(
-    sellerDigest,
+    auctionId,
     playerId.toString(),
     buyerHiddenPrice,
     buyerTeamId.toString(),
@@ -415,5 +429,7 @@ module.exports = {
   transferTeamViaAuction,
   freezeAcademyPlayer,
   computePutAssetForSaleDigest,
-  computePutAssetForSaleDigestNoPrefix
+  computePutAssetForSaleDigestNoPrefix,
+  computeAuctionId,
+  hidePrice
 }
