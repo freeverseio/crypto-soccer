@@ -18,25 +18,27 @@ import (
 func TestCreateAuctionInputHash(t *testing.T) {
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "19999999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	hash, err := in.Hash()
+	hash, err := in.SellerDigest()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	assert.Equal(t, hash.Hex(), "0x8b53cc00b821a305190ee693461b84efcee57d9098c5d42edcce46eecda58cd9")
 }
 
 func TestCreateAuctionInputID(t *testing.T) {
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "1999999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 	id, err := in.ID()
 	assert.NilError(t, err)
-	assert.Equal(t, string(id), "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	assert.Equal(t, id.Hex(), "0x3fedc7c9248c58bc7b0c98e1dc34a8563cdaa51fe7e38d5f1478736e1198835b")
 }
 
 func TestCreateAuctionSignerAddress(t *testing.T) {
@@ -48,7 +50,7 @@ func TestCreateAuctionSignerAddress(t *testing.T) {
 	in.Price = 41234
 	in.Rnd = 42321
 
-	hash, err := in.Hash()
+	hash, err := in.SellerDigest()
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	signature, err := signer.Sign(hash.Bytes(), alice)
 
@@ -68,22 +70,26 @@ func TestCreateAuctionIsSignerOwner(t *testing.T) {
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
 	in := input.CreateAuctionInput{}
-	now := time.Now().Unix()
-	in.ValidUntil = strconv.FormatInt(now+2000, 10)
-	in.OfferValidUntil = strconv.FormatInt(now+1000, 10)
+	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+1000, 10)
+	in.OfferValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = playerId.String()
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 
-	hash, err := in.Hash()
+	hash, err := in.SellerDigest()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), alice)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
-	isOwner, err := in.IsSignerOwner(*bc.Contracts)
+
+	isOwner, err := in.IsSignerOwnerOfPlayer(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, false)
+
+	isValid, err := in.ValidForBlockchainFreeze(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, isValid, false)
 
 	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
@@ -99,30 +105,11 @@ func TestCreateAuctionIsSignerOwner(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	isOwner, err = in.IsSignerOwner(*bc.Contracts)
+	isOwner, err = in.IsSignerOwnerOfPlayer(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, true)
 
-	// isValid, err := in.ValidForBlockchainFreeze(*bc.Contracts)
-	// assert.NilError(t, err)
-	// assert.Equal(t, isValid, true)
-}
-
-func TestCreateAuctionIsValidBlockchain(t *testing.T) {
-	in := input.CreateAuctionInput{}
-	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
-	in.PlayerId = "274877906944"
-	in.CurrencyId = 1
-	in.Price = 41234
-	in.Rnd = 42321
-
-	hash, err := in.Hash()
+	isValid, err = in.ValidForBlockchainFreeze(*bc.Contracts)
 	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
-	assert.NilError(t, err)
-	in.Signature = hex.EncodeToString(signature)
-
-	isValid, err := in.ValidForBlockchainFreeze(*bc.Contracts)
-	assert.NilError(t, err)
-	assert.Assert(t, isValid)
+	assert.Equal(t, isValid, true)
 }

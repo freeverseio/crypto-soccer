@@ -12,7 +12,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
-	"github.com/graph-gophers/graphql-go"
 )
 
 type CreateAuctionInput struct {
@@ -25,15 +24,7 @@ type CreateAuctionInput struct {
 	OfferValidUntil string
 }
 
-func (b CreateAuctionInput) ID() (graphql.ID, error) {
-	hash, err := b.Hash()
-	if err != nil {
-		return graphql.ID(""), err
-	}
-	return graphql.ID(hash.String()[2:]), nil
-}
-
-func (b CreateAuctionInput) Hash() (common.Hash, error) {
+func (b CreateAuctionInput) ID() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
@@ -54,11 +45,35 @@ func (b CreateAuctionInput) Hash() (common.Hash, error) {
 		offerValidUntil,
 		playerId,
 	)
-	return auctionId, err
+	return auctionId, nil
+}
+
+func (b CreateAuctionInput) SellerDigest() (common.Hash, error) {
+	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return common.Hash{}, errors.New("invalid playerId")
+	}
+	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
+	if err != nil {
+		return common.Hash{}, err
+	}
+	offerValidUntil, err := strconv.ParseInt(b.OfferValidUntil, 10, 64)
+	if err != nil {
+		return common.Hash{}, err
+	}
+	sellerDigest, err := signer.ComputePutAssetForSaleDigest(
+		uint8(b.CurrencyId),
+		big.NewInt(int64(b.Price)),
+		big.NewInt(int64(b.Rnd)),
+		validUntil,
+		offerValidUntil,
+		playerId,
+	)
+	return sellerDigest, err
 }
 
 func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
-	hash, err := b.Hash()
+	sellerDigest, err := b.SellerDigest()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -66,10 +81,10 @@ func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromHashAndSignature(hash, sign)
+	return helper.AddressFromHashAndSignature(sellerDigest, sign)
 }
 
-func (b CreateAuctionInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
+func (b CreateAuctionInput) IsSignerOwnerOfPlayer(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress()
 	if err != nil {
 		return false, err
@@ -106,20 +121,18 @@ func (b CreateAuctionInput) ValidForBlockchainFreeze(contracts contracts.Contrac
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
 	}
-	auctionId, err := signer.ComputeAuctionId(
+	sellerHiddenPrice, err := signer.HidePrice(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
-		validUntil,
-		offerValidUntil,
-		playerId,
 	)
 	if err != nil {
-		return false, err
+		return false, errors.New("invalid valid auctionId")
 	}
+
 	isValid, err := contracts.Market.AreFreezePlayerRequirementsOK(
 		&bind.CallOpts{},
-		auctionId,
+		sellerHiddenPrice,
 		playerId,
 		sig,
 		sigV,
@@ -129,6 +142,5 @@ func (b CreateAuctionInput) ValidForBlockchainFreeze(contracts contracts.Contrac
 	if err != nil {
 		return false, err
 	}
-
 	return isValid, nil
 }
