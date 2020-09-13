@@ -61,14 +61,16 @@ func TestCreateAuctionSignerAddress(t *testing.T) {
 func TestCreateAuctionIsSignerOwner(t *testing.T) {
 	tz := uint8(1)
 	countryIdxInTz := big.NewInt(0)
-	// first team is assigned to alice
+	// first team is assigned to during setup to owner (players 0...17),
+	// We will here assign a team to alice (playesr 18...35)
 	// playerId from the second team is made an offer
-	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(30))
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(35))
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
 	in := input.CreateAuctionInput{}
-	in.ValidUntil = "2000000000"
-	in.OfferValidUntil = "1999999000"
+	now := time.Now().Unix()
+	in.ValidUntil = strconv.FormatInt(now+2000, 10)
+	in.OfferValidUntil = strconv.FormatInt(now+1000, 10)
 	in.PlayerId = playerId.String()
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -100,6 +102,10 @@ func TestCreateAuctionIsSignerOwner(t *testing.T) {
 	isOwner, err = in.IsSignerOwner(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, true)
+
+	// isValid, err := in.ValidForBlockchainFreeze(*bc.Contracts)
+	// assert.NilError(t, err)
+	// assert.Equal(t, isValid, true)
 }
 
 func TestCreateAuctionIsValidBlockchain(t *testing.T) {
@@ -116,7 +122,7 @@ func TestCreateAuctionIsValidBlockchain(t *testing.T) {
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
-	isValid, err := in.IsValidForBlockchain(*bc.Contracts)
+	isValid, err := in.ValidForBlockchainFreeze(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Assert(t, isValid)
 }

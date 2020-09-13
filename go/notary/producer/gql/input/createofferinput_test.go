@@ -56,10 +56,11 @@ func TestCreateOfferSignerAddress(t *testing.T) {
 func TestSignerOfOfferIsOwnerOfTeam(t *testing.T) {
 	tz := uint8(1)
 	countryIdxInTz := big.NewInt(0)
-	// first team is assigned to alice
-	// playerId from the second team is made an offer
-	teamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(0))
-	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(30))
+	// first team (teamdIdx = 0) is assigned to during setup to owner (players 0...17),
+	// We will here assign a team (teamIdx = 1) to alice (players 18...35)
+	// We will see check that Alice is the owner of the buyerTeam when making an offer
+	teamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(1))
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(3))
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
 	// The offer fails because alice is not the owner of the team. We then transfer the team to Alice, and offer works.
@@ -76,7 +77,7 @@ func TestSignerOfOfferIsOwnerOfTeam(t *testing.T) {
 	signature, err := signer.Sign(hash.Bytes(), alice)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
-	isOwner, err := in.IsSignerOwner(*bc.Contracts)
+	isOwner, err := in.IsSignerOwnerOfTeam(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, false)
 
@@ -94,7 +95,7 @@ func TestSignerOfOfferIsOwnerOfTeam(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	isOwner, err = in.IsSignerOwner(*bc.Contracts)
+	isOwner, err = in.IsSignerOwnerOfTeam(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, true)
 }

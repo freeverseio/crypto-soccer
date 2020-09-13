@@ -85,7 +85,7 @@ func (b CreateAuctionInput) IsSignerOwner(contracts contracts.Contracts) (bool, 
 	return signerAddress == owner, nil
 }
 
-func (b CreateAuctionInput) IsValidForBlockchain(contracts contracts.Contracts) (bool, error) {
+func (b CreateAuctionInput) ValidForBlockchainFreeze(contracts contracts.Contracts) (bool, error) {
 	var err error
 	var sig [2][32]byte
 	var sigV uint8

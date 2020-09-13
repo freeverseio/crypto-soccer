@@ -90,16 +90,16 @@ func (b CreateOfferInput) SignerAddress(contracts contracts.Contracts) (common.A
 	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
-func (b CreateOfferInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
+func (b CreateOfferInput) IsSignerOwnerOfTeam(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress(contracts)
 	if err != nil {
 		return false, err
 	}
-	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
-	if playerId == nil {
-		return false, errors.New("invalid playerId")
+	teamId, _ := new(big.Int).SetString(b.BuyerTeamId, 10)
+	if teamId == nil {
+		return false, errors.New("invalid BuyerTeamId")
 	}
-	owner, err := contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
+	owner, err := contracts.Market.GetOwnerTeam(&bind.CallOpts{}, teamId)
 	if err != nil {
 		return false, err
 	}
