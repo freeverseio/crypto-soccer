@@ -27,13 +27,30 @@ type AcceptOfferInput struct {
 }
 
 func (b AcceptOfferInput) AuctionID() (graphql.ID, error) {
-	hash, err := b.Hash()
+	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return graphql.ID(""), errors.New("invalid playerId")
+	}
+	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
 	if err != nil {
 		return graphql.ID(""), err
 	}
-	return graphql.ID(hash.String()[2:]), nil
+	offerValidUntil, err := strconv.ParseInt(b.OfferValidUntil, 10, 64)
+	if err != nil {
+		return graphql.ID(""), err
+	}
+	auctionId, err := signer.ComputeAuctionId(
+		uint8(b.CurrencyId),
+		big.NewInt(int64(b.Price)),
+		big.NewInt(int64(b.Rnd)),
+		validUntil,
+		offerValidUntil,
+		playerId,
+	)
+	return graphql.ID(auctionId.String()[2:]), nil
 }
-func (b AcceptOfferInput) Hash() (common.Hash, error) {
+
+func (b AcceptOfferInput) SellerDigest() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
@@ -46,7 +63,8 @@ func (b AcceptOfferInput) Hash() (common.Hash, error) {
 	if err != nil {
 		return common.Hash{}, err
 	}
-	hash, err := signer.ComputePutAssetForSaleDigest(
+
+	sellerDigest, err := signer.ComputePutAssetForSaleDigest(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
@@ -54,11 +72,11 @@ func (b AcceptOfferInput) Hash() (common.Hash, error) {
 		offerValidUntil,
 		playerId,
 	)
-	return hash, err
+	return sellerDigest, err
 }
 
 func (b AcceptOfferInput) VerifySignature() (bool, error) {
-	hash, err := b.Hash()
+	hash, err := b.SellerDigest()
 	if err != nil {
 		return false, err
 	}
@@ -70,7 +88,7 @@ func (b AcceptOfferInput) VerifySignature() (bool, error) {
 }
 
 func (b AcceptOfferInput) SignerAddress() (common.Address, error) {
-	hash, err := b.Hash()
+	hash, err := b.SellerDigest()
 	if err != nil {
 		return common.Address{}, err
 	}

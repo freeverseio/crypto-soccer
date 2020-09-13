@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/graph-gophers/graphql-go"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -23,14 +24,14 @@ type CreatePutPlayerForSaleInput struct {
 	ValidUntil string
 }
 
-func (b CreatePutPlayerForSaleInput) ID() (common.Hash, error) {
+func (b CreatePutPlayerForSaleInput) ID() (graphql.ID, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
-		return common.Hash{}, errors.New("invalid playerId")
+		return graphql.ID(""), errors.New("invalid playerId")
 	}
 	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
 	if err != nil {
-		return common.Hash{}, err
+		return graphql.ID(""), err
 	}
 	offerValidUntil := int64(0)
 	auctionId, err := signer.ComputeAuctionId(
@@ -41,7 +42,7 @@ func (b CreatePutPlayerForSaleInput) ID() (common.Hash, error) {
 		offerValidUntil,
 		playerId,
 	)
-	return auctionId, nil
+	return graphql.ID(auctionId.String()[2:]), nil
 }
 
 func (b CreatePutPlayerForSaleInput) SellerDigest() (common.Hash, error) {

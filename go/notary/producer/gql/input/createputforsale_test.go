@@ -36,7 +36,7 @@ func TestCreateAuctionInputID(t *testing.T) {
 	in.Rnd = 42321
 	id, err := in.ID()
 	assert.NilError(t, err)
-	assert.Equal(t, id.Hex(), "0x278403699489cb0584cdc89877b6622870027544962d240e7bb6328996bb07bd")
+	assert.Equal(t, string(id), "278403699489cb0584cdc89877b6622870027544962d240e7bb6328996bb07bd")
 }
 
 func TestCreateAuctionSignerAddress(t *testing.T) {

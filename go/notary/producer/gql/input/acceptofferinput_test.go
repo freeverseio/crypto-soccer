@@ -14,28 +14,31 @@ import (
 func TestAcceptOfferInputHash(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "199999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	hash, err := in.Hash()
+	hash, err := in.SellerDigest()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	assert.Equal(t, hash.Hex(), "0xe30150bc666d8a20396c30794d1d1eaf86ecf427d4f4e3d8a4aa87d4aa3fc4b5")
 }
 func TestAcceptOfferInputAuctionID(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "199999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 	id, err := in.AuctionID()
 	assert.NilError(t, err)
-	assert.Equal(t, string(id), "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796")
+	assert.Equal(t, string(id), "0xe30150bc666d8a20396c30794d1d1eaf86ecf427d4f4e3d8a4aa87d4aa3fc4b5")
 }
 func TestAcceptOfferValidSignature(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "199999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -50,6 +53,7 @@ func TestAcceptOfferValidSignature(t *testing.T) {
 func TestAcceptOfferSignerAddress(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "199999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -63,12 +67,13 @@ func TestAcceptOfferSignerAddress(t *testing.T) {
 func TestAcceptOfferIsSignerOwner(t *testing.T) {
 	in := input.AcceptOfferInput{}
 	in.ValidUntil = "2000000000"
+	in.OfferValidUntil = "199999000"
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 
-	hash, err := in.Hash()
+	hash, err := in.SellerDigest()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
 	assert.NilError(t, err)
@@ -80,13 +85,14 @@ func TestAcceptOfferIsSignerOwner(t *testing.T) {
 
 func TestAcceptOfferIsValidBlockchain(t *testing.T) {
 	in := input.AcceptOfferInput{}
-	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
+	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+2000, 10)
+	in.OfferValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = "274877906944"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 
-	hash, err := in.Hash()
+	hash, err := in.SellerDigest()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
 	assert.NilError(t, err)
