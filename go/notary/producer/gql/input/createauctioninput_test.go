@@ -2,11 +2,14 @@ package input_test
 
 import (
 	"encoding/hex"
+	"math/big"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"gotest.tools/assert"
@@ -56,21 +59,47 @@ func TestCreateAuctionSignerAddress(t *testing.T) {
 }
 
 func TestCreateAuctionIsSignerOwner(t *testing.T) {
+	tz := uint8(1)
+	countryIdxInTz := big.NewInt(0)
+	// first team is assigned to alice
+	// playerId from the second team is made an offer
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(30))
+	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
 	in := input.CreateAuctionInput{}
 	in.ValidUntil = "2000000000"
-	in.PlayerId = "274877906944"
+	in.OfferValidUntil = "1999999000"
+	in.PlayerId = playerId.String()
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 
 	hash, err := in.Hash()
 	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	signature, err := signer.Sign(hash.Bytes(), alice)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 	isOwner, err := in.IsSignerOwner(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Assert(t, isOwner)
+	assert.Equal(t, isOwner, false)
+
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		tz,
+		countryIdxInTz,
+		crypto.PubkeyToAddress(alice.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = helper.WaitReceipt(bc.Client, tx, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	isOwner, err = in.IsSignerOwner(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, isOwner, true)
 }
 
 func TestCreateAuctionIsValidBlockchain(t *testing.T) {
