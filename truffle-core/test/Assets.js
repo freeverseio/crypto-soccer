@@ -625,7 +625,7 @@ contract('Assets', (accounts) => {
         shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);
     });
 
-    it("computePutAssetForSaleDigest and computeAuctionId", async () => {
+    it("computePutAssetForSaleDigest and computeAuctionId (ref XX1)", async () => {
         currencyId = 1;
         playerId = 11114324213423;
         price = 345;
