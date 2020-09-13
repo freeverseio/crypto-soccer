@@ -207,7 +207,7 @@ func TestHashBidMessage(t *testing.T) {
 	}
 }
 
-func TestHasBidFromAuctionId(t *testing.T) {
+func TestHashBidMessageFromAuctionId(t *testing.T) {
 	validUntil := int64(2000000000)
 	offerValidUntil := validUntil - 300
 	playerId := big.NewInt(274877906944)
@@ -228,7 +228,7 @@ func TestHasBidFromAuctionId(t *testing.T) {
 	)
 	assert.NilError(t, err)
 
-	hash, err := signer.HasBidFromAuctionId(
+	hash, err := signer.HashBidMessageFromAuctionId(
 		bc.Contracts.Market,
 		auctionId,
 		extraPrice,

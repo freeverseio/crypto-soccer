@@ -48,36 +48,34 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
 	}
-	dummyRnd := int64(0)
-
-	hash, err := signer.HashBidMessage(
-		contracts.Market,
+	dummyValidUntil := int64(0)
+	// the validUntil of the offer becomes the offerValidUntil of the auction
+	// the seller adds the new validUntil
+	auctionId, err := signer.ComputeAuctionId(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
+		dummyValidUntil,
 		validUntil,
 		playerId,
-		big.NewInt(0),
-		big.NewInt(dummyRnd),
+	)
+	if err != nil {
+		return common.Hash{}, errors.New("invalid validUntil")
+	}
+	dummyExtraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
+
+	hash, err := signer.HashBidMessageFromAuctionId(
+		contracts.Market,
+		auctionId,
+		dummyExtraPrice,
+		dummyRnd,
 		teamId,
-		true,
 	)
 	if err != nil {
 		return common.Hash{}, err
 	}
 	return common.Hash(hash), nil
-}
-
-func (b CreateOfferInput) VerifySignature(contracts contracts.Contracts) (bool, error) {
-	hash, err := b.Hash(contracts)
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
 }
 
 func (b CreateOfferInput) SignerAddress(contracts contracts.Contracts) (common.Address, error) {
@@ -89,7 +87,7 @@ func (b CreateOfferInput) SignerAddress(contracts contracts.Contracts) (common.A
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
+	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
 func (b CreateOfferInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
@@ -120,11 +118,7 @@ func (b CreateOfferInput) GetOwner(contracts contracts.Contracts) (common.Addres
 	return owner, nil
 }
 
-func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool, error) {
-	signerAddress, err := b.SignerAddress(contracts)
-	if err != nil {
-		return false, err
-	}
+func (b CreateOfferInput) IsAddrTeamOwner(contracts contracts.Contracts, addr common.Address) (bool, error) {
 	teamId, _ := new(big.Int).SetString(b.BuyerTeamId, 10)
 	if teamId == nil {
 		return false, errors.New("invalid teamId")
@@ -133,7 +127,15 @@ func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool
 	if err != nil {
 		return false, err
 	}
-	return signerAddress == owner, nil
+	return addr == owner, nil
+}
+
+func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool, error) {
+	signerAddress, err := b.SignerAddress(contracts)
+	if err != nil {
+		return false, err
+	}
+	return b.IsAddrTeamOwner(contracts, signerAddress)
 }
 
 func (b CreateOfferInput) IsPlayerFrozen(contracts contracts.Contracts) (bool, error) {

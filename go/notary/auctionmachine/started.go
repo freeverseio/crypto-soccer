@@ -54,7 +54,7 @@ func (b *AuctionMachine) processStarted() error {
 	}
 
 	// if has bids let's freeze it
-	auctionHiddenPrice, err := signer.HashPrivateMsg(
+	auctionHiddenPrice, err := signer.HidePrice(
 		uint8(b.auction.CurrencyID),
 		big.NewInt(b.auction.Price),
 		big.NewInt(b.auction.Rnd),
@@ -73,10 +73,11 @@ func (b *AuctionMachine) processStarted() error {
 	tx, err := b.contracts.Market.FreezePlayer(
 		auth,
 		auctionHiddenPrice,
-		big.NewInt(b.auction.ValidUntil),
 		playerId,
 		sig,
 		sigV,
+		uint32(b.auction.ValidUntil),
+		uint32(b.auction.OfferValidUntil),
 	)
 	if err != nil {
 		b.SetState(storage.AuctionFailed, "Failed to freeze: "+err.Error())

@@ -61,7 +61,7 @@ func (b SubmitPlayStorePlayerPurchaseInput) SignerAddress() (common.Address, err
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
+	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
 func (b SubmitPlayStorePlayerPurchaseInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {

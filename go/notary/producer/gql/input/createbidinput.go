@@ -34,16 +34,13 @@ func (b CreateBidInput) Hash(contracts contracts.Contracts) (common.Hash, error)
 	if teamId == nil {
 		return common.Hash{}, errors.New("invalid teamId")
 	}
-	isOffer2StartAuction := false
-
-	auctionHash := common.HexToHash(string(b.AuctionId))
-	hash, err := signer.HashBidMessage2(
+	auctionId := common.HexToHash(string(b.AuctionId))
+	hash, err := signer.HashBidMessageFromAuctionId(
 		contracts.Market,
-		auctionHash,
+		auctionId,
 		big.NewInt(int64(b.ExtraPrice)),
 		big.NewInt(int64(b.Rnd)),
 		teamId,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		return common.Hash{}, err
@@ -72,7 +69,7 @@ func (b CreateBidInput) SignerAddress(contracts contracts.Contracts) (common.Add
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
+	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
 func (b CreateBidInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {

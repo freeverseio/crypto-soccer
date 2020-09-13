@@ -57,7 +57,7 @@ func (b DismissPlayerInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
+	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
 func (b DismissPlayerInput) VerifySignature() (bool, error) {

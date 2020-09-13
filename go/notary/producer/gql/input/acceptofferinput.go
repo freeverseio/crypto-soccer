@@ -16,13 +16,14 @@ import (
 )
 
 type AcceptOfferInput struct {
-	Signature  string
-	PlayerId   string
-	CurrencyId int32
-	Price      int32
-	Rnd        int32
-	ValidUntil string
-	OfferId    graphql.ID
+	Signature       string
+	PlayerId        string
+	CurrencyId      int32
+	Price           int32
+	Rnd             int32
+	ValidUntil      string
+	OfferValidUntil string
+	OfferId         graphql.ID
 }
 
 func (b AcceptOfferInput) AuctionID() (graphql.ID, error) {
@@ -41,11 +42,16 @@ func (b AcceptOfferInput) Hash() (common.Hash, error) {
 	if err != nil {
 		return common.Hash{}, err
 	}
-	hash, err := signer.HashSellMessage(
+	offerValidUntil, err := strconv.ParseInt(b.OfferValidUntil, 10, 64)
+	if err != nil {
+		return common.Hash{}, err
+	}
+	hash, err := signer.ComputePutAssetForSaleDigest(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
 		validUntil,
+		offerValidUntil,
 		playerId,
 	)
 	return hash, err
@@ -72,7 +78,7 @@ func (b AcceptOfferInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
+	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
 func (b AcceptOfferInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
@@ -99,31 +105,37 @@ func (b AcceptOfferInput) IsValidForBlockchain(contracts contracts.Contracts) (b
 	if err != nil {
 		return false, err
 	}
-
-	sellerHiddenPrice, err := signer.HashPrivateMsg(
-		uint8(b.CurrencyId),
-		big.NewInt(int64(b.Price)),
-		big.NewInt(int64(b.Rnd)),
-	)
 	if err != nil {
 		return false, err
 	}
-
-	validUntil, _ := new(big.Int).SetString(b.ValidUntil, 10)
-	if validUntil == nil {
+	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
+	if err != nil {
+		return false, errors.New("invalid valid until")
+	}
+	offerValidUntil, err := strconv.ParseInt(b.OfferValidUntil, 10, 64)
+	if err != nil {
 		return false, errors.New("invalid valid until")
 	}
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
 	}
+	auctionId, err := signer.ComputeAuctionId(
+		uint8(b.CurrencyId),
+		big.NewInt(int64(b.Price)),
+		big.NewInt(int64(b.Rnd)),
+		validUntil,
+		offerValidUntil,
+		playerId,
+	)
 	isValid, err := contracts.Market.AreFreezePlayerRequirementsOK(
 		&bind.CallOpts{},
-		sellerHiddenPrice,
-		validUntil,
+		auctionId,
 		playerId,
 		sig,
 		sigV,
+		uint32(validUntil),
+		uint32(offerValidUntil),
 	)
 	if err != nil {
 		return false, err

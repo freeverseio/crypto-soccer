@@ -164,7 +164,7 @@ func ComputeAuctionId(
 	return hash, nil
 }
 
-func HasBidFromAuctionId(
+func HashBidMessageFromAuctionId(
 	market *market.Market,
 	auctionId [32]byte,
 	extraPrice *big.Int,
@@ -279,6 +279,7 @@ func PublicKeyBytesToAddress(publicKey []byte) common.Address {
 	return common.HexToAddress(hex.EncodeToString(address))
 }
 
+// this function is a tautology. TODO: REMOVE.
 func VerifySignature(hash []byte, signature []byte) (bool, error) {
 	sigPublicKey, err := crypto.Ecrecover(hash, signature)
 	if err != nil {
@@ -288,7 +289,7 @@ func VerifySignature(hash []byte, signature []byte) (bool, error) {
 	return crypto.VerifySignature(sigPublicKey, hash[:], signatureNoRecoverID), nil
 }
 
-func AddressFromSignature(hash, signature []byte) (common.Address, error) {
+func AddressFromHashAndSignature(hash, signature []byte) (common.Address, error) {
 	sigPublicKey, err := crypto.Ecrecover(hash, signature)
 	if err != nil {
 		return common.Address{}, err

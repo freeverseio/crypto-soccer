@@ -93,7 +93,7 @@ func TestAuctionStartedGoFrozen(t *testing.T) {
 	assert.Assert(t, isValid)
 
 	// check the seller is the signer
-	signer, err := signer.AddressFromSignature(hash.Bytes(), signature)
+	signer, err := signer.AddressFromHashAndSignature(hash.Bytes(), signature)
 	assert.NilError(t, err)
 	assert.Equal(t, signer.Hex(), auction.Seller)
 
