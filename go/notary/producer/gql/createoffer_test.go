@@ -62,6 +62,12 @@ func TestCreateOffer1(t *testing.T) {
 	inOffer.Rnd = int32(42321)
 	inOffer.BuyerTeamId = teamId.String()
 
+	hash, err := inOffer.Hash(*bc.Contracts)
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), offerer)
+	assert.NilError(t, err)
+	inOffer.Signature = hex.EncodeToString(signature)
+
 	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
 	acceptOfferIn := input.AcceptOfferInput{}
 	acceptOfferIn.OfferValidUntil = inOffer.ValidUntil
@@ -72,8 +78,7 @@ func TestCreateOffer1(t *testing.T) {
 	acceptOfferIn.Rnd = inOffer.Rnd
 
 	sellerDigest, err := acceptOfferIn.SellerDigest()
-
-	signature, err := signer.Sign(sellerDigest.Bytes(), offerer)
+	signature, err = signer.Sign(sellerDigest.Bytes(), offerer)
 	assert.NilError(t, err)
 	acceptOfferIn.Signature = hex.EncodeToString(signature)
 
@@ -82,6 +87,7 @@ func TestCreateOffer1(t *testing.T) {
 	}{acceptOfferIn})
 	assert.NilError(t, err)
 
+	// The original offer signature should be valid to create an auction
 	auctionId, err := acceptOfferIn.AuctionID()
 	inBid := input.CreateBidInput{}
 	inBid.AuctionId = auctionId
@@ -91,7 +97,7 @@ func TestCreateOffer1(t *testing.T) {
 	inBid.Signature = inOffer.Signature
 
 	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
-	assert.Error(t, err, "signer is not the owner of teamId")
+	assert.NilError(t, err)
 }
 
 func TestCreateOfferSameOwner(t *testing.T) {
