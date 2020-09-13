@@ -21,12 +21,105 @@ func TestCreateOffer1(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 
+	// We will here assign the next available team to offerer so she can make an offer for the players of a different team
+	// we choose that player as a player very far from the current amount of teams (x2)
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
+	offererTeamIdx := nHumanTeams.Int64()
+	sellerTeamIdx := offererTeamIdx + 1
+	offererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(offererTeamIdx))
+	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	seller, _ := crypto.HexToECDSA("0A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(2 + 18*sellerTeamIdx)))
+
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(offerer.PublicKey),
+	)
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(seller.PublicKey),
+	)
+
+	ch := make(chan interface{}, 10)
+
+	mock := mockup.Tx{
+		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
+		BidInsertFunc:          func(bid storage.Bid) error { return nil },
+		CommitFunc:             func() error { return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
+
+	// We use offerValidUntil for offers, and validUntil for accept offer and make bids later
+	validUntil := time.Now().Unix() + 1000
+	offerValidUntil := time.Now().Unix() + 100
+
+	inOffer := input.CreateOfferInput{}
+	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	inOffer.PlayerId = playerId.String()
+	inOffer.CurrencyId = 1
+	inOffer.Price = 41234
+	inOffer.Rnd = int32(42321)
+	inOffer.BuyerTeamId = offererTeamId.String()
+
+	hash, err := inOffer.Hash(*bc.Contracts)
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), offerer)
+	assert.NilError(t, err)
+	inOffer.Signature = hex.EncodeToString(signature)
+
+	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
+	acceptOfferIn := input.AcceptOfferInput{}
+	acceptOfferIn.OfferValidUntil = inOffer.ValidUntil
+	acceptOfferIn.ValidUntil = strconv.FormatInt(validUntil, 10)
+	acceptOfferIn.PlayerId = inOffer.PlayerId
+	acceptOfferIn.CurrencyId = inOffer.CurrencyId
+	acceptOfferIn.Price = inOffer.Price
+	acceptOfferIn.Rnd = inOffer.Rnd
+
+	sellerDigest, err := acceptOfferIn.SellerDigest()
+	signature, err = signer.Sign(sellerDigest.Bytes(), seller)
+	assert.NilError(t, err)
+	acceptOfferIn.Signature = hex.EncodeToString(signature)
+
+	_, err = r.CreateAuctionFromOffer(struct {
+		Input input.AcceptOfferInput
+	}{acceptOfferIn})
+	assert.NilError(t, err)
+
+	// The original offer signature should be valid to create an auction
+	auctionId, err := acceptOfferIn.AuctionID()
+	inBid := input.CreateBidInput{}
+	inBid.AuctionId = auctionId
+	inBid.ExtraPrice = 0
+	inBid.Rnd = 0
+	inBid.TeamId = inOffer.BuyerTeamId
+	inBid.Signature = inOffer.Signature
+
+	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
+	assert.NilError(t, err)
+}
+
+func TestCreateOfferSameOwner(t *testing.T) {
+	// identical to previous test but choosing a playerId that belongs to offerer's team
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+
 	// We will here assign the next available team to offerer so she can make an offer for the players at team = 0
 	// playerId from the second team is made an offer
 	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
-	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(nHumanTeams.Int64()*18+10))
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(nHumanTeams.Int64()*18-10))
 	teamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(nHumanTeams.Int64()))
-	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	offerer, _ := crypto.HexToECDSA("9A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
 	bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
@@ -100,7 +193,7 @@ func TestCreateOffer1(t *testing.T) {
 	assert.NilError(t, err)
 }
 
-func TestCreateOfferSameOwner(t *testing.T) {
+func TestCreateOfferSameOwner2(t *testing.T) {
 	offerer := bc.Owner
 	offererRnd := int32(42321)
 	offerValidUntil := time.Now().Unix() + 100
