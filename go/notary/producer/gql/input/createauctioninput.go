@@ -57,18 +57,6 @@ func (b CreateAuctionInput) Hash() (common.Hash, error) {
 	return auctionId, err
 }
 
-func (b CreateAuctionInput) VerifySignature() (bool, error) {
-	hash, err := b.Hash()
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
-}
-
 func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
 	hash, err := b.Hash()
 	if err != nil {
