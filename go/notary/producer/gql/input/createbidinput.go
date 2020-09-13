@@ -48,18 +48,6 @@ func (b CreateBidInput) Hash(contracts contracts.Contracts) (common.Hash, error)
 	return common.Hash(hash), nil
 }
 
-func (b CreateBidInput) VerifySignature(contracts contracts.Contracts) (bool, error) {
-	hash, err := b.Hash(contracts)
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
-}
-
 func (b CreateBidInput) SignerAddress(contracts contracts.Contracts) (common.Address, error) {
 	hash, err := b.Hash(contracts)
 	if err != nil {

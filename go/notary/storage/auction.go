@@ -1,5 +1,12 @@
 package storage
 
+import (
+	"errors"
+	"math/big"
+
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+)
+
 type AuctionState string
 
 const (
@@ -33,4 +40,23 @@ func NewAuction() *Auction {
 	auction := Auction{}
 	auction.State = AuctionStarted
 	return &auction
+}
+
+func (b Auction) ComputeID() (string, error) {
+	playerId, ok := new(big.Int).SetString(b.PlayerID, 10)
+	if !ok {
+		return "", errors.New("invalid playerId")
+	}
+	id, err := signer.ComputeAuctionId(
+		uint8(b.CurrencyID),
+		big.NewInt(b.Price),
+		big.NewInt(b.Rnd),
+		b.ValidUntil,
+		b.OfferValidUntil,
+		playerId,
+	)
+	if err != nil {
+		return "", errors.New("invalid auctio id")
+	}
+	return id.String()[2:], nil
 }
