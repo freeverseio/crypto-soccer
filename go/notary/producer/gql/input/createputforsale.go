@@ -14,17 +14,16 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 )
 
-type CreateAuctionInput struct {
-	Signature       string
-	PlayerId        string
-	CurrencyId      int32
-	Price           int32
-	Rnd             int32
-	ValidUntil      string
-	OfferValidUntil string
+type CreatePutPlayerForSaleInput struct {
+	Signature  string
+	PlayerId   string
+	CurrencyId int32
+	Price      int32
+	Rnd        int32
+	ValidUntil string
 }
 
-func (b CreateAuctionInput) ID() (common.Hash, error) {
+func (b CreatePutPlayerForSaleInput) ID() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
@@ -33,10 +32,7 @@ func (b CreateAuctionInput) ID() (common.Hash, error) {
 	if err != nil {
 		return common.Hash{}, err
 	}
-	offerValidUntil, err := strconv.ParseInt(b.OfferValidUntil, 10, 64)
-	if err != nil {
-		return common.Hash{}, err
-	}
+	offerValidUntil := int64(0)
 	auctionId, err := signer.ComputeAuctionId(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
@@ -48,7 +44,7 @@ func (b CreateAuctionInput) ID() (common.Hash, error) {
 	return auctionId, nil
 }
 
-func (b CreateAuctionInput) SellerDigest() (common.Hash, error) {
+func (b CreatePutPlayerForSaleInput) SellerDigest() (common.Hash, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
@@ -57,10 +53,8 @@ func (b CreateAuctionInput) SellerDigest() (common.Hash, error) {
 	if err != nil {
 		return common.Hash{}, err
 	}
-	offerValidUntil, err := strconv.ParseInt(b.OfferValidUntil, 10, 64)
-	if err != nil {
-		return common.Hash{}, err
-	}
+	offerValidUntil := int64(0)
+
 	sellerDigest, err := signer.ComputePutAssetForSaleDigest(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
@@ -72,7 +66,7 @@ func (b CreateAuctionInput) SellerDigest() (common.Hash, error) {
 	return sellerDigest, err
 }
 
-func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
+func (b CreatePutPlayerForSaleInput) SignerAddress() (common.Address, error) {
 	sellerDigest, err := b.SellerDigest()
 	if err != nil {
 		return common.Address{}, err
@@ -84,7 +78,7 @@ func (b CreateAuctionInput) SignerAddress() (common.Address, error) {
 	return helper.AddressFromHashAndSignature(sellerDigest, sign)
 }
 
-func (b CreateAuctionInput) IsSignerOwnerOfPlayer(contracts contracts.Contracts) (bool, error) {
+func (b CreatePutPlayerForSaleInput) IsSignerOwnerOfPlayer(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress()
 	if err != nil {
 		return false, err
@@ -100,7 +94,7 @@ func (b CreateAuctionInput) IsSignerOwnerOfPlayer(contracts contracts.Contracts)
 	return signerAddress == owner, nil
 }
 
-func (b CreateAuctionInput) ValidForBlockchainFreeze(contracts contracts.Contracts) (bool, error) {
+func (b CreatePutPlayerForSaleInput) ValidForBlockchainFreeze(contracts contracts.Contracts) (bool, error) {
 	var err error
 	var sig [2][32]byte
 	var sigV uint8
@@ -112,10 +106,7 @@ func (b CreateAuctionInput) ValidForBlockchainFreeze(contracts contracts.Contrac
 	if err != nil {
 		return false, errors.New("invalid valid until")
 	}
-	offerValidUntil, err := strconv.ParseInt(b.OfferValidUntil, 10, 64)
-	if err != nil {
-		return false, errors.New("invalid valid offerValidUntil")
-	}
+	offerValidUntil := int64(0)
 
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {

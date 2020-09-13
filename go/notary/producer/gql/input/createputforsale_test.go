@@ -16,35 +16,32 @@ import (
 )
 
 func TestCreateAuctionInputHash(t *testing.T) {
-	in := input.CreateAuctionInput{}
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = "2000000000"
-	in.OfferValidUntil = "19999999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 	hash, err := in.SellerDigest()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x8b53cc00b821a305190ee693461b84efcee57d9098c5d42edcce46eecda58cd9")
+	assert.Equal(t, hash.Hex(), "0x1c3347f517a3d812ca8bdf38072c66accf71ca1a0f04851fd4a0f1fba593f684")
 }
 
 func TestCreateAuctionInputID(t *testing.T) {
-	in := input.CreateAuctionInput{}
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = "2000000000"
-	in.OfferValidUntil = "1999999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 	id, err := in.ID()
 	assert.NilError(t, err)
-	assert.Equal(t, id.Hex(), "0x3fedc7c9248c58bc7b0c98e1dc34a8563cdaa51fe7e38d5f1478736e1198835b")
+	assert.Equal(t, id.Hex(), "0x278403699489cb0584cdc89877b6622870027544962d240e7bb6328996bb07bd")
 }
 
 func TestCreateAuctionSignerAddress(t *testing.T) {
-	in := input.CreateAuctionInput{}
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = "2000000000"
-	in.OfferValidUntil = "1999999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -69,9 +66,8 @@ func TestCreateAuctionIsSignerOwner(t *testing.T) {
 	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(35))
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
-	in := input.CreateAuctionInput{}
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+1000, 10)
-	in.OfferValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = playerId.String()
 	in.CurrencyId = 1
 	in.Price = 41234
