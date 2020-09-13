@@ -37,7 +37,7 @@ func TestAcceptOfferInputAuctionID(t *testing.T) {
 	in.Rnd = 42321
 	id, err := in.AuctionID()
 	assert.NilError(t, err)
-	assert.Equal(t, string(id), "0xe30150bc666d8a20396c30794d1d1eaf86ecf427d4f4e3d8a4aa87d4aa3fc4b5")
+	assert.Equal(t, string(id), "4fa64a72d14d52385a359bb69326e4faca26771ccb0662cb6fa5555fdf97beb1")
 }
 func TestAcceptOfferSignerAddress(t *testing.T) {
 	in := input.AcceptOfferInput{}
