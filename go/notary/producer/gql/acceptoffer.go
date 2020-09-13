@@ -20,16 +20,7 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 	if b.ch == nil {
 		return id, errors.New("internal error: no channel")
 	}
-
-	isValid, err := args.Input.VerifySignature()
-	if err != nil {
-		return id, err
-	}
-	if !isValid {
-		return id, errors.New("Invalid signature")
-	}
-
-	isOwner, err := args.Input.IsSignerOwner(b.contracts)
+	isOwner, err := args.Input.IsSignerOwnerOfPlayer(b.contracts)
 	if err != nil {
 		return id, err
 	}
@@ -37,7 +28,7 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, fmt.Errorf("signer is not the owner of playerId %v", args.Input.PlayerId)
 	}
 
-	isValidForBlockchain, err := args.Input.IsValidForBlockchain(b.contracts)
+	isValidForBlockchain, err := args.Input.IsValidForBlockchainFreeze(b.contracts)
 	if err != nil {
 		return id, err
 	}

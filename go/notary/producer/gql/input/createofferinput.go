@@ -90,23 +90,23 @@ func (b CreateOfferInput) SignerAddress(contracts contracts.Contracts) (common.A
 	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
-func (b CreateOfferInput) IsSignerOwnerOfTeam(contracts contracts.Contracts) (bool, error) {
+func (b CreateOfferInput) SignerAlreadyOwnsPlayer(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress(contracts)
 	if err != nil {
 		return false, err
 	}
-	teamId, _ := new(big.Int).SetString(b.BuyerTeamId, 10)
-	if teamId == nil {
+	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
 		return false, errors.New("invalid BuyerTeamId")
 	}
-	owner, err := contracts.Market.GetOwnerTeam(&bind.CallOpts{}, teamId)
+	owner, err := contracts.Market.GetOwnerTeam(&bind.CallOpts{}, playerId)
 	if err != nil {
 		return false, err
 	}
 	return signerAddress == owner, nil
 }
 
-func (b CreateOfferInput) GetOwner(contracts contracts.Contracts) (common.Address, error) {
+func (b CreateOfferInput) GetOwnerOfRequestedPlayer(contracts contracts.Contracts) (common.Address, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return common.Address{}, errors.New("invalid playerId")

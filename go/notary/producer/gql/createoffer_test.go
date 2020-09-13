@@ -20,16 +20,20 @@ import (
 func TestCreateOffer1(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
-	offerer, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
+	// We will here assign the next available team to offerer so she can make an offer for the players at team = 0
+	// playerId from the second team is made an offer
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(nHumanTeams.Int64()*18+10))
+	teamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(nHumanTeams.Int64()))
+	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
 	bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		timezoneIdx,
 		countryIdx,
 		crypto.PubkeyToAddress(offerer.PublicKey),
 	)
-
-	offererRnd := int32(42321)
-	offerValidUntil := time.Now().Unix() + 100
 
 	ch := make(chan interface{}, 10)
 
@@ -46,70 +50,48 @@ func TestCreateOffer1(t *testing.T) {
 
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
+	// We use offerValidUntil for offers, and validUntil for accept offer and make bids later
+	validUntil := time.Now().Unix() + 1000
+	offerValidUntil := time.Now().Unix() + 100
+
 	inOffer := input.CreateOfferInput{}
 	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
-	inOffer.PlayerId = "274877906944"
+	inOffer.PlayerId = playerId.String()
 	inOffer.CurrencyId = 1
 	inOffer.Price = 41234
-	inOffer.Rnd = offererRnd
-	inOffer.BuyerTeamId = "274877906945"
-	teamId, _ := new(big.Int).SetString(inOffer.BuyerTeamId, 10)
-	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
-	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
-	dummyRnd := int64(0)
-	hashOffer, err := signer.HashBidMessage(
-		bc.Contracts.Market,
-		uint8(inOffer.CurrencyId),
-		big.NewInt(int64(inOffer.Price)),
-		big.NewInt(int64(inOffer.Rnd)),
-		validUntil,
-		playerId,
-		big.NewInt(0),
-		big.NewInt(dummyRnd),
-		teamId,
-		true,
-	)
+	inOffer.Rnd = int32(42321)
+	inOffer.BuyerTeamId = teamId.String()
+
+	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
+	acceptOfferIn := input.AcceptOfferInput{}
+	acceptOfferIn.OfferValidUntil = inOffer.ValidUntil
+	acceptOfferIn.ValidUntil = strconv.FormatInt(validUntil, 10)
+	acceptOfferIn.PlayerId = inOffer.PlayerId
+	acceptOfferIn.CurrencyId = inOffer.CurrencyId
+	acceptOfferIn.Price = inOffer.Price
+	acceptOfferIn.Rnd = inOffer.Rnd
+
+	sellerDigest, err := acceptOfferIn.SellerDigest()
+
+	signature, err := signer.Sign(sellerDigest.Bytes(), offerer)
 	assert.NilError(t, err)
-	signatureOffer, err := signer.Sign(hashOffer.Bytes(), offerer)
-	assert.NilError(t, err)
-	inOffer.Signature = hex.EncodeToString(signatureOffer)
-	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
+	acceptOfferIn.Signature = hex.EncodeToString(signature)
+
+	_, err = r.CreateAuctionFromOffer(struct {
+		Input input.AcceptOfferInput
+	}{acceptOfferIn})
 	assert.NilError(t, err)
 
-	in := input.CreateAuctionInput{}
-	in.ValidUntil = strconv.FormatInt(offerValidUntil+1000, 10)
-	in.PlayerId = inOffer.PlayerId
-	in.CurrencyId = inOffer.CurrencyId
-	in.Price = inOffer.Price
-	in.Rnd = offererRnd
-	auctionId, err := in.ID()
-
-	validUntilAuction, err := strconv.ParseInt(in.ValidUntil, 10, 64)
-	assert.NilError(t, err)
-	hash, err := signer.HashSellMessage(
-		uint8(in.CurrencyId),
-		big.NewInt(int64(in.Price)),
-		big.NewInt(int64(in.Rnd)),
-		validUntilAuction,
-		playerId,
-	)
-
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
-	assert.NilError(t, err)
-	in.Signature = hex.EncodeToString(signature)
-
-	_, err = r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
-	assert.NilError(t, err)
-
+	auctionId, err := acceptOfferIn.AuctionID()
 	inBid := input.CreateBidInput{}
 	inBid.AuctionId = auctionId
 	inBid.ExtraPrice = 0
-	inBid.Rnd = offererRnd
+	inBid.Rnd = 0
 	inBid.TeamId = inOffer.BuyerTeamId
 	inBid.Signature = inOffer.Signature
 
 	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
-	assert.Error(t, err, "signer is not the owner of teamId 274877906945")
+	assert.Error(t, err, "signer is not the owner of teamId")
 }
 
 func TestCreateOfferSameOwner(t *testing.T) {
@@ -139,19 +121,21 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	teamId, _ := new(big.Int).SetString(inOffer.BuyerTeamId, 10)
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
-	dummyRnd := int64(0)
 
+	dummyValidUntil := int64(0)
+	dummyExtraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
+		dummyValidUntil,
 		validUntil,
 		playerId,
-		big.NewInt(0),
-		big.NewInt(dummyRnd),
+		dummyExtraPrice,
+		dummyRnd,
 		teamId,
-		true,
 	)
 
 	assert.NilError(t, err)
@@ -201,19 +185,23 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 	inOffer.BuyerTeamId = teamNotOwnedByOffered.String()
 	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
 	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
-	dummyRnd := int64(0)
+
+	dummyValidUntil := int64(0)
+	dummyExtraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
+		dummyValidUntil,
 		validUntil,
 		playerId,
-		big.NewInt(0),
-		big.NewInt(dummyRnd),
+		dummyExtraPrice,
+		dummyRnd,
 		teamNotOwnedByOffered,
-		true,
 	)
+
 	assert.NilError(t, err)
 	signatureOffer, err := signer.Sign(hashOffer.Bytes(), offerer)
 	assert.NilError(t, err)
@@ -223,17 +211,18 @@ func TestCreateOfferNotTeamOwner(t *testing.T) {
 
 	// exactly same call but with a team truly owned by offerer
 	inOffer.BuyerTeamId = teamOwnedByOffered.String()
+
 	hashOffer, err = signer.HashBidMessage(
 		bc.Contracts.Market,
 		uint8(inOffer.CurrencyId),
 		big.NewInt(int64(inOffer.Price)),
 		big.NewInt(int64(inOffer.Rnd)),
+		dummyValidUntil,
 		validUntil,
 		playerId,
-		big.NewInt(0),
-		big.NewInt(dummyRnd),
+		dummyExtraPrice,
+		dummyRnd,
 		teamOwnedByOffered,
-		true,
 	)
 	assert.NilError(t, err)
 	signatureOffer, err = signer.Sign(hashOffer.Bytes(), offerer)
@@ -256,61 +245,63 @@ func TestCreateOfferExConsumer(t *testing.T) {
 	}
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
-	in := input.CreateOfferInput{}
-	in.ValidUntil = "999999999999"
-	in.PlayerId = "274877906940"
-	in.BuyerTeamId = "456678987944"
-	in.CurrencyId = 1
-	in.Price = 41234
-	in.Rnd = 4232
-	in.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
-	playerId, _ := new(big.Int).SetString(in.PlayerId, 10)
-	teamId, _ := new(big.Int).SetString(in.BuyerTeamId, 10)
-	validUntil, err := strconv.ParseInt(in.ValidUntil, 10, 64)
+	inOffer := input.CreateOfferInput{}
+	inOffer.ValidUntil = "999999999999"
+	inOffer.PlayerId = "274877906940"
+	inOffer.BuyerTeamId = "456678987944"
+	inOffer.CurrencyId = 1
+	inOffer.Price = 41234
+	inOffer.Rnd = 4232
+	inOffer.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5f"
+	playerId, _ := new(big.Int).SetString(inOffer.PlayerId, 10)
+	teamId, _ := new(big.Int).SetString(inOffer.BuyerTeamId, 10)
+	validUntil, err := strconv.ParseInt(inOffer.ValidUntil, 10, 64)
 	dummyRnd := big.NewInt(0)
 	offerExtraPrice := big.NewInt(0)
-	isOffer := true
 	assert.NilError(t, err)
+
+	dummyValidUntil := int64(0)
 	// an offer cannot be signed with non null extraPrice:
-	hash, err := signer.HashBidMessage(
+	_, err = signer.HashBidMessage(
 		bc.Contracts.Market,
-		uint8(in.CurrencyId),
-		big.NewInt(int64(in.Price)),
-		big.NewInt(int64(in.Rnd)),
+		uint8(inOffer.CurrencyId),
+		big.NewInt(int64(inOffer.Price)),
+		big.NewInt(int64(inOffer.Rnd)),
+		dummyValidUntil,
 		validUntil,
 		playerId,
 		big.NewInt(2),
 		dummyRnd,
 		teamId,
-		isOffer,
 	)
 	assert.Error(t, err, "offers must have zero extraPrice")
+
 	// an offer cannot be signed with non null bid.Rnd:
-	hash, err = signer.HashBidMessage(
+	_, err = signer.HashBidMessage(
 		bc.Contracts.Market,
-		uint8(in.CurrencyId),
-		big.NewInt(int64(in.Price)),
-		big.NewInt(int64(in.Rnd)),
+		uint8(inOffer.CurrencyId),
+		big.NewInt(int64(inOffer.Price)),
+		big.NewInt(int64(inOffer.Rnd)),
+		dummyValidUntil,
 		validUntil,
 		playerId,
 		offerExtraPrice,
 		big.NewInt(2),
 		teamId,
-		isOffer,
 	)
 	assert.Error(t, err, "offers must have zero bidRnd")
 	// it should now work:
-	hash, err = signer.HashBidMessage(
+	hash, err := signer.HashBidMessage(
 		bc.Contracts.Market,
-		uint8(in.CurrencyId),
-		big.NewInt(int64(in.Price)),
-		big.NewInt(int64(in.Rnd)),
+		uint8(inOffer.CurrencyId),
+		big.NewInt(int64(inOffer.Price)),
+		big.NewInt(int64(inOffer.Rnd)),
+		dummyValidUntil,
 		validUntil,
 		playerId,
 		offerExtraPrice,
 		dummyRnd,
 		teamId,
-		isOffer,
 	)
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x1563f70ce76787ea99b420ad637df3757b492c98cd5a774d7111c861453c270b")
@@ -320,8 +311,8 @@ func TestCreateOfferExConsumer(t *testing.T) {
 	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
 	assert.Equal(t, hex.EncodeToString(signature), "dbd05f0df6b470d071462ba49956eb472031de84509409823502decb119f2fb36cfb57d5d6f6de5f819731745a4f5533c1805065eebf1a7d56dc9bdced406b231c")
-	in.Signature = hex.EncodeToString(signature)
+	inOffer.Signature = hex.EncodeToString(signature)
 
-	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{in})
+	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
 	assert.Error(t, err, "signer is not the owner of teamId 456678987944")
 }

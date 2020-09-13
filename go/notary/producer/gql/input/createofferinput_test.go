@@ -278,7 +278,7 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 // 	assert.NilError(t, err)
 // 	defer tx.Rollback()
 
-// 	in := input.CreateAuctionInput{}
+// 	in := input.CreatePutPlayerForSaleInput{}
 // 	in.ValidUntil = "999999999999"
 // 	in.PlayerId = "274877906944"
 // 	in.CurrencyId = 1

@@ -60,7 +60,7 @@ func (b CreateBidInput) SignerAddress(contracts contracts.Contracts) (common.Add
 	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
-func (b CreateBidInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
+func (b CreateBidInput) IsSignerOwnerOfTeam(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress(contracts)
 	if err != nil {
 		return false, err

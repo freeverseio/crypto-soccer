@@ -27,7 +27,7 @@ func TestCreateAuctionCallRollbackOnError(t *testing.T) {
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
 	}
 
-	in := input.CreateAuctionInput{}
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
@@ -40,7 +40,9 @@ func TestCreateAuctionCallRollbackOnError(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-	_, err = r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
+	_, err = r.CreateAuction(struct {
+		Input input.CreatePutPlayerForSaleInput
+	}{in})
 	assert.Error(t, err, "error")
 	assert.Equal(t, rollbackCounter, 1)
 }
@@ -56,7 +58,7 @@ func TestCreateAuctionCallCommit(t *testing.T) {
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
 	}
 
-	in := input.CreateAuctionInput{}
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
@@ -69,7 +71,9 @@ func TestCreateAuctionCallCommit(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-	_, err = r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
+	_, err = r.CreateAuction(struct {
+		Input input.CreatePutPlayerForSaleInput
+	}{in})
 	assert.NilError(t, err)
 	assert.Equal(t, counter, 1)
 }
@@ -85,7 +89,7 @@ func TestCreateAuctionReturnIDOfTheAuction(t *testing.T) {
 
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
 
-	in := input.CreateAuctionInput{}
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = "274877906948"
 	in.CurrencyId = 1
@@ -109,7 +113,9 @@ func TestCreateAuctionReturnIDOfTheAuction(t *testing.T) {
 
 	id, err := in.ID()
 	assert.NilError(t, err)
-	result, err := r.CreateAuction(struct{ Input input.CreateAuctionInput }{in})
+	result, err := r.CreateAuction(struct {
+		Input input.CreatePutPlayerForSaleInput
+	}{in})
 	assert.NilError(t, err)
 	assert.Equal(t, id, result)
 }

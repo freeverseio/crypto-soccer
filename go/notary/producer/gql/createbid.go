@@ -14,6 +14,8 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql
 	log.Infof("[notary|producer|gql] create bid %+v", args.Input)
 
 	id, err := args.Input.ID(b.contracts)
+	log.Warning("id - CreateBid")
+	log.Warning(id)
 	if err != nil {
 		return graphql.ID(""), err
 	}
@@ -22,15 +24,7 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql
 		return id, errors.New("internal error: no channel")
 	}
 
-	isValid, err := args.Input.VerifySignature(b.contracts)
-	if err != nil {
-		return graphql.ID(id), err
-	}
-	if !isValid {
-		return graphql.ID(id), errors.New("Invalid signature")
-	}
-
-	isOwner, err := args.Input.IsSignerOwner(b.contracts)
+	isOwner, err := args.Input.IsSignerOwnerOfTeam(b.contracts)
 	if err != nil {
 		return id, err
 	}

@@ -1,9 +1,15 @@
 package input_test
 
 import (
+	"encoding/hex"
+	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/graph-gophers/graphql-go"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -51,7 +57,51 @@ func TestCreateBidInputSign(t *testing.T) {
 	in.TeamId = "274877906945"
 	in.Signature = "4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b"
 
-	isValid, err := in.IsSignerOwner(*bc.Contracts)
+	isValid, err := in.IsSignerOwnerOfTeam(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isValid, false)
+}
+
+func TestCreateGoodBidInputSign(t *testing.T) {
+	tz := uint8(1)
+	countryIdxInTz := big.NewInt(0)
+	// We will here assign the next available team to alice so she can put a playerId for sale
+	// playerId from the second team is made an offer
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, tz, countryIdxInTz)
+	teamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, nHumanTeams)
+	alice, _ := crypto.HexToECDSA("0B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
+	in := input.CreateBidInput{}
+	in.AuctionId = graphql.ID("32123")
+	in.ExtraPrice = 332
+	in.Rnd = 1243523
+	in.TeamId = teamId.String()
+
+	hash, err := in.Hash(*bc.Contracts)
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), alice)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	isValid, err := in.IsSignerOwnerOfTeam(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, isValid, false)
+
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		tz,
+		countryIdxInTz,
+		crypto.PubkeyToAddress(alice.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = helper.WaitReceipt(bc.Client, tx, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	isValid, err = in.IsSignerOwnerOfTeam(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, isValid, true)
 }

@@ -2,7 +2,7 @@
 package gql
 
 const Schema = ` 
-	input CreateAuctionInput {
+	input CreatePutPlayerForSaleInput {
   		signature: String!
   		playerId: String!
   		currencyId: Int!
@@ -93,7 +93,7 @@ const Schema = `
 	}
 
 	type Mutation {
-		createAuction(input: CreateAuctionInput!): ID!
+		createAuction(input: CreatePutPlayerForSaleInput!): ID!
 		cancelAuction(input: CancelAuctionInput!): ID!
 		createBid(input: CreateBidInput!): ID!
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!

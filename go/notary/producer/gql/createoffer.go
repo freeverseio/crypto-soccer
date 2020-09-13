@@ -24,15 +24,7 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, errors.New("internal error: no channel")
 	}
 
-	isValid, err := args.Input.VerifySignature(b.contracts)
-	if err != nil {
-		return id, err
-	}
-	if !isValid {
-		return id, errors.New("Invalid signature")
-	}
-
-	isPlayerOwner, err := args.Input.IsSignerOwner(b.contracts)
+	isPlayerOwner, err := args.Input.SignerAlreadyOwnsPlayer(b.contracts)
 	if err != nil {
 		return id, err
 	}
