@@ -95,7 +95,7 @@ func (b CreatePutPlayerForSaleInput) IsSignerOwnerOfPlayer(contracts contracts.C
 	return signerAddress == owner, nil
 }
 
-func (b CreatePutPlayerForSaleInput) ValidForBlockchainFreeze(contracts contracts.Contracts) (bool, error) {
+func (b CreatePutPlayerForSaleInput) IsValidForBlockchainFreeze(contracts contracts.Contracts) (bool, error) {
 	var err error
 	var sig [2][32]byte
 	var sigV uint8

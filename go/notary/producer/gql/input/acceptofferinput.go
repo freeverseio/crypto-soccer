@@ -75,18 +75,6 @@ func (b AcceptOfferInput) SellerDigest() (common.Hash, error) {
 	return sellerDigest, err
 }
 
-func (b AcceptOfferInput) VerifySignature() (bool, error) {
-	hash, err := b.SellerDigest()
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
-}
-
 func (b AcceptOfferInput) SignerAddress() (common.Address, error) {
 	hash, err := b.SellerDigest()
 	if err != nil {
@@ -99,7 +87,7 @@ func (b AcceptOfferInput) SignerAddress() (common.Address, error) {
 	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
-func (b AcceptOfferInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
+func (b AcceptOfferInput) IsSignerOwnerOfPlayer(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress()
 	if err != nil {
 		return false, err
@@ -114,8 +102,7 @@ func (b AcceptOfferInput) IsSignerOwner(contracts contracts.Contracts) (bool, er
 	}
 	return signerAddress == owner, nil
 }
-
-func (b AcceptOfferInput) IsValidForBlockchain(contracts contracts.Contracts) (bool, error) {
+func (b AcceptOfferInput) IsValidForBlockchainFreeze(contracts contracts.Contracts) (bool, error) {
 	var err error
 	var sig [2][32]byte
 	var sigV uint8
@@ -138,17 +125,18 @@ func (b AcceptOfferInput) IsValidForBlockchain(contracts contracts.Contracts) (b
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
 	}
-	auctionId, err := signer.ComputeAuctionId(
+	sellerHiddenPrice, err := signer.HidePrice(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
-		validUntil,
-		offerValidUntil,
-		playerId,
 	)
+	if err != nil {
+		return false, errors.New("invalid valid auctionId")
+	}
+
 	isValid, err := contracts.Market.AreFreezePlayerRequirementsOK(
 		&bind.CallOpts{},
-		auctionId,
+		sellerHiddenPrice,
 		playerId,
 		sig,
 		sigV,

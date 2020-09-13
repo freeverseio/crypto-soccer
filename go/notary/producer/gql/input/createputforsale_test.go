@@ -84,7 +84,7 @@ func TestCreateAuctionIsSignerOwner(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, false)
 
-	isValid, err := in.ValidForBlockchainFreeze(*bc.Contracts)
+	isValid, err := in.IsValidForBlockchainFreeze(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isValid, false)
 
@@ -106,7 +106,7 @@ func TestCreateAuctionIsSignerOwner(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, true)
 
-	isValid, err = in.ValidForBlockchainFreeze(*bc.Contracts)
+	isValid, err = in.IsValidForBlockchainFreeze(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isValid, true)
 }
