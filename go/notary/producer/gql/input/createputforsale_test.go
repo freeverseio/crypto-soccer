@@ -60,11 +60,12 @@ func TestCreateAuctionSignerAddress(t *testing.T) {
 func TestCreateAuctionIsSignerOwner(t *testing.T) {
 	tz := uint8(1)
 	countryIdxInTz := big.NewInt(0)
-	// first team is assigned to during setup to owner (players 0...17),
-	// We will here assign a team to alice (playesr 18...35)
+	// We will here assign the next available team to alice so she can put a playerId for sale
 	// playerId from the second team is made an offer
-	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(35))
-	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, tz, countryIdxInTz)
+	nPlayerInCountryForAlice := nHumanTeams.Int64()*18 + 1
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(nPlayerInCountryForAlice))
+	alice, _ := crypto.HexToECDSA("5B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
 	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+1000, 10)

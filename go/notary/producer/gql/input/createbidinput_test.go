@@ -1,6 +1,7 @@
 package input_test
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -11,26 +12,25 @@ import (
 )
 
 func TestCreateBidInputHash(t *testing.T) {
-	auctioninput := input.CreateAuctionInput{}
-	auctioninput.ValidUntil = "2000000000"
-	auctioninput.OfferValidUntil = "1999999000"
-	auctioninput.PlayerId = "274877906944"
-	auctioninput.CurrencyId = 1
-	auctioninput.Price = 41234
-	auctioninput.Rnd = 42321
-	auctionId, err := auctioninput.ID()
+	putforsale := input.CreatePutPlayerForSaleInput{}
+	putforsale.ValidUntil = "2000000000"
+	putforsale.PlayerId = "274877906944"
+	putforsale.CurrencyId = 1
+	putforsale.Price = 41234
+	putforsale.Rnd = 42321
+	auctionId, err := putforsale.ID()
 	assert.NilError(t, err)
-	assert.Equal(t, string(auctionId), "24f45caee25883ab36cc32e2b152b94b8a05bdb086ac68784e3a4686f4d961e8")
+	assert.Equal(t, hex.EncodeToString(auctionId.Bytes()), "58912aae76687d592fefbb46a6192474eb56ce15eb12dea2e41bee3b9fca45d3")
 
 	in := input.CreateBidInput{}
-	in.AuctionId = auctionId
+	in.AuctionId = graphql.ID(hex.EncodeToString(auctionId.Bytes()))
 	in.ExtraPrice = 332
 	in.Rnd = 1243523
 	in.TeamId = "274877906945"
 
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x622481acfbf868f28f786b963f169b755390d06d88e5dfd08ebc9cdeab668dcf")
+	assert.Equal(t, hash.Hex(), "0xaa3b6bde688ad7a6cb75ec987cf8b295dc6fd0782defe0da43f2c6a088e99c95")
 }
 
 func TestCreateBidInputSign(t *testing.T) {
