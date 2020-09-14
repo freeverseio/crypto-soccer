@@ -243,19 +243,6 @@ func TestCreateOfferSameOwner(t *testing.T) {
 
 	ch := make(chan interface{}, 10)
 
-	mock := mockup.Tx{
-		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
-		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
-		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
-		BidInsertFunc:          func(bid storage.Bid) error { return nil },
-		CommitFunc:             func() error { return nil },
-	}
-	service := &mockup.StorageService{
-		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
-	}
-
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
-
 	// We use offerValidUntil for offers, and validUntil for accept offer and make bids later
 	validUntil := time.Now().Unix() + 1000
 	offerValidUntil := time.Now().Unix() + 100
@@ -274,6 +261,19 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	signature, err := signer.Sign(hash.Bytes(), offerer)
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(signature)
+
+	mock := mockup.Tx{
+		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
+		BidInsertFunc:          func(bid storage.Bid) error { return nil },
+		CommitFunc:             func() error { return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
 	acceptOfferIn := input.AcceptOfferInput{}
@@ -325,19 +325,6 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 
 	ch := make(chan interface{}, 10)
 
-	mock := mockup.Tx{
-		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
-		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
-		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
-		BidInsertFunc:          func(bid storage.Bid) error { return nil },
-		CommitFunc:             func() error { return nil },
-	}
-	service := &mockup.StorageService{
-		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
-	}
-
-	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
-
 	// We use offerValidUntil for offers, and validUntil for accept offer and make bids later
 	validUntil := time.Now().Unix() + 1000
 	offerValidUntil := time.Now().Unix() + 100
@@ -356,6 +343,38 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 	signature, err := signer.Sign(hash.Bytes(), offerer)
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(signature)
+
+	mockOffer := storage.Offer{
+		ID:          string(offerID),
+		PlayerID:    inOffer.PlayerId,
+		CurrencyID:  int(inOffer.CurrencyId),
+		Price:       int64(inOffer.Price),
+		Rnd:         int64(inOffer.Rnd),
+		ValidUntil:  validUntil,
+		Signature:   "0x" + inOffer.Signature,
+		State:       storage.OfferStarted,
+		StateExtra:  "",
+		Seller:      inOffer.Seller,
+		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
+		AuctionID:   "",
+		BuyerTeamID: inOffer.BuyerTeamId,
+	}
+	mockOffersByPlayerId := []storage.Offer{mockOffer}
+
+	mock := mockup.Tx{
+		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
+		BidInsertFunc:          func(bid storage.Bid) error { return nil },
+		CommitFunc:             func() error { return nil },
+		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
+	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
 
 	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
 	acceptOfferIn := input.AcceptOfferInput{}
