@@ -130,7 +130,7 @@ func TestCreateOffer1(t *testing.T) {
 	inBid.TeamId = inOffer.BuyerTeamId
 	inBid.Signature = inOffer.Signature
 
-	err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
+	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
 	assert.NilError(t, err)
 
 }

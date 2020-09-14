@@ -67,8 +67,10 @@ const Schema = `
 		currencyId: Int!
 		price: Int!
 		validUntil: String!
+		offerValidUntil: String!
 		rnd: Int!
 		offerId: ID!
+		buyerTeamId: String!
   }
 
 	type WorldPlayer {
@@ -93,14 +95,14 @@ const Schema = `
 	}
 
 	type Mutation {
-		createAuction(input: CreatePutPlayerForSaleInput!): ID!
-		cancelAuction(input: CancelAuctionInput!): ID!
+		createOffer(input: CreateOfferInput!): ID!
+		createAuctionFromPutForSale(input: CreatePutPlayerForSaleInput!): ID!
+		acceptOffer(input: AcceptOfferInput!): ID!
 		createBid(input: CreateBidInput!): ID!
+		cancelAuction(input: CancelAuctionInput!): ID!
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
-		createOffer(input: CreateOfferInput!): ID!
-		acceptOffer(input: AcceptOfferInput!): ID!
 		cancelOffer(input: CancelOfferInput!): ID!
 	}
 `

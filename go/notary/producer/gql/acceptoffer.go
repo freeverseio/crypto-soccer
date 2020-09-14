@@ -180,7 +180,7 @@ func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptO
 	bidInput.ExtraPrice = int32(0)
 	bidInput.Rnd = int32(0)
 	bidInput.TeamId = highestOffer.BuyerTeamID
-	err := b.CreateBid(struct{ Input input.CreateBidInput }{bidInput})
+	_, err := b.CreateBid(struct{ Input input.CreateBidInput }{bidInput})
 
 	if err != nil {
 		return err
