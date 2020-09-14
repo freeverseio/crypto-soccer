@@ -105,52 +105,44 @@ func TestAuctionStartedGoFrozen(t *testing.T) {
 	assert.Equal(t, m.State(), storage.AuctionAssetFrozen)
 }
 
-func TestAuctionMachineAllWorkflow(t *testing.T) {
-	bc, err := testutils.NewBlockchain()
-	assert.NilError(t, err)
+func TestAuctionMachineAllWorkflow1(t *testing.T) {
+	// We will here assign the next available team to offerer so she can make an offer for the players of a different team
+	// we choose that player as a player very far from the current amount of teams (x2)
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
+	offererTeamIdx := nHumanTeams.Int64()
+	sellerTeamIdx := offererTeamIdx + 1
+	offererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(offererTeamIdx))
+	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	seller, _ := crypto.HexToECDSA("0A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(2 + 18*sellerTeamIdx)))
 
-	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	bob, _ := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
-
-	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+	bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
-		1,
-		big.NewInt(0),
-		crypto.PubkeyToAddress(alice.PublicKey),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(offerer.PublicKey),
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = helper.WaitReceipt(bc.Client, tx, 5)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
+	bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
-		1,
-		big.NewInt(0),
-		crypto.PubkeyToAddress(bob.PublicKey),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(seller.PublicKey),
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = helper.WaitReceipt(bc.Client, tx, 5)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	now := time.Now().Unix()
-	validUntil := now + 1000
-	offerValidUntil := validUntil + 100
-	playerID := big.NewInt(274877906944)
+	validUntil := now + 8
+	offerValidUntil := int64(0)
+	playerID := playerId
 	currencyID := uint8(1)
 	price := big.NewInt(41234)
 	auctionRnd := big.NewInt(42321)
 	extraPrice := big.NewInt(332)
 	bidRnd := big.NewInt(1243523)
-	teamID := big.NewInt(274877906945)
+	teamID := offererTeamId
 
-	hashAuctionMsg, err := signer.ComputePutAssetForSaleDigest(
+	sellerDigest, err := signer.ComputePutAssetForSaleDigest(
 		currencyID,
 		price,
 		auctionRnd,
@@ -161,21 +153,22 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signAuctionMsg, err := signer.Sign(hashAuctionMsg.Bytes(), alice)
+	signAuctionMsg, err := signer.Sign(sellerDigest.Bytes(), seller)
 	if err != nil {
 		t.Fatal(err)
 	}
 	auction := storage.Auction{
-		ID:         "TheTestingAuction",
-		PlayerID:   playerID.String(),
-		CurrencyID: int(currencyID),
-		Price:      price.Int64(),
-		Rnd:        auctionRnd.Int64(),
-		ValidUntil: validUntil,
-		Signature:  hex.EncodeToString(signAuctionMsg),
-		State:      storage.AuctionStarted,
-		Seller:     "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7",
+		PlayerID:        playerID.String(),
+		CurrencyID:      int(currencyID),
+		Price:           price.Int64(),
+		Rnd:             auctionRnd.Int64(),
+		ValidUntil:      validUntil,
+		OfferValidUntil: offerValidUntil,
+		Signature:       hex.EncodeToString(signAuctionMsg),
+		State:           storage.AuctionStarted,
+		Seller:          crypto.PubkeyToAddress(seller.PublicKey).Hex(),
 	}
+	auction.ID, _ = auction.ComputeID()
 
 	hashBidMsg, err := signer.HashBidMessage(
 		bc.Contracts.Market,
@@ -192,7 +185,7 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signBidMsg, err := signer.Sign(hashBidMsg.Bytes(), bob)
+	signBidMsg, err := signer.Sign(hashBidMsg.Bytes(), offerer)
 	if err != nil {
 		t.Fatal(err)
 	}
