@@ -3,6 +3,7 @@ package input_test
 import (
 	"encoding/hex"
 	"math/big"
+	"strconv"
 	"testing"
 	"time"
 
@@ -159,7 +160,7 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 
 	now := time.Now().Unix()
 	validUntil := now + 800
-	offerValidUntil := now + 8
+	offerValidUntil := now + 38
 	playerID := big.NewInt(274877906944)
 	currencyID := uint8(1)
 	price := big.NewInt(41234)
@@ -256,12 +257,12 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 
 	// try to create offer which will fail because asset is frozen
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
-	in.PlayerId = "274877906944"
-	in.CurrencyId = 1
-	in.BuyerTeamId = "20"
-	in.Price = 41234
-	in.Rnd = 42321
+	in.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	in.PlayerId = playerID.String()
+	in.CurrencyId = int32(currencyID)
+	in.BuyerTeamId = teamID.String()
+	in.Price = int32(price.Int64())
+	in.Rnd = int32(offererRnd.Int64())
 
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
@@ -271,6 +272,10 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 	isPlayerFrozen, err := in.IsPlayerFrozen(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, true, isPlayerFrozen)
+
+	// double check that the auctionId can already be determined at the time the offer was made
+	auctionIdFromOfferInput, _ := in.ID(*bc.Contracts)
+	assert.Equal(t, string(auctionIdFromOfferInput), auctionId.Hex()[2:])
 }
 
 // func TestCreateOfferPlayerAlreadyOnSale(t *testing.T) {

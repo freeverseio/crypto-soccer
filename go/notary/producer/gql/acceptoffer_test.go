@@ -12,6 +12,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage/mockup"
 	"gotest.tools/assert"
 )
 
@@ -42,6 +44,36 @@ func TestAcceptOfferReturnTheSignature(t *testing.T) {
 	)
 
 	ch := make(chan interface{}, 10)
+
+	mockOffer := storage.Offer{
+		ID:          string(offerID),
+		PlayerID:    inOffer.PlayerId,
+		CurrencyID:  int(inOffer.CurrencyId),
+		Price:       int64(inOffer.Price),
+		Rnd:         int64(inOffer.Rnd),
+		ValidUntil:  validUntil,
+		Signature:   "0x" + inOffer.Signature,
+		State:       storage.OfferStarted,
+		StateExtra:  "",
+		Seller:      inOffer.Seller,
+		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
+		AuctionID:   "",
+		BuyerTeamID: inOffer.BuyerTeamId,
+	}
+	mockOffersByPlayerId := []storage.Offer{mockOffer}
+
+	mock := mockup.Tx{
+		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
+		BidInsertFunc:          func(bid storage.Bid) error { return nil },
+		CommitFunc:             func() error { return nil },
+		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	in := input.AcceptOfferInput{}

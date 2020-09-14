@@ -95,7 +95,6 @@ func TestCreateOffer1(t *testing.T) {
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
 	}
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
-
 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
 
 	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
@@ -113,8 +112,14 @@ func TestCreateOffer1(t *testing.T) {
 	assert.NilError(t, err)
 	acceptOfferIn.Signature = hex.EncodeToString(signature)
 
-	_, err = r.AcceptOffer(struct{ Input input.AcceptOfferInput }{acceptOfferIn})
+	auctionIdResult, err := r.AcceptOffer(struct{ Input input.AcceptOfferInput }{acceptOfferIn})
 	assert.NilError(t, err)
+
+	// test that acceptOffer returned the auctionId from the input offer
+	acceptOffderInId, _ := acceptOfferIn.AuctionID()
+	assert.Equal(t, auctionIdResult, acceptOffderInId)
+	inId, _ := inOffer.ID(*bc.Contracts)
+	assert.Equal(t, auctionIdResult, inId)
 
 	// The original offer signature should be valid to create an auction
 	auctionId, err := acceptOfferIn.AuctionID()
@@ -127,6 +132,7 @@ func TestCreateOffer1(t *testing.T) {
 
 	err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
 	assert.NilError(t, err)
+
 }
 
 func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {

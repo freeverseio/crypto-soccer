@@ -28,11 +28,33 @@ type CreateOfferInput struct {
 }
 
 func (b CreateOfferInput) ID(contracts contracts.Contracts) (graphql.ID, error) {
-	hash, err := b.Hash(contracts)
-	if err != nil {
-		return graphql.ID(""), err
+	teamId, _ := new(big.Int).SetString(b.BuyerTeamId, 10)
+	if teamId == nil {
+		return graphql.ID(""), errors.New("invalid teamId")
 	}
-	return graphql.ID(hash.String()[2:]), nil
+	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
+	if err != nil {
+		return graphql.ID(""), errors.New("invalid validUntil")
+	}
+	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return graphql.ID(""), errors.New("invalid playerId")
+	}
+	dummyValidUntil := int64(0)
+	// the validUntil of the offer becomes the offerValidUntil of the auction
+	// the seller adds the new validUntil
+	auctionId, err := signer.ComputeAuctionId(
+		uint8(b.CurrencyId),
+		big.NewInt(int64(b.Price)),
+		big.NewInt(int64(b.Rnd)),
+		dummyValidUntil,
+		validUntil,
+		playerId,
+	)
+	if err != nil {
+		return graphql.ID(""), errors.New("invalid validUntil")
+	}
+	return graphql.ID(auctionId.String()[2:]), nil
 }
 
 func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, error) {
