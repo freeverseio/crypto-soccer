@@ -20,8 +20,6 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error 
 	}
 
 	bid := bidmachine.FirstAlive(b.bids)
-	log.Warning("....")
-	log.Warning(bid)
 	if bid == nil {
 		b.SetState(storage.AuctionFailed, "No available healty bid")
 		return nil
@@ -45,9 +43,6 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error 
 
 	if bid.State == storage.BidPaid {
 		if err := b.transferAuction(*bid); err != nil {
-			log.Warning("here")
-			log.Warning(err)
-			log.Warning("here done")
 			b.SetState(storage.AuctionWithdrableByBuyer, err.Error())
 			return nil
 		}
@@ -110,9 +105,6 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	auth := bind.NewKeyedTransactor(b.freeverse)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
 	// fails here
-	log.Warning("her2")
-	log.Warning(b.auction.ValidUntil)
-	log.Warning(b.auction.OfferValidUntil)
 	tx, err := b.contracts.Market.CompletePlayerAuction(
 		auth,
 		auctionId,
