@@ -62,16 +62,25 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 	if err != nil {
 		return id, err
 	}
-	if err := CreateAuctionFromOffer(tx, args.Input); err != nil {
-		tx.Rollback()
+
+	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId)
+	if err != nil {
 		return id, err
 	}
 
+	if err := CreateAuctionFromOffer(tx, args.Input, &highestOffer); err != nil {
+		tx.Rollback()
+		return id, err
+	}
+	if err := b.CreateBidFromOffer(tx, args.Input, &highestOffer); err != nil {
+		tx.Rollback()
+		return id, err
+	}
 	return id, tx.Commit()
 }
 
-func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput) error {
-	err := assertIsHighestOfferAndStarted(tx, in)
+func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput, highestOffer *storage.Offer) error {
+	err := assertIsHighestOfferAndStarted(tx, in, highestOffer)
 	if err != nil {
 		return err
 	}
@@ -106,18 +115,22 @@ func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput) error {
 	return nil
 }
 
-func assertIsHighestOfferAndStarted(tx storage.Tx, in input.AcceptOfferInput) error {
-	existingOffers, err := tx.OffersByPlayerId(string(in.PlayerId))
+func getHigestOffer(tx storage.Tx, playerId string) (storage.Offer, error) {
+	existingOffers, err := tx.OffersByPlayerId(playerId)
 	if err != nil {
-		return errors.New("could not find existing offers")
+		return storage.Offer{}, errors.New("could not find existing offers")
 	}
 	if existingOffers == nil {
-		return errors.New("existingOffers is nil")
+		return storage.Offer{}, errors.New("existingOffers is nil")
 	}
-	highestOffer, err := highestOffer(existingOffers)
+	highestOffer, err := highestOfferFromExistingOffers(existingOffers)
 	if err != nil {
-		return err
+		return storage.Offer{}, err
 	}
+	return *highestOffer, nil
+}
+
+func assertIsHighestOfferAndStarted(tx storage.Tx, in input.AcceptOfferInput, highestOffer *storage.Offer) error {
 	if highestOffer == nil {
 		return errors.New("highestOffer is nil")
 	}
@@ -130,7 +143,7 @@ func assertIsHighestOfferAndStarted(tx storage.Tx, in input.AcceptOfferInput) er
 	return nil
 }
 
-func highestOffer(offers []storage.Offer) (*storage.Offer, error) {
+func highestOfferFromExistingOffers(offers []storage.Offer) (*storage.Offer, error) {
 	length := len(offers)
 	if length == 0 {
 		return nil, errors.New("There are no offers for this playerId")
@@ -157,4 +170,20 @@ func highestOffer(offers []storage.Offer) (*storage.Offer, error) {
 		return nil, errors.New("There are no acceptable offers")
 	}
 	return &offers[idx], nil
+}
+
+func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptOfferInput, highestOffer *storage.Offer) error {
+
+	bidInput := input.CreateBidInput{}
+	bidInput.Signature = highestOffer.Signature
+	bidInput.AuctionId = graphql.ID(highestOffer.ID)
+	bidInput.ExtraPrice = int32(0)
+	bidInput.Rnd = int32(0)
+	bidInput.TeamId = highestOffer.BuyerTeamID
+	err := b.CreateBid(struct{ Input input.CreateBidInput }{bidInput})
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

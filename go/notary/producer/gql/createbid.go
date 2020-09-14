@@ -28,6 +28,7 @@ func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) error {
 	if err != nil {
 		return err
 	}
+
 	if err := createBid(tx, args.Input); err != nil {
 		tx.Rollback()
 		return err

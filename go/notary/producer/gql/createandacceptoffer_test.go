@@ -73,7 +73,7 @@ func TestCreateOffer1(t *testing.T) {
 		Price:       int64(inOffer.Price),
 		Rnd:         int64(inOffer.Rnd),
 		ValidUntil:  validUntil,
-		Signature:   "0x" + inOffer.Signature,
+		Signature:   inOffer.Signature,
 		State:       storage.OfferStarted,
 		StateExtra:  "",
 		Seller:      inOffer.Seller,
@@ -191,7 +191,7 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 		Price:       int64(inOffer.Price),
 		Rnd:         int64(inOffer.Rnd),
 		ValidUntil:  validUntil,
-		Signature:   "0x" + inOffer.Signature,
+		Signature:   inOffer.Signature,
 		State:       storage.OfferStarted,
 		StateExtra:  "",
 		Seller:      inOffer.Seller,
@@ -382,7 +382,7 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 		Price:       int64(inOffer.Price),
 		Rnd:         int64(inOffer.Rnd),
 		ValidUntil:  validUntil,
-		Signature:   "0x" + inOffer.Signature,
+		Signature:   inOffer.Signature,
 		State:       storage.OfferStarted,
 		StateExtra:  "",
 		Seller:      inOffer.Seller,
@@ -399,6 +399,7 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 		BidInsertFunc:          func(bid storage.Bid) error { return nil },
 		CommitFunc:             func() error { return nil },
 		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		RollbackFunc:           func() error { return nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
@@ -424,21 +425,10 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 
 	_, err = r.AcceptOffer(struct{ Input input.AcceptOfferInput }{acceptOfferIn})
 
-	assert.NilError(t, err)
-
-	// The original offer signature should be valid to create an auction
-	auctionId, err := acceptOfferIn.AuctionID()
-	inBid := input.CreateBidInput{}
-	inBid.AuctionId = auctionId
-	inBid.ExtraPrice = 0
-	inBid.Rnd = 0
-	inBid.TeamId = inOffer.BuyerTeamId
-	inBid.Signature = inOffer.Signature
-
-	err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
 	errString := err.Error()
 	l := intMin(len(errString)-1, 33)
 	assert.Equal(t, errString[:l], "signer is not the owner of teamId")
+
 }
 
 func TestCreateOfferExConsumer(t *testing.T) {
