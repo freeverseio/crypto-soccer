@@ -19,32 +19,6 @@ import (
 )
 
 func TestCreateOffer1(t *testing.T) {
-	timezoneIdx := uint8(1)
-	countryIdx := big.NewInt(0)
-
-	// We will here assign the next available team to offerer so she can make an offer for the players of a different team
-	// we choose that player as a player very far from the current amount of teams (x2)
-	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
-	offererTeamIdx := nHumanTeams.Int64()
-	sellerTeamIdx := offererTeamIdx + 1
-	offererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(offererTeamIdx))
-	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	seller, _ := crypto.HexToECDSA("0A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(2 + 18*sellerTeamIdx)))
-
-	bc.Contracts.Assets.TransferFirstBotToAddr(
-		bind.NewKeyedTransactor(bc.Owner),
-		timezoneIdx,
-		countryIdx,
-		crypto.PubkeyToAddress(offerer.PublicKey),
-	)
-	bc.Contracts.Assets.TransferFirstBotToAddr(
-		bind.NewKeyedTransactor(bc.Owner),
-		timezoneIdx,
-		countryIdx,
-		crypto.PubkeyToAddress(seller.PublicKey),
-	)
-
 	ch := make(chan interface{}, 10)
 
 	// We use offerValidUntil for offers, and validUntil for accept offer and make bids later
@@ -67,7 +41,6 @@ func TestCreateOffer1(t *testing.T) {
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(signature)
 
-	// var mockOffersByPlayerId []storage.Offer;
 	mockOffer := storage.Offer{
 		ID:          string(offerID),
 		PlayerID:    inOffer.PlayerId,
@@ -172,6 +145,7 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 	inOffer.Price = 41234
 	inOffer.Rnd = int32(42321)
 	inOffer.BuyerTeamId = offererTeamId.String()
+	offerID, _ := inOffer.ID(*bc.Contracts)
 
 	hash, err := inOffer.Hash(*bc.Contracts)
 	assert.NilError(t, err)
@@ -179,12 +153,30 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(signature)
 
+	mockOffer := storage.Offer{
+		ID:          string(offerID),
+		PlayerID:    inOffer.PlayerId,
+		CurrencyID:  int(inOffer.CurrencyId),
+		Price:       int64(inOffer.Price),
+		Rnd:         int64(inOffer.Rnd),
+		ValidUntil:  validUntil,
+		Signature:   "0x" + inOffer.Signature,
+		State:       storage.OfferStarted,
+		StateExtra:  "",
+		Seller:      inOffer.Seller,
+		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
+		AuctionID:   "",
+		BuyerTeamID: inOffer.BuyerTeamId,
+	}
+	mockOffersByPlayerId := []storage.Offer{mockOffer}
+
 	mock := mockup.Tx{
 		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
 		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
 		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
 		BidInsertFunc:          func(bid storage.Bid) error { return nil },
 		CommitFunc:             func() error { return nil },
+		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
@@ -201,6 +193,7 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 	acceptOfferIn.CurrencyId = inOffer.CurrencyId
 	acceptOfferIn.Price = inOffer.Price
 	acceptOfferIn.Rnd = inOffer.Rnd
+	acceptOfferIn.OfferId = graphql.ID(string(offerID))
 
 	sellerDigest, err := acceptOfferIn.SellerDigest()
 	signature, err = signer.Sign(sellerDigest.Bytes(), seller)
@@ -209,7 +202,15 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 
 	_, err = r.AcceptOffer(struct{ Input input.AcceptOfferInput }{acceptOfferIn})
 	errString := err.Error()
-	assert.Equal(t, errString[:35], "signer is not the owner of playerId")
+	l := intMin(len(errString)-1, 35)
+	assert.Equal(t, errString[:l], "signer is not the owner of playerId")
+}
+
+func intMin(a int, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func TestCreateOfferSameOwner(t *testing.T) {
@@ -266,6 +267,7 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	inOffer.Price = 41234
 	inOffer.Rnd = int32(42321)
 	inOffer.BuyerTeamId = offererTeamId.String()
+	offerID, _ := inOffer.ID(*bc.Contracts)
 
 	hash, err := inOffer.Hash(*bc.Contracts)
 	assert.NilError(t, err)
@@ -282,6 +284,7 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	acceptOfferIn.CurrencyId = inOffer.CurrencyId
 	acceptOfferIn.Price = inOffer.Price
 	acceptOfferIn.Rnd = inOffer.Rnd
+	acceptOfferIn.OfferId = graphql.ID(string(offerID))
 
 	sellerDigest, err := acceptOfferIn.SellerDigest()
 	signature, err = signer.Sign(sellerDigest.Bytes(), offerer)
@@ -346,6 +349,7 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 	inOffer.Price = 41234
 	inOffer.Rnd = int32(42321)
 	inOffer.BuyerTeamId = offererTeamId.String()
+	offerID, _ := inOffer.ID(*bc.Contracts)
 
 	hash, err := inOffer.Hash(*bc.Contracts)
 	assert.NilError(t, err)
@@ -361,6 +365,7 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 	acceptOfferIn.CurrencyId = inOffer.CurrencyId
 	acceptOfferIn.Price = inOffer.Price
 	acceptOfferIn.Rnd = inOffer.Rnd
+	acceptOfferIn.OfferId = graphql.ID(string(offerID))
 
 	sellerDigest, err := acceptOfferIn.SellerDigest()
 	signature, err = signer.Sign(sellerDigest.Bytes(), seller)
@@ -382,7 +387,8 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 
 	err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
 	errString := err.Error()
-	assert.Equal(t, errString[:33], "signer is not the owner of teamId")
+	l := intMin(len(errString)-1, 33)
+	assert.Equal(t, errString[:l], "signer is not the owner of teamId")
 }
 
 func TestCreateOfferExConsumer(t *testing.T) {
