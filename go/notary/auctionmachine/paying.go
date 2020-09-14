@@ -109,6 +109,10 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 	}
 	auth := bind.NewKeyedTransactor(b.freeverse)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
+	// fails here
+	log.Warning("her2")
+	log.Warning(b.auction.ValidUntil)
+	log.Warning(b.auction.OfferValidUntil)
 	tx, err := b.contracts.Market.CompletePlayerAuction(
 		auth,
 		auctionId,

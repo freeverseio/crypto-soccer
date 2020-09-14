@@ -403,7 +403,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
 	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller) // <- fails and retunrs withdrawableByBuyer because in paying b.transferAuction fails
 	assert.Equal(t, machine.StateExtra(), "")
-
+	// assert.Equal(t, false, true)
 	t.Run("AuctionWithdrableBySeller", func(t *testing.T) {
 		auction := machine.Auction()
 		assert.Assert(t, auction.PaymentURL != "")
