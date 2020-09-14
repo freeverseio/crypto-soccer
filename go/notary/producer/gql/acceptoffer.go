@@ -134,7 +134,7 @@ func assertIsHighestOfferAndStarted(tx storage.Tx, in input.AcceptOfferInput, hi
 	if highestOffer == nil {
 		return errors.New("highestOffer is nil")
 	}
-	if highestOffer.ID != string(in.OfferId) {
+	if highestOffer.AuctionID != string(in.OfferId) {
 		return errors.New("You can only accept the highest offer")
 	}
 	if highestOffer.State != storage.OfferStarted {
@@ -176,7 +176,7 @@ func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptO
 
 	bidInput := input.CreateBidInput{}
 	bidInput.Signature = highestOffer.Signature
-	bidInput.AuctionId = graphql.ID(highestOffer.ID)
+	bidInput.AuctionId = graphql.ID(highestOffer.AuctionID)
 	bidInput.ExtraPrice = int32(0)
 	bidInput.Rnd = int32(0)
 	bidInput.TeamId = highestOffer.BuyerTeamID

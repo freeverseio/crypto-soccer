@@ -43,7 +43,7 @@ func TestPayingWithOffer(t *testing.T) {
 
 	auction.State = storage.AuctionStarted
 	offer := storage.NewOffer()
-	offer.ID = "12345"
+	offer.AuctionID = "12345"
 	m, err := auctionmachine.New(*auction, nil, offer, *bc.Contracts, bc.Owner)
 	assert.NilError(t, err)
 	assert.Error(t, m.ProcessPaying(v1.NewMockMarketPay()), "auction[f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a|started] is not in state paying")

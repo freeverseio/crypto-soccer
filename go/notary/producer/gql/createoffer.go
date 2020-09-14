@@ -79,7 +79,7 @@ func createOffer(service storage.Tx, in input.CreateOfferInput, contracts contra
 	if err != nil {
 		return err
 	}
-	offer.ID = string(id)
+	offer.AuctionID = string(id)
 	offer.Rnd = int64(in.Rnd)
 	offer.PlayerID = in.PlayerId
 	offer.CurrencyID = int(in.CurrencyId)

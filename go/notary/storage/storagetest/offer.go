@@ -36,7 +36,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
 
-		result, err := tx.Offer(offer.ID)
+		result, err := tx.Offer(offer.AuctionID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 	})
@@ -69,7 +69,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "yo"
 		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
-		result, err := tx.Offer(offer.ID)
+		result, err := tx.Offer(offer.AuctionID)
 		assert.NilError(t, err)
 		assert.Equal(t, result.State, storage.OfferStarted)
 		assert.Equal(t, result.StateExtra, "priva")
@@ -80,7 +80,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.AuctionID = "ciao"
 
 		assert.NilError(t, tx.OfferUpdate(*offer))
-		result, err = tx.Offer(offer.ID)
+		result, err = tx.Offer(offer.AuctionID)
 
 		assert.Equal(t, result.AuctionID, "ciao")
 		assert.NilError(t, err)
@@ -132,7 +132,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
 
-		result, err := tx.Offer(offer.ID)
+		result, err := tx.Offer(offer.AuctionID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 
@@ -169,7 +169,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "yo"
 		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
-		result, err := tx.Offer(offer.ID)
+		result, err := tx.Offer(offer.AuctionID)
 		assert.NilError(t, err)
 		assert.Equal(t, result.State, storage.OfferStarted)
 		assert.Equal(t, result.StateExtra, "priva")
@@ -180,13 +180,13 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.AuctionID = "ciao"
 
 		assert.NilError(t, tx.OfferUpdate(*offer))
-		result, err = tx.Offer(offer.ID)
+		result, err = tx.Offer(offer.AuctionID)
 
 		assert.Equal(t, result.AuctionID, "ciao")
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
 
-		result1, err := tx.Offer(offer.ID)
+		result1, err := tx.Offer(offer.AuctionID)
 		assert.NilError(t, err)
 		assert.Equal(t, *result1, *offer)
 

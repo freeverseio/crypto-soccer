@@ -337,7 +337,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	auction := storage.Auction{
-		ID:              offer.ID,
+		ID:              offer.AuctionID,
 		PlayerID:        offer.PlayerID,
 		CurrencyID:      offer.CurrencyID,
 		Price:           offer.Price,
