@@ -105,7 +105,7 @@ func TestCreateOffer1(t *testing.T) {
 	inBid.TeamId = inOffer.BuyerTeamId
 	inBid.Signature = inOffer.Signature
 
-	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
+	err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
 	assert.NilError(t, err)
 }
 
@@ -361,7 +361,7 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 	inBid.TeamId = inOffer.BuyerTeamId
 	inBid.Signature = inOffer.Signature
 
-	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
+	err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
 	errString := err.Error()
 	assert.Equal(t, errString[:33], "signer is not the owner of teamId")
 }

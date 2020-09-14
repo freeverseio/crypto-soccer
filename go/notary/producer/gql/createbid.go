@@ -6,42 +6,34 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql.ID, error) {
+func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) error {
 	log.Infof("[notary|producer|gql] create bid %+v", args.Input)
 
-	id, err := args.Input.ID(b.contracts)
-	log.Warning("id - CreateBid")
-	log.Warning(id)
-	if err != nil {
-		return graphql.ID(""), err
-	}
-
 	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
+		return errors.New("internal error: no channel")
 	}
 
 	isOwner, err := args.Input.IsSignerOwnerOfTeam(b.contracts)
 	if err != nil {
-		return id, err
+		return err
 	}
 	if !isOwner {
-		return id, fmt.Errorf("signer is not the owner of teamId %v", args.Input.TeamId)
+		return fmt.Errorf("signer is not the owner of teamId %v", args.Input.TeamId)
 	}
 
 	tx, err := b.service.Begin()
 	if err != nil {
-		return id, err
+		return err
 	}
 	if err := createBid(tx, args.Input); err != nil {
 		tx.Rollback()
-		return id, err
+		return err
 	}
 
-	return id, tx.Commit()
+	return tx.Commit()
 }
 
 func createBid(tx storage.Tx, in input.CreateBidInput) error {
