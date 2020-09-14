@@ -3,8 +3,10 @@ package gql
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"strconv"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/graph-gophers/graphql-go"
@@ -60,7 +62,7 @@ func (b *Resolver) CreateAuctionFromOffer(args struct {
 
 	id, err := args.Input.AuctionID()
 	if err != nil {
-		return graphql.ID(""), err
+		return id, err
 	}
 
 	if b.ch == nil {
@@ -73,6 +75,19 @@ func (b *Resolver) CreateAuctionFromOffer(args struct {
 	}
 	if !isOwner {
 		return id, fmt.Errorf("signer is not the owner of playerId %v", args.Input.PlayerId)
+	}
+
+	playerIdString, ok := new(big.Int).SetString(args.Input.PlayerId, 10)
+	if !ok {
+		return id, fmt.Errorf("error converting playerId to bignum")
+	}
+
+	currentTeamId, err := b.contracts.Market.GetCurrentTeamIdFromPlayerId(&bind.CallOpts{}, playerIdString)
+	if err != nil {
+		return id, errors.New("internal error: no currentTeamIdFromPlayerId")
+	}
+	if currentTeamId.String() == args.Input.BuyerTeamId {
+		return id, errors.New("the buyerTeam already owns the player it is making an offer for")
 	}
 
 	isValidForBlockchain, err := args.Input.IsValidForBlockchainFreeze(b.contracts)

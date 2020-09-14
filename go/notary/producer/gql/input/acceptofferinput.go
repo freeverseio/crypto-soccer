@@ -23,6 +23,7 @@ type AcceptOfferInput struct {
 	Rnd             int32
 	ValidUntil      string
 	OfferValidUntil string
+	BuyerTeamId     string
 	OfferId         graphql.ID
 }
 

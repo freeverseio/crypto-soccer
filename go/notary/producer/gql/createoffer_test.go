@@ -191,7 +191,7 @@ func TestCreateOfferSignedByNotOwnedSeller(t *testing.T) {
 }
 
 func TestCreateOfferSameOwner(t *testing.T) {
-	// identical to TestCreateOfferSameOwner but offerer signing as if he owned the player
+	// offerer tries to offer and sell his own player
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 
@@ -199,11 +199,11 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	// we choose that player as a player very far from the current amount of teams (x2)
 	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
 	offererTeamIdx := nHumanTeams.Int64()
-	sellerTeamIdx := offererTeamIdx + 1
+	// sellerTeamIdx := offererTeamIdx + 1
 	offererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(offererTeamIdx))
 	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	seller, _ := crypto.HexToECDSA("0A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(-2 + 18*sellerTeamIdx)))
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(2 + 18*offererTeamIdx)))
 
 	bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
@@ -253,6 +253,7 @@ func TestCreateOfferSameOwner(t *testing.T) {
 
 	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
 	acceptOfferIn := input.AcceptOfferInput{}
+	acceptOfferIn.BuyerTeamId = inOffer.BuyerTeamId
 	acceptOfferIn.OfferValidUntil = inOffer.ValidUntil
 	acceptOfferIn.ValidUntil = strconv.FormatInt(validUntil, 10)
 	acceptOfferIn.PlayerId = inOffer.PlayerId
@@ -268,7 +269,7 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	_, err = r.CreateAuctionFromOffer(struct {
 		Input input.AcceptOfferInput
 	}{acceptOfferIn})
-	assert.Error(t, err, "signer is not the owner of playerId 274877906978")
+	assert.Error(t, err, "the buyerTeam already owns the player it is making an offer for")
 }
 
 func TestCreateOfferNotTeamOwner(t *testing.T) {
