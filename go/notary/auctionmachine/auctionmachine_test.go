@@ -372,14 +372,17 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	}
 
 	assert.Equal(t, machine.State(), storage.AuctionStarted)
+	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
 
 	// machine freeze the asset cause of existent bid
 	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
+	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
 
 	// machine do nothing cause auction deadline is not passed
 	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
+	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
 
 	// waiting that the auction deadline
 	time.Sleep(20 * time.Second)
