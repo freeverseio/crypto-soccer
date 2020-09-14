@@ -35,10 +35,10 @@ services:
     volumes:
       - universe.db-data:/var/lib/postgresql/data
   synchronizer:
-    image: "freeverseio/synchronizer:${TAG}"
-    # build: 
-    #   context: ../../go/
-    #   dockerfile: Dockerfile.synchronizer
+    # image: "freeverseio/synchronizer:${TAG}"
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.synchronizer
     restart: always
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
@@ -47,6 +47,7 @@ services:
       -proxy_address "${PROXY_CONTRACT_ADDRESS}"
       -staker "${STAKER_PVC}"
       -delta "${BLOCKS_PER_STEP}"
+      -config-file=config_prod.json
       # -debug
     depends_on:
       - universe.db

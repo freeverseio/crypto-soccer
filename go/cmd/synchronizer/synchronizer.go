@@ -37,13 +37,13 @@ func main() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Error(err)
 	}
+	log.Info(viper.AllSettings())
 
 	if _, err := os.Stat(*namesDatabase); err != nil {
 		if os.IsNotExist(err) {
 			log.Fatalf("no names database file at %v", *namesDatabase)
 		}
 	}
-	log.Info(viper.AllSettings())
 
 	if *proxyContractAddress == "" {
 		log.Fatal("no proxy contract address")
