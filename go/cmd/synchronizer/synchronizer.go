@@ -31,16 +31,11 @@ func main() {
 	configFile := flag.String("config-file", "config.json", "config JSON file")
 	flag.Parse()
 
-	viper.SetDefault("ContentDir", "content")
-	viper.SetDefault("LayoutDir", "layouts")
-	viper.SetDefault("Taxonomies", map[string]string{"tag": "tags", "category": "categories"})
 	viper.SetConfigName(*configFile) // name of config file (without extension)
 	viper.SetConfigType("json")      // REQUIRED if the config file does not have the extension in the name
 	viper.AddConfigPath(*basePath)   // optionally look for config in the working directory
-	if _, err := os.Stat(*basePath + "/" + *configFile); os.IsNotExist(err) {
-		log.Warningf("No config file %v/%v... default configuration", *basePath, *configFile)
-	} else if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	if err := viper.ReadInConfig(); err != nil {
+		log.Error(err)
 	}
 
 	if _, err := os.Stat(*namesDatabase); err != nil {
@@ -48,6 +43,7 @@ func main() {
 			log.Fatalf("no names database file at %v", *namesDatabase)
 		}
 	}
+	log.Info(viper.AllSettings())
 
 	if *proxyContractAddress == "" {
 		log.Fatal("no proxy contract address")

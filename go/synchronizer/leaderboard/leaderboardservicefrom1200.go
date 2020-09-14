@@ -70,7 +70,7 @@ func UpdateLeagueLeaderboardFrom1200(
 	return teams, nil
 }
 
-func (b LeaderboardService) UpdateTimezoneLeaderboardsFrom1200(
+func (b LeaderboardService) UpdateTimezoneLeaderboardsNew(
 	contracts contracts.Contracts,
 	timezone int,
 	matchDay int,

@@ -13,6 +13,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type Match struct {
@@ -22,8 +23,6 @@ type Match struct {
 	VisitorTeam Team
 	Events      matchevents.MatchEvents
 }
-
-const Version2StartEpoch = 1598918400
 
 const isHomeStadium = true
 const isPlayoff = false
@@ -121,8 +120,10 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber 
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
+	version2StartEpoch := viper.GetInt64("patch.engine_version_2")
+
 	var err error
-	if b.StartTime.Cmp(big.NewInt(Version2StartEpoch)) < 0 {
+	if b.StartTime.Cmp(big.NewInt(version2StartEpoch)) < 0 {
 		err = b.play1stHalfV1(contracts)
 	} else {
 		err = b.play1stHalfV2(contracts)
@@ -344,8 +345,10 @@ func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 }
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
+	version2StartEpoch := viper.GetInt64("patch.engine_version_2")
+
 	var err error
-	if b.StartTime.Cmp(big.NewInt(Version2StartEpoch)) < 0 {
+	if b.StartTime.Cmp(big.NewInt(version2StartEpoch)) < 0 {
 		err = b.play2ndHalfV1(contracts)
 	} else {
 		err = b.play2ndHalfV2(contracts)
