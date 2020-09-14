@@ -282,7 +282,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	extraPrice := big.NewInt(0)
 	dummyRnd := big.NewInt(0)
 	offerRnd := big.NewInt(124352439)
-	buyerTeamID := big.NewInt(274877906945)
+	buyerTeamID := offererTeamId
 
 	// validUntilStr := strconv.FormatInt(validUntil, 10)
 	offerValidUntilStr := strconv.FormatInt(offerValidUntil, 10)
