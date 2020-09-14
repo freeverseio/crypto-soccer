@@ -8,7 +8,7 @@ import (
 )
 
 func (b *Tx) OfferPendingOffers() ([]storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE state = 'started';")
+	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE state = 'started';")
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (b *Tx) OfferPendingOffers() ([]storage.Offer, error) {
 }
 
 func (b *Tx) Offer(AuctionID string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, buyer_team_id FROM offers WHERE auction_id = $1;", AuctionID)
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, buyer_team_id FROM offers_v2 WHERE auction_id = $1;", AuctionID)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (b *Tx) Offer(AuctionID string) (*storage.Offer, error) {
 }
 
 func (b *Tx) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer), buyer_team_id FROM offers WHERE rnd = $1 AND price = $2;", rnd, price)
+	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer), buyer_team_id FROM offers_v2 WHERE rnd = $1 AND price = $2;", rnd, price)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (b *Tx) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
 }
 
 func (b *Tx) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE auction_id = $1;", auctionId)
+	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE auction_id = $1;", auctionId)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (b *Tx) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
 }
 
 func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT auction_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE player_id = $1;", playerId)
+	rows, err := b.tx.Query("SELECT auction_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE player_id = $1;", playerId)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
 
 func (b *Tx) OfferInsert(offer storage.Offer) error {
 	log.Debugf("[DBMS] + create Offer %v", b)
-	_, err := b.tx.Exec("INSERT INTO offers (auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+	_, err := b.tx.Exec("INSERT INTO offers_v2 (auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		offer.AuctionID,
 		offer.PlayerID,
 		offer.CurrencyID,
@@ -180,11 +180,11 @@ func NewNullString(s string) sql.NullString {
 
 func (b *Tx) OfferUpdate(offer storage.Offer) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
-	_, err := b.tx.Exec(`UPDATE offers SET 
+	_, err := b.tx.Exec(`UPDATE offers_v2 SET 
 		state=$1, 
 		state_extra=$2,
 		seller=$3
-		WHERE id=$4;`,
+		WHERE auction_id=$4;`,
 		offer.State,
 		offer.StateExtra,
 		NewNullString(offer.Seller),
@@ -193,13 +193,13 @@ func (b *Tx) OfferUpdate(offer storage.Offer) error {
 	return err
 }
 
-func (b *Tx) OfferCancel(ID string) error {
+func (b *Tx) OfferCancel(AuctionID string) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
-	_, err := b.tx.Exec(`UPDATE offers SET 
+	_, err := b.tx.Exec(`UPDATE offers_v2 SET 
 		state=$1, 
-		WHERE id=$2;`,
+		WHERE auction_id=$2;`,
 		storage.OfferCancelled,
-		ID,
+		AuctionID,
 	)
 	return err
 }
