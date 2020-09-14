@@ -69,31 +69,20 @@ func TestAuctionStartedGoFrozen(t *testing.T) {
 	auction.Price = 41234
 	auction.Rnd = 4232
 	auction.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"
-	auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
 
 	playerId, _ := new(big.Int).SetString(auction.PlayerID, 10)
 	assert.Assert(t, playerId != nil)
-	hash, err := signer.HashSellMessage(
-		uint8(auction.CurrencyID),
-		big.NewInt(auction.Price),
-		big.NewInt(auction.Rnd),
-		auction.ValidUntil,
-		playerId,
-	)
+
+	sellerDigest, err := auction.ComputePutAssetForSaleDigest()
+
 	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	signature, err := signer.Sign(sellerDigest.Bytes(), bc.Owner)
 	assert.NilError(t, err)
 	auction.Signature = hex.EncodeToString(signature)
 
-	signature[64] -= 27 // Transform yellow paper V from 27/28 to 0/1
-
-	// check the signature is valid
-	isValid, err := signer.VerifySignature(hash.Bytes(), signature)
-	assert.NilError(t, err)
-	assert.Assert(t, isValid)
-
 	// check the seller is the signer
-	signer, err := signer.AddressFromHashAndSignature(hash.Bytes(), signature)
+	signer, err := helper.AddressFromHashAndSignature(sellerDigest, signature)
+
 	assert.NilError(t, err)
 	assert.Equal(t, signer.Hex(), auction.Seller)
 
@@ -148,7 +137,8 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 	}
 
 	now := time.Now().Unix()
-	validUntil := now + 8
+	validUntil := now + 1000
+	offerValidUntil := validUntil + 100
 	playerID := big.NewInt(274877906944)
 	currencyID := uint8(1)
 	price := big.NewInt(41234)
@@ -156,13 +146,13 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 	extraPrice := big.NewInt(332)
 	bidRnd := big.NewInt(1243523)
 	teamID := big.NewInt(274877906945)
-	isOffer2StartAuction := false
 
-	hashAuctionMsg, err := signer.HashSellMessage(
+	hashAuctionMsg, err := signer.ComputePutAssetForSaleDigest(
 		currencyID,
 		price,
 		auctionRnd,
 		validUntil,
+		offerValidUntil,
 		playerID,
 	)
 	if err != nil {
@@ -179,7 +169,7 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 		Price:      price.Int64(),
 		Rnd:        auctionRnd.Int64(),
 		ValidUntil: validUntil,
-		Signature:  "0x" + hex.EncodeToString(signAuctionMsg),
+		Signature:  hex.EncodeToString(signAuctionMsg),
 		State:      storage.AuctionStarted,
 		Seller:     "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7",
 	}
@@ -190,11 +180,11 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 		price,
 		auctionRnd,
 		validUntil,
+		offerValidUntil,
 		playerID,
 		extraPrice,
 		bidRnd,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -209,7 +199,7 @@ func TestAuctionMachineAllWorkflow(t *testing.T) {
 			ExtraPrice: extraPrice.Int64(),
 			Rnd:        bidRnd.Int64(),
 			TeamID:     teamID.String(),
-			Signature:  "0x" + hex.EncodeToString(signBidMsg),
+			Signature:  hex.EncodeToString(signBidMsg),
 			State:      storage.BidAccepted,
 		},
 	}
@@ -296,8 +286,8 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	}
 
 	now := time.Now().Unix()
-	offerValidUntil := now + 5
-	auctionValidUntil := offerValidUntil + 4
+	offerValidUntil := now + 100
+	validUntil := offerValidUntil + 1000
 	playerID := big.NewInt(274877906945)
 	currencyID := uint8(1)
 	price := big.NewInt(4129834)
@@ -305,19 +295,18 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	dummyRnd := big.NewInt(0)
 	offerRnd := big.NewInt(124352439)
 	buyerTeamID := big.NewInt(274877906945)
-	isOffer2StartAuction := true
 
 	hashOffer, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		currencyID,
 		price,
 		offerRnd,
+		validUntil,
 		offerValidUntil,
 		playerID,
 		extraPrice,
 		dummyRnd,
 		buyerTeamID,
-		isOffer2StartAuction,
 	)
 
 	signOfferMsg, err := signer.Sign(hashOffer.Bytes(), bob)
@@ -332,7 +321,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		Price:       price.Int64(),
 		Rnd:         offerRnd.Int64(),
 		ValidUntil:  offerValidUntil,
-		Signature:   "0x" + hex.EncodeToString(signOfferMsg),
+		Signature:   hex.EncodeToString(signOfferMsg),
 		State:       storage.OfferStarted,
 		StateExtra:  "",
 		Seller:      crypto.PubkeyToAddress(alice.PublicKey).Hex(),
@@ -341,11 +330,12 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		BuyerTeamID: buyerTeamID.String(),
 	}
 
-	hashAuctionMsg, err := signer.HashSellMessage(
+	hashAuctionMsg, err := signer.ComputePutAssetForSaleDigest(
 		currencyID,
 		price,
 		offerRnd,
-		auctionValidUntil,
+		validUntil,
+		offerValidUntil,
 		playerID,
 	)
 	if err != nil {
@@ -361,8 +351,8 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		CurrencyID: int(currencyID),
 		Price:      price.Int64(),
 		Rnd:        offerRnd.Int64(),
-		ValidUntil: auctionValidUntil,
-		Signature:  "0x" + hex.EncodeToString(signAuctionMsg),
+		ValidUntil: offerValidUntil,
+		Signature:  hex.EncodeToString(signAuctionMsg),
 		State:      storage.AuctionStarted,
 		Seller:     "0x916a407D8cB5B4E533672C908757737F27fE3C25",
 	}
@@ -376,7 +366,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 			ExtraPrice: extraPrice.Int64(),
 			Rnd:        dummyRnd.Int64(),
 			TeamID:     buyerTeamID.String(),
-			Signature:  "0x" + hex.EncodeToString(signOfferMsg),
+			Signature:  hex.EncodeToString(signOfferMsg),
 			State:      storage.BidAccepted,
 		},
 	}

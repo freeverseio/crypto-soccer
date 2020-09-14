@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 )
 
@@ -59,4 +60,23 @@ func (b Auction) ComputeID() (string, error) {
 		return "", errors.New("invalid auctio id")
 	}
 	return id.String()[2:], nil
+}
+
+func (b Auction) ComputePutAssetForSaleDigest() (common.Hash, error) {
+	playerId, ok := new(big.Int).SetString(b.PlayerID, 10)
+	if !ok {
+		return common.Hash{}, errors.New("invalid playerId")
+	}
+	digest, err := signer.ComputePutAssetForSaleDigest(
+		uint8(b.CurrencyID),
+		big.NewInt(b.Price),
+		big.NewInt(b.Rnd),
+		b.ValidUntil,
+		b.OfferValidUntil,
+		playerId,
+	)
+	if err != nil {
+		return common.Hash{}, errors.New("invalid digest")
+	}
+	return digest, nil
 }

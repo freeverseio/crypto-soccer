@@ -80,9 +80,6 @@ func TestVerifyAuctionSignature(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Assert(t, valid)
 
-	address, err := signer.AddressFromHashAndSignature(hash.Bytes(), signature)
-	assert.NilError(t, err)
-	assert.Equal(t, address.Hex(), "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7")
 }
 
 func TestSignatureInvalidId(t *testing.T) {
