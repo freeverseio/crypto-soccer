@@ -19,6 +19,31 @@ import (
 )
 
 func TestCreateOffer1(t *testing.T) {
+	// We will here assign the next available team to offerer so she can make an offer for the players of a different team
+	// we choose that player as a player very far from the current amount of teams (x2)
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
+	offererTeamIdx := nHumanTeams.Int64()
+	sellerTeamIdx := offererTeamIdx + 1
+	offererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(offererTeamIdx))
+	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	seller, _ := crypto.HexToECDSA("0A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(2 + 18*sellerTeamIdx)))
+
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(offerer.PublicKey),
+	)
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(seller.PublicKey),
+	)
+
 	ch := make(chan interface{}, 10)
 
 	// We use offerValidUntil for offers, and validUntil for accept offer and make bids later
