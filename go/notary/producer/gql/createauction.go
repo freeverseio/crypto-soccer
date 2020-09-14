@@ -124,6 +124,7 @@ func CreateAuctionFromPutForSale(tx storage.Tx, in input.CreatePutPlayerForSaleI
 	if auction.ValidUntil, err = strconv.ParseInt(in.ValidUntil, 10, 64); err != nil {
 		return fmt.Errorf("invalid validUntil %v", in.ValidUntil)
 	}
+	auction.OfferValidUntil = int64(0)
 	auction.Signature = in.Signature
 	auction.State = storage.AuctionStarted
 	auction.StateExtra = ""
