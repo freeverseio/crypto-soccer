@@ -382,13 +382,12 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
 
 	// waiting that the auction deadline
+	time.Sleep(20 * time.Second)
 
 	// machine put the auction in paying wait
 	assert.NilError(t, machine.Process(market))
-	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
+	assert.Equal(t, machine.State(), storage.AuctionPaying)
 	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
-
-	time.Sleep(20 * time.Second)
 
 	// machine put the bid in paying state
 	assert.NilError(t, machine.Process(market))
@@ -402,7 +401,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	// machine set the bid to paid and set the auction as withdrable by seller
 	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaid)
-	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller)
+	assert.Equal(t, machine.State(), storage.AuctionWithdrableBySeller) // <- fails and retunrs withdrawableByBuyer because in paying b.transferAuction fails
 	assert.Equal(t, machine.StateExtra(), "")
 
 	t.Run("AuctionWithdrableBySeller", func(t *testing.T) {

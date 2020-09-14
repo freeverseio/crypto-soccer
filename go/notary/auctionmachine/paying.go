@@ -45,6 +45,8 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error 
 
 	if bid.State == storage.BidPaid {
 		if err := b.transferAuction(*bid); err != nil {
+			log.Warning("here")
+			log.Warning(err)
 			b.SetState(storage.AuctionWithdrableByBuyer, err.Error())
 			return nil
 		}
