@@ -187,7 +187,8 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 	_, err = r.CreateAuctionFromOffer(struct {
 		Input input.AcceptOfferInput
 	}{acceptOfferIn})
-	assert.Error(t, err, "signer is not the owner of playerId 274877906978")
+	errString := err.Error()
+	assert.Equal(t, errString[:35], "signer is not the owner of playerId")
 }
 
 func TestCreateOfferSameOwner(t *testing.T) {
@@ -361,7 +362,8 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 	inBid.Signature = inOffer.Signature
 
 	_, err = r.CreateBid(struct{ Input input.CreateBidInput }{inBid})
-	assert.Error(t, err, "signer is not the owner of teamId 274877906948")
+	errString := err.Error()
+	assert.Equal(t, errString[:33], "signer is not the owner of teamId")
 }
 
 func TestCreateOfferExConsumer(t *testing.T) {
@@ -436,13 +438,13 @@ func TestCreateOfferExConsumer(t *testing.T) {
 		teamId,
 	)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x1563f70ce76787ea99b420ad637df3757b492c98cd5a774d7111c861453c270b")
+	assert.Equal(t, hash.Hex(), "0x0bd108f7e6cf8ae86312d1680aececc07dd8c4d97f67879ca159b3ba5a074a90")
 	assert.NilError(t, err)
 	privateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), privateKey)
 	assert.NilError(t, err)
-	assert.Equal(t, hex.EncodeToString(signature), "dbd05f0df6b470d071462ba49956eb472031de84509409823502decb119f2fb36cfb57d5d6f6de5f819731745a4f5533c1805065eebf1a7d56dc9bdced406b231c")
+	assert.Equal(t, hex.EncodeToString(signature), "5f04ac4d856b9a33b9590e23589b711b69f0a2f8d26bcb47bbf9e9a48d8761c116e449c3e9307c672e0b0811a0dde30a33a067dacd9a8cfa83838263344a78a21c")
 	inOffer.Signature = hex.EncodeToString(signature)
 
 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
