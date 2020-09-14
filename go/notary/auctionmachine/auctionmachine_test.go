@@ -382,12 +382,13 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
 
 	// waiting that the auction deadline
-	time.Sleep(20 * time.Second)
 
 	// machine put the auction in paying wait
 	assert.NilError(t, machine.Process(market))
-	assert.Equal(t, machine.State(), storage.AuctionPaying)
+	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
 	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
+
+	time.Sleep(20 * time.Second)
 
 	// machine put the bid in paying state
 	assert.NilError(t, machine.Process(market))
