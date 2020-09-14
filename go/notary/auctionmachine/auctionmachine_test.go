@@ -3,6 +3,7 @@ package auctionmachine_test
 import (
 	"encoding/hex"
 	"math/big"
+	"strconv"
 	"testing"
 	"time"
 
@@ -10,9 +11,9 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"gotest.tools/assert"
@@ -247,44 +248,35 @@ func TestAuctionMachineAllWorkflow1(t *testing.T) {
 }
 
 func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
-	bc, err := testutils.NewBlockchain()
-	assert.NilError(t, err)
-	tz := uint8(1)
+	// We will here assign the next available team to offerer so she can make an offer for the players of a different team
+	// we choose that player as a player very far from the current amount of teams (x2)
+	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
+	offererTeamIdx := nHumanTeams.Int64()
+	sellerTeamIdx := offererTeamIdx + 1
+	offererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(offererTeamIdx))
+	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	seller, _ := crypto.HexToECDSA("0A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(2 + 18*sellerTeamIdx)))
 
-	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8bce1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	bob, _ := crypto.HexToECDSA("3693a221b147b8888490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
-	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+	bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
-		tz,
+		timezoneIdx,
 		countryIdx,
-		crypto.PubkeyToAddress(alice.PublicKey),
+		crypto.PubkeyToAddress(offerer.PublicKey),
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = helper.WaitReceipt(bc.Client, tx, 5)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
+	bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
-		tz,
+		timezoneIdx,
 		countryIdx,
-		crypto.PubkeyToAddress(bob.PublicKey),
+		crypto.PubkeyToAddress(seller.PublicKey),
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = helper.WaitReceipt(bc.Client, tx, 5)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	now := time.Now().Unix()
-	offerValidUntil := now + 100
-	validUntil := offerValidUntil + 1000
-	playerID := big.NewInt(274877906945)
+	offerValidUntil := now + 5
+	validUntil := offerValidUntil + 11
+	playerID := playerId.String()
 	currencyID := uint8(1)
 	price := big.NewInt(4129834)
 	extraPrice := big.NewInt(0)
@@ -292,27 +284,31 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	offerRnd := big.NewInt(124352439)
 	buyerTeamID := big.NewInt(274877906945)
 
-	hashOffer, err := signer.HashBidMessage(
-		bc.Contracts.Market,
-		currencyID,
-		price,
-		offerRnd,
-		validUntil,
-		offerValidUntil,
-		playerID,
-		extraPrice,
-		dummyRnd,
-		buyerTeamID,
-	)
+	// validUntilStr := strconv.FormatInt(validUntil, 10)
+	offerValidUntilStr := strconv.FormatInt(offerValidUntil, 10)
 
-	signOfferMsg, err := signer.Sign(hashOffer.Bytes(), bob)
+	inOffer := input.CreateOfferInput{}
+	// inOffer.Signature   string
+	inOffer.PlayerId = playerID
+	inOffer.CurrencyId = int32(currencyID)
+	inOffer.Price = int32(price.Int64())
+	inOffer.Rnd = int32(offerRnd.Int64())
+	inOffer.ValidUntil = offerValidUntilStr
+	inOffer.BuyerTeamId = offererTeamId.String()
+	inOffer.Seller = crypto.PubkeyToAddress(seller.PublicKey).Hex()
+
+	hashOffer, err := inOffer.Hash(*bc.Contracts)
+
+	signOfferMsg, err := signer.Sign(hashOffer.Bytes(), offerer)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	offerId, _ := inOffer.ID(*bc.Contracts)
+
 	offer := storage.Offer{
-		ID:          "12345",
-		PlayerID:    playerID.String(),
+		ID:          string(offerId),
+		PlayerID:    inOffer.PlayerId,
 		CurrencyID:  int(currencyID),
 		Price:       price.Int64(),
 		Rnd:         offerRnd.Int64(),
@@ -320,8 +316,8 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		Signature:   hex.EncodeToString(signOfferMsg),
 		State:       storage.OfferStarted,
 		StateExtra:  "",
-		Seller:      crypto.PubkeyToAddress(alice.PublicKey).Hex(),
-		Buyer:       crypto.PubkeyToAddress(bob.PublicKey).Hex(),
+		Seller:      crypto.PubkeyToAddress(seller.PublicKey).Hex(),
+		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
 		AuctionID:   "",
 		BuyerTeamID: buyerTeamID.String(),
 	}
@@ -332,25 +328,26 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		offerRnd,
 		validUntil,
 		offerValidUntil,
-		playerID,
+		playerId,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
-	signAuctionMsg, err := signer.Sign(hashAuctionMsg.Bytes(), alice)
+	signAuctionMsg, err := signer.Sign(hashAuctionMsg.Bytes(), seller)
 	if err != nil {
 		t.Fatal(err)
 	}
 	auction := storage.Auction{
-		ID:         "TheTestingAuction2",
-		PlayerID:   playerID.String(),
-		CurrencyID: int(currencyID),
-		Price:      price.Int64(),
-		Rnd:        offerRnd.Int64(),
-		ValidUntil: offerValidUntil,
-		Signature:  hex.EncodeToString(signAuctionMsg),
-		State:      storage.AuctionStarted,
-		Seller:     "0x916a407D8cB5B4E533672C908757737F27fE3C25",
+		ID:              offer.ID,
+		PlayerID:        offer.PlayerID,
+		CurrencyID:      offer.CurrencyID,
+		Price:           offer.Price,
+		Rnd:             offer.Rnd,
+		ValidUntil:      validUntil,
+		OfferValidUntil: offer.ValidUntil,
+		Signature:       hex.EncodeToString(signAuctionMsg),
+		State:           storage.AuctionStarted,
+		Seller:          crypto.PubkeyToAddress(seller.PublicKey).Hex(),
 	}
 
 	offer.AuctionID = auction.ID
@@ -385,14 +382,14 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	assert.Equal(t, machine.State(), storage.AuctionAssetFrozen)
 
 	// waiting that the auction deadline
-	time.Sleep(10 * time.Second)
+	time.Sleep(20 * time.Second)
 
 	// machine put the auction in paying wait
 	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionPaying)
 	assert.Equal(t, machine.Bids()[0].State, storage.BidAccepted)
 
-	// machine put the bid is paying state
+	// machine put the bid in paying state
 	assert.NilError(t, machine.Process(market))
 	assert.Equal(t, machine.State(), storage.AuctionPaying)
 	assert.Equal(t, machine.Bids()[0].State, storage.BidPaying)

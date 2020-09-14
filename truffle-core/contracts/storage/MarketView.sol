@@ -165,8 +165,8 @@ contract MarketView is UniverseInfo, EncodingSkillsSetters, EncodingState {
             /// check validUntil has not expired
             ok = (validUntil > now);
         } else {
-            /// check offerValidUntil has not expired, and that validUntil is at least 3min larger
-            ok = (offerValidUntil > now) && (validUntil > offerValidUntil + 180);
+            /// check offerValidUntil has not expired, and that validUntil is at least 10sec larger
+            ok = (offerValidUntil > now) && (validUntil > offerValidUntil + 10);
         }
         ok = ok &&
             /// check player is not already frozen
