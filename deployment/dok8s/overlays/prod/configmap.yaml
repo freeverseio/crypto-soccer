@@ -5,10 +5,10 @@ metadata:
 data:
   freeverse_username: freeverse
   freeverse_password: freeverse
-  
+
   market_id: "sk_production_AjWbpOPwS3HNi821Ma9mIgA2"
 
   PROXY_CONTRACT_ADDRESS: 0x7334A1E445B4E1Fb94001E1a9F772212b6D9de46
 
   BLOCKS_PER_STEP: "1000"
-  domain: "*.goalrevolution.live"
+  domain: "https://market.goalrevolution.live"

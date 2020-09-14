@@ -14,4 +14,4 @@ data:
   PROXY_CONTRACT_ADDRESS: 0x720C10669287462Bb96eFd9bb5220EcfcBfd88cf
 
   BLOCKS_PER_STEP: "10000"
-  domain: "*.gorengine.com"
+  domain: "https://market.gorengine.com"

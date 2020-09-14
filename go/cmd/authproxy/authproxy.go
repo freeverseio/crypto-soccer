@@ -38,6 +38,7 @@ func main() {
 
 	gqlurl := flag.String("gqlurl", "http://dev1.gorengine.com:4000/graphql", "graphql url")
 	domain := flag.String("domain", "*.goalrevolution.live", "domain")
+	allowHeaders := flag.String("allowHeaders", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization", "allowHeaders")
 	serviceport := flag.Int("serviceport", 8080, "service port")
 	metricsport := flag.Int("metricsport", 4000, "metrics port")
 	debug := flag.Bool("debug", false, "debug")
@@ -50,6 +51,7 @@ func main() {
 	log.Info("-timeout=", *timeout)
 	log.Info("-gqlurl=", *gqlurl)
 	log.Info("-domain=", *domain)
+	log.Info("-allowHeaders=", *allowHeaders)
 	log.Info("-serviceport=", *serviceport)
 	log.Info("-metricsport=", *metricsport)
 	log.Info("-debug=", *debug)
@@ -67,6 +69,7 @@ func main() {
 		*gracetime,
 		serverService,
 		*domain,
+		*allowHeaders,
 	)
 	ap.SetDebug(*debug)
 	ap.SetBackdoor(*backdoor)
