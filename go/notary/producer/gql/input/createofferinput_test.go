@@ -79,7 +79,7 @@ func TestSignerOfOfferIsOwnerOfTeam(t *testing.T) {
 	signature, err := signer.Sign(hash.Bytes(), alice)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
-	isOwner, err := in.IsSignerOwnerOfTeam(*bc.Contracts)
+	isOwner, err := in.IsSignerTeamOwner(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, false)
 
@@ -97,7 +97,7 @@ func TestSignerOfOfferIsOwnerOfTeam(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	isOwner, err = in.IsSignerOwnerOfTeam(*bc.Contracts)
+	isOwner, err = in.IsSignerTeamOwner(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, true)
 }
@@ -116,9 +116,10 @@ func TestCreateOfferGetOwner(t *testing.T) {
 	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
-	owner, err := in.GetOwner(*bc.Contracts)
+
+	signer, err := in.SignerAddress(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, crypto.PubkeyToAddress(bc.Owner.PublicKey).Hex(), owner.Hex())
+	assert.Equal(t, crypto.PubkeyToAddress(bc.Owner.PublicKey).Hex(), signer.Hex())
 }
 
 func TestCreateOfferPlayerFrozen(t *testing.T) {
