@@ -15,7 +15,7 @@ func (b *StorageHistoryTx) OfferInsert(offer storage.Offer) error {
 }
 
 func (b *StorageHistoryTx) OfferUpdate(offer storage.Offer) error {
-	currentOffer, err := b.Tx.Offer(offer.ID)
+	currentOffer, err := b.Tx.Offer(offer.AuctionID)
 	if err != nil {
 		return err
 	}
@@ -32,8 +32,8 @@ func (b *StorageHistoryTx) OfferUpdate(offer storage.Offer) error {
 }
 
 func offerInsertHistory(tx *sql.Tx, offer storage.Offer) error {
-	_, err := tx.Exec("INSERT INTO offers_histories (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
-		offer.ID,
+	_, err := tx.Exec("INSERT INTO offers_histories (auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+		offer.AuctionID,
 		offer.PlayerID,
 		offer.CurrencyID,
 		offer.Price,

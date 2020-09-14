@@ -307,7 +307,6 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 	offerId, _ := inOffer.ID(*bc.Contracts)
 
 	offer := storage.Offer{
-		ID:          string(offerId),
 		PlayerID:    inOffer.PlayerId,
 		CurrencyID:  int(currencyID),
 		Price:       price.Int64(),
@@ -318,7 +317,7 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 		StateExtra:  "",
 		Seller:      crypto.PubkeyToAddress(seller.PublicKey).Hex(),
 		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
-		AuctionID:   "",
+		AuctionID:   string(offerId),
 		BuyerTeamID: buyerTeamID.String(),
 	}
 
