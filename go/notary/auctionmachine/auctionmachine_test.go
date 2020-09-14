@@ -19,11 +19,12 @@ import (
 )
 
 func TestAuctionStarted(t *testing.T) {
-	t.Run("not expired", func(t *testing.T) {
+	t.Run("all ok: nothing expired", func(t *testing.T) {
 		auction := storage.NewAuction()
-		auction.ValidUntil = time.Now().Unix() + 100
-		auction.PlayerID = "274877906944"
-		auction.Seller = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e"
+		auction.ValidUntil = time.Now().Unix() + 1000
+		auction.OfferValidUntil = time.Now().Unix() + 100
+		auction.PlayerID = "274877906944" // id of a player in team0 of this timezone (as declared in setup.go)
+		auction.Seller = crypto.PubkeyToAddress(bc.Owner.PublicKey).Hex()
 		auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
 		offer := storage.NewOffer()
 
@@ -34,9 +35,10 @@ func TestAuctionStarted(t *testing.T) {
 		assert.Equal(t, m.State(), storage.AuctionStarted)
 	})
 
-	t.Run("expired", func(t *testing.T) {
+	t.Run("expired validUntil", func(t *testing.T) {
 		auction := storage.NewAuction()
 		auction.ValidUntil = time.Now().Unix() - 10
+		auction.OfferValidUntil = time.Now().Unix() + 100
 		offer := storage.NewOffer()
 
 		m, err := auctionmachine.New(*auction, nil, offer, *bc.Contracts, bc.Owner)
@@ -50,12 +52,13 @@ func TestAuctionStarted(t *testing.T) {
 		auction := storage.NewAuction()
 		auction.ValidUntil = time.Now().Unix() + 100
 		auction.PlayerID = "274877906944"
+		auction.Seller = "0x03A909262608c650BD9b0ae06E29D90D0F67aC5e"
 		offer := storage.NewOffer()
 
 		m, err := auctionmachine.New(*auction, nil, offer, *bc.Contracts, bc.Owner)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
-		assert.Equal(t, m.StateExtra(), "seller  is not the owner 0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
+		assert.Equal(t, m.StateExtra(), "seller 0x03A909262608c650BD9b0ae06E29D90D0F67aC5e is not the owner 0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
 		assert.Equal(t, m.State(), storage.AuctionFailed)
 	})
 }
