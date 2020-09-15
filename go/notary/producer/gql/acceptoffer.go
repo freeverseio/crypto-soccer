@@ -55,7 +55,7 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, err
 	}
 	if !isValidForBlockchain {
-		return id, fmt.Errorf("blockchain says no")
+		return id, fmt.Errorf("blockchain failed trying to freeze the asset")
 	}
 
 	tx, err := b.service.Begin()

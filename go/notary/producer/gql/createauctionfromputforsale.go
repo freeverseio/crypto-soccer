@@ -38,7 +38,7 @@ func (b *Resolver) CreateAuctionFromPutForSale(args struct {
 		return id, err
 	}
 	if !isValidForBlockchain {
-		return id, fmt.Errorf("blockchain says no")
+		return id, fmt.Errorf("blockchain failed trying to freeze the asset")
 	}
 
 	tx, err := b.service.Begin()
