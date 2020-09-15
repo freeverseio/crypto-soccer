@@ -43,7 +43,7 @@ func (b *Tx) Offer(AuctionID string) (*storage.Offer, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return nil, errors.New("Could not find the offer you queried by auctionID")
 	}
 	var offer storage.Offer
 	offer.AuctionID = AuctionID
@@ -182,7 +182,12 @@ func NewNullString(s string) sql.NullString {
 
 func (b *Tx) OfferUpdate(offer storage.Offer) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
-	_, err := b.tx.Exec(`UPDATE offers_v2 SET 
+	log.Warning(offer.State)
+	log.Warning(offer.StateExtra)
+	log.Warning(offer.Seller)
+	log.Warning(offer.AuctionID)
+
+	rows, err := b.tx.Exec(`UPDATE offers_v2 SET 
 		state=$1, 
 		state_extra=$2,
 		seller=$3
@@ -192,6 +197,13 @@ func (b *Tx) OfferUpdate(offer storage.Offer) error {
 		NewNullString(offer.Seller),
 		offer.AuctionID,
 	)
+	if err != nil {
+		return err
+	}
+	nInserted, err := rows.RowsAffected()
+	if nInserted == 0 {
+		return errors.New("could not find an offer to update")
+	}
 	return err
 }
 
