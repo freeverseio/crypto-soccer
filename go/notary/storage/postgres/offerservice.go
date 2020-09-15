@@ -182,10 +182,6 @@ func NewNullString(s string) sql.NullString {
 
 func (b *Tx) OfferUpdate(offer storage.Offer) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
-	log.Warning(offer.State)
-	log.Warning(offer.StateExtra)
-	log.Warning(offer.Seller)
-	log.Warning(offer.AuctionID)
 
 	rows, err := b.tx.Exec(`UPDATE offers_v2 SET 
 		state=$1, 

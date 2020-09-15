@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
@@ -20,7 +21,7 @@ func (b *StorageHistoryTx) OfferUpdate(offer storage.Offer) error {
 		return err
 	}
 	if currentOffer == nil {
-		return nil
+		return errors.New("could not find offer in StorageHistoryTx")
 	}
 	if *currentOffer == offer {
 		return nil
