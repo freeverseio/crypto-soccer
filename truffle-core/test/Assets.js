@@ -11,6 +11,7 @@ const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
 const marketUtils = require('../utils/marketUtils.js');
 const timeTravel = require('../utils/TimeTravel.js');
+const { signAgreeToBuyPlayerMTx } = require('../utils/marketUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -629,34 +630,36 @@ contract('Assets', (accounts) => {
         currencyId = 1;
         playerId = 11114324213423;
         price = 345;
-        rnd = 1234;
+        sellerRnd = 1234;
         validUntil = 235985749;
         offerValidUntil = 4358487;
-        sellerHiddenPrice = marketUtils.hidePrice(currencyId, price, rnd);
+        sellerHiddenPrice = marketUtils.hidePrice(currencyId, price, sellerRnd);
+        buyerTeamId = 412340324333;
+        buyerRnd = 42309324;
 
         // First check that we can compute auctionIds with or without offerValidUntil
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, 0).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, 0);
+        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, sellerRnd, playerId, validUntil, 0);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0x03214d89eb62587cbb48c9056dba878f839a4ebad3ad75f8826d76c566e4acd0");
 
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, offerValidUntil).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, offerValidUntil);
+        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, sellerRnd, playerId, validUntil, offerValidUntil);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
 
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, 0, offerValidUntil).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, 0, offerValidUntil);
+        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, sellerRnd, playerId, 0, offerValidUntil);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
 
         // OPTION 1: If we wanted to accept and offer => create auction from offer:
-        digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId);
         digest_BC = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
         digest_BC.toString().should.be.equal(digest_JS.toString());
         digest_BC.toString().should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
     
-        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId);
     
         sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
         sigSeller = sellerAccount.sign(digestNoPrefix);
@@ -670,14 +673,35 @@ contract('Assets', (accounts) => {
         sigSeller.messageHash.should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
         sigSeller.signature.should.be.equal('0xf0e4f8fe6502bb950fa45283832d117dda9876e1bf92c29808ab9072fd717cc3756ee55cd659cc33ed2d3d0aa6f290f3f583045e9b91c32cab64747b8b43c7701b');
 
+        // the buyer signature is obtained from a "bid" form the offer as follows: (we will use the same priv key as the seller, this is just to get explicit numbers)
+        var {0: sigBuyer, 1: auctionId0} = await marketUtils.signAgreeToBuyPlayerMTx(
+            currencyId,
+            price,
+            extPrice = 0,
+            sellerRnd,
+            buyRnd = 0,
+            validUntil,
+            offerValidUntil,
+            playerId.toString(),
+            buyerTeamId.toString(),
+            sellerAccount
+          ).should.be.fulfilled;
+
+        // console.log(sigBuyer);
+    
+        sigBuyer.message.should.be.equal('0x3e0a33940182f296b5b867d614570ef660d7b508ea4b55f7ea205f8bed7a6138');
+        sigBuyer.messageHash.should.be.equal('0xf9fa8a35562227e40b67b9dcc977d02b541c444267b26f61be89befeb6fa0846');
+        sigBuyer.signature.should.be.equal('0xd98d216378d06e82089368ee43b1b6047838eae8477f0cc6e9a2b96a9b3aa8593a5304a6f11914df47c896ce4d87fcf4ef70318d622752825fdb1a7f05ab956c1b');
+
+
         // OPTION 2: If we just make a put for sale, ignoring validOfferUntil, etc.
         offerValidUntil = 0;
-        digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId);
         digest_BC = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
         digest_BC.toString().should.be.equal(digest_JS.toString());
         digest_BC.toString().should.be.equal('0x96e22faabe253a8fcff578d928c1e38d9dbfdf36482cca4fc05b77f886db034f');
     
-        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId);
     
         sigSeller = sellerAccount.sign(digestNoPrefix);
     
@@ -689,6 +713,27 @@ contract('Assets', (accounts) => {
         sigSeller.message.should.be.equal('0x0ccdec30c1259bf0d8974a063125536e01eff338af90a1d071316f4d7ea2eeea');
         sigSeller.messageHash.should.be.equal('0x96e22faabe253a8fcff578d928c1e38d9dbfdf36482cca4fc05b77f886db034f');
         sigSeller.signature.should.be.equal('0x6ae2449e83a8b6641b95e7dbf48313d56320727ccd7716988f2d0c9c46b502ec34749a2d4b15d08980a88b3cf5fcb3df509696acc3f1fad6d5bfb19b3c9c547b1b');
+
+        // the buyer signature is obtained from a "bid" as follows: (we will use the same priv key as the seller, this is just to get explicit numbers)
+        var {0: sigBuyer, 1: auctionId0} = await marketUtils.signAgreeToBuyPlayerMTx(
+            currencyId,
+            price,
+            extPrice,
+            sellerRnd,
+            buyRnd,
+            validUntil,
+            offerValidUntil,
+            playerId.toString(),
+            buyerTeamId.toString(),
+            sellerAccount
+            ).should.be.fulfilled;
+
+        // console.log(sigBuyer);
+    
+        sigBuyer.message.should.be.equal('0x72e092aa6c19e5c8502a1578881c2ae2658e50d16e2490463c08c283758559b8');
+        sigBuyer.messageHash.should.be.equal('0xe10d5cc0f6866dbfdf8eb81db5a499994f3ed42ab11ae7c6b49fcb6a9ebcfb77');
+        sigBuyer.signature.should.be.equal('0xb9273ee86fdada2c7c591839051a59a1ec0a48b33d2bd978cfbbd0f56abccc2d4e65f7fd02a25f5a405393c166fc849e4834d4318371e06fc5230d655017b9211c');
+        
     });
 
     it('transferPlayer', async () => {
