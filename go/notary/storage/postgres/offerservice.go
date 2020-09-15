@@ -2,13 +2,14 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 func (b *Tx) OfferPendingOffers() ([]storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE state = 'started';")
+	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE state = 'started';")
 	if err != nil {
 		return nil, err
 	}
@@ -17,7 +18,7 @@ func (b *Tx) OfferPendingOffers() ([]storage.Offer, error) {
 	for rows.Next() {
 		var offer storage.Offer
 		err = rows.Scan(
-			&offer.ID,
+			&offer.AuctionID,
 			&offer.PlayerID,
 			&offer.CurrencyID,
 			&offer.Price,
@@ -28,7 +29,6 @@ func (b *Tx) OfferPendingOffers() ([]storage.Offer, error) {
 			&offer.StateExtra,
 			&offer.Seller,
 			&offer.Buyer,
-			&offer.AuctionID,
 			&offer.BuyerTeamID,
 		)
 		offers = append(offers, offer)
@@ -36,17 +36,17 @@ func (b *Tx) OfferPendingOffers() ([]storage.Offer, error) {
 	return offers, err
 }
 
-func (b *Tx) Offer(ID string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE id = $1;", ID)
+func (b *Tx) Offer(AuctionID string) (*storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE auction_id = $1;", AuctionID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return nil, errors.New("Could not find the offer you queried by auctionID")
 	}
 	var offer storage.Offer
-	offer.ID = ID
+	offer.AuctionID = AuctionID
 	err = rows.Scan(
 		&offer.PlayerID,
 		&offer.CurrencyID,
@@ -58,14 +58,13 @@ func (b *Tx) Offer(ID string) (*storage.Offer, error) {
 		&offer.StateExtra,
 		&offer.Seller,
 		&offer.Buyer,
-		&offer.AuctionID,
 		&offer.BuyerTeamID,
 	)
 	return &offer, err
 }
 
 func (b *Tx) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer, COALESCE(auction_id, ''), buyer_team_id FROM offers WHERE rnd = $1 AND price = $2;", rnd, price)
+	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE rnd = $1 AND price = $2;", rnd, price)
 	if err != nil {
 		return nil, err
 	}
@@ -77,38 +76,9 @@ func (b *Tx) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
 	offer.Price = int64(price)
 	offer.Rnd = int64(rnd)
 	err = rows.Scan(
-		&offer.ID,
-		&offer.PlayerID,
-		&offer.CurrencyID,
-		&offer.ValidUntil,
-		&offer.Signature,
-		&offer.State,
-		&offer.StateExtra,
-		&offer.Seller,
-		&offer.Buyer,
 		&offer.AuctionID,
-		&offer.BuyerTeamID,
-	)
-	return &offer, err
-}
-
-func (b *Tx) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE auction_id = $1;", auctionId)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return nil, nil
-	}
-	var offer storage.Offer
-	offer.AuctionID = auctionId
-	err = rows.Scan(
-		&offer.ID,
 		&offer.PlayerID,
 		&offer.CurrencyID,
-		&offer.Price,
-		&offer.Rnd,
 		&offer.ValidUntil,
 		&offer.Signature,
 		&offer.State,
@@ -121,7 +91,7 @@ func (b *Tx) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
 }
 
 func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT id, COALESCE(auction_id, ''), currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE player_id = $1;", playerId)
+	rows, err := b.tx.Query("SELECT auction_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE player_id = $1;", playerId)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +101,6 @@ func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
 		var offer storage.Offer
 		offer.PlayerID = playerId
 		err = rows.Scan(
-			&offer.ID,
 			&offer.AuctionID,
 			&offer.CurrencyID,
 			&offer.Price,
@@ -154,8 +123,11 @@ func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
 
 func (b *Tx) OfferInsert(offer storage.Offer) error {
 	log.Debugf("[DBMS] + create Offer %v", b)
-	_, err := b.tx.Exec("INSERT INTO offers (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
-		offer.ID,
+	if offer.AuctionID == "" {
+		return errors.New("Trying to insert an auction with empty auctionID")
+	}
+	_, err := b.tx.Exec("INSERT INTO offers_v2 (auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+		offer.AuctionID,
 		offer.PlayerID,
 		offer.CurrencyID,
 		offer.Price,
@@ -168,7 +140,6 @@ func (b *Tx) OfferInsert(offer storage.Offer) error {
 		offer.Buyer,
 		offer.BuyerTeamID,
 	)
-
 	return err
 }
 
@@ -184,28 +155,34 @@ func NewNullString(s string) sql.NullString {
 
 func (b *Tx) OfferUpdate(offer storage.Offer) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
-	_, err := b.tx.Exec(`UPDATE offers SET 
+
+	rows, err := b.tx.Exec(`UPDATE offers_v2 SET 
 		state=$1, 
 		state_extra=$2,
-		auction_id=$3,
-		seller=$4
-		WHERE id=$5;`,
+		seller=$3
+		WHERE auction_id=$4;`,
 		offer.State,
 		offer.StateExtra,
-		NewNullString(offer.AuctionID),
 		NewNullString(offer.Seller),
-		offer.ID,
+		offer.AuctionID,
 	)
+	if err != nil {
+		return err
+	}
+	nInserted, err := rows.RowsAffected()
+	if nInserted == 0 {
+		return errors.New("UPDATE: could not find an offer to update")
+	}
 	return err
 }
 
-func (b *Tx) OfferCancel(ID string) error {
+func (b *Tx) OfferCancel(AuctionID string) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
-	_, err := b.tx.Exec(`UPDATE offers SET 
+	_, err := b.tx.Exec(`UPDATE offers_v2 SET 
 		state=$1, 
-		WHERE id=$2;`,
+		WHERE auction_id=$2;`,
 		storage.OfferCancelled,
-		ID,
+		AuctionID,
 	)
 	return err
 }

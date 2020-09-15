@@ -67,7 +67,6 @@ func TestCreateOffer1(t *testing.T) {
 	inOffer.Signature = hex.EncodeToString(signature)
 
 	mockOffer := storage.Offer{
-		ID:          string(offerID),
 		PlayerID:    inOffer.PlayerId,
 		CurrencyID:  int(inOffer.CurrencyId),
 		Price:       int64(inOffer.Price),
@@ -78,7 +77,7 @@ func TestCreateOffer1(t *testing.T) {
 		StateExtra:  "",
 		Seller:      inOffer.Seller,
 		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
-		AuctionID:   "",
+		AuctionID:   string(offerID),
 		BuyerTeamID: inOffer.BuyerTeamId,
 	}
 	mockOffersByPlayerId := []storage.Offer{mockOffer}
@@ -185,7 +184,6 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 	inOffer.Signature = hex.EncodeToString(signature)
 
 	mockOffer := storage.Offer{
-		ID:          string(offerID),
 		PlayerID:    inOffer.PlayerId,
 		CurrencyID:  int(inOffer.CurrencyId),
 		Price:       int64(inOffer.Price),
@@ -196,7 +194,7 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 		StateExtra:  "",
 		Seller:      inOffer.Seller,
 		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
-		AuctionID:   "",
+		AuctionID:   string(offerID),
 		BuyerTeamID: inOffer.BuyerTeamId,
 	}
 	mockOffersByPlayerId := []storage.Offer{mockOffer}
@@ -376,7 +374,6 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 	inOffer.Signature = hex.EncodeToString(signature)
 
 	mockOffer := storage.Offer{
-		ID:          string(offerID),
 		PlayerID:    inOffer.PlayerId,
 		CurrencyID:  int(inOffer.CurrencyId),
 		Price:       int64(inOffer.Price),
@@ -387,7 +384,7 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 		StateExtra:  "",
 		Seller:      inOffer.Seller,
 		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
-		AuctionID:   "",
+		AuctionID:   string(offerID),
 		BuyerTeamID: inOffer.BuyerTeamId,
 	}
 	mockOffersByPlayerId := []storage.Offer{mockOffer}

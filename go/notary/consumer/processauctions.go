@@ -46,7 +46,7 @@ func processAuction(
 	if err != nil {
 		return err
 	}
-	offer, err := service.OfferByAuctionId(auction.ID)
+	offer, err := service.Offer(auction.ID)
 	if err != nil {
 		return err
 	}
