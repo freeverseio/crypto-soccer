@@ -202,7 +202,7 @@ func (b *Tx) OfferUpdate(offer storage.Offer) error {
 	}
 	nInserted, err := rows.RowsAffected()
 	if nInserted == 0 {
-		return errors.New("could not find an offer to update")
+		return errors.New("UPDATE: could not find an offer to update")
 	}
 	return err
 }

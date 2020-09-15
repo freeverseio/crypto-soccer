@@ -3,6 +3,7 @@ package storagetest
 import (
 	"testing"
 
+	"github.com/cloudflare/cfssl/log"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
@@ -13,7 +14,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, err)
 		defer tx.Rollback()
 		offer, err := tx.Offer("4343")
-		assert.NilError(t, err)
+		assert.Error(t, err, "Could not find the offer you queried by auctionID")
 		assert.Assert(t, offer == nil)
 	})
 
@@ -186,7 +187,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.StateExtra = "privato"
 		offer.Seller = "yo2"
 		offer.AuctionID = "ciaobella"
-		assert.Error(t, tx.OfferUpdate(*offer), "could not find an offer to update")
+		log.Warning(offer)
+		err2 := tx.OfferUpdate(*offer)
+		assert.Error(t, err2, "UPDATE: could not find an offer to update")
 
 		// log.Warning("bbb")
 		// result, err = tx.Offer(offer.AuctionID)
