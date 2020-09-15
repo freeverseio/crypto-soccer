@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -18,6 +19,15 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 	id, err := args.Input.ID(b.contracts)
 	if err != nil {
 		return graphql.ID(""), err
+	}
+
+	offerValidUntil, err := strconv.ParseInt(args.Input.ValidUntil, 10, 64)
+	if err != nil {
+		return graphql.ID(""), err
+	}
+
+	if offerValidUntil <= time.Now().Unix() {
+		return id, errors.New("offer validUntil already expired")
 	}
 
 	if b.ch == nil {

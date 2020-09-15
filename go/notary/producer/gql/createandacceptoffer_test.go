@@ -590,23 +590,5 @@ func TestCreateAndAcceptOfferFailOnValidUntils(t *testing.T) {
 	}
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
-
-	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
-	acceptOfferIn := input.AcceptOfferInput{}
-	acceptOfferIn.OfferValidUntil = inOffer.ValidUntil
-	acceptOfferIn.ValidUntil = strconv.FormatInt(validUntil, 10)
-	acceptOfferIn.PlayerId = inOffer.PlayerId
-	acceptOfferIn.CurrencyId = inOffer.CurrencyId
-	acceptOfferIn.Price = inOffer.Price
-	acceptOfferIn.Rnd = inOffer.Rnd
-	acceptOfferIn.OfferId = graphql.ID(string(offerID))
-
-	sellerDigest, err := acceptOfferIn.SellerDigest()
-	signature, err = signer.Sign(sellerDigest.Bytes(), seller)
-	assert.NilError(t, err)
-	acceptOfferIn.Signature = hex.EncodeToString(signature)
-
-	_, err = r.AcceptOffer(struct{ Input input.AcceptOfferInput }{acceptOfferIn})
-	assert.Error(t, err, "blockchain failed trying to freeze the asset")
-
+	assert.Error(t, err, "offer validUntil already expired")
 }
