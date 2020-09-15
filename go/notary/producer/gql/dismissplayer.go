@@ -17,14 +17,6 @@ func (b *Resolver) DismissPlayer(args struct{ Input input.DismissPlayerInput }) 
 		return id, errors.New("internal error: no channel")
 	}
 
-	// isValid, err := args.Input.VerifySignature()
-	// if err != nil {
-	// 	return graphql.ID(id), err
-	// }
-	// if !isValid {
-	// 	return graphql.ID(id), errors.New("invalid signature")
-	// }
-
 	isOwner, err := args.Input.IsSignerOwner(b.contracts)
 	if err != nil {
 		return id, err
