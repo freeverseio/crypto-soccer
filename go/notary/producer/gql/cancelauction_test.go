@@ -115,34 +115,63 @@ func TestCancelAuctionStorageReturnsOK(t *testing.T) {
 	assert.NilError(t, err)
 }
 
-// func TestCancelAuctionStorageReturnsErrNonExistingAuction(t *testing.T) {
-// 	counter := 0
+func TestCancelAuctionStorageReturnsErrOnEmptyAuctionId(t *testing.T) {
+	counter := 0
 
-// 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
-// 	inAuction := storage.Auction{
-// 		ID:     "123abc",
-// 		Seller: crypto.PubkeyToAddress(alice.PublicKey).Hex(),
-// 	}
+	inAuction := storage.Auction{
+		ID:     "123abc",
+		Seller: crypto.PubkeyToAddress(alice.PublicKey).Hex(),
+	}
 
-// 	mock := mockup.Tx{
-// 		AuctionFunc:       func(ID string) (*storage.Auction, error) { return &inAuction, nil },
-// 		AuctionCancelFunc: func(ID string) error { return nil },
-// 		RollbackFunc:      func() error { counter++; return nil },
-// 	}
-// 	service := &mockup.StorageService{
-// 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
-// 	}
+	mock := mockup.Tx{
+		AuctionFunc:       func(ID string) (*storage.Auction, error) { return &inAuction, nil },
+		AuctionCancelFunc: func(ID string) error { return nil },
+		CommitFunc:        func() error { return nil },
+		RollbackFunc:      func() error { counter++; return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
 
-// 	in := input.CancelAuctionInput{}
-// 	in.AuctionId = "123abc"
-// 	hash, err := in.Hash()
-// 	assert.NilError(t, err)
-// 	signature, err := signer.Sign(hash.Bytes(), alice)
-// 	assert.NilError(t, err)
-// 	in.Signature = hex.EncodeToString(signature)
+	in := input.CancelAuctionInput{}
+	in.AuctionId = ""
+	hash, err := in.Hash()
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), alice)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
 
-// 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-// 	_, err = r.CancelAuction(struct{ Input input.CancelAuctionInput }{in})
-// 	assert.NilError(t, err)
-// }
+	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
+	_, err = r.CancelAuction(struct{ Input input.CancelAuctionInput }{in})
+	assert.Error(t, err, "empty AuctionId when trying to cancel an auction")
+}
+
+func TestCancelAuctionStorageReturnsErrOnWrongAuctionId(t *testing.T) {
+	counter := 0
+
+	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
+	mock := mockup.Tx{
+		AuctionFunc:       func(ID string) (*storage.Auction, error) { return nil, nil },
+		AuctionCancelFunc: func(ID string) error { return nil },
+		CommitFunc:        func() error { return nil },
+		RollbackFunc:      func() error { counter++; return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	in := input.CancelAuctionInput{}
+	in.AuctionId = "3245786876a1"
+	hash, err := in.Hash()
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), alice)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
+	_, err = r.CancelAuction(struct{ Input input.CancelAuctionInput }{in})
+	assert.Error(t, err, "could not find an auction to cancel")
+}

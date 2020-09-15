@@ -42,8 +42,6 @@ func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) 
 		return id, err
 	}
 
-	log.Warning("aaaa")
-	log.Warning(auction.Seller)
 	if signer.Hex() != auction.Seller {
 		return id, errors.New("Signer of CancelAuction is not the Seller")
 	}
