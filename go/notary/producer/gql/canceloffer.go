@@ -17,13 +17,13 @@ func (b *Resolver) CancelOffer(args struct{ Input input.CancelOfferInput }) (gra
 		return id, errors.New("internal error: no channel")
 	}
 
-	isValid, err := args.Input.VerifySignature()
-	if err != nil {
-		return id, err
-	}
-	if !isValid {
-		return id, errors.New("Invalid signature")
-	}
+	// isValid, err := args.Input.VerifySignature()
+	// if err != nil {
+	// 	return id, err
+	// }
+	// if !isValid {
+	// 	return id, errors.New("Invalid signature")
+	// }
 
 	tx, err := b.service.Begin()
 	if err != nil {

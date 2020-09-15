@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
@@ -16,7 +17,15 @@ import (
 func TestCancelAuctionStorageReturnsError(t *testing.T) {
 	counter := 0
 
+	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
+	inAuction := storage.Auction{
+		ID:     "dummyAcutionID",
+		Seller: crypto.PubkeyToAddress(alice.PublicKey).Hex(),
+	}
+
 	mock := mockup.Tx{
+		AuctionFunc:       func(ID string) (*storage.Auction, error) { return &inAuction, nil },
 		AuctionCancelFunc: func(ID string) error { return errors.New("error") },
 		RollbackFunc:      func() error { counter++; return nil },
 	}
@@ -33,8 +42,9 @@ func TestCancelAuctionStorageReturnsError(t *testing.T) {
 
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
 	_, err = r.CancelAuction(struct{ Input input.CancelAuctionInput }{in})
-	assert.Error(t, err, "error")
-	assert.Equal(t, counter, 1)
+	assert.Error(t, err, "empty AuctionId when trying to cancel an auction")
+	assert.Equal(t, counter, 0)
+
 }
 
 func TestCancelAuctionStorageReturnsOK(t *testing.T) {
@@ -52,6 +62,31 @@ func TestCancelAuctionStorageReturnsOK(t *testing.T) {
 	hash, err := in.Hash()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
+	_, err = r.CancelAuction(struct{ Input input.CancelAuctionInput }{in})
+	assert.NilError(t, err)
+	assert.Equal(t, counter, 1)
+}
+
+func TestCancelAuctionStorageFailsOnWrongSigner(t *testing.T) {
+	counter := 0
+
+	mock := mockup.Tx{
+		AuctionCancelFunc: func(ID string) error { return nil },
+		CommitFunc:        func() error { counter++; return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
+	in := input.CancelAuctionInput{}
+	hash, err := in.Hash()
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), alice)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
 
