@@ -28,17 +28,14 @@ func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) 
 
 	auction, err := tx.Auction(string(args.Input.AuctionId))
 	if err != nil {
-		tx.Rollback()
 		return id, err
 	}
 	if auction == nil {
-		tx.Rollback()
 		return id, errors.New("could not find an auction to cancel")
 	}
 
 	signer, err := args.Input.SignerAddress()
 	if err != nil {
-		tx.Rollback()
 		return id, err
 	}
 
