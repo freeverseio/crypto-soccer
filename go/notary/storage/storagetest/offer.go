@@ -182,34 +182,33 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, result.StateExtra, "priva")
 		assert.Equal(t, result.Seller, "yo")
 
-		// TODO write test that you cannot change AuctionID
+		// if I change the auctionID it will not find it when doing an Update
 		offer.StateExtra = "privato"
 		offer.Seller = "yo2"
 		offer.AuctionID = "ciaobella"
 		err2 := tx.OfferUpdate(*offer)
 		assert.Equal(t, err2 != nil, true)
 
-		// result, err = tx.Offer(offer.AuctionID)
+		// ...or when quering
+		_, err = tx.Offer(offer.AuctionID)
+		assert.Error(t, err, "Could not find the offer you queried by auctionID")
 
-		// assert.Equal(t, result.AuctionID, "ciaobellamecagoendios")
-		// assert.NilError(t, err)
-		// assert.Equal(t, *result, *offer)
+		// Let's reset the original (inserted) auction ID and query successfully
+		offer.AuctionID = "dummyAuctionID"
+		assert.NilError(t, tx.OfferUpdate(*offer))
 
-		// result1, err := tx.Offer(offer.AuctionID)
-		// assert.NilError(t, err)
-		// assert.Equal(t, *result1, *offer)
+		result, err = tx.Offer(offer.AuctionID)
+		assert.Equal(t, result.AuctionID, "dummyAuctionID")
+		assert.NilError(t, err)
+		assert.Equal(t, *result, *offer)
 
-		// result2, err := tx.OfferByAuctionId(offer.AuctionID)
-		// assert.NilError(t, err)
-		// assert.Equal(t, *result2, *offer)
+		result3, err := tx.OfferByRndPrice(int32(offer.Rnd), int32(offer.Price))
+		assert.NilError(t, err)
+		assert.Equal(t, *result3, *offer)
 
-		// result3, err := tx.OfferByRndPrice(int32(offer.Rnd), int32(offer.Price))
-		// assert.NilError(t, err)
-		// assert.Equal(t, *result3, *offer)
-
-		// offers, err := tx.OffersByPlayerId(offer.PlayerID)
-		// assert.NilError(t, err)
-		// assert.Equal(t, 1, len(offers))
+		offers, err := tx.OffersByPlayerId(offer.PlayerID)
+		assert.NilError(t, err)
+		assert.Equal(t, 1, len(offers))
 	})
 
 	t.Run("Error on cancel offe not in started state", func(t *testing.T) {

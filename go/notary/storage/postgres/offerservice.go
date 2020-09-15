@@ -64,7 +64,7 @@ func (b *Tx) Offer(AuctionID string) (*storage.Offer, error) {
 }
 
 func (b *Tx) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer), buyer_team_id FROM offers_v2 WHERE rnd = $1 AND price = $2;", rnd, price)
+	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE rnd = $1 AND price = $2;", rnd, price)
 	if err != nil {
 		return nil, err
 	}
@@ -79,33 +79,6 @@ func (b *Tx) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
 		&offer.AuctionID,
 		&offer.PlayerID,
 		&offer.CurrencyID,
-		&offer.ValidUntil,
-		&offer.Signature,
-		&offer.State,
-		&offer.StateExtra,
-		&offer.Seller,
-		&offer.Buyer,
-		&offer.BuyerTeamID,
-	)
-	return &offer, err
-}
-
-func (b *Tx) OfferByAuctionId(auctionId string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE auction_id = $1;", auctionId)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return nil, nil
-	}
-	var offer storage.Offer
-	err = rows.Scan(
-		&offer.AuctionID,
-		&offer.PlayerID,
-		&offer.CurrencyID,
-		&offer.Price,
-		&offer.Rnd,
 		&offer.ValidUntil,
 		&offer.Signature,
 		&offer.State,
