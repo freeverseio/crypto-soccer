@@ -17,14 +17,6 @@ func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) 
 		return id, errors.New("internal error: no channel")
 	}
 
-	// isValid, err := args.Input.VerifySignature()
-	// if err != nil {
-	// 	return id, err
-	// }
-	// if !isValid {
-	// 	return id, errors.New("Invalid signature")
-	// }
-
 	tx, err := b.service.Begin()
 	if err != nil {
 		return id, err
@@ -53,7 +45,7 @@ func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) 
 	log.Warning("aaaa")
 	log.Warning(auction.Seller)
 	if signer.Hex() != auction.Seller {
-		return id, errors.New("Signer of CancelAuction is the the Seller")
+		return id, errors.New("Signer of CancelAuction is not the Seller")
 	}
 
 	if err := tx.AuctionCancel(string(args.Input.AuctionId)); err != nil {
