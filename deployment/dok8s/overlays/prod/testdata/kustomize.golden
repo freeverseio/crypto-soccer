@@ -2,6 +2,7 @@ apiVersion: v1
 data:
   BLOCKS_PER_STEP: "1000"
   PROXY_CONTRACT_ADDRESS: 0x7334A1E445B4E1Fb94001E1a9F772212b6D9de46
+  SYNC_CONFIG_FILE: config_prod.json
   domain: https://market.goalrevolution.live
   freeverse_password: freeverse
   freeverse_username: freeverse
@@ -625,6 +626,8 @@ spec:
         - $(STAKER_PRIVATE_KEY)
         - -delta
         - $(BLOCKS_PER_STEP)
+        - -config-file
+        - $(SYNC_CONFIG_FILE)
         env:
         - name: STAKER_PRIVATE_KEY
           valueFrom:

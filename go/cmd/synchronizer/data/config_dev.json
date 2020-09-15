@@ -1,0 +1,9 @@
+{
+    "patch": {
+        "engine_version_2": "1",
+        "use_zombies": "1",
+        "reset_timezone_24": "1",
+        "reset_timezone_1": "1",
+        "calculate_leaderboard_fix": "1"
+    }
+}

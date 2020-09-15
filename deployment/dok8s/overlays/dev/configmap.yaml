@@ -15,3 +15,4 @@ data:
 
   BLOCKS_PER_STEP: "10000"
   domain: "https://market.gorengine.com"
+  SYNC_CONFIG_FILE: "config_dev.json"

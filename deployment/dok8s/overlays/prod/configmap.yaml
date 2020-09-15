@@ -12,3 +12,4 @@ data:
 
   BLOCKS_PER_STEP: "1000"
   domain: "https://market.goalrevolution.live"
+  SYNC_CONFIG_FILE: "config_prod.json"
