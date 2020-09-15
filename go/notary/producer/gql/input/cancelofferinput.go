@@ -39,18 +39,6 @@ func (b CancelOfferInput) Hash() (common.Hash, error) {
 	return crypto.Keccak256Hash([]byte(ss)), nil
 }
 
-func (b CancelOfferInput) VerifySignature() (bool, error) {
-	hash, err := b.Hash()
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
-}
-
 func (b CancelOfferInput) SignerAddress() (common.Address, error) {
 	hash, err := b.Hash()
 	if err != nil {

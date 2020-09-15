@@ -79,15 +79,3 @@ func (b SubmitPlayStorePlayerPurchaseInput) IsSignerOwner(contracts contracts.Co
 	}
 	return signerAddress == owner, nil
 }
-
-func (b SubmitPlayStorePlayerPurchaseInput) IsValidSignature() (bool, error) {
-	hash, err := b.Hash()
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
-}
