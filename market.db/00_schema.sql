@@ -118,7 +118,7 @@ CREATE INDEX idx_offers_player_id ON offers (player_id);
 CREATE INDEX idx_offers_auction_id ON offers (auction_id);
 
 CREATE TABLE offers_v2 (
-    auction_id TEXT NOT NULL REFERENCES auctions(id),
+    auction_id TEXT NOT NULL,
     player_id TEXT NOT NULL,
     currency_id INT NOT NULL,
     price BIGINT NOT NULL,

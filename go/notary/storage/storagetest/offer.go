@@ -13,7 +13,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, err)
 		defer tx.Rollback()
 		offer, err := tx.Offer("4343")
-		assert.NilError(t, err)
+		assert.Error(t, err, "Could not find the offer you queried by auctionID")
 		assert.Assert(t, offer == nil)
 	})
 
@@ -33,6 +33,9 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.Seller = "3"
 		offer.Buyer = "4"
 
+		err = tx.OfferInsert(*offer)
+		assert.Error(t, err, "Trying to insert an auction with empty auctionID")
+		offer.AuctionID = "dummyAuctionID"
 		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
 
@@ -64,6 +67,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, *auctionResult, *auction)
 
 		offer := storage.NewOffer()
+		offer.AuctionID = "ciao"
 		offer.State = storage.OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
@@ -77,7 +81,6 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 
 		offer.StateExtra = "privato"
 		offer.Seller = "yo2"
-		offer.AuctionID = "ciao"
 
 		assert.NilError(t, tx.OfferUpdate(*offer))
 		result, err = tx.Offer(offer.AuctionID)
@@ -103,6 +106,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.StateExtra = "3"
 		offer.Seller = "3"
 		offer.Buyer = "5"
+		offer.AuctionID = "dummyAuctionID"
 		err = tx.OfferInsert(*offer)
 		assert.NilError(t, err)
 		err = tx.OfferInsert(*offer)
@@ -124,6 +128,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		offer.StateExtra = "3"
 		offer.Seller = "3"
 		offer.Buyer = "4"
+		offer.AuctionID = "dummyAuctionID"
 
 		offers, err := tx.OfferPendingOffers()
 		assert.NilError(t, err)
@@ -157,6 +162,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		auction.StateExtra = "3"
 		auction.PaymentURL = "3"
 		auction.Seller = "3"
+
 		assert.NilError(t, tx.AuctionInsert(*auction))
 
 		auctionResult, err := tx.Auction(auction.ID)
@@ -164,6 +170,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, *auctionResult, *auction)
 
 		offer := storage.NewOffer()
+		offer.AuctionID = "dummyAuctionID"
 		offer.State = storage.OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
@@ -175,24 +182,25 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, result.StateExtra, "priva")
 		assert.Equal(t, result.Seller, "yo")
 
+		// if I change the auctionID it will not find it when doing an Update
 		offer.StateExtra = "privato"
 		offer.Seller = "yo2"
-		offer.AuctionID = "ciao"
+		offer.AuctionID = "ciaobella"
+		err2 := tx.OfferUpdate(*offer)
+		assert.Equal(t, err2 != nil, true)
 
+		// ...or when quering
+		_, err = tx.Offer(offer.AuctionID)
+		assert.Error(t, err, "Could not find the offer you queried by auctionID")
+
+		// Let's reset the original (inserted) auction ID and query successfully
+		offer.AuctionID = "dummyAuctionID"
 		assert.NilError(t, tx.OfferUpdate(*offer))
-		result, err = tx.Offer(offer.AuctionID)
 
-		assert.Equal(t, result.AuctionID, "ciao")
+		result, err = tx.Offer(offer.AuctionID)
+		assert.Equal(t, result.AuctionID, "dummyAuctionID")
 		assert.NilError(t, err)
 		assert.Equal(t, *result, *offer)
-
-		result1, err := tx.Offer(offer.AuctionID)
-		assert.NilError(t, err)
-		assert.Equal(t, *result1, *offer)
-
-		result2, err := tx.OfferByAuctionId(offer.AuctionID)
-		assert.NilError(t, err)
-		assert.Equal(t, *result2, *offer)
 
 		result3, err := tx.OfferByRndPrice(int32(offer.Rnd), int32(offer.Price))
 		assert.NilError(t, err)
@@ -223,6 +231,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, tx.AuctionInsert(*auction))
 
 		offer := storage.NewOffer()
+		offer.AuctionID = "dummyAuctionID"
 		offer.State = storage.OfferAccepted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
