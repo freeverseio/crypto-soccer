@@ -36,7 +36,7 @@ func (b *Tx) OfferPendingOffers() ([]storage.Offer, error) {
 }
 
 func (b *Tx) Offer(AuctionID string) (*storage.Offer, error) {
-	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, auction_id, buyer_team_id FROM offers_v2 WHERE auction_id = $1;", AuctionID)
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers_v2 WHERE auction_id = $1;", AuctionID)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,6 @@ func (b *Tx) Offer(AuctionID string) (*storage.Offer, error) {
 		&offer.StateExtra,
 		&offer.Seller,
 		&offer.Buyer,
-		&offer.AuctionID,
 		&offer.BuyerTeamID,
 	)
 	return &offer, err
