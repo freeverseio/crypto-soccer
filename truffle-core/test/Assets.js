@@ -634,25 +634,7 @@ contract('Assets', (accounts) => {
         offerValidUntil = 4358487;
         sellerHiddenPrice = marketUtils.hidePrice(currencyId, price, rnd);
 
-        digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
-        digest_BC = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
-        digest_BC.toString().should.be.equal(digest_JS.toString());
-        digest_BC.toString().should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
-    
-        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
-    
-        const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
-        const sigSeller = sellerAccount.sign(digestNoPrefix);
-    
-        digestNoPrefix.toString().should.be.equal(sigSeller.message);
-    
-        console.log(sellerAccount.address);
-        console.log(sigSeller);
-    
-        sigSeller.message.should.be.equal('0x4d87a039e857f2b3d2975a8b198fe0ff7b71a734347a612436e1190688d2bb69');
-        sigSeller.messageHash.should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
-        sigSeller.signature.should.be.equal('0xf0e4f8fe6502bb950fa45283832d117dda9876e1bf92c29808ab9072fd717cc3756ee55cd659cc33ed2d3d0aa6f290f3f583045e9b91c32cab64747b8b43c7701b');
-
+        // First check that we can compute auctionIds with or without offerValidUntil
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, 0).should.be.fulfilled;
         auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, 0);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
@@ -667,6 +649,46 @@ contract('Assets', (accounts) => {
         auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, 0, offerValidUntil);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
+
+        // OPTION 1: If we wanted to accept and offer => create auction from offer:
+        digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digest_BC = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
+        digest_BC.toString().should.be.equal(digest_JS.toString());
+        digest_BC.toString().should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
+    
+        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+    
+        sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+        sigSeller = sellerAccount.sign(digestNoPrefix);
+    
+        digestNoPrefix.toString().should.be.equal(sigSeller.message);
+    
+        // console.log(sellerAccount.address);
+        // console.log(sigSeller);
+    
+        sigSeller.message.should.be.equal('0x4d87a039e857f2b3d2975a8b198fe0ff7b71a734347a612436e1190688d2bb69');
+        sigSeller.messageHash.should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
+        sigSeller.signature.should.be.equal('0xf0e4f8fe6502bb950fa45283832d117dda9876e1bf92c29808ab9072fd717cc3756ee55cd659cc33ed2d3d0aa6f290f3f583045e9b91c32cab64747b8b43c7701b');
+
+        // OPTION 2: If we just make a put for sale, ignoring validOfferUntil, etc.
+        offerValidUntil = 0;
+        digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digest_BC = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
+        digest_BC.toString().should.be.equal(digest_JS.toString());
+        digest_BC.toString().should.be.equal('0x96e22faabe253a8fcff578d928c1e38d9dbfdf36482cca4fc05b77f886db034f');
+    
+        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+    
+        sigSeller = sellerAccount.sign(digestNoPrefix);
+    
+        digestNoPrefix.toString().should.be.equal(sigSeller.message);
+    
+        // console.log(sellerAccount.address);
+        // console.log(sigSeller);
+    
+        sigSeller.message.should.be.equal('0x0ccdec30c1259bf0d8974a063125536e01eff338af90a1d071316f4d7ea2eeea');
+        sigSeller.messageHash.should.be.equal('0x96e22faabe253a8fcff578d928c1e38d9dbfdf36482cca4fc05b77f886db034f');
+        sigSeller.signature.should.be.equal('0x6ae2449e83a8b6641b95e7dbf48313d56320727ccd7716988f2d0c9c46b502ec34749a2d4b15d08980a88b3cf5fcb3df509696acc3f1fad6d5bfb19b3c9c547b1b');
     });
 
     it('transferPlayer', async () => {
