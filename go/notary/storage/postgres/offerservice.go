@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
@@ -149,6 +150,9 @@ func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
 
 func (b *Tx) OfferInsert(offer storage.Offer) error {
 	log.Debugf("[DBMS] + create Offer %v", b)
+	if offer.AuctionID == "" {
+		return errors.New("Trying to insert an auction with empty auctionID")
+	}
 	_, err := b.tx.Exec("INSERT INTO offers_v2 (auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		offer.AuctionID,
 		offer.PlayerID,
@@ -163,7 +167,6 @@ func (b *Tx) OfferInsert(offer storage.Offer) error {
 		offer.Buyer,
 		offer.BuyerTeamID,
 	)
-
 	return err
 }
 

@@ -64,6 +64,7 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.Equal(t, *auctionResult, *auction)
 
 		offer := storage.NewOffer()
+		offer.AuctionID = "ciao"
 		offer.State = storage.OfferStarted
 		offer.StateExtra = "priva"
 		offer.Seller = "yo"
