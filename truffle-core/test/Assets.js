@@ -636,6 +636,7 @@ contract('Assets', (accounts) => {
         sellerHiddenPrice = marketUtils.hidePrice(currencyId, price, sellerRnd);
         buyerTeamId = 412340324333;
         buyerRnd = 42309324;
+        extraPrice = 555;
 
         // First check that we can compute auctionIds with or without offerValidUntil
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, 0).should.be.fulfilled;
@@ -718,7 +719,7 @@ contract('Assets', (accounts) => {
         var {0: sigBuyer, 1: auctionId0} = await marketUtils.signAgreeToBuyPlayerMTx(
             currencyId,
             price,
-            extPrice,
+            extraPrice,
             sellerRnd,
             buyRnd,
             validUntil,
@@ -730,9 +731,9 @@ contract('Assets', (accounts) => {
 
         // console.log(sigBuyer);
     
-        sigBuyer.message.should.be.equal('0x72e092aa6c19e5c8502a1578881c2ae2658e50d16e2490463c08c283758559b8');
-        sigBuyer.messageHash.should.be.equal('0xe10d5cc0f6866dbfdf8eb81db5a499994f3ed42ab11ae7c6b49fcb6a9ebcfb77');
-        sigBuyer.signature.should.be.equal('0xb9273ee86fdada2c7c591839051a59a1ec0a48b33d2bd978cfbbd0f56abccc2d4e65f7fd02a25f5a405393c166fc849e4834d4318371e06fc5230d655017b9211c');
+        sigBuyer.message.should.be.equal('0x68b29fd921c6050876b6422179b5daa333d2484449e65d693b5f0b58a55fc713');
+        sigBuyer.messageHash.should.be.equal('0x76e8b2e49b51dfcddb1d7af5af1280ecb8897f8ffeaa6a59859190e5138ab129');
+        sigBuyer.signature.should.be.equal('0xf391bf9a1051d4599499f8618246b9e2cdf6985cc4dbd1f40d6cd4f7f975fe1e2b39d85ffb75164e4183cad9d92cb84aaa49002f6d31cbb0c2cc2f689fc0c7391b');
         
     });
 
