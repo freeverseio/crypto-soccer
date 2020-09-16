@@ -8,6 +8,8 @@ import (
 	"math/big"
 	"sort"
 
+	"github.com/spf13/viper"
+
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"github.com/pkg/errors"
 
@@ -46,12 +48,15 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 	if err != nil {
 		return err
 	}
+
+	verseNumber := verse.Uint64()
+	zombieVerse := viper.GetUint64("patch.use_zombies")
+
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 		// if a new league is starting shuffle the teams
-		zombieVerse := big.NewInt(6285)
-		if verse.Cmp(zombieVerse) >= 0 {
-			if verse.Cmp(zombieVerse) == 0 {
-				log.Info("[6285] Start detecting zombies and shuffling them after bots")
+		if verseNumber >= zombieVerse {
+			if verseNumber == zombieVerse {
+				log.Infof("[%v] Start detecting zombies and shuffling them after bots", zombieVerse)
 			}
 			err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombies(tx, timezoneIdx, countryIdx)
 			if err != nil {
@@ -99,18 +104,20 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	verse := event.Verse.Uint64()
 
-	switch verse {
-	case uint64(674):
-		log.Info("[674|BUG] forcing reset timezone 24")
+	verseResetTimezone24 := viper.GetUint64("patch.reset_timezone_24")
+	verseResetTimezone1 := viper.GetUint64("patch.reset_timezone_1")
+
+	if verseResetTimezone24 != 0 && verse == verseResetTimezone24 {
+		log.Infof("[%v|BUG] forcing reset timezone 24", verseResetTimezone24)
 		if err := b.resetTimezone(tx, 24, event.Verse); err != nil {
 			return err
 		}
-	case uint64(678):
-		log.Info("[678|BUG] forcing reset timezone 1")
+	} else if verseResetTimezone1 != 0 && verse == verseResetTimezone1 {
+		log.Infof("[%v|BUG] forcing reset timezone 1", verseResetTimezone1)
 		if err := b.resetTimezone(tx, 1, event.Verse); err != nil {
 			return err
 		}
-	default:
+	} else {
 		var timezoneToReshuffle uint8
 		var err error
 		transitionVerse := uint64(910)
@@ -189,15 +196,18 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if turnInDay == 1 {
 		log.Infof("[processor|timezone %v] update leaderboard", timezoneIdx)
 		leaderboardService := leaderboard.NewLeaderboardService(storagepostgres.NewStorageService(tx))
-		if verse < 1200 {
+
+		verseCalculateLeaderboardFix := viper.GetUint64("patch.calculate_leaderboard_fix")
+
+		if verse < verseCalculateLeaderboardFix {
 			if err := leaderboardService.UpdateTimezoneLeaderboards(*b.contracts, int(timezoneIdx), int(day)); err != nil {
 				return errors.Wrap(err, "failed updating timezone leaderboard")
 			}
 		} else {
-			if verse == uint64(1200) {
-				log.Info("[1200|BUG] switching to verse 1200 calculate leaderboard function")
+			if verse == verseCalculateLeaderboardFix {
+				log.Infof("[%v|BUG] switching to new calculate leaderboard function", verseCalculateLeaderboardFix)
 			}
-			if err := leaderboardService.UpdateTimezoneLeaderboardsFrom1200(*b.contracts, int(timezoneIdx), int(day)); err != nil {
+			if err := leaderboardService.UpdateTimezoneLeaderboardsNew(*b.contracts, int(timezoneIdx), int(day)); err != nil {
 				return errors.Wrap(err, "failed updating timezone leaderboard")
 			}
 		}

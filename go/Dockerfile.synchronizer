@@ -17,6 +17,7 @@ RUN apk --no-cache add ca-certificates
 COPY --from=builder /user/group /user/passwd /etc/
 COPY --from=builder /app /app
 COPY ./names/sql/names.db .
+COPY cmd/synchronizer/data ./data
 # Perform any further action as an unprivileged user.
 USER nobody:nobody
 # Run the compiled binary.
