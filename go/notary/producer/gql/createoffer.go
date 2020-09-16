@@ -30,10 +30,6 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, errors.New("offer validUntil already expired")
 	}
 
-	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
-	}
-
 	isPlayerOwner, err := args.Input.SignerAlreadyOwnsPlayer(b.contracts)
 	if err != nil {
 		return id, err

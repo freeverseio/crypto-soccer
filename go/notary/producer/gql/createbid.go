@@ -1,7 +1,6 @@
 package gql
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -14,10 +13,6 @@ import (
 
 func (b *Resolver) CreateBid(args struct{ Input input.CreateBidInput }) (graphql.ID, error) {
 	log.Infof("[notary|producer|gql] create bid %+v", args.Input)
-
-	if b.ch == nil {
-		return graphql.ID(""), errors.New("internal error: no channel")
-	}
 
 	isOwner, err := args.Input.IsSignerOwnerOfTeam(b.contracts)
 	if err != nil {

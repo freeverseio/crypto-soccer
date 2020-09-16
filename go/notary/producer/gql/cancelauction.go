@@ -13,10 +13,6 @@ func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) 
 
 	id := args.Input.AuctionId
 
-	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
-	}
-
 	tx, err := b.service.Begin()
 	if err != nil {
 		return id, err

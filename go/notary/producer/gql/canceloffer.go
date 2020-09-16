@@ -14,10 +14,6 @@ func (b *Resolver) CancelOffer(args struct{ Input input.CancelOfferInput }) (gra
 
 	id := args.Input.OfferId
 
-	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
-	}
-
 	tx, err := b.service.Begin()
 	if err != nil {
 		return id, err

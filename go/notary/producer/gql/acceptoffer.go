@@ -25,10 +25,6 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, errors.New("empty offerId")
 	}
 
-	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
-	}
-
 	isOwner, err := args.Input.IsSignerOwnerOfPlayer(b.contracts)
 	if err != nil {
 		return id, err

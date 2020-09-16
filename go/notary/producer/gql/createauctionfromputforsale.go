@@ -1,7 +1,6 @@
 package gql
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -19,10 +18,6 @@ func (b *Resolver) CreateAuctionFromPutForSale(args struct {
 	id, err := args.Input.ID()
 	if err != nil {
 		return graphql.ID(""), err
-	}
-
-	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
 	}
 
 	isOwner, err := args.Input.IsSignerOwnerOfPlayer(b.contracts)
