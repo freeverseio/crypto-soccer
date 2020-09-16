@@ -1,5 +1,10 @@
-DROP TABLE IF EXISTS offers_histories;
-DROP TABLE IF EXISTS offers;
+ALTER TABLE IF EXISTS offers_histories RENAME TO old_offers_histories;
+ALTER TABLE IF EXISTS offers RENAME TO old_offers;
+
+comment on table market.old_offers_histories is
+  E'@omit';
+comment on table market.old_offers is
+  E'@omit';
 
 CREATE TABLE offers (
     auction_id TEXT NOT NULL,
