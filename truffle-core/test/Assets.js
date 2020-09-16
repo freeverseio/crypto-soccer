@@ -694,6 +694,26 @@ contract('Assets', (accounts) => {
         sigBuyer.messageHash.should.be.equal('0xf9fa8a35562227e40b67b9dcc977d02b541c444267b26f61be89befeb6fa0846');
         sigBuyer.signature.should.be.equal('0xd98d216378d06e82089368ee43b1b6047838eae8477f0cc6e9a2b96a9b3aa8593a5304a6f11914df47c896ce4d87fcf4ef70318d622752825fdb1a7f05ab956c1b');
 
+        // a different bidder could also bid,hence using the non-zero full set of inputs
+        var {0: sigBuyer, 1: auctionId0} = await marketUtils.signAgreeToBuyPlayerMTx(
+            currencyId,
+            price,
+            extraPrice,
+            sellerRnd,
+            buyerRnd,
+            validUntil,
+            offerValidUntil,
+            playerId.toString(),
+            buyerTeamId.toString(),
+            sellerAccount
+            ).should.be.fulfilled;
+
+        // console.log(sigBuyer);
+    
+        sigBuyer.message.should.be.equal('0xcd42a7f973cf22eec1feba10d200876bcb36b58be960c5f302d30adddcdd48b6');
+        sigBuyer.messageHash.should.be.equal('0x8fe70d8f8325e843aa1b6e1abd8293a27a1a0494f37085094037503073e66e41');
+        sigBuyer.signature.should.be.equal('0x579afcdc27336de738e375c538cb14378e5dc4af5558f24bec65f66b8c2f91731f18739402f930b6ea6581d87372ef98862f991ec70483995b619a2ec8a3c7361b');
+        
 
         // OPTION 2: If we just make a put for sale, ignoring validOfferUntil, etc.
         offerValidUntil = 0;
@@ -716,17 +736,6 @@ contract('Assets', (accounts) => {
         sigSeller.signature.should.be.equal('0x6ae2449e83a8b6641b95e7dbf48313d56320727ccd7716988f2d0c9c46b502ec34749a2d4b15d08980a88b3cf5fcb3df509696acc3f1fad6d5bfb19b3c9c547b1b');
 
         // the buyer signature is obtained from a "bid" as follows: (we will use the same priv key as the seller, this is just to get explicit numbers)
-        // console.log(
-        //     currencyId,
-        //     price,
-        //     extraPrice,
-        //     sellerRnd,
-        //     buyerRnd,
-        //     validUntil,
-        //     offerValidUntil,
-        //     playerId.toString(),
-        //     buyerTeamId.toString()            
-        // )
         var {0: sigBuyer, 1: auctionId0} = await marketUtils.signAgreeToBuyPlayerMTx(
             currencyId,
             price,
