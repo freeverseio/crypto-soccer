@@ -69,8 +69,6 @@ const Schema = `
 		validUntil: String!
 		offerValidUntil: String!
 		rnd: Int!
-		offerId: ID!
-		buyerTeamId: String!
   }
 
 	type WorldPlayer {

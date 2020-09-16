@@ -21,10 +21,6 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return graphql.ID(""), err
 	}
 
-	if args.Input.OfferId == "" {
-		return id, errors.New("empty offerId")
-	}
-
 	isOwner, err := args.Input.IsSignerOwnerOfPlayer(b.contracts)
 	if err != nil {
 		return id, err
@@ -36,14 +32,6 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 	playerIdString, ok := new(big.Int).SetString(args.Input.PlayerId, 10)
 	if !ok {
 		return id, fmt.Errorf("error converting playerId to bignum")
-	}
-
-	currentTeamId, err := b.contracts.Market.GetCurrentTeamIdFromPlayerId(&bind.CallOpts{}, playerIdString)
-	if err != nil {
-		return id, errors.New("internal error: no currentTeamIdFromPlayerId")
-	}
-	if currentTeamId.String() == args.Input.BuyerTeamId {
-		return id, errors.New("the buyerTeam already owns the player it is making an offer for")
 	}
 
 	isValidForBlockchain, err := args.Input.IsValidForBlockchainFreeze(b.contracts)
@@ -59,16 +47,42 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, err
 	}
 
-	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId)
+	offerID, err := args.Input.AuctionID()
 	if err != nil {
 		return id, err
 	}
 
-	if err := CreateAuctionFromOffer(tx, args.Input, &highestOffer); err != nil {
+	offer, err := tx.Offer(string(offerID))
+	if err != nil {
+		return id, err
+	}
+
+	currentTeamId, err := b.contracts.Market.GetCurrentTeamIdFromPlayerId(&bind.CallOpts{}, playerIdString)
+	if err != nil {
+		return id, errors.New("internal error: no currentTeamIdFromPlayerId")
+	}
+	if currentTeamId.String() == offer.BuyerTeamID {
+		return id, errors.New("the buyerTeam already owns the player it is making an offer for")
+	}
+
+	if offer.State != storage.OfferStarted {
+		return id, errors.New("Auctions can only be created for offers in Started state")
+	}
+
+	// TODO: Consider the need of this next check when DB does not allow it anyway
+	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId)
+	if err != nil {
+		return id, err
+	}
+	if highestOffer.AuctionID != string(offer.AuctionID) {
+		return id, errors.New("You can only accept the highest offer")
+	}
+
+	if err := CreateAuctionFromOffer(tx, args.Input, offer); err != nil {
 		tx.Rollback()
 		return id, err
 	}
-	if err := b.CreateBidFromOffer(tx, args.Input, &highestOffer); err != nil {
+	if err := b.CreateBidFromOffer(tx, args.Input, offer); err != nil {
 		tx.Rollback()
 		return id, err
 	}
@@ -76,10 +90,6 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 }
 
 func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput, highestOffer *storage.Offer) error {
-	err := assertIsHighestOfferAndStarted(tx, in, highestOffer)
-	if err != nil {
-		return err
-	}
 	auction := storage.NewAuction()
 	id, err := in.AuctionID()
 	if err != nil {
@@ -126,19 +136,6 @@ func getHigestOffer(tx storage.Tx, playerId string) (storage.Offer, error) {
 	return *highestOffer, nil
 }
 
-func assertIsHighestOfferAndStarted(tx storage.Tx, in input.AcceptOfferInput, highestOffer *storage.Offer) error {
-	if highestOffer == nil {
-		return errors.New("highestOffer is nil")
-	}
-	if highestOffer.AuctionID != string(in.OfferId) {
-		return errors.New("You can only accept the highest offer")
-	}
-	if highestOffer.State != storage.OfferStarted {
-		return errors.New("Auctions can only be created for offers in Started state")
-	}
-	return nil
-}
-
 func highestOfferFromExistingOffers(offers []storage.Offer) (*storage.Offer, error) {
 	length := len(offers)
 	if length == 0 {
@@ -176,6 +173,7 @@ func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptO
 	bidInput.ExtraPrice = int32(0)
 	bidInput.Rnd = int32(0)
 	bidInput.TeamId = highestOffer.BuyerTeamID
+
 	_, err := b.CreateBid(struct{ Input input.CreateBidInput }{bidInput})
 
 	if err != nil {

@@ -90,6 +90,7 @@ func TestCreateAndAcceptOfferSuccess(t *testing.T) {
 		BidInsertFunc:          func(bid storage.Bid) error { return nil },
 		CommitFunc:             func() error { return nil },
 		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
@@ -207,6 +208,7 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 		BidInsertFunc:          func(bid storage.Bid) error { return nil },
 		CommitFunc:             func() error { return nil },
 		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
@@ -292,11 +294,27 @@ func TestCreateOfferSameOwner(t *testing.T) {
 	assert.NilError(t, err)
 	inOffer.Signature = hex.EncodeToString(signature)
 
+	mockOffer := storage.Offer{
+		PlayerID:    inOffer.PlayerId,
+		CurrencyID:  int(inOffer.CurrencyId),
+		Price:       int64(inOffer.Price),
+		Rnd:         int64(inOffer.Rnd),
+		ValidUntil:  validUntil,
+		Signature:   inOffer.Signature,
+		State:       storage.OfferStarted,
+		StateExtra:  "",
+		Seller:      inOffer.Seller,
+		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
+		AuctionID:   string(offerID),
+		BuyerTeamID: inOffer.BuyerTeamId,
+	}
+
 	mock := mockup.Tx{
 		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
 		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
 		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
 		BidInsertFunc:          func(bid storage.Bid) error { return nil },
+		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
 		CommitFunc:             func() error { return nil },
 	}
 	service := &mockup.StorageService{
@@ -307,7 +325,6 @@ func TestCreateOfferSameOwner(t *testing.T) {
 
 	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
 	acceptOfferIn := input.AcceptOfferInput{}
-	acceptOfferIn.BuyerTeamId = inOffer.BuyerTeamId
 	acceptOfferIn.OfferValidUntil = inOffer.ValidUntil
 	acceptOfferIn.ValidUntil = strconv.FormatInt(validUntil, 10)
 	acceptOfferIn.PlayerId = inOffer.PlayerId
@@ -397,8 +414,10 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 		BidInsertFunc:          func(bid storage.Bid) error { return nil },
 		CommitFunc:             func() error { return nil },
 		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
 		RollbackFunc:           func() error { return nil },
 	}
+
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
 	}
@@ -585,6 +604,7 @@ func TestCreateAndAcceptOfferFailOnValidUntils(t *testing.T) {
 		BidInsertFunc:          func(bid storage.Bid) error { return nil },
 		CommitFunc:             func() error { return nil },
 		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
