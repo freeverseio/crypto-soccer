@@ -21,10 +21,6 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return graphql.ID(""), err
 	}
 
-	if args.Input.OfferId == "" {
-		return id, errors.New("empty offerId")
-	}
-
 	isOwner, err := args.Input.IsSignerOwnerOfPlayer(b.contracts)
 	if err != nil {
 		return id, err
@@ -36,14 +32,6 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 	playerIdString, ok := new(big.Int).SetString(args.Input.PlayerId, 10)
 	if !ok {
 		return id, fmt.Errorf("error converting playerId to bignum")
-	}
-
-	currentTeamId, err := b.contracts.Market.GetCurrentTeamIdFromPlayerId(&bind.CallOpts{}, playerIdString)
-	if err != nil {
-		return id, errors.New("internal error: no currentTeamIdFromPlayerId")
-	}
-	if currentTeamId.String() == args.Input.BuyerTeamId {
-		return id, errors.New("the buyerTeam already owns the player it is making an offer for")
 	}
 
 	isValidForBlockchain, err := args.Input.IsValidForBlockchainFreeze(b.contracts)
@@ -59,16 +47,38 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, err
 	}
 
-	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId)
+	offerID, err := args.Input.AuctionID()
 	if err != nil {
 		return id, err
 	}
 
-	if err := CreateAuctionFromOffer(tx, args.Input, &highestOffer); err != nil {
+	offer, err := tx.Offer(string(offerID))
+	if err != nil {
+		return id, err
+	}
+
+	currentTeamId, err := b.contracts.Market.GetCurrentTeamIdFromPlayerId(&bind.CallOpts{}, playerIdString)
+	if err != nil {
+		return id, errors.New("internal error: no currentTeamIdFromPlayerId")
+	}
+	if currentTeamId.String() == offer.BuyerTeamID {
+		return id, errors.New("the buyerTeam already owns the player it is making an offer for")
+	}
+
+	// TODO: reconsider this line when DB prevents it, or leave it just in case the msg is useful
+	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId)
+	if err != nil {
+		return id, err
+	}
+	if highestOffer.AuctionID != string(offer.AuctionID) {
+		return id, errors.New("You can only accept the highest offer")
+	}
+
+	if err := CreateAuctionFromOffer(tx, args.Input, offer); err != nil {
 		tx.Rollback()
 		return id, err
 	}
-	if err := b.CreateBidFromOffer(tx, args.Input, &highestOffer); err != nil {
+	if err := b.CreateBidFromOffer(tx, args.Input, offer); err != nil {
 		tx.Rollback()
 		return id, err
 	}
@@ -76,6 +86,7 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 }
 
 func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput, highestOffer *storage.Offer) error {
+	// TODO: reconsider this line when DB prevents it, or leave it just in case the msg is useful
 	err := assertIsHighestOfferAndStarted(tx, in, highestOffer)
 	if err != nil {
 		return err
@@ -176,6 +187,7 @@ func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptO
 	bidInput.ExtraPrice = int32(0)
 	bidInput.Rnd = int32(0)
 	bidInput.TeamId = highestOffer.BuyerTeamID
+
 	_, err := b.CreateBid(struct{ Input input.CreateBidInput }{bidInput})
 
 	if err != nil {
