@@ -4,7 +4,7 @@ DECLARE
 BEGIN
     SELECT COUNT(auction_id)
     INTO numHigherOffers
-    FROM offers_v2
+    FROM offers
     WHERE state='started' AND player_id=NEW.player_id AND price >= NEW.price;
 
     IF numHigherOffers > 0 THEN
@@ -14,8 +14,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER insert_offers_v2
+CREATE TRIGGER insert_offers
     BEFORE INSERT
-    ON offers_v2
+    ON offers
     FOR EACH ROW
     EXECUTE PROCEDURE is_higher_offer();

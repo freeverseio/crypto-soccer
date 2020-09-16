@@ -9,7 +9,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_offer
     BEFORE UPDATE
-    ON offers_v2
+    ON offers
     FOR EACH ROW
     WHEN (OLD.state IS DISTINCT FROM NEW.state)
     EXECUTE PROCEDURE update_offer_trigger();

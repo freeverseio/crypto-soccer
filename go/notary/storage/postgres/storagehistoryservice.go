@@ -49,6 +49,6 @@ func (b *StorageHistoryTx) PlaystoreHistoriesCount() int {
 
 func (b *StorageHistoryTx) OffersHistoriesCount() int {
 	var count int
-	b.Tx.tx.QueryRow("SELECT count(*) FROM offers_histories_v2;").Scan(&count)
+	b.Tx.tx.QueryRow("SELECT count(*) FROM offers_histories;").Scan(&count)
 	return count
 }
