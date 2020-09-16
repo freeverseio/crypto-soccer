@@ -40,9 +40,6 @@ const main = async () => {
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
 
     }
-    extend type Match {
-      teamByHomeTeamId2: Team
-    }
   `;
 
   let schemas = [];
