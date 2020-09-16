@@ -65,7 +65,11 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, errors.New("the buyerTeam already owns the player it is making an offer for")
 	}
 
-	// TODO: reconsider this line when DB prevents it, or leave it just in case the msg is useful
+	if offer.State != storage.OfferStarted {
+		return id, errors.New("Auctions can only be created for offers in Started state")
+	}
+
+	// TODO: Consider the need of this next check when DB does not allow it anyway
 	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId)
 	if err != nil {
 		return id, err
@@ -86,11 +90,6 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 }
 
 func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput, highestOffer *storage.Offer) error {
-	// TODO: reconsider this line when DB prevents it, or leave it just in case the msg is useful
-	err := assertIsHighestOfferAndStarted(tx, in, highestOffer)
-	if err != nil {
-		return err
-	}
 	auction := storage.NewAuction()
 	id, err := in.AuctionID()
 	if err != nil {
@@ -135,19 +134,6 @@ func getHigestOffer(tx storage.Tx, playerId string) (storage.Offer, error) {
 		return storage.Offer{}, err
 	}
 	return *highestOffer, nil
-}
-
-func assertIsHighestOfferAndStarted(tx storage.Tx, in input.AcceptOfferInput, highestOffer *storage.Offer) error {
-	if highestOffer == nil {
-		return errors.New("highestOffer is nil")
-	}
-	if highestOffer.AuctionID != string(in.OfferId) {
-		return errors.New("You can only accept the highest offer")
-	}
-	if highestOffer.State != storage.OfferStarted {
-		return errors.New("Auctions can only be created for offers in Started state")
-	}
-	return nil
 }
 
 func highestOfferFromExistingOffers(offers []storage.Offer) (*storage.Offer, error) {
