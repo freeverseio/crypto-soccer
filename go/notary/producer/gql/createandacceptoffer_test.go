@@ -2,6 +2,7 @@ package gql_test
 
 import (
 	"encoding/hex"
+	"errors"
 	"math/big"
 	"strconv"
 	"testing"
@@ -591,4 +592,69 @@ func TestCreateAndAcceptOfferFailOnValidUntils(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
 	assert.Error(t, err, "offer validUntil already expired")
+}
+
+func TestCreateLowerPriceOffer(t *testing.T) {
+	// We will here assign the next available team to offerer so she can make an offer for the players of a different team
+	// we choose that player as a player very far from the current amount of teams (x2)
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
+	offererTeamIdx := nHumanTeams.Int64()
+	sellerTeamIdx := offererTeamIdx + 1
+	offererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(offererTeamIdx))
+	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	seller, _ := crypto.HexToECDSA("0A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(2 + 18*sellerTeamIdx)))
+
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(offerer.PublicKey),
+	)
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(seller.PublicKey),
+	)
+
+	ch := make(chan interface{}, 10)
+
+	// We use offerValidUntil for offers, and validUntil for accept offer and make bids later
+	offerValidUntil := time.Now().Unix() + 100
+
+	inOffer := input.CreateOfferInput{}
+	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	inOffer.PlayerId = playerId.String()
+	inOffer.CurrencyId = 1
+	inOffer.Price = 41234
+	inOffer.Rnd = int32(42321)
+	inOffer.BuyerTeamId = offererTeamId.String()
+	inOffer.Seller = crypto.PubkeyToAddress(seller.PublicKey).Hex()
+	offerID, _ := inOffer.ID(*bc.Contracts)
+
+	hash, err := inOffer.Hash(*bc.Contracts)
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), offerer)
+	assert.NilError(t, err)
+	inOffer.Signature = hex.EncodeToString(signature)
+	rollbackCounter := 0
+
+	mock := mockup.Tx{
+		OfferInsertFunc:        func(offer storage.Offer) error { return errors.New("pq: error: Price not the highest") },
+		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		RollbackFunc:           func() error { rollbackCounter++; return nil },
+		CommitFunc:             func() error { return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
+	id, err := r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
+	assert.Equal(t, id, offerID)
+	assert.Error(t, err, "pq: error: Price not the highest")
+	assert.Equal(t, rollbackCounter, 1)
+
 }

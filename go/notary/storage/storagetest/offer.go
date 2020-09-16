@@ -242,4 +242,54 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		err = tx.OfferUpdate(*offer)
 		assert.Assert(t, err != nil)
 	})
+
+	t.Run("TestInsertOrderTwiceWithLowerPrice", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+
+		offer := storage.NewOffer()
+		offer.Rnd = 4
+		offer.PlayerID = "3"
+		offer.CurrencyID = 3
+		offer.Price = 3
+		offer.ValidUntil = 3
+		offer.Signature = "3"
+		offer.State = storage.OfferStarted
+		offer.StateExtra = "3"
+		offer.Seller = "3"
+		offer.Buyer = "5"
+		offer.AuctionID = "dummyAuctionID"
+		err = tx.OfferInsert(*offer)
+		assert.NilError(t, err)
+		offer.Price = 2
+		err = tx.OfferInsert(*offer)
+		assert.Assert(t, err != nil)
+		assert.Error(t, err, "pq: error: Price not the highest")
+	})
+
+	t.Run("TestInsertOrderTwiceWithHigherPrice", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+
+		offer := storage.NewOffer()
+		offer.Rnd = 4
+		offer.PlayerID = "3"
+		offer.CurrencyID = 3
+		offer.Price = 3
+		offer.ValidUntil = 3
+		offer.Signature = "3"
+		offer.State = storage.OfferStarted
+		offer.StateExtra = "3"
+		offer.Seller = "3"
+		offer.Buyer = "5"
+		offer.AuctionID = "dummyAuctionID"
+		err = tx.OfferInsert(*offer)
+		assert.NilError(t, err)
+		offer.AuctionID = "AnotherDummyID"
+		offer.Price = 4
+		err = tx.OfferInsert(*offer)
+		assert.NilError(t, err)
+	})
 }
