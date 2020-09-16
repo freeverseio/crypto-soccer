@@ -1,10 +1,6 @@
 const { ApolloServer } = require('apollo-server');
 const { HttpLink } = require('apollo-link-http');
-const {
-  introspectSchema,
-  makeRemoteExecutableSchema,
-  mergeSchemas,
-} = require('graphql-tools');
+const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools');
 const fetch = require('node-fetch');
 const resolvers = require('./resolvers/resolvers.js');
 const { horizonConfig } = require('./config.js');
@@ -44,6 +40,9 @@ const main = async () => {
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
 
     }
+    extend type Match {
+      teamByHomeTeamId2: Team
+    }
   `;
 
   let schemas = [];
@@ -52,7 +51,7 @@ const main = async () => {
 
   const schema = mergeSchemas({
     schemas,
-    resolvers,
+    resolvers: resolvers({ horizonRemoteSchema }),
   });
 
   const server = new ApolloServer({ schema });
