@@ -104,8 +104,8 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	verse := event.Verse.Uint64()
 
-	verseResetTimezone24 := viper.GetUint64("patch.reset_timemezone_24")
-	verseResetTimezone1 := viper.GetUint64("patch.reset_timemezone_1")
+	verseResetTimezone24 := viper.GetUint64("patch.reset_timezone_24")
+	verseResetTimezone1 := viper.GetUint64("patch.reset_timezone_1")
 
 	if verseResetTimezone24 != 0 && verse == verseResetTimezone24 {
 		log.Infof("[%v|BUG] forcing reset timezone 24", verseResetTimezone24)
