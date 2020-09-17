@@ -719,12 +719,12 @@ contract("Market", accounts => {
     // Check that default value works, 2 days work, 3 days fail
     // validUntil = now.toNumber() + AUCTION_TIME;
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, sellerAccount).should.be.fulfilled;
-    validUntil2 = now.toNumber() + 3600*24*3 + 10; // 3 days and 10 sec
-    playerId2 = playerId.add(web3.utils.toBN(1));
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, zeroOfferValidUntil, playerId2, sellerAccount).should.be.fulfilled;
     validUntil2 = now.toNumber() + 3600*24*4 + 10; // 4 days and 10 sec
     playerId2 = playerId.add(web3.utils.toBN(2));
     tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, zeroOfferValidUntil, playerId2, sellerAccount).should.be.rejected;
+    validUntil2 = now.toNumber() + 3600*24*3 + 10; // 3 days and 10 sec
+    playerId2 = playerId.add(web3.utils.toBN(1));
+    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, zeroOfferValidUntil, playerId2, sellerAccount).should.be.fulfilled;
   });
   
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because targetTeam = originTeam", async () => {
