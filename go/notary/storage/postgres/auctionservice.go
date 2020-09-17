@@ -91,13 +91,14 @@ func (b *Tx) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
 
 func (b *Tx) AuctionInsert(auction storage.Auction) error {
 	log.Debugf("[DBMS] + create Auction %v", b)
-	_, err := b.tx.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, payment_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
+	_, err := b.tx.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, state_extra, seller, payment_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		auction.ID,
 		auction.PlayerID,
 		auction.CurrencyID,
 		auction.Price,
 		auction.Rnd,
 		auction.ValidUntil,
+		auction.OfferValidUntil,
 		auction.Signature,
 		auction.State,
 		auction.StateExtra,
