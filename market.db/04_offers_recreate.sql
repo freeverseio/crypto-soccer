@@ -51,5 +51,5 @@ CREATE TRIGGER update_offer
     EXECUTE PROCEDURE update_offer_trigger();
 
 
-ALTER TABLE auctions ADD COLUMN offer_valid_until BIGINT NOT NULL;
-ALTER TABLE auctions_histories ADD COLUMN offer_valid_until BIGINT NOT NULL;
+ALTER TABLE auctions ADD COLUMN offer_valid_until BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE auctions_histories ADD COLUMN offer_valid_until BIGINT NOT NULL DEFAULT 0;
