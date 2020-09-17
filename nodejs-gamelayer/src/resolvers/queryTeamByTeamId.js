@@ -16,13 +16,14 @@ const queryTeamByTeamId = (parent, args, context, info, schema) => {
       if (!result) {
         return;
       }
-      const teamName = selectTeamName({ teamId: result.teamId });
+      const teamName = selectTeamName({ teamId: args.teamId });
       const teamManagerName = selectTeamManagerName({
-        teamId: result.teamId,
+        teamId: args.teamId,
       });
 
-      result.teamName = teamName ? teamName : result.teamName;
-      result.teamManagerName = teamManagerName ? teamManagerName : result.teamManagerName;
+      result.name = teamName && teamName.team_name ? teamName.team_name : result.name;
+      result.managerName =
+        teamManagerName && teamManagerName.team_manager_name ? teamManagerName.team_manager_name : result.managerName;
       return result;
     });
 };
