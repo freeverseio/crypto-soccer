@@ -3,6 +3,7 @@ package input_test
 import (
 	"encoding/hex"
 	"math/big"
+	"strconv"
 	"testing"
 	"time"
 
@@ -28,22 +29,7 @@ func TestCreateOfferInputHash(t *testing.T) {
 	in.BuyerTeamId = "20"
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xad10a9049b75c277bbe800b39eab3c27a9ddbd38ec114c2c016ee2ec6f958377")
-}
-
-func TestCreateOfferValidSignature(t *testing.T) {
-	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
-	in.PlayerId = "10"
-	in.CurrencyId = 1
-	in.Price = 41234
-	in.BuyerTeamId = "20"
-	in.Rnd = 42321
-
-	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
-	valid, err := in.VerifySignature(*bc.Contracts)
-	assert.NilError(t, err)
-	assert.Assert(t, valid)
+	assert.Equal(t, hash.Hex(), "0x48280aaca3224b385bcc4e4b94662cbf17f989f99426943da0e1a10cd2e5a4a0")
 }
 
 func TestCreateOfferSignerAddress(t *testing.T) {
@@ -54,29 +40,67 @@ func TestCreateOfferSignerAddress(t *testing.T) {
 	in.Price = 41234
 	in.BuyerTeamId = "20"
 	in.Rnd = 42321
-	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
+
+	hash, err := in.Hash(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, hash.Hex(), "0x48280aaca3224b385bcc4e4b94662cbf17f989f99426943da0e1a10cd2e5a4a0")
+
+	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	assert.NilError(t, err)
+
+	in.Signature = hex.EncodeToString(signature)
 	address, err := in.SignerAddress(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, address.Hex(), "0x38540BCaa818e3303aB9d74E1945fC527A3d8463")
+	assert.Equal(t, address.Hex(), crypto.PubkeyToAddress(bc.Owner.PublicKey).Hex())
 }
 
-func TestCreateOfferIsSignerOwner(t *testing.T) {
+func TestSignerOfOfferIsOwnerOfTeam(t *testing.T) {
+	tz := uint8(1)
+	countryIdxInTz := big.NewInt(0)
+
+	// first team (teamdIdx = 0) is assigned to during setup to owner (players 0...17),
+	// We will here assign the next available team to alice so she can put a playerId for sale
+	// playerId from the second team is made an offer
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, tz, countryIdxInTz)
+	teamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(nHumanTeams.Int64()))
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(3))
+	alice, _ := crypto.HexToECDSA("6B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
+	// The offer fails because alice is not the owner of the team. We then transfer the team to Alice, and offer works.
 	in := input.CreateOfferInput{}
 	in.ValidUntil = "2000000000"
-	in.PlayerId = "27487790694"
+	in.PlayerId = playerId.String()
 	in.CurrencyId = 1
-	in.BuyerTeamId = "20"
+	in.BuyerTeamId = teamId.String()
 	in.Price = 41234
 	in.Rnd = 42321
 
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
+	signature, err := signer.Sign(hash.Bytes(), alice)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
-	isOwner, err := in.IsSignerOwner(*bc.Contracts)
+	isOwner, err := in.IsSignerTeamOwner(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, isOwner, false)
+
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		tz,
+		countryIdxInTz,
+		crypto.PubkeyToAddress(alice.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = helper.WaitReceipt(bc.Client, tx, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	isOwner, err = in.IsSignerTeamOwner(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, isOwner, true)
 }
 
 func TestCreateOfferGetOwner(t *testing.T) {
@@ -93,9 +117,10 @@ func TestCreateOfferGetOwner(t *testing.T) {
 	signature, err := signer.Sign(hash.Bytes(), bc.Owner)
 	assert.NilError(t, err)
 	in.Signature = hex.EncodeToString(signature)
-	owner, err := in.GetOwner(*bc.Contracts)
+
+	signer, err := in.SignerAddress(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, crypto.PubkeyToAddress(bc.Owner.PublicKey).Hex(), owner.Hex())
+	assert.Equal(t, crypto.PubkeyToAddress(bc.Owner.PublicKey).Hex(), signer.Hex())
 }
 
 func TestCreateOfferPlayerFrozen(t *testing.T) {
@@ -134,53 +159,31 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 	}
 
 	now := time.Now().Unix()
-	validUntil := now + 8
+	validUntil := now + 800
+	offerValidUntil := now + 38
 	playerID := big.NewInt(274877906944)
 	currencyID := uint8(1)
 	price := big.NewInt(41234)
-	auctionRnd := big.NewInt(42321)
+	offererRnd := big.NewInt(42321)
 	extraPrice := big.NewInt(332)
 	bidRnd := big.NewInt(1243523)
 	teamID := big.NewInt(274877906945)
-	isOffer2StartAuction := false
 
-	hashAuctionMsg, err := signer.HashSellMessage(
-		currencyID,
-		price,
-		auctionRnd,
-		validUntil,
-		playerID,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	signAuctionMsg, err := signer.Sign(hashAuctionMsg.Bytes(), alice)
-	if err != nil {
-		t.Fatal(err)
-	}
-	auction := storage.Auction{
-		ID:         "TheTestingAuction",
-		PlayerID:   playerID.String(),
-		CurrencyID: int(currencyID),
-		Price:      price.Int64(),
-		Rnd:        auctionRnd.Int64(),
-		ValidUntil: validUntil,
-		Signature:  "0x" + hex.EncodeToString(signAuctionMsg),
-		State:      storage.AuctionStarted,
-		Seller:     "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7",
-	}
-
+	dummyValidUntil := int64(0)
+	dummyExtraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
+	// First the offer creates an offer by signing an apropriate bid message
 	hashBidMsg, err := signer.HashBidMessage(
 		bc.Contracts.Market,
 		currencyID,
 		price,
-		auctionRnd,
-		validUntil,
+		offererRnd,
+		dummyValidUntil,
+		offerValidUntil,
 		playerID,
-		extraPrice,
-		bidRnd,
+		dummyExtraPrice,
+		dummyRnd,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -189,6 +192,44 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// the auctionId (if the offer is accepted) is determined directly from the offer message
+	auctionId, err := signer.ComputeAuctionId(
+		currencyID,
+		price,
+		offererRnd,
+		dummyValidUntil,
+		offerValidUntil,
+		playerID,
+	)
+	// The seller can accept the offer, and adds a new validUntil
+	sellerDigest, err := signer.ComputePutAssetForSaleDigest(
+		currencyID,
+		price,
+		offererRnd,
+		validUntil,
+		offerValidUntil,
+		playerID,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signAuctionMsg, err := signer.Sign(sellerDigest.Bytes(), alice)
+	if err != nil {
+		t.Fatal(err)
+	}
+	auction := storage.Auction{
+		ID:              auctionId.Hex(),
+		PlayerID:        playerID.String(),
+		CurrencyID:      int(currencyID),
+		Price:           price.Int64(),
+		Rnd:             offererRnd.Int64(),
+		ValidUntil:      validUntil,
+		OfferValidUntil: offerValidUntil,
+		Signature:       "0x" + hex.EncodeToString(signAuctionMsg),
+		State:           storage.AuctionStarted,
+		Seller:          "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7",
+	}
+
 	bids := []storage.Bid{
 		storage.Bid{
 			AuctionID:  auction.ID,
@@ -216,12 +257,12 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 
 	// try to create offer which will fail because asset is frozen
 	in := input.CreateOfferInput{}
-	in.ValidUntil = "2000000000"
-	in.PlayerId = "274877906944"
-	in.CurrencyId = 1
-	in.BuyerTeamId = "20"
-	in.Price = 41234
-	in.Rnd = 42321
+	in.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	in.PlayerId = playerID.String()
+	in.CurrencyId = int32(currencyID)
+	in.BuyerTeamId = teamID.String()
+	in.Price = int32(price.Int64())
+	in.Rnd = int32(offererRnd.Int64())
 
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
@@ -231,6 +272,10 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 	isPlayerFrozen, err := in.IsPlayerFrozen(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, true, isPlayerFrozen)
+
+	// double check that the auctionId can already be determined at the time the offer was made
+	auctionIdFromOfferInput, _ := in.ID(*bc.Contracts)
+	assert.Equal(t, string(auctionIdFromOfferInput), auctionId.Hex()[2:])
 }
 
 // func TestCreateOfferPlayerAlreadyOnSale(t *testing.T) {
@@ -239,7 +284,7 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 // 	assert.NilError(t, err)
 // 	defer tx.Rollback()
 
-// 	in := input.CreateAuctionInput{}
+// 	in := input.CreatePutPlayerForSaleInput{}
 // 	in.ValidUntil = "999999999999"
 // 	in.PlayerId = "274877906944"
 // 	in.CurrencyId = 1
@@ -295,5 +340,5 @@ func TestCreateOfferInputHashBigIntPlayer(t *testing.T) {
 	in.BuyerTeamId = "20"
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x03892cbcf2b2ed94602fa91b185a2202dec2e178af2ce3a73f438eebf6b0874c")
+	assert.Equal(t, hash.Hex(), "0x84347c60199d0444e4ec8bbdf788ab1afff4a59f02c146a8c493d2f73955d7c6")
 }

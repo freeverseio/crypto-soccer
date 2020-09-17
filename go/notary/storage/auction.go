@@ -1,5 +1,13 @@
 package storage
 
+import (
+	"errors"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+)
+
 type AuctionState string
 
 const (
@@ -15,21 +23,60 @@ const (
 )
 
 type Auction struct {
-	ID         string
-	PlayerID   string
-	CurrencyID int
-	Price      int64
-	Rnd        int64
-	ValidUntil int64
-	Signature  string
-	State      AuctionState
-	StateExtra string
-	PaymentURL string
-	Seller     string
+	ID              string
+	PlayerID        string
+	CurrencyID      int
+	Price           int64
+	Rnd             int64
+	ValidUntil      int64
+	OfferValidUntil int64
+	Signature       string
+	State           AuctionState
+	StateExtra      string
+	PaymentURL      string
+	Seller          string
 }
 
 func NewAuction() *Auction {
 	auction := Auction{}
 	auction.State = AuctionStarted
 	return &auction
+}
+
+func (b Auction) ComputeID() (string, error) {
+	playerId, ok := new(big.Int).SetString(b.PlayerID, 10)
+	if !ok {
+		return "", errors.New("invalid playerId")
+	}
+	id, err := signer.ComputeAuctionId(
+		uint8(b.CurrencyID),
+		big.NewInt(b.Price),
+		big.NewInt(b.Rnd),
+		b.ValidUntil,
+		b.OfferValidUntil,
+		playerId,
+	)
+	if err != nil {
+		return "", errors.New("invalid auctio id")
+	}
+	return id.String()[2:], nil
+}
+
+func (b Auction) ComputePutAssetForSaleDigest() (common.Hash, error) {
+	playerId, ok := new(big.Int).SetString(b.PlayerID, 10)
+	if !ok {
+		return common.Hash{}, errors.New("invalid playerId")
+	}
+	digest, err := signer.ComputePutAssetForSaleDigest(
+		uint8(b.CurrencyID),
+		big.NewInt(b.Price),
+		big.NewInt(b.Rnd),
+		b.ValidUntil,
+		b.OfferValidUntil,
+		playerId,
+	)
+	if err != nil {
+		return common.Hash{}, errors.New("invalid digest")
+	}
+	return digest, nil
 }

@@ -171,9 +171,11 @@ func TestStorageHistoryUpdateUnChangedOffer(t *testing.T) {
 	default:
 		t.Errorf("wrong type %T", tx)
 	case *postgres.StorageHistoryTx:
-		order := storage.NewOffer()
-		assert.NilError(t, tx.OfferInsert(*order))
-		assert.NilError(t, tx.OfferUpdate(*order))
+		offer := storage.NewOffer()
+		assert.Error(t, tx.OfferInsert(*offer), "Trying to insert an auction with empty auctionID")
+		offer.AuctionID = "dummyAuctionId"
+		assert.NilError(t, tx.OfferInsert(*offer))
+		assert.NilError(t, tx.OfferUpdate(*offer))
 		assert.Equal(t, tx.OffersHistoriesCount(), 1)
 	}
 }
@@ -191,11 +193,11 @@ func TestStorageHistoryUpdateChangedOffer(t *testing.T) {
 	case *postgres.StorageHistoryTx:
 		auction := storage.NewAuction()
 		assert.NilError(t, tx.AuctionInsert(*auction))
-		order := storage.NewOffer()
-		assert.NilError(t, tx.OfferInsert(*order))
-		order.AuctionID = auction.ID
-		order.Seller = "me"
-		assert.NilError(t, tx.OfferUpdate(*order))
+		offer := storage.NewOffer()
+		offer.AuctionID = "dummyAuctionId"
+		assert.NilError(t, tx.OfferInsert(*offer))
+		offer.Seller = "me"
+		assert.NilError(t, tx.OfferUpdate(*offer))
 		assert.Equal(t, tx.OffersHistoriesCount(), 2)
 	}
 }

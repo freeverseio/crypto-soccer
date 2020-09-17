@@ -8,7 +8,7 @@ function concatHash(types, vals) {
 }
 
 // this function does the crazy thing solidity does for hex...
-function getMessageHash(msg) {
+function prefix(msg) {
   assert(web3.utils.isHexStrict(msg), "We currently only support signing hashes, which are 0x stating hex numbers")
   message = web3.utils.hexToBytes(msg);
   var messageBuffer = Buffer.from(message);
@@ -18,14 +18,12 @@ function getMessageHash(msg) {
   return web3.utils.keccak256(ethMessage);
 }
 
-async function signPutAssetForSaleMTx(currencyId, price, rnd, validUntil, asssetId, sellerAccount) {
-  const hiddenPrice = concatHash(
-      ['uint8', 'uint256', 'uint256'],
-      [currencyId, price, rnd]
-  )
+async function signPutAssetForSaleMTx(currencyId, price, rnd, validUntil, offerValidUntil, asssetId, sellerAccount) {
+  const hiddenPrice = hidePrice(currencyId, price, rnd);
+
   const sellerTxMsg = concatHash(
-      ['bytes32', 'uint256', 'uint256'],
-      [hiddenPrice, validUntil, asssetId]
+      ['bytes32', 'uint256', 'uint32', 'uint32'],
+      [hiddenPrice, asssetId, validUntil, offerValidUntil]
   )
   
   const sigSeller = await sellerAccount.sign(sellerTxMsg);
@@ -43,51 +41,64 @@ async function signDismissPlayerMTx(validUntil, asssetId, sellerAccount) {
   return sigSeller;
 }
 
+function computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, assetId, validUntil, offerValidUntil) {
+  return concatHash(
+    ['bytes32', 'uint256', 'uint32', 'uint32'],
+    [sellerHiddenPrice, assetId, validUntil, offerValidUntil]
+  );
+}
 
-// Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerTeamId, buyerAccount) {
-  const sellerHiddenPrice = concatHash(
-    ['uint8', 'uint256', 'uint256'],
-    [currencyId, price, sellerRnd]
-  )
-  const buyerHiddenPrice = concatHash(
-    ['uint256', 'uint256'],
-    [extraPrice, buyerRnd]
-  )
-  const sellerTxMsg = concatHash(
-      ['bytes32', 'uint256', 'uint256'],
-      [sellerHiddenPrice, validUntil, playerId]
-  )
-  const sellerTxHash = getMessageHash(sellerTxMsg);
-  buyerTxMsg = concatHash(
-      ['bytes32', 'bytes32', 'uint256', 'bool'],
-      [sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction]
-  )
-  const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  return sigBuyer;
+function computePutAssetForSaleDigestNoPrefix(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId) {
+  return computePutAssetForSaleDigestNoPrefixFromHiddenPrice(hidePrice(currencyId, price, sellerRnd), assetId, validUntil, offerValidUntil);
+}
+
+function computePutAssetForSaleDigest(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId) {
+  return prefix(computePutAssetForSaleDigestNoPrefix(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId));
 }
 
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-async function signAgreeToBuyTeamMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerAccount) {
-  const sellerHiddenPrice = concatHash(
-    ['uint8', 'uint256', 'uint256'],
-    [currencyId, price, sellerRnd]
-  )
+async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, offerValidUntil, playerId, buyerTeamId, buyerAccount) {
   const buyerHiddenPrice = concatHash(
     ['uint256', 'uint256'],
     [extraPrice, buyerRnd]
   )
-  const sellerTxMsg = concatHash(
-      ['bytes32', 'uint256', 'uint256'],
-      [sellerHiddenPrice, validUntil, playerId]
-  )
-  const sellerTxHash = getMessageHash(sellerTxMsg);
+  auctionId = computeAuctionId(currencyId, price, sellerRnd, playerId, validUntil, offerValidUntil);
   buyerTxMsg = concatHash(
-      ['bytes32', 'bytes32', 'bool'],
-      [sellerTxHash, buyerHiddenPrice, isOffer2StartAuction]
+      ['bytes32', 'bytes32', 'uint256'],
+      [auctionId, buyerHiddenPrice, buyerTeamId]
   )
   const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  return sigBuyer;
+  return [sigBuyer, auctionId];
+}
+
+function hidePrice(currencyId, price, rnd) {
+  return concatHash(
+    ['uint8', 'uint256', 'uint256'],
+    [currencyId, price, rnd]
+  );
+}
+
+function computeAuctionId(currencyId, price, sellerRnd, assetId, validUntil, offerValidUntil) {
+  const sellerHiddenPrice = hidePrice(currencyId, price, sellerRnd);
+
+  return (offerValidUntil == 0) ?
+    concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId, validUntil]) :
+    concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId, offerValidUntil]);
+}
+
+// Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
+async function signAgreeToBuyTeamMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, offerValidUntil, teamId, buyerAccount) {
+  const buyerHiddenPrice = concatHash(
+    ['uint256', 'uint256'],
+    [extraPrice, buyerRnd]
+  )
+  const auctionId = computeAuctionId(currencyId, price, sellerRnd, teamId, validUntil, offerValidUntil);
+  buyerTxMsg = concatHash(
+      ['bytes32', 'bytes32'],
+      [auctionId, buyerHiddenPrice]
+  )
+  const sigBuyer = await buyerAccount.sign(buyerTxMsg);
+  return [sigBuyer, auctionId];
 }
 
 
@@ -144,22 +155,24 @@ async function freezeAcademyPlayer(contractOwner, currencyId, price, sellerRnd, 
 
   tx = await market.freezePlayer(
     sellerHiddenPrice,
-    validUntil,
     playerId,
     sigSellerRS = [NULL_BYTES32, NULL_BYTES32],
     sigSellerV = 0,
+    validUntil,
+    offValidUntil = 0,
     {from: contractOwner}
   ).should.be.fulfilled;
   return tx;
 }
 
-async function freezePlayer(contractOwner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount) {
+async function freezePlayer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount) {
   // Mobile app does this:
   sigSeller = await signPutAssetForSaleMTx(
     currencyId,
     price,
     sellerRnd,
     validUntil,
+    offerValidUntil,
     playerId.toString(),
     sellerAccount
   );
@@ -173,8 +186,8 @@ async function freezePlayer(contractOwner, currencyId, price, sellerRnd, validUn
     ["uint8", "uint256", "uint256"],
     [currencyId, price, sellerRnd]
   );
-  sellerTxMsgBC = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId).should.be.fulfilled;
-  sellerTxMsgBC.should.be.equal(sigSeller.message);
+  sellerDigest = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil).should.be.fulfilled;
+  sellerDigest.should.be.equal(prefix(sigSeller.message)); 
 
   // Then, the buyer builds a message to sign
   let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
@@ -187,10 +200,11 @@ async function freezePlayer(contractOwner, currencyId, price, sellerRnd, validUn
   ];
   tx = await market.freezePlayer(
     sellerHiddenPrice,
-    validUntil,
     playerId,
     sigSellerRS,
     sigSeller.v,
+    validUntil,
+    offerValidUntil,
     {from: contractOwner}
   ).should.be.fulfilled;
   return tx;
@@ -202,12 +216,13 @@ async function transferTeamViaAuction(contractOwner, market, sellerTeamId, selle
   sellerRnd = 42321;
   extraPrice = 332;
   buyerRnd = 1243523;
+  offerValidUntil = 0;
 
   now = await market.getBlockchainNowTime().should.be.fulfilled;
   AUCTION_TIME = 48 * 3600;
   validUntil = now.toNumber() + AUCTION_TIME;
     
-  tx = await freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+  tx = await freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
   isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
   isTeamFrozen.should.be.equal(true);
   truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
@@ -216,8 +231,8 @@ async function transferTeamViaAuction(contractOwner, market, sellerTeamId, selle
   
   tx = await completeTeamAuction(
     contractOwner, 
-    currencyId, price, sellerRnd, validUntil, sellerTeamId, 
-    extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerAccount
+    currencyId, price, sellerRnd, validUntil, offerValidUntil, sellerTeamId, 
+    extraPrice, buyerRnd, buyerAccount
   ).should.be.fulfilled;
   
   truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
@@ -237,12 +252,13 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
   sellerRnd = 42321;
   extraPrice = 332;
   buyerRnd = 1243523;
+  offerValidUntil = 0;
   
   now = await market.getBlockchainNowTime().should.be.fulfilled;
   AUCTION_TIME = 48 * 3600;
   validUntil = now.toNumber() + AUCTION_TIME;
 
-  tx = await freezePlayer(contractOwner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+  tx = await freezePlayer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.fulfilled;
   isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
   isPlayerFrozen.should.be.equal(true);
   truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -250,8 +266,8 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
   });
   tx = await completePlayerAuction(
     contractOwner, 
-    currencyId, price,  sellerRnd, validUntil, playerId, 
-    extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    currencyId, price,  sellerRnd, validUntil, offerValidUntil, playerId, 
+    extraPrice, buyerRnd,buyerTeamId, buyerAccount
   ).should.be.fulfilled;
   let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
   finalOwner.should.be.equal(buyerAccount.address);
@@ -259,24 +275,25 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
 
 async function completePlayerAuction(
   contractOwner, 
-  currencyId, price, sellerRnd, validUntil, playerId, 
-  extraPrice, buyerRnd, isOffer2StartAuctionSig, isOffer2StartAuctionBC, buyerTeamId, buyerAccount
+  currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId,
+  extraPrice, buyerRnd, buyerTeamId, buyerAccount
 ) {
+
   // Add some amount to the price where seller started, and a rnd to obfuscate it
   const buyerHiddenPrice = concatHash(
     ["uint256", "uint256"],
     [extraPrice, buyerRnd]
   );
 
-  let sigBuyer = await signAgreeToBuyPlayerMTx(
+  var {0: sigBuyer, 1: auctionId} = await signAgreeToBuyPlayerMTx(
     currencyId,
     price,
     extraPrice,
     sellerRnd,
     buyerRnd,
     validUntil,
+    offerValidUntil,
     playerId.toString(),
-    isOffer2StartAuctionSig,
     buyerTeamId.toString(),
     buyerAccount
   ).should.be.fulfilled;
@@ -291,33 +308,27 @@ async function completePlayerAuction(
     sigBuyer.s
   ];
 
-  const sellerHiddenPrice = concatHash(
-    ["uint8", "uint256", "uint256"],
-    [currencyId, price, sellerRnd]
-  );
-
   tx = await market.completePlayerAuction(
-    sellerHiddenPrice,
-    validUntil,
+    auctionId,
     playerId.toString(),
     buyerHiddenPrice,
     buyerTeamId.toString(),
     sigBuyerRS,
     sigBuyer.v,
-    isOffer2StartAuctionBC,
     {from: contractOwner}
   ).should.be.fulfilled;
 
   return tx
 }
 
-async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, teamId, sellerAccount) {
+async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount) {
   // Mobile app does this:
   sigSeller = await signPutAssetForSaleMTx(
     currencyId,
     price,
     sellerRnd,
     validUntil, 
+    offerValidUntil,
     teamId.toString(),
     sellerAccount
   );
@@ -327,13 +338,12 @@ async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUnti
   recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
   recoveredSellerAddr.should.be.equal(sellerAccount.address);
 
-  // The correctness of the seller message can also be checked in the BC:
   const sellerHiddenPrice = concatHash(
     ["uint8", "uint256", "uint256"],
     [currencyId, price, sellerRnd]
   );
-  sellerTxMsgBC = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, teamId.toString()).should.be.fulfilled;
-  sellerTxMsgBC.should.be.equal(sigSeller.message);
+  sellerDigest = await market.computePutAssetForSaleDigest(sellerHiddenPrice, teamId.toString(), validUntil, offerValidUntil).should.be.fulfilled;
+  sellerDigest.should.be.equal(prefix(sigSeller.message));
 
   // Then, the buyer builds a message to sign
   let isTeamFrozen = await market.isTeamFrozen(teamId.toNumber()).should.be.fulfilled;
@@ -347,35 +357,35 @@ async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUnti
   
   tx = await market.freezeTeam(
     sellerHiddenPrice,
-    validUntil,
-    teamId.toNumber(),
+    teamId.toString(),
     sigSellerRS,
     sigSeller.v,
+    validUntil,
+    offerValidUntil,
     {from: contractOwner}
   ).should.be.fulfilled;
-
   return tx;
 };
 
 async function completeTeamAuction(
   contractOwner,
-  currencyId, price, sellerRnd, validUntil, sellerTeamId, 
-  extraPrice, buyerRnd, isOffer2StartAuctionSig, isOffer2StartAuctionBC, buyerAccount) 
+  currencyId, price, sellerRnd, validUntil, offerValidUntil, sellerTeamId, 
+  extraPrice, buyerRnd, buyerAccount) 
 {
   // Add some amount to the price where seller started, and a rnd to obfuscate it
   const buyerHiddenPrice = concatHash(
     ["uint256", "uint256"],
     [extraPrice, buyerRnd]
   );
-  let sigBuyer = await signAgreeToBuyTeamMTx(
+  var {0: sigBuyer, 1: auctionId} = await signAgreeToBuyTeamMTx(
     currencyId,
     price,
     extraPrice,
     sellerRnd,
     buyerRnd,
     validUntil,
+    offerValidUntil,
     sellerTeamId.toNumber(),
-    isOffer2StartAuctionSig,
     buyerAccount
   ).should.be.fulfilled;
 
@@ -389,21 +399,13 @@ async function completeTeamAuction(
     sigBuyer.s
   ];
 
-  // The correctness of the seller message can also be checked in the BC:
-  const sellerHiddenPrice = concatHash(
-    ["uint8", "uint256", "uint256"],
-    [currencyId, price, sellerRnd]
-  );
-  
   tx = await market.completeTeamAuction(
-    sellerHiddenPrice,
-    validUntil,
+    auctionId,
     sellerTeamId.toNumber(),
     buyerHiddenPrice,
     sigBuyerRS,
     sigBuyer.v,
     recoveredBuyerAddr,
-    isOffer2StartAuctionBC,
     {from: contractOwner}
   ).should.be.fulfilled;
   return tx;
@@ -412,7 +414,7 @@ async function completeTeamAuction(
 
 module.exports = {
   concatHash,
-  getMessageHash,
+  prefix,
   signPutAssetForSaleMTx,
   signAgreeToBuyPlayerMTx,
   signAgreeToBuyTeamMTx,
@@ -423,5 +425,10 @@ module.exports = {
   completeTeamAuction,
   signDismissPlayerMTx,
   transferTeamViaAuction,
-  freezeAcademyPlayer
+  freezeAcademyPlayer,
+  computePutAssetForSaleDigest,
+  computePutAssetForSaleDigestNoPrefix,
+  computePutAssetForSaleDigestNoPrefixFromHiddenPrice,
+  computeAuctionId,
+  hidePrice
 }
