@@ -16,13 +16,14 @@ const teamByBuyerTeamId = (parent, args, context, info, schema) => {
       if (!result) {
         return;
       }
-      const teamName = selectTeamName({ teamId: result.teamId });
+      const teamName = selectTeamName({ teamId: parent.buyerTeamId });
       const teamManagerName = selectTeamManagerName({
-        teamId: result.teamId,
+        teamId: parent.buyerTeamId,
       });
 
-      result.teamName = teamName ? teamName : result.teamName;
-      result.teamManagerName = teamManagerName ? teamManagerName : result.teamManagerName;
+      result.name = teamName && teamName.team_name ? teamName.team_name : result.name;
+      result.managerName =
+        teamManagerName && teamManagerName.team_manager_name ? teamManagerName.team_manager_name : result.managerName;
       return result;
     });
 };
