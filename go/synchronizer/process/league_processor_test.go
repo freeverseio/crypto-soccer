@@ -2,6 +2,7 @@ package process_test
 
 import (
 	"math/big"
+	"strconv"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -103,228 +104,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 }
 
 func TestGenerateOrgMap(t *testing.T) {
-	teams := []storage.Team{
-		storage.Team{
-
-			TeamID:              "2748779069711",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Z. Dragon",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-			LeagueIdx:           1,
-			LeaderboardPosition: 1,
-			TeamIdxInLeague:     1,
-			Points:              10,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109569",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-			IsZombie:            false,
-		},
-		storage.Team{
-
-			TeamID:              "2748779069712",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Z. Dragon2",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946263",
-			LeagueIdx:           1,
-			LeaderboardPosition: 2,
-			TeamIdxInLeague:     2,
-			Points:              9,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109568",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838721",
-			IsZombie:            false,
-		},
-		storage.Team{
-
-			TeamID:              "2748779069713",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Z. Dragon3",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-			LeagueIdx:           1,
-			LeaderboardPosition: 3,
-			TeamIdxInLeague:     3,
-			Points:              8,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109569",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-			IsZombie:            false,
-		},
-		storage.Team{
-
-			TeamID:              "2748779069714",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Z. Dragon4",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-			LeagueIdx:           1,
-			LeaderboardPosition: 4,
-			TeamIdxInLeague:     4,
-			Points:              7,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109569",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-			IsZombie:            false,
-		},
-		storage.Team{
-
-			TeamID:              "2748779069715",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Z. Dragon5",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-			LeagueIdx:           1,
-			LeaderboardPosition: 5,
-			TeamIdxInLeague:     5,
-			Points:              6,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109569",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-			IsZombie:            false,
-		},
-		storage.Team{
-
-			TeamID:              "2748779069716",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Z. Dragon6",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-			LeagueIdx:           1,
-			LeaderboardPosition: 6,
-			TeamIdxInLeague:     6,
-			Points:              5,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109569",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-			IsZombie:            false,
-		},
-		storage.Team{
-
-			TeamID:              "2748779069717",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Z. Dragon7",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-			LeagueIdx:           1,
-			LeaderboardPosition: 7,
-			TeamIdxInLeague:     7,
-			Points:              4,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109569",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-			IsZombie:            false,
-		},
-		storage.Team{
-
-			TeamID:              "2748779069718",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Z. Dragon8",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-			LeagueIdx:           1,
-			LeaderboardPosition: 8,
-			TeamIdxInLeague:     8,
-			Points:              3,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109569",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-			IsZombie:            false,
-		},
-		storage.Team{
-
-			TeamID:              "2748779069719",
-			TimezoneIdx:         10,
-			CountryIdx:          0,
-			Name:                "A. Zombie. Dragon",
-			ManagerName:         "",
-			Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-			LeagueIdx:           1,
-			LeaderboardPosition: 8,
-			TeamIdxInLeague:     8,
-			Points:              3,
-			W:                   6,
-			D:                   2,
-			L:                   0,
-			GoalsForward:        50,
-			GoalsAgainst:        3,
-			PrevPerfPoints:      22,
-			RankingPoints:       13,
-			TrainingPoints:      0,
-			Tactic:              "232408266302079135077072109569",
-			MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-			IsZombie:            true,
-		},
-	}
-	var state [25]*big.Int
-	for i := 0; i < 25; i++ {
-		state[i] = big.NewInt(0)
-	}
+	state := createTeamStateWithFixedSum(342)
 	teamsWithState := []process.TeamWithState{
 		process.TeamWithState{
 			storage.Team{
@@ -577,6 +357,8 @@ func TestGenerateOrgMap(t *testing.T) {
 		},
 	}
 
+	t.Log(teamsWithState)
+
 	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
 
 	orgMap, zombieOrgMap, err := processor.GenerateOrgMap(teamsWithState)
@@ -586,10 +368,9 @@ func TestGenerateOrgMap(t *testing.T) {
 	zombieOrgMap.Sort()
 	orgMap.AppendOrgMap(zombieOrgMap)
 
-	assert.Equal(t, orgMap.At(0).TeamID, teams[0].TeamID)
-	assert.Equal(t, orgMap.At(8).TeamID, teams[8].TeamID)
+	assert.Equal(t, orgMap.At(0).TeamID, teamsWithState[0].Team.TeamID)
+	assert.Equal(t, orgMap.At(8).TeamID, teamsWithState[8].Team.TeamID)
 
-	teams[0].IsZombie = true
 	teamsWithState[0].Team.IsZombie = true
 
 	orgMap, zombieOrgMap, err = processor.GenerateOrgMap(teamsWithState)
@@ -599,8 +380,8 @@ func TestGenerateOrgMap(t *testing.T) {
 	zombieOrgMap.Sort()
 	orgMap.AppendOrgMap(zombieOrgMap)
 
-	assert.Equal(t, orgMap.At(0).TeamID, teams[1].TeamID)
-	assert.Equal(t, orgMap.At(7).TeamID, teams[0].TeamID)
+	assert.Equal(t, orgMap.At(0).TeamID, teamsWithState[1].Team.TeamID)
+	assert.Equal(t, orgMap.At(7).TeamID, teamsWithState[0].Team.TeamID)
 
 }
 
@@ -777,3 +558,31 @@ func TestGenerateOrgMap(t *testing.T) {
 // 		// log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.LeagueIdx, team.RankingPoints, team.TeamIdxInLeague, team.PrevPerfPoints)
 // 	}
 // }
+
+func createTeamStateWithFixedSum(desiredSum uint32) [25]*big.Int {
+	var state [25]*big.Int
+	for i := 0; i < 25; i++ {
+		state[i] = big.NewInt(0)
+	}
+	state[0], _ = bc.Contracts.PlayAndEvolve.SetSumOfSkills(&bind.CallOpts{}, state[0], desiredSum)
+	return state
+}
+
+func createMinimalTeam(idxInCountry int64) storage.Team {
+	teamId := strconv.FormatInt(2748779069711+idxInCountry, 10)
+	leagueIdx := uint32(idxInCountry / 8)
+	leaderboardPos := (idxInCountry + 1) % 8  // offet a bit, to test. So idx = 0 is second in his league, and winner is idx=7.
+	teamIdxInLeague := (idxInCountry + 2) % 8 // offet a bit, to test. So idx = 0 is 3rd in his league, and winner is idx=6.
+
+	return storage.Team{
+		TeamID:              teamId,
+		TimezoneIdx:         10,
+		CountryIdx:          0,
+		Owner:               "0xaa", // just to prove that it is not a bot (!= 0x0)
+		LeagueIdx:           leagueIdx,
+		LeaderboardPosition: int(leaderboardPos),
+		TeamIdxInLeague:     uint32(teamIdxInLeague),
+		PrevPerfPoints:      22,
+		IsZombie:            false,
+	}
+}
