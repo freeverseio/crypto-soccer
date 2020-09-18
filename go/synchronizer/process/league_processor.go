@@ -31,7 +31,7 @@ type LeagueProcessor struct {
 }
 
 type TeamWithState struct {
-	storage.Team
+	Team      storage.Team
 	TeamState [25]*big.Int
 }
 
@@ -287,12 +287,11 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	return nil
 }
 
-func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]TeamWithState, []storage.Team, error) {
+func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]TeamWithState, error) {
 	teamIds, err := storage.TeamIdsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	var teams []storage.Team
 	var teamsWithState []TeamWithState
 	for i := 0; i < len(teamIds); i++ {
 		teamID := teamIds[i]
@@ -300,33 +299,34 @@ func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql
 		team, err = storage.TeamByTeamId(tx, teamID)
 		teamState, err := b.GetTeamState(tx, team.TeamID)
 		if err != nil {
-			return teamsWithState, teams, err
+			return teamsWithState, err
 		}
 		var teamWithState = TeamWithState{team, teamState}
 		if err != nil {
-			return teamsWithState, teams, err
+			return teamsWithState, err
 		}
 		teamsWithState = append(teamsWithState, teamWithState)
-		teams = append(teams, team)
 	}
-	return teamsWithState, teams, nil
+	return teamsWithState, nil
 }
 
-func (b *LeagueProcessor) GenerateOrgMap(teamsWithState []TeamWithState, teams []storage.Team) (OrgMap, OrgMap, error) {
+func (b *LeagueProcessor) GenerateOrgMap(teamsWithState []TeamWithState) (OrgMap, OrgMap, error) {
 	var orgMap OrgMap
 	var zombieOrgMap OrgMap
 	var err error
 
-	sort.Slice(teams[:], func(i, j int) bool {
-		return teams[i].LeaderboardPosition < teams[j].LeaderboardPosition
+	sort.Slice(teamsWithState[:], func(i, j int) bool {
+		return teamsWithState[i].Team.LeaderboardPosition < teamsWithState[i].Team.LeaderboardPosition
 	})
-	for position, team := range teams {
+	for position, teamWithState := range teamsWithState {
+		team := teamWithState.Team
+		state := teamWithState.TeamState
 		if !team.IsBot() {
 			log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamsWithState[position].TeamState)
 			teamID, _ := new(big.Int).SetString(team.TeamID, 10)
 			team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 				&bind.CallOpts{},
-				teamsWithState[position].TeamState,
+				state,
 				uint8(position),
 				team.PrevPerfPoints,
 				teamID,
@@ -374,11 +374,11 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 	}
 
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-		teamsWithState, teams, err := b.TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
+		teamsWithState, err := b.TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
 		}
-		leagueOrgMap, leagueZombieOrgMap, err := b.GenerateOrgMap(teamsWithState, teams)
+		leagueOrgMap, leagueZombieOrgMap, err := b.GenerateOrgMap(teamsWithState)
 		orgMap.AppendOrgMap(leagueOrgMap)
 		zombieOrgMap.AppendOrgMap(leagueZombieOrgMap)
 		if err != nil {

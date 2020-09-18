@@ -579,7 +579,7 @@ func TestGenerateOrgMap(t *testing.T) {
 
 	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
 
-	orgMap, zombieOrgMap, err := processor.GenerateOrgMap(teamsWithState, teams)
+	orgMap, zombieOrgMap, err := processor.GenerateOrgMap(teamsWithState)
 	assert.NilError(t, err)
 
 	orgMap.Sort()
@@ -590,9 +590,9 @@ func TestGenerateOrgMap(t *testing.T) {
 	assert.Equal(t, orgMap.At(8).TeamID, teams[8].TeamID)
 
 	teams[0].IsZombie = true
-	teamsWithState[0].IsZombie = true
+	teamsWithState[0].Team.IsZombie = true
 
-	orgMap, zombieOrgMap, err = processor.GenerateOrgMap(teamsWithState, teams)
+	orgMap, zombieOrgMap, err = processor.GenerateOrgMap(teamsWithState)
 	assert.NilError(t, err)
 
 	orgMap.Sort()
