@@ -15,7 +15,6 @@ import (
 type AuctionMachine struct {
 	auction   storage.Auction
 	bids      []storage.Bid
-	offer     *storage.Offer
 	contracts contracts.Contracts
 	freeverse *ecdsa.PrivateKey
 }
@@ -23,7 +22,6 @@ type AuctionMachine struct {
 func New(
 	auction storage.Auction,
 	bids []storage.Bid,
-	offer *storage.Offer,
 	contracts contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
 ) (*AuctionMachine, error) {
@@ -36,7 +34,6 @@ func New(
 	return &AuctionMachine{
 		auction,
 		bids,
-		offer,
 		contracts,
 		freeverse,
 	}, nil
@@ -83,10 +80,6 @@ func (b AuctionMachine) Auction() storage.Auction {
 
 func (b AuctionMachine) Bids() []storage.Bid {
 	return b.bids
-}
-
-func (b AuctionMachine) Offer() *storage.Offer {
-	return b.offer
 }
 
 func (b *AuctionMachine) SetState(state storage.AuctionState, extra string) {
