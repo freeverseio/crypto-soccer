@@ -312,7 +312,7 @@ func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql
 	return teamsWithState, teams, nil
 }
 
-func (b *LeagueProcessor) GenerateOrgMap(teamsWithState []TeamWithState, teams []storage.Team) (OrgMap, error) {
+func (b *LeagueProcessor) GenerateOrgMap(teamsWithState []TeamWithState, teams []storage.Team) (OrgMap, OrgMap, error) {
 	var orgMap OrgMap
 	var zombieOrgMap OrgMap
 	var err error
@@ -333,31 +333,28 @@ func (b *LeagueProcessor) GenerateOrgMap(teamsWithState []TeamWithState, teams [
 				team.IsBot(),
 			)
 			if err != nil {
-				return orgMap, err
+				return orgMap, zombieOrgMap, err
 			}
 		}
 		log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
 		if team.IsZombie {
 			if err := zombieOrgMap.Append(team); err != nil {
-				return orgMap, err
+				return orgMap, zombieOrgMap, err
 			}
 		} else {
 			if err := orgMap.Append(team); err != nil {
-				return orgMap, err
+				return orgMap, zombieOrgMap, err
 			}
 		}
 	}
 
-	orgMap.Sort()
-	zombieOrgMap.Sort()
-	orgMap.AppendOrgMap(zombieOrgMap)
-
-	return orgMap, nil
+	return orgMap, zombieOrgMap, nil
 }
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap OrgMap
+	var zombieOrgMap OrgMap
 
 	leagueCount, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
@@ -381,11 +378,18 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 		if err != nil {
 			return err
 		}
-		orgMap, err = b.GenerateOrgMap(teamsWithState, teams)
+		leagueOrgMap, leagueZombieOrgMap, err := b.GenerateOrgMap(teamsWithState, teams)
+		orgMap.AppendOrgMap(leagueOrgMap)
+		zombieOrgMap.AppendOrgMap(leagueZombieOrgMap)
 		if err != nil {
 			return err
 		}
 	}
+
+	orgMap.Sort()
+	zombieOrgMap.Sort()
+	orgMap.AppendOrgMap(zombieOrgMap)
+
 	// create the new leagues
 	for i := 0; i < orgMap.Size(); i++ {
 		team := orgMap.At(i)
