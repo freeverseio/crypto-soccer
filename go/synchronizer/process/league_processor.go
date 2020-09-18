@@ -35,6 +35,10 @@ type TeamWithState struct {
 	TeamState [25]*big.Int
 }
 
+type TeamsWithStateInLeague struct {
+	TeamsWithState [8]TeamWithState
+}
+
 func NewLeagueProcessor(
 	contracts *contracts.Contracts,
 	useractionsPublisher useractions.UserActionsPublishService,
@@ -287,12 +291,15 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	return nil
 }
 
-func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]TeamWithState, error) {
+func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) (TeamsWithStateInLeague, error) {
+	var teamsWithState TeamsWithStateInLeague
 	teamIds, err := storage.TeamIdsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
-		return nil, err
+		return teamsWithState, err
 	}
-	var teamsWithState []TeamWithState
+	if len(teamIds) != 8 {
+		return teamsWithState, errors.New("league does not have 8 teams")
+	}
 	for i := 0; i < len(teamIds); i++ {
 		teamID := teamIds[i]
 		var team storage.Team
@@ -305,24 +312,24 @@ func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql
 		if err != nil {
 			return teamsWithState, err
 		}
-		teamsWithState = append(teamsWithState, teamWithState)
+		teamsWithState.TeamsWithState[i] = teamWithState
 	}
 	return teamsWithState, nil
 }
 
-func (b *LeagueProcessor) GenerateOrgMap(teamsWithState []TeamWithState) (OrgMap, OrgMap, error) {
+func (b *LeagueProcessor) ComputeRankingPointsAndSplitZombiesFromHumans(t TeamsWithStateInLeague) (OrgMap, OrgMap, error) {
 	var orgMap OrgMap
 	var zombieOrgMap OrgMap
 	var err error
 
-	sort.Slice(teamsWithState[:], func(i, j int) bool {
-		return teamsWithState[i].Team.LeaderboardPosition < teamsWithState[i].Team.LeaderboardPosition
+	sort.Slice(t.TeamsWithState[:], func(i, j int) bool {
+		return t.TeamsWithState[i].Team.LeaderboardPosition < t.TeamsWithState[i].Team.LeaderboardPosition
 	})
-	for position, teamWithState := range teamsWithState {
+	for position, teamWithState := range t.TeamsWithState {
 		team := teamWithState.Team
 		state := teamWithState.TeamState
 		if !team.IsBot() {
-			log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamsWithState[position].TeamState)
+			log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, state)
 			teamID, _ := new(big.Int).SetString(team.TeamID, 10)
 			team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 				&bind.CallOpts{},
@@ -353,8 +360,6 @@ func (b *LeagueProcessor) GenerateOrgMap(teamsWithState []TeamWithState) (OrgMap
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
-	var orgMap OrgMap
-	var zombieOrgMap OrgMap
 
 	leagueCount, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
@@ -373,22 +378,19 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 		return err
 	}
 
+	var teamStatesPerLeague []TeamsWithStateInLeague
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-		teamsWithState, err := b.TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
+		teamsWithStateInLeague, err := b.TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
 		}
-		leagueOrgMap, leagueZombieOrgMap, err := b.GenerateOrgMap(teamsWithState)
-		orgMap.AppendOrgMap(leagueOrgMap)
-		zombieOrgMap.AppendOrgMap(leagueZombieOrgMap)
-		if err != nil {
-			return err
-		}
+		teamStatesPerLeague = append(teamStatesPerLeague, teamsWithStateInLeague)
 	}
 
-	orgMap.Sort()
-	zombieOrgMap.Sort()
-	orgMap.AppendOrgMap(zombieOrgMap)
+	orgMap, err := b.GenerateOrgMap(teamStatesPerLeague)
+	if err != nil {
+		return err
+	}
 
 	// create the new leagues
 	for i := 0; i < orgMap.Size(); i++ {
@@ -407,6 +409,24 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 		}
 	}
 	return nil
+}
+
+func (b *LeagueProcessor) GenerateOrgMap(teamStatesPerLeague []TeamsWithStateInLeague) (OrgMap, error) {
+	var orgMap OrgMap
+	var zombieOrgMap OrgMap
+
+	for leagueIdx := uint32(0); leagueIdx < uint32(len(teamStatesPerLeague)); leagueIdx++ {
+		leagueOrgMap, leagueZombieOrgMap, err := b.ComputeRankingPointsAndSplitZombiesFromHumans(teamStatesPerLeague[leagueIdx])
+		orgMap.AppendOrgMap(leagueOrgMap)
+		zombieOrgMap.AppendOrgMap(leagueZombieOrgMap)
+		if err != nil {
+			return orgMap, err
+		}
+	}
+	orgMap.Sort()
+	zombieOrgMap.Sort()
+	orgMap.AppendOrgMap(zombieOrgMap)
+	return orgMap, nil
 }
 
 func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID string) ([25]*big.Int, error) {

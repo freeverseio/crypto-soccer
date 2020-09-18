@@ -104,284 +104,35 @@ func TestLeagueProcessMatch(t *testing.T) {
 }
 
 func TestGenerateOrgMap(t *testing.T) {
-	state := createTeamStateWithFixedSum(342)
-	teamsWithState := []process.TeamWithState{
-		process.TeamWithState{
-			storage.Team{
-				TeamID:              "2748779069711",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Z. Dragon",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-				LeagueIdx:           1,
-				LeaderboardPosition: 1,
-				TeamIdxInLeague:     1,
-				Points:              10,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109569",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-				IsZombie:            false,
-			},
-			state,
-		},
-		process.TeamWithState{
+	var teamStatesPerLeague []process.TeamsWithStateInLeague
 
-			storage.Team{
-				TeamID:              "2748779069712",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Z. Dragon2",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946263",
-				LeagueIdx:           1,
-				LeaderboardPosition: 2,
-				TeamIdxInLeague:     2,
-				Points:              9,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109568",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838721",
-				IsZombie:            false,
-			},
-			state,
-		},
-		process.TeamWithState{
-
-			storage.Team{
-
-				TeamID:              "2748779069713",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Z. Dragon3",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-				LeagueIdx:           1,
-				LeaderboardPosition: 3,
-				TeamIdxInLeague:     3,
-				Points:              8,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109569",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-				IsZombie:            false,
-			},
-			state,
-		},
-		process.TeamWithState{
-
-			storage.Team{
-
-				TeamID:              "2748779069714",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Z. Dragon4",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-				LeagueIdx:           1,
-				LeaderboardPosition: 4,
-				TeamIdxInLeague:     4,
-				Points:              7,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109569",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-				IsZombie:            false,
-			},
-			state,
-		},
-		process.TeamWithState{
-
-			storage.Team{
-
-				TeamID:              "2748779069715",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Z. Dragon5",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-				LeagueIdx:           1,
-				LeaderboardPosition: 5,
-				TeamIdxInLeague:     5,
-				Points:              6,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109569",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-				IsZombie:            false,
-			},
-			state,
-		},
-		process.TeamWithState{
-
-			storage.Team{
-
-				TeamID:              "2748779069716",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Z. Dragon6",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-				LeagueIdx:           1,
-				LeaderboardPosition: 6,
-				TeamIdxInLeague:     6,
-				Points:              5,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109569",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-				IsZombie:            false,
-			},
-			state,
-		},
-		process.TeamWithState{
-
-			storage.Team{
-
-				TeamID:              "2748779069717",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Z. Dragon7",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-				LeagueIdx:           1,
-				LeaderboardPosition: 7,
-				TeamIdxInLeague:     7,
-				Points:              4,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109569",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-				IsZombie:            false,
-			},
-			state,
-		},
-		process.TeamWithState{
-
-			storage.Team{
-
-				TeamID:              "2748779069718",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Z. Dragon8",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-				LeagueIdx:           1,
-				LeaderboardPosition: 8,
-				TeamIdxInLeague:     8,
-				Points:              3,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109569",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-				IsZombie:            false,
-			},
-			state,
-		},
-		process.TeamWithState{
-
-			storage.Team{
-
-				TeamID:              "2748779069719",
-				TimezoneIdx:         10,
-				CountryIdx:          0,
-				Name:                "A. Zombie. Dragon",
-				ManagerName:         "",
-				Owner:               "0xDbC457001BCf6379cA76d5Dce36bc209bB946262",
-				LeagueIdx:           1,
-				LeaderboardPosition: 8,
-				TeamIdxInLeague:     8,
-				Points:              3,
-				W:                   6,
-				D:                   2,
-				L:                   0,
-				GoalsForward:        50,
-				GoalsAgainst:        3,
-				PrevPerfPoints:      22,
-				RankingPoints:       13,
-				TrainingPoints:      0,
-				Tactic:              "232408266302079135077072109569",
-				MatchLog:            "452313210377133253396643281768373768667433434013984093473312053463319838720",
-				IsZombie:            true,
-			},
-			state,
-		},
+	idxInCountry := int64(0)
+	nLeagues := 4
+	for leagueIdx := 0; leagueIdx < 4; leagueIdx++ {
+		teamWithStates := process.TeamsWithStateInLeague{}
+		for t := 0; t < 8; t++ {
+			teamWithStates.TeamsWithState[t] = process.TeamWithState{
+				Team:      createMinimalTeam(idxInCountry),
+				TeamState: createTeamStateWithFixedSum(344),
+			}
+			idxInCountry += 1
+		}
+		teamWithStates.TeamsWithState[3].Team.IsZombie = true
+		teamStatesPerLeague = append(teamStatesPerLeague, teamWithStates)
 	}
-
-	t.Log(teamsWithState)
 
 	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
 
-	orgMap, zombieOrgMap, err := processor.GenerateOrgMap(teamsWithState)
+	orgMap, err := processor.GenerateOrgMap(teamStatesPerLeague)
 	assert.NilError(t, err)
-
-	orgMap.Sort()
-	zombieOrgMap.Sort()
-	orgMap.AppendOrgMap(zombieOrgMap)
-
-	assert.Equal(t, orgMap.At(0).TeamID, teamsWithState[0].Team.TeamID)
-	assert.Equal(t, orgMap.At(8).TeamID, teamsWithState[8].Team.TeamID)
-
-	teamsWithState[0].Team.IsZombie = true
-
-	orgMap, zombieOrgMap, err = processor.GenerateOrgMap(teamsWithState)
-	assert.NilError(t, err)
-
-	orgMap.Sort()
-	zombieOrgMap.Sort()
-	orgMap.AppendOrgMap(zombieOrgMap)
-
-	assert.Equal(t, orgMap.At(0).TeamID, teamsWithState[1].Team.TeamID)
-	assert.Equal(t, orgMap.At(7).TeamID, teamsWithState[0].Team.TeamID)
+	nTeams := nLeagues * 8
+	for i, team := range orgMap.Teams {
+		if i < nTeams-4 {
+			assert.Equal(t, team.IsZombie, false)
+		} else {
+			assert.Equal(t, team.IsZombie, true)
+		}
+	}
 
 }
 
