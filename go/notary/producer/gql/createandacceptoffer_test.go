@@ -91,6 +91,7 @@ func TestCreateAndAcceptOfferSuccess(t *testing.T) {
 		CommitFunc:             func() error { return nil },
 		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
 		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
+		OfferUpdateFunc:        func(offer storage.Offer) error { return nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
