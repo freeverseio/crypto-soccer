@@ -126,12 +126,19 @@ func TestGenerateOrgMap(t *testing.T) {
 	orgMap, err := processor.GenerateOrgMap(teamStatesPerLeague)
 	assert.NilError(t, err)
 	nTeams := nLeagues * 8
+	prevRankingPoints := uint64(18446744073709551615) // = 2**64-1
+	// check: ranking points must be decreasing (except for the first zombie team)
+	// check: the only 4 teams that were zombies are at the end
 	for i, team := range orgMap.Teams {
 		if i < nTeams-4 {
 			assert.Equal(t, team.IsZombie, false)
 		} else {
 			assert.Equal(t, team.IsZombie, true)
 		}
+		if i != nTeams-4 {
+			assert.Equal(t, prevRankingPoints >= team.RankingPoints, true)
+		}
+		prevRankingPoints = team.RankingPoints
 	}
 
 }
