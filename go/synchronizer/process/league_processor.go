@@ -317,12 +317,11 @@ func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql
 	return teamsWithState, nil
 }
 
-func (b *LeagueProcessor) ComputeRankingPointsAndSplitZombiesFromHumans(t TeamsWithStateInLeague) (OrgMap, OrgMap, error) {
-	var orgMap OrgMap
-	var zombieOrgMap OrgMap
+func (b *LeagueProcessor) ComputeRankingPoints(t TeamsWithStateInLeague) (TeamsWithStateInLeague, error) {
 	var err error
+	var out_t TeamsWithStateInLeague
 
-	for _, teamWithState := range t.TeamsWithState {
+	for i, teamWithState := range t.TeamsWithState {
 		team := teamWithState.Team
 		state := teamWithState.TeamState
 		if !team.IsBot() {
@@ -337,10 +336,22 @@ func (b *LeagueProcessor) ComputeRankingPointsAndSplitZombiesFromHumans(t TeamsW
 				team.IsBot(),
 			)
 			if err != nil {
-				return orgMap, zombieOrgMap, err
+				return t, err
 			}
 		}
+		out_t.TeamsWithState[i] = TeamWithState{Team: team, TeamState: state}
 		log.Debugf("New ranking team %v points %v ranking %v leadPos %v", team.TeamID, team.Points, team.RankingPoints, team.LeaderboardPosition)
+	}
+
+	return out_t, nil
+}
+
+func (b *LeagueProcessor) SplitZombiesFromHumans(t TeamsWithStateInLeague) (OrgMap, OrgMap, error) {
+	var orgMap OrgMap
+	var zombieOrgMap OrgMap
+
+	for _, teamWithState := range t.TeamsWithState {
+		team := teamWithState.Team
 		if team.IsZombie {
 			if err := zombieOrgMap.Append(team); err != nil {
 				return orgMap, zombieOrgMap, err
@@ -351,7 +362,6 @@ func (b *LeagueProcessor) ComputeRankingPointsAndSplitZombiesFromHumans(t TeamsW
 			}
 		}
 	}
-
 	return orgMap, zombieOrgMap, nil
 }
 
@@ -413,7 +423,12 @@ func (b *LeagueProcessor) GenerateOrgMap(teamStatesPerLeague []TeamsWithStateInL
 	var zombieOrgMap OrgMap
 
 	for leagueIdx := uint32(0); leagueIdx < uint32(len(teamStatesPerLeague)); leagueIdx++ {
-		leagueOrgMap, leagueZombieOrgMap, err := b.ComputeRankingPointsAndSplitZombiesFromHumans(teamStatesPerLeague[leagueIdx])
+		teamsWithUpdatedRankingPoints, err := b.ComputeRankingPoints(teamStatesPerLeague[leagueIdx])
+		if err != nil {
+			return orgMap, err
+		}
+		leagueOrgMap, leagueZombieOrgMap, err := b.SplitZombiesFromHumans(teamsWithUpdatedRankingPoints)
+
 		orgMap.AppendOrgMap(leagueOrgMap)
 		zombieOrgMap.AppendOrgMap(leagueZombieOrgMap)
 		if err != nil {
