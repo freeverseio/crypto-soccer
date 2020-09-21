@@ -3,11 +3,6 @@ const HorizonService = require('../services/HorizonService.js');
 const BidValidation = require('./BidValidation.js');
 const Web3 = require('web3');
 
-jest.mock('../repositories', () => ({
-  selectOwnerMaximumBid: jest.fn().mockReturnValue(25),
-  updateOwnerMaximumBid: jest.fn(),
-}));
-
 jest.mock('../services/HorizonService.js', () => ({
   getBidsPayedByOwner: jest
     .fn()
@@ -42,31 +37,8 @@ test('Bid Prefixed Hash', async () => {
   );
 });
 
-test('allowed to bid', async () => {
+test('not allowed to bid because computed maximum bid is lower than total price', async () => {
   const web3 = new Web3('');
-  bidValidation = new BidValidation({
-    teamId: '234',
-    rnd: 12345,
-    auctionId: '555',
-    extraPrice: 10,
-    signature:
-      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
-    web3,
-  });
-  const result = await bidValidation.isAllowedToBid();
-
-  expect(result).toBe(true);
-  expect(repositories.selectOwnerMaximumBid).toHaveBeenCalledWith({
-    owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
-  });
-  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
-  expect(repositories.updateOwnerMaximumBid).toHaveBeenCalledTimes(0);
-  expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledTimes(0);
-});
-
-test('not allowed to bid because 0 is set', async () => {
-  const web3 = new Web3('');
-  repositories.selectOwnerMaximumBid.mockReturnValue(0);
 
   bidValidation = new BidValidation({
     teamId: '234',
@@ -80,46 +52,14 @@ test('not allowed to bid because 0 is set', async () => {
   const result = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(false);
-  expect(repositories.selectOwnerMaximumBid).toHaveBeenCalledWith({
-    owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
-  });
-  expect(HorizonService.getAuction).toHaveBeenCalledTimes(0);
-  expect(repositories.updateOwnerMaximumBid).toHaveBeenCalledTimes(0);
-  expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledTimes(0);
-});
-
-test('not allowed to bid because current maximum bid and computed maximum bid are lower than total price', async () => {
-  const web3 = new Web3('');
-  repositories.selectOwnerMaximumBid.mockReturnValue(11);
-
-  bidValidation = new BidValidation({
-    teamId: '234',
-    rnd: 12345,
-    auctionId: '555',
-    extraPrice: 10,
-    signature:
-      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
-    web3,
-  });
-  const result = await bidValidation.isAllowedToBid();
-
-  expect(result).toBe(false);
-  expect(repositories.selectOwnerMaximumBid).toHaveBeenCalledWith({
-    owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
-  });
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledWith({
     owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
   });
-  expect(repositories.updateOwnerMaximumBid).toHaveBeenCalledWith({
-    owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
-    maximumBid: 9,
-  });
 });
 
-test('allowed to bid because current maximum bid is lower than total price but computed is greater', async () => {
+test('allowed to bid because computed is greater', async () => {
   const web3 = new Web3('');
-  repositories.selectOwnerMaximumBid.mockReturnValue(11);
   HorizonService.getBidsPayedByOwner.mockReturnValue([
     { extraPrice: 1, auctionByAuctionId: { price: 50 } },
   ]);
@@ -136,16 +76,9 @@ test('allowed to bid because current maximum bid is lower than total price but c
   const result = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(true);
-  expect(repositories.selectOwnerMaximumBid).toHaveBeenCalledWith({
-    owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
-  });
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledWith({
     owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
-  });
-  expect(repositories.updateOwnerMaximumBid).toHaveBeenCalledWith({
-    owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
-    maximumBid: 76.5,
   });
 });
 
@@ -164,8 +97,6 @@ test('not allowed to bid because signer is not owner', async () => {
   const result = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(false);
-  expect(repositories.selectOwnerMaximumBid).toHaveBeenCalledTimes(0);
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(0);
-  expect(repositories.updateOwnerMaximumBid).toHaveBeenCalledTimes(0);
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledTimes(0);
 });

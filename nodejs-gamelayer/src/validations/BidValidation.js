@@ -1,9 +1,4 @@
 const HorizonService = require('../services/HorizonService.js');
-const {
-  selectOwnerMaximumBid,
-  updateOwnerMaximumBid,
-} = require('../repositories');
-const { MINIMUM_DEFAULT_BID } = require('../config.js');
 
 class BidValidation {
   constructor({ teamId, rnd, auctionId, extraPrice, signature, web3 }) {
@@ -74,21 +69,10 @@ class BidValidation {
     }
 
     const owner = await this.signerAddress();
-    let maximumBid = await selectOwnerMaximumBid({ owner });
-
-    if (parseInt(maximumBid) === 0) {
-      return false;
-    }
-    maximumBid = parseInt(maximumBid) || MINIMUM_DEFAULT_BID;
-
     const auction = await HorizonService.getAuction({
       auctionId: this.auctionId,
     });
     const totalPrice = parseInt(auction.price) + parseInt(this.extraPrice);
-
-    if (maximumBid >= totalPrice) {
-      return true;
-    }
 
     const bidsPayed = await HorizonService.getBidsPayedByOwner({ owner });
     const totalAmountSpent = bidsPayed.reduce(
@@ -97,8 +81,7 @@ class BidValidation {
           parseInt(curr.extraPrice) + parseInt(curr.auctionByAuctionId.price)),
       0
     );
-    const newMaximumBid = parseInt(totalAmountSpent) * 1.5;
-    await updateOwnerMaximumBid({ owner, maximumBid: newMaximumBid });
+    const newMaximumBid = parseInt(totalAmountSpent);
 
     if (newMaximumBid >= totalPrice) {
       return true;
