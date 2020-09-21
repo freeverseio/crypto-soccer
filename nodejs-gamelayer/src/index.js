@@ -80,12 +80,6 @@ const main = async () => {
       nodes: [Message]
     }
 
-    input SetOwnerMaximumBidInput {
-      signature: String!
-      owner: ID!
-      maximumBid: Int!
-    }
-
     input CreateBidInput {
   		signature: String!
 		  auctionId: ID!
@@ -93,10 +87,6 @@ const main = async () => {
   		rnd: Int!
   		teamId: String!
 	  }
-
-    extend type Team {
-      maximumBidByOwner: Int!
-    }
 
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
