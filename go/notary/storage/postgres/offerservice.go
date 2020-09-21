@@ -179,7 +179,7 @@ func (b *Tx) OfferUpdate(offer storage.Offer) error {
 func (b *Tx) OfferCancel(AuctionID string) error {
 	log.Debugf("[DBMS] + update Offer %v", b)
 	_, err := b.tx.Exec(`UPDATE offers SET 
-		state=$1, 
+		state=$1 
 		WHERE auction_id=$2;`,
 		storage.OfferCancelled,
 		AuctionID,
