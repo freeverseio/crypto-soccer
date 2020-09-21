@@ -46,11 +46,8 @@ func processAuction(
 	if err != nil {
 		return err
 	}
-	offer, err := service.OfferByAuctionId(auction.ID)
-	if err != nil {
-		return err
-	}
-	am, err := auctionmachine.New(auction, bids, offer, contracts, pvc)
+
+	am, err := auctionmachine.New(auction, bids, contracts, pvc)
 	if err != nil {
 		return err
 	}

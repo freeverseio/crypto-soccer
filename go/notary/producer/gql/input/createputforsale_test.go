@@ -15,34 +15,33 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestAcceptOfferInputHash(t *testing.T) {
-	in := input.AcceptOfferInput{}
+func TestCreateAuctionInputHash(t *testing.T) {
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = "2000000000"
-	in.OfferValidUntil = "199999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
 	hash, err := in.SellerDigest()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0xe30150bc666d8a20396c30794d1d1eaf86ecf427d4f4e3d8a4aa87d4aa3fc4b5")
+	assert.Equal(t, hash.Hex(), "0x1c3347f517a3d812ca8bdf38072c66accf71ca1a0f04851fd4a0f1fba593f684")
 }
-func TestAcceptOfferInputAuctionID(t *testing.T) {
-	in := input.AcceptOfferInput{}
+
+func TestCreateAuctionInputID(t *testing.T) {
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = "2000000000"
-	in.OfferValidUntil = "199999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
 	in.Rnd = 42321
-	id, err := in.AuctionID()
+	id, err := in.ID()
 	assert.NilError(t, err)
-	assert.Equal(t, string(id), "4fa64a72d14d52385a359bb69326e4faca26771ccb0662cb6fa5555fdf97beb1")
+	assert.Equal(t, string(id), "278403699489cb0584cdc89877b6622870027544962d240e7bb6328996bb07bd")
 }
-func TestAcceptOfferSignerAddress(t *testing.T) {
-	in := input.AcceptOfferInput{}
+
+func TestCreateAuctionSignerAddress(t *testing.T) {
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = "2000000000"
-	in.OfferValidUntil = "199999000"
 	in.PlayerId = "10"
 	in.CurrencyId = 1
 	in.Price = 41234
@@ -58,7 +57,7 @@ func TestAcceptOfferSignerAddress(t *testing.T) {
 	assert.Equal(t, address.Hex(), crypto.PubkeyToAddress(alice.PublicKey).Hex())
 }
 
-func TestAcceptOfferIsSignerOwner(t *testing.T) {
+func TestCreateAuctionIsSignerOwner(t *testing.T) {
 	tz := uint8(1)
 	countryIdxInTz := big.NewInt(0)
 	// We will here assign the next available team to alice so she can put a playerId for sale
@@ -68,9 +67,8 @@ func TestAcceptOfferIsSignerOwner(t *testing.T) {
 	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, tz, countryIdxInTz, big.NewInt(nPlayerInCountryForAlice))
 	alice, _ := crypto.HexToECDSA("5B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
-	in := input.AcceptOfferInput{}
+	in := input.CreatePutPlayerForSaleInput{}
 	in.ValidUntil = strconv.FormatInt(time.Now().Unix()+1000, 10)
-	in.OfferValidUntil = strconv.FormatInt(time.Now().Unix()+100, 10)
 	in.PlayerId = playerId.String()
 	in.CurrencyId = 1
 	in.Price = 41234

@@ -1,11 +1,9 @@
 package gql
 
 import (
-	"encoding/hex"
 	"errors"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
@@ -14,23 +12,6 @@ import (
 
 func (b *Resolver) GetWorldPlayers(args struct{ Input input.GetWorldPlayersInput }) ([]*worldplayer.WorldPlayer, error) {
 	log.Debugf("GetWorldPlayers %v", args)
-
-	hash, err := args.Input.Hash()
-	if err != nil {
-		return nil, err
-	}
-	sign, err := hex.DecodeString(args.Input.Signature)
-	if err != nil {
-		return nil, err
-	}
-
-	isValid, err := helper.VerifySignature(hash, sign)
-	if err != nil {
-		return nil, err
-	}
-	if !isValid {
-		return nil, errors.New("Invalid signature")
-	}
 
 	isOwner, err := args.Input.IsSignerOwner(b.contracts)
 	if err != nil {

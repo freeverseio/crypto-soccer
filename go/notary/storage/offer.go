@@ -11,7 +11,6 @@ const (
 )
 
 type Offer struct {
-	ID          string
 	PlayerID    string
 	CurrencyID  int
 	Price       int64

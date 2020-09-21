@@ -23,18 +23,6 @@ func TestDismissPlayerInputHash(t *testing.T) {
 	assert.Equal(t, hash.Hex(), "0xa345906cc0144e72ba04ea426d34bd486000e51de093b4b1a106deafa21c3244")
 }
 
-func TestDismissPlayerValidSignature(t *testing.T) {
-	msg := input.DismissPlayerInput{}
-	msg.PlayerId = "123455"
-	msg.ValidUntil = "5646456"
-	msg.ReturnToAcademy = true
-	msg.Signature = "2148732eeca5265898a5fe8dd3ba1c1af5b3d5b815fb23d9d6e383b376a2c91c694170ebd18b64b122905f82d3d6961a78a784b8966fcb350d51c6c5e7917d2d1b"
-
-	isValid, err := msg.VerifySignature()
-	assert.NilError(t, err)
-	assert.Equal(t, isValid, true)
-}
-
 func TestDismissPlayerSignerAddress(t *testing.T) {
 	msg := input.DismissPlayerInput{}
 	msg.PlayerId = "123455"

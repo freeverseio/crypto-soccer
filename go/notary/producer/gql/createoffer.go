@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
@@ -20,19 +21,16 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return graphql.ID(""), err
 	}
 
-	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
-	}
-
-	isValid, err := args.Input.VerifySignature(b.contracts)
+	offerValidUntil, err := strconv.ParseInt(args.Input.ValidUntil, 10, 64)
 	if err != nil {
-		return id, err
-	}
-	if !isValid {
-		return id, errors.New("Invalid signature")
+		return graphql.ID(""), err
 	}
 
-	isPlayerOwner, err := args.Input.IsSignerOwner(b.contracts)
+	if offerValidUntil <= time.Now().Unix() {
+		return id, errors.New("offer validUntil already expired")
+	}
+
+	isPlayerOwner, err := args.Input.SignerAlreadyOwnsPlayer(b.contracts)
 	if err != nil {
 		return id, err
 	}
@@ -87,7 +85,7 @@ func createOffer(service storage.Tx, in input.CreateOfferInput, contracts contra
 	if err != nil {
 		return err
 	}
-	offer.ID = string(id)
+	offer.AuctionID = string(id)
 	offer.Rnd = int64(in.Rnd)
 	offer.PlayerID = in.PlayerId
 	offer.CurrencyID = int(in.CurrencyId)
@@ -103,7 +101,11 @@ func createOffer(service storage.Tx, in input.CreateOfferInput, contracts contra
 		return err
 	}
 	offer.Buyer = signerAddress.Hex()
-	offer.Seller = in.Seller
+	seller, err := in.GetOwnerOfRequestedPlayer(contracts)
+	if err != nil {
+		return err
+	}
+	offer.Seller = seller.Hex()
 	offer.BuyerTeamID = in.BuyerTeamId
 	if err = service.OfferInsert(*offer); err != nil {
 		return err

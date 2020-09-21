@@ -36,7 +36,7 @@ func RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
 	return r, s, v, err
 }
 
-func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) (common.Hash, error) {
+func HidePrice(currencyId uint8, price *big.Int, rnd *big.Int) (common.Hash, error) {
 	uint8Ty, _ := abi.NewType("uint8", "uint8", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 	arguments := abi.Arguments{
@@ -63,15 +63,16 @@ func HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) (common.Hash
 	return crypto.Keccak256Hash(bytes), nil
 }
 
-func HashSellMessage(
+func ComputePutAssetForSaleDigest(
 	currencyId uint8,
 	price *big.Int,
 	rnd *big.Int,
 	validUntil int64,
-	playerId *big.Int,
+	offerValidUntil int64,
+	assetId *big.Int,
 ) (common.Hash, error) {
 	var hash [32]byte
-	hashPrivateMessage, err := HashPrivateMsg(
+	sellerHiddenPrice, err := HidePrice(
 		currencyId,
 		price,
 		rnd,
@@ -82,6 +83,7 @@ func HashSellMessage(
 
 	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	uint32Ty, _ := abi.NewType("uint32", "uint32", nil)
 	arguments := abi.Arguments{
 		{
 			Type: bytes32Ty,
@@ -90,14 +92,18 @@ func HashSellMessage(
 			Type: uint256Ty,
 		},
 		{
-			Type: uint256Ty,
+			Type: uint32Ty,
+		},
+		{
+			Type: uint32Ty,
 		},
 	}
 
 	bytes, err := arguments.Pack(
-		hashPrivateMessage,
-		big.NewInt(validUntil),
-		playerId,
+		sellerHiddenPrice,
+		assetId,
+		uint32(validUntil),
+		uint32(offerValidUntil),
 	)
 	if err != nil {
 		return [32]byte{}, err
@@ -108,13 +114,62 @@ func HashSellMessage(
 	return crypto.Keccak256Hash([]byte(ss)), nil
 }
 
-func HashBidMessage2(
+func ComputeAuctionId(
+	currencyId uint8,
+	price *big.Int,
+	rnd *big.Int,
+	validUntil int64,
+	offerValidUntil int64,
+	assetId *big.Int,
+) (common.Hash, error) {
+	var hash [32]byte
+	sellerHiddenPrice, err := HidePrice(
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	bytes32Ty, _ := abi.NewType("bytes32", "bytes32", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	uint32Ty, _ := abi.NewType("uint32", "uint32", nil)
+	arguments := abi.Arguments{
+		{
+			Type: bytes32Ty,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: uint32Ty,
+		},
+	}
+	var timeUntil uint32
+	if offerValidUntil > 0 {
+		timeUntil = uint32(offerValidUntil)
+	} else {
+		timeUntil = uint32(validUntil)
+	}
+
+	bytes, err := arguments.Pack(
+		sellerHiddenPrice,
+		assetId,
+		timeUntil,
+	)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
+	return hash, nil
+}
+
+func HashBidMessageFromAuctionId(
 	market *market.Market,
-	auctionHashMsg [32]byte,
+	auctionId [32]byte,
 	extraPrice *big.Int,
 	bidRnd *big.Int,
 	teamID *big.Int,
-	isOffer2StartAuction bool,
 ) (common.Hash, error) {
 	var hash [32]byte
 	bidHiddenPrice, err := market.HashBidHiddenPrice(
@@ -127,10 +182,9 @@ func HashBidMessage2(
 	}
 	hash, err = market.BuildAgreeToBuyPlayerTxMsg(
 		&bind.CallOpts{},
-		auctionHashMsg,
+		auctionId,
 		bidHiddenPrice,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		return hash, err
@@ -145,24 +199,25 @@ func HashBidMessage(
 	price *big.Int,
 	auctionRnd *big.Int,
 	validUntil int64,
+	offerValidUntil int64,
 	playerID *big.Int,
 	extraPrice *big.Int,
 	bidRnd *big.Int,
 	teamID *big.Int,
-	isOffer2StartAuction bool,
 ) (common.Hash, error) {
-	if isOffer2StartAuction && extraPrice.Cmp(big.NewInt(0)) != 0 {
+	if offerValidUntil > 0 && extraPrice.Cmp(big.NewInt(0)) != 0 {
 		return [32]byte{}, fmt.Errorf("offers must have zero extraPrice")
 	}
-	if isOffer2StartAuction && bidRnd.Cmp(big.NewInt(0)) != 0 {
+	if offerValidUntil > 0 && bidRnd.Cmp(big.NewInt(0)) != 0 {
 		return [32]byte{}, fmt.Errorf("offers must have zero bidRnd")
 	}
 	var hash [32]byte
-	auctionHashMsg, err := HashSellMessage(
+	auctionId, err := ComputeAuctionId(
 		currencyID,
 		price,
 		auctionRnd,
 		validUntil,
+		offerValidUntil,
 		playerID,
 	)
 	if err != nil {
@@ -178,10 +233,9 @@ func HashBidMessage(
 	}
 	hash, err = market.BuildAgreeToBuyPlayerTxMsg(
 		&bind.CallOpts{},
-		auctionHashMsg,
+		auctionId,
 		bidHiddenPrice,
 		teamID,
-		isOffer2StartAuction,
 	)
 	if err != nil {
 		return hash, err
@@ -225,16 +279,7 @@ func PublicKeyBytesToAddress(publicKey []byte) common.Address {
 	return common.HexToAddress(hex.EncodeToString(address))
 }
 
-func VerifySignature(hash []byte, signature []byte) (bool, error) {
-	sigPublicKey, err := crypto.Ecrecover(hash, signature)
-	if err != nil {
-		return false, err
-	}
-	signatureNoRecoverID := signature[:len(signature)-1] // remove recovery id
-	return crypto.VerifySignature(sigPublicKey, hash[:], signatureNoRecoverID), nil
-}
-
-func AddressFromSignature(hash, signature []byte) (common.Address, error) {
+func AddressFromHashAndSignature(hash, signature []byte) (common.Address, error) {
 	sigPublicKey, err := crypto.Ecrecover(hash, signature)
 	if err != nil {
 		return common.Address{}, err

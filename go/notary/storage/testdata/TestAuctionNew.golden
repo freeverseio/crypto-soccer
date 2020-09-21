@@ -5,6 +5,7 @@
 	Price: (int64) 0,
 	Rnd: (int64) 0,
 	ValidUntil: (int64) 0,
+	OfferValidUntil: (int64) 0,
 	Signature: (string) "",
 	State: (storage.AuctionState) (len=7) "started",
 	StateExtra: (string) "",
