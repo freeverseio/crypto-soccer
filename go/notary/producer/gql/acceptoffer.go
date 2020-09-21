@@ -86,6 +86,10 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		tx.Rollback()
 		return id, err
 	}
+	if err := b.UpdateOffer(tx, offer); err != nil {
+		tx.Rollback()
+		return id, err
+	}
 	return id, tx.Commit()
 }
 
@@ -176,6 +180,16 @@ func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptO
 
 	_, err := b.CreateBid(struct{ Input input.CreateBidInput }{bidInput})
 
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *Resolver) UpdateOffer(tx storage.Tx, highestOffer *storage.Offer) error {
+
+	highestOffer.State = storage.OfferAccepted
+	err := tx.OfferUpdate(*highestOffer)
 	if err != nil {
 		return err
 	}
