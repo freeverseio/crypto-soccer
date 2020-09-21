@@ -34,11 +34,24 @@ const main = async () => {
       teamId: ID!
       name: String!
     }
+    
+    input SetMessageInput {
+      destinatary: String!
+      category: String!
+      auctionId: String
+      text: String!
+      customImageUrl: String
+      metadata: String
+    }
 
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
 
+    }
+
+    extend type Query {
+      getMessage(destinatary: String, after: String)
     }
   `;
 
