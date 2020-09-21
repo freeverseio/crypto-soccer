@@ -322,10 +322,10 @@ func (b *LeagueProcessor) ComputeRankingPointsAndSplitZombiesFromHumans(t TeamsW
 	var zombieOrgMap OrgMap
 	var err error
 
-	sort.Slice(t.TeamsWithState[:], func(i, j int) bool {
-		return t.TeamsWithState[i].Team.LeaderboardPosition < t.TeamsWithState[i].Team.LeaderboardPosition
-	})
-	for position, teamWithState := range t.TeamsWithState {
+	// sort.Slice(t.TeamsWithState[:], func(i, j int) bool {
+	// 	return t.TeamsWithState[i].Team.LeaderboardPosition < t.TeamsWithState[i].Team.LeaderboardPosition
+	// })
+	for _, teamWithState := range t.TeamsWithState {
 		team := teamWithState.Team
 		state := teamWithState.TeamState
 		if !team.IsBot() {
@@ -334,7 +334,7 @@ func (b *LeagueProcessor) ComputeRankingPointsAndSplitZombiesFromHumans(t TeamsW
 			team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 				&bind.CallOpts{},
 				state,
-				uint8(position),
+				uint8(team.LeaderboardPosition),
 				team.PrevPerfPoints,
 				teamID,
 				team.IsBot(),
@@ -343,7 +343,8 @@ func (b *LeagueProcessor) ComputeRankingPointsAndSplitZombiesFromHumans(t TeamsW
 				return orgMap, zombieOrgMap, err
 			}
 		}
-		log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
+		log.Warning(team.Points, team.RankingPoints, team.LeaderboardPosition)
+		log.Debugf("New ranking team %v points %v ranking %v leadPos %v", team.TeamID, team.Points, team.RankingPoints, team.LeaderboardPosition)
 		if team.IsZombie {
 			if err := zombieOrgMap.Append(team); err != nil {
 				return orgMap, zombieOrgMap, err
