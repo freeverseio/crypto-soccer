@@ -6,6 +6,7 @@ const {
   updateTeamManagerName,
   insertMessage,
   selectMessage,
+  updateTeamAssignedAt,
 } = require('../repositories');
 const { TeamValidation } = require('../validations');
 const teamByHomeTeamId = require('./teamByHomeTeamId');
@@ -238,6 +239,21 @@ const resolvers = ({ horizonRemoteSchema }) => {
         } catch (e) {
           return e;
         }
+      },
+      transferFistBotToAddr: async (_, { input: { teamId } }, context, info) => {
+        //update team assigned at
+        updateTeamAssignedAt({ teamId, assignedAt });
+        const result = await info.mergeInfo.delegateToSchema({
+          schema,
+          operation: 'mutation',
+          fieldName: 'transferFistBotToAddr',
+          args: {
+            teamId: match.visitorTeamId,
+          },
+          context,
+          info,
+        });
+        return result;
       },
     },
     Query: {
