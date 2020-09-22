@@ -5,9 +5,9 @@ const selectMessagesQuery = {
     SELECT
       destinatary,
       category,
-      auction_id,
-      text_message,
-      custom_image_url,
+      auction_id as auctionId,
+      text_message as text,
+      custom_image_url as customImageUrl,
       metadata
     FROM
       inbox

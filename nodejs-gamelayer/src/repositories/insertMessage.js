@@ -36,7 +36,8 @@ const insertMessage = async ({
 
   try {
     const { rows } = await pool.query(insertMessageQuery, values);
-    return rows[0];
+    const { id } = rows[0];
+    return id;
   } catch (e) {
     throw e;
   }

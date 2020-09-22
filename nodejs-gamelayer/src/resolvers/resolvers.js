@@ -241,15 +241,12 @@ const resolvers = ({ horizonRemoteSchema }) => {
       },
     },
     Query: {
-      getMessage: async (_, { destinatary, after }) => {
+      getMessages: async (_, { destinatary, after }) => {
         try {
           const isDateValid = dayjs(after).isValid();
-          console.log('isDateValid', isDateValid);
-          console.log('createdAt', after);
-          console.log('destinatary', destinatary);
           const createdAt = isDateValid ? after : dayjs('2018-04-04T16:00:00.000Z').format();
-          console.log('createdAt', createdAt);
-          await selectMessage({ destinatary, createdAt });
+          const messages = await selectMessage({ destinatary, createdAt });
+          return messages;
         } catch (e) {
           return e;
         }
