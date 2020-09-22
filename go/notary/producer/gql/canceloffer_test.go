@@ -81,7 +81,7 @@ func TestCancelOfferStorageReturnsErrorOnWrongSigner(t *testing.T) {
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
 	_, err = r.CancelOffer(struct{ Input input.CancelOfferInput }{in})
 	assert.Error(t, err, "Signer of Canceloffer is neither the Seller nor the Buyer")
-	assert.Equal(t, counter, 0)
+	assert.Equal(t, counter, 1)
 }
 
 func TestCancelOfferStorageReturnsOK(t *testing.T) {

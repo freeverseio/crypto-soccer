@@ -20,31 +20,38 @@ func (b *Resolver) CancelOffer(args struct{ Input input.CancelOfferInput }) (gra
 	}
 
 	if string(args.Input.OfferId) == "" {
+		tx.Rollback()
 		return id, errors.New("empty OfferId when trying to cancel an offer")
 	}
 
 	offer, err := tx.Offer(string(args.Input.OfferId))
+	log.Warningf("Trying to look for offerid: %v\n", args.Input.OfferId)
+	log.Warningf("Offer: %v\n", offer)
 	if err != nil {
+		tx.Rollback()
 		return id, err
 	}
 	if offer == nil {
+		tx.Rollback()
 		return id, errors.New("could not find an offer to cancel")
 	}
 
+	log.Warningf("storage.OfferStarted: %v\n", storage.OfferStarted)
+	log.Warningf("offer.state: %v\n", offer.State)
+
 	if offer.State != storage.OfferStarted {
+		tx.Rollback()
 		return id, errors.New("cannot cancel an offer unless it is in Started state")
 	}
 
 	signer, err := args.Input.SignerAddress()
 	if err != nil {
+		tx.Rollback()
 		return id, err
 	}
-	log.Warning("aaa")
-
-	log.Warning(signer.Hex())
-	log.Warning(offer.Seller)
 
 	if (signer.Hex() != offer.Seller) && (signer.Hex() != offer.Buyer) {
+		tx.Rollback()
 		return id, errors.New("Signer of Canceloffer is neither the Seller nor the Buyer")
 	}
 
