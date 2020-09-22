@@ -1,0 +1,32 @@
+const PostgresSQLService = require('../services/PostgresSQLService');
+
+const selectMessagesQuery = {
+  text: `
+    SELECT
+      destinatary,
+      category,
+      auction_id,
+      text_message,
+      custom_image_url,
+      metadata
+    FROM
+      inbox
+    WHERE
+      destinatary = $1
+      AND created_at >= $2
+  `,
+};
+
+const selectMessages = async ({ destinatary, createdAt }) => {
+  const pool = await PostgresSQLService.getPool();
+  const values = [destinatary, createdAt];
+
+  try {
+    const { rows } = await pool.query(selectMessagesQuery, values);
+    return rows;
+  } catch (e) {
+    throw e;
+  }
+};
+
+module.exports = selectMessages;

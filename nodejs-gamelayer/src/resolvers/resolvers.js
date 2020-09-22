@@ -1,5 +1,12 @@
 const Web3 = require('web3');
-const { selectTeamName, selectTeamManagerName, updateTeamName, updateTeamManagerName } = require('../repositories');
+const {
+  selectTeamName,
+  selectTeamManagerName,
+  updateTeamName,
+  updateTeamManagerName,
+  insertMessage,
+  selectMessage,
+} = require('../repositories');
 const { TeamValidation } = require('../validations');
 const teamByHomeTeamId = require('./teamByHomeTeamId');
 const teamByVisitorTeamId = require('./teamByVisitorTeamId');
@@ -212,12 +219,33 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return 'Signer is not the team owner';
         }
       },
+      setMessage: async (
+        _,
+        { input: { destinatary, category, auction_id, text_message, custom_image_url, metadata } }
+      ) => {
+        try {
+          const id = await insertMessage({
+            destinatary,
+            category,
+            auction_id,
+            text_message,
+            custom_image_url,
+            metadata,
+          });
+
+          return id;
+        } catch (e) {
+          return e;
+        }
+      },
     },
     Query: {
-      teamByTeamId: {
-        resolve(parent, args, context, info) {
-          return queryTeamByTeamId(parent, args, context, info, horizonRemoteSchema);
-        },
+      getMessage: async (_, { destinatary, after }) => {
+        try {
+          await selectMessage({ destinatary, createdAt: after });
+        } catch (e) {
+          return e;
+        }
       },
     },
   };
