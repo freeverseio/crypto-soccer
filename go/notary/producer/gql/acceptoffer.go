@@ -170,7 +170,6 @@ func highestOfferFromExistingOffers(offers []storage.Offer) (*storage.Offer, err
 }
 
 func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptOfferInput, highestOffer *storage.Offer) error {
-
 	bidInput := input.CreateBidInput{}
 	bidInput.Signature = highestOffer.Signature
 	bidInput.AuctionId = graphql.ID(highestOffer.AuctionID)
@@ -178,12 +177,27 @@ func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptO
 	bidInput.Rnd = int32(0)
 	bidInput.TeamId = highestOffer.BuyerTeamID
 
-	_, err := b.CreateBid(struct{ Input input.CreateBidInput }{bidInput})
-
+	isOwner, err := bidInput.IsSignerOwnerOfTeam(b.contracts)
 	if err != nil {
 		return err
 	}
-	return nil
+	if !isOwner {
+		return fmt.Errorf("signer is not the owner of teamId %v", bidInput.TeamId)
+	}
+
+	bid := storage.NewBid()
+	bid.AuctionID = highestOffer.AuctionID
+	bid.ExtraPrice = int64(0)
+	bid.Rnd = int64(0)
+	bid.TeamID = highestOffer.BuyerTeamID
+	bid.Signature = highestOffer.Signature
+	bid.State = storage.BidAccepted
+	bid.StateExtra = ""
+	bid.PaymentID = ""
+	bid.PaymentURL = ""
+	bid.PaymentDeadline = 0
+
+	return tx.BidInsert(*bid)
 }
 
 func (b *Resolver) UpdateOffer(tx storage.Tx, highestOffer *storage.Offer) error {
