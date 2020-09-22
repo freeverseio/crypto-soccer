@@ -13,5 +13,5 @@ CREATE TABLE inbox (
     PRIMARY KEY(id)
 );
 
-CREATE INDEX idx_inbox_team_id ON inbox (team_id);
+CREATE INDEX idx_inbox_destinatary ON inbox (destinatary);
 CREATE INDEX idx_inbox_created_at ON inbox (created_at);

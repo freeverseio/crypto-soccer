@@ -20,6 +20,7 @@ const selectMessagesQuery = {
 const selectMessages = async ({ destinatary, createdAt }) => {
   const pool = await PostgresSQLService.getPool();
   const values = [destinatary, createdAt];
+  console.log('selectMessages -> values', values);
 
   try {
     const { rows } = await pool.query(selectMessagesQuery, values);

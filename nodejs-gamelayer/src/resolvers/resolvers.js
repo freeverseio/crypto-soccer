@@ -14,6 +14,7 @@ const teamByBuyerTeamId = require('./teamByBuyerTeamId');
 const teamByTeamId = require('./teamByTeamId');
 const queryTeamByTeamId = require('./queryTeamByTeamId');
 
+const dayjs = require('dayjs');
 const web3 = new Web3('');
 
 const resolvers = ({ horizonRemoteSchema }) => {
@@ -242,7 +243,13 @@ const resolvers = ({ horizonRemoteSchema }) => {
     Query: {
       getMessage: async (_, { destinatary, after }) => {
         try {
-          await selectMessage({ destinatary, createdAt: after });
+          const isDateValid = dayjs(after).isValid();
+          console.log('isDateValid', isDateValid);
+          console.log('createdAt', after);
+          console.log('destinatary', destinatary);
+          const createdAt = isDateValid ? after : dayjs('2018-04-04T16:00:00.000Z').format();
+          console.log('createdAt', createdAt);
+          await selectMessage({ destinatary, createdAt });
         } catch (e) {
           return e;
         }

@@ -56,7 +56,7 @@ const main = async () => {
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
-      setMessage(input: SetMessageInput): ID!
+      setMessage(input: SetMessageInput): String!
     }
 
     extend type Query {
