@@ -1,5 +1,91 @@
 const truffleAssert = require('truffle-assertions');
 
+
+// Signing  functions
+
+async function acceptOffer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount) {
+  const sigSeller = await signPutAssetForSaleMTx(
+    currencyId,
+    price,
+    sellerRnd,
+    validUntil,
+    offerValidUntil,
+    playerId.toString(),
+    sellerAccount
+  );
+
+  const isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
+  isPlayerFrozen.should.be.equal(false);
+
+  const tx = await market.freezePlayer(
+    hideSellerPrice(currencyId, price, sellerRnd),
+    playerId,
+    [sigSeller.r, sigSeller.s],
+    sigSeller.v,
+    validUntil,
+    offerValidUntil,
+    {from: contractOwner}
+  ).should.be.fulfilled;
+  return tx;
+}
+
+
+async function putPlayerForSale(contractOwner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount) {
+  const offerValidUntil = 0;
+  return acceptOffer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount);
+}
+
+async function completePlayerAuction(
+  contractOwner, 
+  currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId,
+  extraPrice, buyerRnd, buyerTeamId, buyerAccount
+) {
+
+  // Add some amount to the price where seller started, and a rnd to obfuscate it
+  const buyerHiddenPrice = concatHash(
+    ["uint256", "uint256"],
+    [extraPrice, buyerRnd]
+  );
+
+  var {0: sigBuyer, 1: auctionId} = await signAgreeToBuyPlayerMTx(
+    currencyId,
+    price,
+    extraPrice,
+    sellerRnd,
+    buyerRnd,
+    validUntil,
+    offerValidUntil,
+    playerId.toString(),
+    buyerTeamId.toString(),
+    buyerAccount
+  ).should.be.fulfilled;
+
+  // Freeverse checks the signature
+  recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
+  recoveredBuyerAddr.should.be.equal(buyerAccount.address);
+
+  // Freeverse waits until actual money has been transferred between users, and completes sale
+  const sigBuyerRS = [
+    sigBuyer.r,
+    sigBuyer.s
+  ];
+
+  tx = await market.completePlayerAuction(
+    auctionId,
+    playerId.toString(),
+    buyerHiddenPrice,
+    buyerTeamId.toString(),
+    sigBuyerRS,
+    sigBuyer.v,
+    {from: contractOwner}
+  ).should.be.fulfilled;
+
+  return tx
+}
+
+
+// Main functions that write to the BC
+
 function concatHash(types, vals) {
   assert(types.length == vals.length, "Length of inputs should be equal")
   return web3.utils.keccak256(
@@ -19,7 +105,7 @@ function prefix(msg) {
 }
 
 async function signPutAssetForSaleMTx(currencyId, price, rnd, validUntil, offerValidUntil, asssetId, sellerAccount) {
-  const hiddenPrice = hidePrice(currencyId, price, rnd);
+  const hiddenPrice = hideSellerPrice(currencyId, price, rnd);
 
   const sellerTxMsg = concatHash(
       ['bytes32', 'uint256', 'uint32', 'uint32'],
@@ -49,7 +135,7 @@ function computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, 
 }
 
 function computePutAssetForSaleDigestNoPrefix(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId) {
-  return computePutAssetForSaleDigestNoPrefixFromHiddenPrice(hidePrice(currencyId, price, sellerRnd), assetId, validUntil, offerValidUntil);
+  return computePutAssetForSaleDigestNoPrefixFromHiddenPrice(hideSellerPrice(currencyId, price, sellerRnd), assetId, validUntil, offerValidUntil);
 }
 
 function computePutAssetForSaleDigest(currencyId, price, sellerRnd, validUntil, offerValidUntil, assetId) {
@@ -71,7 +157,7 @@ async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd,
   return [sigBuyer, auctionId];
 }
 
-function hidePrice(currencyId, price, rnd) {
+function hideSellerPrice(currencyId, price, rnd) {
   return concatHash(
     ['uint8', 'uint256', 'uint256'],
     [currencyId, price, rnd]
@@ -79,7 +165,7 @@ function hidePrice(currencyId, price, rnd) {
 }
 
 function computeAuctionId(currencyId, price, sellerRnd, assetId, validUntil, offerValidUntil) {
-  const sellerHiddenPrice = hidePrice(currencyId, price, sellerRnd);
+  const sellerHiddenPrice = hideSellerPrice(currencyId, price, sellerRnd);
 
   return (offerValidUntil == 0) ?
     concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId, validUntil]) :
@@ -165,50 +251,6 @@ async function freezeAcademyPlayer(contractOwner, currencyId, price, sellerRnd, 
   return tx;
 }
 
-async function freezePlayer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount) {
-  // Mobile app does this:
-  sigSeller = await signPutAssetForSaleMTx(
-    currencyId,
-    price,
-    sellerRnd,
-    validUntil,
-    offerValidUntil,
-    playerId.toString(),
-    sellerAccount
-  );
-  // First of all, Freeverse and Buyer check the signature
-  // In this case, using web3:
-  recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-  recoveredSellerAddr.should.be.equal(sellerAccount.address);
-
-  // The correctness of the seller message can also be checked in the BC:
-  const sellerHiddenPrice = concatHash(
-    ["uint8", "uint256", "uint256"],
-    [currencyId, price, sellerRnd]
-  );
-  sellerDigest = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil).should.be.fulfilled;
-  sellerDigest.should.be.equal(prefix(sigSeller.message)); 
-
-  // Then, the buyer builds a message to sign
-  let isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
-  isPlayerFrozen.should.be.equal(false);
-
-  // and send the Freeze TX. 
-  const sigSellerRS = [
-    sigSeller.r,
-    sigSeller.s
-  ];
-  tx = await market.freezePlayer(
-    sellerHiddenPrice,
-    playerId,
-    sigSellerRS,
-    sigSeller.v,
-    validUntil,
-    offerValidUntil,
-    {from: contractOwner}
-  ).should.be.fulfilled;
-  return tx;
-}
 
 async function transferTeamViaAuction(contractOwner, market, sellerTeamId, sellerAccount, buyerAccount) {
   currencyId = 1;
@@ -258,12 +300,14 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
   AUCTION_TIME = 48 * 3600;
   validUntil = now.toNumber() + AUCTION_TIME;
 
-  tx = await freezePlayer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.fulfilled;
+  tx = await putPlayerForSale(contractOwner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+
   isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
   isPlayerFrozen.should.be.equal(true);
   truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
     return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
   });
+
   tx = await completePlayerAuction(
     contractOwner, 
     currencyId, price,  sellerRnd, validUntil, offerValidUntil, playerId, 
@@ -273,53 +317,7 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
   finalOwner.should.be.equal(buyerAccount.address);
 }
 
-async function completePlayerAuction(
-  contractOwner, 
-  currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId,
-  extraPrice, buyerRnd, buyerTeamId, buyerAccount
-) {
 
-  // Add some amount to the price where seller started, and a rnd to obfuscate it
-  const buyerHiddenPrice = concatHash(
-    ["uint256", "uint256"],
-    [extraPrice, buyerRnd]
-  );
-
-  var {0: sigBuyer, 1: auctionId} = await signAgreeToBuyPlayerMTx(
-    currencyId,
-    price,
-    extraPrice,
-    sellerRnd,
-    buyerRnd,
-    validUntil,
-    offerValidUntil,
-    playerId.toString(),
-    buyerTeamId.toString(),
-    buyerAccount
-  ).should.be.fulfilled;
-
-  // Freeverse checks the signature
-  recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-  recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-  // Freeverse waits until actual money has been transferred between users, and completes sale
-  const sigBuyerRS = [
-    sigBuyer.r,
-    sigBuyer.s
-  ];
-
-  tx = await market.completePlayerAuction(
-    auctionId,
-    playerId.toString(),
-    buyerHiddenPrice,
-    buyerTeamId.toString(),
-    sigBuyerRS,
-    sigBuyer.v,
-    {from: contractOwner}
-  ).should.be.fulfilled;
-
-  return tx
-}
 
 async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount) {
   // Mobile app does this:
@@ -419,7 +417,6 @@ module.exports = {
   signAgreeToBuyPlayerMTx,
   signAgreeToBuyTeamMTx,
   transferPlayerViaAuction,
-  freezePlayer,
   completePlayerAuction,
   freezeTeam,
   completeTeamAuction,
@@ -430,5 +427,5 @@ module.exports = {
   computePutAssetForSaleDigestNoPrefix,
   computePutAssetForSaleDigestNoPrefixFromHiddenPrice,
   computeAuctionId,
-  hidePrice
+  hideSellerPrice
 }
