@@ -37,6 +37,14 @@ function signAcceptPlayerOffer(currencyId, price, rnd, validUntil, offerValidUnt
   return sigSeller;
 }
 
+// Temporary: use signPutAssetForSale when porting teams libs
+function signPutTeamForSale(currencyId, price, rnd, validUntil, offerValidUntil, assetId, sellerAccount) {
+  const sigSeller = sellerAccount.sign(
+      computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, assetId)
+  );
+  return sigSeller;
+}
+
 // Main functions that write to the BC
 
 
@@ -321,9 +329,7 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
 
 async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount) {
   // Mobile app does this:
-  console.log("aaaaa");
-  const sigSeller = signPutAssetForSale(currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount);
-  console.log("aaaaa");
+  const sigSeller = signPutTeamForSale(currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount);
 
   // First of all, Freeverse and Buyer check the signature
   // In this case, using web3:
