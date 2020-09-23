@@ -41,9 +41,8 @@ class Signer {
   }
 
   concatHash(types, vals) {
-    assert(types.length == vals.length, "Length of inputs should be equal")
-    return web3.utils.keccak256(
-        web3.eth.abi.encodeParameters(types, vals)
+    return this.web3.utils.keccak256(
+        this.web3.eth.abi.encodeParameters(types, vals)
     )
   }
 
