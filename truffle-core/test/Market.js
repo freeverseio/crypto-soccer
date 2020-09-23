@@ -961,7 +961,7 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
 
     // test that Freeverse cannot put the same player again in the market
-    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
     
     // test that the new owner can sell freely as always
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, buyerAccount).should.be.fulfilled;
@@ -973,7 +973,7 @@ contract("Market", accounts => {
       playerId, sellerTeamId,
       sellerAccount
     );
-    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, buyerTeamId, sigBuyer).should.be.fulfilled;
+    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, sellerTeamId, sigBuyer).should.be.fulfilled;
   });
   
   it2("special players: same special player cannot be sold twice", async () => {
