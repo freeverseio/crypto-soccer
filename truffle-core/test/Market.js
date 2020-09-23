@@ -675,7 +675,7 @@ contract("Market", accounts => {
   });
   
   
-  it("players: completes a MAKE_AN_OFFER via MTXs", async () => {
+  it2("players: completes a MAKE_AN_OFFER via MTXs", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
@@ -925,7 +925,7 @@ contract("Market", accounts => {
   });
 
   
-  it2("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+  it("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     playerId = await createSpecialPlayerId();
 
     tx = await assets.setMarket(owners.COO, {from: owners.superuser}).should.be.fulfilled;
@@ -944,11 +944,15 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerId, 
-      extraPrice, buyerRnd, buyerTeamId, buyerAccount
-    ).should.be.fulfilled;
+
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      currencyId, price, extraPrice,
+      sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
+      playerId, buyerTeamId,
+      buyerAccount
+    );
+    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, buyerTeamId, sigBuyer).should.be.fulfilled;
+
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
@@ -960,12 +964,16 @@ contract("Market", accounts => {
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
     
     // test that the new owner can sell freely as always
-    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerId, 
-      extraPrice, buyerRnd, sellerTeamId, sellerAccount
-    ).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, buyerAccount).should.be.fulfilled;
+
+    // in particular, it can re-bought by the original seller
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      currencyId, price, extraPrice,
+      sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
+      playerId, sellerTeamId,
+      sellerAccount
+    );
+    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, buyerTeamId, sigBuyer).should.be.fulfilled;
   });
   
   it2("special players: same special player cannot be sold twice", async () => {
