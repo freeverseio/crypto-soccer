@@ -6,7 +6,7 @@ const truffleAssert = require('truffle-assertions');
 function signPutAssetForSale(currencyId, price, rnd, validUntil, assetId, sellerAccount) {
   const offerValidUntil = 0;
   const sigSeller = sellerAccount.sign(
-      this.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, assetId)
+      computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, assetId)
   );
   return sigSeller;
 }
@@ -61,7 +61,22 @@ async function acceptOffer(contractOwner, currencyId, price, sellerRnd, validUnt
 
 async function putPlayerForSale(contractOwner, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount) {
   const offerValidUntil = 0;
-  return acceptOffer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount);
+  const sigSeller = signPutAssetForSale(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount);
+
+  const isAssetFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
+  isAssetFrozen.should.be.equal(false);
+
+  const tx = await market.freezePlayer(
+    hideSellerPrice(currencyId, price, sellerRnd),
+    playerId,
+    [sigSeller.r, sigSeller.s],
+    sigSeller.v,
+    validUntil,
+    offerValidUntil,
+    {from: contractOwner}
+  ).should.be.fulfilled;
+
+  return tx;
 }
 
 async function completePlayerAuction(
