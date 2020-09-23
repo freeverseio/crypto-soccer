@@ -792,7 +792,7 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
-  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because post_auction time had passed", async () => {
+  it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because post_auction time had passed", async () => {
     // validUntil = now + AUCTION_TIME = now + 48 hours
     // the payment must take place within 48 hours after valid until, so within 4 days from now.
     // We show that 4 days - 10 sec work, but 4 days + 10 sec fail
@@ -836,14 +836,17 @@ contract("Market", accounts => {
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil0, playerId, sellerAccount).should.be.fulfilled;
     await timeTravel.advanceTime(AUCTION_TIME + 6 * 3600);
     await timeTravel.advanceBlock().should.be.fulfilled;
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil0, zeroOfferValidUntil, playerId, 
-      extraPrice, buyerRnd, buyerTeamId, buyerAccount
-    ).should.be.fulfilled;
+
+    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      currencyId, price, extraPrice,
+      sellerRnd, buyerRnd, validUntil0, zeroOfferValidUntil,
+      playerId, buyerTeamId,
+      buyerAccount
+    );
+    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, buyerTeamId, sigBuyer).should.be.fulfilled;
   });
 
-  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
+  it2("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
   });
   
@@ -853,19 +856,26 @@ contract("Market", accounts => {
     // first acquisition works:
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerId, 
-      extraPrice, buyerRnd, buyerTeamId, buyerAccount
-    ).should.be.fulfilled;
+
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      currencyId, price, extraPrice,
+      sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
+      playerId, buyerTeamId,
+      buyerAccount
+    );
+    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, buyerTeamId, sigBuyer).should.be.fulfilled;
+
     // second acquisition should fail:
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerId, 
-      extraPrice, buyerRnd, buyerTeamId, buyerAccount
-    ).should.be.rejected;
+
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      currencyId, price, extraPrice,
+      sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
+      playerId, buyerTeamId,
+      buyerAccount
+    );
+    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, buyerTeamId, sigBuyer).should.be.rejected;
   });  
 
   it2("behaviour of getCurrentTeamIdFromPlayerId", async () => {
