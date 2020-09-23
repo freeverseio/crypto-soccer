@@ -8,6 +8,10 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
+
+const { Signer } = require('../utils/MarketSigner.js');
+const signer = new Signer(web3);
+
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const timeTravel = require('../utils/TimeTravel.js');
@@ -106,7 +110,7 @@ contract("Market", accounts => {
     account.address.should.be.equal("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
     const playerId = "123455";
     const validUntil = "5646456";
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId, account).should.be.fulfilled;
+    sigSeller = signer.signDismissPlayer(validUntil, playerId, account)
 
     sigSeller.message.should.be.equal('0x26a63dd7a77ba6da621296c5433d235fa802b0eed629457ff3237b321f6db462');
     sigSeller.messageHash.should.be.equal('0xa345906cc0144e72ba04ea426d34bd486000e51de093b4b1a106deafa21c3244');
@@ -158,7 +162,7 @@ contract("Market", accounts => {
       tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerIds[i], sellerAccount).should.be.fulfilled;
     }
     for (i = 0; i < nPlayersToBuy; i++) {
-      const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
         currencyId, price, extraPrice,
         sellerRnd, buyerRnd,
         validUntil, zeroOfferValidUntil,
@@ -688,7 +692,7 @@ contract("Market", accounts => {
     });
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
-    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerOffer(
+    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerOffer(
       currencyId, price, offererRnd, playerId, offerValidUntil, buyerTeamId, buyerAccount
     );
     const tx2 = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, buyerTeamId, sigBuyer).should.be.fulfilled;
@@ -737,7 +741,7 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
       playerId, sellerTeamId,
@@ -768,7 +772,7 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
 
-    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
       playerId, buyerTeamId,
@@ -796,7 +800,7 @@ contract("Market", accounts => {
     await timeTravel.advanceTime(4*24*3600-10);
     await timeTravel.advanceBlock().should.be.fulfilled;
 
-    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil0, zeroOfferValidUntil,
       playerId0, buyerTeamId,
@@ -814,7 +818,7 @@ contract("Market", accounts => {
     await timeTravel.advanceTime(4*24*3600+10);
     await timeTravel.advanceBlock().should.be.fulfilled;
 
-    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil0, zeroOfferValidUntil,
       playerId0, buyerTeamId,
@@ -830,7 +834,7 @@ contract("Market", accounts => {
     await timeTravel.advanceTime(AUCTION_TIME + 6 * 3600);
     await timeTravel.advanceBlock().should.be.fulfilled;
 
-    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil0, zeroOfferValidUntil,
       playerId, buyerTeamId,
@@ -850,7 +854,7 @@ contract("Market", accounts => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
 
-    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
       playerId, buyerTeamId,
@@ -862,7 +866,7 @@ contract("Market", accounts => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
 
-    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
       playerId, buyerTeamId,
@@ -945,7 +949,7 @@ contract("Market", accounts => {
     });
     
 
-    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
       playerId, buyerTeamId,
@@ -967,7 +971,7 @@ contract("Market", accounts => {
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, buyerAccount).should.be.fulfilled;
 
     // in particular, it can re-bought by the original seller
-    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
       playerId, sellerTeamId,
@@ -981,7 +985,7 @@ contract("Market", accounts => {
     tx = await marketUtils.freezeAcademyPlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId).should.be.fulfilled;
     tx = await marketUtils.freezeAcademyPlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId).should.be.rejected;
 
-    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signer.signPlayerBid(
       currencyId, price, extraPrice,
       sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
       playerId, buyerTeamId,
@@ -1016,7 +1020,7 @@ contract("Market", accounts => {
 
   it("dismissPlayer player works", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = signer.signDismissPlayer(validUntil, playerId.toString(), sellerAccount);
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     onwer.should.be.equal(sellerAccount.address);
     
@@ -1065,7 +1069,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers: owner can still sell in auction after a dismiss", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = signer.signDismissPlayer(validUntil, playerId.toString(), sellerAccount);
 
     tx = await market.dismissPlayer(
       validUntil,
@@ -1127,7 +1131,7 @@ contract("Market", accounts => {
     nTransit.toNumber().should.be.equal(1);
     await market.completePlayerTransit(sellerPlayerIds[7]).should.be.rejected;
 
-    sigBuyer = await marketUtils.signDismissPlayerMTx(validUntil, sellerPlayerIds[0].toString(), buyerAccount);
+    sigBuyer = signer.signDismissPlayer(validUntil, sellerPlayerIds[0].toString(), buyerAccount);
     tx = await market.dismissPlayer(
       validUntil,
       sellerPlayerIds[0],
@@ -1146,7 +1150,7 @@ contract("Market", accounts => {
 
   it("dismissPlayers: Academy can not sell in auction after a dismiss", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = signer.signDismissPlayer(validUntil, playerId.toString(), sellerAccount);
 
     tx = await market.dismissPlayer(
       validUntil,
@@ -1162,7 +1166,7 @@ contract("Market", accounts => {
 
   it("dismissPlayers: Academy can not sell as buynow", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = signer.signDismissPlayer(validUntil, playerId.toString(), sellerAccount);
 
     tx = await market.dismissPlayer(
       validUntil,
@@ -1185,7 +1189,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers fails when already sold, not owner any more", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = signer.signDismissPlayer(validUntil, playerId.toString(), sellerAccount);
     
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
     onwer = await market.getOwnerPlayer(playerId).should.be.fulfilled;
@@ -1203,7 +1207,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers fails if frozen first", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = signer.signDismissPlayer(validUntil, playerId.toString(), sellerAccount);
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     
     tx = await market.dismissPlayer(
@@ -1218,7 +1222,7 @@ contract("Market", accounts => {
   
   it("dismissPlayers fails if too long passed", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
+    sigSeller = signer.signDismissPlayer(validUntil, playerId.toString(), sellerAccount);
 
     await timeTravel.advanceTime(validUntil - now + 200);
     await timeTravel.advanceBlock().should.be.fulfilled;
@@ -1354,14 +1358,14 @@ contract("Market", accounts => {
 
     // Define params of the seller, and sign
     validUntil = 2000000000;
-    buyerHiddenPrice = marketUtils.concatHash(
+    buyerHiddenPrice = signer.concatHash(
       ["uint256", "uint256"],
       [extraPrice, buyerRnd]
     );
     offValidUntil = validUntil - 300;
 
     const sellerHiddenPrice = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
-    const message = await marketUtils.computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, sellerTeamId.toString(10), validUntil, offValidUntil);
+    const message = await signer.computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, sellerTeamId.toString(10), validUntil, offValidUntil);
     const sigSeller = sellerAccount.sign(message);
 
     sellerHiddenPrice.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
@@ -1387,13 +1391,13 @@ contract("Market", accounts => {
     buyerTeamId = '274877906945';
     validUntil = 2000000000;
     offValidUntil = validUntil - 300;
-    buyerHiddenPrice = marketUtils.concatHash(
+    buyerHiddenPrice = signer.concatHash(
       ["uint256", "uint256"],
       [extraPrice, buyerRnd]
     );
 
     const sellerHiddenPrice = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
-    const message = await marketUtils.computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, sellerTeamId.toString(10), validUntil, offValidUntil);
+    const message = await signer.computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, sellerTeamId.toString(10), validUntil, offValidUntil);
     const sigSeller = sellerAccount.sign(message);
     const auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, offValidUntil).should.be.fulfilled;
 
@@ -1417,13 +1421,13 @@ contract("Market", accounts => {
     buyerTeamId = '274877906945';
     validUntil = 2000000000;
     offValidUntil = validUntil - 300;
-    buyerHiddenPrice = marketUtils.concatHash(
+    buyerHiddenPrice = signer.concatHash(
       ["uint256", "uint256"],
       [0, 0]
     );
 
     const sellerHiddenPrice = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
-    const message = await marketUtils.computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, sellerTeamId.toString(10), validUntil, offValidUntil);
+    const message = await signer.computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, sellerTeamId.toString(10), validUntil, offValidUntil);
     const sigSeller = sellerAccount.sign(message);
     const auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, offValidUntil).should.be.fulfilled;
 
