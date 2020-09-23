@@ -4,16 +4,27 @@ const truffleAssert = require('truffle-assertions');
 // Signing  functions
 
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-async function signPlayerBid(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, offerValidUntil, playerId, buyerTeamId, buyerAccount) {
+function signPlayerBid(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, offerValidUntil, playerId, buyerTeamId, buyerAccount) {
   const buyerHiddenPrice = hideBuyerPrice(extraPrice, buyerRnd);
   const auctionId = computeAuctionId(currencyId, price, sellerRnd, playerId, validUntil, offerValidUntil);
   const buyerTxMsg = concatHash(
       ['bytes32', 'bytes32', 'uint256'],
       [auctionId, buyerHiddenPrice, buyerTeamId]
   );
-  const sigBuyer = await buyerAccount.sign(buyerTxMsg);
+  const sigBuyer = buyerAccount.sign(buyerTxMsg);
   return [sigBuyer, auctionId, buyerHiddenPrice];
 }
+
+function signBid(currencyId, price, rnd, validUntil, offerValidUntil, asssetId, sellerAccount) {
+  const hiddenPrice = hideSellerPrice(currencyId, price, rnd);
+  const sellerTxMsg = concatHash(
+      ['bytes32', 'uint256', 'uint32', 'uint32'],
+      [hiddenPrice, asssetId.toString(), validUntil, offerValidUntil]
+  )
+  const sigSeller = sellerAccount.sign(sellerTxMsg);
+  return sigSeller;
+}
+
 
 
 
@@ -21,7 +32,7 @@ async function signPlayerBid(currencyId, price, extraPrice, sellerRnd, buyerRnd,
 
 
 async function acceptOffer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount) {
-  const sigSeller = await signPutAssetForSaleMTx(
+  const sigSeller = await signBid(
     currencyId,
     price,
     sellerRnd,
@@ -93,23 +104,11 @@ function prefix(msg) {
   return web3.utils.keccak256(ethMessage);
 }
 
-async function signPutAssetForSaleMTx(currencyId, price, rnd, validUntil, offerValidUntil, asssetId, sellerAccount) {
-  const hiddenPrice = hideSellerPrice(currencyId, price, rnd);
-
-  const sellerTxMsg = concatHash(
-      ['bytes32', 'uint256', 'uint32', 'uint32'],
-      [hiddenPrice, asssetId, validUntil, offerValidUntil]
-  )
-  
-  const sigSeller = await sellerAccount.sign(sellerTxMsg);
-  sigSeller.message.should.be.equal(sellerTxMsg);
-  return sigSeller;
-}
 
 async function signDismissPlayerMTx(validUntil, asssetId, sellerAccount) {
   const sellerTxMsg = concatHash(
       ['uint256', 'uint256'],
-      [validUntil, asssetId]
+      [validUntil, asssetId.toString()]
   )
   const sigSeller = await sellerAccount.sign(sellerTxMsg);
   sigSeller.message.should.be.equal(sellerTxMsg);
@@ -119,7 +118,7 @@ async function signDismissPlayerMTx(validUntil, asssetId, sellerAccount) {
 function computePutAssetForSaleDigestNoPrefixFromHiddenPrice(sellerHiddenPrice, assetId, validUntil, offerValidUntil) {
   return concatHash(
     ['bytes32', 'uint256', 'uint32', 'uint32'],
-    [sellerHiddenPrice, assetId, validUntil, offerValidUntil]
+    [sellerHiddenPrice, assetId.toString(), validUntil, offerValidUntil]
   );
 }
 
@@ -277,7 +276,7 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
     return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
   });
 
-  const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = await signPlayerBid(
+  const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = signPlayerBid(
     currencyId,
     price,
     extraPrice,
@@ -288,7 +287,7 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
     playerId.toString(),
     buyerTeamId.toString(),
     buyerAccount
-  ).should.be.fulfilled;
+  );
 
   await completePlayerAuction(
     contractOwner, 
@@ -306,7 +305,7 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
 
 async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount) {
   // Mobile app does this:
-  sigSeller = await signPutAssetForSaleMTx(
+  sigSeller = await signBid(
     currencyId,
     price,
     sellerRnd,
@@ -405,7 +404,7 @@ function hideBuyerPrice(price, rnd) {
 module.exports = {
   concatHash,
   prefix,
-  signPutAssetForSaleMTx,
+  signBid,
   signPlayerBid,
   signAgreeToBuyTeamMTx,
   transferPlayerViaAuction,

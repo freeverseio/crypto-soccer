@@ -155,9 +155,11 @@ contract("Market", accounts => {
     nPlayersToBuy = 9;
     for (i = 0; i < nPlayersToBuy; i++) {
       playerIds.push(playerId.add(web3.utils.toBN(i))); 
-      tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerIds[i], sellerAccount).should.be.fulfilled;
+      tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerIds[i], sellerAccount).should.be.fulfilled;
+      // tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerIds[i], sellerAccount).should.be.fulfilled;
     }
     for (i = 0; i < nPlayersToBuy; i++) {
+
       tx = await marketUtils.completePlayerAuction(
         owners.market, 
         currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerIds[i], 
