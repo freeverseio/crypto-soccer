@@ -708,7 +708,7 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
-  it("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
+  it2("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() - 10; // valid until one sec in the past
@@ -723,7 +723,7 @@ contract("Market", accounts => {
     });
   });
   
-  it("players: fails a freezePlayer via MTXs because validUntil is too large", async () => {
+  it2("players: fails a freezePlayer via MTXs because validUntil is too large", async () => {
     // validUntil is capped to avoid malicious use of MTXs in the future. Currenly capped to AUCTION_TIME + POST_AUCTION_TIME = 1d + 2d = 3 days
     // Check that default value works, 2 days work, 3 days fail
     // validUntil = now.toNumber() + AUCTION_TIME;
@@ -736,7 +736,7 @@ contract("Market", accounts => {
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.rejected;
   });
   
-  it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because targetTeam = originTeam", async () => {
+  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because targetTeam = originTeam", async () => {
     tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
@@ -744,12 +744,14 @@ contract("Market", accounts => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerId, 
-      extraPrice, buyerRnd, sellerTeamId, sellerAccount
-    ).should.be.rejected;
-
+    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      currencyId, price, extraPrice,
+      sellerRnd, buyerRnd, validUntil, zeroOfferValidUntil,
+      playerId, sellerTeamId,
+      sellerAccount
+    );
+  
+    await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, sellerTeamId, sigBuyer).should.be.rejected;
   });
   
   it2("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
