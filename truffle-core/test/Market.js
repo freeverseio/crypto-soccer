@@ -798,33 +798,42 @@ contract("Market", accounts => {
     // We show that 4 days - 10 sec work, but 4 days + 10 sec fail
     validUntil0 = now.toNumber() + AUCTION_TIME;
     playerId0 = playerId.add(web3.utils.toBN(1));
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, zeroOfferValidUntil, playerId0, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil0, playerId0, sellerAccount).should.be.fulfilled;
+
     await timeTravel.advanceTime(4*24*3600-10);
     await timeTravel.advanceBlock().should.be.fulfilled;
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil0, zeroOfferValidUntil, playerId0, 
-      extraPrice, buyerRnd, buyerTeamId, buyerAccount
-    ).should.be.fulfilled;
+
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      currencyId, price, extraPrice,
+      sellerRnd, buyerRnd, validUntil0, zeroOfferValidUntil,
+      playerId0, buyerTeamId,
+      buyerAccount
+    );
+    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId0, buyerTeamId, sigBuyer).should.be.fulfilled;
+
 
     // try again
     now0 = await market.getBlockchainNowTime().should.be.fulfilled;
     validUntil0 = now0.toNumber() + AUCTION_TIME;
     playerId0 = playerId.add(web3.utils.toBN(2));
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, zeroOfferValidUntil, playerId0, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil0, playerId0, sellerAccount).should.be.fulfilled;
+
     await timeTravel.advanceTime(4*24*3600+10);
     await timeTravel.advanceBlock().should.be.fulfilled;
-    tx = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  sellerRnd, validUntil0, zeroOfferValidUntil, playerId0, 
-      extraPrice, buyerRnd, buyerTeamId, buyerAccount
-    ).should.be.rejected;
+
+    var {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+      currencyId, price, extraPrice,
+      sellerRnd, buyerRnd, validUntil0, zeroOfferValidUntil,
+      playerId0, buyerTeamId,
+      buyerAccount
+    );
+    tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId0, buyerTeamId, sigBuyer).should.be.rejected;
   });
   
   it2("players: test that valid until can be larger than AUCTION_TIME and complete transaction", async () => {
     // this test illustrates an undesired behaviour: TODO - change solidity code
     validUntil0 = now.toNumber() + AUCTION_TIME + 12 * 3600;
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil0, zeroOfferValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil0, playerId, sellerAccount).should.be.fulfilled;
     await timeTravel.advanceTime(AUCTION_TIME + 6 * 3600);
     await timeTravel.advanceBlock().should.be.fulfilled;
     tx = await marketUtils.completePlayerAuction(
@@ -843,7 +852,7 @@ contract("Market", accounts => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1, {from: owners.COO}).should.be.fulfilled;
     // first acquisition works:
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     tx = await marketUtils.completePlayerAuction(
       owners.market,
       currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerId, 
@@ -851,7 +860,7 @@ contract("Market", accounts => {
     ).should.be.fulfilled;
     // second acquisition should fail:
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     tx = await marketUtils.completePlayerAuction(
       owners.market,
       currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerId, 
@@ -945,10 +954,10 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
 
     // test that Freeverse cannot put the same player again in the market
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, freeverseAccount).should.be.rejected;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
     
     // test that the new owner can sell freely as always
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, buyerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     tx = await marketUtils.completePlayerAuction(
       owners.market,
       currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerId, 
@@ -1180,7 +1189,7 @@ contract("Market", accounts => {
   it2("dismissPlayers fails if frozen first", async () => {
     playerId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sigSeller = await marketUtils.signDismissPlayerMTx(validUntil, playerId.toString(), sellerAccount);
-    await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     
     tx = await market.dismissPlayer(
       validUntil,
