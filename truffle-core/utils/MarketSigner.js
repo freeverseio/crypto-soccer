@@ -52,7 +52,6 @@ class Signer {
         [validUntil, asssetId.toString()]
     )
     const sigSeller = sellerAccount.sign(sellerTxMsg);
-    sigSeller.message.should.be.equal(sellerTxMsg);
     return sigSeller;
   }
 
