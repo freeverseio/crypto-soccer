@@ -554,7 +554,6 @@ contract("Market", accounts => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
-
     tx = await marketUtils.freezeTeam(owners.market, currencyId, price, offererRnd, validUntil, offerValidUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
@@ -676,7 +675,7 @@ contract("Market", accounts => {
   });
   
   
-  it2("players: completes a MAKE_AN_OFFER via MTXs", async () => {
+  it("players: completes a MAKE_AN_OFFER via MTXs", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
@@ -692,13 +691,7 @@ contract("Market", accounts => {
     const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerOffer(
       currencyId, price, offererRnd, playerId, offerValidUntil, buyerTeamId, buyerAccount
     );
-    await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerIds[i], buyerTeamId, sigBuyer).should.be.fulfilled;
-
-    const tx2 = await marketUtils.completePlayerAuction(
-      owners.market,
-      currencyId, price,  offererRnd, validUntil, offerValidUntil, playerId, 
-      extraPrice = 0, buyerRnd = 0, buyerTeamId, buyerAccount
-    ).should.be.fulfilled;
+    const tx2 = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerId, buyerTeamId, sigBuyer).should.be.fulfilled;
 
     truffleAssert.eventEmitted(tx2, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
