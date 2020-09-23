@@ -9,9 +9,10 @@ const insertMessageQuery = {
           auction_id,
           text_message,
           custom_image_url,
-          metadata
+          metadata,
+          is_read
         )
-    VALUES ($1, $2, $3, $4, $5, $6)
+    VALUES ($1, $2, $3, $4, $5, $6, false)
     RETURNING id
     `,
 };

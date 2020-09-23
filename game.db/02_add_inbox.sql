@@ -1,14 +1,14 @@
 CREATE TYPE inbox_category AS ENUM ('offer', 'auction', 'promo', 'news', 'incident', 'welcome');
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE inbox (
-    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    id BIGSERIAL,
     destinatary TEXT NOT NULL,
     category inbox_category NOT NULL,
     auction_id TEXT,
     text_message TEXT NOT NULL,
     custom_image_url TEXT,
     metadata JSON,
+    is_read boolean DEFAULT false, 
     created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );

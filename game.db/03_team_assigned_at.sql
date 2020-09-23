@@ -1,1 +1,0 @@
-ALTER TABLE team_props ADD COLUMN assigned_at timestamp without timezone;

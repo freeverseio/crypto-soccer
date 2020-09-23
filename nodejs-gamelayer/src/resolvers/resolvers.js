@@ -1,21 +1,11 @@
 const Web3 = require('web3');
-const {
-  selectTeamName,
-  selectTeamManagerName,
-  updateTeamName,
-  updateTeamManagerName,
-  insertMessage,
-  selectMessage,
-  updateTeamAssignedAt,
-} = require('../repositories');
+const { selectTeamName, selectTeamManagerName, updateTeamName, updateTeamManagerName } = require('../repositories');
 const { TeamValidation } = require('../validations');
-const teamByHomeTeamId = require('./teamByHomeTeamId');
-const teamByVisitorTeamId = require('./teamByVisitorTeamId');
-const teamByBuyerTeamId = require('./teamByBuyerTeamId');
-const teamByTeamId = require('./teamByTeamId');
-const queryTeamByTeamId = require('./queryTeamByTeamId');
-
-const dayjs = require('dayjs');
+const getMessagesResolver = require('./getMessagesResolver');
+const setMessageReadResolver = require('./setMessageReadResolver');
+const setMailboxStartResolver = require('./setMailboxStartResolver');
+const setBroadcastMessageResolver = require('./setBroadcastMessageResolver');
+const setMessageResolver = require('./setMessageResolver');
 const web3 = new Web3('');
 
 const resolvers = ({ horizonRemoteSchema }) => {
@@ -221,52 +211,13 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return 'Signer is not the team owner';
         }
       },
-      setMessage: async (
-        _,
-        { input: { destinatary, category, auction_id, text_message, custom_image_url, metadata } }
-      ) => {
-        try {
-          const id = await insertMessage({
-            destinatary,
-            category,
-            auction_id,
-            text_message,
-            custom_image_url,
-            metadata,
-          });
-
-          return id;
-        } catch (e) {
-          return e;
-        }
-      },
-      transferFistBotToAddr: async (_, { input: { teamId } }, context, info) => {
-        //update team assigned at
-        updateTeamAssignedAt({ teamId, assignedAt });
-        const result = await info.mergeInfo.delegateToSchema({
-          schema,
-          operation: 'mutation',
-          fieldName: 'transferFistBotToAddr',
-          args: {
-            teamId: match.visitorTeamId,
-          },
-          context,
-          info,
-        });
-        return result;
-      },
+      setMessage: setMessageResolver,
+      setBroadcastMessage: setBroadcastMessageResolver,
+      setMailboxStart: setMailboxStartResolver,
+      setMessageRead: setMessageReadResolver,
     },
     Query: {
-      getMessages: async (_, { destinatary, after }) => {
-        try {
-          const isDateValid = dayjs(after).isValid();
-          const createdAt = isDateValid ? after : dayjs('2018-04-04T16:00:00.000Z').format();
-          const messages = await selectMessage({ destinatary, createdAt });
-          return messages;
-        } catch (e) {
-          return e;
-        }
-      },
+      getMessages: getMessagesResolver,
     },
   };
 };
