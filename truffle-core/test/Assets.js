@@ -6,6 +6,10 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
+
+
+const { Signer } = require('../utils/MarketSigner.js');
+const signer = new Signer(web3);
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
@@ -654,17 +658,17 @@ contract('Assets', (accounts) => {
         sigSeller.signature.should.be.equal('0xf0e4f8fe6502bb950fa45283832d117dda9876e1bf92c29808ab9072fd717cc3756ee55cd659cc33ed2d3d0aa6f290f3f583045e9b91c32cab64747b8b43c7701b');
 
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, 0).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, 0);
+        auctionId_JS = await signer.computeAuctionId(currencyId, price, rnd, playerId, validUntil, 0);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0x03214d89eb62587cbb48c9056dba878f839a4ebad3ad75f8826d76c566e4acd0");
 
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, offerValidUntil).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, offerValidUntil);
+        auctionId_JS = await signer.computeAuctionId(currencyId, price, rnd, playerId, validUntil, offerValidUntil);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
 
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, 0, offerValidUntil).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, 0, offerValidUntil);
+        auctionId_JS = await signer.computeAuctionId(currencyId, price, rnd, playerId, 0, offerValidUntil);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
     });
