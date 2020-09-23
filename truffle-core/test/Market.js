@@ -820,7 +820,7 @@ contract("Market", accounts => {
     ).should.be.fulfilled;
   });
 
-  it2("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
+  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
   });
   
@@ -1340,7 +1340,7 @@ contract("Market", accounts => {
     sigBuyer.signature.should.be.equal('0x414ea45ef8bf69f49e69471a3582545e6a4c681117d799e52aa43f33b1799121577520b17accad661041b23a38435c460d8fbb25574f6a7851125ec5ca95ba8a1c');
   });
 
-  it('players: deterministic sign (values used in market.notary test) ', async () => {
+  it2('players: deterministic sign (values used in market.notary test) ', async () => {
     const sellerAccount = await web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
     const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
@@ -1370,7 +1370,7 @@ contract("Market", accounts => {
     sigBuyer.signature.should.be.equal('0x8bfc8368ec014bad0e1c540cf2a1c5a567b2b650242786229290fbd45dfb30fa21f9f30cb9b6ae5b7d229b8b551ce01d3e53f384460a8651b786357d49b18aa81c');
   });
 
-  it('players: deterministic sign (values used in market.notary test, ref XX2) ', async () => {
+  it2('players: deterministic sign (values used in market.notary test, ref XX2) ', async () => {
     const sellerAccount = await web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
     const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
