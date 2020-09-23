@@ -15,32 +15,25 @@ function signPlayerBid(currencyId, price, extraPrice, sellerRnd, buyerRnd, valid
   return [sigBuyer, auctionId, buyerHiddenPrice];
 }
 
-function signBid(currencyId, price, rnd, validUntil, offerValidUntil, asssetId, sellerAccount) {
-  const hiddenPrice = hideSellerPrice(currencyId, price, rnd);
-  const sellerTxMsg = concatHash(
-      ['bytes32', 'uint256', 'uint32', 'uint32'],
-      [hiddenPrice, asssetId.toString(), validUntil, offerValidUntil]
-  )
-  const sigSeller = sellerAccount.sign(sellerTxMsg);
-  return sigSeller;
+function signPlayerOffer(currencyId, price, offererRnd, playerId, offerValidUntil, buyerTeamId, offererAccount) {
+  const extraPrice = 0;
+  const buyerRnd = 0;
+  const validUntil = 0;
+  return signPlayerBid(currencyId, price, extraPrice, offererRnd, buyerRnd, validUntil, offerValidUntil, playerId, buyerTeamId, offererAccount);
 }
 
-
-
+function signAcceptPlayerOffer(currencyId, price, rnd, validUntil, offerValidUntil, playerId, sellerAccount) {
+  const sigSeller = sellerAccount.sign(
+      computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId)
+  );
+  return sigSeller;
+}
 
 // Main functions that write to the BC
 
 
 async function acceptOffer(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount) {
-  const sigSeller = await signBid(
-    currencyId,
-    price,
-    sellerRnd,
-    validUntil,
-    offerValidUntil,
-    playerId.toString(),
-    sellerAccount
-  );
+  const sigSeller = signAcceptPlayerOffer(currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount);
 
   const isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
   isPlayerFrozen.should.be.equal(false);
@@ -305,7 +298,7 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
 
 async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount) {
   // Mobile app does this:
-  sigSeller = await signBid(
+  sigSeller = signPlayerBid(
     currencyId,
     price,
     sellerRnd,
@@ -405,10 +398,9 @@ module.exports = {
   acceptOffer,
   putPlayerForSale,
   signPlayerBid,
+  signPlayerOffer,
   concatHash,
   prefix,
-  signBid,
-  signPlayerBid,
   signAgreeToBuyTeamMTx,
   transferPlayerViaAuction,
   completePlayerAuction,

@@ -156,7 +156,6 @@ contract("Market", accounts => {
     for (i = 0; i < nPlayersToBuy; i++) {
       playerIds.push(playerId.add(web3.utils.toBN(i))); 
       tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerIds[i], sellerAccount).should.be.fulfilled;
-      // tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerIds[i], sellerAccount).should.be.fulfilled;
     }
     for (i = 0; i < nPlayersToBuy; i++) {
       const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
@@ -632,14 +631,14 @@ contract("Market", accounts => {
   });
 
   
-  it2("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because one of its players already frozen", async () => {
+  it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because one of its players already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
     teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
     teamId.should.be.bignumber.equal(sellerTeamId);
     
     // put player:
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     
@@ -659,7 +658,7 @@ contract("Market", accounts => {
   // ------------------------------------------------------------------------------------
   // ------------------------------------------------------------------------------------
 
-  it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because his team is already frozen", async () => {
+  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because his team is already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
     teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
@@ -671,18 +670,18 @@ contract("Market", accounts => {
     isTeamFrozen.should.be.equal(true);
     
     // fail to put player:
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false);
   });
   
   
-  it2("players: completes a MAKE_AN_OFFER via MTXs", async () => {
+  it("players: completes a MAKE_AN_OFFER via MTXs", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
 
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, offererRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.acceptOffer(owners.market, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -690,6 +689,15 @@ contract("Market", accounts => {
     });
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
+    const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerOffer(
+      currencyId, price, extraPrice,
+      offererRnd, buyerRnd,
+      validUntil, offerValidUntil,
+      playerId, buyerTeamId,
+      buyerAccount
+    );
+    const tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerIds[i], buyerTeamId, sigBuyer).should.be.fulfilled;
+
     tx = await marketUtils.completePlayerAuction(
       owners.market,
       currencyId, price,  offererRnd, validUntil, offerValidUntil, playerId, 
