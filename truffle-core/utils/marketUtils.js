@@ -9,7 +9,7 @@ function signPlayerBid(currencyId, price, extraPrice, sellerRnd, buyerRnd, valid
   const auctionId = computeAuctionId(currencyId, price, sellerRnd, playerId, validUntil, offerValidUntil);
   const buyerTxMsg = concatHash(
       ['bytes32', 'bytes32', 'uint256'],
-      [auctionId, buyerHiddenPrice, buyerTeamId]
+      [auctionId, buyerHiddenPrice, buyerTeamId.toString()]
   );
   const sigBuyer = buyerAccount.sign(buyerTxMsg);
   return [sigBuyer, auctionId, buyerHiddenPrice];
@@ -136,8 +136,8 @@ function computeAuctionId(currencyId, price, sellerRnd, assetId, validUntil, off
   const sellerHiddenPrice = hideSellerPrice(currencyId, price, sellerRnd);
 
   return (offerValidUntil == 0) ?
-    concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId, validUntil]) :
-    concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId, offerValidUntil]);
+    concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId.toString(), validUntil]) :
+    concatHash(['bytes32', 'uint256', 'uint32'], [sellerHiddenPrice, assetId.toString(), offerValidUntil]);
 }
 
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
@@ -402,6 +402,9 @@ function hideBuyerPrice(price, rnd) {
 }
 
 module.exports = {
+  acceptOffer,
+  putPlayerForSale,
+  signPlayerBid,
   concatHash,
   prefix,
   signBid,

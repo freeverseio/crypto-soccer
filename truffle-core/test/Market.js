@@ -150,7 +150,7 @@ contract("Market", accounts => {
     minLapseTime2.toNumber().should.be.equal(newLapseTime2);
   });
 
-  it2("normal players, go above 25, and get rid of player", async () => {
+  it("normal players, go above 25, and get rid of player", async () => {
     playerIds = [];
     nPlayersToBuy = 9;
     for (i = 0; i < nPlayersToBuy; i++) {
@@ -159,12 +159,14 @@ contract("Market", accounts => {
       // tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerIds[i], sellerAccount).should.be.fulfilled;
     }
     for (i = 0; i < nPlayersToBuy; i++) {
-
-      tx = await marketUtils.completePlayerAuction(
-        owners.market, 
-        currencyId, price,  sellerRnd, validUntil, zeroOfferValidUntil, playerIds[i], 
-        extraPrice, buyerRnd, buyerTeamId, buyerAccount
-      ).should.be.fulfilled;
+      const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerBid(
+        currencyId, price, extraPrice,
+        sellerRnd, buyerRnd,
+        validUntil, zeroOfferValidUntil,
+        playerIds[i], buyerTeamId,
+        buyerAccount
+      );
+      await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerIds[i], buyerTeamId, sigBuyer).should.be.fulfilled;
     }
 
     nTransit = await market.getNPlayersInTransitInTeam(buyerTeamId).should.be.fulfilled;
