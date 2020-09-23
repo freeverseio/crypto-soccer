@@ -150,7 +150,7 @@ contract("Market", accounts => {
     minLapseTime2.toNumber().should.be.equal(newLapseTime2);
   });
 
-  it("normal players, go above 25, and get rid of player", async () => {
+  it2("normal players, go above 25, and get rid of player", async () => {
     playerIds = [];
     nPlayersToBuy = 9;
     for (i = 0; i < nPlayersToBuy; i++) {
@@ -631,7 +631,7 @@ contract("Market", accounts => {
   });
 
   
-  it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because one of its players already frozen", async () => {
+  it2("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because one of its players already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
     teamId = await market.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
@@ -676,12 +676,12 @@ contract("Market", accounts => {
   });
   
   
-  it("players: completes a MAKE_AN_OFFER via MTXs", async () => {
+  it2("players: completes a MAKE_AN_OFFER via MTXs", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
 
-    tx = await marketUtils.acceptOffer(owners.market, currencyId, price, sellerRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    const tx = await marketUtils.acceptOffer(owners.market, currencyId, price, offererRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -690,21 +690,17 @@ contract("Market", accounts => {
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
     const {0: sigBuyer, 1: auctionId, 2: buyerHiddenPrice} = marketUtils.signPlayerOffer(
-      currencyId, price, extraPrice,
-      offererRnd, buyerRnd,
-      validUntil, offerValidUntil,
-      playerId, buyerTeamId,
-      buyerAccount
+      currencyId, price, offererRnd, playerId, offerValidUntil, buyerTeamId, buyerAccount
     );
-    const tx = await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerIds[i], buyerTeamId, sigBuyer).should.be.fulfilled;
+    await marketUtils.completePlayerAuction(owners.market, auctionId, buyerHiddenPrice, playerIds[i], buyerTeamId, sigBuyer).should.be.fulfilled;
 
-    tx = await marketUtils.completePlayerAuction(
+    const tx2 = await marketUtils.completePlayerAuction(
       owners.market,
       currencyId, price,  offererRnd, validUntil, offerValidUntil, playerId, 
       extraPrice = 0, buyerRnd = 0, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
 
-    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
+    truffleAssert.eventEmitted(tx2, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
 
@@ -832,7 +828,7 @@ contract("Market", accounts => {
     ).should.be.fulfilled;
   });
 
-  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
+  it2("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
   });
   
@@ -972,7 +968,7 @@ contract("Market", accounts => {
     tx = await marketUtils.freezeAcademyPlayer(owners.market, currencyId, price, sellerRnd, validUntil, playerId.add(web3.utils.toBN(1))).should.be.fulfilled;
   });
 
-  it2("special players: check children of special players", async () => {
+  it("special players: check children of special players", async () => {
     training= await TrainingPoints.new().should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     sumSkills = await market.getSumOfSkills(playerId).should.be.fulfilled;
