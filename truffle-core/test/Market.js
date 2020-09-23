@@ -828,7 +828,7 @@ contract("Market", accounts => {
     ).should.be.fulfilled;
   });
 
-  it2("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
+  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs - via function call", async () => {
     await marketUtils.transferPlayerViaAuction(owners.market, market, playerId, buyerTeamId, sellerAccount, buyerAccount).should.be.fulfilled;
   });
   
