@@ -3,6 +3,14 @@ const truffleAssert = require('truffle-assertions');
 
 // Signing  functions
 
+function signPutAssetForSale(currencyId, price, rnd, validUntil, assetId, sellerAccount) {
+  const offerValidUntil = 0;
+  const sigSeller = sellerAccount.sign(
+      this.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, assetId)
+  );
+  return sigSeller;
+}
+
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
 function signPlayerBid(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, offerValidUntil, playerId, buyerTeamId, buyerAccount) {
   const buyerHiddenPrice = hideBuyerPrice(extraPrice, buyerRnd);
@@ -298,30 +306,24 @@ async function transferPlayerViaAuction(contractOwner, market, playerId, buyerTe
 
 async function freezeTeam(contractOwner, currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount) {
   // Mobile app does this:
-  sigSeller = signPlayerBid(
-    currencyId,
-    price,
-    sellerRnd,
-    validUntil, 
-    offerValidUntil,
-    teamId.toString(),
-    sellerAccount
-  );
+  console.log("aaaaa");
+  const sigSeller = signPutAssetForSale(currencyId, price, sellerRnd, validUntil, offerValidUntil, teamId, sellerAccount);
+  console.log("aaaaa");
 
   // First of all, Freeverse and Buyer check the signature
   // In this case, using web3:
-  recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
+  const recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
   recoveredSellerAddr.should.be.equal(sellerAccount.address);
 
   const sellerHiddenPrice = concatHash(
     ["uint8", "uint256", "uint256"],
     [currencyId, price, sellerRnd]
   );
-  sellerDigest = await market.computePutAssetForSaleDigest(sellerHiddenPrice, teamId.toString(), validUntil, offerValidUntil).should.be.fulfilled;
+  const sellerDigest = await market.computePutAssetForSaleDigest(sellerHiddenPrice, teamId.toString(), validUntil, offerValidUntil).should.be.fulfilled;
   sellerDigest.should.be.equal(prefix(sigSeller.message));
 
   // Then, the buyer builds a message to sign
-  let isTeamFrozen = await market.isTeamFrozen(teamId.toNumber()).should.be.fulfilled;
+  const isTeamFrozen = await market.isTeamFrozen(teamId.toNumber()).should.be.fulfilled;
   isTeamFrozen.should.be.equal(false);
 
   // and send the Freeze TX. 
