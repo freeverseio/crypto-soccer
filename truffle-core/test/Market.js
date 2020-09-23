@@ -708,13 +708,14 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
-  it2("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
+  it("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() - 10; // valid until one sec in the past
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, offererRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.rejected;
+    tx = await marketUtils.acceptOffer(owners.market, currencyId, price, offererRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.rejected;
+
     offerValidUntil = now.toNumber() + 10; // valid until one sec in the past
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, offererRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.acceptOffer(owners.market, currencyId, price, offererRnd, validUntil, offerValidUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -722,21 +723,21 @@ contract("Market", accounts => {
     });
   });
   
-  it2("players: fails a freezePlayer via MTXs because validUntil is too large", async () => {
+  it("players: fails a freezePlayer via MTXs because validUntil is too large", async () => {
     // validUntil is capped to avoid malicious use of MTXs in the future. Currenly capped to AUCTION_TIME + POST_AUCTION_TIME = 1d + 2d = 3 days
     // Check that default value works, 2 days work, 3 days fail
     // validUntil = now.toNumber() + AUCTION_TIME;
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     validUntil2 = now.toNumber() + 3600*24*3 + 10; // 3 days and 10 sec
     playerId2 = playerId.add(web3.utils.toBN(1));
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, zeroOfferValidUntil, playerId2, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.fulfilled;
     validUntil2 = now.toNumber() + 3600*24*4 + 10; // 4 days and 10 sec
     playerId2 = playerId.add(web3.utils.toBN(2));
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil2, zeroOfferValidUntil, playerId2, sellerAccount).should.be.rejected;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil2, playerId2, sellerAccount).should.be.rejected;
   });
   
   it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because targetTeam = originTeam", async () => {
-    tx = await marketUtils.freezePlayer(owners.market, currencyId, price, sellerRnd, validUntil, zeroOfferValidUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await marketUtils.putPlayerForSale(owners.market, currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozenFiat(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
