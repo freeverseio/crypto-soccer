@@ -636,7 +636,7 @@ contract('Assets', (accounts) => {
         rnd = 1234;
         validUntil = 235985749;
         offerValidUntil = 4358487;
-        sellerHiddenPrice = marketUtils.hideSellerPrice(currencyId, price, rnd);
+        sellerHiddenPrice = signer.hideSellerPrice(currencyId, price, rnd);
 
         digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
         digest_BC = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
