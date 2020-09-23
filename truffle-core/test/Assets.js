@@ -643,7 +643,7 @@ contract('Assets', (accounts) => {
         digest_BC.toString().should.be.equal(digest_JS.toString());
         digest_BC.toString().should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
     
-        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digestNoPrefix = await signer.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
     
         const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
         const sigSeller = sellerAccount.sign(digestNoPrefix);
