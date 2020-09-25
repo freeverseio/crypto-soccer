@@ -27,7 +27,7 @@ func LeagueCount(tx *sql.Tx) (uint32, error) {
 	return count, nil
 }
 
-func LeagueByTeimezoneIdxCountryIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) (uint32, error) {
+func LeagueCountByTimezoneIdxCountryIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) (uint32, error) {
 	rows, err := tx.Query("SELECT COUNT(*) FROM leagues WHERE (timezone_idx = $1 AND country_idx = $2);", timezoneIdx, countryIdx)
 	if err != nil {
 		return 0, err
