@@ -25,8 +25,6 @@ func (b *Resolver) CancelOffer(args struct{ Input input.CancelOfferInput }) (gra
 	}
 
 	offer, err := tx.Offer(string(args.Input.OfferId))
-	log.Warningf("Trying to look for offerid: %v\n", args.Input.OfferId)
-	log.Warningf("Offer: %v\n", offer)
 	if err != nil {
 		tx.Rollback()
 		return id, err
@@ -35,9 +33,6 @@ func (b *Resolver) CancelOffer(args struct{ Input input.CancelOfferInput }) (gra
 		tx.Rollback()
 		return id, errors.New("could not find an offer to cancel")
 	}
-
-	log.Warningf("storage.OfferStarted: %v\n", storage.OfferStarted)
-	log.Warningf("offer.state: %v\n", offer.State)
 
 	if offer.State != storage.OfferStarted {
 		tx.Rollback()
