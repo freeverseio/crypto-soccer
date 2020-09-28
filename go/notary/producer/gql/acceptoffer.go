@@ -119,7 +119,7 @@ func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput, highestOff
 		return fmt.Errorf("invalid OfferValidUntil %v", in.OfferValidUntil)
 	}
 	auction.Signature = in.Signature
-	auction.State = storage.AuctionStarted
+	auction.State = storage.AuctionStarted //should be asset frozen
 	auction.StateExtra = ""
 	auction.PaymentURL = ""
 	signerAddress, err := in.SignerAddress()
