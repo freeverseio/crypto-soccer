@@ -14,28 +14,36 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestCancelOfferStorageReturnsError1(t *testing.T) {
+func TestCancelAllOffersBySellerStorageReturnsError1(t *testing.T) {
 	counter := 0
 
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
-	inOffer := storage.Offer{
+	mockOfferAlice1 := storage.Offer{
 		AuctionID: "123abc",
 		Seller:    crypto.PubkeyToAddress(alice.PublicKey).Hex(),
 		State:     storage.OfferStarted,
 	}
 
+	mockOfferAlice2 := storage.Offer{
+		AuctionID: "123abcd",
+		Seller:    crypto.PubkeyToAddress(alice.PublicKey).Hex(),
+		State:     storage.OfferStarted,
+	}
+
+	mockOffersByPlayerId := []storage.Offer{mockOfferAlice1, mockOfferAlice2}
+
 	mock := mockup.Tx{
-		OfferFunc:       func(AuctionID string) (*storage.Offer, error) { return &inOffer, nil },
-		OfferCancelFunc: func(AuctionID string) error { return errors.New("error") },
-		RollbackFunc:    func() error { counter++; return nil },
+		OffersByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferCancelFunc:      func(AuctionID string) error { return errors.New("error") },
+		RollbackFunc:         func() error { counter++; return nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
 	}
 
-	in := input.CancelOfferInput{}
-	in.OfferId = "123abc"
+	in := input.CancelAllOffersBySellerInput{}
+	in.PlayerId = "274877906944"
 	hash, err := in.Hash()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), alice)
@@ -43,35 +51,44 @@ func TestCancelOfferStorageReturnsError1(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-	_, err = r.CancelOffer(struct{ Input input.CancelOfferInput }{in})
+	_, err = r.CancelAllOffersBySeller(struct {
+		Input input.CancelAllOffersBySellerInput
+	}{in})
 	assert.Error(t, err, "error")
 	assert.Equal(t, counter, 1)
 
 }
 
-func TestCancelOfferStorageReturnsErrorOnWrongSigner(t *testing.T) {
+func TestCancelAllOffersBySellerStorageReturnsErrorOnWrongSigner(t *testing.T) {
 	counter := 0
 
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	bob, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-
-	inOffer := storage.Offer{
+	mockOfferAlice1 := storage.Offer{
 		AuctionID: "123abc",
 		Seller:    crypto.PubkeyToAddress(alice.PublicKey).Hex(),
 		State:     storage.OfferStarted,
 	}
 
+	mockOfferAlice2 := storage.Offer{
+		AuctionID: "123abcd",
+		Seller:    crypto.PubkeyToAddress(bob.PublicKey).Hex(),
+		State:     storage.OfferStarted,
+	}
+
+	mockOffersByPlayerId := []storage.Offer{mockOfferAlice1, mockOfferAlice2}
+
 	mock := mockup.Tx{
-		OfferFunc:       func(AuctionID string) (*storage.Offer, error) { return &inOffer, nil },
-		OfferCancelFunc: func(AuctionID string) error { return errors.New("error") },
-		RollbackFunc:    func() error { counter++; return nil },
+		OffersByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferCancelFunc:      func(AuctionID string) error { return errors.New("error") },
+		RollbackFunc:         func() error { counter++; return nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
 	}
 
-	in := input.CancelOfferInput{}
-	in.OfferId = "123abc"
+	in := input.CancelAllOffersBySellerInput{}
+	in.PlayerId = "274877906944"
 	hash, err := in.Hash()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), bob)
@@ -79,34 +96,45 @@ func TestCancelOfferStorageReturnsErrorOnWrongSigner(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-	_, err = r.CancelOffer(struct{ Input input.CancelOfferInput }{in})
-	assert.Error(t, err, "Signer of Canceloffer is neither the Seller nor the Buyer")
+	_, err = r.CancelAllOffersBySeller(struct {
+		Input input.CancelAllOffersBySellerInput
+	}{in})
+	assert.Error(t, err, "Signer of Cancelalloffersbyseller is not the Seller")
 	assert.Equal(t, counter, 1)
 }
 
-func TestCancelOfferStorageReturnsOK(t *testing.T) {
+func TestCancelAllOffersBySellerStorageReturnsOK(t *testing.T) {
 	counter := 0
 
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
-	inOffer := storage.Offer{
+	mockOfferAlice1 := storage.Offer{
 		AuctionID: "123abc",
 		Seller:    crypto.PubkeyToAddress(alice.PublicKey).Hex(),
 		State:     storage.OfferStarted,
 	}
 
-	mock := mockup.Tx{
-		OfferFunc:       func(AuctionID string) (*storage.Offer, error) { return &inOffer, nil },
-		OfferCancelFunc: func(AuctionID string) error { return nil },
-		CommitFunc:      func() error { return nil },
-		RollbackFunc:    func() error { counter++; return nil },
+	mockOfferAlice2 := storage.Offer{
+		AuctionID: "123abcd",
+		Seller:    crypto.PubkeyToAddress(alice.PublicKey).Hex(),
+		State:     storage.OfferStarted,
 	}
+
+	mockOffersByPlayerId := []storage.Offer{mockOfferAlice1, mockOfferAlice2}
+
+	mock := mockup.Tx{
+		OffersByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferCancelFunc:      func(AuctionID string) error { return nil },
+		CommitFunc:           func() error { return nil },
+		RollbackFunc:         func() error { counter++; return nil },
+	}
+
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
 	}
 
-	in := input.CancelOfferInput{}
-	in.OfferId = "123abc"
+	in := input.CancelAllOffersBySellerInput{}
+	in.PlayerId = "274877906944"
 	hash, err := in.Hash()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), alice)
@@ -114,95 +142,74 @@ func TestCancelOfferStorageReturnsOK(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-	_, err = r.CancelOffer(struct{ Input input.CancelOfferInput }{in})
+	_, err = r.CancelAllOffersBySeller(struct {
+		Input input.CancelAllOffersBySellerInput
+	}{in})
 	assert.NilError(t, err)
 }
 
-func TestCancelOfferStorageReturnsErrOnEmptyOfferId(t *testing.T) {
+func TestCancelAllOffersBySellerStorageReturnsErrOnWrongOfferId(t *testing.T) {
 	counter := 0
 
 	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 
-	inOffer := storage.Offer{
+	mock := mockup.Tx{
+		OffersByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return nil, nil },
+		OfferCancelFunc:      func(AuctionID string) error { return nil },
+		CommitFunc:           func() error { return nil },
+		RollbackFunc:         func() error { counter++; return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	in := input.CancelAllOffersBySellerInput{}
+	in.PlayerId = "274877906944"
+	hash, err := in.Hash()
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), alice)
+	assert.NilError(t, err)
+	in.Signature = hex.EncodeToString(signature)
+
+	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
+	_, err = r.CancelAllOffersBySeller(struct {
+		Input input.CancelAllOffersBySellerInput
+	}{in})
+	assert.Error(t, err, "could not find an existing offers to cancel")
+}
+
+func TestCancelAllOffersBySellerStorageReturnsErrorOnWronfOfferState(t *testing.T) {
+	counter := 0
+
+	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+
+	mockOfferAlice1 := storage.Offer{
 		AuctionID: "123abc",
 		Seller:    crypto.PubkeyToAddress(alice.PublicKey).Hex(),
 		State:     storage.OfferStarted,
 	}
 
-	mock := mockup.Tx{
-		OfferFunc:       func(AuctionID string) (*storage.Offer, error) { return &inOffer, nil },
-		OfferCancelFunc: func(AuctionID string) error { return nil },
-		CommitFunc:      func() error { return nil },
-		RollbackFunc:    func() error { counter++; return nil },
-	}
-	service := &mockup.StorageService{
-		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
-	}
-
-	in := input.CancelOfferInput{}
-	in.OfferId = ""
-	hash, err := in.Hash()
-	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), alice)
-	assert.NilError(t, err)
-	in.Signature = hex.EncodeToString(signature)
-
-	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-	_, err = r.CancelOffer(struct{ Input input.CancelOfferInput }{in})
-	assert.Error(t, err, "empty OfferId when trying to cancel an offer")
-}
-
-func TestCancelOfferStorageReturnsErrOnWrongOfferId(t *testing.T) {
-	counter := 0
-
-	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-
-	mock := mockup.Tx{
-		OfferFunc:       func(AuctionID string) (*storage.Offer, error) { return nil, nil },
-		OfferCancelFunc: func(AuctionID string) error { return nil },
-		CommitFunc:      func() error { return nil },
-		RollbackFunc:    func() error { counter++; return nil },
-	}
-	service := &mockup.StorageService{
-		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
-	}
-
-	in := input.CancelOfferInput{}
-	in.OfferId = "3245786876a1"
-	hash, err := in.Hash()
-	assert.NilError(t, err)
-	signature, err := signer.Sign(hash.Bytes(), alice)
-	assert.NilError(t, err)
-	in.Signature = hex.EncodeToString(signature)
-
-	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-	_, err = r.CancelOffer(struct{ Input input.CancelOfferInput }{in})
-	assert.Error(t, err, "could not find an offer to cancel")
-}
-
-func TestCancelOfferStorageReturnsErrorOnWronfOfferState(t *testing.T) {
-	counter := 0
-
-	alice, _ := crypto.HexToECDSA("4B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-
-	inOffer := storage.Offer{
-		AuctionID: "123abc",
+	mockOfferAlice2 := storage.Offer{
+		AuctionID: "123abcd",
 		Seller:    crypto.PubkeyToAddress(alice.PublicKey).Hex(),
 		State:     storage.OfferAccepted,
 	}
 
+	mockOffersByPlayerId := []storage.Offer{mockOfferAlice1, mockOfferAlice2}
+
 	mock := mockup.Tx{
-		OfferFunc:       func(AuctionID string) (*storage.Offer, error) { return &inOffer, nil },
-		OfferCancelFunc: func(AuctionID string) error { return nil },
-		CommitFunc:      func() error { return nil },
-		RollbackFunc:    func() error { counter++; return nil },
+		OffersByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferCancelFunc:      func(AuctionID string) error { return nil },
+		CommitFunc:           func() error { return nil },
+		RollbackFunc:         func() error { counter++; return nil },
 	}
+
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
 	}
 
-	in := input.CancelOfferInput{}
-	in.OfferId = "123abc"
+	in := input.CancelAllOffersBySellerInput{}
+	in.PlayerId = "274877906944"
 	hash, err := in.Hash()
 	assert.NilError(t, err)
 	signature, err := signer.Sign(hash.Bytes(), alice)
@@ -210,6 +217,8 @@ func TestCancelOfferStorageReturnsErrorOnWronfOfferState(t *testing.T) {
 	in.Signature = hex.EncodeToString(signature)
 
 	r := gql.NewResolver(make(chan interface{}, 10), *bc.Contracts, namesdb, googleCredentials, service)
-	_, err = r.CancelOffer(struct{ Input input.CancelOfferInput }{in})
+	_, err = r.CancelAllOffersBySeller(struct {
+		Input input.CancelAllOffersBySellerInput
+	}{in})
 	assert.Error(t, err, "cannot cancel an offer unless it is in Started state")
 }
