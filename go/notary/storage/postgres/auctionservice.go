@@ -6,7 +6,7 @@ import (
 )
 
 func (b *Tx) AuctionPendingAuctions() ([]storage.Auction, error) {
-	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
 	if err != nil {
 		return nil, err
 	}
@@ -21,6 +21,7 @@ func (b *Tx) AuctionPendingAuctions() ([]storage.Auction, error) {
 			&auction.Price,
 			&auction.Rnd,
 			&auction.ValidUntil,
+			&auction.OfferValidUntil,
 			&auction.Signature,
 			&auction.State,
 			&auction.PaymentURL,
@@ -33,7 +34,7 @@ func (b *Tx) AuctionPendingAuctions() ([]storage.Auction, error) {
 }
 
 func (b *Tx) Auction(ID string) (*storage.Auction, error) {
-	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE id = $1;", ID)
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -49,6 +50,7 @@ func (b *Tx) Auction(ID string) (*storage.Auction, error) {
 		&auction.Price,
 		&auction.Rnd,
 		&auction.ValidUntil,
+		&auction.OfferValidUntil,
 		&auction.Signature,
 		&auction.State,
 		&auction.PaymentURL,
@@ -59,7 +61,7 @@ func (b *Tx) Auction(ID string) (*storage.Auction, error) {
 }
 
 func (b *Tx) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
-	rows, err := b.tx.Query("SELECT id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE player_id = $1;", ID)
+	rows, err := b.tx.Query("SELECT id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE player_id = $1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +76,7 @@ func (b *Tx) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
 			&auction.Price,
 			&auction.Rnd,
 			&auction.ValidUntil,
+			&auction.OfferValidUntil,
 			&auction.Signature,
 			&auction.State,
 			&auction.PaymentURL,
