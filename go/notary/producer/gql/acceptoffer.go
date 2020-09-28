@@ -69,8 +69,12 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, errors.New("Auctions can only be created for offers in Started state")
 	}
 
+	existingOffers, err := tx.OffersByPlayerId(args.Input.PlayerId)
+	if err != nil {
+		return id, errors.New("could not find existing offers")
+	}
 	// TODO: Consider the need of this next check when DB does not allow it anyway
-	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId)
+	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId, existingOffers)
 	if err != nil {
 		return id, err
 	}
@@ -87,6 +91,10 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, err
 	}
 	if err := b.UpdateOffer(tx, offer); err != nil {
+		tx.Rollback()
+		return id, err
+	}
+	if err := b.CancelRemainingOffers(tx, offer, existingOffers); err != nil {
 		tx.Rollback()
 		return id, err
 	}
@@ -125,11 +133,7 @@ func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput, highestOff
 	return nil
 }
 
-func getHigestOffer(tx storage.Tx, playerId string) (storage.Offer, error) {
-	existingOffers, err := tx.OffersByPlayerId(playerId)
-	if err != nil {
-		return storage.Offer{}, errors.New("could not find existing offers")
-	}
+func getHigestOffer(tx storage.Tx, playerId string, existingOffers []storage.Offer) (storage.Offer, error) {
 	if existingOffers == nil {
 		return storage.Offer{}, errors.New("existingOffers is nil")
 	}
@@ -206,6 +210,21 @@ func (b *Resolver) UpdateOffer(tx storage.Tx, highestOffer *storage.Offer) error
 	err := tx.OfferUpdate(*highestOffer)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (b *Resolver) CancelRemainingOffers(tx storage.Tx, highestOffer *storage.Offer, existingOffers []storage.Offer) error {
+
+	for _, offer := range existingOffers {
+		if highestOffer.AuctionID != offer.AuctionID {
+			offer.State = storage.OfferCancelled
+			offer.StateExtra = "Cancelled by accepting a higher offer"
+			err := tx.OfferUpdate(offer)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
