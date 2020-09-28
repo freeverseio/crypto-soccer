@@ -56,9 +56,9 @@ const Schema = `
 		buyerTeamId: String!
 	}
 
-	input CancelOfferInput {
+	input CancelAllOffersBySellerInput {
 		signature: String!
-		offerId:   ID!
+		playerId:   ID!
 	}
 
 	input AcceptOfferInput {
@@ -101,6 +101,6 @@ const Schema = `
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
-		cancelOffer(input: CancelOfferInput!): ID!
+		cancelAllOffersBySeller(input: CancelAllOffersBySellerInput!): ID!
 	}
 `
