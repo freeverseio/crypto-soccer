@@ -15,6 +15,7 @@ const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
 const marketUtils = require('../utils/marketUtils.js');
 const timeTravel = require('../utils/TimeTravel.js');
+const { assert } = require('chai');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -106,6 +107,27 @@ contract('Assets', (accounts) => {
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
     
+
+
+    it('test from the field', async () => {
+        currencyId = 1;
+        price = 100;
+        rnd = 1597206901;
+        validUntil = 1601298513;
+        offerValidUntil = 1601298406;
+        playerId = 2748779076742;
+        seller = "0xaC347a9Fa330c6c23136F1460086D436ed55a3f8";
+        signature = "c0e41caec64adca10fe20063f67d45c7de48d8d1fec80175988a34b57a4cc6fe66a3bd9bda90280e5a6194b06e24e5c3679cf429527a40b3cfda9ce1e3fe90921b";
+        encryptedPrivKey = "lFHM/DuF/b9KGSba8makQ3uG85YCIMS+egCfAKqrOmZ9dXxC++fAa+63XZWgp7XTGbgTMwXFNDGyVXDL+oQUuKzLi+4z2HolcmY9TTKhsiOrf4q1x2dY9RmM2p51FnW4";
+        privKey = "0x473a556049fb15974a76d52783957804f33fe6987d8cb2f503553cdd1a421eaa";
+        hash = signer.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+
+        const sellAccount = web3.eth.accounts.privateKeyToAccount(privKey);
+        sig = signer.signAcceptPlayerOffer(currencyId, price, rnd, validUntil, offerValidUntil, playerId, sellAccount);
+        assert.equal(sig.signature, '0x'+signature);
+        assert.equal(sellAccount.address, seller);
+    });
+
     it('addDivisions and addCountries', async () => {
         result = await assets.countCountries(tz).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
