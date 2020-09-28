@@ -9,6 +9,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"gopkg.in/src-d/go-log.v1"
 )
 
 func (b *AuctionMachine) processStarted() error {
@@ -52,7 +53,7 @@ func (b *AuctionMachine) processStarted() error {
 	if len(b.bids) == 0 {
 		return nil
 	}
-
+	log.Warningf("Auction received in processStarted: %v \n", b.auction)
 	// if has bids let's freeze it
 	auctionHiddenPrice, err := signer.HidePrice(
 		uint8(b.auction.CurrencyID),
@@ -62,6 +63,7 @@ func (b *AuctionMachine) processStarted() error {
 	if err != nil {
 		return err
 	}
+	log.Warningf("AuctionHiddenPrice : %v\n", auctionHiddenPrice.Hex())
 	var sig [2][32]byte
 	var sigV uint8
 	sig[0], sig[1], sigV, err = signer.RSV(b.auction.Signature)
@@ -70,6 +72,17 @@ func (b *AuctionMachine) processStarted() error {
 	}
 	auth := bind.NewKeyedTransactor(b.freeverse)
 	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
+
+	isValid, err := b.contracts.Market.AreFreezePlayerRequirementsOK(
+		&bind.CallOpts{},
+		auctionHiddenPrice,
+		playerId,
+		sig,
+		sigV,
+		uint32(b.auction.ValidUntil),
+		uint32(b.auction.OfferValidUntil),
+	)
+	log.Warningf("Are freeze player requirements ok?: %v\n", isValid)
 
 	tx, err := b.contracts.Market.FreezePlayer(
 		auth,
