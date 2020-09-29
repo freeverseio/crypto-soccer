@@ -112,6 +112,7 @@ func (b *BidMachine) processPaying() error {
 	if isPaid {
 		b.setState(storage.BidPaid, "")
 	}
+	log.Debugf("[bid] Auction %v, extra_price %v | Order: %v, state: %v, is paid: %v | Bid New State: %v", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID, order.Status, isPaid, b.bid.State)
 
 	return nil
 }
