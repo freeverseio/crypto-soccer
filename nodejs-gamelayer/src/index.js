@@ -64,6 +64,7 @@ const main = async () => {
     console.log(`Request in /order/started:`);
     console.log('main -> req', req);
     console.log('Req body: ', JSON.stringify(req.body));
+    console.log('Req headers: ', JSON.stringify(req.headers));
     res.send('OK');
   });
   server.applyMiddleware({ app });
