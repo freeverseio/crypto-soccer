@@ -15,10 +15,13 @@
   "dependencies": {
     "apollo-link-http": "^1.5.16",
     "apollo-server": "^2.9.14",
+    "apollo-server-express": "^2.18.1",
+    "express": "4.17.1",
     "graphql": "^14.5.8",
     "graphql-request": "^3.0.0",
     "pg": "8.3.0",
-    "web3": "1.2.11"
+    "web3": "1.2.11",
+    "body-parser": "1.19.0"
   },
   "devDependencies": {
     "jest": "^26.3.0",
