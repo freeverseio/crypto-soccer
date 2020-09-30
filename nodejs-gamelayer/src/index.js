@@ -1,6 +1,4 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { ApolloServer } = require('apollo-server-express');
+const { ApolloServer } = require('apollo-server');
 const { HttpLink } = require('apollo-link-http');
 const {
   introspectSchema,
@@ -58,20 +56,9 @@ const main = async () => {
   });
 
   const server = new ApolloServer({ schema });
-  const app = express();
-  app.use(bodyParser.json());
-  app.post('/order/started', (req, res) => {
-    console.log(`Request in /order/started:`);
-    console.log('main -> req', req);
-    console.log('Req body: ', JSON.stringify(req.body));
-    console.log('Req headers: ', JSON.stringify(req.headers));
-    res.send('OK');
-  });
-  server.applyMiddleware({ app });
-  app.listen({ port: 4000 }, () => {
-    console.log(
-      `🚀 Server ready at http://localhost:4000${server.graphqlPath}`
-    );
+
+  server.listen().then(({ url }) => {
+    console.log(`🚀  Server ready at ${url}`);
   });
 };
 
