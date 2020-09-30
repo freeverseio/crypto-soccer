@@ -11,9 +11,7 @@ test('Team Hash', async () => {
   });
   const hash = teamValidation.hash();
 
-  expect(hash).toBe(
-    '0x074b4277787bca36334cf57f0507141ef743a08d7690dba02af123626e6955d0'
-  );
+  expect(hash).toBe('0x074b4277787bca36334cf57f0507141ef743a08d7690dba02af123626e6955d0');
 });
 
 test('Team PrefixedHash', async () => {
@@ -28,9 +26,7 @@ test('Team PrefixedHash', async () => {
   });
   const hash = teamValidation.prefixedHash();
 
-  expect(hash).toBe(
-    '0x34e71acf56fc4ad1a6e219dcc96bf5111d8092a6ab64308281a7c77525d2a404'
-  );
+  expect(hash).toBe('0x34e71acf56fc4ad1a6e219dcc96bf5111d8092a6ab64308281a7c77525d2a404');
 });
 
 test('Team signerAddress', async () => {

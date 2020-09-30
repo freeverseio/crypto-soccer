@@ -14,9 +14,7 @@ class HorizonService {
     `;
     const result = await request(this.endpoint, query);
 
-    return result && result.teamByTeamId && result.teamByTeamId.owner
-      ? result.teamByTeamId.owner
-      : '';
+    return result && result.teamByTeamId && result.teamByTeamId.owner ? result.teamByTeamId.owner : '';
   }
 
   async getPlayerOwner({ playerId }) {
