@@ -1,15 +1,10 @@
-FROM node:10
+FROM node:12-alpine 
 
-# Set the working directory to /app
+ENV PORT ${PORT}
 WORKDIR /app
-
-# Copy the current directory contents into the container at /appa
 COPY . /app
-
 RUN npm ci --only=production
-# If you are building your code for production
-# RUN npm ci --only=production
-
-EXPOSE 4000
-
+EXPOSE ${PORT}
+RUN chown -R node:node /app
+USER node
 ENTRYPOINT [ "npm", "start", "--" ]
