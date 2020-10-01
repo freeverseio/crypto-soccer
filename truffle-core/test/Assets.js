@@ -6,11 +6,16 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
+
+
+const { Signer } = require('../utils/MarketSigner.js');
+const signer = new Signer(web3);
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
 const marketUtils = require('../utils/marketUtils.js');
 const timeTravel = require('../utils/TimeTravel.js');
+const { assert } = require('chai');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Proxy = artifacts.require('Proxy');
@@ -102,6 +107,27 @@ contract('Assets', (accounts) => {
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
     
+
+
+    it('test from the field', async () => {
+        currencyId = 1;
+        price = 100;
+        rnd = 1597206901;
+        validUntil = 1601298513;
+        offerValidUntil = 1601298406;
+        playerId = 2748779076742;
+        seller = "0xaC347a9Fa330c6c23136F1460086D436ed55a3f8";
+        signature = "c0e41caec64adca10fe20063f67d45c7de48d8d1fec80175988a34b57a4cc6fe66a3bd9bda90280e5a6194b06e24e5c3679cf429527a40b3cfda9ce1e3fe90921b";
+        encryptedPrivKey = "lFHM/DuF/b9KGSba8makQ3uG85YCIMS+egCfAKqrOmZ9dXxC++fAa+63XZWgp7XTGbgTMwXFNDGyVXDL+oQUuKzLi+4z2HolcmY9TTKhsiOrf4q1x2dY9RmM2p51FnW4";
+        privKey = "0x473a556049fb15974a76d52783957804f33fe6987d8cb2f503553cdd1a421eaa";
+        hash = signer.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+
+        const sellAccount = web3.eth.accounts.privateKeyToAccount(privKey);
+        sig = signer.signAcceptPlayerOffer(currencyId, price, rnd, validUntil, offerValidUntil, playerId, sellAccount);
+        assert.equal(sig.signature, '0x'+signature);
+        assert.equal(sellAccount.address, seller);
+    });
+
     it('addDivisions and addCountries', async () => {
         result = await assets.countCountries(tz).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
@@ -632,14 +658,14 @@ contract('Assets', (accounts) => {
         rnd = 1234;
         validUntil = 235985749;
         offerValidUntil = 4358487;
-        sellerHiddenPrice = marketUtils.hidePrice(currencyId, price, rnd);
+        sellerHiddenPrice = signer.hideSellerPrice(currencyId, price, rnd);
 
         digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
         digest_BC = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
         digest_BC.toString().should.be.equal(digest_JS.toString());
         digest_BC.toString().should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
     
-        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digestNoPrefix = await signer.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
     
         const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
         const sigSeller = sellerAccount.sign(digestNoPrefix);
@@ -654,17 +680,17 @@ contract('Assets', (accounts) => {
         sigSeller.signature.should.be.equal('0xf0e4f8fe6502bb950fa45283832d117dda9876e1bf92c29808ab9072fd717cc3756ee55cd659cc33ed2d3d0aa6f290f3f583045e9b91c32cab64747b8b43c7701b');
 
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, 0).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, 0);
+        auctionId_JS = await signer.computeAuctionId(currencyId, price, rnd, playerId, validUntil, 0);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0x03214d89eb62587cbb48c9056dba878f839a4ebad3ad75f8826d76c566e4acd0");
 
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, offerValidUntil).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, offerValidUntil);
+        auctionId_JS = await signer.computeAuctionId(currencyId, price, rnd, playerId, validUntil, offerValidUntil);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
 
         auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, 0, offerValidUntil).should.be.fulfilled;
-        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, 0, offerValidUntil);
+        auctionId_JS = await signer.computeAuctionId(currencyId, price, rnd, playerId, 0, offerValidUntil);
         auctionId.toString().should.be.equal(auctionId_JS.toString());
         auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
     });
