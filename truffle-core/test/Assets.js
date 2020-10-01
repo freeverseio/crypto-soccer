@@ -106,8 +106,25 @@ contract('Assets', (accounts) => {
         N_DIVS_AT_START = N_DIVS_AT_START.toNumber();
         N_TEAMS_AT_START = N_DIVS_AT_START * LEAGUES_PER_DIV * TEAMS_PER_LEAGUE;
     });
-    
 
+    
+    it('test from the field (2)', async () => {
+        playerId = "274877906944";
+        pvc = "0xFE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85";
+        expectedHash = "0x978c23f58e78cae5d83b11b244d04c67bd802e70f7fda94bf940379a9713812e";
+        expectedSig = "8b641b11779fd458998b04fc90c35bb717237e72a8fa6ce045b1a38ad610a1f16b51d05a0521a65553167b9b4b8e4a5286648a727bc9b36a496d64bcaa5658a31b";
+        expectedEthAddr = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e";
+        actualSig = "0xa67621b4763db406f404c4a600ce0e79ee50147c209e85d2f146f0d760c0a1ac2a213a06f702995cee279af1f588b55c9fa462b2e6a9502d25cede77ec690ced1c";
+
+        account = web3.eth.accounts.privateKeyToAccount(pvc);
+        assert.equal(account.address, expectedEthAddr);
+
+        hash = signer.concatHash(["uint256"],[playerId]);
+        assert.equal(hash, expectedHash);
+
+        sig = account.sign(hash);
+        assert.equal(sig.signature, actualSig);
+    });
 
     it('test from the field', async () => {
         currencyId = 1;
@@ -127,6 +144,7 @@ contract('Assets', (accounts) => {
         assert.equal(sig.signature, '0x'+signature);
         assert.equal(sellAccount.address, seller);
     });
+
 
     it('addDivisions and addCountries', async () => {
         result = await assets.countCountries(tz).should.be.fulfilled;

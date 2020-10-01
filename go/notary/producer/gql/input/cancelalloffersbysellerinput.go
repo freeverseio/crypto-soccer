@@ -18,7 +18,7 @@ type CancelAllOffersBySellerInput struct {
 }
 
 func (b CancelAllOffersBySellerInput) Hash() (common.Hash, error) {
-	uint256Ty, _ := abi.NewType("int256", "int256", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
 
 	arguments := abi.Arguments{
 		{Type: uint256Ty},
