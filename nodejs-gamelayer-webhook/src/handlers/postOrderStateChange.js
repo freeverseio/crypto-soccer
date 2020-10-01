@@ -17,8 +17,9 @@ const postOrderStateChange = async (req, res) => {
     logger.debug(
       `Received:\nAuctionId: ${auctionId}\n--------\nTransactionName${name}\n--------\nStatus: ${status}\n--------\nTrustee Shortlink hash: ${hashTrusteeShortLink}\n--------\nShortlink Hash: ${hash}\n--------\n`
     );
-    // user horizon service to call notary new mutation
+
     await HorizonService.processAuction({ auctionId });
+
     res.sendStatus(200);
   } catch (e) {
     logger.error(e);

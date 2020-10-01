@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamelayer-webhook
+  labels:
+    app.kubernetes.io/app: gamelayer-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: gamelayer-webhook
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: gamelayer-webhook
+    spec:
+      containers:
+      - name: gamelayer-webhook
+        image: freeverseio/gamelayer.webhook:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        env:
+          - name: HORIZON_URL
+            value: http://horizon:4000/graphql
+          - name: LOG_LEVEL
+            value: info
+      imagePullSecrets:
+      - name: docker-secret

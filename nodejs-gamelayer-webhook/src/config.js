@@ -5,7 +5,7 @@ const horizonConfig = {
 };
 
 const loggerConfig = {
-  level: LOG_LEVEL || 'debug',
+  level: LOG_LEVEL || 'info',
 };
 
 module.exports = {

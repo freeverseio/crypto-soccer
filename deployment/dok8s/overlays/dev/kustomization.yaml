@@ -31,6 +31,8 @@ images:
   newTag: dev
 - name: freeverseio/gamelayer
   newTag: dev
+- name: freeverseio/gamelayer.webhook
+  newTag: dev
 patchesJson6902:
 - target:
     group: networking.k8s.io
