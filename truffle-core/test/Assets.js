@@ -126,6 +126,26 @@ contract('Assets', (accounts) => {
         assert.equal(sig.signature, actualSig);
     });
 
+    
+    it('test from the field (3)', async () => {
+        auctionId = "0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796";
+        pvc = "0xFE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85";
+        expectedHash = "0x20d4c8848f2c767dbe7dc79e56e05e61d717a27ec94d635d2ef888f20ed7335c";
+        expectedSig = "ae2431f4d5e8d8f05b3478bbaa293213c697c3d3ef09ff02b3a9b2ffb98199b25622dc55c1774809276149caac35cd1ccef358578a7c7b2aabd7ec0a15b017b81c";
+        expectedEthAddr = "0x83A909262608c650BD9b0ae06E29D90D0F67aC5e";
+        actualSig = "0xa67621b4763db406f404c4a600ce0e79ee50147c209e85d2f146f0d760c0a1ac2a213a06f702995cee279af1f588b55c9fa462b2e6a9502d25cede77ec690ced1c";
+
+        account = web3.eth.accounts.privateKeyToAccount(pvc);
+        assert.equal(account.address, expectedEthAddr);
+
+        hash = signer.concatHash(["bytes32"],[auctionId]);
+        assert.equal(hash, expectedHash);
+
+        sig = account.sign(hash);
+        assert.equal(sig.signature, actualSig);
+    });
+
+    return
     it('test from the field', async () => {
         currencyId = 1;
         price = 100;
