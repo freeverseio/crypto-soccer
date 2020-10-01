@@ -18,7 +18,7 @@ func TestCancelAllOffersBySellerHash(t *testing.T) {
 	in.PlayerId = "274877906944"
 	hash, err = in.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x978c23f58e78cae5d83b11b244d04c67bd802e70f7fda94bf940379a9713812e")
+	assert.Equal(t, hash.Hex(), "0x09ee27431fe606a3c506131fbd025a440d4318c40f1500ee0dea757cd6c67ccb")
 }
 func TestCancelAllOffersBySellerGetSigner(t *testing.T) {
 	in := input.CancelAllOffersBySellerInput{}
@@ -26,7 +26,7 @@ func TestCancelAllOffersBySellerGetSigner(t *testing.T) {
 
 	hash, err := in.Hash()
 	assert.NilError(t, err)
-	assert.Equal(t, hash.Hex(), "0x978c23f58e78cae5d83b11b244d04c67bd802e70f7fda94bf940379a9713812e")
+	assert.Equal(t, hash.Hex(), "0x09ee27431fe606a3c506131fbd025a440d4318c40f1500ee0dea757cd6c67ccb")
 
 	pvc, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	assert.NilError(t, err)
@@ -34,7 +34,7 @@ func TestCancelAllOffersBySellerGetSigner(t *testing.T) {
 	assert.NilError(t, err)
 
 	in.Signature = hex.EncodeToString(sign)
-	assert.Equal(t, in.Signature, "8b641b11779fd458998b04fc90c35bb717237e72a8fa6ce045b1a38ad610a1f16b51d05a0521a65553167b9b4b8e4a5286648a727bc9b36a496d64bcaa5658a31b")
+	assert.Equal(t, in.Signature, "a67621b4763db406f404c4a600ce0e79ee50147c209e85d2f146f0d760c0a1ac2a213a06f702995cee279af1f588b55c9fa462b2e6a9502d25cede77ec690ced1c")
 
 	address, err := in.SignerAddress()
 	assert.NilError(t, err)
