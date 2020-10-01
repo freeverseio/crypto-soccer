@@ -97,7 +97,7 @@ func (b *MarketPay) CreateOrder(
 func (b *MarketPay) GetOrder(hash string) (*marketpay.Order, error) {
 	url := b.endpoint + "/express/hash/" + hash
 	method := "GET"
-
+	log.Debugf("Market Pay Get Order, url: %v\n", url)
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -116,7 +116,12 @@ func (b *MarketPay) GetOrder(hash string) (*marketpay.Order, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("Market pay Get Order response: %v\n", res)
 	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Non-OK HTTP status: %v", res.StatusCode)
+	}
+
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err

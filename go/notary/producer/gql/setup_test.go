@@ -21,6 +21,14 @@ var googleCredentials []byte
 var db *sql.DB
 var service storage.StorageService
 
+// var nHumanTeams *big.Int
+// var offererTeamIdx int64
+// var sellerTeamIdx int64
+// var offererTeamId *big.Int
+// var offerer *ecdsa.PrivateKey
+// var seller *ecdsa.PrivateKey
+// var playerId *big.Int
+
 func TestMain(m *testing.M) {
 	var err error
 	namesdb, err = names.New("../../../names/sql/names.db")

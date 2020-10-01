@@ -2,28 +2,39 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
-func (b StorageHistoryService) OfferInsert(tx *sql.Tx, offer storage.Offer) error {
-	err := b.StorageService.OfferInsert(tx, offer)
+func (b *StorageHistoryTx) OfferInsert(offer storage.Offer) error {
+	err := b.Tx.OfferInsert(offer)
 	if err != nil {
 		return err
 	}
-	return offerInsertHistory(tx, offer)
+	return offerInsertHistory(b.Tx.tx, offer)
 }
 
-func (b StorageHistoryService) OfferUpdate(tx *sql.Tx, offer storage.Offer) error {
-	if err := b.StorageService.OfferUpdate(tx, offer); err != nil {
+func (b *StorageHistoryTx) OfferUpdate(offer storage.Offer) error {
+	currentOffer, err := b.Tx.Offer(offer.AuctionID)
+	if err != nil {
 		return err
 	}
-	return offerInsertHistory(tx, offer)
+	if currentOffer == nil {
+		return errors.New("could not find offer in StorageHistoryTx")
+	}
+	if *currentOffer == offer {
+		return nil
+	}
+	if err := b.Tx.OfferUpdate(offer); err != nil {
+		return err
+	}
+	return offerInsertHistory(b.Tx.tx, offer)
 }
 
 func offerInsertHistory(tx *sql.Tx, offer storage.Offer) error {
-	_, err := tx.Exec("INSERT INTO offers_histories (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
-		offer.ID,
+	_, err := tx.Exec("INSERT INTO offers_histories (auction_id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+		offer.AuctionID,
 		offer.PlayerID,
 		offer.CurrencyID,
 		offer.Price,

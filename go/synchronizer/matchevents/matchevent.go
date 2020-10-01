@@ -3,7 +3,6 @@ package matchevents
 import (
 	"errors"
 	"fmt"
-	"hash/fnv"
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -50,14 +49,8 @@ func MarchEventTypeByMatchEvent(event int16) (storage.MatchEventType, error) {
 	}
 }
 
-func int_hash(s string) uint64 {
-	h := fnv.New64a()
-	h.Write([]byte(s))
-	return h.Sum64()
-}
-
 func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
-	var result uint64 = int_hash(seed.String() + salt)
+	var result uint64 = IntHash(seed.String() + salt)
 	if max_val == 0 {
 		return result
 	}

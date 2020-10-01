@@ -57,19 +57,7 @@ func (b DismissPlayerInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
-}
-
-func (b DismissPlayerInput) VerifySignature() (bool, error) {
-	hash, err := b.Hash()
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
+	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
 func (b DismissPlayerInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {

@@ -20,7 +20,7 @@ func TestLeaderboardServiceFrom1200NoMatches(t *testing.T) {
 		return []storage.Match{}, nil
 	}
 	service := leaderboard.NewLeaderboardService(*sto)
-	assert.NilError(t, service.UpdateTimezoneLeaderboardsFrom1200(*bc.Contracts, matchDay, timezone))
+	assert.NilError(t, service.UpdateTimezoneLeaderboardsNew(*bc.Contracts, matchDay, timezone))
 }
 
 func TestLeaderboardServiceFrom12001Match(t *testing.T) {
@@ -31,7 +31,7 @@ func TestLeaderboardServiceFrom12001Match(t *testing.T) {
 		return []storage.Match{storage.Match{}}, nil
 	}
 	service := leaderboard.NewLeaderboardService(sto)
-	assert.Error(t, service.UpdateTimezoneLeaderboardsFrom1200(*bc.Contracts, matchDay, timezone), "matches count not multiple 56")
+	assert.Error(t, service.UpdateTimezoneLeaderboardsNew(*bc.Contracts, matchDay, timezone), "matches count not multiple 56")
 }
 
 func TestLeaderboardServiceFrom1200League(t *testing.T) {
@@ -65,7 +65,7 @@ func TestLeaderboardServiceFrom1200League(t *testing.T) {
 	service := leaderboard.NewLeaderboardService(sto)
 	timezone := 10
 	matchDay := 15
-	assert.NilError(t, service.UpdateTimezoneLeaderboardsFrom1200(*bc.Contracts, matchDay, timezone))
+	assert.NilError(t, service.UpdateTimezoneLeaderboardsNew(*bc.Contracts, matchDay, timezone))
 
 	golden.Assert(t, dump.Sdump(teams), t.Name()+".golden")
 }

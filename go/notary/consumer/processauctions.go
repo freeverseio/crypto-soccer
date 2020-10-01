@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"crypto/ecdsa"
-	"database/sql"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/marketpay"
@@ -12,13 +11,12 @@ import (
 )
 
 func ProcessAuctions(
-	service storage.StorageService,
+	service storage.Tx,
 	market marketpay.MarketPayService,
-	tx *sql.Tx,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 ) error {
-	auctions, err := service.AuctionPendingAuctions(tx)
+	auctions, err := service.AuctionPendingAuctions()
 	if err != nil {
 		return err
 	}
@@ -27,7 +25,6 @@ func ProcessAuctions(
 		if err := processAuction(
 			service,
 			market,
-			tx,
 			auction,
 			pvc,
 			contracts,
@@ -39,33 +36,29 @@ func ProcessAuctions(
 }
 
 func processAuction(
-	service storage.StorageService,
+	service storage.Tx,
 	market marketpay.MarketPayService,
-	tx *sql.Tx,
 	auction storage.Auction,
 	pvc *ecdsa.PrivateKey,
 	contracts contracts.Contracts,
 ) error {
-	bids, err := service.Bids(tx, auction.ID)
+	bids, err := service.Bids(auction.ID)
 	if err != nil {
 		return err
 	}
-	offer, err := service.OfferByAuctionId(tx, auction.ID)
-	if err != nil {
-		return err
-	}
-	am, err := auctionmachine.New(auction, bids, offer, contracts, pvc)
+
+	am, err := auctionmachine.New(auction, bids, contracts, pvc)
 	if err != nil {
 		return err
 	}
 	if err := am.Process(market); err != nil {
 		return err
 	}
-	if err := service.AuctionUpdate(tx, am.Auction()); err != nil {
+	if err := service.AuctionUpdate(am.Auction()); err != nil {
 		return err
 	}
 	for _, bid := range am.Bids() {
-		if err := service.BidUpdate(tx, bid); err != nil {
+		if err := service.BidUpdate(bid); err != nil {
 			return err
 		}
 	}

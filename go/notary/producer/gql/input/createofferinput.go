@@ -1,7 +1,6 @@
 package input
 
 import (
-	"database/sql"
 	"encoding/hex"
 	"errors"
 	"math/big"
@@ -29,11 +28,33 @@ type CreateOfferInput struct {
 }
 
 func (b CreateOfferInput) ID(contracts contracts.Contracts) (graphql.ID, error) {
-	hash, err := b.Hash(contracts)
-	if err != nil {
-		return graphql.ID(""), err
+	teamId, _ := new(big.Int).SetString(b.BuyerTeamId, 10)
+	if teamId == nil {
+		return graphql.ID(""), errors.New("invalid teamId")
 	}
-	return graphql.ID(hash.String()[2:]), nil
+	validUntil, err := strconv.ParseInt(b.ValidUntil, 10, 64)
+	if err != nil {
+		return graphql.ID(""), errors.New("invalid validUntil")
+	}
+	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
+	if playerId == nil {
+		return graphql.ID(""), errors.New("invalid playerId")
+	}
+	dummyValidUntil := int64(0)
+	// the validUntil of the offer becomes the offerValidUntil of the auction
+	// the seller adds the new validUntil
+	auctionId, err := signer.ComputeAuctionId(
+		uint8(b.CurrencyId),
+		big.NewInt(int64(b.Price)),
+		big.NewInt(int64(b.Rnd)),
+		dummyValidUntil,
+		validUntil,
+		playerId,
+	)
+	if err != nil {
+		return graphql.ID(""), errors.New("invalid validUntil")
+	}
+	return graphql.ID(auctionId.String()[2:]), nil
 }
 
 func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, error) {
@@ -49,36 +70,34 @@ func (b CreateOfferInput) Hash(contracts contracts.Contracts) (common.Hash, erro
 	if playerId == nil {
 		return common.Hash{}, errors.New("invalid playerId")
 	}
-	dummyRnd := int64(0)
-
-	hash, err := signer.HashBidMessage(
-		contracts.Market,
+	dummyValidUntil := int64(0)
+	// the validUntil of the offer becomes the offerValidUntil of the auction
+	// the seller adds the new validUntil
+	auctionId, err := signer.ComputeAuctionId(
 		uint8(b.CurrencyId),
 		big.NewInt(int64(b.Price)),
 		big.NewInt(int64(b.Rnd)),
+		dummyValidUntil,
 		validUntil,
 		playerId,
-		big.NewInt(0),
-		big.NewInt(dummyRnd),
+	)
+	if err != nil {
+		return common.Hash{}, errors.New("invalid validUntil")
+	}
+	dummyExtraPrice := big.NewInt(0)
+	dummyRnd := big.NewInt(0)
+
+	hash, err := signer.HashBidMessageFromAuctionId(
+		contracts.Market,
+		auctionId,
+		dummyExtraPrice,
+		dummyRnd,
 		teamId,
-		true,
 	)
 	if err != nil {
 		return common.Hash{}, err
 	}
 	return common.Hash(hash), nil
-}
-
-func (b CreateOfferInput) VerifySignature(contracts contracts.Contracts) (bool, error) {
-	hash, err := b.Hash(contracts)
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
 }
 
 func (b CreateOfferInput) SignerAddress(contracts contracts.Contracts) (common.Address, error) {
@@ -90,26 +109,26 @@ func (b CreateOfferInput) SignerAddress(contracts contracts.Contracts) (common.A
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
+	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
-func (b CreateOfferInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
+func (b CreateOfferInput) SignerAlreadyOwnsPlayer(contracts contracts.Contracts) (bool, error) {
 	signerAddress, err := b.SignerAddress(contracts)
 	if err != nil {
 		return false, err
 	}
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
-		return false, errors.New("invalid playerId")
+		return false, errors.New("invalid BuyerTeamId")
 	}
-	owner, err := contracts.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
+	owner, err := contracts.Market.GetOwnerTeam(&bind.CallOpts{}, playerId)
 	if err != nil {
 		return false, err
 	}
 	return signerAddress == owner, nil
 }
 
-func (b CreateOfferInput) GetOwner(contracts contracts.Contracts) (common.Address, error) {
+func (b CreateOfferInput) GetOwnerOfRequestedPlayer(contracts contracts.Contracts) (common.Address, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return common.Address{}, errors.New("invalid playerId")
@@ -121,11 +140,7 @@ func (b CreateOfferInput) GetOwner(contracts contracts.Contracts) (common.Addres
 	return owner, nil
 }
 
-func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool, error) {
-	signerAddress, err := b.SignerAddress(contracts)
-	if err != nil {
-		return false, err
-	}
+func (b CreateOfferInput) IsAddrTeamOwner(contracts contracts.Contracts, addr common.Address) (bool, error) {
 	teamId, _ := new(big.Int).SetString(b.BuyerTeamId, 10)
 	if teamId == nil {
 		return false, errors.New("invalid teamId")
@@ -134,7 +149,15 @@ func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool
 	if err != nil {
 		return false, err
 	}
-	return signerAddress == owner, nil
+	return addr == owner, nil
+}
+
+func (b CreateOfferInput) IsSignerTeamOwner(contracts contracts.Contracts) (bool, error) {
+	signerAddress, err := b.SignerAddress(contracts)
+	if err != nil {
+		return false, err
+	}
+	return b.IsAddrTeamOwner(contracts, signerAddress)
 }
 
 func (b CreateOfferInput) IsPlayerFrozen(contracts contracts.Contracts) (bool, error) {
@@ -149,13 +172,13 @@ func (b CreateOfferInput) IsPlayerFrozen(contracts contracts.Contracts) (bool, e
 	return isFrozen, nil
 }
 
-func (b CreateOfferInput) IsPlayerOnSale(contracts contracts.Contracts, service storage.StorageService, tx *sql.Tx) (bool, error) {
+func (b CreateOfferInput) IsPlayerOnSale(tx storage.Tx) (bool, error) {
 	playerId, _ := new(big.Int).SetString(b.PlayerId, 10)
 	if playerId == nil {
 		return false, errors.New("invalid playerId")
 	}
 
-	auctions, err := service.AuctionsByPlayerId(tx, b.PlayerId)
+	auctions, err := tx.AuctionsByPlayerId(b.PlayerId)
 	if err != nil {
 		return false, err
 	}

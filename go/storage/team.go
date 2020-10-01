@@ -32,6 +32,7 @@ type Team struct {
 	TrainingPoints      uint16
 	Tactic              string
 	MatchLog            string
+	IsZombie            bool
 }
 
 type TeamStorageService interface {
@@ -41,6 +42,8 @@ type TeamStorageService interface {
 	UpdateManagerName(teamId string, name string) error
 	UpdateLeaderboardPosition(teamId string, position int) error
 	TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error)
+	TeamUpdateZombies() error
+	TeamCleanZombies() error
 }
 
 func NewTeam() *Team {
@@ -183,6 +186,26 @@ func TeamsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countr
 	return teams, nil
 }
 
+func TeamIdsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]string, error) {
+	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var teamsIds []string
+	for rows.Next() {
+		var teamID string
+		err = rows.Scan(
+			&teamID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		teamsIds = append(teamsIds, teamID)
+	}
+	return teamsIds, nil
+}
+
 func TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, teamIdxInLeague uint32) (*big.Int, error) {
 	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND team_idx_in_league = $4);", timezoneIdx, countryIdx, leagueIdx, teamIdxInLeague)
 	if err != nil {
@@ -229,7 +252,8 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	tactic,
 	match_log,
 	manager_name,
-	leaderboard_position
+	leaderboard_position,
+	is_zombie
 	FROM teams WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return team, err
@@ -259,9 +283,22 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 		&team.MatchLog,
 		&team.ManagerName,
 		&team.LeaderboardPosition,
+		&team.IsZombie,
 	)
 	if err != nil {
 		return team, err
 	}
 	return team, nil
+}
+
+func TeamUpdateZombies(tx *sql.Tx) error {
+	log.Debugf("[DBMS] TeamUpdateZombies")
+	_, err := tx.Exec("UPDATE teams SET is_zombie=true WHERE team_id IN (SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count >= 9);")
+	return err
+}
+
+func TeamCleanZombies(tx *sql.Tx) error {
+	log.Debugf("[DBMS] TeamCleanZombies")
+	_, err := tx.Exec("UPDATE teams SET is_zombie=false WHERE team_id NOT IN (SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count >= 9);")
+	return err
 }

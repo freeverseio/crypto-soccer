@@ -33,13 +33,17 @@ type AuthProxy struct {
 	cache         *gocache.Cache
 	gracetime     int
 	debug         bool
+	domain        string
 	serverService ServerService
+	allowHeaders        string
 }
 
 func New(
 	timeout int,
 	gracetime int,
 	serverService ServerService,
+	domain string,
+	allowHeaders string,
 
 ) *AuthProxy {
 	return &AuthProxy{
@@ -49,6 +53,8 @@ func New(
 		// default expiration time of 5 minutes, and purges expired items every 2 minute
 		cache:         gocache.New(5*time.Minute, 2*time.Minute),
 		serverService: serverService,
+		domain:        domain,
+		allowHeaders:  allowHeaders,
 	}
 }
 
@@ -63,7 +69,6 @@ func (b *AuthProxy) SetBackdoor(active bool) {
 var opid uint64
 
 func (b *AuthProxy) checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
-
 	// check if token is well formed
 	auth := strings.TrimSpace(r.Header.Get("Authorization"))
 	if !strings.HasPrefix(auth, "Bearer") {
@@ -123,6 +128,14 @@ func (b *AuthProxy) Gqlproxy(w http.ResponseWriter, r *http.Request) {
 		// metricsOpsFailed.Inc()
 		log.Error("[", op, "] ", err)
 		http.Error(w, fmt.Sprintf("Internal error traceid:%v", op), http.StatusInternalServerError)
+	}
+
+	//enable cors
+	w.Header().Set("Access-Control-Allow-Origin", b.domain)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", b.allowHeaders)
+	if (*r).Method == "OPTIONS" {
+		return
 	}
 
 	// set the maximum time for the whole operation

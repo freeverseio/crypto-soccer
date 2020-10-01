@@ -1,14 +1,42 @@
 package postgres
 
 import (
-	"database/sql"
-
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
-func (b StorageService) Bids(tx *sql.Tx, ID string) ([]storage.Bid, error) {
-	rows, err := tx.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1;", ID)
+func (b *Tx) Bid(auctionId string, extraPrice int64) (*storage.Bid, error) {
+	rows, err := b.tx.Query("SELECT rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1 AND extra_price=$2;", auctionId, extraPrice)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
+	var bid storage.Bid
+	bid.AuctionID = auctionId
+	bid.ExtraPrice = extraPrice
+	err = rows.Scan(
+		&bid.Rnd,
+		&bid.TeamID,
+		&bid.Signature,
+		&bid.State,
+		&bid.StateExtra,
+		&bid.PaymentID,
+		&bid.PaymentURL,
+		&bid.PaymentDeadline,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &bid, nil
+}
+
+func (b *Tx) Bids(ID string) ([]storage.Bid, error) {
+	rows, err := b.tx.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction_id=$1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +65,9 @@ func (b StorageService) Bids(tx *sql.Tx, ID string) ([]storage.Bid, error) {
 	return bids, nil
 }
 
-func (b StorageService) BidInsert(tx *sql.Tx, bid storage.Bid) error {
+func (b *Tx) BidInsert(bid storage.Bid) error {
 	log.Debugf("[DBMS] + create Bid %v", b)
-	_, err := tx.Exec(`INSERT INTO bids 
+	_, err := b.tx.Exec(`INSERT INTO bids 
 			(auction_id, 
 			extra_price,
 			rnd, 
@@ -65,9 +93,9 @@ func (b StorageService) BidInsert(tx *sql.Tx, bid storage.Bid) error {
 	return err
 }
 
-func (b StorageService) BidUpdate(tx *sql.Tx, bid storage.Bid) error {
+func (b *Tx) BidUpdate(bid storage.Bid) error {
 	log.Debugf("[DBMS] + update Bid %v", b)
-	_, err := tx.Exec(`UPDATE bids SET 
+	_, err := b.tx.Exec(`UPDATE bids SET 
 		state=$1, 
 		state_extra=$2,
 		payment_id=$3,

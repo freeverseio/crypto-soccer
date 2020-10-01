@@ -625,8 +625,51 @@ contract('Assets', (accounts) => {
         shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);
     });
 
+    it("computePutAssetForSaleDigest and computeAuctionId (ref XX1)", async () => {
+        currencyId = 1;
+        playerId = 11114324213423;
+        price = 345;
+        rnd = 1234;
+        validUntil = 235985749;
+        offerValidUntil = 4358487;
+        sellerHiddenPrice = marketUtils.hidePrice(currencyId, price, rnd);
+
+        digest_JS = await marketUtils.computePutAssetForSaleDigest(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+        digest_BC = await market.computePutAssetForSaleDigest(sellerHiddenPrice, playerId, validUntil, offerValidUntil);
+        digest_BC.toString().should.be.equal(digest_JS.toString());
+        digest_BC.toString().should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
     
-   it('transferPlayer', async () => {
+        digestNoPrefix = await marketUtils.computePutAssetForSaleDigestNoPrefix(currencyId, price, rnd, validUntil, offerValidUntil, playerId);
+    
+        const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+        const sigSeller = sellerAccount.sign(digestNoPrefix);
+    
+        digestNoPrefix.toString().should.be.equal(sigSeller.message);
+    
+        console.log(sellerAccount.address);
+        console.log(sigSeller);
+    
+        sigSeller.message.should.be.equal('0x4d87a039e857f2b3d2975a8b198fe0ff7b71a734347a612436e1190688d2bb69');
+        sigSeller.messageHash.should.be.equal('0x376b87a3db2c3ef6e1189a96303454a32fd8bf21bfe0a470e68be98e57d36495');
+        sigSeller.signature.should.be.equal('0xf0e4f8fe6502bb950fa45283832d117dda9876e1bf92c29808ab9072fd717cc3756ee55cd659cc33ed2d3d0aa6f290f3f583045e9b91c32cab64747b8b43c7701b');
+
+        auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, 0).should.be.fulfilled;
+        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, 0);
+        auctionId.toString().should.be.equal(auctionId_JS.toString());
+        auctionId.toString().should.be.equal("0x03214d89eb62587cbb48c9056dba878f839a4ebad3ad75f8826d76c566e4acd0");
+
+        auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, validUntil, offerValidUntil).should.be.fulfilled;
+        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, validUntil, offerValidUntil);
+        auctionId.toString().should.be.equal(auctionId_JS.toString());
+        auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
+
+        auctionId = await market.computeAuctionId(sellerHiddenPrice, playerId, 0, offerValidUntil).should.be.fulfilled;
+        auctionId_JS = await marketUtils.computeAuctionId(currencyId, price, rnd, playerId, 0, offerValidUntil);
+        auctionId.toString().should.be.equal(auctionId_JS.toString());
+        auctionId.toString().should.be.equal("0xf06dfe068a4aa5621dddc8d424ca97c0bd6a2ef5e9af94ba6ba3550beb6e0438");
+    });
+
+    it('transferPlayer', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 

@@ -61,7 +61,7 @@ func (b SubmitPlayStorePlayerPurchaseInput) SignerAddress() (common.Address, err
 	if err != nil {
 		return common.Address{}, err
 	}
-	return helper.AddressFromSignature(hash, sign)
+	return helper.AddressFromHashAndSignature(hash, sign)
 }
 
 func (b SubmitPlayStorePlayerPurchaseInput) IsSignerOwner(contracts contracts.Contracts) (bool, error) {
@@ -78,16 +78,4 @@ func (b SubmitPlayStorePlayerPurchaseInput) IsSignerOwner(contracts contracts.Co
 		return false, err
 	}
 	return signerAddress == owner, nil
-}
-
-func (b SubmitPlayStorePlayerPurchaseInput) IsValidSignature() (bool, error) {
-	hash, err := b.Hash()
-	if err != nil {
-		return false, err
-	}
-	sign, err := hex.DecodeString(b.Signature)
-	if err != nil {
-		return false, err
-	}
-	return helper.VerifySignature(hash, sign)
 }

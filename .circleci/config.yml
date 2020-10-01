@@ -19,7 +19,7 @@ executors:
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
-      - image: postgres:alpine
+      - image: postgres:12.4-alpine
         environment:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
@@ -34,7 +34,7 @@ executors:
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
-      - image: postgres:alpine
+      - image: postgres:12.4-alpine
         environment:
           - POSTGRES_USER=freeverse
           - POSTGRES_PASSWORD=freeverse
@@ -89,6 +89,7 @@ jobs:
     steps:
       - checkout
       - run: cd nodejs-gamelayer && npm ci
+      - run: cd nodejs-gamelayer && npm run lint
       - run: cd nodejs-gamelayer && npm run test
   truffle_core:
     executor: freeverse

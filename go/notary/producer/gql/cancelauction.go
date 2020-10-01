@@ -13,17 +13,36 @@ func (b *Resolver) CancelAuction(args struct{ Input input.CancelAuctionInput }) 
 
 	id := args.Input.AuctionId
 
-	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
-	}
-
-	isValid, err := args.Input.VerifySignature()
+	tx, err := b.service.Begin()
 	if err != nil {
 		return id, err
 	}
-	if !isValid {
-		return id, errors.New("Invalid signature")
+
+	if string(args.Input.AuctionId) == "" {
+		return id, errors.New("empty AuctionId when trying to cancel an auction")
 	}
 
-	return id, b.push(args.Input)
+	auction, err := tx.Auction(string(args.Input.AuctionId))
+	if err != nil {
+		return id, err
+	}
+	if auction == nil {
+		return id, errors.New("could not find an auction to cancel")
+	}
+
+	signer, err := args.Input.SignerAddress()
+	if err != nil {
+		return id, err
+	}
+
+	if signer.Hex() != auction.Seller {
+		return id, errors.New("Signer of CancelAuction is not the Seller")
+	}
+
+	if err := tx.AuctionCancel(string(args.Input.AuctionId)); err != nil {
+		tx.Rollback()
+		return id, err
+	}
+
+	return id, tx.Commit()
 }

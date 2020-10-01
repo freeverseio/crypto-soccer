@@ -47,6 +47,7 @@ services:
       -proxy_address "${PROXY_CONTRACT_ADDRESS}"
       -staker "${STAKER_PVC}"
       -delta "${BLOCKS_PER_STEP}"
+      -config-file=config_prod.json
       # -debug
     depends_on:
       - universe.db

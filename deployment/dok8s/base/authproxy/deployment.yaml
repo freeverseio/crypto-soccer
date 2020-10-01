@@ -22,7 +22,9 @@ spec:
           - configMapRef:
               name: freeverse-configmap
         args: [-timeout=30,
-               -gqlurl, "http://gamelayer:4000", "$(authproxy_extra_args)"]
+               -gqlurl, "http://gamelayer:4000",
+               -domain, "$(domain)",
+               -allowHeaders, "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization", "$(authproxy_extra_args)"]
 
       imagePullSecrets:
       - name: docker-secret

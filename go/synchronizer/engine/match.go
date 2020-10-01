@@ -13,6 +13,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type Match struct {
@@ -22,8 +23,6 @@ type Match struct {
 	VisitorTeam Team
 	Events      matchevents.MatchEvents
 }
-
-const Version2StartEpoch = 1598918400
 
 const isHomeStadium = true
 const isPlayoff = false
@@ -121,8 +120,10 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber 
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
+	version2StartEpoch := viper.GetInt64("patch.engine_version_2")
+
 	var err error
-	if b.StartTime.Cmp(big.NewInt(Version2StartEpoch)) < 0 {
+	if b.StartTime.Cmp(big.NewInt(version2StartEpoch)) < 0 {
 		err = b.play1stHalfV1(contracts)
 	} else {
 		err = b.play1stHalfV2(contracts)
@@ -154,6 +155,8 @@ func (b *Match) play1stHalfV1(contracts contracts.Contracts) error {
 		return errors.Wrap(err, "failed calculating visitor assignedTP")
 	}
 	var BCError uint8
+	isHomeBotOrZombie := b.HomeTeam.IsBot() || b.HomeTeam.IsZombie
+	isVisitorBotOrZombie := b.VisitorTeam.IsBot() || b.VisitorTeam.IsZombie
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -162,7 +165,7 @@ func (b *Match) play1stHalfV1(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, isHomeBotOrZombie, isVisitorBotOrZombie},
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	if err != nil {
@@ -226,6 +229,8 @@ func (b *Match) play1stHalfV2(contracts contracts.Contracts) error {
 		visitorAssignedTP = big.NewInt(0)
 	}
 	var BCError uint8
+	isHomeBotOrZombie := b.HomeTeam.IsBot() || b.HomeTeam.IsZombie
+	isVisitorBotOrZombie := b.VisitorTeam.IsBot() || b.VisitorTeam.IsZombie
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play1stHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -234,7 +239,7 @@ func (b *Match) play1stHalfV2(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, isHomeBotOrZombie, isVisitorBotOrZombie},
 		[2]*big.Int{homeAssignedTP, visitorAssignedTP},
 	)
 	// We have two types of possible errors returned:
@@ -288,6 +293,8 @@ func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	var BCError uint8
+	isHomeBotOrZombie := b.HomeTeam.IsBot() || b.HomeTeam.IsZombie
+	isVisitorBotOrZombie := b.VisitorTeam.IsBot() || b.VisitorTeam.IsZombie
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -296,7 +303,7 @@ func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, isHomeBotOrZombie, isVisitorBotOrZombie},
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed play2ndHalfAndEvolve")
@@ -338,8 +345,10 @@ func (b *Match) play2ndHalfV1(contracts contracts.Contracts) error {
 }
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
+	version2StartEpoch := viper.GetInt64("patch.engine_version_2")
+
 	var err error
-	if b.StartTime.Cmp(big.NewInt(Version2StartEpoch)) < 0 {
+	if b.StartTime.Cmp(big.NewInt(version2StartEpoch)) < 0 {
 		err = b.play2ndHalfV1(contracts)
 	} else {
 		err = b.play2ndHalfV2(contracts)
@@ -363,6 +372,8 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 	matchLogs[0], _ = new(big.Int).SetString(b.HomeTeam.MatchLog, 10)
 	matchLogs[1], _ = new(big.Int).SetString(b.VisitorTeam.MatchLog, 10)
 	var BCError uint8
+	isHomeBotOrZombie := b.HomeTeam.IsBot() || b.HomeTeam.IsZombie
+	isVisitorBotOrZombie := b.VisitorTeam.IsBot() || b.VisitorTeam.IsZombie
 	newSkills, logsAndEvents, BCError, err := contracts.PlayAndEvolve.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		b.Seed,
@@ -371,7 +382,7 @@ func (b *Match) play2ndHalfV2(contracts contracts.Contracts) error {
 		[2]*big.Int{homeTeamID, visitorTeamID},
 		[2]*big.Int{homeTactic, visitorTactic},
 		matchLogs,
-		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, b.HomeTeam.IsBot(), b.VisitorTeam.IsBot()},
+		[5]bool{is2ndHalf, isHomeStadium, isPlayoff, isHomeBotOrZombie, isVisitorBotOrZombie},
 	)
 	// We have two types of possible errors returned:
 	// - Virtual Machine errors (never expected), err != nil => halt

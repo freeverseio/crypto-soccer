@@ -1,14 +1,12 @@
 package postgres
 
 import (
-	"database/sql"
-
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
-func (b StorageService) AuctionPendingAuctions(tx *sql.Tx) ([]storage.Auction, error) {
-	rows, err := tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
+func (b *Tx) AuctionPendingAuctions() ([]storage.Auction, error) {
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended');")
 	if err != nil {
 		return nil, err
 	}
@@ -23,6 +21,7 @@ func (b StorageService) AuctionPendingAuctions(tx *sql.Tx) ([]storage.Auction, e
 			&auction.Price,
 			&auction.Rnd,
 			&auction.ValidUntil,
+			&auction.OfferValidUntil,
 			&auction.Signature,
 			&auction.State,
 			&auction.PaymentURL,
@@ -34,8 +33,8 @@ func (b StorageService) AuctionPendingAuctions(tx *sql.Tx) ([]storage.Auction, e
 	return auctions, err
 }
 
-func (b StorageService) Auction(tx *sql.Tx, ID string) (*storage.Auction, error) {
-	rows, err := tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE id = $1;", ID)
+func (b *Tx) Auction(ID string) (*storage.Auction, error) {
+	rows, err := b.tx.Query("SELECT player_id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE id = $1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +50,7 @@ func (b StorageService) Auction(tx *sql.Tx, ID string) (*storage.Auction, error)
 		&auction.Price,
 		&auction.Rnd,
 		&auction.ValidUntil,
+		&auction.OfferValidUntil,
 		&auction.Signature,
 		&auction.State,
 		&auction.PaymentURL,
@@ -60,8 +60,8 @@ func (b StorageService) Auction(tx *sql.Tx, ID string) (*storage.Auction, error)
 	return &auction, err
 }
 
-func (b StorageService) AuctionsByPlayerId(tx *sql.Tx, ID string) ([]storage.Auction, error) {
-	rows, err := tx.Query("SELECT id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE player_id = $1;", ID)
+func (b *Tx) AuctionsByPlayerId(ID string) ([]storage.Auction, error) {
+	rows, err := b.tx.Query("SELECT id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE player_id = $1;", ID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +76,7 @@ func (b StorageService) AuctionsByPlayerId(tx *sql.Tx, ID string) ([]storage.Auc
 			&auction.Price,
 			&auction.Rnd,
 			&auction.ValidUntil,
+			&auction.OfferValidUntil,
 			&auction.Signature,
 			&auction.State,
 			&auction.PaymentURL,
@@ -91,15 +92,16 @@ func (b StorageService) AuctionsByPlayerId(tx *sql.Tx, ID string) ([]storage.Auc
 	return auctions, err
 }
 
-func (b StorageService) AuctionInsert(tx *sql.Tx, auction storage.Auction) error {
+func (b *Tx) AuctionInsert(auction storage.Auction) error {
 	log.Debugf("[DBMS] + create Auction %v", b)
-	_, err := tx.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, payment_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
+	_, err := b.tx.Exec("INSERT INTO auctions (id, player_id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, state_extra, seller, payment_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		auction.ID,
 		auction.PlayerID,
 		auction.CurrencyID,
 		auction.Price,
 		auction.Rnd,
 		auction.ValidUntil,
+		auction.OfferValidUntil,
 		auction.Signature,
 		auction.State,
 		auction.StateExtra,
@@ -109,9 +111,9 @@ func (b StorageService) AuctionInsert(tx *sql.Tx, auction storage.Auction) error
 	return err
 }
 
-func (b StorageService) AuctionUpdate(tx *sql.Tx, auction storage.Auction) error {
+func (b *Tx) AuctionUpdate(auction storage.Auction) error {
 	log.Debugf("[DBMS] + update Auction %v", b)
-	_, err := tx.Exec(`UPDATE auctions SET 
+	_, err := b.tx.Exec(`UPDATE auctions SET 
 		state=$1, 
 		state_extra=$2,
 		payment_url=$3
@@ -120,6 +122,17 @@ func (b StorageService) AuctionUpdate(tx *sql.Tx, auction storage.Auction) error
 		auction.StateExtra,
 		auction.PaymentURL,
 		auction.ID,
+	)
+	return err
+}
+
+func (b *Tx) AuctionCancel(ID string) error {
+	log.Debugf("[DBMS] + cancel Auction %v", b)
+	_, err := b.tx.Exec(`UPDATE auctions SET 
+		state=$1 
+		WHERE id=$2;`,
+		storage.AuctionCancelled,
+		ID,
 	)
 	return err
 }

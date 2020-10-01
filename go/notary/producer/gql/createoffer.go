@@ -3,8 +3,12 @@ package gql
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"time"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,19 +21,16 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return graphql.ID(""), err
 	}
 
-	if b.ch == nil {
-		return id, errors.New("internal error: no channel")
-	}
-
-	isValid, err := args.Input.VerifySignature(b.contracts)
+	offerValidUntil, err := strconv.ParseInt(args.Input.ValidUntil, 10, 64)
 	if err != nil {
-		return id, err
-	}
-	if !isValid {
-		return id, errors.New("Invalid signature")
+		return graphql.ID(""), err
 	}
 
-	isPlayerOwner, err := args.Input.IsSignerOwner(b.contracts)
+	if offerValidUntil <= time.Now().Unix() {
+		return id, errors.New("offer validUntil already expired")
+	}
+
+	isPlayerOwner, err := args.Input.SignerAlreadyOwnsPlayer(b.contracts)
 	if err != nil {
 		return id, err
 	}
@@ -47,12 +48,12 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, fmt.Errorf("signer is not the owner of teamId %v", args.Input.BuyerTeamId)
 	}
 
-	tx, err := b.service.DB().Begin()
+	tx, err := b.service.Begin()
 	if err != nil {
 		return id, err
 	}
 
-	isPlayerOnSale, err := args.Input.IsPlayerOnSale(b.contracts, b.service, tx)
+	isPlayerOnSale, err := args.Input.IsPlayerOnSale(tx)
 	if err != nil {
 		return id, err
 	}
@@ -70,8 +71,45 @@ func (b *Resolver) CreateOffer(args struct{ Input input.CreateOfferInput }) (gra
 		return id, fmt.Errorf("Player is frozen %v", args.Input.PlayerId)
 	}
 
-	seller, err := args.Input.GetOwner(b.contracts)
-	args.Input.Seller = seller.Hex()
+	if err := createOffer(tx, args.Input, b.contracts); err != nil {
+		tx.Rollback()
+		return id, err
+	}
 
-	return id, b.push(args.Input)
+	return id, tx.Commit()
+}
+
+func createOffer(service storage.Tx, in input.CreateOfferInput, contracts contracts.Contracts) error {
+	offer := storage.NewOffer()
+	id, err := in.ID(contracts)
+	if err != nil {
+		return err
+	}
+	offer.AuctionID = string(id)
+	offer.Rnd = int64(in.Rnd)
+	offer.PlayerID = in.PlayerId
+	offer.CurrencyID = int(in.CurrencyId)
+	offer.Price = int64(in.Price)
+	if offer.ValidUntil, err = strconv.ParseInt(in.ValidUntil, 10, 64); err != nil {
+		fmt.Printf("%d of type %T", offer.ValidUntil, offer.ValidUntil)
+	}
+	offer.Signature = in.Signature
+	offer.State = storage.OfferStarted
+	offer.StateExtra = ""
+	signerAddress, err := in.SignerAddress(contracts)
+	if err != nil {
+		return err
+	}
+	offer.Buyer = signerAddress.Hex()
+	seller, err := in.GetOwnerOfRequestedPlayer(contracts)
+	if err != nil {
+		return err
+	}
+	offer.Seller = seller.Hex()
+	offer.BuyerTeamID = in.BuyerTeamId
+	if err = service.OfferInsert(*offer); err != nil {
+		return err
+	}
+
+	return nil
 }

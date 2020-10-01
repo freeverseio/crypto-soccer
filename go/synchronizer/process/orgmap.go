@@ -9,7 +9,14 @@ import (
 )
 
 type OrgMap struct {
-	teams []storage.Team
+	Teams []storage.Team
+}
+
+func (b *OrgMap) AppendOrgMap(newOrgMap OrgMap) error {
+	for _, team := range newOrgMap.Teams {
+		b.Append(team)
+	}
+	return nil
 }
 
 func (b *OrgMap) Append(team storage.Team) error {
@@ -17,31 +24,31 @@ func (b *OrgMap) Append(team storage.Team) error {
 		return errors.New("invalid TeamID")
 	}
 
-	for _, t := range b.teams {
+	for _, t := range b.Teams {
 		if t.TeamID == team.TeamID {
 			return errors.New("team already in OrgMap")
 		}
 	}
 
-	b.teams = append(b.teams, team)
+	b.Teams = append(b.Teams, team)
 	return nil
 }
 
 func (b *OrgMap) Sort() {
-	sort.Slice(b.teams[:], func(i, j int) bool {
-		if b.teams[i].RankingPoints == b.teams[j].RankingPoints {
-			teamID0, _ := new(big.Int).SetString(b.teams[i].TeamID, 10)
-			teamID1, _ := new(big.Int).SetString(b.teams[j].TeamID, 10)
+	sort.Slice(b.Teams[:], func(i, j int) bool {
+		if b.Teams[i].RankingPoints == b.Teams[j].RankingPoints {
+			teamID0, _ := new(big.Int).SetString(b.Teams[i].TeamID, 10)
+			teamID1, _ := new(big.Int).SetString(b.Teams[j].TeamID, 10)
 			return teamID0.Cmp(teamID1) == -1
 		}
-		return b.teams[i].RankingPoints > b.teams[j].RankingPoints
+		return b.Teams[i].RankingPoints > b.Teams[j].RankingPoints
 	})
 }
 
 func (b OrgMap) Size() int {
-	return len(b.teams)
+	return len(b.Teams)
 }
 
 func (b OrgMap) At(i int) storage.Team {
-	return b.teams[i]
+	return b.Teams[i]
 }

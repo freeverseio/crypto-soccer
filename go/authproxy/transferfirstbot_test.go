@@ -88,3 +88,54 @@ func TestMatchTransferFirstBotMutation(t *testing.T) {
 		assert.Equal(t, body, resultBody)
 	})
 }
+
+func TestQueryFromPhoenix1(t *testing.T) {
+	m := `
+query playerInfo($playerId: String!) {
+  playerByPlayerId(playerId: $playerId) {
+    teamId
+    playerId
+    name
+    preferredPosition
+    dayOfBirth
+    countryOfBirth
+    race
+    endurance
+    defence
+    shoot
+    pass
+    speed
+    potential
+    tiredness
+    redCard
+    injuryMatchesLeft
+    teamByTeamId {
+      teamId
+      owner
+      name
+      managerName
+      gkCount: playersByTeamId(condition: { preferredPosition: "GK" }) {
+        totalCount
+      }
+    }
+    offersByPlayerId(condition: { state: STARTED }, orderBy: PRICE_DESC) {
+      nodes {
+        id
+        teamByBuyerTeamId {
+          teamId
+          name
+          owner
+          managerName
+        }
+        rnd
+        price
+        validUntil
+        auctionId
+      }
+    }
+  }
+}
+	`
+	match, _ := authproxy.IsTransferFirstBotMutation(m)
+	assert.False(t, match)
+}

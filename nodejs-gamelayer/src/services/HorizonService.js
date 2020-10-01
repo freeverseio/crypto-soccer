@@ -1,9 +1,9 @@
-const { request, gql } = require('graphql-request')
-const { horizonConfig } = require('../config.js')
+const { request, gql } = require('graphql-request');
+const { horizonConfig } = require('../config.js');
 
 class HorizonService {
   constructor() {
-    this.endpoint = horizonConfig.url
+    this.endpoint = horizonConfig.url;
   }
 
   async getTeamOwner({ teamId }) {
@@ -11,10 +11,10 @@ class HorizonService {
     {
         teamByTeamId(teamId: "${teamId}"){ owner }
     }
-    `
-    const result = await request(this.endpoint, query)
-    
-    return result && result.teamByTeamId && result.teamByTeamId.owner ? result.teamByTeamId.owner : ''
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.teamByTeamId && result.teamByTeamId.owner ? result.teamByTeamId.owner : '';
   }
 
   async getPlayerOwner({ playerId }) {
@@ -27,10 +27,15 @@ class HorizonService {
             }
         }
     }
-    `
-    const result = await request(this.endpoint, query)
-    
-    return result && result.playerByPlayerId && result.playerByPlayerId.teamByTeamId && result.playerByPlayerId.teamByTeamId.owner ? result.playerByPlayerId.teamByTeamId.owner : ''
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result &&
+      result.playerByPlayerId &&
+      result.playerByPlayerId.teamByTeamId &&
+      result.playerByPlayerId.teamByTeamId.owner
+      ? result.playerByPlayerId.teamByTeamId.owner
+      : '';
   }
 }
 

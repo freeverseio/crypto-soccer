@@ -21,15 +21,6 @@ func TestCancelAuctionHash(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x5757964f4d77a1fdc41d891587d2dd6fd593df7d2933a5d8f2ecab7ddf26c6fe")
 }
-func TestCancelAuctionValidSignature(t *testing.T) {
-	in := input.CancelAuctionInput{}
-	in.AuctionId = "4345345341"
-	in.Signature = "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c"
-	valid, err := in.VerifySignature()
-	assert.NilError(t, err)
-	assert.Assert(t, valid)
-}
-
 func TestCancelAuctionGetSigner(t *testing.T) {
 	in := input.CancelAuctionInput{}
 	in.AuctionId = "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796"
