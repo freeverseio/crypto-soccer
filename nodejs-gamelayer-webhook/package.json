@@ -1,0 +1,27 @@
+{
+  "name": "nodejs-common-gql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "test": "jest --forceExit",
+    "lint": "npx eslint .",
+    "format": "npx eslint . --fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "1.19.0",
+    "express": "4.17.1",
+    "graphql-request": "3.0.0"
+  },
+  "devDependencies": {
+    "jest": "^26.3.0",
+    "eslint": "7.7.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.0.5"
+  }
+}
