@@ -985,6 +985,38 @@ metadata:
     nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
     nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
   labels:
+    app.kubernetes.io/app: gamelayer-webhook
+    app.kubernetes.io/component: gamelayer-webhook
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+    webhook: enabled
+  name: cryptosoccer-webhook-ingress
+  namespace: freeverse
+spec:
+  rules:
+  - host: gamelayer.goalrevolution.live
+    http:
+      paths:
+      - backend:
+          serviceName: gamelayer-webhook
+          servicePort: 5000
+        path: /
+  tls:
+  - hosts:
+    - gamelayer.goalrevolution.live
+    secretName: cryptosoccer-webhook-tls
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-freeverse
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-tls-error-page: http://www.mysite.com/error-cert.html
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+  labels:
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
   name: cryptosoccer-ingress
