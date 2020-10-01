@@ -80,8 +80,22 @@ const main = async () => {
     }
   `;
 
-  let schemas = [];
-  horizonRemoteSchema && schemas.push(horizonRemoteSchema);
+  const schemas = [];
+  const transformedHorizonRemoteSchema = transformSchema(horizonRemoteSchema, [
+    new FilterRootFields((operation, fieldName, field) => {
+      if (fieldName == 'processAuction') {
+        return false;
+      }
+      return true;
+    }),
+    new FilterTypes((typeName, fieldName, field) => {
+      if (fieldName == 'ProcessAuctionInput') {
+        return false;
+      }
+      return true;
+    }),
+  ]);
+  transformedHorizonRemoteSchema && schemas.push(transformedHorizonRemoteSchema);
   schemas.push(linkTypeDefs);
 
   const schema = mergeSchemas({
