@@ -1,10 +1,10 @@
 const winston = require('winston');
-const { loggerConfig } = require('./config.js');
+const { serverConfig } = require('./config.js');
 
 const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
-      level: loggerConfig.level,
+      level: serverConfig.level,
       format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
     }),
   ],

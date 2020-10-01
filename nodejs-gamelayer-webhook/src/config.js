@@ -1,14 +1,15 @@
-const { HORIZON_URL, LOG_LEVEL } = process.env;
+const { HORIZON_URL, LOG_LEVEL, PORT } = process.env;
 
 const horizonConfig = {
   url: HORIZON_URL,
 };
 
-const loggerConfig = {
+const serverConfig = {
   level: LOG_LEVEL || 'info',
+  port: PORT,
 };
 
 module.exports = {
   horizonConfig,
-  loggerConfig,
+  serverConfig,
 };

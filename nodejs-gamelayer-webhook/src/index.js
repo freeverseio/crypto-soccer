@@ -2,8 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const routes = require('./routes');
 const logger = require('./logger');
-const port = 5000;
-const log = 1;
+const { serverConfig } = require('./config.js');
+const { port } = serverConfig;
 
 const app = express();
 

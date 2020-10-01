@@ -6,6 +6,6 @@ metadata:
     app.kubernetes.io/app: gamelayer-webhook
 spec:
   ports:
-  - port: 4000
+  - port: 5000
   selector:
     app.kubernetes.io/app: gamelayer-webhook
