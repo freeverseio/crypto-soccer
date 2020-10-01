@@ -8,7 +8,7 @@ import (
 
 type ProcessEvent struct{}
 
-func NewProcessor(ch chan interface{}, duration time.Duration) {
+func NewProcessorAuctions(ch chan interface{}, duration time.Duration) {
 	if ch == nil {
 		log.Error("Nil channer")
 		return
