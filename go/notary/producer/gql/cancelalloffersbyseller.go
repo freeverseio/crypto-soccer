@@ -20,7 +20,8 @@ func (b *Resolver) CancelAllOffersBySeller(args struct {
 	if err != nil {
 		return id, err
 	}
-
+	log.Debugf("Input signature: %v\n", args.Input.Signature)
+	log.Debugf("Input playerId: %v\n", args.Input.PlayerId)
 	existingOffers, err := tx.OffersByPlayerId(string(args.Input.PlayerId))
 	if err != nil {
 		tx.Rollback()
@@ -32,6 +33,7 @@ func (b *Resolver) CancelAllOffersBySeller(args struct {
 	}
 
 	for _, offer := range existingOffers {
+		log.Debugf("Trying to cancel offer: %v\n", offer)
 
 		if offer.State != storage.OfferStarted {
 			tx.Rollback()
@@ -43,7 +45,8 @@ func (b *Resolver) CancelAllOffersBySeller(args struct {
 			tx.Rollback()
 			return id, err
 		}
-
+		log.Debugf("Signer from input: %v\n", signer.Hex())
+		log.Debugf("Offer seller: %v\n", offer.Seller)
 		if signer.Hex() != offer.Seller {
 			tx.Rollback()
 			return id, errors.New("Signer of Cancelalloffersbyseller is not the Seller")
