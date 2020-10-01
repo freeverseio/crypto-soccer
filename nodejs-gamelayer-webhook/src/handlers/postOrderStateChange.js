@@ -1,4 +1,7 @@
-const postOrderStateChange = (req, res) => {
+const logger = require('../logger');
+const HorizonService = require('../services/HorizonService');
+
+const postOrderStateChange = async (req, res) => {
   try {
     const [body] = req.body;
     const {
@@ -9,15 +12,16 @@ const postOrderStateChange = (req, res) => {
         shortlink: { hash },
       },
     } = body;
-
-    console.log(
-      `Received: ${name}\n--------\nStatus: ${status}\n--------\nTrustee Shortlink hash: ${hashTrusteeShortLink}\n--------\nShortlink Hash: ${hash}\n--------\n`
+    const regex = /^[a-f0-9]{64}$/gm;
+    const auctionId = name.match(regex);
+    logger.debug(
+      `Received:\nAuctionId: ${auctionId}\n--------\nTransactionName${name}\n--------\nStatus: ${status}\n--------\nTrustee Shortlink hash: ${hashTrusteeShortLink}\n--------\nShortlink Hash: ${hash}\n--------\n`
     );
-
     // user horizon service to call notary new mutation
-
+    await HorizonService.processAuction({ auctionId });
     res.sendStatus(200);
   } catch (e) {
+    logger.error(e);
     res.sendStatus(500);
   }
 };

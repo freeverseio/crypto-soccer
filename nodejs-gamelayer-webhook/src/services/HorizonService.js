@@ -6,10 +6,10 @@ class HorizonService {
     this.endpoint = horizonConfig.url;
   }
 
-  async checkOrderState({ teamId }) {
+  async processAuction({ auctionId }) {
     const query = gql`
     {
-        checkOrderState(teamId: "${teamId}")
+        processAuction(id: "${auctionId}")
     }
     `;
   }
