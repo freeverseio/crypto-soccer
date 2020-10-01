@@ -12,10 +12,10 @@ const postOrderStateChange = async (req, res) => {
         shortlink: { hash },
       },
     } = body;
-    const regex = /^[a-f0-9]{64}$/gm;
-    const auctionId = name.match(regex);
+    const regex = /[a-f0-9]{64}/g;
+    const [auctionId] = name.match(regex);
     logger.debug(
-      `Received:\nAuctionId: ${auctionId}\n--------\nTransactionName${name}\n--------\nStatus: ${status}\n--------\nTrustee Shortlink hash: ${hashTrusteeShortLink}\n--------\nShortlink Hash: ${hash}\n--------\n`
+      `Received:\nAuctionId: ${auctionId}\n--------\nTransaction Name: ${name}\n--------\nStatus: ${status}\n--------\nTrustee Shortlink hash: ${hashTrusteeShortLink}\n--------\nShortlink Hash: ${hash}\n--------\n`
     );
 
     await HorizonService.processAuction({ auctionId });
