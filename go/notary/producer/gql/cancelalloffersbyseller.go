@@ -1,10 +1,9 @@
 package gql
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -16,43 +15,22 @@ func (b *Resolver) CancelAllOffersBySeller(args struct {
 
 	id := args.Input.PlayerId
 
+	isOwner, err := args.Input.IsSignerOwnerOfPlayer(b.contracts)
+	if err != nil {
+		return id, err
+	}
+	if !isOwner {
+		return id, fmt.Errorf("signer is not the owner of playerId %v", args.Input.PlayerId)
+	}
+
 	tx, err := b.service.Begin()
 	if err != nil {
 		return id, err
 	}
 
-	existingOffers, err := tx.OffersByPlayerId(string(args.Input.PlayerId))
-	if err != nil {
+	if err := tx.CancelAllOffersByPlayerId(string(id)); err != nil {
 		tx.Rollback()
-		return id, errors.New("could not find existing offers")
-	}
-	if existingOffers == nil {
-		tx.Rollback()
-		return id, errors.New("could not find an existing offers to cancel")
-	}
-
-	for _, offer := range existingOffers {
-
-		if offer.State != storage.OfferStarted {
-			tx.Rollback()
-			return id, errors.New("cannot cancel an offer unless it is in Started state")
-		}
-
-		signer, err := args.Input.SignerAddress()
-		if err != nil {
-			tx.Rollback()
-			return id, err
-		}
-
-		if signer.Hex() != offer.Seller {
-			tx.Rollback()
-			return id, errors.New("Signer of Cancelalloffersbyseller is not the Seller")
-		}
-
-		if err := tx.OfferCancel(offer.AuctionID); err != nil {
-			tx.Rollback()
-			return id, err
-		}
+		return id, err
 	}
 
 	return id, tx.Commit()
