@@ -121,6 +121,37 @@ func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
 	return offers, nil
 }
 
+func (b *Tx) OffersStartedByPlayerId(playerId string) ([]storage.Offer, error) {
+	rows, err := b.tx.Query("SELECT auction_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller, buyer, buyer_team_id FROM offers WHERE player_id = $1 AND state='started';", playerId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var offers []storage.Offer
+	for rows.Next() {
+		var offer storage.Offer
+		offer.PlayerID = playerId
+		err = rows.Scan(
+			&offer.AuctionID,
+			&offer.CurrencyID,
+			&offer.Price,
+			&offer.Rnd,
+			&offer.ValidUntil,
+			&offer.Signature,
+			&offer.State,
+			&offer.StateExtra,
+			&offer.Seller,
+			&offer.Buyer,
+			&offer.BuyerTeamID,
+		)
+		if err != nil {
+			return offers, err
+		}
+		offers = append(offers, offer)
+	}
+	return offers, nil
+}
+
 func (b *Tx) OfferInsert(offer storage.Offer) error {
 	log.Debugf("[DBMS] + create Offer %v", b)
 	if offer.AuctionID == "" {

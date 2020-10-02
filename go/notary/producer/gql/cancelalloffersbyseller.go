@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/graph-gophers/graphql-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,22 +20,17 @@ func (b *Resolver) CancelAllOffersBySeller(args struct {
 		return id, err
 	}
 
-	existingOffers, err := tx.OffersByPlayerId(string(args.Input.PlayerId))
+	existingStartedOffers, err := tx.OffersStartedByPlayerId(string(args.Input.PlayerId))
 	if err != nil {
 		tx.Rollback()
 		return id, errors.New("could not find existing offers")
 	}
-	if existingOffers == nil {
+	if existingStartedOffers == nil {
 		tx.Rollback()
 		return id, errors.New("could not find an existing offers to cancel")
 	}
 
-	for _, offer := range existingOffers {
-
-		if offer.State != storage.OfferStarted {
-			tx.Rollback()
-			return id, errors.New("cannot cancel an offer unless it is in Started state")
-		}
+	for _, offer := range existingStartedOffers {
 
 		signer, err := args.Input.SignerAddress()
 		if err != nil {
