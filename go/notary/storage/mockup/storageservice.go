@@ -34,14 +34,14 @@ type Tx struct {
 	PlayStorePendingOrdersByPlayerIdFunc func(playerId string) ([]storage.PlaystoreOrder, error)
 
 	// Offer
-	OfferFunc                   func(ID string) (*storage.Offer, error)
-	OfferPendingOffersFunc      func() ([]storage.Offer, error)
-	OfferInsertFunc             func(offer storage.Offer) error
-	OfferUpdateFunc             func(offer storage.Offer) error
-	OfferCancelFunc             func(ID string) error
-	OfferByRndPriceFunc         func(rnd int32, price int32) (*storage.Offer, error)
-	OffersByPlayerIdFunc        func(playerId string) ([]storage.Offer, error)
-	OffersStartedByPlayerIdFunc func(playerId string) ([]storage.Offer, error)
+	OfferFunc                     func(ID string) (*storage.Offer, error)
+	OfferPendingOffersFunc        func() ([]storage.Offer, error)
+	OfferInsertFunc               func(offer storage.Offer) error
+	OfferUpdateFunc               func(offer storage.Offer) error
+	OfferCancelFunc               func(ID string) error
+	OfferByRndPriceFunc           func(rnd int32, price int32) (*storage.Offer, error)
+	OffersByPlayerIdFunc          func(playerId string) ([]storage.Offer, error)
+	CancelAllOffersByPlayerIdFunc func(playerId string) error
 }
 
 func (b *StorageService) Begin() (storage.Tx, error) {
@@ -120,6 +120,6 @@ func (b *Tx) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
 func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
 	return b.OffersByPlayerIdFunc(playerId)
 }
-func (b *Tx) OffersStartedByPlayerId(playerId string) ([]storage.Offer, error) {
-	return b.OffersStartedByPlayerIdFunc(playerId)
+func (b *Tx) CancelAllOffersByPlayerId(playerId string) error {
+	return b.CancelAllOffersByPlayerIdFunc(playerId)
 }

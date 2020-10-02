@@ -210,16 +210,6 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, err)
 		assert.Equal(t, 1, len(offers))
 
-		offers, err = tx.OffersStartedByPlayerId(offer.PlayerID)
-		assert.NilError(t, err)
-		assert.Equal(t, 1, len(offers))
-
-		offer.State = storage.OfferAccepted
-		assert.NilError(t, tx.OfferUpdate(*offer))
-
-		offers, err = tx.OffersStartedByPlayerId(offer.PlayerID)
-		assert.NilError(t, err)
-		assert.Equal(t, 0, len(offers))
 	})
 
 	t.Run("Error on cancel offe not in started state", func(t *testing.T) {
@@ -330,5 +320,36 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, err)
 		offer.State = storage.OfferCancelled
 		assert.Equal(t, *result, *offer)
+	})
+	t.Run("TestOfferCacnelAllOffers", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+		offer := storage.NewOffer()
+		offer.Rnd = 4
+		offer.PlayerID = "3"
+		offer.CurrencyID = 3
+		offer.Price = 3
+		offer.ValidUntil = 3
+		offer.Signature = "3"
+		offer.State = storage.OfferStarted
+		offer.StateExtra = "3"
+		offer.Seller = "3"
+		offer.Buyer = "4"
+		offer.AuctionID = "dummyAuctionID"
+		err = tx.OfferInsert(*offer)
+		assert.NilError(t, err)
+
+		offer.AuctionID = "dummyAuctionID2"
+		offer.Price = 4
+		err = tx.OfferInsert(*offer)
+		assert.NilError(t, err)
+
+		err = tx.CancelAllOffersByPlayerId(offer.PlayerID)
+		assert.NilError(t, err)
+
+		result, err := tx.Offer(offer.AuctionID)
+		assert.NilError(t, err)
+		assert.Equal(t, result.State, storage.OfferCancelled)
 	})
 }
