@@ -1,9 +1,10 @@
 const GamelayerService = require('../GamelayerService');
+const { mailboxTypes } = require('../config');
 
 const processAcceptedOffers = async ({ offerHistory }) => {
   await GamelayerService.setMessage({
     destinatary: offerHistory.buyer,
-    category: 'offer',
+    category: mailboxTypes.offer,
     auctionId: offerHistory.auctionId,
     text: 'Blablbalba',
     customImageUrl: '',

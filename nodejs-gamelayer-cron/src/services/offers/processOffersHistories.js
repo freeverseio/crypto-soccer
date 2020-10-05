@@ -4,9 +4,12 @@ const processStartedOffers = require('./processStartedOffers');
 const selectLastChecked = require('../../repositories/selectLastChecked');
 const updateLastChecked = require('../../repositories/updateLastChecked');
 const HorizonService = require('../HorizonService');
+const { mailboxCronTypes, offerStates } = require('../config');
 
 const processOffersHistories = async () => {
-  const offerLastChecked = await selectLastChecked({ entity: 'offer' });
+  const offerLastChecked = await selectLastChecked({
+    entity: mailboxCronTypes.offer,
+  });
 
   const lastOffersHistories = await HorizonService.getLastOfferHistories({
     lastChecked: offerLastChecked,
@@ -15,17 +18,20 @@ const processOffersHistories = async () => {
   const newLastChecked =
     lastOffersHistories[lastOffersHistories.length].insertedAt;
 
-  await updateLastChecked({ entity: 'offer', lastChecked: newLastChecked });
+  await updateLastChecked({
+    entity: mailboxCronTypes.offer,
+    lastChecked: newLastChecked,
+  });
 
   for (const offerHistory of lastOffersHistories) {
     switch (offerHistory.state) {
-      case 'started':
+      case offerStates.started:
         await processStartedOffers({ offerHistory });
         break;
-      case 'accepted':
+      case offerStates.accepted:
         await processAcceptedOffers({ offerHistory });
         break;
-      case 'rejected':
+      case offerStates.rejected:
         await processRejectedOffers({ offerHistory });
         break;
     }
