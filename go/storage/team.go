@@ -329,7 +329,7 @@ func TeamUpdateZombies(tx *sql.Tx) error {
 							   WHERE 
 							   		t.owner <> '0x0000000000000000000000000000000000000000' 
 									AND tiredness = 7 
-							   		AND p.shirt_number <> 25 
+							   		AND p.shirt_number < 25 
 							   GROUP  BY tc.team_id) AS sq 
 					   WHERE  number_of_tired_players_in_starting_eleven >= 9) `
 	_, err := tx.Exec(query)
