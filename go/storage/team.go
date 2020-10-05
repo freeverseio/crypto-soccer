@@ -293,12 +293,51 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 
 func TeamUpdateZombies(tx *sql.Tx) error {
 	log.Debugf("[DBMS] TeamUpdateZombies")
-	_, err := tx.Exec("UPDATE teams SET is_zombie=true WHERE team_id IN (SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count >= 9);")
+	query := `
+	UPDATE teams 
+	SET    is_zombie = true 
+	WHERE  team_id IN (SELECT sq.team_id 
+					   FROM   (SELECT tc.team_id, 
+									  Count(tc.team_id) AS 
+									  number_of_tired_players_in_starting_eleven 
+							   FROM   tactics tc 
+									  LEFT JOIN teams t 
+											 ON tc.team_id = t.team_id 
+									  LEFT JOIN players p 
+											 ON p.team_id = tc.team_id 
+												AND ( tc.shirt_0 = p.shirt_number 
+													   OR tc.shirt_1 = 
+														  p.shirt_number 
+													   OR tc.shirt_2 = 
+														  p.shirt_number 
+													   OR tc.shirt_3 = 
+														  p.shirt_number 
+													   OR tc.shirt_4 = 
+														  p.shirt_number 
+													   OR tc.shirt_5 = 
+														  p.shirt_number 
+													   OR tc.shirt_6 = 
+														  p.shirt_number 
+													   OR tc.shirt_7 = 
+														  p.shirt_number 
+													   OR tc.shirt_8 = 
+														  p.shirt_number 
+													   OR tc.shirt_9 = 
+														  p.shirt_number 
+													   OR tc.shirt_10 = 
+														  p.shirt_number ) 
+							   WHERE 
+							   		t.owner <> '0x0000000000000000000000000000000000000000' 
+									AND tiredness = 7 
+							   		AND p.shirt_number < 25 
+							   GROUP  BY tc.team_id) AS sq 
+					   WHERE  number_of_tired_players_in_starting_eleven >= 9) `
+	_, err := tx.Exec(query)
 	return err
 }
 
 func TeamCleanZombies(tx *sql.Tx) error {
 	log.Debugf("[DBMS] TeamCleanZombies")
-	_, err := tx.Exec("UPDATE teams SET is_zombie=false WHERE team_id NOT IN (SELECT sq.team_id FROM (SELECT COUNT(player_id), team_id FROM players WHERE tiredness = 7 GROUP BY team_id, tiredness) sq WHERE sq.count >= 9);")
+	_, err := tx.Exec("UPDATE teams SET is_zombie=false WHERE is_zombie=true;")
 	return err
 }
