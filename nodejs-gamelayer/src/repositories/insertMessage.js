@@ -17,23 +17,9 @@ const insertMessageQuery = {
     `,
 };
 
-const insertMessage = async ({
-  destinatary,
-  category,
-  auctionId,
-  text,
-  customImageUrl,
-  metadata,
-}) => {
+const insertMessage = async ({ destinatary, category, auctionId, text, customImageUrl, metadata }) => {
   const pool = await PostgresSQLService.getPool();
-  const values = [
-    destinatary,
-    category,
-    auctionId,
-    text,
-    customImageUrl,
-    metadata,
-  ];
+  const values = [destinatary, category, auctionId, text, customImageUrl, metadata];
 
   try {
     const { rows } = await pool.query(insertMessageQuery, values);

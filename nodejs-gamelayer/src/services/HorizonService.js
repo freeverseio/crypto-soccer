@@ -50,9 +50,7 @@ class HorizonService {
     `;
     const result = await request(this.endpoint, query);
 
-    return result && result.allTeams && result.allTeams.nodes
-      ? result.allTeams.nodes
-      : [];
+    return result && result.allTeams && result.allTeams.nodes ? result.allTeams.nodes : [];
   }
 }
 

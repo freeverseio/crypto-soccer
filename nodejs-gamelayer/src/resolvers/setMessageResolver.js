@@ -2,17 +2,7 @@ const { insertMessage } = require('../repositories');
 
 const setMessageResolver = async (
   _,
-  {
-    input: {
-      id,
-      destinatary,
-      category,
-      auctionId,
-      text,
-      customImageUrl,
-      metadata,
-    },
-  }
+  { input: { id, destinatary, category, auctionId, text, customImageUrl, metadata } }
 ) => {
   try {
     if (id) {
