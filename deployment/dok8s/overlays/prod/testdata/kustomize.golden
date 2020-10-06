@@ -7,7 +7,7 @@ data:
   freeverse_password: freeverse
   freeverse_username: freeverse
   market_id: sk_production_AjWbpOPwS3HNi821Ma9mIgA2
-  notary_process_wait: 30
+  notary_process_wait: "30"
 kind: ConfigMap
 metadata:
   labels:

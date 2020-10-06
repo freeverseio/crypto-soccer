@@ -8,7 +8,7 @@ data:
 
   market_id: ""
   notary_extra_args: "-iap_test"
-  notary_process_wait: 90
+  notary_process_wait: "90"
   authproxy_extra_args: "-backdoor"
   horizon_extra_args: "--enableCors"
 

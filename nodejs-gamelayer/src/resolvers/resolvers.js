@@ -11,6 +11,16 @@ const web3 = new Web3('');
 
 const resolvers = ({ horizonRemoteSchema }) => {
   return {
+    TeamsHistory: {
+      name: {
+        fragment: `... on TeamsHistory { teamId }`,
+        resolve(team, args, context, info) {
+          return selectTeamName({ teamId: team.teamId }).then((result) => {
+            return result && result.team_name ? result.team_name : team.name;
+          });
+        },
+      },
+    },
     Team: {
       name: {
         selectionSet: `{ teamId }`,
