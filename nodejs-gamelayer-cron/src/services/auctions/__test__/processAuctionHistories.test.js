@@ -72,6 +72,7 @@ test('processAuctionHistories works correctly', async () => {
     entity: 'auction',
     lastChecked: '2020-09-29T09:59:55.710169+00:00',
   });
+  expect(HorizonService.getLastAuctionsHistories).toHaveBeenCalledTimes(1);
   expect(processPayingAuction).toHaveBeenCalledTimes(2);
   expect(processWithdrawableBySellerAuction).toHaveBeenCalledTimes(1);
 });

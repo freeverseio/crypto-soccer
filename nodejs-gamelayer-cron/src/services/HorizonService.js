@@ -9,9 +9,8 @@ class HorizonService {
   async getOfferersByPlayerId({ playerId }) {
     const query = gql`
       {
-        allOffersHistories(condition: { state: STARTED, playerId: ${playerId} }) {
+        allOffers(condition: { state: STARTED, playerId: "${playerId}" }) {
           nodes {
-            insertedAt
             auctionId
             playerId
             currencyId

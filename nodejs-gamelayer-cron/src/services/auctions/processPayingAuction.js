@@ -1,5 +1,5 @@
 const { bidStates } = require('../../config');
-const GamelayerService = require('../Gamelayerservice');
+const GamelayerService = require('../GamelayerService');
 const HorizonService = require('../HorizonService');
 
 const processPayingAuction = async ({ auctionHistory }) => {

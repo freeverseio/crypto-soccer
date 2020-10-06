@@ -1,4 +1,4 @@
-const GamelayerService = require('../Gamelayerservice');
+const GamelayerService = require('../GamelayerService');
 
 const processWithdrawableBySellerAuction = async ({ auctionHistory }) => {
   await GamelayerService.setMessage({

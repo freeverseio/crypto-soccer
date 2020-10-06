@@ -1,5 +1,6 @@
 const notifyNewHigherOffer = require('./notifyNewHigherOffer');
-const GamelayerService = require('../Gamelayerservice');
+const GamelayerService = require('../GamelayerService');
+const HorizonService = require('../HorizonService');
 
 const processStartedOffers = async ({ offerHistory }) => {
   const offerers = await HorizonService.getOfferersByPlayerId({
@@ -9,9 +10,9 @@ const processStartedOffers = async ({ offerHistory }) => {
   switch (offerers.length) {
     case 1:
       await GamelayerService.setMessage({
-        destinatary: bid.teamId,
-        category: 'auction',
-        auctionId: auctionHistory.id,
+        destinatary: offerHistory.teamId,
+        category: 'offer',
+        auctionId: offerHistory.auctionId,
         text: 'You received an offer for your player',
         customImageUrl: '',
         metadata: '',
@@ -26,7 +27,7 @@ const processStartedOffers = async ({ offerHistory }) => {
 
   for (const offerer of offerers) {
     await notifyNewHigherOffer({
-      destinatary: offerer,
+      destinatary: offerer.buyerTeamId,
       auctionId: offerHistory.auctionId,
     });
   }
