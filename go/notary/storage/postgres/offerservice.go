@@ -121,6 +121,17 @@ func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
 	return offers, nil
 }
 
+func (b *Tx) CancelAllOffersByPlayerId(playerId string) error {
+	log.Debugf("[DBMS] + Cancel All Offer %v", b)
+
+	_, err := b.tx.Exec(`UPDATE offers SET state='cancelled' WHERE player_id=$1;`, playerId)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 func (b *Tx) OfferInsert(offer storage.Offer) error {
 	log.Debugf("[DBMS] + create Offer %v", b)
 	if offer.AuctionID == "" {

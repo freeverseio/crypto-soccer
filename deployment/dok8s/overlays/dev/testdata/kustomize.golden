@@ -10,6 +10,7 @@ data:
   horizon_extra_args: --enableCors
   market_id: ""
   notary_extra_args: -iap_test
+  notary_process_wait: "90"
 kind: ConfigMap
 metadata:
   labels:
@@ -463,6 +464,8 @@ spec:
         - $(market_id)
         - -google_key
         - /var/secrets/google/key.json
+        - -process_wait
+        - $(notary_process_wait)
         - $(notary_extra_args)
         env:
         - name: MARKET_PRIVATE_KEY
