@@ -7,7 +7,7 @@ const processWithdrawableBySellerAuction = async ({ auctionHistory }) => {
     auctionId: auctionHistory.id,
     text: 'Your auction is in state withdrawable by seller, go get paid.',
     customImageUrl: '',
-    metadata: '',
+    metadata: '{}',
   });
 };
 

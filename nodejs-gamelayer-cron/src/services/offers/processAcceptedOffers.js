@@ -8,7 +8,7 @@ const processAcceptedOffers = async ({ offerHistory }) => {
     auctionId: offerHistory.auctionId,
     text: 'Your offer for this player has been accepted!',
     customImageUrl: '',
-    metadata: '',
+    metadata: '{}',
   });
 };
 

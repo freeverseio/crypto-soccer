@@ -23,7 +23,7 @@ const processPendingPayingBids = async () => {
           auctionId: bid.auctionId,
           text: 'You should pay the auction, less than 12h remaining',
           customImageUrl: '',
-          metadata: '',
+          metadata: '{}',
         });
       }
     } catch (e) {

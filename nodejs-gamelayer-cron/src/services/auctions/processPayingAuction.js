@@ -9,7 +9,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
     auctionId: auctionHistory.id,
     text: 'The auction for this player has ended. You sold him!',
     customImageUrl: '',
-    metadata: '',
+    metadata: '{}',
   });
 
   const bids = await HorizonService.getBidsByAuctionId({
@@ -25,7 +25,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
           auctionId: auctionHistory.id,
           text: 'You won the auction, remember to pay',
           customImageUrl: '',
-          metadata: '',
+          metadata: '{}',
         });
         break;
       default:
@@ -35,7 +35,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
           auctionId: auctionHistory.id,
           text: 'You lost the auction',
           customImageUrl: '',
-          metadata: '',
+          metadata: '{}',
         });
         break;
     }

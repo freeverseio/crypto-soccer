@@ -1,3 +1,4 @@
+const dayjs = require('dayjs');
 const processAcceptedOffers = require('./processAcceptedOffers');
 const processRejectedOffers = require('./processRejectedOffers');
 const processStartedOffers = require('./processStartedOffers');
@@ -13,19 +14,24 @@ const processOffersHistories = async () => {
   });
 
   const lastOffersHistories = await HorizonService.getLastOfferHistories({
-    lastChecked: offerLastChecked,
+    lastChecked: dayjs(offerLastChecked).format(),
   });
 
   const newLastChecked =
-    lastOffersHistories[lastOffersHistories.length - 1].insertedAt;
-  undefined.data;
+    lastOffersHistories[lastOffersHistories.length - 1] &&
+    lastOffersHistories[lastOffersHistories.length - 1].inserted_at
+      ? lastOffersHistories[lastOffersHistories.length - 1].insertedAt
+      : offerLastChecked;
+
   await updateLastChecked({
     entity: mailboxTypes.offer,
     lastChecked: newLastChecked,
   });
 
   logger.info(
-    `Processing Offer Histories - LastCheckedOfferTime: ${offerLastChecked} - NewLastCheckedOfferTime: ${newLastChecked}`
+    offerLastChecked != newLastChecked
+      ? `Processing Offer Histories - LastCheckedOfferTime: ${offerLastChecked} - NewLastCheckedOfferTime: ${newLastChecked}`
+      : `Processing Offer Histories - No new offer histories since lastCheckedOfferTime: ${offerLastChecked}`
   );
 
   for (const offerHistory of lastOffersHistories) {

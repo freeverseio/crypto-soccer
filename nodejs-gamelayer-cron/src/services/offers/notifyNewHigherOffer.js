@@ -8,7 +8,7 @@ const notifyNewHigherOffer = async ({ destinatary, auctionId }) => {
     auctionId,
     text: 'Your player has received a new higher offer!',
     customImageUrl: '',
-    metadata: '',
+    metadata: '{}',
   });
 };
 

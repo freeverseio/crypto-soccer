@@ -15,7 +15,7 @@ const processStartedOffers = async ({ offerHistory }) => {
         auctionId: offerHistory.auctionId,
         text: 'You received an offer for your player',
         customImageUrl: '',
-        metadata: '',
+        metadata: '{}',
       });
       break;
     default:

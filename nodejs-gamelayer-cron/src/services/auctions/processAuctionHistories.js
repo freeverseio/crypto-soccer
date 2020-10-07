@@ -1,3 +1,4 @@
+const dayjs = require('dayjs');
 const processPayingAuction = require('./processPayingAuction');
 const processWithdrawableBySellerAuction = require('./processWithdrawableBySellerAuction');
 const selectLastChecked = require('../../repositories/selectLastChecked');
@@ -10,27 +11,26 @@ const processAuctionHistories = async () => {
   const auctionLastChecked = await selectLastChecked({
     entity: mailboxTypes.auction,
   });
-  console.log(
-    'processAuctionHistories -> auctionLastChecked',
-    auctionLastChecked
-  );
 
-  logger.info(
-    `Processing Auction Histories - LastCheckedAuctionTime: ${auctionLastChecked}`
-  );
   const lastAuctionsHistories = await HorizonService.getLastAuctionsHistories({
-    lastChecked: auctionLastChecked,
+    lastChecked: dayjs(auctionLastChecked).format(),
   });
 
   const newLastChecked =
-    lastAuctionsHistories[lastAuctionsHistories.length - 1].insertedAt;
+    lastAuctionsHistories[lastAuctionsHistories.length - 1] &&
+    lastAuctionsHistories[lastAuctionsHistories.length - 1].inserted_at
+      ? lastAuctionsHistories[lastAuctionsHistories.length - 1].insertedAt
+      : auctionLastChecked;
+
   await updateLastChecked({
     entity: mailboxTypes.auction,
     lastChecked: newLastChecked,
   });
 
   logger.info(
-    `Processing Auction Histories - LastCheckedAuctionTime: ${auctionLastChecked} - NewLastCheckedAuctionTime: ${newLastChecked}`
+    auctionLastChecked != newLastChecked
+      ? `Processing Auction Histories - LastCheckedAuctionTime: ${auctionLastChecked} - NewLastCheckedAuctionTime: ${newLastChecked}`
+      : `Processing Auction Histories - No new auction histories since lastCheckedAuctionTime: ${auctionLastChecked}`
   );
 
   for (const auctionHistory of lastAuctionsHistories) {
