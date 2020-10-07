@@ -6,7 +6,7 @@ const processAcceptedOffers = async ({ offerHistory }) => {
     destinatary: offerHistory.buyerTeamId,
     category: mailboxTypes.offer,
     auctionId: offerHistory.auctionId,
-    text: 'Blablbalba',
+    text: 'Your offer for this player has been accepted!',
     customImageUrl: '',
     metadata: '',
   });

@@ -5,7 +5,7 @@ const processRejectedOffers = async ({ offerHistory }) => {
     destinatary: offerHistory.buyerTeamId,
     category: 'offer',
     auctionId: offerHistory.auctionId,
-    text: 'Blablbalba',
+    text: 'Your offer for this player has been rejected',
     customImageUrl: '',
     metadata: '',
   });

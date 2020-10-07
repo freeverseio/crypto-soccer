@@ -14,9 +14,12 @@
   "license": "ISC",
   "dependencies": {
     "dayjs": "1.8.36",
+    "dayjs-plugin-utc": "0.1.2",
     "node-cron": "2.0.3",
     "graphql": "14.5.8",
-    "graphql-request": "3.0.0"
+    "graphql-request": "3.0.0",
+    "pg": "8.3.0",
+    "winston": "3.3.3"
   },
   "devDependencies": {
     "jest": "26.3.0",

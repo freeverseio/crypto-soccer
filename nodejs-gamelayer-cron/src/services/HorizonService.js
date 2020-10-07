@@ -98,6 +98,7 @@ class HorizonService {
         }
       }
     `;
+    console.log('getLastAuctionsHistories -> query', query);
     const result = await request(this.endpoint, query);
 
     return result &&

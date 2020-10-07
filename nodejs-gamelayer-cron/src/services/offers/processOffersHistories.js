@@ -5,6 +5,7 @@ const selectLastChecked = require('../../repositories/selectLastChecked');
 const updateLastChecked = require('../../repositories/updateLastChecked');
 const HorizonService = require('../HorizonService');
 const { mailboxTypes, offerStates } = require('../../config');
+const logger = require('../../logger');
 
 const processOffersHistories = async () => {
   const offerLastChecked = await selectLastChecked({
@@ -17,23 +18,34 @@ const processOffersHistories = async () => {
 
   const newLastChecked =
     lastOffersHistories[lastOffersHistories.length - 1].insertedAt;
-
+  undefined.data;
   await updateLastChecked({
     entity: mailboxTypes.offer,
     lastChecked: newLastChecked,
   });
 
+  logger.info(
+    `Processing Offer Histories - LastCheckedOfferTime: ${offerLastChecked} - NewLastCheckedOfferTime: ${newLastChecked}`
+  );
+
   for (const offerHistory of lastOffersHistories) {
-    switch (offerHistory.state.toLowerCase()) {
-      case offerStates.started:
-        await processStartedOffers({ offerHistory });
-        break;
-      case offerStates.accepted:
-        await processAcceptedOffers({ offerHistory });
-        break;
-      case offerStates.rejected:
-        await processRejectedOffers({ offerHistory });
-        break;
+    try {
+      switch (offerHistory.state.toLowerCase()) {
+        case offerStates.started:
+          await processStartedOffers({ offerHistory });
+          break;
+        case offerStates.accepted:
+          await processAcceptedOffers({ offerHistory });
+          break;
+        case offerStates.rejected:
+          await processRejectedOffers({ offerHistory });
+          break;
+      }
+    } catch (e) {
+      logger.info(
+        `Error processing offerHistory: ${JSON.stringify(offerHistory)}`
+      );
+      logger.error(e);
     }
   }
 };

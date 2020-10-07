@@ -17,7 +17,9 @@ const selectLastChecked = async ({ entity }) => {
 
   try {
     const { rows } = await pool.query(selectLastCheckedQuery, values);
-    return rows[0];
+    const { last_time_checked } = rows[0];
+
+    return last_time_checked;
   } catch (e) {
     throw e;
   }

@@ -1,5 +1,18 @@
-const { GAMELAYER_URL, HORIZON_URL } = process.env;
+const {
+  GAMELAYER_URL,
+  HORIZON_URL,
+  MAILBOX_CRON,
+  PG_CONNECTION_STRING,
+  LOG_LEVEL,
+} = process.env;
 
+const serverConfig = {
+  level: LOG_LEVEL || 'info',
+};
+
+const postgreSQLConfig = {
+  connectionString: PG_CONNECTION_STRING,
+};
 const horizonConfig = {
   url: HORIZON_URL,
 };
@@ -54,4 +67,7 @@ module.exports = {
   mailboxTypes,
   bidStates,
   timeToNotifyPendinPayingBids,
+  postgreSQLConfig,
+  MAILBOX_CRON,
+  serverConfig,
 };
