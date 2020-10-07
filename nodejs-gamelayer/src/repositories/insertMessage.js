@@ -7,19 +7,20 @@ const insertMessageQuery = {
           destinatary,
           category,
           auction_id,
+          title,
           text_message,
           custom_image_url,
           metadata,
           is_read
         )
-    VALUES ($1, $2, $3, $4, $5, $6, false)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, false)
     RETURNING id
     `,
 };
 
-const insertMessage = async ({ destinatary, category, auctionId, text, customImageUrl, metadata }) => {
+const insertMessage = async ({ destinatary, category, auctionId, title, text, customImageUrl, metadata }) => {
   const pool = await PostgresSQLService.getPool();
-  const values = [destinatary, category, auctionId, text, customImageUrl, metadata];
+  const values = [destinatary, category, auctionId, title, text, customImageUrl, metadata];
 
   try {
     const { rows } = await pool.query(insertMessageQuery, values);

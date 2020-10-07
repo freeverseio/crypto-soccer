@@ -18,8 +18,12 @@ const selectTeamMailboxStartedAt = async ({ teamId }) => {
 
   try {
     const { rows } = await pool.query(selectTeamMailboxStartedAtQuery, values);
-    const { mailbox_started_at } = rows[0];
-    return mailbox_started_at;
+    if (rows[0] && rows[0].mailbox_started_at) {
+      const { mailbox_started_at } = rows[0];
+      return mailbox_started_at;
+    }
+
+    return '';
   } catch (e) {
     throw e;
   }

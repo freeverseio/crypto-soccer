@@ -1,7 +1,10 @@
 const { insertMessage } = require('../repositories');
 const HorizonService = require('../services/HorizonService.js');
 
-const setBroadcastMessageResolver = async (_, { input: { category, auctionId, text, customImageUrl, metadata } }) => {
+const setBroadcastMessageResolver = async (
+  _,
+  { input: { category, auctionId, title, text, customImageUrl, metadata } }
+) => {
   try {
     const teamIds = await HorizonService.getAllTeamIds();
     for (const teamId of teamIds) {
@@ -9,6 +12,7 @@ const setBroadcastMessageResolver = async (_, { input: { category, auctionId, te
         destinatary: teamId,
         category,
         auctionId,
+        title,
         text,
         customImageUrl,
         metadata,

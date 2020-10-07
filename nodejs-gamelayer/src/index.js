@@ -39,6 +39,7 @@ const main = async () => {
       destinatary: String!
       category: String!
       auctionId: String
+      title: String!
       text: String!
       customImageUrl: String
       metadata: String
@@ -47,6 +48,7 @@ const main = async () => {
     input SetBroadcastMessageInput {
       category: String!
       auctionId: String
+      title: String!
       text: String!
       customImageUrl: String
       metadata: String
@@ -57,6 +59,7 @@ const main = async () => {
       destinatary: String!
       category: String!
       auctionId: String
+      title: String!
       text: String!
       customImageUrl: String
       metadata: String

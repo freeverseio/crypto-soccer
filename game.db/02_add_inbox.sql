@@ -5,6 +5,7 @@ CREATE TABLE inbox (
     destinatary TEXT NOT NULL,
     category inbox_category NOT NULL,
     auction_id TEXT,
+    title TEXT NOT NULL,
     text_message TEXT NOT NULL,
     custom_image_url TEXT,
     metadata JSON,
