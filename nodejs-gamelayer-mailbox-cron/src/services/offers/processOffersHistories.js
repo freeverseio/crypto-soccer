@@ -19,7 +19,7 @@ const processOffersHistories = async () => {
 
   const newLastChecked =
     lastOffersHistories[lastOffersHistories.length - 1] &&
-    lastOffersHistories[lastOffersHistories.length - 1].inserted_at
+    lastOffersHistories[lastOffersHistories.length - 1].insertedAt
       ? lastOffersHistories[lastOffersHistories.length - 1].insertedAt
       : offerLastChecked;
 

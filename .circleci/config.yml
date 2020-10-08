@@ -331,11 +331,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - gamelayer-mailbox-cron:
-          context: dockerhub
-          filters:
-            tags:
-              only: /.*/
       - truffle_core:
           context: dockerhub
           filters:

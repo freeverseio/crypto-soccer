@@ -18,7 +18,7 @@ const processAuctionHistories = async () => {
 
   const newLastChecked =
     lastAuctionsHistories[lastAuctionsHistories.length - 1] &&
-    lastAuctionsHistories[lastAuctionsHistories.length - 1].inserted_at
+    lastAuctionsHistories[lastAuctionsHistories.length - 1].insertedAt
       ? lastAuctionsHistories[lastAuctionsHistories.length - 1].insertedAt
       : auctionLastChecked;
 
