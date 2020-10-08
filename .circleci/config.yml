@@ -327,6 +327,7 @@ workflows:
             tags:
               only: /.*/
       - market-read-api:
+      - gamelayer-mailbox-cron:
           context: dockerhub
           filters:
             tags:
