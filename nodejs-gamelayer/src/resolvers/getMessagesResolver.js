@@ -1,5 +1,6 @@
 const dayjs = require('dayjs');
 const { selectMessages, selectTeamMailboxStartedAt } = require('../repositories');
+const messagesView = require('../views/message');
 
 const getMessagesResolver = async (_, { teamId, limit, after }) => {
   try {
@@ -15,7 +16,7 @@ const getMessagesResolver = async (_, { teamId, limit, after }) => {
       after,
       limit,
     });
-    return messages;
+    return messages.map(messagesView);
   } catch (e) {
     return e;
   }

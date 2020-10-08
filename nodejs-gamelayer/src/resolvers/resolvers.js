@@ -6,6 +6,10 @@ const setMessageReadResolver = require('./setMessageReadResolver');
 const setMailboxStartResolver = require('./setMailboxStartResolver');
 const setBroadcastMessageResolver = require('./setBroadcastMessageResolver');
 const setMessageResolver = require('./setMessageResolver');
+const teamByTeamId = require('./teamByTeamId');
+const teamByHomeTeamId = require('./teamByHomeTeamId');
+const teamByVisitorTeamId = require('./teamByVisitorTeamId');
+
 const web3 = new Web3('');
 
 const resolvers = ({ horizonRemoteSchema }) => {

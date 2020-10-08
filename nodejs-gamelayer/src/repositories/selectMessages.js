@@ -6,12 +6,12 @@ const selectMessagesQuery = {
       id,
       destinatary,
       category,
-      auction_id as auctionId,
+      auction_id,
       title,
       text_message as text,
-      custom_image_url as customImageUrl,
+      custom_image_url,
       metadata::TEXT,
-      is_read as isRead
+      is_read
     FROM
       inbox
     WHERE
