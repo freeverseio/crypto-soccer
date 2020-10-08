@@ -18,3 +18,4 @@ resources:
 - gamelayer-webhook
 - synchronizer-with-universe-db
 - market-read-api
+- gamelayer-mailbox-cron
