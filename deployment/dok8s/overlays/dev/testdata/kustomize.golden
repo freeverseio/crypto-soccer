@@ -4,7 +4,7 @@ data:
   PROXY_CONTRACT_ADDRESS: 0x720C10669287462Bb96eFd9bb5220EcfcBfd88cf
   SYNC_CONFIG_FILE: config_dev.json
   authproxy_extra_args: -backdoor
-  domain: https://market.gorengine.com
+  domain: '*'
   freeverse_password: freeverse
   freeverse_username: freeverse
   horizon_extra_args: --enableCors
