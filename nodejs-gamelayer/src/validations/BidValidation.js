@@ -18,21 +18,13 @@ class BidValidation {
     const bidHiddenPrice = this.web3.utils.soliditySha3(paramsBidHiddenPrice);
     const params = this.web3.eth.abi.encodeParameters(
       ['bytes32', 'bytes32', 'uint256', 'bool'],
-      [
-        '0x' + this.auctionId || '',
-        bidHiddenPrice || '',
-        this.teamId || 0,
-        false,
-      ]
+      ['0x' + this.auctionId || '', bidHiddenPrice || '', this.teamId || 0, false]
     );
     return this.web3.utils.soliditySha3(params);
   }
 
   prefixedHash() {
-    const prefixedHash = this.web3.utils.soliditySha3(
-      '\x19Ethereum Signed Message:\n32',
-      this.hash()
-    );
+    const prefixedHash = this.web3.utils.soliditySha3('\x19Ethereum Signed Message:\n32', this.hash());
 
     return prefixedHash;
   }
@@ -46,9 +38,7 @@ class BidValidation {
       v: '0x' + this.signature.split('').slice(130, 132).join(''),
     };
 
-    const pubKeyRecovered = await this.web3.eth.accounts.recover(
-      signatureObject
-    );
+    const pubKeyRecovered = await this.web3.eth.accounts.recover(signatureObject);
 
     return pubKeyRecovered;
   }
@@ -76,9 +66,7 @@ class BidValidation {
 
     const bidsPayed = await HorizonService.getBidsPayedByOwner({ owner });
     const totalAmountSpent = bidsPayed.reduce(
-      (acc, curr) =>
-        (acc +=
-          parseInt(curr.extraPrice) + parseInt(curr.auctionByAuctionId.price)),
+      (acc, curr) => (acc += parseInt(curr.extraPrice) + parseInt(curr.auctionByAuctionId.price)),
       0
     );
     const newMaximumBid = parseInt(totalAmountSpent);

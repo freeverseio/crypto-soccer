@@ -128,6 +128,12 @@ const main = async () => {
       }
       return true;
     }),
+    new FilterTypes((typeName, fieldName, field) => {
+      if (fieldName == 'CreateBidInput') {
+        return false;
+      }
+      return true;
+    }),
   ]);
   transformedHorizonRemoteSchema && schemas.push(transformedHorizonRemoteSchema);
   schemas.push(linkTypeDefs);
