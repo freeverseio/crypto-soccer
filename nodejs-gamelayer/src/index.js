@@ -34,11 +34,49 @@ const main = async () => {
       teamId: ID!
       name: String!
     }
+    
+    input SetMessageInput {
+      destinatary: String!
+      category: String!
+      auctionId: String
+      title: String!
+      text: String!
+      customImageUrl: String
+      metadata: String
+    }
+
+    input SetBroadcastMessageInput {
+      category: String!
+      auctionId: String
+      title: String!
+      text: String!
+      customImageUrl: String
+      metadata: String
+    }
+
+    type Message {
+      id: String
+      destinatary: String!
+      category: String!
+      auctionId: String
+      title: String!
+      text: String!
+      customImageUrl: String
+      metadata: String
+      isRead: Boolean
+    }
 
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
+      setMessage(input: SetMessageInput!): ID!
+      setBroadcastMessage(input: SetBroadcastMessageInput!): Boolean!
+      setMailboxStart(teamId: ID!): Boolean
+      setMessageRead(id: ID!): Boolean
+    }
 
+    extend type Query {
+      getMessages(teamId: ID!, limit: Int, after: Int): [Message]
     }
   `;
 

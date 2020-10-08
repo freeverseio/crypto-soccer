@@ -1,0 +1,1 @@
+ALTER TABLE team_props ADD COLUMN mailbox_started_at timestamp without time zone;

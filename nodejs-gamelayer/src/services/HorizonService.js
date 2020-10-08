@@ -37,6 +37,21 @@ class HorizonService {
       ? result.playerByPlayerId.teamByTeamId.owner
       : '';
   }
+
+  async getAllTeamIds() {
+    const query = gql`
+      {
+        allTeams {
+          nodes {
+            teamId
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allTeams && result.allTeams.nodes ? result.allTeams.nodes : [];
+  }
 }
 
 module.exports = new HorizonService();

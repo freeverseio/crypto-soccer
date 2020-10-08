@@ -1,12 +1,11 @@
 const Web3 = require('web3');
 const { selectTeamName, selectTeamManagerName, updateTeamName, updateTeamManagerName } = require('../repositories');
 const { TeamValidation } = require('../validations');
-const teamByHomeTeamId = require('./teamByHomeTeamId');
-const teamByVisitorTeamId = require('./teamByVisitorTeamId');
-const teamByBuyerTeamId = require('./teamByBuyerTeamId');
-const teamByTeamId = require('./teamByTeamId');
-const queryTeamByTeamId = require('./queryTeamByTeamId');
-
+const getMessagesResolver = require('./getMessagesResolver');
+const setMessageReadResolver = require('./setMessageReadResolver');
+const setMailboxStartResolver = require('./setMailboxStartResolver');
+const setBroadcastMessageResolver = require('./setBroadcastMessageResolver');
+const setMessageResolver = require('./setMessageResolver');
 const web3 = new Web3('');
 
 const resolvers = ({ horizonRemoteSchema }) => {
@@ -212,13 +211,13 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return 'Signer is not the team owner';
         }
       },
+      setMessage: setMessageResolver,
+      setBroadcastMessage: setBroadcastMessageResolver,
+      setMailboxStart: setMailboxStartResolver,
+      setMessageRead: setMessageReadResolver,
     },
     Query: {
-      teamByTeamId: {
-        resolve(parent, args, context, info) {
-          return queryTeamByTeamId(parent, args, context, info, horizonRemoteSchema);
-        },
-      },
+      getMessages: getMessagesResolver,
     },
   };
 };
