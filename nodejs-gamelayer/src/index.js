@@ -1,6 +1,13 @@
 const { ApolloServer } = require('apollo-server');
 const { HttpLink } = require('apollo-link-http');
-const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools');
+const {
+  introspectSchema,
+  makeRemoteExecutableSchema,
+  mergeSchemas,
+  transformSchema,
+  FilterRootFields,
+  FilterTypes,
+} = require('graphql-tools');
 const fetch = require('node-fetch');
 const resolvers = require('./resolvers/resolvers.js');
 const { horizonConfig } = require('./config.js');
