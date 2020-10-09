@@ -9,8 +9,8 @@ class HorizonService {
 
   async processAuction({ auctionId }) {
     const query = gql`
-    {
-        processAuction(id: "${auctionId}")
+    mutation {
+        processAuction(input: { id: "${auctionId}"})
     }
     `;
     logger.debug(`Sending processAuction(id:${auctionId}) mutation...`);
