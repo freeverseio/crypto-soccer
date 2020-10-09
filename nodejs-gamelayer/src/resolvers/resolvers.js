@@ -1,11 +1,5 @@
 const Web3 = require('web3');
-const {
-  selectTeamName,
-  selectTeamManagerName,
-  updateTeamName,
-  updateTeamManagerName,
-  updateTeamMaximumBid,
-} = require('../repositories');
+const { selectTeamName, selectTeamManagerName, updateTeamName, updateTeamManagerName } = require('../repositories');
 const { TeamValidation, BidValidation } = require('../validations');
 const getMessagesResolver = require('./getMessagesResolver');
 const setMessageReadResolver = require('./setMessageReadResolver');
@@ -191,14 +185,6 @@ const resolvers = ({ horizonRemoteSchema }) => {
         },
       },
     },
-    maximumBidByOwner: {
-      selectionSet: `{ owner }`,
-      resolve(team, args, context, info) {
-        return selectOwnerMaximumBid({ owner: team.owner }).then((result) => {
-          return result && result.maximum_bid ? result.maximum_bid : MINIMUM_DEFAULT_BID;
-        });
-      },
-    },
     Mutation: {
       setTeamName: async (_, { input: { teamId, name, signature } }) => {
         const teamValidation = new TeamValidation({
@@ -231,21 +217,6 @@ const resolvers = ({ horizonRemoteSchema }) => {
         } else {
           return 'Signer is not the team owner';
         }
-      },
-      setTeamMaximumBid: async (_, { input: { teamId, maximumBid, signature } }) => {
-        const teamValidation = new TeamValidation({ teamId, name, signature, web3 });
-        const isSignerOwner = await teamValidation.isSignerOwner();
-
-        if (isSignerOwner) {
-          await updateTeamMaximumBid({ teamId, teamMaximumBid: name });
-          return teamId;
-        } else {
-          return 'Signer is not the team owner';
-        }
-      },
-      setOwnerMaximumBid: async (_, { input: { owner, maximumBid } }) => {
-        await updateOwnerMaximumBid({ owner, maximumBid });
-        return owner;
       },
       createBid: async (_, args, context, info) => {
         const {
