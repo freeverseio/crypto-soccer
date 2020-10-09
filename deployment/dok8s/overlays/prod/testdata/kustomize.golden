@@ -494,6 +494,46 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/app: gamelayer-webhook
+    app.kubernetes.io/component: gamelayer-webhook
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: gamelayer-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: gamelayer-webhook
+      app.kubernetes.io/component: gamelayer-webhook
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: gamelayer-webhook
+        app.kubernetes.io/component: gamelayer-webhook
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - env:
+        - name: HORIZON_URL
+          value: http://horizon:4000/graphql
+        - name: LOG_LEVEL
+          value: info
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/gamelayer.webhook:dev
+        imagePullPolicy: Always
+        name: gamelayer-webhook
+      imagePullSecrets:
+      - name: docker-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
     app.kubernetes.io/app: horizon
     app.kubernetes.io/component: horizon
     app.kubernetes.io/part-of: cryptosoccer
