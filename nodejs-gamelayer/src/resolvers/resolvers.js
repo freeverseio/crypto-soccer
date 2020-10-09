@@ -10,6 +10,7 @@ const teamByTeamId = require('./teamByTeamId');
 const teamByHomeTeamId = require('./teamByHomeTeamId');
 const teamByVisitorTeamId = require('./teamByVisitorTeamId');
 const teamByBuyerTeamId = require('./teamByBuyerTeamId');
+const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
 
 const web3 = new Web3('');
 
@@ -223,6 +224,7 @@ const resolvers = ({ horizonRemoteSchema }) => {
     },
     Query: {
       getMessages: getMessagesResolver,
+      getNumUnreadMessages: getNumUnreadMessagesResolver,
     },
   };
 };

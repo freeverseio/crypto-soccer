@@ -8,6 +8,7 @@ const selectMessages = require('./selectMessages');
 const insertMessage = require('./insertMessage');
 const insertMessages = require('./insertMessages');
 const updateMessageRead = require('./updateMessageRead');
+const selectNumUnreadMessages = require('./selectNumUnreadMessages');
 
 module.exports = {
   selectTeamName,
@@ -20,4 +21,5 @@ module.exports = {
   selectTeamMailboxStartedAt,
   updateMessageRead,
   insertMessages,
+  selectNumUnreadMessages,
 };
