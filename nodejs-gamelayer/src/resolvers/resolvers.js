@@ -9,6 +9,7 @@ const setMessageResolver = require('./setMessageResolver');
 const teamByTeamId = require('./teamByTeamId');
 const teamByHomeTeamId = require('./teamByHomeTeamId');
 const teamByVisitorTeamId = require('./teamByVisitorTeamId');
+const teamByBuyerTeamId = require('./teamByBuyerTeamId');
 
 const web3 = new Web3('');
 
