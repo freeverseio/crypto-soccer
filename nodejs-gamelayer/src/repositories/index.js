@@ -6,6 +6,7 @@ const selectTeamMailboxStartedAt = require('./selectTeamMailboxStartedAt.js');
 const updateTeamManagerName = require('./updateTeamManagerName.js');
 const selectMessages = require('./selectMessages');
 const insertMessage = require('./insertMessage');
+const insertMessages = require('./insertMessages');
 const updateMessageRead = require('./updateMessageRead');
 
 module.exports = {
@@ -18,4 +19,5 @@ module.exports = {
   insertMessage,
   selectTeamMailboxStartedAt,
   updateMessageRead,
+  insertMessages,
 };
