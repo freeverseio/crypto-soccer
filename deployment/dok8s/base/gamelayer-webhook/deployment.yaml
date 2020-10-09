@@ -26,7 +26,5 @@ spec:
             value: http://horizon:4000/graphql
           - name: LOG_LEVEL
             value: info
-          - name: PORT
-            value: 5000
       imagePullSecrets:
       - name: docker-secret

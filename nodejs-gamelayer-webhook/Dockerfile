@@ -1,10 +1,9 @@
 FROM node:10-alpine AS build-env
 
-ENV PORT ${PORT}
 WORKDIR /app
 COPY . /app
 RUN npm ci --only=production
-EXPOSE ${PORT}
+EXPOSE 5000
 RUN chown -R node:node /app
 USER node
 
