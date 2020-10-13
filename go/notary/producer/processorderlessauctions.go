@@ -17,7 +17,7 @@ func NewProcessorOrderlessAuctions(ch chan interface{}, duration time.Duration) 
 	for {
 		time.Sleep(duration)
 		select {
-		case ch <- ProcessEvent{}:
+		case ch <- ProcessOrderlessAuctionEvent{}:
 		default:
 			log.Warning("channel is full")
 		}
