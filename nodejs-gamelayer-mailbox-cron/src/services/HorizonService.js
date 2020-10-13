@@ -29,10 +29,8 @@ class HorizonService {
     `;
     const result = await request(this.endpoint, query);
 
-    return result &&
-      result.allOffersHistories &&
-      result.allOffersHistories.nodes
-      ? result.allOffersHistories.nodes
+    return result && result.allOffers && result.allOffers.nodes
+      ? result.allOffers.nodes
       : [];
   }
 
@@ -101,9 +99,9 @@ class HorizonService {
     const result = await request(this.endpoint, query);
 
     return result &&
-      result.allOffersHistories &&
-      result.allOffersHistories.nodes
-      ? result.allOffersHistories.nodes
+      result.allAuctionsHistories &&
+      result.allAuctionsHistories.nodes
+      ? result.allAuctionsHistories.nodes
       : [];
   }
 
@@ -128,10 +126,8 @@ class HorizonService {
     `;
     const result = await request(this.endpoint, query);
 
-    return result &&
-      result.allOffersHistories &&
-      result.allOffersHistories.nodes
-      ? result.allOffersHistories.nodes
+    return result && result.allBids && result.allBids.nodes
+      ? result.allBids.nodes
       : [];
   }
 
@@ -153,10 +149,8 @@ class HorizonService {
     `;
     const result = await request(this.endpoint, query);
 
-    return result &&
-      result.allOffersHistories &&
-      result.allOffersHistories.nodes
-      ? result.allOffersHistories.nodes
+    return result && result.allBids && result.allBids.nodes
+      ? result.allBids.nodes
       : [];
   }
 }

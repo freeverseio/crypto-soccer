@@ -28,11 +28,7 @@ class GamelayerService {
     `;
     const result = await request(this.endpoint, query);
 
-    return result &&
-      result.allOffersHistories &&
-      result.allOffersHistories.nodes
-      ? result.allOffersHistories.nodes
-      : [];
+    return result;
   }
 }
 

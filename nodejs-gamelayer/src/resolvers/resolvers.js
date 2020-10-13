@@ -46,6 +46,146 @@ const resolvers = ({ horizonRemoteSchema }) => {
         },
       },
     },
+    MatchEvent: {
+      teamByTeamId: {
+        fragment: `... on MatchEvent { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    Match: {
+      teamByHomeTeamId: {
+        fragment: `... on Match { homeTeamId }`,
+        resolve(match, args, context, info) {
+          return teamByHomeTeamId(match, args, context, info, horizonRemoteSchema);
+        },
+      },
+      teamByVisitorTeamId: {
+        fragment: `... on Match { visitorTeamId }`,
+        resolve(match, args, context, info) {
+          return teamByVisitorTeamId(match, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    MatchesHistory: {
+      teamByHomeTeamId: {
+        fragment: `... on MatchesHistory { homeTeamId }`,
+        resolve(match, args, context, info) {
+          return teamByHomeTeamId(match, args, context, info, horizonRemoteSchema);
+        },
+      },
+      teamByVisitorTeamId: {
+        fragment: `... on MatchesHistory { visitorTeamId }`,
+        resolve(match, args, context, info) {
+          return teamByVisitorTeamId(match, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    Player: {
+      teamByTeamId: {
+        fragment: `... on Player { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    PlayersHistory: {
+      teamByTeamId: {
+        fragment: `... on PlayersHistory { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    Bid: {
+      teamByTeamId: {
+        fragment: `... on Bid { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    Offer: {
+      teamByBuyerTeamId: {
+        fragment: `... on Offer { buyerTeamId }`,
+        resolve(offer, args, context, info) {
+          return teamByBuyerTeamId(offer, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    Tactic: {
+      teamByTeamId: {
+        fragment: `... on Tactic { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    TacticsHistory: {
+      teamByTeamId: {
+        fragment: `... on TacticsHistory { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    Training: {
+      teamByTeamId: {
+        fragment: `... on Training { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info), horizonRemoteSchema;
+        },
+      },
+    },
+    TrainingsHistory: {
+      teamByTeamId: {
+        fragment: `... on TrainingsHistory { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    TeamsProp: {
+      teamByTeamId: {
+        fragment: `... on TeamsProp { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    TeamsPropsHistory: {
+      teamByTeamId: {
+        fragment: `... on TeamsPropsHistory { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    UpdateTacticPayload: {
+      teamByTeamId: {
+        fragment: `... on UpdateTacticPayload { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    UpdateTeamsPropPayload: {
+      teamByTeamId: {
+        fragment: `... on UpdateTeamsPropPayload { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
+    UpdateTrainingPayload: {
+      teamByTeamId: {
+        fragment: `... on UpdateTrainingPayload { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
     Mutation: {
       setTeamName: async (_, { input: { teamId, name, signature } }) => {
         const teamValidation = new TeamValidation({
