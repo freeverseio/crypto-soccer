@@ -87,6 +87,14 @@ func (b *Consumer) Consume(event interface{}) error {
 	case producer.ProcessOfferEvent:
 		log.Info("[consumer] process offer to expire")
 		return ProcessOffers(tx)
+	case producer.ProcessOrderlessAuctionEvent:
+		log.Info("[consumer] process orderless auctions")
+		return ProcessOrderlessAuctions(
+			tx,
+			b.market,
+			b.contracts,
+			b.pvc,
+		)
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}

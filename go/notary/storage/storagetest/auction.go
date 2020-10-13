@@ -262,4 +262,74 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		assert.Assert(t, tx.AuctionCancel(auction.ID) != nil)
 	})
+
+	t.Run("TestAuctionPendingOrderlessAuctions", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+
+		auction := storage.NewAuction()
+		auction.ID = "ciao0"
+		auction.State = storage.AuctionStarted
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		result, err := tx.AuctionPendingOrderlessAuctions()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 1)
+
+		auction.ID = "ciao1"
+		auction.PlayerID = "3"
+		auction.State = storage.AuctionAssetFrozen
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		result, err = tx.AuctionPendingOrderlessAuctions()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 2)
+
+		auction.ID = "ciao2"
+		auction.PlayerID = "4"
+		auction.State = storage.AuctionPaying
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		result, err = tx.AuctionPendingOrderlessAuctions()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 2)
+
+		auction.ID = "ciao3"
+		auction.PlayerID = "5"
+		auction.State = storage.AuctionWithdrableBySeller
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		result, err = tx.AuctionPendingOrderlessAuctions()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 2)
+
+		auction.ID = "ciao4"
+		auction.PlayerID = "6"
+		auction.State = storage.AuctionWithdrableByBuyer
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		result, err = tx.AuctionPendingOrderlessAuctions()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 3)
+
+		auction.ID = "ciao5"
+		auction.PlayerID = "7"
+		auction.State = storage.AuctionFailed
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		result, err = tx.AuctionPendingOrderlessAuctions()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 3)
+
+		auction.ID = "ciao6"
+		auction.PlayerID = "8"
+		auction.State = storage.AuctionEnded
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		result, err = tx.AuctionPendingOrderlessAuctions()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 3)
+
+		auction.ID = "ciao7"
+		auction.PlayerID = "9"
+		auction.State = storage.AuctionCancelled
+		assert.NilError(t, tx.AuctionInsert(*auction))
+		result, err = tx.AuctionPendingOrderlessAuctions()
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 3)
+	})
 }

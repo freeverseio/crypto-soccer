@@ -10,6 +10,7 @@ type Tx interface {
 
 	// Auction
 	AuctionPendingAuctions() ([]Auction, error)
+	AuctionPendingOrderlessAuctions() ([]Auction, error)
 	Auction(ID string) (*Auction, error)
 	AuctionInsert(auction Auction) error
 	AuctionUpdate(auction Auction) error
