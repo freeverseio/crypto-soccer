@@ -29,13 +29,13 @@ func main() {
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	debug := flag.Bool("debug", false, "print debug logs")
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
-	processWait := flag.Int("process_wait", 120, "secs to wait for next process")
+	processWait := flag.Int("process_wait", 30, "secs to wait for next process")
 	marketID := flag.String("market_id", "", "WARNING: market identifier. If set connecting the real market")
 	googleKey := flag.String("google_key", "", "google credentials")
 	iapTestOn := flag.Bool("iap_test", false, "allow purchase of testing iap players")
 	flag.Parse()
 
-	log.Infof("[PARAM] postgres                   : %v", *postgresURL)
+	log.Infof("[PARAM] postgres                    : %v", *postgresURL)
 	log.Infof("[PARAM] ethereum_client            : %v", *ethereumClient)
 	log.Infof("[PARAM] proxy_address              : %v", *proxyAddress)
 	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
@@ -109,7 +109,7 @@ func main() {
 			googleCredentials,
 			storageService,
 		)
-		go producer.NewProcessor(ch, time.Duration(30)*time.Second)
+		go producer.NewProcessorAuctions(ch, time.Duration(24)*time.Hour)
 		go producer.NewProcessorOffer(ch, time.Duration(40)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(2)*time.Second)
 

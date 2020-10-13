@@ -28,9 +28,9 @@ func ForwardnessToString(value uint8) (string, error) {
 	case 3:
 		return "F", nil
 	case 4:
-		return "MF", nil
-	case 5:
 		return "MD", nil
+	case 5:
+		return "MF", nil
 	default:
 		return "", errors.New("unexistent forwardness")
 	}

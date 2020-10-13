@@ -7,6 +7,7 @@ data:
   freeverse_password: freeverse
 
   market_id: "sk_production_AjWbpOPwS3HNi821Ma9mIgA2"
+  notary_process_wait: "30"
 
   PROXY_CONTRACT_ADDRESS: 0x7334A1E445B4E1Fb94001E1a9F772212b6D9de46
 

@@ -40,6 +40,7 @@ spec:
                -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
                -market_id, "$(market_id)",
                -google_key, "/var/secrets/google/key.json",
+               -process_wait, "$(notary_process_wait)",
                "$(notary_extra_args)"]
         ports:
         - containerPort: 4000

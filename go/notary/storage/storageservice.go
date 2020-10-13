@@ -37,4 +37,5 @@ type Tx interface {
 	OfferCancel(ID string) error
 	OfferByRndPrice(rnd int32, price int32) (*Offer, error)
 	OffersByPlayerId(playerId string) ([]Offer, error)
+	CancelAllOffersByPlayerId(playerId string) error
 }

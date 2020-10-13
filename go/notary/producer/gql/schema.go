@@ -56,9 +56,9 @@ const Schema = `
 		buyerTeamId: String!
 	}
 
-	input CancelOfferInput {
+	input CancelAllOffersBySellerInput {
 		signature: String!
-		offerId:   ID!
+		playerId:   ID!
 	}
 
 	input AcceptOfferInput {
@@ -69,7 +69,11 @@ const Schema = `
 		validUntil: String!
 		offerValidUntil: String!
 		rnd: Int!
-  }
+	}
+	
+	input ProcessAuctionInput {
+		id: ID!
+	}
 
 	type WorldPlayer {
 		playerId: ID!
@@ -101,6 +105,7 @@ const Schema = `
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
-		cancelOffer(input: CancelOfferInput!): ID!
+		cancelAllOffersBySeller(input: CancelAllOffersBySellerInput!): ID!
+		processAuction(input: ProcessAuctionInput!): ID!
 	}
 `

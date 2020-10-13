@@ -69,8 +69,12 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, errors.New("Auctions can only be created for offers in Started state")
 	}
 
+	existingOffers, err := tx.OffersByPlayerId(args.Input.PlayerId)
+	if err != nil {
+		return id, errors.New("could not find existing offers")
+	}
 	// TODO: Consider the need of this next check when DB does not allow it anyway
-	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId)
+	highestOffer, err := getHigestOffer(tx, args.Input.PlayerId, existingOffers)
 	if err != nil {
 		return id, err
 	}
@@ -83,6 +87,14 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, err
 	}
 	if err := b.CreateBidFromOffer(tx, args.Input, offer); err != nil {
+		tx.Rollback()
+		return id, err
+	}
+	if err := b.UpdateOffer(tx, offer); err != nil {
+		tx.Rollback()
+		return id, err
+	}
+	if err := b.CancelRemainingOffers(tx, offer, existingOffers); err != nil {
 		tx.Rollback()
 		return id, err
 	}
@@ -121,11 +133,7 @@ func CreateAuctionFromOffer(tx storage.Tx, in input.AcceptOfferInput, highestOff
 	return nil
 }
 
-func getHigestOffer(tx storage.Tx, playerId string) (storage.Offer, error) {
-	existingOffers, err := tx.OffersByPlayerId(playerId)
-	if err != nil {
-		return storage.Offer{}, errors.New("could not find existing offers")
-	}
+func getHigestOffer(tx storage.Tx, playerId string, existingOffers []storage.Offer) (storage.Offer, error) {
 	if existingOffers == nil {
 		return storage.Offer{}, errors.New("existingOffers is nil")
 	}
@@ -166,7 +174,6 @@ func highestOfferFromExistingOffers(offers []storage.Offer) (*storage.Offer, err
 }
 
 func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptOfferInput, highestOffer *storage.Offer) error {
-
 	bidInput := input.CreateBidInput{}
 	bidInput.Signature = highestOffer.Signature
 	bidInput.AuctionId = graphql.ID(highestOffer.AuctionID)
@@ -174,10 +181,50 @@ func (b *Resolver) CreateBidFromOffer(tx storage.Tx, acceptOfferIn input.AcceptO
 	bidInput.Rnd = int32(0)
 	bidInput.TeamId = highestOffer.BuyerTeamID
 
-	_, err := b.CreateBid(struct{ Input input.CreateBidInput }{bidInput})
-
+	isOwner, err := bidInput.IsSignerOwnerOfTeam(b.contracts)
 	if err != nil {
 		return err
+	}
+	if !isOwner {
+		return fmt.Errorf("signer is not the owner of teamId %v", bidInput.TeamId)
+	}
+
+	bid := storage.NewBid()
+	bid.AuctionID = highestOffer.AuctionID
+	bid.ExtraPrice = int64(0)
+	bid.Rnd = int64(0)
+	bid.TeamID = highestOffer.BuyerTeamID
+	bid.Signature = highestOffer.Signature
+	bid.State = storage.BidAccepted
+	bid.StateExtra = ""
+	bid.PaymentID = ""
+	bid.PaymentURL = ""
+	bid.PaymentDeadline = 0
+
+	return tx.BidInsert(*bid)
+}
+
+func (b *Resolver) UpdateOffer(tx storage.Tx, highestOffer *storage.Offer) error {
+
+	highestOffer.State = storage.OfferAccepted
+	err := tx.OfferUpdate(*highestOffer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *Resolver) CancelRemainingOffers(tx storage.Tx, highestOffer *storage.Offer, existingOffers []storage.Offer) error {
+
+	for _, offer := range existingOffers {
+		if highestOffer.AuctionID != offer.AuctionID {
+			offer.State = storage.OfferCancelled
+			offer.StateExtra = "Cancelled by accepting a higher offer"
+			err := tx.OfferUpdate(offer)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }

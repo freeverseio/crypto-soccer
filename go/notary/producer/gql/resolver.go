@@ -34,6 +34,10 @@ func NewResolver(
 }
 
 func (b *Resolver) push(event interface{}) error {
+	if b.ch == nil {
+		return errors.New("internal error: no channel")
+	}
+
 	select {
 	case b.ch <- event:
 	default:

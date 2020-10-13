@@ -91,6 +91,7 @@ func TestCreateAndAcceptOfferSuccess(t *testing.T) {
 		CommitFunc:             func() error { return nil },
 		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
 		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
+		OfferUpdateFunc:        func(offer storage.Offer) error { return nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
@@ -676,5 +677,155 @@ func TestCreateLowerPriceOffer(t *testing.T) {
 	assert.Equal(t, id, offerID)
 	assert.Error(t, err, "pq: error: Price not the highest")
 	assert.Equal(t, rollbackCounter, 1)
+
+}
+
+func TestCreateAndAcceptOfferSuccessWithOtherOffersToReject(t *testing.T) {
+	// We will here assign the next available team to offerer so she can make an offer for the players of a different team
+	// we choose that player as a player very far from the current amount of teams (x2)
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+	nHumanTeams, _ := bc.Contracts.Assets.GetNHumansInCountry(&bind.CallOpts{}, timezoneIdx, countryIdx)
+	offererTeamIdx := nHumanTeams.Int64()
+	sellerTeamIdx := offererTeamIdx + 1
+	anotherOffererTeamIdx := sellerTeamIdx + 1
+	offererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(offererTeamIdx))
+	anotherOffererTeamId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, big.NewInt(anotherOffererTeamIdx))
+	offerer, _ := crypto.HexToECDSA("9B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	seller, _ := crypto.HexToECDSA("0A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	anotherOfferer, _ := crypto.HexToECDSA("1A878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	playerId, _ := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, (big.NewInt(2 + 18*sellerTeamIdx)))
+
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(offerer.PublicKey),
+	)
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(seller.PublicKey),
+	)
+	bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(anotherOfferer.PublicKey),
+	)
+
+	ch := make(chan interface{}, 10)
+
+	// We use offerValidUntil for offers, and validUntil for accept offer and make bids later
+	validUntil := time.Now().Unix() + 1000
+	offerValidUntil := time.Now().Unix() + 100
+
+	inOffer := input.CreateOfferInput{}
+	inOffer.ValidUntil = strconv.FormatInt(offerValidUntil, 10)
+	inOffer.PlayerId = playerId.String()
+	inOffer.CurrencyId = 1
+	inOffer.Price = 41234
+	inOffer.Rnd = int32(42321)
+	inOffer.BuyerTeamId = offererTeamId.String()
+	inOffer.Seller = crypto.PubkeyToAddress(seller.PublicKey).Hex()
+	offerID, _ := inOffer.ID(*bc.Contracts)
+
+	hash, err := inOffer.Hash(*bc.Contracts)
+	assert.NilError(t, err)
+	signature, err := signer.Sign(hash.Bytes(), offerer)
+	assert.NilError(t, err)
+	inOffer.Signature = hex.EncodeToString(signature)
+
+	//
+	inOfferFromAnotherOfferer := input.CreateOfferInput{}
+	inOfferFromAnotherOfferer.ValidUntil = strconv.FormatInt(offerValidUntil+100, 10)
+	inOfferFromAnotherOfferer.PlayerId = playerId.String()
+	inOfferFromAnotherOfferer.CurrencyId = 1
+	inOfferFromAnotherOfferer.Price = 41234
+	inOfferFromAnotherOfferer.Rnd = int32(542321)
+	inOfferFromAnotherOfferer.BuyerTeamId = anotherOffererTeamId.String()
+	inOfferFromAnotherOfferer.Seller = crypto.PubkeyToAddress(seller.PublicKey).Hex()
+	anotherOfferID, _ := inOfferFromAnotherOfferer.ID(*bc.Contracts)
+
+	hashFromAnotherOffer, err := inOfferFromAnotherOfferer.Hash(*bc.Contracts)
+	assert.NilError(t, err)
+	signatureFromAnotherOffer, err := signer.Sign(hashFromAnotherOffer.Bytes(), anotherOfferer)
+	assert.NilError(t, err)
+	inOfferFromAnotherOfferer.Signature = hex.EncodeToString(signatureFromAnotherOffer)
+	//
+	mockOffer := storage.Offer{
+		PlayerID:    inOffer.PlayerId,
+		CurrencyID:  int(inOffer.CurrencyId),
+		Price:       int64(inOffer.Price),
+		Rnd:         int64(inOffer.Rnd),
+		ValidUntil:  validUntil,
+		Signature:   inOffer.Signature,
+		State:       storage.OfferStarted,
+		StateExtra:  "",
+		Seller:      inOffer.Seller,
+		Buyer:       crypto.PubkeyToAddress(offerer.PublicKey).Hex(),
+		AuctionID:   string(offerID),
+		BuyerTeamID: inOffer.BuyerTeamId,
+	}
+
+	mockAnotherOffer := storage.Offer{
+		PlayerID:    inOfferFromAnotherOfferer.PlayerId,
+		CurrencyID:  int(inOfferFromAnotherOfferer.CurrencyId),
+		Price:       int64(inOfferFromAnotherOfferer.Price),
+		Rnd:         int64(inOfferFromAnotherOfferer.Rnd + 100),
+		ValidUntil:  validUntil,
+		Signature:   inOfferFromAnotherOfferer.Signature,
+		State:       storage.OfferStarted,
+		StateExtra:  "",
+		Seller:      inOfferFromAnotherOfferer.Seller,
+		Buyer:       crypto.PubkeyToAddress(anotherOfferer.PublicKey).Hex(),
+		AuctionID:   string(anotherOfferID),
+		BuyerTeamID: inOfferFromAnotherOfferer.BuyerTeamId,
+	}
+
+	mockOffersByPlayerId := []storage.Offer{mockOffer, mockAnotherOffer}
+	offerUpdateCounter := 0
+
+	mock := mockup.Tx{
+		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
+		BidInsertFunc:          func(bid storage.Bid) error { return nil },
+		CommitFunc:             func() error { return nil },
+		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
+		OfferUpdateFunc:        func(offer storage.Offer) error { offerUpdateCounter++; return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
+	_, err = r.CreateOffer(struct{ Input input.CreateOfferInput }{inOffer})
+
+	// When you accept the offer, validUntil is redefined, and offerValidUntil is inherited from the offer
+	acceptOfferIn := input.AcceptOfferInput{}
+	acceptOfferIn.OfferValidUntil = inOffer.ValidUntil
+	acceptOfferIn.ValidUntil = strconv.FormatInt(validUntil, 10)
+	acceptOfferIn.PlayerId = inOffer.PlayerId
+	acceptOfferIn.CurrencyId = inOffer.CurrencyId
+	acceptOfferIn.Price = inOffer.Price
+	acceptOfferIn.Rnd = inOffer.Rnd
+	acceptOfferIn.OfferId = graphql.ID(string(offerID))
+
+	sellerDigest, err := acceptOfferIn.SellerDigest()
+	signature, err = signer.Sign(sellerDigest.Bytes(), seller)
+	assert.NilError(t, err)
+	acceptOfferIn.Signature = hex.EncodeToString(signature)
+
+	auctionIdResult, err := r.AcceptOffer(struct{ Input input.AcceptOfferInput }{acceptOfferIn})
+	assert.NilError(t, err)
+	assert.Equal(t, offerUpdateCounter, 2)
+
+	// test that acceptOffer returned the auctionId from the input offer
+	acceptOffderInId, _ := acceptOfferIn.AuctionID()
+	assert.Equal(t, auctionIdResult, acceptOffderInId)
+	inId, _ := inOffer.ID(*bc.Contracts)
+	assert.Equal(t, auctionIdResult, inId)
 
 }

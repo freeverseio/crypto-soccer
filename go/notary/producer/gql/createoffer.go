@@ -101,7 +101,11 @@ func createOffer(service storage.Tx, in input.CreateOfferInput, contracts contra
 		return err
 	}
 	offer.Buyer = signerAddress.Hex()
-	offer.Seller = in.Seller
+	seller, err := in.GetOwnerOfRequestedPlayer(contracts)
+	if err != nil {
+		return err
+	}
+	offer.Seller = seller.Hex()
 	offer.BuyerTeamID = in.BuyerTeamId
 	if err = service.OfferInsert(*offer); err != nil {
 		return err

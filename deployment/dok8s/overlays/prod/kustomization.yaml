@@ -8,31 +8,31 @@ resources:
 - configmap.yaml
 images:
 - name: freeverseio/authproxy
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/dashboard
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/horizon
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/market.db
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/market.notary
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/market.trader
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/relay.actions
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/synchronizer
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/universe.api
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/universe.db
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/dashboard
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/gamelayer
-  newTag: 0.24.8
+  newTag: 0.24.9
 - name: freeverseio/game.db
-  newTag: 0.24.8
+  newTag: 0.24.9
 patchesJson6902:
 - target:
     group: networking.k8s.io
@@ -52,5 +52,13 @@ patchesJson6902:
     kind: Ingress
     name: dashboard-oauth2-proxy
   path: dashboard/ingress_patch.yaml
+patches:
+- target:
+    group: networking.k8s.io
+    version: v1beta1
+    kind: Ingress
+    namespace: freeverse
+    name: cryptosoccer-webhook-ingress
+  path: gamelayer-webhook/ingress_patch.yaml
 patchesStrategicMerge:
   - synchronizer/deployment.yaml

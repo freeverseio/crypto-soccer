@@ -30,6 +30,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		auction.CurrencyID = 3
 		auction.Price = 3
 		auction.ValidUntil = 3
+		auction.OfferValidUntil = 0
 		auction.Signature = "3"
 		auction.State = storage.AuctionStarted
 		auction.StateExtra = "3"
