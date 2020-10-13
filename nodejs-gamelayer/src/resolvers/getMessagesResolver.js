@@ -16,7 +16,7 @@ const getMessagesResolver = async (_, { teamId, limit, after }) => {
       after,
       limit,
     });
-    return messages.map(messagesView);
+    return { totalCount: messages.length, nodes: messages.map(messagesView) };
   } catch (e) {
     return e;
   }

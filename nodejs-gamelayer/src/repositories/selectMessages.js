@@ -11,7 +11,8 @@ const selectMessagesQuery = {
       text_message as text,
       custom_image_url,
       metadata::TEXT,
-      is_read
+      is_read,
+      created_at
     FROM
       inbox
     WHERE

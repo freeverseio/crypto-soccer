@@ -71,6 +71,12 @@ const main = async () => {
       customImageUrl: String
       metadata: String
       isRead: Boolean
+      createdAt: String
+    }
+
+    type Messages {
+      totalCount: Int!
+      nodes: [Message]
     }
 
     extend type Mutation {
@@ -81,9 +87,10 @@ const main = async () => {
       setMailboxStart(teamId: ID!): Boolean
       setMessageRead(id: ID!): Boolean
     }
-
+    
     extend type Query {
-      getMessages(teamId: ID!, limit: Int, after: Int): [Message]
+      getMessages(teamId: ID!, limit: Int, after: Int): Messages!
+      getNumUnreadMessages(teamId : ID!): Int!
     }
   `;
 
