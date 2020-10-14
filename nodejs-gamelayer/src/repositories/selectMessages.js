@@ -18,14 +18,14 @@ const selectMessagesQuery = {
     WHERE
       destinatary = $1
       AND created_at >= $2
-      AND id > $3
-    LIMIT $4
+    LIMIT $3
+    OFFSET $4
   `,
 };
 
-const selectMessages = async ({ destinatary, createdAt, after, limit }) => {
+const selectMessages = async ({ destinatary, createdAt, offset, limit }) => {
   const pool = await PostgresSQLService.getPool();
-  const values = [destinatary, createdAt, after, limit];
+  const values = [destinatary, createdAt, limit, offset];
 
   try {
     const { rows } = await pool.query(selectMessagesQuery, values);
