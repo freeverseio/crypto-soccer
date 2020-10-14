@@ -16,6 +16,7 @@ func ProcessAuction(
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
 	auctionID string,
+	shouldQueryMarketPay bool,
 ) error {
 	auction, err := service.Auction(auctionID)
 	if err != nil {
@@ -27,6 +28,7 @@ func ProcessAuction(
 		*auction,
 		pvc,
 		contracts,
+		shouldQueryMarketPay,
 	); err != nil {
 		log.Error(err)
 	}
@@ -39,13 +41,14 @@ func processAuction(
 	auction storage.Auction,
 	pvc *ecdsa.PrivateKey,
 	contracts contracts.Contracts,
+	shouldQueryMarketPay bool,
 ) error {
 	bids, err := service.Bids(auction.ID)
 	if err != nil {
 		return err
 	}
 
-	am, err := auctionmachine.New(auction, bids, contracts, pvc)
+	am, err := auctionmachine.New(auction, bids, contracts, pvc, shouldQueryMarketPay)
 	if err != nil {
 		return err
 	}

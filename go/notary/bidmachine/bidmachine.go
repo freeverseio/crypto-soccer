@@ -15,12 +15,13 @@ import (
 )
 
 type BidMachine struct {
-	market          marketpay.MarketPayService
-	auction         storage.Auction
-	bid             *storage.Bid
-	contracts       contracts.Contracts
-	freeverse       *ecdsa.PrivateKey
-	PostAuctionTime int64
+	market               marketpay.MarketPayService
+	auction              storage.Auction
+	bid                  *storage.Bid
+	contracts            contracts.Contracts
+	freeverse            *ecdsa.PrivateKey
+	PostAuctionTime      int64
+	shouldQueryMarketPay bool
 }
 
 func New(
@@ -29,6 +30,7 @@ func New(
 	bid *storage.Bid,
 	contracts contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
+	shouldQueryMarketPay bool,
 ) (*BidMachine, error) {
 	if market == nil {
 		return nil, errors.New("No market instance given")
@@ -50,6 +52,7 @@ func New(
 		contracts,
 		freeverse,
 		PostAuctionTime.Int64(),
+		shouldQueryMarketPay,
 	}, nil
 }
 
@@ -102,19 +105,21 @@ func (b *BidMachine) processPaying() error {
 		b.setState(storage.BidFailed, "expired")
 		return nil
 	}
-
 	log.Debugf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID)
-	order, err := b.market.GetOrder(b.bid.PaymentID)
-	log.Debugf("Order received from marketpay: %v\n", order)
-	log.Debugf("error received from marketpay.GetOrder: %v\n", err)
-	if err != nil {
-		return err
+
+	if b.shouldQueryMarketPay {
+		order, err := b.market.GetOrder(b.bid.PaymentID)
+		log.Debugf("Order received from marketpay: %v\n", order)
+		log.Debugf("error received from marketpay.GetOrder: %v\n", err)
+		if err != nil {
+			return err
+		}
+		isPaid := b.market.IsPaid(*order)
+		if isPaid {
+			b.setState(storage.BidPaid, "")
+		}
+		log.Debugf("[bid] Auction %v, extra_price %v | Order: %v, state: %v, is paid: %v | Bid New State: %v", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID, order.Status, isPaid, b.bid.State)
 	}
-	isPaid := b.market.IsPaid(*order)
-	if isPaid {
-		b.setState(storage.BidPaid, "")
-	}
-	log.Debugf("[bid] Auction %v, extra_price %v | Order: %v, state: %v, is paid: %v | Bid New State: %v", b.bid.AuctionID, b.bid.ExtraPrice, b.bid.PaymentID, order.Status, isPaid, b.bid.State)
 
 	return nil
 }
