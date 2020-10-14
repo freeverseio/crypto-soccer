@@ -14,12 +14,14 @@ import (
 func TestNotPayingAuction(t *testing.T) {
 	auction := storage.Auction{State: storage.AuctionAssetFrozen}
 	bid := storage.NewBid()
+	shouldQueryMarketPay := true
 	_, err := bidmachine.New(
 		v1.NewMockMarketPay(),
 		auction,
 		bid,
 		*bc.Contracts,
 		bc.Owner,
+		shouldQueryMarketPay,
 	)
 	assert.Error(t, err, "Auction is not in PAYING state")
 }
@@ -27,12 +29,25 @@ func TestNotPayingAuction(t *testing.T) {
 func TestPayingAuction(t *testing.T) {
 	auction := storage.Auction{State: storage.AuctionPaying}
 	bid := storage.NewBid()
+	shouldQueryMarketPay := true
 	_, err := bidmachine.New(
 		v1.NewMockMarketPay(),
 		auction,
 		bid,
 		*bc.Contracts,
 		bc.Owner,
+		shouldQueryMarketPay,
+	)
+	assert.NilError(t, err)
+
+	shouldQueryMarketPay = false
+	_, err = bidmachine.New(
+		v1.NewMockMarketPay(),
+		auction,
+		bid,
+		*bc.Contracts,
+		bc.Owner,
+		shouldQueryMarketPay,
 	)
 	assert.NilError(t, err)
 }
@@ -72,12 +87,14 @@ func TestFirstAlive(t *testing.T) {
 func TestExpiredBidNoTransit(t *testing.T) {
 	auction := storage.Auction{State: storage.AuctionPaying}
 	bid := &storage.Bid{State: storage.BidFailed}
+	shouldQueryMarketPay := true
 	machine, err := bidmachine.New(
 		v1.NewMockMarketPay(),
 		auction,
 		bid,
 		*bc.Contracts,
 		bc.Owner,
+		shouldQueryMarketPay,
 	)
 	assert.NilError(t, err)
 	assert.NilError(t, machine.Process())
@@ -93,12 +110,14 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 		State:           storage.BidAccepted,
 		PaymentDeadline: 3,
 	}
+	shouldQueryMarketPay := true
 	machine, err := bidmachine.New(
 		v1.NewMockMarketPay(),
 		auction,
 		bid,
 		*bc.Contracts,
 		bc.Owner,
+		shouldQueryMarketPay,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -127,12 +146,37 @@ func TestBidPayingExpires(t *testing.T) {
 		State:           storage.BidPaying,
 		PaymentDeadline: now - 1,
 	}
+	shouldQueryMarketPay := true
 	machine, err := bidmachine.New(
 		v1.NewMockMarketPay(),
 		auction,
 		bid,
 		*bc.Contracts,
 		bc.Owner,
+		shouldQueryMarketPay,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bid.PaymentDeadline != now-1 {
+		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
+	}
+	if bid.State != storage.BidFailed {
+		t.Fatalf("Wrong state %v", bid.State)
+	}
+
+	shouldQueryMarketPay = false
+	machine, err = bidmachine.New(
+		v1.NewMockMarketPay(),
+		auction,
+		bid,
+		*bc.Contracts,
+		bc.Owner,
+		shouldQueryMarketPay,
 	)
 	if err != nil {
 		t.Fatal(err)

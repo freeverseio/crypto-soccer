@@ -14,6 +14,7 @@ func ProcessAuctions(
 	market marketpay.MarketPayService,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
+	shouldQueryMarketPay bool,
 ) error {
 	auctions, err := service.AuctionPendingAuctions()
 	if err != nil {
@@ -27,6 +28,7 @@ func ProcessAuctions(
 			auction,
 			pvc,
 			contracts,
+			shouldQueryMarketPay,
 		); err != nil {
 			log.Error(err)
 		}

@@ -20,7 +20,8 @@ func TestWithDrawableBySellerPendingValidate(t *testing.T) {
 	bid.PaymentID = order.TrusteeShortlink.Hash
 	bids := []storage.Bid{*bid}
 	order.Status = "PENDING_VALIDATE"
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
 	assert.Equal(t, m.State(), storage.AuctionValidation)
@@ -37,7 +38,8 @@ func TestWithDrawableBySellerPendingRelease(t *testing.T) {
 	bid.PaymentID = order.TrusteeShortlink.Hash
 	bids := []storage.Bid{*bid}
 	order.Status = "PENDING_RELEASE"
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
 	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)
@@ -54,7 +56,8 @@ func TestWithDrawableBySellerReleased(t *testing.T) {
 	bid.PaymentID = order.TrusteeShortlink.Hash
 	bids := []storage.Bid{*bid}
 	order.Status = "RELEASED"
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessWithdrawableBySeller(market))
 	assert.Equal(t, m.State(), storage.AuctionWithdrableBySeller)

@@ -242,8 +242,8 @@ func TestCreateOfferPlayerFrozen(t *testing.T) {
 	}
 
 	market := marketpay.NewMockMarketPay()
-
-	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	if err != nil {
 		t.Fatal(err)
 	}

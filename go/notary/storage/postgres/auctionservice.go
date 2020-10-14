@@ -34,7 +34,7 @@ func (b *Tx) AuctionPendingAuctions() ([]storage.Auction, error) {
 }
 
 func (b *Tx) AuctionPendingOrderlessAuctions() ([]storage.Auction, error) {
-	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended' OR state='paying' OR state='withadrable_by_seller' OR state='validation');")
+	rows, err := b.tx.Query("SELECT id, player_id, currency_id, price, rnd, valid_until, offer_valid_until, signature, state, payment_url, state_extra, seller FROM auctions WHERE NOT (state = 'cancelled' OR state = 'failed' OR state = 'ended' OR state='withadrable_by_seller' OR state='validation');")
 	if err != nil {
 		return nil, err
 	}

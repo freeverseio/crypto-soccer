@@ -27,8 +27,8 @@ func TestAuctionStarted(t *testing.T) {
 		auction.PlayerID = "274877906944" // id of a player in team0 of this timezone (as declared in setup.go)
 		auction.Seller = crypto.PubkeyToAddress(bc.Owner.PublicKey).Hex()
 		auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
-
-		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+		shouldQueryMarketPay := true
+		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.StateExtra(), "")
@@ -40,7 +40,8 @@ func TestAuctionStarted(t *testing.T) {
 		auction.ValidUntil = time.Now().Unix() - 10
 		auction.OfferValidUntil = time.Now().Unix() + 100
 
-		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+		shouldQueryMarketPay := true
+		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.StateExtra(), "expired")
@@ -53,7 +54,8 @@ func TestAuctionStarted(t *testing.T) {
 		auction.PlayerID = "274877906944"
 		auction.Seller = "0x03A909262608c650BD9b0ae06E29D90D0F67aC5e"
 
-		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+		shouldQueryMarketPay := true
+		m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 		assert.NilError(t, err)
 		assert.NilError(t, m.Process(nil))
 		assert.Equal(t, m.StateExtra(), "seller 0x03A909262608c650BD9b0ae06E29D90D0F67aC5e is not the owner 0x83A909262608c650BD9b0ae06E29D90D0F67aC5e")
@@ -95,8 +97,8 @@ func TestAuctionStartedGoFrozen(t *testing.T) {
 
 	bid := storage.NewBid()
 	bids := []storage.Bid{*bid}
-
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process(nil))
 	assert.Equal(t, m.State(), storage.AuctionAssetFrozen)
@@ -198,8 +200,8 @@ func TestAuctionMachineAllWorkflow1(t *testing.T) {
 	}
 
 	market := v1.NewMockMarketPay()
-
-	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -361,7 +363,8 @@ func TestAuctionMachineAllWorkflowWithOffer(t *testing.T) {
 
 	market := v1.NewMockMarketPay()
 
-	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	machine, err := auctionmachine.New(auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	if err != nil {
 		t.Fatal(err)
 	}

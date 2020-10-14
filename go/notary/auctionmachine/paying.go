@@ -31,6 +31,7 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error 
 		bid,
 		b.contracts,
 		b.freeverse,
+		b.shouldQueryMarketPay,
 	)
 	if err != nil {
 		return err

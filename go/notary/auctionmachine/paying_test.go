@@ -24,7 +24,8 @@ func TestPaying(t *testing.T) {
 	auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
 
 	auction.State = storage.AuctionStarted
-	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.Error(t, m.ProcessPaying(v1.NewMockMarketPay()), "auction[f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a|started] is not in state paying")
 }
@@ -41,7 +42,8 @@ func TestPayingWithOffer(t *testing.T) {
 	auction.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
 
 	auction.State = storage.AuctionStarted
-	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.Error(t, m.ProcessPaying(v1.NewMockMarketPay()), "auction[f1d4501c5158a9018b1618ec4d471c66b663d8f6bffb6e70a0c6584f5c1ea94a|started] is not in state paying")
 }
@@ -49,7 +51,8 @@ func TestPayingWithOffer(t *testing.T) {
 func TestPayingNilBids(t *testing.T) {
 	auction := storage.NewAuction()
 	auction.State = storage.AuctionPaying
-	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, nil, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
@@ -62,7 +65,8 @@ func TestPayingNoBidsAvailable(t *testing.T) {
 	bid := storage.NewBid()
 	bid.State = storage.BidFailed
 	bids := []storage.Bid{*bid}
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionFailed)
@@ -75,7 +79,8 @@ func TestPayingWithBid(t *testing.T) {
 	bid := storage.NewBid()
 	bid.State = storage.BidAccepted
 	bids := []storage.Bid{*bid}
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(v1.NewMockMarketPay()))
 	assert.Equal(t, m.State(), storage.AuctionPaying)
@@ -111,7 +116,8 @@ func TestPayingFailing(t *testing.T) {
 	bid.TeamID = "4343"
 	bid.Signature = "381bf58829e11790830eab9924b123d1dbe96dd37b10112729d9d32d476c8d5762598042bb5d5fd63f668455aa3a2ce4e2632241865c26ababa231ad212b5f151b"
 	bids := []storage.Bid{*bid}
-	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner)
+	shouldQueryMarketPay := true
+	m, err := auctionmachine.New(*auction, bids, *bc.Contracts, bc.Owner, shouldQueryMarketPay)
 	assert.NilError(t, err)
 	assert.NilError(t, m.ProcessPaying(&service))
 	assert.Equal(t, m.State(), storage.AuctionWithdrableByBuyer)

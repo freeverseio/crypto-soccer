@@ -290,7 +290,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingOrderlessAuctions()
 		assert.NilError(t, err)
-		assert.Equal(t, len(result), 2)
+		assert.Equal(t, len(result), 3)
 
 		auction.ID = "ciao3"
 		auction.PlayerID = "5"
@@ -298,7 +298,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingOrderlessAuctions()
 		assert.NilError(t, err)
-		assert.Equal(t, len(result), 2)
+		assert.Equal(t, len(result), 3)
 
 		auction.ID = "ciao4"
 		auction.PlayerID = "6"
@@ -306,7 +306,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingOrderlessAuctions()
 		assert.NilError(t, err)
-		assert.Equal(t, len(result), 3)
+		assert.Equal(t, len(result), 4)
 
 		auction.ID = "ciao5"
 		auction.PlayerID = "7"
@@ -314,7 +314,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingOrderlessAuctions()
 		assert.NilError(t, err)
-		assert.Equal(t, len(result), 3)
+		assert.Equal(t, len(result), 4)
 
 		auction.ID = "ciao6"
 		auction.PlayerID = "8"
@@ -322,7 +322,7 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingOrderlessAuctions()
 		assert.NilError(t, err)
-		assert.Equal(t, len(result), 3)
+		assert.Equal(t, len(result), 4)
 
 		auction.ID = "ciao7"
 		auction.PlayerID = "9"
@@ -330,6 +330,6 @@ func testAuctionServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, tx.AuctionInsert(*auction))
 		result, err = tx.AuctionPendingOrderlessAuctions()
 		assert.NilError(t, err)
-		assert.Equal(t, len(result), 3)
+		assert.Equal(t, len(result), 4)
 	})
 }
