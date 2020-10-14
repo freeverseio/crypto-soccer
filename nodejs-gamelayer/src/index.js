@@ -89,7 +89,7 @@ const main = async () => {
     }
     
     extend type Query {
-      getMessages(teamId: ID!, limit: Int, after: Int): Messages!
+      getMessages(teamId: ID!, limit: Int, offset: Int): Messages!
       getNumUnreadMessages(teamId : ID!): Int!
     }
   `;
