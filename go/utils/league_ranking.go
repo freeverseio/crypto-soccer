@@ -45,3 +45,23 @@ func twoToPow(n uint64) int64 {
 func decodeTZCountryAndValGo(encoded *big.Int) (uint8, *big.Int, *big.Int) {
 	return uint8(and(right(encoded, 38), 31).Int64()), and(right(encoded, 28), 1023), and(encoded, 268435455)
 }
+
+func getPerfPoints(leagueRanking uint8) uint64 {
+	if leagueRanking == 0 {
+		return 50
+	} else if leagueRanking == 1 {
+		return 42
+	} else if leagueRanking == 2 {
+		return 30
+	} else if leagueRanking == 3 {
+		return 25
+	} else if leagueRanking == 4 {
+		return 20
+	} else if leagueRanking == 5 {
+		return 15
+	} else if leagueRanking == 6 {
+		return 5
+	} else {
+		return 0
+	}
+}
