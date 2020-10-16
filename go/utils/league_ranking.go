@@ -65,3 +65,58 @@ func getPerfPoints(leagueRanking uint8) uint64 {
 		return 0
 	}
 }
+
+func getSumOfTopPlayerSkills(skills []*big.Int) int64 {
+	PLAYERS_PER_TEAM_MAX := uint8(25)
+	var sortedSumSkills [25]int64
+	for p := uint8(0); p < PLAYERS_PER_TEAM_MAX; p++ {
+		if !equals(skills[p], 0) {
+			sortedSumSkills[p] = getSumOfSkillsGo(skills[p]).Int64()
+		}
+	}
+	sort25(&sortedSumSkills)
+	teamSkills := int64(0)
+	for p := uint8(0); p < 18; p++ {
+		teamSkills += sortedSumSkills[p]
+	}
+	return teamSkills
+}
+
+func sort25(data *[25]int64) *[25]int64 {
+	quickSort25(data, int(0), int(24))
+	return data
+}
+
+func quickSort25(arr *[25]int64, left int, right int) {
+	i := left
+	j := right
+	if i != j {
+		pivot := arr[uint(left+(right-left)/2)]
+		for i <= j {
+			for arr[uint(i)] > pivot {
+				i++
+			}
+			for pivot > arr[uint(j)] {
+				j--
+			}
+			if i <= j {
+				oldj := arr[uint(j)]
+				oldi := arr[uint(i)]
+				arr[uint(i)] = oldj
+				arr[uint(j)] = oldi
+				i++
+				j--
+			}
+		}
+		if left < j {
+			quickSort25(arr, left, j)
+		}
+		if i < right {
+			quickSort25(arr, i, right)
+		}
+	}
+}
+
+func getSumOfSkillsGo(encodedSkills *big.Int) *big.Int {
+	return and(right(encodedSkills, 181), 524287) // 2**19-1
+}
