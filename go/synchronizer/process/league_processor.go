@@ -81,6 +81,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 		if err != nil {
 			return err
 		}
+		log.Infof("[processor|consume] starting reseting leagues and deleting match events")
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 			if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx, verse); err != nil {
 				return err
@@ -90,6 +91,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 			}
 		}
 	}
+	log.Infof("[processor|consume] ended shuffling timezone %v and create calendars", timezoneIdx)
 	return nil
 }
 
@@ -228,12 +230,13 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 }
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
-	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
+	log.Infof("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap OrgMap
 	leagueCount, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
+	log.Infof("Computing ranking points for each team in each league. League count %v", leagueCount)
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
@@ -269,9 +272,10 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			}
 		}
 	}
-
+	log.Infof("Sorting orgmap...")
 	orgMap.Sort()
 
+	log.Infof("Creating new leagues...")
 	// create the new leagues
 	for i := 0; i < orgMap.Size(); i++ {
 		team := orgMap.At(i)
@@ -288,6 +292,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			return err
 		}
 	}
+	log.Infof("Ended UpdatePrevPerfPointsAndShuffleTeamsInCountry")
 	return nil
 }
 
@@ -366,7 +371,7 @@ func (b *LeagueProcessor) SplitZombiesFromHumans(t TeamsWithStateInLeague) (OrgM
 }
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
-	log.Debugf("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
+	log.Infof("Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 
 	leagueCount, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
@@ -375,6 +380,8 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 	if err != nil {
 		return err
 	}
+
+	log.Infof("Cleaning and updating zombies")
 	// Suggest to make Clean set ALL = false
 	err = storage.TeamCleanZombies(tx)
 	if err != nil {
@@ -385,6 +392,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 		return err
 	}
 
+	log.Infof("Computing ranking points for each team in each league. League count %v", leagueCount)
 	var teamStatesPerLeague []TeamsWithStateInLeague
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 		teamsWithStateInLeague, err := b.TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
@@ -394,11 +402,13 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 		teamStatesPerLeague = append(teamStatesPerLeague, teamsWithStateInLeague)
 	}
 
+	log.Infof("Sorting orgmap...")
 	orgMap, err := b.GenerateOrgMap(teamStatesPerLeague)
 	if err != nil {
 		return err
 	}
 
+	log.Infof("Creating new leagues...")
 	// create the new leagues
 	for i := 0; i < orgMap.Size(); i++ {
 		team := orgMap.At(i)
@@ -415,6 +425,8 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 			return err
 		}
 	}
+
+	log.Infof("Ended UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie")
 	return nil
 }
 
