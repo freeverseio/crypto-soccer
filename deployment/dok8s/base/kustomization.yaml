@@ -7,12 +7,13 @@ resources:
 - marketdb
 - notary
 - relayactions
-- synchronizer
+# - synchronizer
 - trader
 - universeapi
-- universedb
+# - universedb
 - dashboard
 - oauth2-proxy
 - gamedb
 - gamelayer
 - gamelayer-webhook
+- synchronizer-with-universe-db

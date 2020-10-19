@@ -62,5 +62,5 @@ patches:
     namespace: freeverse
     name: cryptosoccer-webhook-ingress
   path: gamelayer-webhook/ingress_patch.yaml
-patchesStrategicMerge:
-  - synchronizer/deployment.yaml
+# patchesStrategicMerge:
+#   - synchronizer/deployment.yaml

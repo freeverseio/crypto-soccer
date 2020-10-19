@@ -211,17 +211,20 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app.kubernetes.io/app: synchronizer
-    app.kubernetes.io/component: synchronizer
+    app.kubernetes.io/app: synchronizer-with-universe-db
+    app.kubernetes.io/component: synchronizer-with-universe-db
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
-  name: synchronizer
+  name: synchronizer-with-universe-db
 spec:
   ports:
-  - port: 4004
+  - name: universedb
+    port: 5432
+  - name: synchronizer
+    port: 4004
   selector:
-    app.kubernetes.io/app: synchronizer
-    app.kubernetes.io/component: synchronizer
+    app.kubernetes.io/app: synchronizer-with-universe-db
+    app.kubernetes.io/component: synchronizer-with-universe-db
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
 ---
@@ -261,24 +264,6 @@ spec:
   selector:
     app.kubernetes.io/app: universeapi
     app.kubernetes.io/component: universeapi
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/app: universedb
-    app.kubernetes.io/component: universedb
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
-  name: universedb
-spec:
-  ports:
-  - port: 5432
-  selector:
-    app.kubernetes.io/app: universedb
-    app.kubernetes.io/component: universedb
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
 ---
@@ -625,7 +610,7 @@ spec:
       containers:
       - args:
         - -postgres
-        - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
+        - postgres://$(freeverse_username):$(freeverse_password)@synchronizer-with-universe-db:5432/cryptosoccer?sslmode=disable
         - -ethereum
         - http://xdai:8545
         - -proxy_address
@@ -650,67 +635,6 @@ spec:
         - containerPort: 4000
       imagePullSecrets:
       - name: docker-secret
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app.kubernetes.io/app: synchronizer
-    app.kubernetes.io/component: synchronizer
-    app.kubernetes.io/part-of: cryptosoccer
-    app.kubernetes.io/version: 1.0.0
-  name: synchronizer
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/app: synchronizer
-      app.kubernetes.io/component: synchronizer
-      app.kubernetes.io/part-of: cryptosoccer
-      app.kubernetes.io/version: 1.0.0
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/app: synchronizer
-        app.kubernetes.io/component: synchronizer
-        app.kubernetes.io/part-of: cryptosoccer
-        app.kubernetes.io/version: 1.0.0
-    spec:
-      containers:
-      - args:
-        - -postgres
-        - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable
-        - -ethereum
-        - http://xdai:8545
-        - -ipfs
-        - /dns4/ipfsnode/tcp/5001
-        - -proxy_address
-        - $(PROXY_CONTRACT_ADDRESS)
-        - -staker
-        - $(STAKER_PRIVATE_KEY)
-        - -delta
-        - $(BLOCKS_PER_STEP)
-        - -config-file
-        - $(SYNC_CONFIG_FILE)
-        env:
-        - name: STAKER_PRIVATE_KEY
-          valueFrom:
-            secretKeyRef:
-              key: staker
-              name: blockchain-accounts
-        envFrom:
-        - configMapRef:
-            name: freeverse-configmap
-        image: freeverseio/synchronizer:dev
-        imagePullPolicy: Always
-        name: synchronizer
-        resources:
-          requests:
-            cpu: "3"
-      imagePullSecrets:
-      - name: docker-secret
-      nodeSelector:
-        beta.kubernetes.io/instance-type: s-4vcpu-8gb
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -780,7 +704,7 @@ spec:
       containers:
       - args:
         - -d
-        - postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer
+        - postgres://$(freeverse_username):$(freeverse_password)@synchronizer-with-universe-db:5432/cryptosoccer
         envFrom:
         - configMapRef:
             name: freeverse-configmap
@@ -910,41 +834,56 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
-    app.kubernetes.io/app: universedb
-    app.kubernetes.io/component: universedb
+    app.kubernetes.io/app: synchronizer-with-universe-db
+    app.kubernetes.io/component: synchronizer-with-universe-db
     app.kubernetes.io/part-of: cryptosoccer
     app.kubernetes.io/version: 1.0.0
-  name: universedb
+  name: synchronizer-with-universe-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/app: universedb
-      app.kubernetes.io/component: universedb
+      app.kubernetes.io/app: synchronizer-with-universe-db
+      app.kubernetes.io/component: synchronizer-with-universe-db
       app.kubernetes.io/part-of: cryptosoccer
       app.kubernetes.io/version: 1.0.0
-  serviceName: universedb
+  serviceName: synchronizer-with-universe-db
   template:
     metadata:
       labels:
-        app.kubernetes.io/app: universedb
-        app.kubernetes.io/component: universedb
+        app.kubernetes.io/app: synchronizer-with-universe-db
+        app.kubernetes.io/component: synchronizer-with-universe-db
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
     spec:
-      affinity:
-        podAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app.kubernetes.io/app
-                  operator: In
-                  values:
-                  - synchronizer
-              topologyKey: beta.kubernetes.io/os
-            weight: 100
       containers:
+      - args:
+        - -postgres
+        - postgres://$(freeverse_username):$(freeverse_password)@localhost:5432/cryptosoccer?sslmode=disable
+        - -ethereum
+        - http://xdai:8545
+        - -ipfs
+        - /dns4/ipfsnode/tcp/5001
+        - -proxy_address
+        - $(PROXY_CONTRACT_ADDRESS)
+        - -staker
+        - $(STAKER_PRIVATE_KEY)
+        - -delta
+        - $(BLOCKS_PER_STEP)
+        - -config-file
+        - $(SYNC_CONFIG_FILE)
+        env:
+        - name: STAKER_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: staker
+              name: blockchain-accounts
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/synchronizer:dev
+        imagePullPolicy: Always
+        name: synchronizer
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
@@ -962,8 +901,8 @@ spec:
   volumeClaimTemplates:
   - metadata:
       labels:
-        app.kubernetes.io/app: universedb
-        app.kubernetes.io/component: universedb
+        app.kubernetes.io/app: synchronizer-with-universe-db
+        app.kubernetes.io/component: synchronizer-with-universe-db
         app.kubernetes.io/part-of: cryptosoccer
         app.kubernetes.io/version: 1.0.0
       name: universedb-storage
