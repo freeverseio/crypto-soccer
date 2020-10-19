@@ -120,3 +120,16 @@ func quickSort25(arr *[25]int64, left int, right int) {
 func getSumOfSkillsGo(encodedSkills *big.Int) *big.Int {
 	return and(right(encodedSkills, 181), 524287) // 2**19-1
 }
+
+func computeTeamRankingPointsPure(
+	skills [25]*big.Int,
+	leagueRanking uint8,
+	prevPerfPoints int64,
+) (int64, int64) {
+	WEIGHT_SKILLS := int64(100)
+	INERTIA := int64(2)
+	perfPointsThisLeague := getPerfPoints(leagueRanking)
+	prevPerfPoints = (INERTIA*prevPerfPoints + (10-INERTIA)*perfPointsThisLeague)
+	result := int64(getSumOfTopPlayerSkills(skills)) * (WEIGHT_SKILLS*10 + prevPerfPoints)
+	return result, prevPerfPoints / 10
+}
