@@ -102,9 +102,9 @@ type Auction {
   }
   
   type Query {
-    allAuctions: [Auctions]
-    allBids: [Bids]
-    allOffers: [Offers]
+    allAuctions: [Auction]
+    allBids: [Bid]
+    allOffers: [Offer]
   }  
 `;
 
