@@ -102,12 +102,14 @@ func (b *Consumer) Consume(event interface{}) error {
 	case input.ProcessAuctionInput:
 		log.Info("[consumer] process auctions from webhook")
 		shouldQueryMarketPay := true
-		return ProcessAuctions(
+		auctionID := string(event.(input.ProcessAuctionInput).Id)
+		return ProcessAuctionFromWebhook(
 			tx,
 			b.market,
 			b.contracts,
 			b.pvc,
 			shouldQueryMarketPay,
+			auctionID,
 		)
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
