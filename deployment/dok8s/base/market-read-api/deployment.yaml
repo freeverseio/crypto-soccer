@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-read-api
+  labels:
+    app.kubernetes.io/app: market-read-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: market-read-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: market-read-api
+    spec:
+      containers:
+        - name: market-read-api
+          image: freeverseio/market.read.api:dev
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: freeverse-configmap
+          env:
+            - name: HORIZON_URL
+              value: http://horizon:4000/graphql
+            - name: PG_CONNECTION_STRING
+              value: postgresql://$(freeverse_username):$(freeverse_password)@gamedb:5432/game
+      imagePullSecrets:
+        - name: docker-secret

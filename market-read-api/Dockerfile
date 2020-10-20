@@ -1,15 +1,13 @@
-FROM node:10
+FROM node:10-alpine AS build-env
 
-# Set the working directory to /app
 WORKDIR /app
-
-# Copy the current directory contents into the container at /appa
 COPY . /app
-
 RUN npm ci --only=production
-# If you are building your code for production
-# RUN npm ci --only=production
+EXPOSE 5000
+RUN chown -R node:node /app
+USER node
 
-EXPOSE 4000
-
-ENTRYPOINT [ "npm", "start", "--" ]
+FROM gcr.io/distroless/nodejs:10
+COPY --from=build-env /app /app
+WORKDIR /app
+CMD ["src/index.js"]

@@ -94,64 +94,49 @@ class HorizonService {
 
   async getAllAuctions() {
     const query = gql`
-    {
-      allAuctions 
-      (	filter: {
-          and : [
-            { 
-              state: { 
-                equalTo: STARTED
-              } 
-            },
-            { 
-              state: { 
-                equalTo: ASSET_FROZEN
-              } 
-            }
-          ]
-        }
-      )
       {
-        nodes {
-          id
-          playerId
-          price
-          validUntil
-          state
-          seller
-          bidsByAuctionId(orderBy: EXTRA_PRICE_DESC) {
-            nodes {
+        allAuctions(filter: { or: [{ state: { equalTo: STARTED } }, { state: { equalTo: ASSET_FROZEN } }] }) {
+          nodes {
+            id
+            playerId
+            price
+            validUntil
+            state
+            seller
+            offerValidUntil
+            bidsByAuctionId(orderBy: EXTRA_PRICE_DESC) {
+              nodes {
                 teamId
                 extraPrice
                 state
                 teamByTeamId {
-                    name
+                  name
                 }
                 paymentDeadline
+              }
             }
-          }
-          playerByPlayerId {
-            playerId
-            name
-            teamId
-            defence
-            speed
-            pass
-            shoot
-            endurance
-            preferredPosition
-            potential
-            dayOfBirth
-            shirtNumber
-            countryOfBirth
-            teamByTeamId {
+            playerByPlayerId {
+              playerId
               name
-              managerName
+              teamId
+              defence
+              speed
+              pass
+              shoot
+              endurance
+              preferredPosition
+              potential
+              dayOfBirth
+              shirtNumber
+              countryOfBirth
+              teamByTeamId {
+                name
+                managerName
+              }
             }
           }
         }
       }
-    }
     `;
     const result = await request(this.endpoint, query);
 
@@ -170,6 +155,7 @@ class HorizonService {
           validUntil
           state
           seller
+          offerValidUntil
           bidsByAuctionId(orderBy: EXTRA_PRICE_DESC) {
             nodes {
                 teamId

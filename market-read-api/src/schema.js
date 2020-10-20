@@ -3,11 +3,10 @@ type Auction {
     price: BigInt!
     validUntil: BigInt!
     state: AuctionState!
-    stateExtra: String!
     seller: String!
     offerValidUntil: BigInt!
-    bidsByAuctionId: [Bid]
-    playerByPlayerId: [Player]
+    bidsByAuctionId: BidsConnection
+    playerByPlayerId: Player
   }
   
   enum AuctionState {
@@ -29,7 +28,11 @@ type Auction {
     paymentDeadline: String!
     teamByTeamId: Team
   }
-  
+
+  type BidsConnection {
+    nodes: [Bid]
+  }
+
   enum BidState {
     ACCEPTED
     PAYING

@@ -17,3 +17,4 @@ resources:
 - gamelayer
 - gamelayer-webhook
 - synchronizer-with-universe-db
+- market-read-api

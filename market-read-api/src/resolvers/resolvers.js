@@ -31,6 +31,14 @@ const resolvers = ({ horizonRemoteSchema }) => {
         },
       },
     },
+    Player: {
+      teamByTeamId: {
+        fragment: `... on Player { teamId }`,
+        resolve(parent, args, context, info) {
+          return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
     Query: {
       allAuctions: allAuctionsResolver,
       getAuction: getAuctionResolver,
