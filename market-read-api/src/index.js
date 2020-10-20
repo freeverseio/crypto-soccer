@@ -11,7 +11,7 @@ const {
 const fetch = require('node-fetch');
 const resolvers = require('./resolvers/resolvers.js');
 const { horizonConfig } = require('./config.js');
-const schemaDefinition = require ('./schema.js');
+const schemaDefinition = require('./schema.js');
 
 const createRemoteSchema = async (uri) => {
   const link = new HttpLink({ uri, fetch });

@@ -1,8 +1,6 @@
 const { selectTeamName, selectTeamManagerName } = require('../repositories');
 const teamByTeamId = require('./teamByTeamId');
-const teamByBuyerTeamId = require('./teamByBuyerTeamId');
-const allOffersResolver = require('./allOffers');
-const allBidsResolver = require('./allBids');
+const getAuctionResolver = require('./getAuction');
 const allAuctionsResolver = require('./allAuctions');
 
 const resolvers = ({ horizonRemoteSchema }) => {
@@ -25,14 +23,6 @@ const resolvers = ({ horizonRemoteSchema }) => {
         },
       },
     },
-    // Player: {
-    //   teamByTeamId: {
-    //     fragment: `... on Player { teamId }`,
-    //     resolve(parent, args, context, info) {
-    //       return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
-    //     },
-    //   },
-    // },
     Bid: {
       teamByTeamId: {
         fragment: `... on Bid { teamId }`,
@@ -41,18 +31,9 @@ const resolvers = ({ horizonRemoteSchema }) => {
         },
       },
     },
-    Offer: {
-      teamByBuyerTeamId: {
-        fragment: `... on Offer { buyerTeamId }`,
-        resolve(offer, args, context, info) {
-          return teamByBuyerTeamId(offer, args, context, info, horizonRemoteSchema);
-        },
-      },
-    },
     Query: {
       allAuctions: allAuctionsResolver,
-      allBids: allBidsResolver,
-      allOffers: allOffersResolver,
+      getAuction: getAuctionResolver,
     },
   };
 };
