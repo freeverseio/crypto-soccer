@@ -1,4 +1,5 @@
 const HorizonService = require('../services/HorizonService.js');
+const { MINIMUM_DEFAULT_BID } = require('../config.js');
 
 class BidValidation {
   constructor({ teamId, rnd, auctionId, extraPrice, signature, web3 }) {
@@ -69,7 +70,7 @@ class BidValidation {
       (acc, curr) => (acc += parseInt(curr.extraPrice) + parseInt(curr.auctionByAuctionId.price)),
       0
     );
-    const newMaximumBid = parseInt(totalAmountSpent);
+    const newMaximumBid = parseInt(totalAmountSpent) + parseInt(MINIMUM_DEFAULT_BID);
 
     if (newMaximumBid >= totalPrice) {
       return true;

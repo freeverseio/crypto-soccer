@@ -11,7 +11,6 @@ const teamByHomeTeamId = require('./teamByHomeTeamId');
 const teamByVisitorTeamId = require('./teamByVisitorTeamId');
 const teamByBuyerTeamId = require('./teamByBuyerTeamId');
 const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
-const { MINIMUM_DEFAULT_BID } = require('../config.js');
 
 const web3 = new Web3('');
 

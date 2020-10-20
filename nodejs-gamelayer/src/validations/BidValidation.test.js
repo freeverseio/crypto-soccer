@@ -32,12 +32,12 @@ test('Bid Prefixed Hash', async () => {
 
 test('not allowed to bid because computed maximum bid is lower than total price', async () => {
   const web3 = new Web3('');
-
+  HorizonService.getTeamOwner.mockReturnValue('0xB3Bf1413f3B132f261d487AEa94343106ab42d89');
   bidValidation = new BidValidation({
     teamId: '234',
     rnd: 12345,
     auctionId: '555',
-    extraPrice: 10,
+    extraPrice: 2000,
     signature:
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
@@ -47,13 +47,15 @@ test('not allowed to bid because computed maximum bid is lower than total price'
   expect(result).toBe(false);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledWith({
-    owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
+    owner: '0xB3Bf1413f3B132f261d487AEa94343106ab42d89',
   });
 });
 
 test('allowed to bid because computed is greater', async () => {
   const web3 = new Web3('');
-  HorizonService.getBidsPayedByOwner.mockReturnValue([{ extraPrice: 1, auctionByAuctionId: { price: 50 } }]);
+  HorizonService.getTeamOwner.mockReturnValue('0x7AAB315885FB74a292781e78c33E130be0e326c4');
+  HorizonService.getBidsPayedByOwner.mockRestore();
+  HorizonService.getBidsPayedByOwner.mockReturnValueOnce([{ extraPrice: 1001, auctionByAuctionId: { price: 50 } }]);
 
   bidValidation = new BidValidation({
     teamId: '234',
@@ -90,4 +92,28 @@ test('not allowed to bid because signer is not owner', async () => {
   expect(result).toBe(false);
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(0);
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledTimes(0);
+});
+
+test('allowed to bid because bid is less than minimum default bid', async () => {
+  const web3 = new Web3('');
+  HorizonService.getTeamOwner.mockReturnValue('0x7AAB315885FB74a292781e78c33E130be0e326c4');
+  HorizonService.getBidsPayedByOwner.mockRestore();
+  HorizonService.getBidsPayedByOwner.mockReturnValueOnce([]);
+
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 10,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedToBid();
+
+  expect(result).toBe(true);
+  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
+  expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledWith({
+    owner: '0x7AAB315885FB74a292781e78c33E130be0e326c4',
+  });
 });
