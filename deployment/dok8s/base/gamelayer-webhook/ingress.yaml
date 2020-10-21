@@ -15,10 +15,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - gamelayer.gorengine.com
+    - order.gorengine.com
     secretName: cryptosoccer-webhook-tls
   rules:
-  - host: gamelayer.gorengine.com
+  - host: order.gorengine.com
     http:
       paths:
       - path: /

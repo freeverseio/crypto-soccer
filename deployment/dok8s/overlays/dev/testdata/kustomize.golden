@@ -995,7 +995,7 @@ metadata:
   namespace: freeverse
 spec:
   rules:
-  - host: gamelayer.gorengine.com
+  - host: order.gorengine.com
     http:
       paths:
       - backend:
@@ -1004,7 +1004,7 @@ spec:
         path: /
   tls:
   - hosts:
-    - gamelayer.gorengine.com
+    - order.gorengine.com
     secretName: cryptosoccer-webhook-tls
 ---
 apiVersion: networking.k8s.io/v1beta1
