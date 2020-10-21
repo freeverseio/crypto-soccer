@@ -94,6 +94,7 @@ const main = async () => {
       setBroadcastMessage(input: SetBroadcastMessageInput!): Boolean!
       setMailboxStart(teamId: ID!): Boolean
       setMessageRead(id: ID!): Boolean
+      setLastTimeLoggedIn(teamId: ID!): Boolean
     }
     
     extend type Query {
@@ -101,6 +102,7 @@ const main = async () => {
       getNumUnreadMessages(teamId : ID!): Int!
       getMessages(teamId: ID!, limit: Int, after: Int): [Message]
       createBid(input: CreateBidInput!): ID!
+      getLastTimeLoggedIn(teamId: ID!): String!
     }
   `;
 

@@ -11,6 +11,8 @@ const teamByHomeTeamId = require('./teamByHomeTeamId');
 const teamByVisitorTeamId = require('./teamByVisitorTeamId');
 const teamByBuyerTeamId = require('./teamByBuyerTeamId');
 const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
+const getLastTimeLoggedInResolver = require('./getLastTimeLoggedIn');
+const setLastTimeLoggedInResolver = require('./setLastTimeLoggedIn');
 
 const web3 = new Web3('');
 
@@ -241,10 +243,12 @@ const resolvers = ({ horizonRemoteSchema }) => {
       setBroadcastMessage: setBroadcastMessageResolver,
       setMailboxStart: setMailboxStartResolver,
       setMessageRead: setMessageReadResolver,
+      setLastTimeLoggedIn: setLastTimeLoggedInResolver,
     },
     Query: {
       getMessages: getMessagesResolver,
       getNumUnreadMessages: getNumUnreadMessagesResolver,
+      getLastTimeLoggedIn: getLastTimeLoggedInResolver,
     },
   };
 };
