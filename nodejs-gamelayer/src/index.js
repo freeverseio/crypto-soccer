@@ -1,6 +1,13 @@
 const { ApolloServer } = require('apollo-server');
 const { HttpLink } = require('apollo-link-http');
-const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools');
+const {
+  introspectSchema,
+  makeRemoteExecutableSchema,
+  mergeSchemas,
+  transformSchema,
+  FilterRootFields,
+  FilterTypes,
+} = require('graphql-tools');
 const fetch = require('node-fetch');
 const resolvers = require('./resolvers/resolvers.js');
 const { horizonConfig } = require('./config.js');
@@ -34,16 +41,75 @@ const main = async () => {
       teamId: ID!
       name: String!
     }
+    
+    input SetMessageInput {
+      destinatary: String!
+      category: String!
+      auctionId: String
+      title: String!
+      text: String!
+      customImageUrl: String
+      metadata: String
+    }
+
+    input SetBroadcastMessageInput {
+      category: String!
+      auctionId: String
+      title: String!
+      text: String!
+      customImageUrl: String
+      metadata: String
+    }
+
+    type Message {
+      id: String
+      destinatary: String!
+      category: String!
+      auctionId: String
+      title: String!
+      text: String!
+      customImageUrl: String
+      metadata: String
+      isRead: Boolean
+      createdAt: String
+    }
+
+    type Messages {
+      totalCount: Int!
+      nodes: [Message]
+    }
 
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
-
+      setMessage(input: SetMessageInput!): ID!
+      setBroadcastMessage(input: SetBroadcastMessageInput!): Boolean!
+      setMailboxStart(teamId: ID!): Boolean
+      setMessageRead(id: ID!): Boolean
+    }
+    
+    extend type Query {
+      getMessages(teamId: ID!, limit: Int, offset: Int): Messages!
+      getNumUnreadMessages(teamId : ID!): Int!
     }
   `;
 
-  let schemas = [];
-  horizonRemoteSchema && schemas.push(horizonRemoteSchema);
+  const schemas = [];
+  const transformedHorizonRemoteSchema = transformSchema(horizonRemoteSchema, [
+    new FilterRootFields((operation, fieldName, field) => {
+      if (fieldName == 'processAuction') {
+        return false;
+      }
+      return true;
+    }),
+    new FilterTypes((typeName, fieldName, field) => {
+      if (fieldName == 'ProcessAuctionInput') {
+        return false;
+      }
+      return true;
+    }),
+  ]);
+  transformedHorizonRemoteSchema && schemas.push(transformedHorizonRemoteSchema);
   schemas.push(linkTypeDefs);
 
   const schema = mergeSchemas({

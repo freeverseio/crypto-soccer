@@ -33,6 +33,7 @@ kustomize edit set image freeverseio/webphoenix:${TAG}
 kustomize edit set image freeverseio/game.api:${TAG}
 kustomize edit set image freeverseio/game.db:${TAG}
 kustomize edit set image freeverseio/gamelayer:${TAG}
+kustomize edit set image freeverseio/gamelayer.webhook:${TAG}
 
 # change to n replicas
 # kustomize edit set replicas horizon=1

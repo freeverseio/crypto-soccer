@@ -7,7 +7,9 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const Privileged = artifacts.require('Privileged');
+const Utils = artifacts.require('Utils');
 const debug = require('../utils/debugUtils.js');
+const { isBigNumber } = require('web3-utils');
 
 contract('Privileged', (accounts) => {
     let privileged = null;
@@ -29,6 +31,7 @@ contract('Privileged', (accounts) => {
     
     beforeEach(async () => {
         privileged = await Privileged.new().should.be.fulfilled;
+        utils = await Utils.new().should.be.fulfilled;
     });
 
     it('create batch of world players', async () => {
@@ -118,6 +121,16 @@ contract('Privileged', (accounts) => {
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
             playerValue = 1000, maxPot = 9, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
+
+        // checking that the values of the player props can be extracted from playerId only
+        for (p = 0; p < playerIdArray.length; p++) {
+            var {0: _skills, 1: _day, 2: _traits, 3: _playerId, 4: _alignedSubstRed, 5: _genNonstopInj} = await utils.fullDecodeSkills(playerIdArray[p]).should.be.fulfilled     
+            _day.should.be.bignumber.equal(dayOfBirthArray[p]);
+            debug.compareArrays(skillsArray[p], _skills, toNum = false, isBig = true);
+            debug.compareArrays(traitsArray[p], _traits, toNum = false, isBig = true);
+            debug.compareArrays([false, false, false, false, false], _alignedSubstRed, toNum = false);
+            for (i = 0; i < _genNonstopInj.length; i++) { _genNonstopInj[i].toNumber().should.be.equal(0); }
+        }
 
         // compare actual values
         debug.compareArrays(skillsArray[0], expectedSkills, toNum = true);

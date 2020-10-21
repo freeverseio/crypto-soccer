@@ -69,7 +69,11 @@ const Schema = `
 		validUntil: String!
 		offerValidUntil: String!
 		rnd: Int!
-  }
+	}
+	
+	input ProcessAuctionInput {
+		id: ID!
+	}
 
 	type WorldPlayer {
 		playerId: ID!
@@ -102,5 +106,6 @@ const Schema = `
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
 		cancelAllOffersBySeller(input: CancelAllOffersBySellerInput!): ID!
+		processAuction(input: ProcessAuctionInput!): ID!
 	}
 `

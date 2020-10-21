@@ -17,7 +17,7 @@ func TestPreferredPosition(t *testing.T) {
 	if result != expected {
 		t.Fatalf("Expected %v but got %v", expected, result)
 	}
-	expected = "MD LCR"
+	expected = "MF LCR"
 	result, _ = utils.PreferredPosition(0x5, 0x7)
 	if result != expected {
 		t.Fatalf("Expected %v but got %v", expected, result)
@@ -45,12 +45,12 @@ func TestForwardnessToString(t *testing.T) {
 	if result != expected {
 		t.Fatalf("Expected %v but got %v", expected, result)
 	}
-	expected = "MF"
+	expected = "MD"
 	result, _ = utils.ForwardnessToString(4)
 	if result != expected {
 		t.Fatalf("Expected %v but got %v", expected, result)
 	}
-	expected = "MD"
+	expected = "MF"
 	result, _ = utils.ForwardnessToString(5)
 	if result != expected {
 		t.Fatalf("Expected %v but got %v", expected, result)

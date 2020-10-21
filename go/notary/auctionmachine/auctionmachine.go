@@ -13,10 +13,11 @@ import (
 )
 
 type AuctionMachine struct {
-	auction   storage.Auction
-	bids      []storage.Bid
-	contracts contracts.Contracts
-	freeverse *ecdsa.PrivateKey
+	auction              storage.Auction
+	bids                 []storage.Bid
+	contracts            contracts.Contracts
+	freeverse            *ecdsa.PrivateKey
+	shouldQueryMarketPay bool
 }
 
 func New(
@@ -24,6 +25,7 @@ func New(
 	bids []storage.Bid,
 	contracts contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
+	shouldQueryMarketPay bool,
 ) (*AuctionMachine, error) {
 	if contracts.Market == nil {
 		return nil, errors.New("market is nil")
@@ -36,6 +38,7 @@ func New(
 		bids,
 		contracts,
 		freeverse,
+		shouldQueryMarketPay,
 	}, nil
 }
 

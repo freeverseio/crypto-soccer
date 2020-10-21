@@ -62,11 +62,13 @@ func (b *Consumer) Consume(event interface{}) error {
 	switch in := event.(type) {
 	case producer.ProcessEvent:
 		log.Info("[consumer] process auctions")
+		shouldQueryMarketPay := true
 		return ProcessAuctions(
 			tx,
 			b.market,
 			b.contracts,
 			b.pvc,
+			shouldQueryMarketPay,
 		)
 	case producer.PlaystoreOrderEvent:
 		log.Info("[consumer] process playstore events")
@@ -87,6 +89,28 @@ func (b *Consumer) Consume(event interface{}) error {
 	case producer.ProcessOfferEvent:
 		log.Info("[consumer] process offer to expire")
 		return ProcessOffers(tx)
+	case producer.ProcessOrderlessAuctionEvent:
+		log.Info("[consumer] process orderless auctions")
+		shouldQueryMarketPay := false
+		return ProcessOrderlessAuctions(
+			tx,
+			b.market,
+			b.contracts,
+			b.pvc,
+			shouldQueryMarketPay,
+		)
+	case input.ProcessAuctionInput:
+		log.Info("[consumer] process auctions from webhook")
+		shouldQueryMarketPay := true
+		auctionID := string(event.(input.ProcessAuctionInput).Id)
+		return ProcessAuctionFromWebhook(
+			tx,
+			b.market,
+			b.contracts,
+			b.pvc,
+			shouldQueryMarketPay,
+			auctionID,
+		)
 	default:
 		return fmt.Errorf("unknown event: %+v", event)
 	}

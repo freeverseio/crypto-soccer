@@ -14,6 +14,7 @@ type Tx struct {
 
 	// Auction
 	AuctionPendingAuctionsFunc func() ([]storage.Auction, error)
+	AuctionPendingOrderlessAuctionsFunc func() ([]storage.Auction, error)
 	AuctionFunc                func(ID string) (*storage.Auction, error)
 	AuctionInsertFunc          func(auction storage.Auction) error
 	AuctionUpdateFunc          func(auction storage.Auction) error
@@ -56,6 +57,9 @@ func (b *Tx) Rollback() error {
 }
 func (b *Tx) AuctionPendingAuctions() ([]storage.Auction, error) {
 	return b.AuctionPendingAuctionsFunc()
+}
+func (b *Tx) AuctionPendingOrderlessAuctions() ([]storage.Auction, error) {
+	return b.AuctionPendingOrderlessAuctionsFunc()
 }
 func (b *Tx) Auction(ID string) (*storage.Auction, error) {
 	return b.AuctionFunc(ID)

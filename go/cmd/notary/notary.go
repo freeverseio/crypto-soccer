@@ -109,7 +109,8 @@ func main() {
 			googleCredentials,
 			storageService,
 		)
-		go producer.NewProcessor(ch, time.Duration(*processWait)*time.Second)
+		go producer.NewProcessorAuctions(ch, time.Duration(24)*time.Hour)
+		go producer.NewProcessorOrderlessAuctions(ch, time.Duration(*processWait)*time.Second)
 		go producer.NewProcessorOffer(ch, time.Duration(40)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(2)*time.Second)
 

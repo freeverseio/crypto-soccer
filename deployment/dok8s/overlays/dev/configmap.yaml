@@ -15,5 +15,5 @@ data:
   PROXY_CONTRACT_ADDRESS: 0x720C10669287462Bb96eFd9bb5220EcfcBfd88cf
 
   BLOCKS_PER_STEP: "10000"
-  domain: "https://market.gorengine.com"
+  domain: "*"
   SYNC_CONFIG_FILE: "config_dev.json"

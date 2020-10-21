@@ -91,6 +91,8 @@ jobs:
       - run: cd nodejs-gamelayer && npm ci
       - run: cd nodejs-gamelayer && npm run lint
       - run: cd nodejs-gamelayer && npm run test
+      - run: cd nodejs-gamelayer-webhook && npm ci
+      - run: cd nodejs-gamelayer-webhook && npm run lint
   truffle_core:
     executor: freeverse
     parallelism: 20
@@ -205,6 +207,7 @@ jobs:
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev -t freeverseio/universe.api:${CIRCLE_SHA1} .
       - run: cd game.db && docker build -t freeverseio/game.db:dev -t freeverseio/game.db:${CIRCLE_SHA1} .
       - run: cd nodejs-gamelayer && docker build -t freeverseio/gamelayer:dev -t freeverseio/gamelayer:${CIRCLE_SHA1} .
+      - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:dev -t freeverseio/gamelayer.webhook:${CIRCLE_SHA1} .
 
       # push images
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
@@ -220,6 +223,7 @@ jobs:
       - run: docker push freeverseio/dashboard
       - run: docker push freeverseio/game.db
       - run: docker push freeverseio/gamelayer
+      - run: docker push freeverseio/gamelayer.webhook
 
   dockerization-production:
     executor: freeverse
@@ -241,6 +245,7 @@ jobs:
       - run: cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} .
       - run: cd game.db && docker build -t freeverseio/game.db:${CIRCLE_TAG} .
       - run: cd nodejs-gamelayer && docker build -t freeverseio/gamelayer:${CIRCLE_TAG} .
+      - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
       - run: docker push freeverseio/horizon:${CIRCLE_TAG}
@@ -254,6 +259,7 @@ jobs:
       - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
       - run: docker push freeverseio/game.db:${CIRCLE_TAG}
       - run: docker push freeverseio/gamelayer:${CIRCLE_TAG}
+      - run: docker push freeverseio/gamelayer.webhook:${CIRCLE_TAG}
   deployk8s:
     docker:
       - image: cimg/base:2020.01
@@ -278,6 +284,7 @@ jobs:
           kustomize edit set image freeverseio/universe.db:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/game.db:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/gamelayer:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/gamelayer.webhook:${CIRCLE_SHA1}
           kustomize build . -o app.yaml
           cat app.yaml
           kubectl -n freeverse apply -f app.yaml

@@ -15,3 +15,4 @@ resources:
 - oauth2-proxy
 - gamedb
 - gamelayer
+- gamelayer-webhook
