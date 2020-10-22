@@ -1,5 +1,6 @@
 const GamelayerService = require('../../GamelayerService');
 const processWithdrawableBySellerAuction = require('../processWithdrawableBySellerAuction');
+const getTeamIdFromAuctionSeller = require('../getTeamIdFromAuctionSeller');
 
 jest.mock('../../GamelayerService', () => ({
   setMessage: jest.fn(),
@@ -20,6 +21,10 @@ const auctionHistory = {
   id: '591e7084cd10ffd282783744baa90a72a6ac949ecaffe2cd15f2120135750441',
   offerValidUntil: '0',
 };
+
+jest.mock('../getTeamIdFromAuctionSeller', () =>
+  jest.fn().mockReturnValue('234324234')
+);
 
 afterEach(() => {
   jest.clearAllMocks();

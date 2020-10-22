@@ -21,7 +21,7 @@ const processPendingPayingBids = async () => {
           destinatary: bid.teamId,
           category: 'auction',
           auctionId: bid.auctionId,
-          text: 'You should pay the auction, less than 12h remaining',
+          text: 'auction_buyer_pending_payment',
           customImageUrl: '',
           metadata: '{}',
         });

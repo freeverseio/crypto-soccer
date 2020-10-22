@@ -4,6 +4,7 @@ const processStartedOffers = require('../processStartedOffers');
 const notifyNewHigherOffer = require('../notifyNewHigherOffer');
 
 jest.mock('../../HorizonService.js', () => ({
+  getTeamIdFromPlayerId: jest.fn().mockReturnValue('3242343'),
   getOfferersByPlayerId: jest.fn().mockReturnValue([
     {
       insertedAt: '2020-09-29T10:12:51.070996+00:00',

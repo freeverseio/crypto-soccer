@@ -1,27 +1,34 @@
 const notifyNewHigherOffer = require('./notifyNewHigherOffer');
 const GamelayerService = require('../GamelayerService');
 const HorizonService = require('../HorizonService');
+const { mailboxTypes } = require('../../config');
 
 const processStartedOffers = async ({ offerHistory }) => {
   const offerers = await HorizonService.getOfferersByPlayerId({
     playerId: offerHistory.playerId,
   });
 
+  const playerTeamId = await HorizonService.getTeamIdFromPlayerId({
+    playerId: offerHistory.playerId,
+  });
+
   switch (offerers.length) {
     case 1:
       await GamelayerService.setMessage({
-        destinatary: offerHistory.teamId,
-        category: 'offer',
+        destinatary: playerTeamId,
+        category: mailboxTypes.offer,
         auctionId: offerHistory.auctionId,
-        text: 'You received an offer for your player',
+        text: 'offer_seller_offer_received',
         customImageUrl: '',
-        metadata: '{}',
+        metadata: `{"playerId":"${offerHistory.playerId}"}`,
       });
       break;
     default:
       await notifyNewHigherOffer({
-        destinatary: offerHistory.seller,
+        destinatary: playerTeamId,
         auctionId: offerHistory.auctionId,
+        text: 'offer_seller_higher_offer_received',
+        metadata: `{"playerId":"${offerHistory.playerId}"}`,
       });
   }
 
@@ -29,6 +36,8 @@ const processStartedOffers = async ({ offerHistory }) => {
     await notifyNewHigherOffer({
       destinatary: offerer.buyerTeamId,
       auctionId: offerHistory.auctionId,
+      text: 'offer_buyer_higher_offer',
+      metadata: `{"playerId":"${offerHistory.playerId}"}`,
     });
   }
 };

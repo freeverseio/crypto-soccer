@@ -153,6 +153,64 @@ class HorizonService {
       ? result.allBids.nodes
       : [];
   }
+
+  async getTeamIdsFromOwner({ owner }) {
+    const query = gql`
+      {
+        allTeams(condition: { owner: ${owner} }) {
+          nodes {
+            teamId
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allTeams && result.allTeams.nodes
+      ? result.allTeams.nodes
+      : [];
+  }
+
+  async getPlayerHistoriesLast30BlockNumberTeams({ playerId }) {
+    const query = gql`
+      {
+        allPlayersHistories(
+          first: 30
+          condition: { playerId: "${playerId}" }
+          orderBy: BLOCK_NUMBER_DESC
+        ) {
+          nodes {
+            teamId
+            blockNumber
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result &&
+      result.allPlayersHistories &&
+      result.allPlayersHistories.nodes
+      ? result.allPlayersHistories.nodes
+      : [];
+  }
+
+  async getTeamIdFromPlayerId({ playerId }) {
+    const query = gql`
+      {
+        allPlayers(condition: { playerId: ${playerId} }) {
+          nodes {
+            teamId
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allPlayers && result.allPlayers.nodes
+      ? result.allPlayers.nodes
+      : [];
+  }
 }
 
 module.exports = new HorizonService();

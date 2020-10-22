@@ -1,14 +1,21 @@
 const GamelayerService = require('../GamelayerService');
+const getTeamIdFromAuctionSeller = require('./getTeamIdFromAuctionSeller.js');
 
 const processWithdrawableBySellerAuction = async ({ auctionHistory }) => {
-  await GamelayerService.setMessage({
-    destinatary: auctionHistory.seller,
-    category: 'auction',
-    auctionId: auctionHistory.id,
-    text: 'Your auction is in state withdrawable by seller, go get paid.',
-    customImageUrl: '',
-    metadata: '{}',
+  const destinataryTeamId = await getTeamIdFromAuctionSeller({
+    auction: auctionHistory,
   });
+
+  if (destinataryTeamId) {
+    await GamelayerService.setMessage({
+      destinatary: destinataryTeamId,
+      category: 'auction',
+      auctionId: auctionHistory.id,
+      text: 'auction_seller_gets_paid',
+      customImageUrl: '',
+      metadata: '{}',
+    });
+  }
 };
 
 module.exports = processWithdrawableBySellerAuction;

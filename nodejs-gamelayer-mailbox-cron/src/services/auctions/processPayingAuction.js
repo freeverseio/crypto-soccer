@@ -1,16 +1,23 @@
 const { bidStates } = require('../../config');
 const GamelayerService = require('../GamelayerService');
 const HorizonService = require('../HorizonService');
+const getTeamIdFromAuctionSeller = require('./getTeamIdFromAuctionSeller.js');
 
 const processPayingAuction = async ({ auctionHistory }) => {
-  await GamelayerService.setMessage({
-    destinatary: auctionHistory.seller,
-    category: 'auction',
-    auctionId: auctionHistory.id,
-    text: 'The auction for this player has ended. You sold him!',
-    customImageUrl: '',
-    metadata: '{}',
+  const destinataryTeamId = await getTeamIdFromAuctionSeller({
+    auction: auctionHistory,
   });
+
+  if (destinataryTeamId) {
+    await GamelayerService.setMessage({
+      destinatary: destinataryTeamId,
+      category: 'auction',
+      auctionId: auctionHistory.id,
+      text: 'auction_seller_sells',
+      customImageUrl: '',
+      metadata: '{}',
+    });
+  }
 
   const bids = await HorizonService.getBidsByAuctionId({
     auctionId: auctionHistory.id,
@@ -23,7 +30,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
           destinatary: bid.teamId,
           category: 'auction',
           auctionId: auctionHistory.id,
-          text: 'You won the auction, remember to pay',
+          text: 'auction_buyer_wins_auction',
           customImageUrl: '',
           metadata: '{}',
         });
@@ -33,7 +40,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
           destinatary: bid.teamId,
           category: 'auction',
           auctionId: auctionHistory.id,
-          text: 'You lost the auction',
+          text: 'auction_buyer_loses_auction',
           customImageUrl: '',
           metadata: '{}',
         });
