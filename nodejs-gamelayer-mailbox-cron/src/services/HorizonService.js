@@ -195,7 +195,7 @@ class HorizonService {
       : [];
   }
 
-  async getTeamIdFromPlayerId({ playerId }) {
+  async getInfoFromPlayerId({ playerId }) {
     const query = gql`
       {
         allPlayers(condition: { playerId: ${playerId} }) {
@@ -208,7 +208,77 @@ class HorizonService {
     const result = await request(this.endpoint, query);
 
     return result && result.allPlayers && result.allPlayers.nodes
-      ? result.allPlayers.nodes
+      ? result.allPlayers.nodes[0]
+      : [];
+  }
+
+  async getInfoFromTeamId({ teamId }) {
+    const query = gql`
+      {
+        allTeams(condition: { teamId: ${teamId} }) {
+          nodes {
+            teamId
+            name
+            managerName
+          }2748779069857
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allTeams && result.allTeams.nodes
+      ? result.allTeams.nodes[0]
+      : [];
+  }
+
+  async getPaidBidByAuctionId({ auctionId }) {
+    const query = gql`
+      {
+        allBids(
+          condition: {
+            auctionId: "${auctionId}",
+            state: PAID
+          }
+        ) {
+          nodes {
+            extraPrice
+            rnd
+            teamId
+            signature
+            state
+            stateExtra
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allBids && result.allBids.nodes
+      ? result.allBids.nodes[0]
+      : [];
+  }
+  async getAuction({ auctionId }) {
+    const query = gql`
+      {
+        allAuctions(
+          condition: {
+            id: "${auctionId}"
+          }
+        ) {
+          nodes {
+            playerId
+            price
+            playerByPlayerId {
+              name
+            }
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allAuctions && result.allAuctions.nodes
+      ? result.allAuctions.nodes[0]
       : [];
   }
 }

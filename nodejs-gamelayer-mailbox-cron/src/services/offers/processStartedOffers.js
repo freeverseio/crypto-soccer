@@ -8,8 +8,15 @@ const processStartedOffers = async ({ offerHistory }) => {
     playerId: offerHistory.playerId,
   });
 
-  const playerTeamId = await HorizonService.getTeamIdFromPlayerId({
+  const {
+    teamId: playerTeamId,
+    name,
+  } = await HorizonService.getInfoFromPlayerId({
     playerId: offerHistory.playerId,
+  });
+
+  const { name: offererTeamName } = await HorizonService.getInfoFromTeamId({
+    teamId: offerHistory.buyerTeamId,
   });
 
   switch (offerers.length) {
@@ -20,7 +27,7 @@ const processStartedOffers = async ({ offerHistory }) => {
         auctionId: offerHistory.auctionId,
         text: 'offer_seller_offer_received',
         customImageUrl: '',
-        metadata: `{"playerId":"${offerHistory.playerId}"}`,
+        metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${name}", "offerAmount": "${offerHistory.price}", "offererTeamId": "${offerHistory.buyerTeamId}", "offererTeamName": "${offererTeamName}"}`,
       });
       break;
     default:
@@ -28,7 +35,7 @@ const processStartedOffers = async ({ offerHistory }) => {
         destinatary: playerTeamId,
         auctionId: offerHistory.auctionId,
         text: 'offer_seller_higher_offer_received',
-        metadata: `{"playerId":"${offerHistory.playerId}"}`,
+        metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${name}", "offerAmount": "${offerHistory.price}", "offererTeamId": "${offerHistory.buyerTeamId}", "offererTeamName": "${offererTeamName}"}`,
       });
   }
 
@@ -37,7 +44,7 @@ const processStartedOffers = async ({ offerHistory }) => {
       destinatary: offerer.buyerTeamId,
       auctionId: offerHistory.auctionId,
       text: 'offer_buyer_higher_offer',
-      metadata: `{"playerId":"${offerHistory.playerId}"}`,
+      metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${name}", "offerAmount": "${offerHistory.price}", "offererTeamId": "${offerHistory.buyerTeamId}", "offererTeamName": "${offererTeamName}"}`,
     });
   }
 };
