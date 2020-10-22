@@ -90,7 +90,7 @@ class HorizonService {
     const teams = await this.getTeamsByOwner({ owner });
     const query = gql`
     {
-      allBids(condition: { state: PAID }, filter: { teamId: { in: ${teams.map((t) => t.teamId)}}}){
+      allBids(condition: { state: PAID }, filter: { teamId: { in: "${teams.map((t) => t.teamId)}"}}){
         nodes {
           extraPrice
           auctionByAuctionId{

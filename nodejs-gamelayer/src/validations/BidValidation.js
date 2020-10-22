@@ -18,8 +18,8 @@ class BidValidation {
     );
     const bidHiddenPrice = this.web3.utils.soliditySha3(paramsBidHiddenPrice);
     const params = this.web3.eth.abi.encodeParameters(
-      ['bytes32', 'bytes32', 'uint256', 'bool'],
-      ['0x' + this.auctionId || '', bidHiddenPrice || '', this.teamId || 0, false]
+      ['bytes32', 'bytes32', 'uint256'],
+      ['0x' + this.auctionId || '', bidHiddenPrice || '', this.teamId || 0]
     );
     return this.web3.utils.soliditySha3(params);
   }

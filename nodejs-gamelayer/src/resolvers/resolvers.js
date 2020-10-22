@@ -11,6 +11,8 @@ const teamByHomeTeamId = require('./teamByHomeTeamId');
 const teamByVisitorTeamId = require('./teamByVisitorTeamId');
 const teamByBuyerTeamId = require('./teamByBuyerTeamId');
 const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
+const getLastTimeLoggedInResolver = require('./getLastTimeLoggedIn');
+const setLastTimeLoggedInResolver = require('./setLastTimeLoggedIn');
 
 const web3 = new Web3('');
 
@@ -222,29 +224,31 @@ const resolvers = ({ horizonRemoteSchema }) => {
           input: { teamId, rnd, auctionId, extraPrice, signature },
         } = args;
         const bidValidation = new BidValidation({ teamId, rnd, auctionId, extraPrice, signature, web3 });
-        const isAllowed = bidValidation.isAllowedToBid();
+        const isAllowed = await bidValidation.isAllowedToBid();
 
         if (!isAllowed) {
           return 'User not allowed to bid for that amount';
+        } else {
+          return info.mergeInfo.delegateToSchema({
+            schema: horizonRemoteSchema,
+            operation: 'mutation',
+            fieldName: 'createBid',
+            args,
+            context,
+            info,
+          });
         }
-
-        return info.mergeInfo.delegateToSchema({
-          schema: horizonRemoteSchema,
-          operation: 'mutation',
-          fieldName: 'createBid',
-          args,
-          context,
-          info,
-        });
       },
       setMessage: setMessageResolver,
       setBroadcastMessage: setBroadcastMessageResolver,
       setMailboxStart: setMailboxStartResolver,
       setMessageRead: setMessageReadResolver,
+      setLastTimeLoggedIn: setLastTimeLoggedInResolver,
     },
     Query: {
       getMessages: getMessagesResolver,
       getNumUnreadMessages: getNumUnreadMessagesResolver,
+      getLastTimeLoggedIn: getLastTimeLoggedInResolver,
     },
   };
 };
