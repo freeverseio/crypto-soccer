@@ -224,20 +224,20 @@ const resolvers = ({ horizonRemoteSchema }) => {
           input: { teamId, rnd, auctionId, extraPrice, signature },
         } = args;
         const bidValidation = new BidValidation({ teamId, rnd, auctionId, extraPrice, signature, web3 });
-        const isAllowed = bidValidation.isAllowedToBid();
+        const isAllowed = await bidValidation.isAllowedToBid();
 
         if (!isAllowed) {
           return 'User not allowed to bid for that amount';
+        } else {
+          return info.mergeInfo.delegateToSchema({
+            schema: horizonRemoteSchema,
+            operation: 'mutation',
+            fieldName: 'createBid',
+            args,
+            context,
+            info,
+          });
         }
-
-        return info.mergeInfo.delegateToSchema({
-          schema: horizonRemoteSchema,
-          operation: 'mutation',
-          fieldName: 'createBid',
-          args,
-          context,
-          info,
-        });
       },
       setMessage: setMessageResolver,
       setBroadcastMessage: setBroadcastMessageResolver,

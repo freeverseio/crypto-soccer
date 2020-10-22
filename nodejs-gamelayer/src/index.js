@@ -95,6 +95,7 @@ const main = async () => {
       setMailboxStart(teamId: ID!): Boolean
       setMessageRead(id: ID!): Boolean
       setLastTimeLoggedIn(teamId: ID!): Boolean
+      createBid(input: CreateBidInput!): ID!
     }
     
     extend type Query {
