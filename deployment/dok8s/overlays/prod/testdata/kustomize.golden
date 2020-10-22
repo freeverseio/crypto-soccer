@@ -517,7 +517,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.read.api:0.24.10
+        image: freeverseio/market.read.api:0.24.11
         imagePullPolicy: Always
         name: market-read-api
       imagePullSecrets:
