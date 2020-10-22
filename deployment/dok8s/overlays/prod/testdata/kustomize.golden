@@ -438,7 +438,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer.webhook:0.24.11
+        image: freeverseio/gamelayer.mailbox.cron:0.24.11
         imagePullPolicy: Always
         name: gamelayer-mailbox-cron
       imagePullSecrets:
@@ -478,7 +478,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer.webhook:dev
+        image: freeverseio/gamelayer.webhook:0.24.11
         imagePullPolicy: Always
         name: gamelayer-webhook
       imagePullSecrets:
