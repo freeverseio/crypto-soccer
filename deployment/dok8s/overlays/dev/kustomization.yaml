@@ -61,5 +61,5 @@ patches:
     name: cryptosoccer-webhook-ingress
     labelSelector: webhook=enabled
   path: gamelayer-webhook/ingress_patch.yaml
-patchesStrategicMerge:
-  - synchronizer/deployment.yaml
+# patchesStrategicMerge:
+#   - synchronizer/deployment.yaml

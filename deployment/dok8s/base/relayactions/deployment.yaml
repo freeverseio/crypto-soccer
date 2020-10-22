@@ -27,7 +27,7 @@ spec:
         envFrom:
           - configMapRef:
               name: freeverse-configmap
-        args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
+        args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@synchronizer-with-universe-db:5432/cryptosoccer?sslmode=disable",
                -ethereum, http://xdai:8545,
                -proxy_address, "$(PROXY_CONTRACT_ADDRESS)",
                -ipfs, "/dns4/ipfsnode/tcp/5001",
