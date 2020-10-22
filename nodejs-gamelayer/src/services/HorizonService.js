@@ -52,6 +52,75 @@ class HorizonService {
 
     return result && result.allTeams && result.allTeams.nodes ? result.allTeams.nodes : [];
   }
+
+  async getAuction({ auctionId }) {
+    const query = gql`
+    {
+        auctionById(id: "${auctionId}"){ 
+            price
+        }
+    }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.auctionById ? result.auctionById : {};
+  }
+
+  async getBidsPayedByTeamId({ teamId }) {
+    const query = gql`
+    {
+      allBids(condition: { teamId: "${teamId}", state: PAID }){
+        nodes {
+          extraPrice
+          auctionByAuctionId{
+            id
+            state
+            price
+          }
+        }
+      }
+    }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allBids && result.allBids.nodes ? result.allBids.nodes : [];
+  }
+
+  async getBidsPayedByOwner({ owner }) {
+    const teams = await this.getTeamsByOwner({ owner });
+    const query = gql`
+    {
+      allBids(condition: { state: PAID }, filter: { teamId: { in: ${teams.map((t) => t.teamId)}}}){
+        nodes {
+          extraPrice
+          auctionByAuctionId{
+            id
+            state
+            price
+          }
+        }
+      }
+    }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allBids && result.allBids.nodes ? result.allBids.nodes : [];
+  }
+
+  async getTeamsByOwner({ owner }) {
+    const query = gql`
+    {
+      allTeams(condition: { owner: "${owner}" }){
+        nodes {
+          teamId
+        }
+      }
+    }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allTeams && result.allTeams.nodes ? result.allTeams.nodes : [];
+  }
 }
 
 module.exports = new HorizonService();

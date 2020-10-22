@@ -10,3 +10,5 @@ CREATE TABLE team_props (
     team_manager_name TEXT NOT NULL,
     PRIMARY KEY(team_id)
 );
+
+

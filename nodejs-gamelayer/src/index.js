@@ -79,6 +79,14 @@ const main = async () => {
       nodes: [Message]
     }
 
+    input CreateBidInput {
+  		signature: String!
+		  auctionId: ID!
+  		extraPrice: Int!
+  		rnd: Int!
+  		teamId: String!
+	  }
+
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
@@ -91,6 +99,8 @@ const main = async () => {
     extend type Query {
       getMessages(teamId: ID!, limit: Int, offset: Int): Messages!
       getNumUnreadMessages(teamId : ID!): Int!
+      getMessages(teamId: ID!, limit: Int, after: Int): [Message]
+      createBid(input: CreateBidInput!): ID!
     }
   `;
 
@@ -104,6 +114,18 @@ const main = async () => {
     }),
     new FilterTypes((typeName, fieldName, field) => {
       if (fieldName == 'ProcessAuctionInput') {
+        return false;
+      }
+      return true;
+    }),
+    new FilterRootFields((operation, fieldName, field) => {
+      if (fieldName == 'createBid') {
+        return false;
+      }
+      return true;
+    }),
+    new FilterTypes((typeName, fieldName, field) => {
+      if (fieldName == 'CreateBidInput') {
         return false;
       }
       return true;
