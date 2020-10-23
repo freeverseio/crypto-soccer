@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamelayer-mailbox-cron
+  labels:
+    app.kubernetes.io/app: gamelayer-mailbox-cron
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: gamelayer-mailbox-cron
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: gamelayer-mailbox-cron
+    spec:
+      containers:
+      - name: gamelayer-mailbox-cron
+        image: freeverseio/gamelayer.mailbox.cron:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        env:
+          - name: PG_CONNECTION_STRING
+            value: postgresql://$(freeverse_username):$(freeverse_password)@gamedb:5432/game
+          - name: HORIZON_URL
+            value: http://horizon:4000/graphql
+          - name: GAMELAYER_URL
+            value: http://gamelayer:4000/graphql
+          - name: LOG_LEVEL
+            value: debug
+          - name: MAILBOX_CRON
+            value: "15 * * * *"
+      imagePullSecrets:
+      - name: docker-secret

@@ -37,6 +37,8 @@ images:
   newTag: 0.24.11
 - name: freeverseio/market.read.api
   newTag: 0.24.11
+- name: freeverseio/gamelayer.mailbox.cron
+  newTag: 0.24.11
 patchesJson6902:
 - target:
     group: networking.k8s.io
