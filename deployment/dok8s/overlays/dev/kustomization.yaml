@@ -33,6 +33,8 @@ images:
   newTag: dev
 - name: freeverseio/gamelayer.webhook
   newTag: dev
+- name: freeverseio/market.read.api
+  newTag: dev
 patchesJson6902:
 - target:
     group: networking.k8s.io

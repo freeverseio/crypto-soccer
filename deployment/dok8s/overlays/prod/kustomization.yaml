@@ -35,6 +35,8 @@ images:
   newTag: 0.24.11
 - name: freeverseio/gamelayer.webhook
   newTag: 0.24.11
+- name: freeverseio/market.read.api
+  newTag: 0.24.11
 patchesJson6902:
 - target:
     group: networking.k8s.io
