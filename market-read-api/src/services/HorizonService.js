@@ -129,6 +129,7 @@ class HorizonService {
               dayOfBirth
               shirtNumber
               countryOfBirth
+              race
               teamByTeamId {
                 name
                 managerName
@@ -181,6 +182,7 @@ class HorizonService {
             potential
             dayOfBirth
             countryOfBirth
+            race
             teamByTeamId {
               name
               managerName

@@ -24,7 +24,6 @@ type Auction {
   type Bid {
     extraPrice: Int!
     state: BidState!
-    stateExtra: String!
     paymentDeadline: String!
     teamByTeamId: Team
   }
