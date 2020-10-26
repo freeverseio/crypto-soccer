@@ -105,7 +105,7 @@ afterEach(() => {
 });
 
 test('processAcceptedBids works correctly', async () => {
-  await processAcceptedBids();
+  await processAcceptedBids({ lastChecked: '2020-06-01T16:00:00.000Z' });
 
   expect(HorizonService.getLastAcceptedBidsHistories).toHaveBeenCalledTimes(1);
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(3);
