@@ -28,7 +28,10 @@ const processWithdrawableBySellerAuction = async ({ auctionHistory }) => {
       auctionId: auctionHistory.id,
       text: 'auction_seller_gets_paid',
       customImageUrl: '',
-      metadata: `{"bidderTeamId":"${paidBid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`,
+      metadata: `{"bidderTeamId":"${paidBid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
+        /"/g,
+        '\\"'
+      ),
     });
   }
 };

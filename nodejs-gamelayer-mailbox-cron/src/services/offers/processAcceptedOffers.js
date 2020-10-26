@@ -20,7 +20,10 @@ const processAcceptedOffers = async ({ offerHistory }) => {
     auctionId: offerHistory.auctionId,
     text: 'offer_buyer_offer_accepted',
     customImageUrl: '',
-    metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${playerName}", "offerAmount": "${offerHistory.price}", "sellerTeamId": "${playerTeamId}", "sellerTeamName": "${sellerTeamName}"}`,
+    metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${playerName}", "offerAmount": "${offerHistory.price}", "sellerTeamId": "${playerTeamId}", "sellerTeamName": "${sellerTeamName}"}`.replace(
+      /"/g,
+      '\\"'
+    ),
   });
 };
 

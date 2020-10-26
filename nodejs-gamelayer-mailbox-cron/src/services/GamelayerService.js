@@ -13,6 +13,7 @@ class GamelayerService {
     text,
     customImageUrl,
     metadata,
+    title,
   }) {
     const query = gql`
       mutation {
@@ -20,6 +21,7 @@ class GamelayerService {
         destinatary: "${destinatary}",
         category: "${category}",
         auctionId: "${auctionId}",
+        title: "${title}",
         text: "${text}",
         customImageUrl: "${customImageUrl}",
         metadata: "${metadata}",

@@ -32,7 +32,10 @@ const processPayingAuction = async ({ auctionHistory }) => {
           auctionId: auctionHistory.id,
           text: 'auction_buyer_wins_auction',
           customImageUrl: '',
-          metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}", "paymentDeadline":"${bid.paymentDeadline}"}`,
+          metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}", "paymentDeadline":"${bid.paymentDeadline}"}`.replace(
+            /"/g,
+            '\\"'
+          ),
         });
 
         if (destinataryTeamId) {
@@ -42,7 +45,10 @@ const processPayingAuction = async ({ auctionHistory }) => {
             auctionId: auctionHistory.id,
             text: 'auction_seller_sells',
             customImageUrl: '',
-            metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`,
+            metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
+              /"/g,
+              '\\"'
+            ),
           });
         }
         break;
@@ -64,7 +70,10 @@ const processPayingAuction = async ({ auctionHistory }) => {
           auctionId: auctionHistory.id,
           text: 'auction_buyer_loses_auction',
           customImageUrl: '',
-          metadata: `{"totalAmount": "${totalAmount}", "maxBidderTeamId":"${maxBid.teamId}", "maxBidderTeamName":"${maxBidderTeamName}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`,
+          metadata: `{"amount": "${totalAmount}", "maxBidderTeamId":"${maxBid.teamId}", "maxBidderTeamName":"${maxBidderTeamName}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
+            /"/g,
+            '\\"'
+          ),
         });
         break;
     }

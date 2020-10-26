@@ -19,7 +19,10 @@ const processRejectedOffers = async ({ offerHistory }) => {
     auctionId: offerHistory.auctionId,
     text: 'offer_buyer_offer_rejected',
     customImageUrl: '',
-    metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${playerName}", "sellerTeamId": "${playerTeamId}", "sellerTeamName": "${sellerTeamName}"}`,
+    metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${playerName}", "sellerTeamId": "${playerTeamId}", "sellerTeamName": "${sellerTeamName}"}`.replace(
+      /"/g,
+      '\\"'
+    ),
   });
 };
 
