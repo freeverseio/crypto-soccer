@@ -17,6 +17,7 @@ const processRejectedOffers = async ({ offerHistory }) => {
     destinatary: offerHistory.buyerTeamId,
     category: 'offer',
     auctionId: offerHistory.auctionId,
+    title: '',
     text: 'offer_buyer_offer_rejected',
     customImageUrl: '',
     metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${playerName}", "sellerTeamId": "${playerTeamId}", "sellerTeamName": "${sellerTeamName}"}`.replace(

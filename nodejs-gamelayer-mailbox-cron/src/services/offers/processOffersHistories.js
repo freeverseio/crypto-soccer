@@ -29,7 +29,7 @@ const processOffersHistories = async () => {
   });
 
   logger.info(
-    offerLastChecked != newLastChecked
+    dayjs(offerLastChecked).format() != dayjs(newLastChecked).format()
       ? `Processing Offer Histories - LastCheckedOfferTime: ${offerLastChecked} - NewLastCheckedOfferTime: ${newLastChecked}`
       : `Processing Offer Histories - No new offer histories since lastCheckedOfferTime: ${offerLastChecked}`
   );

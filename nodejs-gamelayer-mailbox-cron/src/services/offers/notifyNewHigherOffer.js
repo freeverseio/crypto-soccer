@@ -11,6 +11,7 @@ const notifyNewHigherOffer = async ({
     destinatary,
     category: mailboxTypes.offer,
     auctionId,
+    title: '',
     text,
     customImageUrl: '',
     metadata,
