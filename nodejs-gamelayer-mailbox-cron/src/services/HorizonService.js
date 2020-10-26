@@ -271,6 +271,12 @@ class HorizonService {
             playerByPlayerId {
               name
             }
+            bidsByAuctionId{
+              nodes {
+                teamId
+              }
+            }
+            seller
           }
         }
       }
@@ -279,6 +285,39 @@ class HorizonService {
 
     return result && result.allAuctions && result.allAuctions.nodes
       ? result.allAuctions.nodes[0]
+      : [];
+  }
+
+  async getLastAcceptedBidsHistories({ lastChecked }) {
+    const query = gql`
+      {
+        allBidsHistories(
+          condition: { state: ACCEPTED },
+          filter: {
+            insertedAt: { greaterThan: "${lastChecked}" }
+          },
+          orderBy: INSERTED_AT_ASC
+        ) {
+          nodes {
+            insertedAt
+            rnd
+            signature
+            state
+            stateExtra
+            auctionId
+            extraPrice
+            teamId
+						paymentUrl
+            paymentId
+            paymentDeadline
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allBidsHistories && result.allBidsHistories.nodes
+      ? result.allBidsHistories.nodes
       : [];
   }
 }
