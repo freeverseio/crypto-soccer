@@ -40,7 +40,6 @@ executors:
           - POSTGRES_PASSWORD=freeverse
           - POSTGRES_DB=market
 
-
 commands:
   submit_universe_db_schema:
     description: "Submit cryptosoccer schema in database"
@@ -65,16 +64,16 @@ commands:
   install_ipfs_cluster:
     steps:
       - run:
-            name: "compiling ipfs-cluster"
-            command: |
-              set -x
-              wget https://github.com/ipfs/ipfs-cluster/archive/v0.13.0.tar.gz
-              tar -zxvf v0.13.0.tar.gz
-              cd ipfs-cluster-0.13.0/cmd/ipfs-cluster-service
-              export GO111MODULE=on
-              go build -a -ldflags '-w -extldflags "-static"'
-              mv ipfs-cluster-service /usr/local/bin
-              ipfs-cluster-service init
+          name: "compiling ipfs-cluster"
+          command: |
+            set -x
+            wget https://github.com/ipfs/ipfs-cluster/archive/v0.13.0.tar.gz
+            tar -zxvf v0.13.0.tar.gz
+            cd ipfs-cluster-0.13.0/cmd/ipfs-cluster-service
+            export GO111MODULE=on
+            go build -a -ldflags '-w -extldflags "-static"'
+            mv ipfs-cluster-service /usr/local/bin
+            ipfs-cluster-service init
 
 jobs:
   dashboard:
@@ -129,7 +128,7 @@ jobs:
       - submit_universe_db_schema
       - install_ipfs_cluster
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
-      - run: 
+      - run:
           command: |
             set -e
             set -x
@@ -138,7 +137,7 @@ jobs:
             go test ./... -v
       - run: cd go/utils && go test ./... -v
       - run: cd go/synchronizer/engine && go test ./... -v
-      - run: cd go/synchronizer/staker && go test ./... 
+      - run: cd go/synchronizer/staker && go test ./...
       - run: cd go/synchronizer/matchevents && go test ./... -v
       - run: cd go/synchronizer/leaderboard && go test ./... -v
   go1:
@@ -148,7 +147,7 @@ jobs:
       - generate_contracts_code
       - submit_universe_db_schema
       - install_ipfs_cluster
-      - run: 
+      - run:
           command: |
             set -e
             set -x
@@ -179,7 +178,7 @@ jobs:
       - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/notary/auctionmachine && go test ./...
       - run: cd go/notary/bidmachine && go test ./...
-      - run: cd go/notary/consumer && go test ./... 
+      - run: cd go/notary/consumer && go test ./...
       - run: cd go/notary/producer && go test ./... -p 1
       - run: cd go/notary/signer && go test ./...
       - run: cd go/notary/storage && go test ./...
@@ -204,7 +203,7 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
+      - setup_remote_docker: # (2)
           docker_layer_caching: true # (3)
       - generate_contracts_code
       # create the latest images
@@ -247,7 +246,7 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
+      - setup_remote_docker: # (2)
           docker_layer_caching: true # (3)
       - generate_contracts_code
       - run: cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} .
@@ -291,7 +290,7 @@ jobs:
       - kube-orb/install-kubeconfig:
           kubeconfig: KUBECONFIG_DATA
       - install_kustomize
-      - run: | 
+      - run: |
           cd deployment/dok8s/overlays/dev
           kustomize edit set image freeverseio/authproxy:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/dashboard:${CIRCLE_SHA1}
@@ -327,6 +326,11 @@ workflows:
             tags:
               only: /.*/
       - market-read-api:
+          context: dockerhub
+          filters:
+            tags:
+              only: /.*/
+      - gamelayer-mailbox-cron:
           context: dockerhub
           filters:
             tags:
@@ -369,7 +373,7 @@ workflows:
       - dockerization-development:
           context: dockerhub
           filters:
-           branches:
+            branches:
               only:
                 - dev
           requires:
@@ -397,11 +401,9 @@ workflows:
             - dashboard
       - deployk8s:
           filters:
-           branches:
+            branches:
               only:
                 - dev
           requires:
             - dockerization-development
             - truffle_core
-
-

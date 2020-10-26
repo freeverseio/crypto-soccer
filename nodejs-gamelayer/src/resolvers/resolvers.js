@@ -1,6 +1,6 @@
 const Web3 = require('web3');
 const { selectTeamName, selectTeamManagerName, updateTeamName, updateTeamManagerName } = require('../repositories');
-const { TeamValidation, BidValidation } = require('../validations');
+const { TeamValidation } = require('../validations');
 const getMessagesResolver = require('./getMessagesResolver');
 const setMessageReadResolver = require('./setMessageReadResolver');
 const setMailboxStartResolver = require('./setMailboxStartResolver');
@@ -13,6 +13,7 @@ const teamByBuyerTeamId = require('./teamByBuyerTeamId');
 const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
 const getLastTimeLoggedInResolver = require('./getLastTimeLoggedIn');
 const setLastTimeLoggedInResolver = require('./setLastTimeLoggedIn');
+const createBidResolver = require('./createBidResolver');
 
 const web3 = new Web3('');
 
@@ -219,25 +220,8 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return 'Signer is not the team owner';
         }
       },
-      createBid: async (_, args, context, info) => {
-        const {
-          input: { teamId, rnd, auctionId, extraPrice, signature },
-        } = args;
-        const bidValidation = new BidValidation({ teamId, rnd, auctionId, extraPrice, signature, web3 });
-        const isAllowed = await bidValidation.isAllowedToBid();
-
-        if (!isAllowed) {
-          return 'User not allowed to bid for that amount';
-        } else {
-          return info.mergeInfo.delegateToSchema({
-            schema: horizonRemoteSchema,
-            operation: 'mutation',
-            fieldName: 'createBid',
-            args,
-            context,
-            info,
-          });
-        }
+      createBid: async (parent, args, context, info) => {
+        return createBidResolver(parent, args, context, info, horizonRemoteSchema, web3);
       },
       setMessage: setMessageResolver,
       setBroadcastMessage: setBroadcastMessageResolver,

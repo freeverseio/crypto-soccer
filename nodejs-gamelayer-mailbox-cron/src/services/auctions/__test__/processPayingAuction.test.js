@@ -1,7 +1,7 @@
 const HorizonService = require('../../HorizonService');
 const GamelayerService = require('../../GamelayerService');
 const processPayingAuction = require('../processPayingAuction');
-
+const getTeamIdFromAuctionSeller = require('../getTeamIdFromAuctionSeller');
 jest.mock('../../HorizonService.js', () => ({
   getBidsByAuctionId: jest.fn().mockReturnValue([
     {
@@ -10,7 +10,7 @@ jest.mock('../../HorizonService.js', () => ({
       teamId: '2748779069859',
       signature:
         '7aab2862668d5ee1195cd7cbedefea0a7f0158ee31ec09a2a81d094389afce1002778522f901a160feadd81be99c42570e109e46604fc5aa4d1b21b5952c20bf1c',
-      state: 'FAILED',
+      state: 'PAYING',
       stateExtra: 'expired',
     },
     {
@@ -19,7 +19,7 @@ jest.mock('../../HorizonService.js', () => ({
       teamId: '2748779069860',
       signature:
         '799caa88c00a7b6d4c19db172e25d819c4b216cd4169124fb67fee0a7308f3ce57d18e9beb865fbf2d43946748dcf74011a6f6c9cca255f20eecf2d0e4174e0d1b',
-      state: 'FAILED',
+      state: 'ACCEPTED',
       stateExtra: 'expired',
     },
     {
@@ -28,10 +28,19 @@ jest.mock('../../HorizonService.js', () => ({
       teamId: '2748779069859',
       signature:
         '9132d377118048e66c34e146b613b0fc4589edb79ef6e7a695c63e773d647cf74505df6e3defb17510b3d9d2a4699f892601a8f938897e75f5ea3ab7df8159ea1c',
-      state: 'FAILED',
+      state: 'ACCEPTED',
       stateExtra: 'expired',
     },
   ]),
+  getInfoFromTeamId: jest.fn().mockReturnValue({
+    teamId: '2748779069857',
+    name: 'Magicians Plus',
+    managerName: 'asdas',
+  }),
+  getInfoFromPlayerId: jest.fn().mockReturnValue({
+    teamId: '2748779069626',
+    name: 'joreg',
+  }),
 }));
 
 jest.mock('../../GamelayerService', () => ({
@@ -54,6 +63,10 @@ const auctionHistory = {
   offerValidUntil: '0',
 };
 
+jest.mock('../getTeamIdFromAuctionSeller', () =>
+  jest.fn().mockReturnValue('234324234')
+);
+
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -61,6 +74,9 @@ afterEach(() => {
 test('processPayingAuction works correctly', async () => {
   await processPayingAuction({ auctionHistory });
 
+  expect(getTeamIdFromAuctionSeller).toHaveBeenCalledTimes(1);
   expect(HorizonService.getBidsByAuctionId).toHaveBeenCalledTimes(1);
+  expect(HorizonService.getInfoFromPlayerId).toHaveBeenCalledTimes(3);
+  expect(HorizonService.getInfoFromTeamId).toHaveBeenCalledTimes(5);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(4);
 });

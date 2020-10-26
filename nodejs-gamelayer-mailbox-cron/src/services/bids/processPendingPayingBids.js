@@ -17,13 +17,27 @@ const processPendingPayingBids = async () => {
       const timeRemainingToPay = paymentDeadline.diff(dayjs.utc(), 'hour');
 
       if (timeRemainingToPay < timeToNotifyPendinPayingBids) {
+        const auction = await HorizonService.getAuction({
+          auctionId: bid.auctionId,
+        });
+
+        const { name: bidderTeamName } = await HorizonService.getInfoFromTeamId(
+          {
+            teamId: bid.teamId,
+          }
+        );
+        const totalAmount = parseInt(auction.price) + parseInt(bid.extraPrice);
+
         await GamelayerService.setMessage({
           destinatary: bid.teamId,
           category: 'auction',
           auctionId: bid.auctionId,
-          text: 'You should pay the auction, less than 12h remaining',
+          text: 'auction_buyer_pending_payment',
           customImageUrl: '',
-          metadata: '{}',
+          metadata: `{"amount": "${totalAmount}", "playerId":"${auction.playerId}", "playerName": "${auction.playerByPlayerId.name}", "bidderTeamId": "${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "paymentDeadline": "${bid.paymentDeadline}"}`.replace(
+            /"/g,
+            '\\"'
+          ),
         });
       }
     } catch (e) {

@@ -1,8 +1,30 @@
+const HorizonService = require('../../HorizonService');
 const GamelayerService = require('../../GamelayerService');
 const processWithdrawableBySellerAuction = require('../processWithdrawableBySellerAuction');
+const getTeamIdFromAuctionSeller = require('../getTeamIdFromAuctionSeller');
 
 jest.mock('../../GamelayerService', () => ({
   setMessage: jest.fn(),
+}));
+
+jest.mock('../../HorizonService', () => ({
+  getInfoFromTeamId: jest.fn().mockReturnValue({
+    teamId: '2748779069857',
+    name: 'Magicians Plus',
+    managerName: 'asdas',
+  }),
+  getInfoFromPlayerId: jest.fn().mockReturnValue({
+    teamId: '2748779069626',
+  }),
+  getPaidBidByAuctionId: jest.fn().mockReturnValue({
+    extraPrice: 0,
+    rnd: 0,
+    teamId: '2748779069875',
+    signature:
+      '531a6e38203a3ba21a5a845b9287dedb985ca638a19c21f2f9e083a7ae5ac3210a0eaa6df4c573e1000b2c842b4dbff5606633ae1994f986fd533a6aea43daed1c',
+    state: 'PAID',
+    stateExtra: '',
+  }),
 }));
 
 const auctionHistory = {
@@ -21,12 +43,18 @@ const auctionHistory = {
   offerValidUntil: '0',
 };
 
+jest.mock('../getTeamIdFromAuctionSeller', () =>
+  jest.fn().mockReturnValue('234324234')
+);
+
 afterEach(() => {
   jest.clearAllMocks();
 });
 
 test('processWithdrawableBySellerAuction works correctly', async () => {
   await processWithdrawableBySellerAuction({ auctionHistory });
-
+  expect(HorizonService.getPaidBidByAuctionId).toHaveBeenCalledTimes(1);
+  expect(HorizonService.getInfoFromPlayerId).toHaveBeenCalledTimes(1);
+  expect(HorizonService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(1);
 });

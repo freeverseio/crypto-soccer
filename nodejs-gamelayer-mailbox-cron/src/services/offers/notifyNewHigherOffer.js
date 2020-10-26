@@ -1,14 +1,19 @@
 const { mailboxTypes } = require('../../config');
 const GamelayerService = require('../GamelayerService');
 
-const notifyNewHigherOffer = async ({ destinatary, auctionId }) => {
+const notifyNewHigherOffer = async ({
+  destinatary,
+  auctionId,
+  text,
+  metadata,
+}) => {
   await GamelayerService.setMessage({
     destinatary,
     category: mailboxTypes.offer,
     auctionId,
-    text: 'Your player has received a new higher offer!',
+    text,
     customImageUrl: '',
-    metadata: '{}',
+    metadata,
   });
 };
 
