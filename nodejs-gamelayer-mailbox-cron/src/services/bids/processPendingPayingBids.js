@@ -32,6 +32,7 @@ const processPendingPayingBids = async () => {
           destinatary: bid.teamId,
           category: 'auction',
           auctionId: bid.auctionId,
+          title: '',
           text: 'auction_buyer_pending_payment',
           customImageUrl: '',
           metadata: `{"amount": "${totalAmount}", "playerId":"${auction.playerId}", "playerName": "${auction.playerByPlayerId.name}", "bidderTeamId": "${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "paymentDeadline": "${bid.paymentDeadline}"}`.replace(

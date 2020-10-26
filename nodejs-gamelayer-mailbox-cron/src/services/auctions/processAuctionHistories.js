@@ -6,6 +6,7 @@ const updateLastChecked = require('../../repositories/updateLastChecked');
 const HorizonService = require('../HorizonService');
 const { mailboxTypes, auctionStates } = require('../../config');
 const logger = require('../../logger');
+const processAcceptedBids = require('../bids/processAcceptedBids');
 
 const processAuctionHistories = async () => {
   const auctionLastChecked = await selectLastChecked({
@@ -28,7 +29,7 @@ const processAuctionHistories = async () => {
   });
 
   logger.info(
-    auctionLastChecked != newLastChecked
+    dayjs(auctionLastChecked).format() != dayjs(newLastChecked).format()
       ? `Processing Auction Histories - LastCheckedAuctionTime: ${auctionLastChecked} - NewLastCheckedAuctionTime: ${newLastChecked}`
       : `Processing Auction Histories - No new auction histories since lastCheckedAuctionTime: ${auctionLastChecked}`
   );
@@ -50,6 +51,10 @@ const processAuctionHistories = async () => {
       logger.error(e);
     }
   }
+
+  await processAcceptedBids({
+    lastChecked: dayjs(auctionLastChecked).format(),
+  });
 };
 
 module.exports = processAuctionHistories;

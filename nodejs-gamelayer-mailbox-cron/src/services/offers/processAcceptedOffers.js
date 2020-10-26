@@ -18,6 +18,7 @@ const processAcceptedOffers = async ({ offerHistory }) => {
     destinatary: offerHistory.buyerTeamId,
     category: mailboxTypes.offer,
     auctionId: offerHistory.auctionId,
+    title: '',
     text: 'offer_buyer_offer_accepted',
     customImageUrl: '',
     metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${playerName}", "offerAmount": "${offerHistory.price}", "sellerTeamId": "${playerTeamId}", "sellerTeamName": "${sellerTeamName}"}`.replace(

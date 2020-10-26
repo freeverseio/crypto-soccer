@@ -41,7 +41,7 @@ class HorizonService {
   async getAllTeamIds() {
     const query = gql`
       {
-        allTeams {
+        allTeams(filter: { owner: { notEqualTo: "0x0000000000000000000000000000000000000000" } }) {
           nodes {
             teamId
           }

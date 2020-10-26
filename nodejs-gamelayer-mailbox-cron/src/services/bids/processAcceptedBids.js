@@ -3,8 +3,10 @@ const GamelayerService = require('../GamelayerService');
 const logger = require('../../logger');
 const getTeamIdFromAuctionSeller = require('../auctions/getTeamIdFromAuctionSeller');
 
-const processAcceptedBids = async () => {
-  const bids = await HorizonService.getLastAcceptedBidsHistories();
+const processAcceptedBids = async ({ lastChecked }) => {
+  const bids = await HorizonService.getLastAcceptedBidsHistories({
+    lastChecked,
+  });
 
   logger.info(`Processing Accepted Bids`);
 
@@ -22,6 +24,7 @@ const processAcceptedBids = async () => {
         destinatary: sellerTeamId,
         category: 'auction',
         auctionId: bid.auctionId,
+        title: '',
         text: 'auction_seller_new_bid_received',
         customImageUrl: '',
         metadata: `{"amount": "${totalAmount}", "playerId":"${auction.playerId}", "playerName": "${auction.playerByPlayerId.name}", "bidderTeamId": "${bid.teamId}", "bidderTeamName":"${bidderTeamName}"}`.replace(
@@ -36,6 +39,7 @@ const processAcceptedBids = async () => {
             destinatary: bidder.teamId,
             category: 'auction',
             auctionId: bid.auctionId,
+            title: '',
             text: 'auction_buyer_new_higher_bid',
             customImageUrl: '',
             metadata: `{"amount": "${totalAmount}", "playerId":"${auction.playerId}", "playerName": "${auction.playerByPlayerId.name}", "bidderTeamId": "${bid.teamId}", "bidderTeamName":"${bidderTeamName}"}`.replace(

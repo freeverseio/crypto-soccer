@@ -30,6 +30,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
           destinatary: bid.teamId,
           category: 'auction',
           auctionId: auctionHistory.id,
+          title: '',
           text: 'auction_buyer_wins_auction',
           customImageUrl: '',
           metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}", "paymentDeadline":"${bid.paymentDeadline}"}`.replace(
@@ -43,6 +44,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
             destinatary: destinataryTeamId,
             category: 'auction',
             auctionId: auctionHistory.id,
+            title: '',
             text: 'auction_seller_sells',
             customImageUrl: '',
             metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
@@ -68,6 +70,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
           destinatary: bid.teamId,
           category: 'auction',
           auctionId: auctionHistory.id,
+          title: '',
           text: 'auction_buyer_loses_auction',
           customImageUrl: '',
           metadata: `{"amount": "${totalAmount}", "maxBidderTeamId":"${maxBid.teamId}", "maxBidderTeamName":"${maxBidderTeamName}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(

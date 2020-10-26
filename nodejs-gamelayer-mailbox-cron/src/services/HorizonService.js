@@ -143,6 +143,7 @@ class HorizonService {
             state
             stateExtra
             paymentDeadline
+            auctionId
           }
         }
       }
@@ -157,7 +158,7 @@ class HorizonService {
   async getTeamIdsFromOwner({ owner }) {
     const query = gql`
       {
-        allTeams(condition: { owner: ${owner} }) {
+        allTeams(condition: { owner: "${owner}" }) {
           nodes {
             teamId
           }
@@ -198,7 +199,7 @@ class HorizonService {
   async getInfoFromPlayerId({ playerId }) {
     const query = gql`
       {
-        allPlayers(condition: { playerId: ${playerId} }) {
+        allPlayers(condition: { playerId: "${playerId}" }) {
           nodes {
             teamId
           }
@@ -215,12 +216,12 @@ class HorizonService {
   async getInfoFromTeamId({ teamId }) {
     const query = gql`
       {
-        allTeams(condition: { teamId: ${teamId} }) {
+        allTeams(condition: { teamId: "${teamId}" }) {
           nodes {
             teamId
             name
             managerName
-          }2748779069857
+          }
         }
       }
     `;
