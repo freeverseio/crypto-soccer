@@ -17,6 +17,31 @@ const processPayingAuction = async ({ auctionHistory }) => {
       auctionHistory
     )}\n\nBids: ${JSON.stringify(bids)}`
   );
+
+  let maxBid =
+    bids.length == 1
+      ? bids[0]
+      : bids.find(
+          (b) =>
+            b.state.toLowerCase() == bidStates.paid ||
+            b.state.toLowerCase() == bidStates.paying
+        );
+
+  if (!maxBid) {
+    const maxExtraPrice = Math.max(bids.map((b) => b.extraPrice));
+    maxBid = bids.find((b) => b.extraPrice == maxExtraPrice);
+    maxBidIndex = bids.findIndex((b) => b.extraPrice == maxExtraPrice);
+    bids[maxBidIndex].state = 'PAYING';
+  }
+
+  if (bids.length == 1) {
+    bids[0].state = 'PAYING';
+  }
+
+  const { name: maxBidderTeamName } = await GamelayerService.getInfoFromTeamId({
+    teamId: maxBid.teamId,
+  });
+
   for (const bid of bids) {
     const { name: playerName } = await HorizonService.getInfoFromPlayerId({
       playerId: auctionHistory.playerId,
@@ -60,17 +85,6 @@ const processPayingAuction = async ({ auctionHistory }) => {
         }
         break;
       case bidStates.accepted:
-        const maxBid = bids.find(
-          (b) =>
-            b.state.toLowerCase() == bidStates.paid ||
-            b.state.toLowerCase() == bidStates.paying
-        );
-        const {
-          name: maxBidderTeamName,
-        } = await GamelayerService.getInfoFromTeamId({
-          teamId: maxBid.teamId,
-        });
-
         await GamelayerService.setMessage({
           destinatary: bid.teamId,
           category: 'auction',

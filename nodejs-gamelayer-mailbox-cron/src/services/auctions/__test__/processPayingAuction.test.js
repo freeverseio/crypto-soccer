@@ -77,6 +77,6 @@ test('processPayingAuction works correctly', async () => {
   expect(getTeamIdFromAuctionSeller).toHaveBeenCalledTimes(1);
   expect(HorizonService.getBidsByAuctionId).toHaveBeenCalledTimes(1);
   expect(HorizonService.getInfoFromPlayerId).toHaveBeenCalledTimes(3);
-  expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(5);
+  expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(4);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(4);
 });
