@@ -69,18 +69,23 @@ jest.mock('../../HorizonService.js', () => {
         nodes: [
           {
             teamId: '2748779069852',
+            extraPrice: 0,
           },
           {
             teamId: '2748779069852',
+            extraPrice: 50,
           },
           {
             teamId: '2748779069852',
+            extraPrice: 100,
           },
           {
             teamId: '2748779069852',
+            extraPrice: 150,
           },
           {
             teamId: '2748779069852',
+            extraPrice: 200,
           },
         ],
       },
@@ -113,5 +118,5 @@ test('processAcceptedBids works correctly', async () => {
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(3);
   expect(getTeamIdFromAuctionSeller).toHaveBeenCalledTimes(3);
   expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(3);
-  expect(GamelayerService.setMessage).toHaveBeenCalledTimes(13);
+  expect(GamelayerService.setMessage).toHaveBeenCalledTimes(11);
 });
