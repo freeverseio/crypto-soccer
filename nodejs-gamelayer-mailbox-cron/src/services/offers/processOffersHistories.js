@@ -27,31 +27,34 @@ const processOffersHistories = async () => {
     entity: mailboxTypes.offer,
     lastChecked: newLastChecked,
   });
+  const areNewHistories =
+    dayjs(offerLastChecked).format() != dayjs(newLastChecked).format();
 
   logger.info(
-    dayjs(offerLastChecked).format() != dayjs(newLastChecked).format()
+    areNewHistories
       ? `Processing Offer Histories - LastCheckedOfferTime: ${offerLastChecked} - NewLastCheckedOfferTime: ${newLastChecked}`
       : `Processing Offer Histories - No new offer histories since lastCheckedOfferTime: ${offerLastChecked}`
   );
-
-  for (const offerHistory of lastOffersHistories) {
-    try {
-      switch (offerHistory.state.toLowerCase()) {
-        case offerStates.started:
-          await processStartedOffers({ offerHistory });
-          break;
-        case offerStates.accepted:
-          await processAcceptedOffers({ offerHistory });
-          break;
-        case offerStates.rejected:
-          await processRejectedOffers({ offerHistory });
-          break;
+  if (areNewHistories) {
+    for (const offerHistory of lastOffersHistories) {
+      try {
+        switch (offerHistory.state.toLowerCase()) {
+          case offerStates.started:
+            await processStartedOffers({ offerHistory });
+            break;
+          case offerStates.accepted:
+            await processAcceptedOffers({ offerHistory });
+            break;
+          case offerStates.rejected:
+            await processRejectedOffers({ offerHistory });
+            break;
+        }
+      } catch (e) {
+        logger.info(
+          `Error processing offerHistory: ${JSON.stringify(offerHistory)}`
+        );
+        logger.error(e);
       }
-    } catch (e) {
-      logger.info(
-        `Error processing offerHistory: ${JSON.stringify(offerHistory)}`
-      );
-      logger.error(e);
     }
   }
 };

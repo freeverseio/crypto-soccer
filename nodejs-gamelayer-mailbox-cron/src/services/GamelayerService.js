@@ -32,6 +32,25 @@ class GamelayerService {
 
     return result;
   }
+
+  async getInfoFromTeamId({ teamId }) {
+    const query = gql`
+      {
+        allTeams(condition: { teamId: "${teamId}" }) {
+          nodes {
+            teamId
+            name
+            managerName
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allTeams && result.allTeams.nodes
+      ? result.allTeams.nodes[0]
+      : [];
+  }
 }
 
 module.exports = new GamelayerService();

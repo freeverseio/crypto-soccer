@@ -15,7 +15,7 @@ const processStartedOffers = async ({ offerHistory }) => {
     playerId: offerHistory.playerId,
   });
 
-  const { name: offererTeamName } = await HorizonService.getInfoFromTeamId({
+  const { name: offererTeamName } = await GamelayerService.getInfoFromTeamId({
     teamId: offerHistory.buyerTeamId,
   });
 
@@ -28,7 +28,7 @@ const processStartedOffers = async ({ offerHistory }) => {
         title: '',
         text: 'offer_seller_offer_received',
         customImageUrl: '',
-        metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${name}", "offerAmount": "${offerHistory.price}", "offererTeamId": "${offerHistory.buyerTeamId}", "offererTeamName": "${offererTeamName}"}`.replace(
+        metadata: `{"playerId":"${offerHistory.playerId}", "playerName":"${name}", "offerAmount":"${offerHistory.price}", "offererTeamId":"${offerHistory.buyerTeamId}", "offererTeamName":"${offererTeamName}"}`.replace(
           /"/g,
           '\\"'
         ),
@@ -39,7 +39,7 @@ const processStartedOffers = async ({ offerHistory }) => {
         destinatary: playerTeamId,
         auctionId: offerHistory.auctionId,
         text: 'offer_seller_higher_offer_received',
-        metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${name}", "offerAmount": "${offerHistory.price}", "offererTeamId": "${offerHistory.buyerTeamId}", "offererTeamName": "${offererTeamName}"}`.replace(
+        metadata: `{"playerId":"${offerHistory.playerId}", "playerName":"${name}", "offerAmount":"${offerHistory.price}", "offererTeamId":"${offerHistory.buyerTeamId}", "offererTeamName":"${offererTeamName}"}`.replace(
           /"/g,
           '\\"'
         ),
@@ -51,7 +51,7 @@ const processStartedOffers = async ({ offerHistory }) => {
       destinatary: offerer.buyerTeamId,
       auctionId: offerHistory.auctionId,
       text: 'offer_buyer_higher_offer',
-      metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${name}", "offerAmount": "${offerHistory.price}", "offererTeamId": "${offerHistory.buyerTeamId}", "offererTeamName": "${offererTeamName}"}`.replace(
+      metadata: `{"playerId":"${offerHistory.playerId}", "playerName":"${name}", "offerAmount":"${offerHistory.price}", "offererTeamId":"${offerHistory.buyerTeamId}", "offererTeamName":"${offererTeamName}"}`.replace(
         /"/g,
         '\\"'
       ),
