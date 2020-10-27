@@ -53,7 +53,7 @@ jest.mock('../../HorizonService.js', () => ({
       validUntil: '1601383774',
       signature:
         'd175435f7dd55ee4edb8388b112df707cc7d9cc12da43486870b679a277dc6023a141ecc59b77ea753b35916e8e57d0c027ba4e84e7110dbe3a0c2ee39f3e8d81b',
-      state: 'REJECTED',
+      state: 'CANCELLED',
       stateExtra: '',
       seller: '0x9f46F66b079d469920e4e72a99ef42D8A3447C10',
       buyer: '0xf1735CAdC166a115CA170A1423DF4DB6dAE53bf8',

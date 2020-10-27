@@ -17,7 +17,7 @@ jest.mock('../../HorizonService.js', () => ({
       validUntil: '1601373789',
       signature:
         '22795665491fb888d3ccb0be12f4c27357e7cd6a200875a608721bcd580b89ff0acb98b7d11f5424540da9573d5c64191a270ad4ba9243639810b9a261f8c0451b',
-      state: 'WITHDRAWABLE_BY_SELLER',
+      state: 'WITHADRABLE_BY_SELLER',
       stateExtra: '',
       seller: '0xF7dF8923eE9De53e5ffC40F51F96df72bAcC0BA4',
       id: '591e7084cd10ffd282783744baa90a72a6ac949ecaffe2cd15f2120135750441',

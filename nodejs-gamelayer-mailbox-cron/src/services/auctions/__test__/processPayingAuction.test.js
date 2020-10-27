@@ -80,3 +80,26 @@ test('processPayingAuction works correctly', async () => {
   expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(4);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(4);
 });
+
+test('processPayingAuction works correctly when auction paying but bids in accepted state still', async () => {
+  HorizonService.getBidsByAuctionId.mockReset();
+  HorizonService.getBidsByAuctionId.mockReturnValue([
+    {
+      extraPrice: 0,
+      rnd: 1688090333,
+      teamId: '2748779069859',
+      signature:
+        '7aab2862668d5ee1195cd7cbedefea0a7f0158ee31ec09a2a81d094389afce1002778522f901a160feadd81be99c42570e109e46604fc5aa4d1b21b5952c20bf1c',
+      state: 'ACCEPTED',
+      stateExtra: 'expired',
+    },
+  ]);
+
+  await processPayingAuction({ auctionHistory });
+
+  expect(getTeamIdFromAuctionSeller).toHaveBeenCalledTimes(1);
+  expect(HorizonService.getBidsByAuctionId).toHaveBeenCalledTimes(1);
+  expect(HorizonService.getInfoFromPlayerId).toHaveBeenCalledTimes(1);
+  expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(2);
+  expect(GamelayerService.setMessage).toHaveBeenCalledTimes(2);
+});

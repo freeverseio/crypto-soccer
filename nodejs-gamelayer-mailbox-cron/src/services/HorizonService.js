@@ -252,6 +252,7 @@ class HorizonService {
           nodes {
             playerId
             price
+            state
             playerByPlayerId {
               name
             }
