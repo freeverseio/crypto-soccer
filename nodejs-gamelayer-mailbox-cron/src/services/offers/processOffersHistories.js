@@ -14,7 +14,7 @@ const processOffersHistories = async () => {
   });
 
   const lastOffersHistories = await HorizonService.getLastOfferHistories({
-    lastChecked: dayjs(offerLastChecked).format(),
+    lastChecked: dayjs(offerLastChecked).add(1, 'second').format(),
   });
 
   const newLastChecked =
