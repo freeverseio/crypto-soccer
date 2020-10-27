@@ -259,6 +259,7 @@ class HorizonService {
             bidsByAuctionId{
               nodes {
                 teamId
+                extraPrice
               }
             }
             seller
