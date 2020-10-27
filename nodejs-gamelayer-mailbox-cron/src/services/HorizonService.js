@@ -120,6 +120,7 @@ class HorizonService {
             signature
             state
             stateExtra
+            paymentDeadline
           }
         }
       }
@@ -202,6 +203,7 @@ class HorizonService {
         allPlayers(condition: { playerId: "${playerId}" }) {
           nodes {
             teamId
+            name
           }
         }
       }
@@ -210,25 +212,6 @@ class HorizonService {
 
     return result && result.allPlayers && result.allPlayers.nodes
       ? result.allPlayers.nodes[0]
-      : [];
-  }
-
-  async getInfoFromTeamId({ teamId }) {
-    const query = gql`
-      {
-        allTeams(condition: { teamId: "${teamId}" }) {
-          nodes {
-            teamId
-            name
-            managerName
-          }
-        }
-      }
-    `;
-    const result = await request(this.endpoint, query);
-
-    return result && result.allTeams && result.allTeams.nodes
-      ? result.allTeams.nodes[0]
       : [];
   }
 

@@ -4,14 +4,14 @@ const processRejectedOffers = require('../processRejectedOffers');
 
 jest.mock('../../GamelayerService', () => ({
   setMessage: jest.fn(),
-}));
-
-jest.mock('../../HorizonService', () => ({
   getInfoFromTeamId: jest.fn().mockReturnValue({
     teamId: '2748779069857',
     name: 'Magicians Plus',
     managerName: 'asdas',
   }),
+}));
+
+jest.mock('../../HorizonService', () => ({
   getInfoFromPlayerId: jest.fn().mockReturnValue({
     teamId: '2748779069626',
     name: 'joreg',
@@ -41,6 +41,6 @@ const offerHistory = {
 test('processRejectedOffers works correctly', async () => {
   await processRejectedOffers({ offerHistory });
   expect(HorizonService.getInfoFromPlayerId).toHaveBeenCalledTimes(1);
-  expect(HorizonService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
+  expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(1);
 });

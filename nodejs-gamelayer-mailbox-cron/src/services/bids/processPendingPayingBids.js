@@ -21,11 +21,11 @@ const processPendingPayingBids = async () => {
           auctionId: bid.auctionId,
         });
 
-        const { name: bidderTeamName } = await HorizonService.getInfoFromTeamId(
-          {
-            teamId: bid.teamId,
-          }
-        );
+        const {
+          name: bidderTeamName,
+        } = await GamelayerService.getInfoFromTeamId({
+          teamId: bid.teamId,
+        });
         const totalAmount = parseInt(auction.price) + parseInt(bid.extraPrice);
 
         await GamelayerService.setMessage({
@@ -35,7 +35,7 @@ const processPendingPayingBids = async () => {
           title: '',
           text: 'auction_buyer_pending_payment',
           customImageUrl: '',
-          metadata: `{"amount": "${totalAmount}", "playerId":"${auction.playerId}", "playerName": "${auction.playerByPlayerId.name}", "bidderTeamId": "${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "paymentDeadline": "${bid.paymentDeadline}"}`.replace(
+          metadata: `{"amount":"${totalAmount}", "playerId":"${auction.playerId}", "playerName":"${auction.playerByPlayerId.name}", "bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "paymentDeadline":"${bid.paymentDeadline}"}`.replace(
             /"/g,
             '\\"'
           ),

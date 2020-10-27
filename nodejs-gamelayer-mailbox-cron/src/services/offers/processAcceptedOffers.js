@@ -10,7 +10,7 @@ const processAcceptedOffers = async ({ offerHistory }) => {
     playerId: offerHistory.playerId,
   });
 
-  const { name: sellerTeamName } = await HorizonService.getInfoFromTeamId({
+  const { name: sellerTeamName } = await GamelayerService.getInfoFromTeamId({
     teamId: playerTeamId,
   });
 
@@ -21,7 +21,7 @@ const processAcceptedOffers = async ({ offerHistory }) => {
     title: '',
     text: 'offer_buyer_offer_accepted',
     customImageUrl: '',
-    metadata: `{"playerId":"${offerHistory.playerId}", "playerName": "${playerName}", "offerAmount": "${offerHistory.price}", "sellerTeamId": "${playerTeamId}", "sellerTeamName": "${sellerTeamName}"}`.replace(
+    metadata: `{"playerId":"${offerHistory.playerId}", "playerName":"${playerName}", "offerAmount":"${offerHistory.price}", "sellerTeamId":"${playerTeamId}", "sellerTeamName":"${sellerTeamName}"}`.replace(
       /"/g,
       '\\"'
     ),

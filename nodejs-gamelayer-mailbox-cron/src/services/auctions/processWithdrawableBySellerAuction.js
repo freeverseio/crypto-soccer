@@ -15,7 +15,7 @@ const processWithdrawableBySellerAuction = async ({ auctionHistory }) => {
       playerId: auctionHistory.playerId,
     });
 
-    const { name: bidderTeamName } = await HorizonService.getInfoFromTeamId({
+    const { name: bidderTeamName } = await GamelayerService.getInfoFromTeamId({
       teamId: paidBid.teamId,
     });
 
@@ -29,7 +29,7 @@ const processWithdrawableBySellerAuction = async ({ auctionHistory }) => {
       title: '',
       text: 'auction_seller_gets_paid',
       customImageUrl: '',
-      metadata: `{"bidderTeamId":"${paidBid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
+      metadata: `{"bidderTeamId":"${paidBid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount":"${totalAmount}", "playerId":"${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
         /"/g,
         '\\"'
       ),

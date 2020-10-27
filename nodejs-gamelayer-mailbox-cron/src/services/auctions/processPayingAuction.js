@@ -2,6 +2,7 @@ const { bidStates } = require('../../config');
 const GamelayerService = require('../GamelayerService');
 const HorizonService = require('../HorizonService');
 const getTeamIdFromAuctionSeller = require('./getTeamIdFromAuctionSeller.js');
+const logger = require('../../logger');
 
 const processPayingAuction = async ({ auctionHistory }) => {
   const destinataryTeamId = await getTeamIdFromAuctionSeller({
@@ -11,13 +12,17 @@ const processPayingAuction = async ({ auctionHistory }) => {
   const bids = await HorizonService.getBidsByAuctionId({
     auctionId: auctionHistory.id,
   });
-
+  logger.debug(
+    `ProcessPayingAuction: Auction history: ${JSON.stringify(
+      auctionHistory
+    )}\n\nBids: ${JSON.stringify(bids)}`
+  );
   for (const bid of bids) {
     const { name: playerName } = await HorizonService.getInfoFromPlayerId({
       playerId: auctionHistory.playerId,
     });
 
-    const { name: bidderTeamName } = await HorizonService.getInfoFromTeamId({
+    const { name: bidderTeamName } = await GamelayerService.getInfoFromTeamId({
       teamId: bid.teamId,
     });
 
@@ -33,7 +38,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
           title: '',
           text: 'auction_buyer_wins_auction',
           customImageUrl: '',
-          metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}", "paymentDeadline":"${bid.paymentDeadline}"}`.replace(
+          metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount":"${totalAmount}", "playerId":"${auctionHistory.playerId}", "playerName":"${playerName}", "paymentDeadline":"${bid.paymentDeadline}"}`.replace(
             /"/g,
             '\\"'
           ),
@@ -47,7 +52,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
             title: '',
             text: 'auction_seller_sells',
             customImageUrl: '',
-            metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount": "${totalAmount}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
+            metadata: `{"bidderTeamId":"${bid.teamId}", "bidderTeamName":"${bidderTeamName}", "amount":"${totalAmount}", "playerId":"${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
               /"/g,
               '\\"'
             ),
@@ -62,7 +67,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
         );
         const {
           name: maxBidderTeamName,
-        } = await HorizonService.getInfoFromTeamId({
+        } = await GamelayerService.getInfoFromTeamId({
           teamId: maxBid.teamId,
         });
 

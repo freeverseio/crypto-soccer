@@ -27,34 +27,37 @@ const processAuctionHistories = async () => {
     entity: mailboxTypes.auction,
     lastChecked: newLastChecked,
   });
+  const areNewHistories =
+    dayjs(auctionLastChecked).format() != dayjs(newLastChecked).format();
 
   logger.info(
-    dayjs(auctionLastChecked).format() != dayjs(newLastChecked).format()
+    areNewHistories
       ? `Processing Auction Histories - LastCheckedAuctionTime: ${auctionLastChecked} - NewLastCheckedAuctionTime: ${newLastChecked}`
       : `Processing Auction Histories - No new auction histories since lastCheckedAuctionTime: ${auctionLastChecked}`
   );
 
-  for (const auctionHistory of lastAuctionsHistories) {
-    try {
-      switch (auctionHistory.state.toLowerCase()) {
-        case auctionStates.withdrawableBySeller:
-          await processWithdrawableBySellerAuction({ auctionHistory });
-          break;
-        case auctionStates.paying:
-          await processPayingAuction({ auctionHistory });
-          break;
+  if (areNewHistories) {
+    for (const auctionHistory of lastAuctionsHistories) {
+      try {
+        switch (auctionHistory.state.toLowerCase()) {
+          case auctionStates.withdrawableBySeller:
+            await processWithdrawableBySellerAuction({ auctionHistory });
+            break;
+          case auctionStates.paying:
+            await processPayingAuction({ auctionHistory });
+            break;
+        }
+      } catch (e) {
+        logger.info(
+          `Error processing auction history: ${JSON.stringify(auctionHistory)}`
+        );
+        logger.error(e);
       }
-    } catch (e) {
-      logger.info(
-        `Error processing auction history: ${JSON.stringify(auctionHistory)}`
-      );
-      logger.error(e);
     }
+    await processAcceptedBids({
+      lastChecked: dayjs(auctionLastChecked).format(),
+    });
   }
-
-  await processAcceptedBids({
-    lastChecked: dayjs(auctionLastChecked).format(),
-  });
 };
 
 module.exports = processAuctionHistories;

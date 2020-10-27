@@ -4,11 +4,6 @@ const processStartedOffers = require('../processStartedOffers');
 const notifyNewHigherOffer = require('../notifyNewHigherOffer');
 
 jest.mock('../../HorizonService.js', () => ({
-  getInfoFromTeamId: jest.fn().mockReturnValue({
-    teamId: '2748779069857',
-    name: 'Magicians Plus',
-    managerName: 'asdas',
-  }),
   getInfoFromPlayerId: jest.fn().mockReturnValue({
     teamId: '2748779069626',
     name: 'joreg',
@@ -53,6 +48,11 @@ jest.mock('../../HorizonService.js', () => ({
 
 jest.mock('../../GamelayerService', () => ({
   setMessage: jest.fn(),
+  getInfoFromTeamId: jest.fn().mockReturnValue({
+    teamId: '2748779069857',
+    name: 'Magicians Plus',
+    managerName: 'asdas',
+  }),
 }));
 
 jest.mock('../notifyNewHigherOffer', () => jest.fn());
@@ -102,7 +102,7 @@ test('processStartedOffers works correctly more than 1 offerer', async () => {
 
   expect(HorizonService.getOfferersByPlayerId).toHaveBeenCalledTimes(1);
   expect(HorizonService.getInfoFromPlayerId).toHaveBeenCalledTimes(1);
-  expect(HorizonService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
+  expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(0);
   expect(notifyNewHigherOffer).toHaveBeenCalledTimes(3);
 });
@@ -112,7 +112,7 @@ test('processStartedOffers works correctly with 1 offerer', async () => {
 
   expect(HorizonService.getOfferersByPlayerId).toHaveBeenCalledTimes(1);
   expect(HorizonService.getInfoFromPlayerId).toHaveBeenCalledTimes(1);
-  expect(HorizonService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
+  expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(1);
   expect(notifyNewHigherOffer).toHaveBeenCalledTimes(1);
 });

@@ -28,11 +28,7 @@ jest.mock('../../HorizonService.js', () => {
         paymentDeadline: dayjs().add(2, 'hour').unix(),
       },
     ]),
-    getInfoFromTeamId: jest.fn().mockReturnValue({
-      teamId: '2748779069857',
-      name: 'Magicians Plus',
-      managerName: 'asdas',
-    }),
+
     getInfoFromPlayerId: jest.fn().mockReturnValue({
       teamId: '2748779069626',
     }),
@@ -48,6 +44,11 @@ jest.mock('../../HorizonService.js', () => {
 
 jest.mock('../../GamelayerService', () => ({
   setMessage: jest.fn(),
+  getInfoFromTeamId: jest.fn().mockReturnValue({
+    teamId: '2748779069857',
+    name: 'Magicians Plus',
+    managerName: 'asdas',
+  }),
 }));
 
 afterEach(() => {
@@ -59,6 +60,6 @@ test('processPendingPayingBids works correctly', async () => {
 
   expect(HorizonService.getPayingBids).toHaveBeenCalledTimes(1);
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(1);
-  expect(HorizonService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
+  expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(1);
 });
