@@ -45,7 +45,7 @@ const processOffersHistories = async () => {
           case offerStates.accepted:
             await processAcceptedOffers({ offerHistory });
             break;
-          case offerStates.rejected:
+          case offerStates.cancelled:
             await processRejectedOffers({ offerHistory });
             break;
         }

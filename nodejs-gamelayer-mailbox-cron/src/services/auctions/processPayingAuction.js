@@ -30,7 +30,8 @@ const processPayingAuction = async ({ auctionHistory }) => {
   if (!maxBid) {
     const maxExtraPrice = Math.max(bids.map((b) => b.extraPrice));
     maxBid = bids.find((b) => b.extraPrice == maxExtraPrice);
-    maxBidIndex = bids.findIndex((b) => b.extraPrice == maxExtraPrice);
+    const maxBidIndex = bids.findIndex((b) => b.extraPrice == maxExtraPrice);
+    logger.debug(`Maxbid(bids[${maxBidIndex}]): ${JSON.stringify(maxBid)}`);
     bids[maxBidIndex].state = 'PAYING';
   }
 

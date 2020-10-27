@@ -29,15 +29,16 @@ const mailboxCronEntities = {
 const offerStates = {
   started: 'started',
   accepted: 'accepted',
-  rejected: 'rejected',
+  cancelled: 'cancelled',
 };
 
 const auctionStates = {
   started: 'started',
   accepted: 'accepted',
   rejected: 'rejected',
-  withdrawableBySeller: 'withdrawable_by_seller',
+  withdrawableBySeller: 'withadrable_by_seller',
   paying: 'paying',
+  assetFrozen: 'asset_frozen',
 };
 
 const bidStates = {
