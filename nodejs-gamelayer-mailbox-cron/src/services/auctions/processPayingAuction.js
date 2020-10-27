@@ -1,3 +1,4 @@
+const dayjs = require('dayjs');
 const { bidStates } = require('../../config');
 const GamelayerService = require('../GamelayerService');
 const HorizonService = require('../HorizonService');
@@ -33,10 +34,16 @@ const processPayingAuction = async ({ auctionHistory }) => {
     const maxBidIndex = bids.findIndex((b) => b.extraPrice == maxExtraPrice);
     logger.debug(`Maxbid(bids[${maxBidIndex}]): ${JSON.stringify(maxBid)}`);
     bids[maxBidIndex].state = 'PAYING';
+    bids[maxBidIndex].paymentDeadline = bids[maxBidIndex].paymentDeadline
+      ? bids[maxBidIndex].paymentDeadline
+      : dayjs().add(2, 'day').unix();
   }
 
   if (bids.length == 1) {
     bids[0].state = 'PAYING';
+    bids[0].paymentDeadline = bids[0].paymentDeadline
+      ? bids[0].paymentDeadline
+      : dayjs().add(2, 'day').unix();
   }
 
   const { name: maxBidderTeamName } = await GamelayerService.getInfoFromTeamId({

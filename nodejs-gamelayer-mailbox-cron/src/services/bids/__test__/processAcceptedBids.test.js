@@ -61,6 +61,7 @@ jest.mock('../../HorizonService.js', () => {
     getAuction: jest.fn().mockReturnValue({
       playerId: '2748779076846',
       price: '100',
+      state: 'ASSET_FROZEN',
       playerByPlayerId: {
         name: 'Hector Galindo',
       },
