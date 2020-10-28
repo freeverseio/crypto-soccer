@@ -113,6 +113,13 @@ contract('Updates', (accounts) => {
         await timeTravel.revertToSnapShot(snapshotId);
     });
 
+
+    it('TimezonetoUptate bug from field', async () =>  {
+        a = await updates.timeZoneToUpdatePure(12289,24).should.be.fulfilled;
+        a.turnInDay.toNumber().should.be.equal(1);
+        a.day.toNumber().should.be.equal(4);
+    });
+
     it('Inform event', async () =>  {
         tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys")).should.be.rejected;
         tx = await updates.inform(id=1233432432, content = web3.utils.keccak256("hiboys"), {from: owners.relay}).should.be.fulfilled;

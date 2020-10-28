@@ -135,19 +135,20 @@ contract UniverseInfo is Storage, EncodingSkillsGetters, EncodingIDs, Constants 
     function timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timezone, uint8 day, uint8 turnInDay) {
         /// if _currentVerse = 0, we should be updating _timeZoneForRound1
         /// recall that timeZones range from 1...24 (not from 0...24)
-        turnInDay = uint8(verse % 4);
+        uint256 turn = verse % 4;
         uint256 delta = 9 * 4 + turnInDay;
         uint256 tz;
         uint256 dia;        
-        if (turnInDay >= 2 && verse < delta) return (NULL_TIMEZONE, 0, 0);
-        if (turnInDay < 2) {
-            tz = TZForRound1 + ((verse - turnInDay) % VERSES_PER_DAY)/4;
-            dia = 2 * uint8((verse - 4 * (tz - TZForRound1) - turnInDay)/VERSES_PER_DAY);
+        if (turn >= 2 && verse < delta) return (NULL_TIMEZONE, 0, 0);
+        if (turn < 2) {
+            tz = TZForRound1 + ((verse - turn) % VERSES_PER_DAY)/4;
+            dia = 2 * (verse - 4 * (tz - TZForRound1) - turn)/VERSES_PER_DAY;
         } else {
             tz = TZForRound1 + ((verse - delta) % VERSES_PER_DAY)/4;
-            dia = 1 + 2 * uint8((verse - 4 * (tz - TZForRound1) - delta)/VERSES_PER_DAY);
-            turnInDay -= 2;
+            dia = 1 + 2 * (verse - 4 * (tz - TZForRound1) - delta)/VERSES_PER_DAY;
+            turn -= 2;
         }
+        turnInDay = uint8(turn);
         timezone = normalizeTZ(tz);
         day = uint8(dia % MATCHDAYS_PER_ROUND);
     }
