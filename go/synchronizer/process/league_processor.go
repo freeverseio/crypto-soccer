@@ -203,23 +203,26 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	verse12290SkipUpdateLeaderboardFix := viper.GetBool("patch.verse_12290_skip_update_leaderboard_fix")
+	verse12328SkipUpdateLeaderboardFix := viper.GetBool("patch.verse_12328_skip_update_leaderboard_fix")
 	if !(verse12290SkipUpdateLeaderboardFix && verse == 12290) {
-		if turnInDay == 1 {
-			log.Infof("[processor|timezone %v] update leaderboard", timezoneIdx)
-			leaderboardService := leaderboard.NewLeaderboardService(storagepostgres.NewStorageService(tx))
+		if !(verse12328SkipUpdateLeaderboardFix && verse == 12328) {
+			if turnInDay == 1 {
+				log.Infof("[processor|timezone %v] update leaderboard", timezoneIdx)
+				leaderboardService := leaderboard.NewLeaderboardService(storagepostgres.NewStorageService(tx))
 
-			verseCalculateLeaderboardFix := viper.GetUint64("patch.calculate_leaderboard_fix")
+				verseCalculateLeaderboardFix := viper.GetUint64("patch.calculate_leaderboard_fix")
 
-			if verse < verseCalculateLeaderboardFix {
-				if err := leaderboardService.UpdateTimezoneLeaderboards(*b.contracts, int(timezoneIdx), int(day)); err != nil {
-					return errors.Wrap(err, "failed updating timezone leaderboard")
-				}
-			} else {
-				if verse == verseCalculateLeaderboardFix {
-					log.Infof("[%v|BUG] switching to new calculate leaderboard function", verseCalculateLeaderboardFix)
-				}
-				if err := leaderboardService.UpdateTimezoneLeaderboardsNew(*b.contracts, int(timezoneIdx), int(day)); err != nil {
-					return errors.Wrap(err, "failed updating timezone leaderboard")
+				if verse < verseCalculateLeaderboardFix {
+					if err := leaderboardService.UpdateTimezoneLeaderboards(*b.contracts, int(timezoneIdx), int(day)); err != nil {
+						return errors.Wrap(err, "failed updating timezone leaderboard")
+					}
+				} else {
+					if verse == verseCalculateLeaderboardFix {
+						log.Infof("[%v|BUG] switching to new calculate leaderboard function", verseCalculateLeaderboardFix)
+					}
+					if err := leaderboardService.UpdateTimezoneLeaderboardsNew(*b.contracts, int(timezoneIdx), int(day)); err != nil {
+						return errors.Wrap(err, "failed updating timezone leaderboard")
+					}
 				}
 			}
 		}
