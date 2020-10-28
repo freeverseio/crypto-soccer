@@ -8,6 +8,8 @@ import "../encoders/EncodingTacticsBase1.sol";
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingSkillsGetters.sol";
 import "../encoders/EncodingMatchLogBase3.sol";
+import "../encoders/EncodingMatchEventsSetters.sol";
+        
 
 
 /**
@@ -17,7 +19,7 @@ import "../encoders/EncodingMatchLogBase3.sol";
  @dev because they use a storage pointer to other contracts.
 */
 
-contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetters, EncodingSkillsGetters, EncodingMatchLogBase3 {
+contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetters, EncodingSkillsGetters, EncodingMatchLogBase3, EncodingMatchEventsSetters {
 
     uint8 constant public PLAYERS_PER_TEAM_MAX = 25;
     uint8 private constant IDX_IS_2ND_HALF = 0; 
@@ -96,6 +98,7 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
         }
 
         return (skills, matchLogsAndEvents, 0);
+        // return (skills, serializeEvents(matchLogsAndEvents), 0);
     }
     
     
@@ -157,6 +160,7 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
 
         return (skills, matchLogsAndEvents, 0);
+        // return (skills, serializeEvents(matchLogsAndEvents), 0);
     }
 
     function getBotTactics() public pure returns(uint256) { 
@@ -210,6 +214,23 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
         }
         return (skills, matchLogsAndEvents, error);
     }
+
+    // /// for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
+    // function serializeEvents(uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents) public pure returns (uint256[2+5*ROUNDS_PER_MATCH] memory) {
+    //     uint256 serializedEvents;
+    //     for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++) {
+    //         serializedEvents = setTeamThatAttacks(serializedEvents, round, uint8(matchLogsAndEvents[2 + round*5]));
+    //         serializedEvents = setManagesToShoot(serializedEvents, round, matchLogsAndEvents[3 + round*5] == 1);
+    //         serializedEvents = setShooter(serializedEvents, round, uint8(matchLogsAndEvents[4 + round*5]));
+    //         serializedEvents = setIsGoal(serializedEvents, round, matchLogsAndEvents[5 + round*5] == 1);
+    //         serializedEvents = setAssister(serializedEvents, round, uint8(matchLogsAndEvents[6 + round*5]));
+    //     }
+    //     uint256[2+5*ROUNDS_PER_MATCH] memory serializedMatchLogAndEvents;
+    //     serializedMatchLogAndEvents[0] = matchLogsAndEvents[0];
+    //     serializedMatchLogAndEvents[1] = matchLogsAndEvents[1];
+    //     serializedMatchLogAndEvents[2] = 2; // this is the flag that shows that events are now serialized (otherise it'd be 0/1)
+    //     serializedMatchLogAndEvents[3] = serializedEvents; 
+    // }
 
 }
 

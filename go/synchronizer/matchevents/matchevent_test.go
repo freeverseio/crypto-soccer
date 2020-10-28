@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts/router"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/matchevents"
 	"gotest.tools/assert"
 )
@@ -358,6 +359,9 @@ func TestMatchEvents2ndHalfHardcoded(t *testing.T) {
 	for i := 0; i < len(events64); i++ {
 		events = append(events, big.NewInt(events64[i]))
 	}
+
+	serializedEvents, err := router.SerializeEventsFromPlayHalf(events[2:])
+	assert.Equal(t, serializedEvents.String(), "1298544272193277839290013088483329")
 
 	NO_SUBS := uint8(11)
 	lineup0 := [14]uint8{17, 16, 15, 14, 13, 11, 9, 8, 7, 0, 10, 19, 12, 21}

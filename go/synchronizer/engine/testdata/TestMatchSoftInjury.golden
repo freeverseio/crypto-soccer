@@ -17,7 +17,8 @@
 		VisitorTeamSumSkills: (uint32) 54978,
 		State: (storage.MatchState) (len=4) "half",
 		StateExtra: (string) "",
-		StartEpoch: (int64) 0
+		StartEpoch: (int64) 0,
+		SerializedEvents: (*big.Int)(0)
 	},
 	StartTime: (*big.Int)(1790899200),
 	HomeTeam: (engine.Team) {

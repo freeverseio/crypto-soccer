@@ -1,4 +1,4 @@
-([]storage.Match) (len=56 cap=68) {
+([]storage.Match) (len=56 cap=64) {
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
 CountryIdx: (uint32) 0,
@@ -17,7 +17,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -37,7 +38,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -57,7 +59,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -77,7 +80,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -97,7 +101,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -117,7 +122,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -137,7 +143,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -157,7 +164,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -177,7 +185,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -197,7 +206,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -217,7 +227,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -237,7 +248,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -257,7 +269,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -277,7 +290,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -297,7 +311,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -317,7 +332,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -337,7 +353,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -357,7 +374,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -377,7 +395,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -397,7 +416,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -417,7 +437,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -437,7 +458,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -457,7 +479,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -477,7 +500,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -497,7 +521,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -517,7 +542,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -537,7 +563,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -557,7 +584,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -577,7 +605,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -597,7 +626,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -617,7 +647,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -637,7 +668,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -657,7 +689,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -677,7 +710,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -697,7 +731,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -717,7 +752,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -737,7 +773,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -757,7 +794,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -777,7 +815,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -797,7 +836,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -817,7 +857,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -837,7 +878,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -857,7 +899,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -877,7 +920,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -897,7 +941,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -917,7 +962,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -937,7 +983,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -957,7 +1004,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -977,7 +1025,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -997,7 +1046,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -1017,7 +1067,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -1037,7 +1088,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -1057,7 +1109,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -1077,7 +1130,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -1097,7 +1151,8 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 },
 (storage.Match) {
 TimezoneIdx: (uint8) 1,
@@ -1117,6 +1172,7 @@ HomeTeamSumSkills: (uint32) 0,
 VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) "",
 StateExtra: (string) "",
-StartEpoch: (int64) 0
+StartEpoch: (int64) 0,
+SerializedEvents: (*big.Int)(<nil>)
 }
 }
