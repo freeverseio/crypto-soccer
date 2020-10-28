@@ -202,7 +202,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return err
 	}
 
-	verse12290SkipUpdateLeaderboardFix := viper.GetBool("verse_12290_skip_update_leaderboard_fix")
+	verse12290SkipUpdateLeaderboardFix := viper.GetBool("patch.verse_12290_skip_update_leaderboard_fix")
 	if !(verse12290SkipUpdateLeaderboardFix && verse == 12290) {
 		if turnInDay == 1 {
 			log.Infof("[processor|timezone %v] update leaderboard", timezoneIdx)
