@@ -4,6 +4,7 @@
         "use_zombies": "1",
         "reset_timezone_24": "1",
         "reset_timezone_1": "1",
-        "calculate_leaderboard_fix": "1"
+        "calculate_leaderboard_fix": "1",
+        "verse_12290_skip_update_leaderboard_fix": true
     }
 }
