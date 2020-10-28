@@ -16,6 +16,8 @@ jest.mock('../../HorizonService.js', () => {
         state: 'PAYING',
         stateExtra: 'expired',
         paymentDeadline: dayjs().add(2, 'day').unix(),
+        auctionId:
+          'cb127f7252fb10da3599484d3a33a682e505793f9b590a6c4e2ed6bd36e6a9a9',
       },
       {
         extraPrice: 0,
@@ -26,6 +28,8 @@ jest.mock('../../HorizonService.js', () => {
         state: 'PAYING',
         stateExtra: 'expired',
         paymentDeadline: dayjs().add(2, 'hour').unix(),
+        auctionId:
+          'cb127f7252fb10da3599484d3a33a682e505793f9b590a6c4e2ed6bd36e6a9b9',
       },
     ]),
 
@@ -49,6 +53,36 @@ jest.mock('../../GamelayerService', () => ({
     name: 'Magicians Plus',
     managerName: 'asdas',
   }),
+  getMessages: jest.fn().mockReturnValue([
+    {
+      destinatary: '2748779069616',
+      id: '23',
+      category: 'auction',
+      auctionId:
+        'cb127f7252fb10da3599484d3a33a682e505793f9b590a6c4e2ed6bd36e6a9b9',
+      title: 'undefined',
+      text: 'auction_buyer_wins_auction',
+      customImageUrl: '',
+      metadata:
+        '{"bidderTeamId":"2748779069616", "bidderTeamName":"RED BULL", "amount": "50", "playerId": "2748779076574", "playerName":"undefined", "paymentDeadline":"undefined"}',
+      isRead: false,
+      createdAt: '2020-10-26T15:37:06+00:00',
+    },
+    {
+      destinatary: '2748779069616',
+      id: '25',
+      category: 'auction',
+      auctionId:
+        'cb127f7252fb10da3599484d3a33a682e505793f9b590a6c4e2ed6bd36e6a9b9',
+      title: 'undefined',
+      text: 'auction_buyer_wins_auction',
+      customImageUrl: '',
+      metadata:
+        '{"bidderTeamId":"2748779069616", "bidderTeamName":"RED BULL", "amount": "50", "playerId": "2748779076574", "playerName":"undefined", "paymentDeadline":"undefined"}',
+      isRead: false,
+      createdAt: '2020-10-26T15:37:06+00:00',
+    },
+  ]),
 }));
 
 afterEach(() => {
@@ -60,6 +94,48 @@ test('processPendingPayingBids works correctly', async () => {
 
   expect(HorizonService.getPayingBids).toHaveBeenCalledTimes(1);
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(1);
+  expect(GamelayerService.getMessages).toHaveBeenCalledTimes(1);
   expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(1);
   expect(GamelayerService.setMessage).toHaveBeenCalledTimes(1);
+});
+
+test('processPendingPayingBids works correctly when there is already a pending payment message', async () => {
+  GamelayerService.getMessages.mockReset();
+  GamelayerService.getMessages.mockReturnValue([
+    {
+      destinatary: '2748779069616',
+      id: '23',
+      category: 'auction',
+      auctionId:
+        'cb127f7252fb10da3599484d3a33a682e505793f9b590a6c4e2ed6bd36e6a9b9',
+      title: 'undefined',
+      text: 'auction_buyer_wins_auction',
+      customImageUrl: '',
+      metadata:
+        '{"bidderTeamId":"2748779069616", "bidderTeamName":"RED BULL", "amount": "50", "playerId": "2748779076574", "playerName":"undefined", "paymentDeadline":"undefined"}',
+      isRead: false,
+      createdAt: '2020-10-26T15:37:06+00:00',
+    },
+    {
+      destinatary: '2748779069616',
+      id: '1058',
+      category: 'auction',
+      auctionId:
+        'cb127f7252fb10da3599484d3a33a682e505793f9b590a6c4e2ed6bd36e6a9b9',
+      title: '',
+      text: 'auction_buyer_pending_payment',
+      customImageUrl: '',
+      metadata:
+        '{"amount":"50", "playerId":"2748779076574", "playerName":"Lucas Menendez", "bidderTeamId":"2748779069616", "bidderTeamName":"RED BULL", "paymentDeadline":"1603880321"}',
+      isRead: false,
+      createdAt: '2020-10-28T12:52:00+00:00',
+    },
+  ]);
+  await processPendingPayingBids();
+
+  expect(HorizonService.getPayingBids).toHaveBeenCalledTimes(1);
+  expect(HorizonService.getAuction).toHaveBeenCalledTimes(0);
+  expect(GamelayerService.getMessages).toHaveBeenCalledTimes(1);
+  expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(0);
+  expect(GamelayerService.setMessage).toHaveBeenCalledTimes(0);
 });

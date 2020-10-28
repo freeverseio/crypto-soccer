@@ -1,7 +1,8 @@
 const PostgresSQLService = require('../services/PostgresSQLService');
 
-const selectMessagesQuery = {
-  text: `
+const selectMessagesQuery = ({ auctionId }) => {
+  return {
+    text: `
     SELECT
       id,
       destinatary,
@@ -18,17 +19,21 @@ const selectMessagesQuery = {
     WHERE
       destinatary = $1
       AND created_at >= $2
+      ${auctionId ? 'AND auction_id = $5' : ''}
     LIMIT $3
     OFFSET $4
   `,
+  };
 };
 
-const selectMessages = async ({ destinatary, createdAt, offset, limit }) => {
+const selectMessages = async ({ destinatary, auctionId, createdAt, offset, limit }) => {
   const pool = await PostgresSQLService.getPool();
-  const values = [destinatary, createdAt, limit, offset];
+  const values = auctionId
+    ? [destinatary, createdAt, limit, offset, auctionId]
+    : [destinatary, createdAt, limit, offset];
 
   try {
-    const { rows } = await pool.query(selectMessagesQuery, values);
+    const { rows } = await pool.query(selectMessagesQuery({ auctionId }), values);
     return rows;
   } catch (e) {
     throw e;

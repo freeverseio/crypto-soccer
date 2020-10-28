@@ -99,7 +99,7 @@ const main = async () => {
     }
     
     extend type Query {
-      getMessages(teamId: ID!, limit: Int, offset: Int): Messages!
+      getMessages(teamId: ID!, auctionId: ID, limit: Int, offset: Int): Messages!
       getNumUnreadMessages(teamId : ID!): Int!
       createBid(input: CreateBidInput!): ID!
       getLastTimeLoggedIn(teamId: ID!): String!

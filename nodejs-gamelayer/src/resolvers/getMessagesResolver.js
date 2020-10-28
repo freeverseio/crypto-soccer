@@ -2,7 +2,7 @@ const dayjs = require('dayjs');
 const { selectMessages, selectTeamMailboxStartedAt } = require('../repositories');
 const messagesView = require('../views/message');
 
-const getMessagesResolver = async (_, { teamId, limit, offset }) => {
+const getMessagesResolver = async (_, { teamId, auctionId, limit, offset }) => {
   try {
     limit = parseInt(limit) ? parseInt(limit) : null;
     offset = parseInt(offset) ? parseInt(offset) : 0;
@@ -12,6 +12,7 @@ const getMessagesResolver = async (_, { teamId, limit, offset }) => {
 
     const messages = await selectMessages({
       destinatary: teamId,
+      auctionId,
       createdAt,
       offset,
       limit,

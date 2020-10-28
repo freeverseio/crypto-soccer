@@ -51,6 +51,24 @@ class GamelayerService {
       ? result.allTeams.nodes[0]
       : [];
   }
+
+  async getMessages({ teamId, auctionId }) {
+    const query = gql`
+      {
+        getMessages(teamId: "${teamId}", auctionId: "${auctionId}") {
+          nodes {
+            text
+            auctionId
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.getMessages && result.getMessages.nodes
+      ? result.getMessages.nodes
+      : [];
+  }
 }
 
 module.exports = new GamelayerService();

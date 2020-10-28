@@ -32,7 +32,7 @@ jest.mock('../../HorizonService.js', () => {
         stateExtra: '',
         auctionId:
           'fa3944fc76f6d9b8dc9775ba385dbdbef34b19b0f39e2d37fa728d094885b4f4',
-        extraPrice: 0,
+        extraPrice: 101,
         teamId: '2748779069845',
         paymentUrl: '',
         paymentId: '',
@@ -47,7 +47,7 @@ jest.mock('../../HorizonService.js', () => {
         stateExtra: '',
         auctionId:
           '3829046fe1b9f3a74ad3ee8c28edf2c79761737e785dc22d7339e756449b280a',
-        extraPrice: 0,
+        extraPrice: 49,
         teamId: '2748779069852',
         paymentUrl: '',
         paymentId: '',
@@ -72,7 +72,7 @@ jest.mock('../../HorizonService.js', () => {
             extraPrice: 0,
           },
           {
-            teamId: '2748779069852',
+            teamId: '2748779069853',
             extraPrice: 50,
           },
           {
@@ -80,7 +80,7 @@ jest.mock('../../HorizonService.js', () => {
             extraPrice: 100,
           },
           {
-            teamId: '2748779069852',
+            teamId: '2748779069854',
             extraPrice: 150,
           },
           {
@@ -118,5 +118,5 @@ test('processAcceptedBids works correctly', async () => {
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(3);
   expect(getTeamIdFromAuctionSeller).toHaveBeenCalledTimes(3);
   expect(GamelayerService.getInfoFromTeamId).toHaveBeenCalledTimes(3);
-  expect(GamelayerService.setMessage).toHaveBeenCalledTimes(11);
+  expect(GamelayerService.setMessage).toHaveBeenCalledTimes(6);
 });
