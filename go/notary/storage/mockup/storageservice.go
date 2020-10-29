@@ -13,13 +13,13 @@ type Tx struct {
 	CommitFunc   func() error
 
 	// Auction
-	AuctionPendingAuctionsFunc func() ([]storage.Auction, error)
+	AuctionPendingAuctionsFunc          func() ([]storage.Auction, error)
 	AuctionPendingOrderlessAuctionsFunc func() ([]storage.Auction, error)
-	AuctionFunc                func(ID string) (*storage.Auction, error)
-	AuctionInsertFunc          func(auction storage.Auction) error
-	AuctionUpdateFunc          func(auction storage.Auction) error
-	AuctionCancelFunc          func(ID string) error
-	AuctionsByPlayerIdFunc     func(ID string) ([]storage.Auction, error)
+	AuctionFunc                         func(ID string) (*storage.Auction, error)
+	AuctionInsertFunc                   func(auction storage.Auction) error
+	AuctionUpdateFunc                   func(auction storage.Auction) error
+	AuctionCancelFunc                   func(ID string) error
+	AuctionsByPlayerIdFunc              func(ID string) ([]storage.Auction, error)
 
 	// Bid
 	BidFunc       func(auctionId string, extraPrice int64) (*storage.Bid, error)
@@ -42,6 +42,7 @@ type Tx struct {
 	OfferCancelFunc               func(ID string) error
 	OfferByRndPriceFunc           func(rnd int32, price int32) (*storage.Offer, error)
 	OffersByPlayerIdFunc          func(playerId string) ([]storage.Offer, error)
+	OffersStartedByPlayerIdFunc   func(playerId string) ([]storage.Offer, error)
 	CancelAllOffersByPlayerIdFunc func(playerId string) error
 }
 
@@ -123,6 +124,9 @@ func (b *Tx) OfferByRndPrice(rnd int32, price int32) (*storage.Offer, error) {
 }
 func (b *Tx) OffersByPlayerId(playerId string) ([]storage.Offer, error) {
 	return b.OffersByPlayerIdFunc(playerId)
+}
+func (b *Tx) OffersStartedByPlayerId(playerId string) ([]storage.Offer, error) {
+	return b.OffersStartedByPlayerIdFunc(playerId)
 }
 func (b *Tx) CancelAllOffersByPlayerId(playerId string) error {
 	return b.CancelAllOffersByPlayerIdFunc(playerId)

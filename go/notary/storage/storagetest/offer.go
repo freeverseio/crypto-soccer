@@ -210,6 +210,17 @@ func testOfferServiceInterface(t *testing.T, service storage.StorageService) {
 		assert.NilError(t, err)
 		assert.Equal(t, 1, len(offers))
 
+		offers, err = tx.OffersStartedByPlayerId(offer.PlayerID)
+		assert.NilError(t, err)
+		assert.Equal(t, 1, len(offers))
+
+		offer.State = storage.OfferCancelled
+		assert.NilError(t, tx.OfferUpdate(*offer))
+
+		offers, err = tx.OffersStartedByPlayerId(offer.PlayerID)
+		assert.NilError(t, err)
+		assert.Equal(t, 0, len(offers))
+
 	})
 
 	t.Run("Error on cancel offe not in started state", func(t *testing.T) {

@@ -47,15 +47,20 @@ const processStartedOffers = async ({ offerHistory }) => {
   }
 
   for (const offerer of offerers) {
-    await notifyNewHigherOffer({
-      destinatary: offerer.buyerTeamId,
-      auctionId: offerHistory.auctionId,
-      text: 'offer_buyer_higher_offer',
-      metadata: `{"playerId":"${offerHistory.playerId}", "playerName":"${name}", "offerAmount":"${offerHistory.price}", "offererTeamId":"${offerHistory.buyerTeamId}", "offererTeamName":"${offererTeamName}"}`.replace(
-        /"/g,
-        '\\"'
-      ),
-    });
+    if (
+      offerHistory.price > offerer.price &&
+      offerHistory.buyerTeamId != offerer.buyerTeamId
+    ) {
+      await notifyNewHigherOffer({
+        destinatary: offerer.buyerTeamId,
+        auctionId: offerHistory.auctionId,
+        text: 'offer_buyer_higher_offer',
+        metadata: `{"playerId":"${offerHistory.playerId}", "playerName":"${name}", "offerAmount":"${offerHistory.price}", "offererTeamId":"${offerHistory.buyerTeamId}", "offererTeamName":"${offererTeamName}"}`.replace(
+          /"/g,
+          '\\"'
+        ),
+      });
+    }
   }
 };
 

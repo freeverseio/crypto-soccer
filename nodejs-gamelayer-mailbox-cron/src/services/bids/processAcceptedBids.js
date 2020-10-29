@@ -40,7 +40,7 @@ const processAcceptedBids = async ({ lastChecked }) => {
         for (const bidder of auction.bidsByAuctionId.nodes) {
           if (
             bidder.teamId != bid.teamId &&
-            bid.extraPrice < bidder.extraPrice
+            bid.extraPrice > bidder.extraPrice
           ) {
             await GamelayerService.setMessage({
               destinatary: bidder.teamId,

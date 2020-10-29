@@ -49,3 +49,24 @@ func offerInsertHistory(tx *sql.Tx, offer storage.Offer) error {
 	)
 	return err
 }
+
+func (b *StorageHistoryTx) CancelAllOffersByPlayerId(playerId string) error {
+
+	offers, err := b.Tx.OffersStartedByPlayerId(playerId)
+	if err != nil {
+		return err
+	}
+
+	if err := b.Tx.CancelAllOffersByPlayerId(playerId); err != nil {
+		return err
+	}
+
+	for _, offer := range offers {
+		offer.State = storage.OfferCancelled
+		err = offerInsertHistory(b.Tx.tx, offer)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
