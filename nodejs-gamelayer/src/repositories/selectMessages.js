@@ -20,6 +20,7 @@ const selectMessagesQuery = ({ auctionId }) => {
       destinatary = $1
       AND created_at >= $2
       ${auctionId ? 'AND auction_id = $5' : ''}
+      ORDER BY created_at DESC
     LIMIT $3
     OFFSET $4
   `,

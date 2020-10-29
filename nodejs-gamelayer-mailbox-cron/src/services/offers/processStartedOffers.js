@@ -2,6 +2,7 @@ const notifyNewHigherOffer = require('./notifyNewHigherOffer');
 const GamelayerService = require('../GamelayerService');
 const HorizonService = require('../HorizonService');
 const { mailboxTypes } = require('../../config');
+const logger = require('../../logger');
 
 const processStartedOffers = async ({ offerHistory }) => {
   const offerers = await HorizonService.getOfferersByPlayerId({
@@ -45,12 +46,17 @@ const processStartedOffers = async ({ offerHistory }) => {
         ),
       });
   }
-
+  logger.debug(`Offer History: ${JSON.stringify(offerHistory)}`);
   for (const offerer of offerers) {
+    logger.debug(`Offerer: ${JSON.stringify(offerer)}`);
     if (
       offerHistory.price > offerer.price &&
       offerHistory.buyerTeamId != offerer.buyerTeamId
     ) {
+      logger.debug(
+        `I am notifying buyer higher offer to ${offerer.buyerTeamId}`
+      );
+
       await notifyNewHigherOffer({
         destinatary: offerer.buyerTeamId,
         auctionId: offerHistory.auctionId,
