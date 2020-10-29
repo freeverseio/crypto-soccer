@@ -51,12 +51,13 @@ func offerInsertHistory(tx *sql.Tx, offer storage.Offer) error {
 }
 
 func (b *StorageHistoryTx) CancelAllOffersByPlayerId(playerId string) error {
-	if err := b.Tx.CancelAllOffersByPlayerId(playerId); err != nil {
+
+	offers, err := b.Tx.OffersStartedByPlayerId(playerId)
+	if err != nil {
 		return err
 	}
 
-	offers, err := b.Tx.OffersByPlayerId(playerId)
-	if err != nil {
+	if err := b.Tx.CancelAllOffersByPlayerId(playerId); err != nil {
 		return err
 	}
 
