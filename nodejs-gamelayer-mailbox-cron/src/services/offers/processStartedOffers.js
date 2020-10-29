@@ -50,7 +50,7 @@ const processStartedOffers = async ({ offerHistory }) => {
   for (const offerer of offerers) {
     logger.debug(`Offerer: ${JSON.stringify(offerer)}`);
     if (
-      offerHistory.price > offerer.price &&
+      parseInt(offerHistory.price) > parseInt(offerer.price) &&
       offerHistory.buyerTeamId != offerer.buyerTeamId
     ) {
       logger.debug(
