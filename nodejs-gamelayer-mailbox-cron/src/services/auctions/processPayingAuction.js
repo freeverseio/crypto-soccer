@@ -49,6 +49,7 @@ const processPayingAuction = async ({ auctionHistory }) => {
   const { name: maxBidderTeamName } = await GamelayerService.getInfoFromTeamId({
     teamId: maxBid.teamId,
   });
+  const buyerLosesAuctionTeamsNotified = [];
 
   for (const bid of bids) {
     const { name: playerName } = await HorizonService.getInfoFromPlayerId({
@@ -93,18 +94,24 @@ const processPayingAuction = async ({ auctionHistory }) => {
         }
         break;
       case bidStates.accepted:
-        await GamelayerService.setMessage({
-          destinatary: bid.teamId,
-          category: 'auction',
-          auctionId: auctionHistory.id,
-          title: '',
-          text: 'auction_buyer_loses_auction',
-          customImageUrl: '',
-          metadata: `{"amount": "${totalAmount}", "maxBidderTeamId":"${maxBid.teamId}", "maxBidderTeamName":"${maxBidderTeamName}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
-            /"/g,
-            '\\"'
-          ),
-        });
+        if (
+          !buyerLosesAuctionTeamsNotified.includes(bid.teamId) &&
+          maxBid.teamId != bid.teamId
+        ) {
+          await GamelayerService.setMessage({
+            destinatary: bid.teamId,
+            category: 'auction',
+            auctionId: auctionHistory.id,
+            title: '',
+            text: 'auction_buyer_loses_auction',
+            customImageUrl: '',
+            metadata: `{"amount": "${totalAmount}", "maxBidderTeamId":"${maxBid.teamId}", "maxBidderTeamName":"${maxBidderTeamName}", "playerId": "${auctionHistory.playerId}", "playerName":"${playerName}"}`.replace(
+              /"/g,
+              '\\"'
+            ),
+          });
+          buyerLosesAuctionTeamsNotified.push(bid.teamId);
+        }
         break;
     }
   }
