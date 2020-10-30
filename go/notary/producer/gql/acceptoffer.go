@@ -69,7 +69,7 @@ func (b *Resolver) AcceptOffer(args struct{ Input input.AcceptOfferInput }) (gra
 		return id, errors.New("Auctions can only be created for offers in Started state")
 	}
 
-	existingOffers, err := tx.OffersByPlayerId(args.Input.PlayerId)
+	existingOffers, err := tx.OffersStartedByPlayerId(args.Input.PlayerId)
 	if err != nil {
 		return id, errors.New("could not find existing offers")
 	}
