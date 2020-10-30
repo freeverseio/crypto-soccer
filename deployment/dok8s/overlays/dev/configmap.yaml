@@ -11,7 +11,7 @@ data:
   notary_process_wait: "90"
   authproxy_extra_args: "-backdoor"
   horizon_extra_args: "--enableCors"
-
+  mailbox_cron: "* * * * *"
   PROXY_CONTRACT_ADDRESS: 0x720C10669287462Bb96eFd9bb5220EcfcBfd88cf
 
   BLOCKS_PER_STEP: "10000"

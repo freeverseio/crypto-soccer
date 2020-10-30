@@ -6,6 +6,7 @@ data:
   domain: https://market.goalrevolution.live
   freeverse_password: freeverse
   freeverse_username: freeverse
+  mailbox_cron: 15 * * * *
   market_id: sk_production_AjWbpOPwS3HNi821Ma9mIgA2
   notary_process_wait: "30"
 kind: ConfigMap
@@ -434,7 +435,7 @@ spec:
         - name: LOG_LEVEL
           value: debug
         - name: MAILBOX_CRON
-          value: 15 * * * *
+          value: $(mailbox_cron)
         envFrom:
         - configMapRef:
             name: freeverse-configmap

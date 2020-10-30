@@ -8,6 +8,7 @@ data:
   freeverse_password: freeverse
   freeverse_username: freeverse
   horizon_extra_args: --enableCors
+  mailbox_cron: '* * * * *'
   market_id: ""
   notary_extra_args: -iap_test
   notary_process_wait: "90"
@@ -437,7 +438,7 @@ spec:
         - name: LOG_LEVEL
           value: debug
         - name: MAILBOX_CRON
-          value: 15 * * * *
+          value: $(mailbox_cron)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
