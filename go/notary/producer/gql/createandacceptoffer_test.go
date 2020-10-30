@@ -84,14 +84,14 @@ func TestCreateAndAcceptOfferSuccess(t *testing.T) {
 	mockOffersByPlayerId := []storage.Offer{mockOffer}
 
 	mock := mockup.Tx{
-		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
-		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
-		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
-		BidInsertFunc:          func(bid storage.Bid) error { return nil },
-		CommitFunc:             func() error { return nil },
-		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
-		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
-		OfferUpdateFunc:        func(offer storage.Offer) error { return nil },
+		AuctionInsertFunc:           func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc:      func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:             func(offer storage.Offer) error { return nil },
+		BidInsertFunc:               func(bid storage.Bid) error { return nil },
+		CommitFunc:                  func() error { return nil },
+		OffersStartedByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:                   func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
+		OfferUpdateFunc:             func(offer storage.Offer) error { return nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
@@ -203,13 +203,13 @@ func TestCreateOfferSignedByNotOwnedPlayer(t *testing.T) {
 	mockOffersByPlayerId := []storage.Offer{mockOffer}
 
 	mock := mockup.Tx{
-		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
-		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
-		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
-		BidInsertFunc:          func(bid storage.Bid) error { return nil },
-		CommitFunc:             func() error { return nil },
-		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
-		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
+		AuctionInsertFunc:           func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc:      func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:             func(offer storage.Offer) error { return nil },
+		BidInsertFunc:               func(bid storage.Bid) error { return nil },
+		CommitFunc:                  func() error { return nil },
+		OffersStartedByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:                   func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
@@ -409,14 +409,14 @@ func TestCreateOfferMadeByNotTeamOwner(t *testing.T) {
 	mockOffersByPlayerId := []storage.Offer{mockOffer}
 
 	mock := mockup.Tx{
-		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
-		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
-		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
-		BidInsertFunc:          func(bid storage.Bid) error { return nil },
-		CommitFunc:             func() error { return nil },
-		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
-		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
-		RollbackFunc:           func() error { return nil },
+		AuctionInsertFunc:           func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc:      func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:             func(offer storage.Offer) error { return nil },
+		BidInsertFunc:               func(bid storage.Bid) error { return nil },
+		CommitFunc:                  func() error { return nil },
+		OffersStartedByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:                   func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
+		RollbackFunc:                func() error { return nil },
 	}
 
 	service := &mockup.StorageService{
@@ -599,13 +599,13 @@ func TestCreateAndAcceptOfferFailOnValidUntils(t *testing.T) {
 	mockOffersByPlayerId := []storage.Offer{mockOffer}
 
 	mock := mockup.Tx{
-		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
-		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
-		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
-		BidInsertFunc:          func(bid storage.Bid) error { return nil },
-		CommitFunc:             func() error { return nil },
-		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
-		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
+		AuctionInsertFunc:           func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc:      func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:             func(offer storage.Offer) error { return nil },
+		BidInsertFunc:               func(bid storage.Bid) error { return nil },
+		CommitFunc:                  func() error { return nil },
+		OffersStartedByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:                   func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
@@ -788,14 +788,14 @@ func TestCreateAndAcceptOfferSuccessWithOtherOffersToReject(t *testing.T) {
 	offerUpdateCounter := 0
 
 	mock := mockup.Tx{
-		AuctionInsertFunc:      func(auction storage.Auction) error { return nil },
-		AuctionsByPlayerIdFunc: func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
-		OfferInsertFunc:        func(offer storage.Offer) error { return nil },
-		BidInsertFunc:          func(bid storage.Bid) error { return nil },
-		CommitFunc:             func() error { return nil },
-		OffersByPlayerIdFunc:   func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
-		OfferFunc:              func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
-		OfferUpdateFunc:        func(offer storage.Offer) error { offerUpdateCounter++; return nil },
+		AuctionInsertFunc:           func(auction storage.Auction) error { return nil },
+		AuctionsByPlayerIdFunc:      func(ID string) ([]storage.Auction, error) { return []storage.Auction{}, nil },
+		OfferInsertFunc:             func(offer storage.Offer) error { return nil },
+		BidInsertFunc:               func(bid storage.Bid) error { return nil },
+		CommitFunc:                  func() error { return nil },
+		OffersStartedByPlayerIdFunc: func(playerId string) ([]storage.Offer, error) { return mockOffersByPlayerId, nil },
+		OfferFunc:                   func(offerID string) (*storage.Offer, error) { return &mockOffer, nil },
+		OfferUpdateFunc:             func(offer storage.Offer) error { offerUpdateCounter++; return nil },
 	}
 	service := &mockup.StorageService{
 		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
