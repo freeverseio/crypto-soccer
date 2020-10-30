@@ -220,6 +220,9 @@ func (b *Resolver) CancelRemainingOffers(tx storage.Tx, highestOffer *storage.Of
 		if highestOffer.AuctionID != offer.AuctionID {
 			offer.State = storage.OfferCancelled
 			offer.StateExtra = "Cancelled by accepting a higher offer"
+			if highestOffer.BuyerTeamID == offer.BuyerTeamID {
+				offer.StateExtra = "omit mailbox: Cancelled by accepting a higher offer"
+			}
 			err := tx.OfferUpdate(offer)
 			if err != nil {
 				return err
