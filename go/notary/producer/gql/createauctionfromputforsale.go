@@ -72,6 +72,11 @@ func CreateAuctionFromPutForSale(tx storage.Tx, in input.CreatePutPlayerForSaleI
 		return err
 	}
 	auction.Seller = signerAddress.Hex()
+
+	if err := tx.CancelAllOffersByPlayerId(in.PlayerId); err != nil {
+		return err
+	}
+
 	if err = tx.AuctionInsert(*auction); err != nil {
 		return err
 	}
