@@ -457,12 +457,12 @@ contract('Evolution', (accounts) => {
         // Team0: show that the two yellows became 1 yellow and 1 red. And that 2nd team had no cards at all.
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54956, 8, 3, 8, 8, 14 ];
+        expct = [ 0, 8, 3, 8, 8, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54978, 14, 0, 0, 14, 14 ];
+        expct = [ 0, 14, 0, 0, 14, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
 
         seed = '0xe52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71';startTime = '1790899200';matchLog0 = '1809252841225230840719990802586915413221463612302449923019351491021792870400';teamId0 = '274877906944';tactic0 = '340596594427581673436941882753025';assignedTP0 = '0';players0 = ['444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215348664084887401221731547818249502887980205736758','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215337246103345753542683081530493906926889143763766','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270','444839120007985571215331537112574929703158848386616108946343612777270',];matchLog1 = '1809252842383666049074119856298496506341924193632611326497576041530278307731';teamId1 = '274877906945';tactic1 = '340596594427581673436941882753025';assignedTP1 = '0';players1 = ['13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512357567640649784837729749092819920993002307781397','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901','13479973333575334512351858649878960998205515948942123012456776794901',];        
@@ -473,12 +473,12 @@ contract('Evolution', (accounts) => {
         // same for 2nd half
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = true).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54956, 7, 3, 8, 7, 14 ];
+        expct = [ 89928, 7, 3, 8, 7, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = true).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54978, 14, 0, 0, 14, 14 ];
+        expct = [ 89964, 14, 0, 0, 14, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
 
 
@@ -594,7 +594,7 @@ contract('Evolution', (accounts) => {
         // we should therefore expect: 106 * 33022 / 55000 = 63
         expectedGoals = [4, 0];
         expectedPoints = [58, 10];
-        expectedSums = [55000,33022];
+        expectedSums = [90000,54036];
         expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
         expectedAss = [ 6, 10, 6, 9, 8, 6, 10, 6, 9 ];   
@@ -720,7 +720,7 @@ contract('Evolution', (accounts) => {
         // we should therefore expect: 106 * 33022 / 55000 = 63
         expectedGoals = [3,0];
         expectedPoints = [45,11];
-        expectedSums = [55000,33000];
+        expectedSums = [90000, 54000];
         expectedFwds = [ 1, 3, 2 ];     
         expectedSho = [ 1, 10, 7];     
         expectedAss = [ 6, 10, 8 ];   
@@ -752,13 +752,13 @@ contract('Evolution', (accounts) => {
         }        
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
-        sumSkills.toNumber().should.be.equal(55000);
+        sumSkills.toNumber().should.be.equal(0);
         outPlayer.toNumber().should.be.equal(14);
         yellow1.toNumber().should.be.equal(14);
         yellow2.toNumber().should.be.equal(14);
 
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
-        sumSkills.toNumber().should.be.equal(33000);
+        sumSkills.toNumber().should.be.equal(0);
 
         for (team = 0; team < 2; team++) {
             result = await assets.getAlignedEndOfFirstHalf(skills[team][0]).should.be.fulfilled;
@@ -834,12 +834,12 @@ contract('Evolution', (accounts) => {
         // same for 2nd half
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[0], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54962, 7, 3, 8, 7, 14 ];
+        expct = [ 0, 7, 3, 8, 7, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
         
         var {0: sumSkills , 1: winner, 2: nGoals, 3: TPs, 4: outPlayer, 5: typeOut, 6: outRounds, 7: yellow1, 8: yellow2, 9: subs1, 10: subs2, 11: subs3 } = await utils.fullDecodeMatchLog(matchLogsAndEvents[1], is2nd = false).should.be.fulfilled;
         result = [sumSkills, outPlayer, typeOut, outRounds, yellow1, yellow2];
-        expct = [ 54989, 14, 0, 0, 14, 14 ];
+        expct = [ 0, 14, 0, 0, 14, 14 ];
         debug.compareArrays(result, expct, toNum = true, isBigNumber = false);
     });
     
@@ -1815,7 +1815,7 @@ contract('Evolution', (accounts) => {
 
         // check Training Points (and Goals)
         expectedGoals = [5, 5];
-        expectedPoints = [36, 22];
+        expectedPoints = [39, 21];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
