@@ -37,6 +37,10 @@ const processAuctionHistories = async () => {
   );
 
   if (areNewHistories) {
+    await processAcceptedBids({
+      lastChecked: dayjs(auctionLastChecked).add(1, 'second').format(),
+    });
+
     for (const auctionHistory of lastAuctionsHistories) {
       try {
         switch (auctionHistory.state.toLowerCase()) {
@@ -54,9 +58,6 @@ const processAuctionHistories = async () => {
         logger.error(e);
       }
     }
-    await processAcceptedBids({
-      lastChecked: dayjs(auctionLastChecked).add(1, 'second').format(),
-    });
   }
 };
 
