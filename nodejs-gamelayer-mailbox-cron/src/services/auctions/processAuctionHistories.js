@@ -55,7 +55,7 @@ const processAuctionHistories = async () => {
       }
     }
     await processAcceptedBids({
-      lastChecked: dayjs(auctionLastChecked).format(),
+      lastChecked: dayjs(auctionLastChecked).add(1, 'second').format(),
     });
   }
 };
