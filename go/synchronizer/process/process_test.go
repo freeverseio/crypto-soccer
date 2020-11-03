@@ -187,3 +187,28 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Wrong numnber of match events > 54*34 %v", matchEventsCount)
 	}
 }
+
+func TestProcessorProcessWithDataInDB(t *testing.T) {
+	t.Parallel()
+	tx, err := universedb.Begin()
+	assert.NilError(t, err)
+
+	p := process.NewEventProcessor(
+		bc.Client,
+		bc.Contracts.ProxyAddress,
+		namesdb,
+		useractionsPublishService,
+		nil,
+	)
+	log.SetLevel(log.DebugLevel)
+	_, err = p.Process(tx, 10)
+	assert.NilError(t, err)
+
+	if err != nil {
+		log.Infof("Just before rollback %v", err)
+		tx.Rollback()
+	}
+	log.Infof("Just before commit")
+	tx.Commit()
+	log.Infof("Just after commit")
+}
