@@ -97,16 +97,6 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
         return getNTot(matchLog, false) + getNTot(matchLog, true) + getNGKAndDefs(matchLog, false) + getNGKAndDefs(matchLog, true) ;
     }
     
-    function computeTeamQuality(uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills) public pure returns (uint256 quality) {
-        uint256 skills;
-        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            skills = teamSkills[p];
-            if (skills != 0) {
-                for (uint8 sk = 0; sk < N_SKILLS; sk++) quality += getSkill(skills, sk); 
-            }
-        }
-    }
-    
     /// +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
     function pointsPerWhoScoredGoalsAndAssists(uint256 matchLog, uint256 nGoals) public pure returns(uint256 points) {
         for (uint8 goal = 0; goal < nGoals; goal++) {
