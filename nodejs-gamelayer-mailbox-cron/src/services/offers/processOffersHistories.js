@@ -5,12 +5,16 @@ const processStartedOffers = require('./processStartedOffers');
 const selectLastChecked = require('../../repositories/selectLastChecked');
 const updateLastChecked = require('../../repositories/updateLastChecked');
 const HorizonService = require('../HorizonService');
-const { mailboxTypes, offerStates } = require('../../config');
+const {
+  mailboxTypes,
+  offerStates,
+  mailboxCronEntities,
+} = require('../../config');
 const logger = require('../../logger');
 
 const processOffersHistories = async () => {
   const offerLastChecked = await selectLastChecked({
-    entity: mailboxTypes.offer,
+    entity: mailboxCronEntities.offer,
   });
 
   const lastOffersHistories = await HorizonService.getLastOfferHistories({

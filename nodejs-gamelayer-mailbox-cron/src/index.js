@@ -3,10 +3,12 @@ const { MAILBOX_CRON } = require('./config');
 const processOffersHistories = require('./services/offers/processOffersHistories');
 const processAuctionHistories = require('./services/auctions/processAuctionHistories');
 const processPendingPayingBids = require('./services/bids/processPendingPayingBids');
+const processBidsHistories = require('./services/bids/processBidsHistories');
 const logger = require('./logger');
 
 cron.schedule(MAILBOX_CRON, async () => {
   logger.info('Initiating mailbox events polling...');
+  await processBidsHistories();
   await processAuctionHistories();
   await processOffersHistories();
   await processPendingPayingBids();

@@ -3,13 +3,7 @@ const GamelayerService = require('../GamelayerService');
 const logger = require('../../logger');
 const getTeamIdFromAuctionSeller = require('../auctions/getTeamIdFromAuctionSeller');
 
-const processAcceptedBids = async ({ lastChecked }) => {
-  const bids = await HorizonService.getLastAcceptedBidsHistories({
-    lastChecked,
-  });
-
-  logger.info(`Processing Accepted Bids`);
-
+const processAcceptedBids = async ({ bids }) => {
   for (const bid of bids) {
     try {
       const auction = await HorizonService.getAuction({
