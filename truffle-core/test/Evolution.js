@@ -97,7 +97,7 @@ contract('Evolution', (accounts) => {
     const nTot = 11; 
     const winner = 2; // DRAW = 2
     const isHomeSt = false;
-    const teamSumSkillsDefault = 0;
+    const teamSumSkillsDefault = 1;
     const trainingPointsInit = 0;
     const N_SKILLS = 5;
 
