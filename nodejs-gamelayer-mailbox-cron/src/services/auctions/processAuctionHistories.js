@@ -4,13 +4,17 @@ const processWithdrawableBySellerAuction = require('./processWithdrawableBySelle
 const selectLastChecked = require('../../repositories/selectLastChecked');
 const updateLastChecked = require('../../repositories/updateLastChecked');
 const HorizonService = require('../HorizonService');
-const { mailboxTypes, auctionStates } = require('../../config');
+const {
+  mailboxTypes,
+  auctionStates,
+  mailboxCronEntities,
+} = require('../../config');
 const logger = require('../../logger');
 const processAcceptedBids = require('../bids/processAcceptedBids');
 
 const processAuctionHistories = async () => {
   const auctionLastChecked = await selectLastChecked({
-    entity: mailboxTypes.auction,
+    entity: mailboxCronEntities.auction,
   });
 
   const lastAuctionsHistories = await HorizonService.getLastAuctionsHistories({
@@ -37,10 +41,6 @@ const processAuctionHistories = async () => {
   );
 
   if (areNewHistories) {
-    await processAcceptedBids({
-      lastChecked: dayjs(auctionLastChecked).add(1, 'second').format(),
-    });
-
     for (const auctionHistory of lastAuctionsHistories) {
       try {
         switch (auctionHistory.state.toLowerCase()) {
