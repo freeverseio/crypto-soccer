@@ -23,9 +23,8 @@ contract('Privileged', (accounts) => {
         return secs/ (24 * 3600);
     }
     
-    function dayOfBirthToAgeYears(dayOfBirth){ 
-        const now = Math.floor(new Date()/1000);
-        ageYears = (secsToDays(now) - dayOfBirth)*7/365;
+    function dayOfBirthToAgeYears(dayOfBirth, nowInDays){ 
+        ageYears = (nowInDays - dayOfBirth)*14/365;
         return ageYears;
     }
     
@@ -59,22 +58,22 @@ contract('Privileged', (accounts) => {
             mod = await privileged.ageModifier(age).should.be.fulfilled;
             mods.push(mod);
         }
-        expectedMods = [ 11500, 11110, 10720, 10330, 9940, 9550, 8050, 6550 ];
+        expectedMods = [ 17000, 15602, 14204, 12806, 11408, 10000, 7600, 5200 ];
         debug.compareArrays(mods, expectedMods, toNum = true);
     });
-    
+
     it('creating buyNow players: potentialModifier', async () =>  {
         mods = [];
         for (pot = 0; pot < 10; pot++) {
             mod = await privileged.potentialModifier(pot).should.be.fulfilled;
             mods.push(mod);
         }
-        expectedMods = [ 8500, 8833, 9166, 9500, 9833, 10166, 10500, 10833, 11166, 11500 ];
+        expectedMods = [ 5000, 6200, 7400, 8600, 9800, 11000, 12200, 13400, 14600, 15800 ];
         debug.compareArrays(mods, expectedMods, toNum = true);
     });
     
     it('creating one buyNow player', async () =>  {
-        expectedSkills = [ 1526, 963, 1080, 875, 1547 ];
+        expectedSkills = [ 2325, 1468, 1646, 1333, 2358 ];
         expectedTraits = [0, 3, 6, 2];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(playerValue = 1000, maxPot = 9, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
@@ -114,7 +113,7 @@ contract('Privileged', (accounts) => {
     });
 
     it('creating a batch of buyNow players', async () =>  {
-        expectedSkills = [ 797, 1093, 1257, 737, 1017 ];
+        expectedSkills = [ 665, 912, 1048, 615, 848 ];
         expectedTraits = [ 3, 3, 3, 1 ];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,2];
@@ -160,10 +159,10 @@ contract('Privileged', (accounts) => {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [10,10,10,10];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1000, maxPot = 9, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+            playerValue = 1800, maxPot = 9, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
         h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
-        assert.equal(h, '0x3e31ab49397c9131c1c8f4fff3ab9ecb25176a71f9252d42c6d72cfcb8732fcd', "createBuyNowPlayerIdBatch not as expected");
+        assert.equal(h, '0xc70729c165b3f583cf654dbab489dab5fb5d21ff63e22d30704ad5bcdc01cedf', "createBuyNowPlayerIdBatch not as expected");
 
         if (false) {
             // traits: shoot, speed, pass, defence, endurance
@@ -175,7 +174,7 @@ contract('Privileged', (accounts) => {
                 st += labels[pos];
                 for (p = 0; p < nPlayersPerForwardPos[pos]; p++) {
                     st += "\nPot: " + traitsArray[counter][0];
-                    st += " | Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter]));
+                    st += " | Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter].toNumber(), epochInDays));
                     st += " | Shoot: " + skillsArray[counter][0];
                     st += " | Speed: " + skillsArray[counter][1];
                     st += " | Pass: " + skillsArray[counter][2];
