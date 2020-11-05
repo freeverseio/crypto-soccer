@@ -14,8 +14,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeTeamSumSkills: (uint32) 54956,
-VisitorTeamSumSkills: (uint32) 54978,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) (len=4) "half",
 StateExtra: (string) "",
 StartEpoch: (int64) 0
@@ -42,7 +42,7 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "452313210304731052874510216384546863227876772543978085303767934482287427584",
+MatchLog: (string) (len=75) "452312848583337244297713205710601276740859365219049158267708053737657335808",
 IsZombie: (bool) false
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
@@ -710,7 +710,7 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "452313210449535453918776347811589108137143560532918219528522925453181190144",
+MatchLog: (string) (len=75) "452312848583337244297713205428006233585079308769508536316708016733873504256",
 IsZombie: (bool) false
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
@@ -1540,8 +1540,8 @@ Seed: ([32]uint8) (len=32 cap=32) {
 },
 HomeGoals: (uint8) 0,
 VisitorGoals: (uint8) 0,
-HomeTeamSumSkills: (uint32) 54956,
-VisitorTeamSumSkills: (uint32) 54978,
+HomeTeamSumSkills: (uint32) 0,
+VisitorTeamSumSkills: (uint32) 0,
 State: (storage.MatchState) (len=4) "half",
 StateExtra: (string) "",
 StartEpoch: (int64) 0
@@ -1568,7 +1568,7 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "452313210304731052874510216378837872457052933019744941425969953936756441088",
+MatchLog: (string) (len=75) "452312848583337244297713205704892285970035525694816014389910073192126349312",
 IsZombie: (bool) false
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
@@ -2236,7 +2236,7 @@ PrevPerfPoints: (uint64) 0,
 RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 0,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
-MatchLog: (string) (len=75) "452313210449535453918776348091331689434936416748599926667277984431031189504",
+MatchLog: (string) (len=75) "452312848583337244297713205707748814882872164985190243455463075711723503616",
 IsZombie: (bool) false
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
