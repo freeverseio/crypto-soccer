@@ -42,21 +42,21 @@ func generateBatchDistribution(teamId string, periodNumber int64) []WorldPlayers
 	// - has a fixed number of players, and fixed distribution of field position
 	// - maxPotential 80%
 	tier := WorldPlayersTier{
-		Value:            1000,
+		Value:            1200,
 		MaxPotential:     7,
 		ProductId:        "player_tier_1",
 		GoalKeepersCount: 3,
-		DefendersCount:   9,
-		MidfieldersCount: 9,
-		AttackersCount:   9,
+		DefendersCount:   6,
+		MidfieldersCount: 6,
+		AttackersCount:   6,
 	}
 	tiers = append(tiers, tier)
 
 	// Tier2:
-	// - a fixed number (2) of players, with field position distributed randomly
+	// - a fixed number of players, with field position distributed randomly
 	// - maxPotential 90%
 	tier = WorldPlayersTier{
-		Value:            1800,
+		Value:            2200,
 		MaxPotential:     8,
 		ProductId:        "player_tier_2",
 		GoalKeepersCount: 0,
@@ -64,16 +64,16 @@ func generateBatchDistribution(teamId string, periodNumber int64) []WorldPlayers
 		MidfieldersCount: 0,
 		AttackersCount:   0,
 	}
-	randomPosPlayersCount := int64(2)
+	randomPosPlayersCount := int64(4)
 	tier = addPlayerAtRandomFieldPos(tier, seed, randomPosPlayersCount)
 	tiers = append(tiers, tier)
 
 	// Tier3
-	// - variable number of players (1/3 of possibility to be 1, otherwise 0),
+	// - a fixed number of players, with field position distributed randomly
 	// - field position distributed randomly
 	// - maxPotential 100%
 	tier = WorldPlayersTier{
-		Value:            2500,
+		Value:            3500,
 		MaxPotential:     9,
 		ProductId:        "player_tier_3",
 		GoalKeepersCount: 0,
@@ -81,11 +81,7 @@ func generateBatchDistribution(teamId string, periodNumber int64) []WorldPlayers
 		MidfieldersCount: 0,
 		AttackersCount:   0,
 	}
-	if intHash(seed)%3 == 0 {
-		randomPosPlayersCount = int64(1)
-	} else {
-		randomPosPlayersCount = int64(0)
-	}
+	randomPosPlayersCount = int64(3)
 	tier = addPlayerAtRandomFieldPos(tier, seed+"salt", randomPosPlayersCount)
 	tiers = append(tiers, tier)
 
