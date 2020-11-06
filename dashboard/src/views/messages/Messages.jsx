@@ -44,8 +44,8 @@ export default () => {
       <Form onSubmit={handleSubmit}>
         <Form.Input fluid label="Category" value={category} onChange={e => setCategory(e.target.value)} error={category === ""} />
         <Form.Input fluid label="Title" value={title} onChange={e => setTitle(e.target.value)} error={title === ""} />
-        <Form.TextArea label="Body" value={text} onChange={e => setText(e.target.value)} rows="10" />
-        <Form.Button active={category !== "" && title !== ""}>Submit</Form.Button>
+        <Form.TextArea label="Body" value={text} onChange={e => setText(e.target.value)} rows="10" error={text === ""} />
+        <Form.Button active={category !== "" && title !== "" && text !== ""}>Submit</Form.Button>
       </Form>
     </Container>
   )
