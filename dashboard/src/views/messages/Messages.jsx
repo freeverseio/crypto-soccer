@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { Container, Form } from 'semantic-ui-react';
 import { useState } from 'react';
 
-const SEND_MESSADE = gql`
+const SEND_MESSAGE = gql`
   mutation SetBroadcastMessage(
     $category: String!,
     $title: String!,
@@ -22,29 +22,30 @@ const SEND_MESSADE = gql`
 `;
 
 export default () => {
-  const [sendMessage] = useMutation(SEND_MESSADE);
+  const [sendMessage, { error }] = useMutation(SEND_MESSAGE);
   const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
 
-  const handleSubmit = () => {
+  function handleSubmit() {
     sendMessage({
       variables: {
         category: category,
         title: title,
         text: text,
       }
-    })
-    .catch(console.error);
+    }).catch(console.error);
   }
+
+  if (error) return `Error! ${error.message}`;
 
   return (
     <Container>
       <Form onSubmit={handleSubmit}>
-        <Form.Input fluid label="Category" value={category} onChange={e => setCategory(e.value)} />
-        <Form.Input fluid label="Title" value={title} onChange={e => setTitle(e.value)} />
-        <Form.TextArea label="Body" value={text} onChange={e => setText(e.value)} rows="10" />
-        <Form.Button>Submit</Form.Button>
+        <Form.Input fluid label="Category" value={category} onChange={e => setCategory(e.target.value)} error={category === ""} />
+        <Form.Input fluid label="Title" value={title} onChange={e => setTitle(e.target.value)} error={title === ""} />
+        <Form.TextArea label="Body" value={text} onChange={e => setText(e.target.value)} rows="10" error={text === ""} />
+        <Form.Button active={category !== "" && title !== "" && text !== ""}>Submit</Form.Button>
       </Form>
     </Container>
   )
