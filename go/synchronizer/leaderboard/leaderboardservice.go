@@ -48,7 +48,7 @@ func UpdateLeagueLeaderboard(
 	matches [56]storage.Match,
 	teams [8]storage.Team,
 ) ([8]storage.Team, error) {
-	// log.Infof("UpdateLeagueLeaderboard matches %+v, teams %+v", matches, teams)
+	log.Infof("UpdateLeagueLeaderboard matches %+v, teams %+v", matches, teams)
 
 	timezoneIdx := matches[0].TimezoneIdx
 	countryIdx := matches[0].CountryIdx
@@ -105,7 +105,7 @@ func (b LeaderboardService) UpdateTimezoneLeaderboards(
 	timezone int,
 	matchDay int,
 ) error {
-	log.Debugf("UpdateTimezoneLeaderboard timezone %v matchDay %v", timezone, matchDay)
+	log.Infof("UpdateTimezoneLeaderboard timezone %v matchDay %v", timezone, matchDay)
 	matches, err := b.service.MatchService().MatchesByTimezone(uint8(timezone))
 	if err != nil {
 		return err

@@ -1,12 +1,12 @@
-version: '3'
+version: "3"
 services:
-  ethereum: 
+  ethereum:
     build: ../../docker/ethereum-xdai-dev
     # build: ../../docker/ethereum-node-test
-    ports: 
+    ports:
       - "8545:8545"
   universe.db:
-    build: ../../.idea/universe.db.with.data/
+    image: freeverseio/universe.db.with.data:latest
     ports:
       - "5432:5432"
   ipfs.node:
@@ -25,7 +25,7 @@ services:
     image: ipfs/ipfs-cluster:v0.13.0
     restart: always
     # entrypoint: ["ipfs-cluster-follow"]
-    environment: 
+    environment:
       CLUSTER_IPFSHTTP_NODEMULTIADDRESS: /dns4/ipfs.node/tcp/5001
       CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9094
       CLUSTER_IPFSPROXY_LISTENMULTIADDRESS: /ip4/0.0.0.0/tcp/9095
@@ -35,5 +35,7 @@ services:
       - "127.0.0.1:9094:9094"
       - "127.0.0.1:9095:9095"
       - "127.0.0.1:9096:9096"
-    depends_on: 
+    depends_on:
       - ipfs.node
+volumes:
+  universe.db-data:

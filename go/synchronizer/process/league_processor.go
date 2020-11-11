@@ -8,9 +8,9 @@ import (
 	"math/big"
 	"sort"
 
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"github.com/spf13/viper"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"github.com/pkg/errors"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -201,15 +201,17 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
 	}
-
 	verse12290SkipUpdateLeaderboardFix := viper.GetBool("patch.verse_12290_skip_update_leaderboard_fix")
 	verse12328SkipUpdateLeaderboardFix := viper.GetBool("patch.verse_12328_skip_update_leaderboard_fix")
+	log.Infof("verse12290SkipUpdateLeaderboardFix %v", verse12290SkipUpdateLeaderboardFix)
+	log.Infof("verse12328SkipUpdateLeaderboardFix %v", verse12328SkipUpdateLeaderboardFix)
+	log.Infof("verse %v", verse)
 	if !(verse12290SkipUpdateLeaderboardFix && verse == 12290) {
 		if !(verse12328SkipUpdateLeaderboardFix && verse == 12328) {
 			if turnInDay == 1 {
 				log.Infof("[processor|timezone %v] update leaderboard", timezoneIdx)
 				leaderboardService := leaderboard.NewLeaderboardService(storagepostgres.NewStorageService(tx))
-
+				log.Infof("hola")
 				verseCalculateLeaderboardFix := viper.GetUint64("patch.calculate_leaderboard_fix")
 
 				if verse < verseCalculateLeaderboardFix {

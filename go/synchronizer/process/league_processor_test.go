@@ -15,6 +15,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/useractions"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestProcessInvalidTimezone(t *testing.T) {
@@ -101,6 +102,58 @@ func TestLeagueProcessMatch(t *testing.T) {
 		types.Log{BlockNumber: 1001},
 	})
 	assert.NilError(t, err)
+}
+
+//Only run when universe db is loaded with data in tz 10
+func TestLeagueProcessMatchWithData(t *testing.T) {
+	t.Parallel()
+	tx, err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	log.SetLevel(log.TraceLevel)
+	timezoneIdx := uint8(10)
+	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
+	day := uint8(0)
+	seed := [32]byte{0x2}
+	turnInDay := uint8(0)
+	gameDeployDay, err := bc.Contracts.Assets.GameDeployDay(&bind.CallOpts{})
+	assert.NilError(t, err)
+	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
+	ua := useractions.UserActions{}
+	cid, err := useractionsPublishService.Publish(ua)
+	assert.NilError(t, err)
+	root, err := ua.Root()
+	assert.NilError(t, err)
+	err = processor.Process(tx, updates.UpdatesActionsSubmission{
+		big.NewInt(12913),
+		timezoneIdx,
+		day,
+		turnInDay,
+		seed,
+		big.NewInt(actionsSubmissionTime),
+		root,
+		cid,
+		types.Log{BlockNumber: 1000},
+	})
+	assert.NilError(t, err)
+	// turnInDay = 1
+	// err = processor.Process(tx, updates.UpdatesActionsSubmission{
+	// 	big.NewInt(12914),
+	// 	timezoneIdx,
+	// 	day,
+	// 	turnInDay,
+	// 	seed,
+	// 	big.NewInt(actionsSubmissionTime),
+	// 	root,
+	// 	cid,
+	// 	types.Log{BlockNumber: 1001},
+	// })
+	// assert.NilError(t, err)
+	// log.Infof("Just before commit")
+	// tx.Commit()
+	// log.Infof("Just after commit")
 }
 
 func TestGenerateOrgMapWithoutBots(t *testing.T) {
