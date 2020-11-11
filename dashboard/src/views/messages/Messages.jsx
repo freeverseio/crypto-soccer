@@ -34,7 +34,12 @@ export default () => {
         title: title,
         text: text,
       }
-    }).catch(console.error);
+    }).catch(console.error)
+      .then(() => {
+        setCategory("");
+        setText("");
+        setTitle("");
+      })
   }
 
   if (error) return `Error! ${error.message}`;
