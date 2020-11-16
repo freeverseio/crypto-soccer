@@ -5,11 +5,11 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
+	"gopkg.in/src-d/go-log.v1"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
-	"github.com/prometheus/common/log"
 )
 
 func UpdateLeagueLeaderboardFrom1200(
@@ -18,7 +18,7 @@ func UpdateLeagueLeaderboardFrom1200(
 	matches [56]storage.Match,
 	teams [8]storage.Team,
 ) ([8]storage.Team, error) {
-	log.Infof("UpdateLeagueLeaderboard matches %+v, teams %+v", matches, teams)
+	// log.Infof("UpdateLeagueLeaderboard matches %+v, teams %+v", matches, teams)
 
 	timezoneIdx := matches[0].TimezoneIdx
 	countryIdx := matches[0].CountryIdx
@@ -52,7 +52,7 @@ func UpdateLeagueLeaderboardFrom1200(
 		teamIdxInLeague[i] = big.NewInt(int64(i))
 	}
 
-	log.Infof("Calling ComputeLeagueLeaderboard %v %v %v", teamIdxInLeague, results, matchDay)
+	// log.Infof("Calling ComputeLeagueLeaderboard %v %v %v", teamIdxInLeague, results, matchDay)
 	llb, err := contracts.Leagues.ComputeLeagueLeaderBoard(
 		&bind.CallOpts{},
 		teamIdxInLeague,
@@ -60,7 +60,6 @@ func UpdateLeagueLeaderboardFrom1200(
 		uint8(matchDay),
 	)
 	if err != nil {
-		log.Infof("So error, %v ", err)
 		return [8]storage.Team{}, errors.Wrapf(err, "failed calling the BC teamIdxInLeague %v , results %v, matchDay %v", teamIdxInLeague, results, matchDay)
 	}
 
@@ -76,7 +75,7 @@ func (b LeaderboardService) UpdateTimezoneLeaderboardsNew(
 	timezone int,
 	matchDay int,
 ) error {
-	log.Infof("UpdateTimezoneLeaderboard timezone %v matchDay %v", timezone, matchDay)
+	log.Debugf("UpdateTimezoneLeaderboard timezone %v matchDay %v", timezone, matchDay)
 	matches, err := b.service.MatchService().MatchesByTimezone(uint8(timezone))
 	if err != nil {
 		return err

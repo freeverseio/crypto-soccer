@@ -83,7 +83,6 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	log.Infof("Last processed block %v", lastProcessedBlock)
 	if lastProcessedBlock == 0 {
 		bigBangEvent, err := p.getFirstDeployEvent(p.proxyContractAddress)
 		if err != nil {
@@ -119,7 +118,6 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 	if p.contracts, err = contracts.NewFromStorage(p.Client, tx); err != nil {
 		return 0, err
 	}
-	log.Infof("Before process 2")
 	return p.Process2(tx, delta)
 }
 
