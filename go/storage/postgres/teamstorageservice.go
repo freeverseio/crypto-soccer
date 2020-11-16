@@ -56,12 +56,12 @@ func (b TeamStorageService) TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx ui
 	return storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(b.tx, timezoneIdx, countryIdx, leagueIdx)
 }
 
-func (b TeamStorageService) TeamUpdateZombies() error {
+func (b TeamStorageService) TeamUpdateZombies(timezoneIdx uint8, countryIdx uint32) error {
 
-	return storage.TeamUpdateZombies(b.tx)
+	return storage.TeamUpdateZombies(b.tx, timezoneIdx, countryIdx)
 }
 
-func (b TeamStorageService) TeamCleanZombies() error {
+func (b TeamStorageService) TeamCleanZombies(timezoneIdx uint8, countryIdx uint32) error {
 
-	return storage.TeamCleanZombies(b.tx)
+	return storage.TeamCleanZombies(b.tx, timezoneIdx, countryIdx)
 }

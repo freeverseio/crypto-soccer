@@ -13,8 +13,8 @@ type TeamStorageService struct {
 	UpdateManagerNameFunc                     func(teamId string, name string) error
 	UpdateLeaderboardPositionFunc             func(teamId string, position int) error
 	TeamsByTimezoneIdxCountryIdxLeagueIdxFunc func(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error)
-	TeamUpdateZombiesFunc                     func() error
-	TeamCleanZombiesFunc                      func() error
+	TeamUpdateZombiesFunc                     func(timezoneIdx uint8, countryIdx uint32) error
+	TeamCleanZombiesFunc                      func(timezoneIdx uint8, countryIdx uint32) error
 }
 
 func (b TeamStorageService) Team(teamId string) (*storage.Team, error) {
@@ -59,16 +59,16 @@ func (b TeamStorageService) TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx ui
 	return b.TeamsByTimezoneIdxCountryIdxLeagueIdxFunc(timezoneIdx, countryIdx, leagueIdx)
 }
 
-func (b TeamStorageService) TeamUpdateZombies() error {
+func (b TeamStorageService) TeamUpdateZombies(timezoneIdx uint8, countryIdx uint32) error {
 	if b.TeamUpdateZombiesFunc == nil {
 		return errors.New("TeamStorageService::TeamUpdateZombies is nil")
 	}
-	return b.TeamUpdateZombiesFunc()
+	return b.TeamUpdateZombiesFunc(timezoneIdx, countryIdx)
 }
 
-func (b TeamStorageService) TeamCleanZombies() error {
+func (b TeamStorageService) TeamCleanZombies(timezoneIdx uint8, countryIdx uint32) error {
 	if b.TeamCleanZombiesFunc == nil {
 		return errors.New("TeamStorageService::TeamCleanZombies is nil")
 	}
-	return b.TeamCleanZombiesFunc()
+	return b.TeamCleanZombiesFunc(timezoneIdx, countryIdx)
 }

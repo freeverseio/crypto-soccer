@@ -42,8 +42,8 @@ type TeamStorageService interface {
 	UpdateManagerName(teamId string, name string) error
 	UpdateLeaderboardPosition(teamId string, position int) error
 	TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error)
-	TeamUpdateZombies() error
-	TeamCleanZombies() error
+	TeamUpdateZombies(timezoneIdx uint8, countryIdx uint32) error
+	TeamCleanZombies(timezoneIdx uint8, countryIdx uint32) error
 }
 
 func NewTeam() *Team {
@@ -291,12 +291,12 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	return team, nil
 }
 
-func TeamUpdateZombies(tx *sql.Tx) error {
+func TeamUpdateZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("[DBMS] TeamUpdateZombies")
 	query := `
 	UPDATE teams 
 	SET    is_zombie = true 
-	WHERE  team_id IN (SELECT sq.team_id 
+	WHERE  timezone_idx = $1 AND country_idx = $2 AND team_id IN (SELECT sq.team_id 
 					   FROM   (SELECT tc.team_id, 
 									  Count(tc.team_id) AS 
 									  number_of_tired_players_in_starting_eleven 
@@ -332,12 +332,12 @@ func TeamUpdateZombies(tx *sql.Tx) error {
 							   		AND p.shirt_number < 25 
 							   GROUP  BY tc.team_id) AS sq 
 					   WHERE  number_of_tired_players_in_starting_eleven >= 9) `
-	_, err := tx.Exec(query)
+	_, err := tx.Exec(query, timezoneIdx, countryIdx)
 	return err
 }
 
-func TeamCleanZombies(tx *sql.Tx) error {
+func TeamCleanZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("[DBMS] TeamCleanZombies")
-	_, err := tx.Exec("UPDATE teams SET is_zombie=false WHERE is_zombie=true;")
+	_, err := tx.Exec("UPDATE teams SET is_zombie=false WHERE timezone_idx = $1 AND country_idx = $2 AND is_zombie=true;", timezoneIdx, countryIdx)
 	return err
 }
