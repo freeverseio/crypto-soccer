@@ -21,6 +21,9 @@ const cache = new InMemoryCache({
 const client = new ApolloClient({
   uri: Config.url,
   cache,
+  headers: {
+        authorization: "Bearer joshua",
+      },
 });
 
 const provider = window.ethereum ? window.ethereum : '';
