@@ -595,7 +595,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
     {
         uint8[14] memory lineup = getFullLineUp(tactics);
         uint8 changes;
-        uint256 teamSkills;
         uint8 fieldPlayers;
         
         /// Count changes during half-time, as well as not-aligned players
@@ -607,8 +606,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
                     if (is2ndHalf && !getAlignedEndOfFirstHalf(linedUpSkills[p])) {
                         matchLog = addHalfTimeSubs(matchLog, lineup[p]+1, changes); /// for halftime subs, 0 = NO_SUBS
                         changes++;
-                        teamSkills += getSumOfSkills(linedUpSkills[p]); 
-                    } else if (!is2ndHalf) teamSkills += getSumOfSkills(linedUpSkills[p]); 
+                    }
                 }
             }
         }
@@ -626,7 +624,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
                 linedUpSkills[11+p] = verifyCanPlay(lineup[11+p], skills[lineup[11+p]], is2ndHalf, true);
                 if (linedUpSkills[11+p]>0) {
                     changes++;
-                    teamSkills += getSumOfSkills(linedUpSkills[11+p]); 
                     /// if the player to be substituted was an empty slot, then add 1 to fieldPlayers
                     /// this prevents, e.g., having a red-carded from 1st half not starting the 2nd half (so that the
                     /// system would allow a 10 players lineup), to be immediately substituted by another player, hence
@@ -654,7 +651,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase
         }  
         /// Note that teamSumSkills is the sum of, at most, 14 skills of, at most, 20b each. 
         /// So the total cannot be larger that 24b, which is the limit reserved for teamSumSkills.
-        matchLog = addTeamSumSkills(matchLog, teamSkills); 
         return (matchLog, linedUpSkills, err);      
     }
 

@@ -152,6 +152,8 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
         for (uint8 team = 0; team < 2; team++) {
             (skills[team], err) = evo.updateSkillsAfterPlayHalf(skills[team], matchLogsAndEvents[team], tactics[team], true, matchBools[IDX_IS_BOT_HOME + team]);
             if (err > 0) return cancelHalf(skills, true, err);
+            // warning: the following line would change skills if it was not an external contract call!
+            matchLogsAndEvents[team] = evo.addTeamSumSkillsToLog(matchLogsAndEvents[team], skills[team]);
         }
 
         (matchLogsAndEvents[0], matchLogsAndEvents[1]) = training.computeTrainingPoints(matchLogsAndEvents[0], matchLogsAndEvents[1]);
