@@ -24,7 +24,7 @@ func TestGetWorldPlayersDeterministicResult(t *testing.T) {
 	players1, err := service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
 
-	assert.Equal(t, len(players0), 32)
+	assert.Equal(t, len(players0), 28)
 	assert.Equal(t, len(players0), len(players1))
 	for i := range players0 {
 		assert.Equal(t, *players0[i], *players1[i])
@@ -51,7 +51,7 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 	service := worldplayer.NewWorldPlayerService(*bc.Contracts, namesdb)
 	players, err := service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
-	assert.Equal(t, len(players), 32)
+	assert.Equal(t, len(players), 28)
 
 	player0Id, _ := new(big.Int).SetString(string(players[0].PlayerId()), 10)
 	targetTeamId, _ := new(big.Int).SetString(teamId, 10)
@@ -66,7 +66,7 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 
 	players, err = service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
-	assert.Equal(t, len(players), 31)
+	assert.Equal(t, len(players), 28-1)
 }
 
 func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {
@@ -80,8 +80,8 @@ func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {
 	service := worldplayer.NewWorldPlayerService(*bc.Contracts, namesdb)
 	players, err := service.CreateBatch(teamId, now-2)
 	assert.NilError(t, err)
-	assert.Equal(t, len(players), 32)
-	assert.Equal(t, string(players[0].PlayerId()), "25724436434260067557745572147503721500217552451380292479878199")
+	assert.Equal(t, len(players), 28)
+	assert.Equal(t, string(players[0].PlayerId()), "25721267233481556899586487085851574449263650210018562878210872")
 	expectedValidUntil := int64(1554940800)
 	assert.Equal(t, players[0].ValidUntil(), strconv.FormatUint(uint64(expectedValidUntil), 10))
 	assert.Equal(t, expectedValidUntil-now == 0, true)
@@ -89,8 +89,8 @@ func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {
 
 	players, err = service.CreateBatch(teamId, now-1)
 	assert.NilError(t, err)
-	assert.Equal(t, len(players), 32)
-	assert.Equal(t, string(players[0].PlayerId()), "25724436434260067557745572147503721500217552451380292479878199")
+	assert.Equal(t, len(players), 28)
+	assert.Equal(t, string(players[0].PlayerId()), "25721267233481556899586487085851574449263650210018562878210872")
 	expectedValidUntil = int64(1554940800)
 	assert.Equal(t, players[0].ValidUntil(), strconv.FormatUint(uint64(expectedValidUntil), 10))
 	assert.Equal(t, expectedValidUntil-now == 0, true)
@@ -102,8 +102,8 @@ func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {
 	// and hence, the validUntil would be exactly 12 hours in the future
 	players, err = service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
-	assert.Equal(t, len(players), 32)
-	assert.Equal(t, string(players[0].PlayerId()), "25728203308299535852283230531167809334883996271558048168805556")
+	assert.Equal(t, len(players), 28)
+	assert.Equal(t, string(players[0].PlayerId()), "25731381704051291705775465742902119316707374387554242936178067")
 	expectedValidUntil = int64(1554984000)
 	assert.Equal(t, players[0].ValidUntil(), strconv.FormatUint(uint64(expectedValidUntil), 10))
 	assert.Equal(t, expectedValidUntil-now == halfDay, true)
@@ -113,8 +113,8 @@ func TestWorldPlayerServiceTimeDependentDiscontinuity(t *testing.T) {
 
 	players, err = service.CreateBatch(teamId, now+1)
 	assert.NilError(t, err)
-	assert.Equal(t, len(players), 32)
-	assert.Equal(t, string(players[0].PlayerId()), "25728203308299535852283230531167809334883996271558048168805556")
+	assert.Equal(t, len(players), 28)
+	assert.Equal(t, string(players[0].PlayerId()), "25731381704051291705775465742902119316707374387554242936178067")
 	expectedValidUntil = int64(1554984000)
 	assert.Equal(t, players[0].ValidUntil(), strconv.FormatUint(uint64(expectedValidUntil), 10))
 	assert.Equal(t, expectedValidUntil-now == halfDay, true)
