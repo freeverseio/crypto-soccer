@@ -52,6 +52,17 @@ contract('Merkle', (accounts) => {
     });
 
     it('get merkle root with padding', async () => {
+        leafs = [ 
+            '0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d',
+            '0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6',
+            '0xad7c5bef027816a800da1736444fb58a807ef4c9603b7848673f7e3a68eb14a5',
+            '0x0000000000000000000000000000000000000000000000000000000000000000' 
+        ]
+        root1 = await merkleUtils.merkleRootZeroPad(leafs, nLevels = 2);
+        root1.should.be.equal('0x1cb9f7923cd35fa294c1ffec3b80a81957766a26c52ff2089a8f0b0e1328b7d8');
+    });
+    
+    it('get merkle root with padding', async () => {
         leafs = Array.from(new Array(16), (x,i) => (i < 6 ? web3.utils.keccak256(i.toString()): NULL_BYTES32));
         root1 = await merkleUtils.merkleRoot(leafs, nLevels = 4);
         leafs = Array.from(new Array(6), (x,i) => (i < 6 ? web3.utils.keccak256(i.toString()): NULL_BYTES32));
