@@ -22,7 +22,7 @@ const processBidsHistories = async () => {
       : bidLastChecked;
 
   await updateLastChecked({
-    entity: mailboxCronEntities.auction,
+    entity: mailboxCronEntities.bid,
     lastChecked: newLastChecked,
   });
   const areNewHistories =

@@ -5,13 +5,14 @@ import "../encoders/EncodingMatchLog.sol";
 import "../encoders/EncodingTPAssignment.sol";
 import "../encoders/EncodingSkillsSetters.sol";
 import "../encoders/EncodingTacticsBase1.sol";
+import "../gameEngine/GetSumSkills.sol";
 
 /**
  @title Library or pure functions that manage how players evolve
  @author Freeverse.io, www.freeverse.io
 */
 
-contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsBase1 {
+contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters, EncodingTacticsBase1, GetSumSkills {
 
     uint8 constant private PLAYERS_PER_TEAM_MAX = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   /// noone saw a card
@@ -222,6 +223,11 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
                 }
             }
         }
+    }
+
+    // computes teamSumSkills and adds it to matchLog
+    function addTeamSumSkillsToLog(uint256 matchLog, uint256[PLAYERS_PER_TEAM_MAX] memory skills) public pure returns (uint256) {
+        return addTeamSumSkills(matchLog, getSumOfTopPlayerSkills(skills));
     }
 }
 

@@ -13,8 +13,8 @@
 		},
 		HomeGoals: (uint8) 6,
 		VisitorGoals: (uint8) 4,
-		HomeTeamSumSkills: (uint32) 54989,
-		VisitorTeamSumSkills: (uint32) 54989,
+		HomeTeamSumSkills: (uint32) 89982,
+		VisitorTeamSumSkills: (uint32) 89982,
 		State: (storage.MatchState) (len=3) "end",
 		StateExtra: (string) "",
 		StartEpoch: (int64) 0
@@ -41,7 +41,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 57,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=75) "458607603191344343405274802519552205382582931339757593817583154540776291910",
+			MatchLog: (string) (len=75) "458607833515908240769126935034898626300047814783262178281023787172278599238",
 			IsZombie: (bool) false
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {
@@ -709,7 +709,7 @@
 			RankingPoints: (uint64) 0,
 			TrainingPoints: (uint16) 27,
 			Tactic: (string) (len=33) "340596594427581673436941882753025",
-			MatchLog: (string) (len=75) "455294764944884872787306119457318134634565908901630588837748451234307205476",
+			MatchLog: (string) (len=75) "455294995269448770151158251972664555552030792345135173301189083865809512804",
 			IsZombie: (bool) false
 		},
 		Players: ([25]*engine.Player) (len=25 cap=25) {

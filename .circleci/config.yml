@@ -262,7 +262,7 @@ jobs:
       - run: cd game.db && docker build -t freeverseio/game.db:${CIRCLE_TAG} .
       - run: cd nodejs-gamelayer && docker build -t freeverseio/gamelayer:${CIRCLE_TAG} .
       - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:${CIRCLE_TAG} .
-      - run: cd market-read-api && docker build -t freeverseio/market-read-api:${CIRCLE_TAG} .
+      - run: cd market-read-api && docker build -t freeverseio/market.read.api:${CIRCLE_TAG} .
       - run: cd nodejs-gamelayer-mailbox-cron && docker build -t freeverseio/gamelayer.mailbox.cron:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}

@@ -4,6 +4,7 @@ const logger = require('../../logger');
 const getTeamIdFromAuctionSeller = require('../auctions/getTeamIdFromAuctionSeller');
 
 const processAcceptedBids = async ({ bids }) => {
+  logger.debug(`Acepted bids to process: ${JSON.stringify(bids)}`);
   for (const bid of bids) {
     try {
       const auction = await HorizonService.getAuction({
