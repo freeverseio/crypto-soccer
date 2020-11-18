@@ -2,8 +2,7 @@ pragma solidity >= 0.6.3;
 
 import "../storage/Assets.sol";
 import "./SortIdxs.sol";
-import "./SortValues25.sol";
-import "../encoders/EncodingSkillsGetters.sol";
+import "../gameEngine/GetSumSkills.sol";
 import "../encoders/EncodingIDs.sol";
 
 /**
@@ -13,7 +12,7 @@ import "../encoders/EncodingIDs.sol";
  @dev because they use a storage pointer to the Assets contracts.
 */
 
-contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs, SortValues25 {
+contract Leagues is SortIdxs, EncodingIDs, GetSumSkills {
     uint8 constant public PLAYERS_PER_TEAM_MAX = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
@@ -142,18 +141,6 @@ contract Leagues is SortIdxs, EncodingSkillsGetters, EncodingIDs, SortValues25 {
             return (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry), uint64(0));
         }
         return ((rankingPoints << 28) + (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry)), prevPerfPoints);
-    }
-
-
-    /// warning: getSumOfTopPlayerSkills rewrites the skills array
-    /// this function returns the sum of the skills of the top 18 players in the team
-    function getSumOfTopPlayerSkills(uint256[PLAYERS_PER_TEAM_MAX] memory skills) public pure returns (uint256 teamSkills) {
-        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (skills[p] != 0)
-                skills[p] = getSumOfSkills(skills[p]);
-        }
-        sort25(skills);
-        for (uint8 p = 0; p < 18; p++) { teamSkills += skills[p]; }
     }
 
     function computeTeamRankingPointsPure(

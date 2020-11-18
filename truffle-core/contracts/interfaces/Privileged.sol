@@ -52,16 +52,16 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     }
     
     /// returns a value relative to 10000
-    /// Relative to 1, it would be = age < 31) ? 1.15 - 0.013 * (age - 16) : 1.15 - 0.013*15 - 0.05 * (age - 31)
+    /// Relative to 1, it would be = age < 31) ? 1.7 - 0.7/15 * (age - 16) : 1 - 0.08 * (age - 31)
     function ageModifier(uint256 ageYears) public pure returns(uint256) {
-        return (ageYears < 31) ? 11500 - 130 * (ageYears - 16) : 9550 - 500 * (ageYears - 31);
+        return (ageYears < 31) ? 17000 - 466 * (ageYears - 16) : 10000 - 800 * (ageYears - 31);
     }
 
     /// returns a value relative to 10000
-    /// relative to 1 it would be = 0.85 + potential/30
-    /// relative to 1e4: 8500+10000*p/30 = (8500*30+10000* p)/30
+    /// relative to 1 it would be = 0.5 + 1.5 * potential * ( so that it ranges in [0.5, 2]
+    /// relative to 1e4: 5000+10000*p*1.2/10 = 5000+1200*p
     function potentialModifier(uint256 potential) public pure returns(uint256) {
-        return (8500 * 30 + 10000 * potential) / 30;
+        return (5000 + 1200 * potential);
     }
     
     function computeAvgSkills(uint256 playerValue, uint256 ageYears, uint8 potential) public pure returns (uint256) {
