@@ -4,7 +4,6 @@ const processPayingAuction = require('../processPayingAuction');
 const processWithdrawableBySellerAuction = require('../processWithdrawableBySellerAuction');
 const selectLastChecked = require('../../../repositories/selectLastChecked');
 const updateLastChecked = require('../../../repositories/updateLastChecked');
-const processAcceptedBids = require('../../bids/processAcceptedBids');
 
 jest.mock('../../HorizonService.js', () => ({
   getLastAuctionsHistories: jest.fn().mockReturnValue([
@@ -77,5 +76,4 @@ test('processAuctionHistories works correctly', async () => {
   expect(HorizonService.getLastAuctionsHistories).toHaveBeenCalledTimes(1);
   expect(processPayingAuction).toHaveBeenCalledTimes(2);
   expect(processWithdrawableBySellerAuction).toHaveBeenCalledTimes(1);
-  expect(processAcceptedBids).toHaveBeenCalledTimes(1);
 });

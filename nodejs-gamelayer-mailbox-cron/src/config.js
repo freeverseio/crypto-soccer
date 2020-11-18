@@ -24,6 +24,7 @@ const gamelayerConfig = {
 const mailboxCronEntities = {
   auction: 'auction',
   offer: 'offer',
+  bid: 'bid',
 };
 
 const offerStates = {
