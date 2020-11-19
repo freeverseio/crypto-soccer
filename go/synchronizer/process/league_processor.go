@@ -382,11 +382,11 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 		return err
 	}
 	// Suggest to make Clean set ALL = false
-	err = storage.TeamCleanZombies(tx)
+	err = storage.TeamCleanZombies(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
-	err = storage.TeamUpdateZombies(tx)
+	err = storage.TeamUpdateZombies(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
