@@ -6,9 +6,11 @@ services:
     ports:
       - "8545:8545"
   universe.db:
-    image: freeverseio/universe.db.with.data:latest
+    image: freeverseio/universe.db:data
     ports:
       - "5432:5432"
+    environment:
+      - PGDATA=postgres
   ipfs.node:
     image: ipfs/go-ipfs:v0.6.0
     restart: always
