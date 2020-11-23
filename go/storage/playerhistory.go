@@ -1,6 +1,10 @@
 package storage
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+	"strings"
+)
 
 type PlayerHistory struct {
 	Player
@@ -41,4 +45,54 @@ func (b PlayerHistory) Insert(tx *sql.Tx) error {
 		return err
 	}
 	return nil
+}
+
+func PlayersHistoriesBulkInsert(rowsToBeInserted []*PlayerHistory, tx *sql.Tx) error {
+	numParams := 17
+	valueStrings := make([]string, 0, len(rowsToBeInserted))
+	valueArgs := make([]interface{}, 0, len(rowsToBeInserted)*numParams)
+	i := 0
+	for _, post := range rowsToBeInserted {
+		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12, i*numParams+13, i*numParams+14, i*numParams+15, i*numParams+16, i*numParams+17))
+		valueArgs = append(valueArgs, post.BlockNumber)
+		valueArgs = append(valueArgs, post.PlayerId.String())
+		valueArgs = append(valueArgs, post.TeamId)
+		valueArgs = append(valueArgs, post.Defence)
+		valueArgs = append(valueArgs, post.Speed)
+		valueArgs = append(valueArgs, post.Pass)
+		valueArgs = append(valueArgs, post.Shoot)
+		valueArgs = append(valueArgs, post.Endurance)
+		valueArgs = append(valueArgs, post.ShirtNumber)
+		valueArgs = append(valueArgs, post.PreferredPosition)
+		valueArgs = append(valueArgs, post.EncodedSkills.String())
+		valueArgs = append(valueArgs, post.EncodedState.String())
+		valueArgs = append(valueArgs, post.Potential)
+		valueArgs = append(valueArgs, post.DayOfBirth)
+		valueArgs = append(valueArgs, post.Tiredness)
+		valueArgs = append(valueArgs, post.CountryOfBirth)
+		valueArgs = append(valueArgs, post.Race)
+		i++
+	}
+	stmt := fmt.Sprintf(`INSERT INTO players_histories (
+		block_number,
+		player_id,
+		team_id,
+		defence,
+		speed,
+		pass,
+		shoot,
+		endurance, 
+		shirt_number,
+		preferred_position,
+		encoded_skills, 
+		encoded_state,
+		potential,
+		day_of_birth,
+		tiredness,
+		country_of_birth,
+		race
+		) VALUES %s
+		`, strings.Join(valueStrings, ","))
+	_, err := tx.Exec(stmt, valueArgs...)
+	return err
 }

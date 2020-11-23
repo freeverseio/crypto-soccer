@@ -2,7 +2,9 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"math/big"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -265,4 +267,80 @@ func ActivePlayersByTeamId(tx *sql.Tx, teamID string) ([]*Player, error) {
 		players = append(players, &player)
 	}
 	return players, err
+}
+
+func PlayersBulkInsertUpdate(rowsToBeInserted []Player, tx *sql.Tx) error {
+	numParams := 20
+	valueStrings := make([]string, 0, len(rowsToBeInserted))
+	valueArgs := make([]interface{}, 0, len(rowsToBeInserted)*numParams)
+	i := 0
+	for _, post := range rowsToBeInserted {
+		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12, i*numParams+13, i*numParams+14, i*numParams+15, i*numParams+16, i*numParams+17, i*numParams+18, i*numParams+19, i*numParams+20))
+		valueArgs = append(valueArgs, post.PlayerId.String())
+		valueArgs = append(valueArgs, post.TeamId)
+		valueArgs = append(valueArgs, post.Defence)
+		valueArgs = append(valueArgs, post.Speed)
+		valueArgs = append(valueArgs, post.Pass)
+		valueArgs = append(valueArgs, post.Shoot)
+		valueArgs = append(valueArgs, post.Endurance)
+		valueArgs = append(valueArgs, post.ShirtNumber)
+		valueArgs = append(valueArgs, post.EncodedSkills.String())
+		valueArgs = append(valueArgs, post.RedCard)
+		valueArgs = append(valueArgs, post.InjuryMatchesLeft)
+		valueArgs = append(valueArgs, post.Name)
+		valueArgs = append(valueArgs, post.Tiredness)
+		valueArgs = append(valueArgs, post.CountryOfBirth)
+		valueArgs = append(valueArgs, post.Race)
+		valueArgs = append(valueArgs, post.YellowCard1stHalf)
+		valueArgs = append(valueArgs, post.PreferredPosition)
+		valueArgs = append(valueArgs, post.Potential)
+		valueArgs = append(valueArgs, post.DayOfBirth)
+		valueArgs = append(valueArgs, post.EncodedState.String())
+		i++
+	}
+	stmt := fmt.Sprintf(`INSERT INTO players (
+		player_id,
+		team_id, 
+		defence, 
+		speed, 
+		pass, 
+		shoot,
+		endurance,
+		shirt_number,
+		encoded_skills,
+		red_card,
+		injury_matches_left,
+		name,
+		tiredness,
+		country_of_birth,
+		race,
+		yellow_card_1st_half,
+		preferred_position,
+		potential,
+		day_of_birth,
+		encoded_state
+		) VALUES %s
+		ON CONFLICT(player_id) DO UPDATE SET
+		team_id = excluded.team_id, 
+		defence = excluded.defence, 
+		speed = excluded.speed, 
+		pass = excluded.pass, 
+		shoot = excluded.shoot,
+		endurance = excluded.endurance,
+		shirt_number = excluded.shirt_number,
+		encoded_skills = excluded.encoded_skills,
+		red_card = excluded.red_card,
+		injury_matches_left = excluded.injury_matches_left,
+		name = excluded.name,
+		tiredness = excluded.tiredness,
+		country_of_birth = excluded.country_of_birth,
+		race = excluded.race,
+		yellow_card_1st_half = excluded.yellow_card_1st_half,
+		preferred_position = excluded.preferred_position,
+		potential = excluded.potential,
+		day_of_birth = excluded.day_of_birth,
+		encoded_state = excluded.encoded_state
+		`, strings.Join(valueStrings, ","))
+	_, err := tx.Exec(stmt, valueArgs...)
+	return err
 }

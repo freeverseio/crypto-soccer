@@ -200,3 +200,68 @@ func TestMinute2Round(t *testing.T) {
 // 	assert.NilError(t, err)
 // 	assert.Assert(t, beginPlayer.Defence != halfPlayer.Defence)
 // }
+
+// //Only run when universe db is loaded with data in tz 10
+// func TestSaveMatchesDifferentTxWithData(t *testing.T) {
+// 	t.Parallel()
+// 	tx, err := universedb.Begin()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer tx.Rollback()
+// 	timezoneIdx := uint8(10)
+// 	day := uint8(0)
+// 	log.Infof("Loading matches...")
+// 	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
+// 	assert.NilError(t, err)
+
+// 	log.Infof("Saving %v matches...", len(*matches))
+// 	err = matches.ToStorageLimitedParallelTx(*bc.Contracts, 1000, context.TODO(), universedb)
+
+// 	log.Infof("... end")
+// 	assert.NilError(t, err)
+// }
+
+// //Only run when universe db is loaded with data in tz 10
+// func TestSaveMatchesSameTxWithData(t *testing.T) {
+// 	t.Parallel()
+// 	tx, err := universedb.Begin()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer tx.Rollback()
+// 	timezoneIdx := uint8(10)
+// 	day := uint8(0)
+// 	////////////////////
+// 	log.Infof("Loading matches...")
+// 	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
+// 	assert.NilError(t, err)
+
+// 	log.Infof("Saving %v matches...", len(*matches))
+// 	err = matches.ToStorage(*bc.Contracts, tx, 1000, context.TODO())
+
+// 	log.Infof("... end")
+// 	assert.NilError(t, err)
+// }
+
+// //Only run when universe db is loaded with data in tz 10
+// func TestSaveMatchesBulkUpdate(t *testing.T) {
+// 	t.Parallel()
+// 	tx, err := universedb.Begin()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer tx.Rollback()
+// 	timezoneIdx := uint8(10)
+// 	day := uint8(0)
+
+// 	log.Infof("Loading matches...")
+// 	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
+// 	assert.NilError(t, err)
+
+// 	log.Infof("Saving %v matches...", len(*matches))
+// 	err = matches.ToStorageBulk(*bc.Contracts, tx, 1000)
+
+// 	log.Infof("... end")
+// 	assert.NilError(t, err)
+// }

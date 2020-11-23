@@ -247,7 +247,8 @@ func (b *Matches) SetTrainings(contracts contracts.Contracts, trainings []sto.Tr
 	return nil
 }
 
-func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
+func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64, ctx context.Context) error {
+
 	for _, match := range b {
 		if err := match.ToStorage(contracts, tx, blockNumber); err != nil {
 			filename := fmt.Sprintf("/tmp/%x", match.Hash()) + ".toStorage.error.json"
@@ -258,5 +259,216 @@ func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumbe
 			return err
 		}
 	}
+	return nil
+
+}
+
+func (b Matches) ToStorageMaxParallelTx(contracts contracts.Contracts, blockNumber uint64, ctx context.Context, universedb *sql.DB) error {
+
+	errs, _ := errgroup.WithContext(ctx)
+
+	for _, match := range b {
+		matchRoutine := match
+		errs.Go(func() error {
+			log.Infof("Processing match %x", matchRoutine.Hash())
+			tx, err := universedb.Begin()
+			if err != nil {
+				return err
+			}
+			err = matchRoutine.ToStorage(contracts, tx, blockNumber)
+			if err != nil {
+				filename := fmt.Sprintf("/tmp/%x", matchRoutine.Hash()) + ".toStorage.error.json"
+				log.Errorf("match to storage: %v: saving match state to %v", err.Error(), filename)
+				if err := ioutil.WriteFile(filename, matchRoutine.ToJson(), 0644); err != nil {
+					tx.Rollback()
+					return err
+				}
+				tx.Rollback()
+				return err
+			}
+			return tx.Commit()
+		})
+	}
+	return errs.Wait()
+}
+
+func (b Matches) ToStorageLimitedParallelTx(contracts contracts.Contracts, blockNumber uint64, ctx context.Context, universedb *sql.DB) error {
+
+	errs, _ := errgroup.WithContext(ctx)
+	maxClients := 32
+	for v := 0; v < len(b)/maxClients; v++ {
+		matchV := v
+		for i := 0; i < maxClients; i++ {
+			matchI := i
+			log.Infof("Processing matchroutine %v", matchV*maxClients+matchI)
+			matchRoutine := b[matchV*maxClients+matchI]
+			errs.Go(func() error {
+				tx, err := universedb.Begin()
+				if err != nil {
+					return err
+				}
+				err = matchRoutine.ToStorage(contracts, tx, blockNumber)
+				if err != nil {
+					filename := fmt.Sprintf("/tmp/%x", matchRoutine.Hash()) + ".toStorage.error.json"
+					log.Errorf("match to storage: %v: saving match state to %v", err.Error(), filename)
+					if err := ioutil.WriteFile(filename, matchRoutine.ToJson(), 0644); err != nil {
+						tx.Rollback()
+						return err
+					}
+					tx.Rollback()
+					return err
+				}
+				return tx.Commit()
+			})
+			errs.Wait()
+		}
+		// time.Sleep(2 * time.Second)
+
+	}
+	return nil
+}
+
+func (b Matches) ToStorageBulk(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) error {
+
+	var teamsToUpdate []storage.Team
+	var teamsHistoriesToInsert []*storage.TeamHistory
+	var playersToUpdate []storage.Player
+	var playersHistoriesToInsert []*storage.PlayerHistory
+	var matchesToUpdate []storage.Match
+	var matchesHistoriesToInsert []*storage.MatchHistory
+	var eventsToUpdate []*storage.MatchEvent
+
+	for _, match := range b {
+		teamsToUpdate = append(teamsToUpdate, match.HomeTeam.Team)
+		teamsToUpdate = append(teamsToUpdate, match.VisitorTeam.Team)
+
+		teamsHistoriesToInsert = append(teamsHistoriesToInsert, storage.NewTeamHistory(blockNumber, match.HomeTeam.Team))
+		teamsHistoriesToInsert = append(teamsHistoriesToInsert, storage.NewTeamHistory(blockNumber, match.VisitorTeam.Team))
+
+		for _, player := range match.HomeTeam.Players {
+			if player.IsNil() {
+				continue
+			}
+
+			playersToUpdate = append(playersToUpdate, player.Player)
+			playersHistoriesToInsert = append(playersHistoriesToInsert, storage.NewPlayerHistory(blockNumber, player.Player))
+		}
+		for _, player := range match.VisitorTeam.Players {
+			if player.IsNil() {
+				continue
+			}
+
+			playersToUpdate = append(playersToUpdate, player.Player)
+			playersHistoriesToInsert = append(playersHistoriesToInsert, storage.NewPlayerHistory(blockNumber, player.Player))
+		}
+		matchesToUpdate = append(matchesToUpdate, match.Match)
+		matchesHistoriesToInsert = append(matchesHistoriesToInsert, storage.NewMatchHistory(blockNumber, match.Match))
+		newEventsToUpdate, err := match.ToStorageBulkReturn(contracts, tx, blockNumber)
+		if err != nil {
+			filename := fmt.Sprintf("/tmp/%x", match.Hash()) + ".toStorage.error.json"
+			log.Errorf("match to storage: %v: saving match state to %v", err.Error(), filename)
+			if err := ioutil.WriteFile(filename, match.ToJson(), 0644); err != nil {
+				return err
+			}
+			return err
+		}
+		eventsToUpdate = append(eventsToUpdate, newEventsToUpdate[:]...)
+	}
+
+	log.Infof("Num teams to update %v", len(teamsToUpdate))
+	// for _, team := range teamsToUpdate {
+	// 	log.Infof("Team id %v", team.TeamID)
+	// }
+	log.Infof("Num teams histories to insert %v", len(teamsHistoriesToInsert))
+	// for _, team := range teamsHistoriesToInsert {
+	// 	log.Infof("Team id %v", team.TeamID)
+	// }
+	log.Infof("Num players to update %v", len(playersToUpdate))
+	// for _, player := range playersToUpdate {
+	// 	log.Infof("player id %v", player.PlayerId)
+	// }
+	log.Infof("Num players histories to insert %v", len(playersHistoriesToInsert))
+	// for _, player := range playersHistoriesToInsert {
+	// 	log.Infof("player id %v", player.PlayerId)
+	// }
+	log.Infof("Num matches to update %v", len(matchesToUpdate))
+	log.Infof("Num events to insert %v", len(eventsToUpdate))
+
+	err := storage.TeamsBulkInsertUpdate(teamsToUpdate, tx)
+	log.Infof("Updated all teams")
+	if err != nil {
+		return err
+	}
+
+	i := 0
+	for i < len(playersToUpdate) {
+		// log.Infof("Updating from %v to %v", i, i+3000)
+		newI := i + 3000
+		if newI > len(playersToUpdate) {
+			newI = len(playersToUpdate)
+		}
+		err := storage.PlayersBulkInsertUpdate(playersToUpdate[i:newI], tx)
+		if err != nil {
+			return err
+		}
+		i = newI
+
+	}
+	log.Infof("Updated all players")
+
+	err = storage.MatchesBulkInsertUpdate(matchesToUpdate, tx)
+	log.Infof("Updated all matches")
+	if err != nil {
+		return err
+	}
+
+	if len(eventsToUpdate) > 0 {
+		v := 0
+		for v < len(eventsToUpdate) {
+			newV := v + 3000
+			if newV > len(eventsToUpdate) {
+				newV = len(eventsToUpdate)
+			}
+			if err := storage.MatchEventsBulkInsert(eventsToUpdate[v:newV], tx); err != nil {
+				return err
+			}
+			v = newV
+
+		}
+		log.Infof("Updated all events")
+	}
+
+	err = storage.TeamsHistoriesBulkInsert(teamsHistoriesToInsert, tx)
+	if err != nil {
+		return err
+	}
+	log.Infof("Inserted all teams histories")
+	x := 0
+	for x < len(playersHistoriesToInsert) {
+		newX := x + 3000
+		if newX > len(playersHistoriesToInsert) {
+			newX = len(playersHistoriesToInsert)
+		}
+		err = storage.PlayersHistoriesBulkInsert(playersHistoriesToInsert[x:newX], tx)
+		if err != nil {
+			return err
+		}
+		x = newX
+	}
+	log.Infof("Inserted all players histories")
+
+	w := 0
+	for w < len(matchesHistoriesToInsert) {
+		newW := w + 3000
+		if newW > len(matchesHistoriesToInsert) {
+			newW = len(matchesHistoriesToInsert)
+		}
+		err = storage.MatchesHistoriesBulkInsert(matchesHistoriesToInsert[w:newW], tx)
+		if err != nil {
+			return err
+		}
+		w = newW
+	}
+	log.Infof("Inserted all matches histories")
 	return nil
 }

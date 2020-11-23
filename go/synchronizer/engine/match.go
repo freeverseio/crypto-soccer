@@ -119,6 +119,41 @@ func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx, blockNumber 
 	return b.Update(tx, blockNumber)
 }
 
+func (b Match) ToStorageBulkReturn(contracts contracts.Contracts, tx *sql.Tx, blockNumber uint64) ([]*storage.MatchEvent, error) {
+	var storageEvents []*storage.MatchEvent
+	for _, computedEvent := range b.Events {
+		event := storage.MatchEvent{}
+		if computedEvent.Team == 0 {
+			event.TeamID = b.HomeTeam.TeamID
+		} else {
+			event.TeamID = b.VisitorTeam.TeamID
+		}
+		if computedEvent.PrimaryPlayerID != "" {
+			event.PrimaryPlayerID.String = computedEvent.PrimaryPlayerID
+			event.PrimaryPlayerID.Valid = true
+		}
+		if computedEvent.SecondaryPlayerID != "" {
+			event.SecondaryPlayerID.String = computedEvent.SecondaryPlayerID
+			event.SecondaryPlayerID.Valid = true
+		}
+		event.TimezoneIdx = int(b.TimezoneIdx)
+		event.CountryIdx = int(b.CountryIdx)
+		event.LeagueIdx = int(b.LeagueIdx)
+		event.MatchDayIdx = int(b.MatchDayIdx)
+		event.MatchIdx = int(b.MatchIdx)
+		event.Minute = int(computedEvent.Minute)
+		var err error
+		if event.Type, err = matchevents.MarchEventTypeByMatchEvent(computedEvent.Type); err != nil {
+			return nil, err
+		}
+		event.ManageToShoot = computedEvent.ManagesToShoot
+		event.IsGoal = computedEvent.IsGoal
+		storageEvents = append(storageEvents, &event)
+	}
+
+	return storageEvents, nil
+}
+
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	version2StartEpoch := viper.GetInt64("patch.engine_version_2")
 

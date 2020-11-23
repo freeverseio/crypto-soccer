@@ -3,8 +3,10 @@ package storage
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"math/big"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -339,5 +341,81 @@ func TeamUpdateZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 func TeamCleanZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Debugf("[DBMS] TeamCleanZombies")
 	_, err := tx.Exec("UPDATE teams SET is_zombie=false WHERE timezone_idx = $1 AND country_idx = $2 AND is_zombie=true;", timezoneIdx, countryIdx)
+	return err
+}
+
+func TeamsBulkInsertUpdate(rowsToBeInserted []Team, tx *sql.Tx) error {
+	numParams := 20
+	valueStrings := make([]string, 0, len(rowsToBeInserted))
+	valueArgs := make([]interface{}, 0, len(rowsToBeInserted)*numParams)
+	i := 0
+	for _, post := range rowsToBeInserted {
+		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12, i*numParams+13, i*numParams+14, i*numParams+15, i*numParams+16, i*numParams+17, i*numParams+18, i*numParams+19, i*numParams+20))
+		valueArgs = append(valueArgs, post.TeamID)
+		valueArgs = append(valueArgs, post.Owner)
+		valueArgs = append(valueArgs, post.LeagueIdx)
+		valueArgs = append(valueArgs, post.TeamIdxInLeague)
+		valueArgs = append(valueArgs, post.Points)
+		valueArgs = append(valueArgs, post.W)
+		valueArgs = append(valueArgs, post.D)
+		valueArgs = append(valueArgs, post.L)
+		valueArgs = append(valueArgs, post.GoalsForward)
+		valueArgs = append(valueArgs, post.GoalsAgainst)
+		valueArgs = append(valueArgs, post.PrevPerfPoints)
+		valueArgs = append(valueArgs, strconv.FormatUint(post.RankingPoints, 10))
+		valueArgs = append(valueArgs, post.TrainingPoints)
+		valueArgs = append(valueArgs, post.Name)
+		valueArgs = append(valueArgs, post.Tactic)
+		valueArgs = append(valueArgs, post.MatchLog)
+		valueArgs = append(valueArgs, post.ManagerName)
+		valueArgs = append(valueArgs, post.LeaderboardPosition)
+		valueArgs = append(valueArgs, post.TimezoneIdx)
+		valueArgs = append(valueArgs, post.CountryIdx)
+		i++
+	}
+	stmt := fmt.Sprintf(`INSERT INTO teams (
+		team_id,
+		owner, 
+		league_idx, 
+		team_idx_in_league,
+		points,
+		w,
+		d,
+		l,
+		goals_forward,
+		goals_against,
+		prev_perf_points,
+		ranking_points,
+		training_points,
+		name,
+		tactic,
+		match_log,
+		manager_name,
+		leaderboard_position,
+		timezone_idx,
+		country_idx
+		) VALUES %s
+		ON CONFLICT(team_id) DO UPDATE SET
+		owner = excluded.owner, 
+		league_idx = excluded.league_idx, 
+		team_idx_in_league = excluded.team_idx_in_league,
+		points = excluded.points,
+		w = excluded.w,
+		d = excluded.d,
+		l = excluded.l,
+		goals_forward = excluded.goals_forward,
+		goals_against = excluded.goals_against,
+		prev_perf_points = excluded.prev_perf_points,
+		ranking_points = excluded.ranking_points,
+		training_points = excluded.training_points,
+		name = excluded.name,
+		tactic = excluded.tactic,
+		match_log = excluded.match_log,
+		manager_name = excluded.manager_name,
+		leaderboard_position = excluded.leaderboard_position,
+		timezone_idx = excluded.timezone_idx,
+		country_idx = excluded.country_idx
+		`, strings.Join(valueStrings, ","))
+	_, err := tx.Exec(stmt, valueArgs...)
 	return err
 }
