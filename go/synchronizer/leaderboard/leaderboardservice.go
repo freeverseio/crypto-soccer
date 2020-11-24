@@ -5,11 +5,11 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
-	"gopkg.in/src-d/go-log.v1"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
+	"github.com/prometheus/common/log"
 )
 
 type LeaderboardService struct {
