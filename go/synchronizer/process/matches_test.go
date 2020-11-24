@@ -10,6 +10,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	log "github.com/sirupsen/logrus"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
@@ -201,67 +202,24 @@ func TestMinute2Round(t *testing.T) {
 // 	assert.Assert(t, beginPlayer.Defence != halfPlayer.Defence)
 // }
 
-// //Only run when universe db is loaded with data in tz 10
-// func TestSaveMatchesDifferentTxWithData(t *testing.T) {
-// 	t.Parallel()
-// 	tx, err := universedb.Begin()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer tx.Rollback()
-// 	timezoneIdx := uint8(10)
-// 	day := uint8(0)
-// 	log.Infof("Loading matches...")
-// 	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
-// 	assert.NilError(t, err)
+//Only meaningfull run when universe db is loaded with data in tz 10
+func TestSaveMatchesBulkUpdate(t *testing.T) {
+	t.Parallel()
+	tx, err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	timezoneIdx := uint8(10)
+	day := uint8(0)
 
-// 	log.Infof("Saving %v matches...", len(*matches))
-// 	err = matches.ToStorageLimitedParallelTx(*bc.Contracts, 1000, context.TODO(), universedb)
+	log.Infof("[TEST] Loading matches...")
+	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
+	assert.NilError(t, err)
 
-// 	log.Infof("... end")
-// 	assert.NilError(t, err)
-// }
+	log.Infof("[Ŧ€ßŦ] Saving %v matches...", len(*matches))
+	err = matches.ToStorageBulk(*bc.Contracts, tx, 1000)
 
-// //Only run when universe db is loaded with data in tz 10
-// func TestSaveMatchesSameTxWithData(t *testing.T) {
-// 	t.Parallel()
-// 	tx, err := universedb.Begin()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer tx.Rollback()
-// 	timezoneIdx := uint8(10)
-// 	day := uint8(0)
-// 	////////////////////
-// 	log.Infof("Loading matches...")
-// 	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
-// 	assert.NilError(t, err)
-
-// 	log.Infof("Saving %v matches...", len(*matches))
-// 	err = matches.ToStorage(*bc.Contracts, tx, 1000, context.TODO())
-
-// 	log.Infof("... end")
-// 	assert.NilError(t, err)
-// }
-
-// //Only run when universe db is loaded with data in tz 10
-// func TestSaveMatchesBulkUpdate(t *testing.T) {
-// 	t.Parallel()
-// 	tx, err := universedb.Begin()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer tx.Rollback()
-// 	timezoneIdx := uint8(10)
-// 	day := uint8(0)
-
-// 	log.Infof("Loading matches...")
-// 	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
-// 	assert.NilError(t, err)
-
-// 	log.Infof("Saving %v matches...", len(*matches))
-// 	err = matches.ToStorageBulk(*bc.Contracts, tx, 1000)
-
-// 	log.Infof("... end")
-// 	assert.NilError(t, err)
-// }
+	log.Infof("[TEST]... end")
+	assert.NilError(t, err)
+}

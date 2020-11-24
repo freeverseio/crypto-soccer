@@ -65,28 +65,37 @@ func DeleteAllMatchEvents(tx *sql.Tx, timezone int, countryIdx int, leagueIdx in
 	return err
 }
 
-func MatchEventsBulkInsert(events []*MatchEvent, tx *sql.Tx) error {
+func MatchEventsBulkInsert(rowsToBeInserted []*MatchEvent, tx *sql.Tx) error {
 	numParams := 12
-	valueStrings := make([]string, 0, len(events))
-	valueArgs := make([]interface{}, 0, len(events)*numParams)
-	i := 0
-	for _, post := range events {
-		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12))
-		valueArgs = append(valueArgs, post.TimezoneIdx)
-		valueArgs = append(valueArgs, post.CountryIdx)
-		valueArgs = append(valueArgs, post.LeagueIdx)
-		valueArgs = append(valueArgs, post.MatchDayIdx)
-		valueArgs = append(valueArgs, post.MatchIdx)
-		valueArgs = append(valueArgs, post.Minute)
-		valueArgs = append(valueArgs, post.Type)
-		valueArgs = append(valueArgs, post.TeamID)
-		valueArgs = append(valueArgs, post.ManageToShoot)
-		valueArgs = append(valueArgs, post.IsGoal)
-		valueArgs = append(valueArgs, post.PrimaryPlayerID)
-		valueArgs = append(valueArgs, post.SecondaryPlayerID)
-		i++
-	}
-	stmt := fmt.Sprintf(`INSERT INTO match_events (
+	var err error = nil
+	maxRowsToBeInserted := int(MAX_PARAMS_IN_PG_STMT / numParams)
+	x := 0
+	for x < len(rowsToBeInserted) {
+		newX := x + maxRowsToBeInserted
+		if newX > len(rowsToBeInserted) {
+			newX = len(rowsToBeInserted)
+		}
+		currentRowsToBeInserted := rowsToBeInserted[x:newX]
+		valueStrings := make([]string, 0, len(currentRowsToBeInserted))
+		valueArgs := make([]interface{}, 0, len(currentRowsToBeInserted)*numParams)
+		i := 0
+		for _, post := range currentRowsToBeInserted {
+			valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12))
+			valueArgs = append(valueArgs, post.TimezoneIdx)
+			valueArgs = append(valueArgs, post.CountryIdx)
+			valueArgs = append(valueArgs, post.LeagueIdx)
+			valueArgs = append(valueArgs, post.MatchDayIdx)
+			valueArgs = append(valueArgs, post.MatchIdx)
+			valueArgs = append(valueArgs, post.Minute)
+			valueArgs = append(valueArgs, post.Type)
+			valueArgs = append(valueArgs, post.TeamID)
+			valueArgs = append(valueArgs, post.ManageToShoot)
+			valueArgs = append(valueArgs, post.IsGoal)
+			valueArgs = append(valueArgs, post.PrimaryPlayerID)
+			valueArgs = append(valueArgs, post.SecondaryPlayerID)
+			i++
+		}
+		stmt := fmt.Sprintf(`INSERT INTO match_events (
 		timezone_idx,
 		country_idx,
 		league_idx,
@@ -99,8 +108,13 @@ func MatchEventsBulkInsert(events []*MatchEvent, tx *sql.Tx) error {
 		is_goal,
 		primary_player_id,
 		secondary_player_id
-	) VALUES %s`, strings.Join(valueStrings, ","))
-	_, err := tx.Exec(stmt, valueArgs...)
+		) VALUES %s`, strings.Join(valueStrings, ","))
+		_, err = tx.Exec(stmt, valueArgs...)
+		if err != nil {
+			return err
+		}
+		x = newX
+	}
 	return err
 }
 

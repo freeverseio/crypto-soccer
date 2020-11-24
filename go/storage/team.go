@@ -346,34 +346,44 @@ func TeamCleanZombies(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 
 func TeamsBulkInsertUpdate(rowsToBeInserted []Team, tx *sql.Tx) error {
 	numParams := 20
-	valueStrings := make([]string, 0, len(rowsToBeInserted))
-	valueArgs := make([]interface{}, 0, len(rowsToBeInserted)*numParams)
-	i := 0
-	for _, post := range rowsToBeInserted {
-		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12, i*numParams+13, i*numParams+14, i*numParams+15, i*numParams+16, i*numParams+17, i*numParams+18, i*numParams+19, i*numParams+20))
-		valueArgs = append(valueArgs, post.TeamID)
-		valueArgs = append(valueArgs, post.Owner)
-		valueArgs = append(valueArgs, post.LeagueIdx)
-		valueArgs = append(valueArgs, post.TeamIdxInLeague)
-		valueArgs = append(valueArgs, post.Points)
-		valueArgs = append(valueArgs, post.W)
-		valueArgs = append(valueArgs, post.D)
-		valueArgs = append(valueArgs, post.L)
-		valueArgs = append(valueArgs, post.GoalsForward)
-		valueArgs = append(valueArgs, post.GoalsAgainst)
-		valueArgs = append(valueArgs, post.PrevPerfPoints)
-		valueArgs = append(valueArgs, strconv.FormatUint(post.RankingPoints, 10))
-		valueArgs = append(valueArgs, post.TrainingPoints)
-		valueArgs = append(valueArgs, post.Name)
-		valueArgs = append(valueArgs, post.Tactic)
-		valueArgs = append(valueArgs, post.MatchLog)
-		valueArgs = append(valueArgs, post.ManagerName)
-		valueArgs = append(valueArgs, post.LeaderboardPosition)
-		valueArgs = append(valueArgs, post.TimezoneIdx)
-		valueArgs = append(valueArgs, post.CountryIdx)
-		i++
-	}
-	stmt := fmt.Sprintf(`INSERT INTO teams (
+	var err error = nil
+	maxRowsToBeInserted := int(MAX_PARAMS_IN_PG_STMT / numParams)
+	x := 0
+	for x < len(rowsToBeInserted) {
+		newX := x + maxRowsToBeInserted
+		if newX > len(rowsToBeInserted) {
+			newX = len(rowsToBeInserted)
+		}
+		currentRowsToBeInserted := rowsToBeInserted[x:newX]
+
+		valueStrings := make([]string, 0, len(currentRowsToBeInserted))
+		valueArgs := make([]interface{}, 0, len(currentRowsToBeInserted)*numParams)
+		i := 0
+		for _, post := range currentRowsToBeInserted {
+			valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12, i*numParams+13, i*numParams+14, i*numParams+15, i*numParams+16, i*numParams+17, i*numParams+18, i*numParams+19, i*numParams+20))
+			valueArgs = append(valueArgs, post.TeamID)
+			valueArgs = append(valueArgs, post.Owner)
+			valueArgs = append(valueArgs, post.LeagueIdx)
+			valueArgs = append(valueArgs, post.TeamIdxInLeague)
+			valueArgs = append(valueArgs, post.Points)
+			valueArgs = append(valueArgs, post.W)
+			valueArgs = append(valueArgs, post.D)
+			valueArgs = append(valueArgs, post.L)
+			valueArgs = append(valueArgs, post.GoalsForward)
+			valueArgs = append(valueArgs, post.GoalsAgainst)
+			valueArgs = append(valueArgs, post.PrevPerfPoints)
+			valueArgs = append(valueArgs, strconv.FormatUint(post.RankingPoints, 10))
+			valueArgs = append(valueArgs, post.TrainingPoints)
+			valueArgs = append(valueArgs, post.Name)
+			valueArgs = append(valueArgs, post.Tactic)
+			valueArgs = append(valueArgs, post.MatchLog)
+			valueArgs = append(valueArgs, post.ManagerName)
+			valueArgs = append(valueArgs, post.LeaderboardPosition)
+			valueArgs = append(valueArgs, post.TimezoneIdx)
+			valueArgs = append(valueArgs, post.CountryIdx)
+			i++
+		}
+		stmt := fmt.Sprintf(`INSERT INTO teams (
 		team_id,
 		owner, 
 		league_idx, 
@@ -416,6 +426,11 @@ func TeamsBulkInsertUpdate(rowsToBeInserted []Team, tx *sql.Tx) error {
 		timezone_idx = excluded.timezone_idx,
 		country_idx = excluded.country_idx
 		`, strings.Join(valueStrings, ","))
-	_, err := tx.Exec(stmt, valueArgs...)
+		_, err = tx.Exec(stmt, valueArgs...)
+		if err != nil {
+			return err
+		}
+		x = newX
+	}
 	return err
 }

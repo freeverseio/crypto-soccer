@@ -7,6 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const MAX_PARAMS_IN_PG_STMT = 65535
+
 func New(url string) (*sql.DB, error) {
 	var err error
 	db, err := sql.Open("postgres", url)
