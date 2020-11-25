@@ -40,4 +40,15 @@ type Tx interface {
 	OffersByPlayerId(playerId string) ([]Offer, error)
 	OffersStartedByPlayerId(playerId string) ([]Offer, error)
 	CancelAllOffersByPlayerId(playerId string) error
+
+	// AuctionPassPlayStore
+	AuctionPassPlayStoreOrder(orderId string) (*AuctionPassPlaystoreOrder, error)
+	AuctionPassPlayStorePendingOrders() ([]AuctionPassPlaystoreOrder, error)
+	AuctionPassPlayStoreInsert(order AuctionPassPlaystoreOrder) error
+	AuctionPassPlayStoreUpdateState(order AuctionPassPlaystoreOrder) error
+
+	// AuctionPass
+	AuctionPass(owner string) (*AuctionPass, error)
+	AuctionPassInsert(order AuctionPass) error
+	AuctionPassAcknowledge(ap AuctionPass) error
 }

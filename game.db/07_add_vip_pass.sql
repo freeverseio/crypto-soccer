@@ -1,0 +1,1 @@
+ALTER TABLE team_props ADD COLUMN auction_pass boolean DEFAULT false;

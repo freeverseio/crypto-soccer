@@ -14,6 +14,7 @@ const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
 const getLastTimeLoggedInResolver = require('./getLastTimeLoggedIn');
 const setLastTimeLoggedInResolver = require('./setLastTimeLoggedIn');
 const createBidResolver = require('./createBidResolver');
+const getAuctionPassResolver = require('./getAuctionPassResolver');
 
 const web3 = new Web3('');
 
@@ -233,6 +234,7 @@ const resolvers = ({ horizonRemoteSchema }) => {
       getMessages: getMessagesResolver,
       getNumUnreadMessages: getNumUnreadMessagesResolver,
       getLastTimeLoggedIn: getLastTimeLoggedInResolver,
+      getAuctionPass: getAuctionPassResolver,
     },
   };
 };

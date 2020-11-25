@@ -79,6 +79,11 @@ const main = async () => {
       nodes: [Message]
     }
 
+    input TeamAuctionPass {
+      teamId: String
+      auctionPass: Boolean
+    }
+
     input CreateBidInput {
   		signature: String!
 		  auctionId: ID!
@@ -103,6 +108,7 @@ const main = async () => {
       getNumUnreadMessages(teamId : ID!): Int!
       createBid(input: CreateBidInput!): ID!
       getLastTimeLoggedIn(teamId: ID!): String!
+      getAuctionPass(teamId: ID!): TeamAuctionPass
     }
   `;
 
