@@ -6,13 +6,14 @@ import (
 	"fmt"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 type AuctionPassMachine struct {
 	service   storage.Tx
-	client    ClientService
+	client    googleplaystoreutils.ClientService
 	order     storage.AuctionPassPlaystoreOrder
 	contracts contracts.Contracts
 	pvc       *ecdsa.PrivateKey
@@ -21,7 +22,7 @@ type AuctionPassMachine struct {
 
 func New(
 	service storage.Tx,
-	client ClientService,
+	client googleplaystoreutils.ClientService,
 	order storage.AuctionPassPlaystoreOrder,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,

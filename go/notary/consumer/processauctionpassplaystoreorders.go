@@ -5,10 +5,10 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionpassmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,7 +25,7 @@ func ProcessAuctionPassPlaystoreOrders(
 		return err
 	}
 
-	client, err := playstore.NewGoogleClientService(googleCredentials)
+	client, err := googleplaystoreutils.NewGoogleClientService(googleCredentials)
 	if err != nil {
 		return err
 	}

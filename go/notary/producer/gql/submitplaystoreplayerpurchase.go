@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/graph-gophers/graphql-go"
@@ -26,13 +26,13 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 		return result, errors.New("Not team owner")
 	}
 
-	data, err := playstore.DataFromReceipt(args.Input.Receipt)
+	data, err := googleplaystoreutils.DataFromReceipt(args.Input.Receipt)
 	if err != nil {
 		return result, err
 	}
 
 	ctx := context.Background()
-	client, err := playstore.NewGoogleClientService(b.googleCredentials)
+	client, err := googleplaystoreutils.NewGoogleClientService(b.googleCredentials)
 	if err != nil {
 		return result, err
 	}
@@ -65,7 +65,7 @@ func submitPlayStorePlayerPurchase(
 ) error {
 	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)
 
-	data, err := playstore.DataFromReceipt(in.Receipt)
+	data, err := googleplaystoreutils.DataFromReceipt(in.Receipt)
 	if err != nil {
 		return err
 	}

@@ -7,12 +7,13 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 type Machine struct {
-	client    ClientService
+	client    googleplaystoreutils.ClientService
 	order     storage.PlaystoreOrder
 	contracts contracts.Contracts
 	pvc       *ecdsa.PrivateKey
@@ -21,7 +22,7 @@ type Machine struct {
 }
 
 func New(
-	client ClientService,
+	client googleplaystoreutils.ClientService,
 	order storage.PlaystoreOrder,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
