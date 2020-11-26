@@ -11,6 +11,14 @@ services:
       - "5432:5432"
     environment:
       - PGDATA=postgres
+    command:
+      - "postgres"
+      - "-c"
+      - "synchronous_commit=off"
+      - "-c"
+      - "wal_buffers=2048"
+      - "-c"
+      - "wal_writer_delay=500"
   ipfs.node:
     image: ipfs/go-ipfs:v0.6.0
     restart: always

@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"sort"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -290,4 +292,81 @@ func MatchesStartEpochByTimezone(tx *sql.Tx, timezone uint8) ([]int64, error) {
 		return startTimes[i] < startTimes[j]
 	})
 	return startTimes, nil
+}
+
+func MatchesBulkInsertUpdate(rowsToBeInserted []Match, tx *sql.Tx) error {
+	numParams := 15
+	var err error = nil
+	maxRowsToBeInserted := int(MAX_PARAMS_IN_PG_STMT / numParams)
+	x := 0
+	for x < len(rowsToBeInserted) {
+		newX := x + maxRowsToBeInserted
+		if newX > len(rowsToBeInserted) {
+			newX = len(rowsToBeInserted)
+		}
+		currentRowsToBeInserted := rowsToBeInserted[x:newX]
+		valueStrings := make([]string, 0, len(currentRowsToBeInserted))
+		valueArgs := make([]interface{}, 0, len(currentRowsToBeInserted)*numParams)
+		i := 0
+		for _, post := range currentRowsToBeInserted {
+			valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12, i*numParams+13, i*numParams+14, i*numParams+15))
+			valueArgs = append(valueArgs, post.TimezoneIdx)
+			valueArgs = append(valueArgs, post.CountryIdx)
+			valueArgs = append(valueArgs, post.LeagueIdx)
+			valueArgs = append(valueArgs, post.MatchDayIdx)
+			valueArgs = append(valueArgs, post.MatchIdx)
+			valueArgs = append(valueArgs, post.HomeTeamID.String())
+			valueArgs = append(valueArgs, post.VisitorTeamID.String())
+			valueArgs = append(valueArgs, post.HomeGoals)
+			valueArgs = append(valueArgs, post.VisitorGoals)
+			valueArgs = append(valueArgs, post.HomeTeamSumSkills)
+			valueArgs = append(valueArgs, post.VisitorTeamSumSkills)
+			valueArgs = append(valueArgs, post.State)
+			valueArgs = append(valueArgs, hex.EncodeToString(post.Seed[:]))
+			valueArgs = append(valueArgs, post.StateExtra)
+			valueArgs = append(valueArgs, post.StartEpoch)
+			i++
+		}
+		stmt := fmt.Sprintf(`INSERT INTO matches (
+		timezone_idx,
+		country_idx,
+		league_idx,
+		match_day_idx,
+		match_idx,
+		home_team_id, 
+		visitor_team_id,
+		home_goals,
+		visitor_goals,
+		home_teamsumskills,
+		visitor_teamsumskills,
+		state,
+		seed,
+		state_extra,
+		start_epoch
+		) VALUES %s
+		ON CONFLICT(timezone_idx, country_idx, league_idx, match_day_idx, match_idx) DO UPDATE SET
+		timezone_idx = excluded.timezone_idx,
+		country_idx = excluded.country_idx,
+		league_idx = excluded.league_idx,
+		match_day_idx = excluded.match_day_idx,
+		match_idx = excluded.match_idx,
+		home_team_id = excluded.home_team_id, 
+		visitor_team_id = excluded.visitor_team_id,
+		home_goals = excluded.home_goals,
+		visitor_goals = excluded.visitor_goals,
+		home_teamsumskills = excluded.home_teamsumskills,
+		visitor_teamsumskills = excluded.visitor_teamsumskills,
+		state = excluded.state,
+		seed = excluded.seed,
+		state_extra = excluded.state_extra,
+		start_epoch = excluded.start_epoch
+		`, strings.Join(valueStrings, ","))
+		_, err = tx.Exec(stmt, valueArgs...)
+		if err != nil {
+			return err
+		}
+		x = newX
+	}
+	return err
+
 }

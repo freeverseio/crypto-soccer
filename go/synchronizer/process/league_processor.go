@@ -198,7 +198,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return err
 	}
 	log.Infof("[processor|timezone %v] save matches to storage", timezoneIdx)
-	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
+	if err = matches.ToStorageBulk(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
 	}
 	verse12290SkipUpdateLeaderboardFix := viper.GetBool("patch.verse_12290_skip_update_leaderboard_fix")
