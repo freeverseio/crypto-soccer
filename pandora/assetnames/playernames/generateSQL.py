@@ -123,6 +123,10 @@ properNaming = {
     1009: "TwoOrMoreRegions",
     1010: "Hispanic",
     1100: "Spanish",
+    1141: "BelgiumSurnames",
+    1125: "PolandSurnames",
+    1105: "ItalySurnames",
+    1112: "NetherlandsSurnames"
 }
 
 for code in allCodes:
