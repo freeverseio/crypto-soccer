@@ -2,6 +2,8 @@ package auctionpassmachine
 
 import (
 	"context"
+	"errors"
+	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
@@ -37,6 +39,10 @@ func (b *AuctionPassMachine) processAuctionPassAcknowledged(ctx context.Context,
 }
 
 func (b AuctionPassMachine) acknowledgeAuctionPass(service storage.Tx) error {
+	teamId, _ := new(big.Int).SetString(b.order.TeamId, 10)
+	if teamId == nil {
+		return errors.New("invalid team")
+	}
 	auctionPass := storage.AuctionPass{
 		Owner:              string(b.order.Owner),
 		PurchasedForTeamId: string(b.order.TeamId),

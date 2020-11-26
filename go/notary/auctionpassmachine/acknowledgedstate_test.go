@@ -5,6 +5,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionpassmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/androidpublisher/v3"
 	"gotest.tools/assert"
 )
@@ -14,6 +15,7 @@ func TestAckStateProcessErrorInCLient(t *testing.T) {
 	order.State = storage.AuctionPassPlaystoreOrderAcknowledged
 	client := NewMockClientService()
 	iapTestOn := true
+	log.Infof("Hola")
 	tx, err := service.Begin()
 	assert.NilError(t, err)
 	defer tx.Rollback()
@@ -82,7 +84,7 @@ func TestAckStateProcessTestPurchaseWithTestOn(t *testing.T) {
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process())
 	assert.Equal(t, m.Order().State, storage.AuctionPassPlaystoreOrderRefunding)
-	assert.Equal(t, m.Order().StateExtra, "invalid player")
+	assert.Equal(t, m.Order().StateExtra, "invalid team")
 }
 
 func TestAckStateProcess(t *testing.T) {
@@ -107,5 +109,5 @@ func TestAckStateProcess(t *testing.T) {
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process())
 	assert.Equal(t, m.Order().State, storage.AuctionPassPlaystoreOrderRefunding)
-	assert.Equal(t, m.Order().StateExtra, "invalid player")
+	assert.Equal(t, m.Order().StateExtra, "invalid team")
 }

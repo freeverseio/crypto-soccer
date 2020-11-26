@@ -35,7 +35,7 @@ func (b *Resolver) GetAuctionPass(args struct{ Input input.GetAuctionPassInput }
 		return nil, errors.New("auciton pass not exists for this owner")
 	}
 
-	auctionPass := auctionpass.NewAuctionPass(storageAuctionPass.Owner, storageAuctionPass.PurchasedForTeamId, storageAuctionPass.ProductId, storageAuctionPass.Ack)
+	auctionPass :service= auctionpass.NewAuctionPass(storageAuctionPass.Owner, storageAuctionPass.PurchasedForTeamId, storageAuctionPass.ProductId, storageAuctionPass.Ack)
 
 	return auctionPass, tx.Commit()
 }

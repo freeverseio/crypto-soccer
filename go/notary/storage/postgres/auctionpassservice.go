@@ -38,7 +38,7 @@ func (b *Tx) AuctionPassInsert(order storage.AuctionPass) error {
 		owner,
 		purchased_for_team_id,
 		product_id
-		) VALUES ($1);`,
+		) VALUES ($1, $2, $3);`,
 		order.Owner,
 		order.PurchasedForTeamId,
 		order.ProductId,
@@ -48,7 +48,7 @@ func (b *Tx) AuctionPassInsert(order storage.AuctionPass) error {
 
 func (b *Tx) AuctionPassAcknowledge(ap storage.AuctionPass) error {
 	_, err := b.tx.Exec(`UPDATE auction_pass SET 
-		ack=$1, 
+		ack=$1
 		WHERE owner=$2;`,
 		ap.Ack,
 		ap.Owner,
