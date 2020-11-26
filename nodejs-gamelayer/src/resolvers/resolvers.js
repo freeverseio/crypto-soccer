@@ -15,6 +15,7 @@ const getLastTimeLoggedInResolver = require('./getLastTimeLoggedIn');
 const setLastTimeLoggedInResolver = require('./setLastTimeLoggedIn');
 const createBidResolver = require('./createBidResolver');
 const auctionPassByOwnerResolver = require('./auctionPassByOwnerResolver');
+const playerHistoryGraphByPlayerIdResolver = require('./playerHistoryGraphByPlayerIdResolver');
 
 const web3 = new Web3('');
 
@@ -95,6 +96,12 @@ const resolvers = ({ horizonRemoteSchema }) => {
         fragment: `... on Player { teamId }`,
         resolve(parent, args, context, info) {
           return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+      playerHistoryGraphByPlayerId: {
+        fragment: `... on Player { teamId, playerId}`,
+        resolve(parent, args, context, info) {
+          return playerHistoryGraphByPlayerIdResolver(parent, args, context, info);
         },
       },
     },
