@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionpassmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
 func TestAuctionPassMachineCreation(t *testing.T) {
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	tx, err := service.Begin()
 	assert.NilError(t, err)
@@ -27,7 +28,7 @@ func TestAuctionPassMachineCreation(t *testing.T) {
 }
 
 func TestMachineCreationFailedState(t *testing.T) {
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	tx, err := service.Begin()
 	assert.NilError(t, err)
@@ -47,7 +48,7 @@ func TestMachineCreationFailedState(t *testing.T) {
 }
 
 func TestMachineCreationRefundedState(t *testing.T) {
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	tx, err := service.Begin()
 	assert.NilError(t, err)
@@ -67,7 +68,7 @@ func TestMachineCreationRefundedState(t *testing.T) {
 }
 
 func TestMachineCreationCompleteState(t *testing.T) {
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	tx, err := service.Begin()
 	assert.NilError(t, err)

@@ -3,13 +3,14 @@ package playstore_test
 import (
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
 func TestMachineCreation(t *testing.T) {
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	order := storage.NewPlaystoreOrder()
 	_, err := playstore.New(
@@ -24,7 +25,7 @@ func TestMachineCreation(t *testing.T) {
 }
 
 func TestMachineCreationFailedState(t *testing.T) {
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderFailed
@@ -41,7 +42,7 @@ func TestMachineCreationFailedState(t *testing.T) {
 }
 
 func TestMachineCreationRefundedState(t *testing.T) {
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderRefunded
@@ -58,7 +59,7 @@ func TestMachineCreationRefundedState(t *testing.T) {
 }
 
 func TestMachineCreationCompleteState(t *testing.T) {
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderComplete

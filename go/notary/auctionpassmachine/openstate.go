@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
@@ -19,7 +20,7 @@ func (b *AuctionPassMachine) processAuctionPassOpenState(ctx context.Context, se
 		return nil
 	}
 
-	validator := NewPurchaseValidator(*purchase)
+	validator := googleplaystoreutils.NewPurchaseValidator(*purchase)
 	if validator.IsCanceled() {
 		b.setState(storage.AuctionPassPlaystoreOrderComplete, "cancelled")
 		return nil

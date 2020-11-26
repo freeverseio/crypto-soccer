@@ -1,4 +1,4 @@
-package playstore_test
+package googleplaystoreutils
 
 import (
 	"context"

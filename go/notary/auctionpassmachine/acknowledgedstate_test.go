@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionpassmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/androidpublisher/v3"
@@ -13,7 +14,7 @@ import (
 func TestAckStateProcessErrorInCLient(t *testing.T) {
 	order := storage.NewAuctionPassPlaystoreOrder()
 	order.State = storage.AuctionPassPlaystoreOrderAcknowledged
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	log.Infof("Hola")
 	tx, err := service.Begin()
@@ -36,7 +37,7 @@ func TestAckStateProcessErrorInCLient(t *testing.T) {
 func TestAckStateProcessTestPurchaseWithTestOff(t *testing.T) {
 	order := storage.NewAuctionPassPlaystoreOrder()
 	order.State = storage.AuctionPassPlaystoreOrderAcknowledged
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
 			PurchaseType: new(int64),
@@ -63,7 +64,7 @@ func TestAckStateProcessTestPurchaseWithTestOff(t *testing.T) {
 func TestAckStateProcessTestPurchaseWithTestOn(t *testing.T) {
 	order := storage.NewAuctionPassPlaystoreOrder()
 	order.State = storage.AuctionPassPlaystoreOrderAcknowledged
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
 			PurchaseType: new(int64),
@@ -90,7 +91,7 @@ func TestAckStateProcessTestPurchaseWithTestOn(t *testing.T) {
 func TestAckStateProcess(t *testing.T) {
 	order := storage.NewAuctionPassPlaystoreOrder()
 	order.State = storage.AuctionPassPlaystoreOrderAcknowledged
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{}, nil
 	}

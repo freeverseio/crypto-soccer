@@ -1,4 +1,4 @@
-package auctionpassmachine
+package googleplaystoreutils
 
 import (
 	"encoding/json"

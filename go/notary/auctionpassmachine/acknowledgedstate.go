@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
@@ -22,7 +23,7 @@ func (b *AuctionPassMachine) processAuctionPassAcknowledged(ctx context.Context,
 		return nil
 	}
 
-	validator := NewPurchaseValidator(*purchase)
+	validator := googleplaystoreutils.NewPurchaseValidator(*purchase)
 	if validator.IsTest() && !b.iapTestOn {
 		log.Warningf("[consumer|iap] received test orderId %v ...", purchase.OrderId)
 		b.setState(storage.AuctionPassPlaystoreOrderComplete, "test order")

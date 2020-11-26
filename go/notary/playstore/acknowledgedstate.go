@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/helper"
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
@@ -24,7 +25,7 @@ func (b *Machine) processAcknowledged(ctx context.Context) error {
 		return nil
 	}
 
-	validator := NewPurchaseValidator(*purchase)
+	validator := googleplaystoreutils.NewPurchaseValidator(*purchase)
 	if validator.IsTest() && !b.iapTestOn {
 		log.Warningf("[consumer|iap] received test orderId %v ... skip creating player", purchase.OrderId)
 		b.setState(storage.PlaystoreOrderComplete, "test order")

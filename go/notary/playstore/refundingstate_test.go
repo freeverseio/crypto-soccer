@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
@@ -12,7 +13,7 @@ import (
 func TestRefundingStateProcessError(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderRefunding
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	client.RefundFunc = func() error { return errors.New("complicated") }
 	iapTestOn := true
 	m, err := playstore.New(
@@ -32,7 +33,7 @@ func TestRefundingStateProcessError(t *testing.T) {
 func TestRefundingStateProcessNoError(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderRefunding
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	client.RefundFunc = func() error { return nil }
 	iapTestOn := true
 	m, err := playstore.New(
