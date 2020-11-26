@@ -46,13 +46,13 @@ func (b *AuctionPassMachine) Process() error {
 
 	switch b.order.State {
 	case storage.AuctionPassPlaystoreOrderOpen:
-		log.Infof("[playstore|process] orderId %v in Open state", b.order.OrderId)
+		log.Infof("[auctionpass|playstore|process] orderId %v in Open state", b.order.OrderId)
 		return b.processAuctionPassOpenState(ctx, b.service)
 	case storage.AuctionPassPlaystoreOrderAcknowledged:
-		log.Infof("[playstore|process] orderId %v in Acknowledged state", b.order.OrderId)
+		log.Infof("[auctionpass|playstore|process] orderId %v in Acknowledged state", b.order.OrderId)
 		return b.processAuctionPassAcknowledged(ctx, b.service)
 	case storage.AuctionPassPlaystoreOrderRefunding:
-		log.Infof("[playstore|process] orderId %v in Refunding state", b.order.OrderId)
+		log.Infof("[auctionpass|playstore|process] orderId %v in Refunding state", b.order.OrderId)
 		return b.processAuctionPassRefundingState(ctx)
 	case storage.AuctionPassPlaystoreOrderFailed:
 		log.Warning("failed order ... skip")

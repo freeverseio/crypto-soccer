@@ -37,7 +37,6 @@ func ProcessAuctionPassPlaystoreOrders(
 			order,
 			contracts,
 			pvc,
-			namesdb,
 			iapTestOn,
 		)
 		if err != nil {
@@ -47,7 +46,7 @@ func ProcessAuctionPassPlaystoreOrders(
 			log.Error(err)
 			continue
 		}
-		if err := service.PlayStoreUpdateState(machine.Order()); err != nil {
+		if err := service.AuctionPassPlayStoreUpdateState(machine.Order()); err != nil {
 			return err
 		}
 	}
