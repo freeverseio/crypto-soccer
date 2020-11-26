@@ -55,7 +55,8 @@ def writeAllNamesForCountry(database_name, countryCode, countryName):
             else:
                 thisLine = line.rstrip('\n').split(",")
                 assert len(thisLine) == nFields, "wrong num of fields"
-                allNames.append(thisLine[0])
+                surname = thisLine[0].replace("  ", " ").strip()
+                allNames.append(surname)
     writeNames(allNames, countryCode, countryName)
 
 
