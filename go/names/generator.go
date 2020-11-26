@@ -261,6 +261,38 @@ func (b *Generator) GenerateSurname(playerId *big.Int, generation uint8, region 
 
 func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, tz uint8, countryIdxInTZ uint64) (string, string, string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
+	if tz == 10 && countryIdxInTZ == 0 {
+		return b.GeneratePlayerFullNameV1(playerId, generation, tz, countryIdxInTZ)
+	}
+	return b.GeneratePlayerFullNameV2(playerId, generation, tz, countryIdxInTZ)
+}
+
+func (b *Generator) GeneratePlayerFullNameV2(playerId *big.Int, generation uint8, tz uint8, countryIdxInTZ uint64) (string, string, string, error) {
+	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
+	if tz == 0 || tz > 24 {
+		return "", "", "", fmt.Errorf("Timezone should be within [1, 24], but it was %v", tz)
+	}
+	if generation >= 64 {
+		return "", "", "", fmt.Errorf("Generation should be within [0, 63], but it was %v", generation)
+	}
+	specs, ok := b.deployedCountriesSpecs[serializeTZandCountryIdx(tz, countryIdxInTZ)]
+	if !ok {
+		// Spain is the default country if you query for one that is not specified
+		specs = b.deployedCountriesSpecs[serializeTZandCountryIdx(10, 0)]
+	}
+	name, countryISO2, err := b.GenerateName(playerId, generation, specs.iso2, specs.namePurity)
+	if err != nil {
+		return "", "", "", err
+	}
+	surname, region, err := b.GenerateSurname(playerId, generation, specs.region, specs.surnamePurity)
+	if err != nil {
+		return "", "", "", err
+	}
+	return name + " " + surname, countryISO2, region, nil
+}
+
+func (b *Generator) GeneratePlayerFullNameV1(playerId *big.Int, generation uint8, tz uint8, countryIdxInTZ uint64) (string, string, string, error) {
+	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
 	if tz == 0 || tz > 24 {
 		return "", "", "", fmt.Errorf("Timezone should be within [1, 24], but it was %v", tz)
 	}
