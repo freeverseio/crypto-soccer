@@ -8,7 +8,8 @@ func (b *Tx) AuctionPass(owner string) (*storage.AuctionPass, error) {
 	rows, err := b.tx.Query(`SELECT 
 	owner,
 	purchased_for_team_id,
-	product_id
+	product_id,
+	ack
 	FROM auction_pass WHERE owner=$1;`, owner)
 	if err != nil {
 		return nil, err
@@ -25,6 +26,7 @@ func (b *Tx) AuctionPass(owner string) (*storage.AuctionPass, error) {
 		&order.Owner,
 		&order.PurchasedForTeamId,
 		&order.ProductId,
+		&order.Ack,
 	)
 	if err != nil {
 		return nil, err
