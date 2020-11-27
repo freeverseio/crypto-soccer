@@ -422,9 +422,7 @@ func TeamsBulkInsertUpdate(rowsToBeInserted []Team, tx *sql.Tx) error {
 		tactic = excluded.tactic,
 		match_log = excluded.match_log,
 		manager_name = excluded.manager_name,
-		leaderboard_position = excluded.leaderboard_position,
-		timezone_idx = excluded.timezone_idx,
-		country_idx = excluded.country_idx
+		leaderboard_position = excluded.leaderboard_position
 		`, strings.Join(valueStrings, ","))
 		_, err = tx.Exec(stmt, valueArgs...)
 		if err != nil {

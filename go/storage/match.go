@@ -345,11 +345,6 @@ func MatchesBulkInsertUpdate(rowsToBeInserted []Match, tx *sql.Tx) error {
 		start_epoch
 		) VALUES %s
 		ON CONFLICT(timezone_idx, country_idx, league_idx, match_day_idx, match_idx) DO UPDATE SET
-		timezone_idx = excluded.timezone_idx,
-		country_idx = excluded.country_idx,
-		league_idx = excluded.league_idx,
-		match_day_idx = excluded.match_day_idx,
-		match_idx = excluded.match_idx,
 		home_team_id = excluded.home_team_id, 
 		visitor_team_id = excluded.visitor_team_id,
 		home_goals = excluded.home_goals,
@@ -358,8 +353,7 @@ func MatchesBulkInsertUpdate(rowsToBeInserted []Match, tx *sql.Tx) error {
 		visitor_teamsumskills = excluded.visitor_teamsumskills,
 		state = excluded.state,
 		seed = excluded.seed,
-		state_extra = excluded.state_extra,
-		start_epoch = excluded.start_epoch
+		state_extra = excluded.state_extra
 		`, strings.Join(valueStrings, ","))
 		_, err = tx.Exec(stmt, valueArgs...)
 		if err != nil {
