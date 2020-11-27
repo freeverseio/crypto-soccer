@@ -10,6 +10,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/engine"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	log "github.com/sirupsen/logrus"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
@@ -200,3 +201,25 @@ func TestMinute2Round(t *testing.T) {
 // 	assert.NilError(t, err)
 // 	assert.Assert(t, beginPlayer.Defence != halfPlayer.Defence)
 // }
+
+//Only meaningfull run when universe db is loaded with data in tz 10
+func TestSaveMatchesBulkUpdate(t *testing.T) {
+	t.Parallel()
+	tx, err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	timezoneIdx := uint8(10)
+	day := uint8(0)
+
+	log.Infof("[TEST] Loading matches...")
+	matches, err := process.NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
+	assert.NilError(t, err)
+
+	log.Infof("[Ŧ€ßŦ] Saving %v matches...", len(*matches))
+	err = matches.ToStorageBulk(*bc.Contracts, tx, 1000)
+
+	log.Infof("[TEST]... end")
+	assert.NilError(t, err)
+}

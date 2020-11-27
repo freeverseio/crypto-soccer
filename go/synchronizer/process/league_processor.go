@@ -8,9 +8,9 @@ import (
 	"math/big"
 	"sort"
 
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"github.com/spf13/viper"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"github.com/pkg/errors"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -198,10 +198,9 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return err
 	}
 	log.Infof("[processor|timezone %v] save matches to storage", timezoneIdx)
-	if err = matches.ToStorage(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
+	if err = matches.ToStorageBulk(*b.contracts, tx, event.Raw.BlockNumber); err != nil {
 		return err
 	}
-
 	verse12290SkipUpdateLeaderboardFix := viper.GetBool("patch.verse_12290_skip_update_leaderboard_fix")
 	verse12328SkipUpdateLeaderboardFix := viper.GetBool("patch.verse_12328_skip_update_leaderboard_fix")
 	if !(verse12290SkipUpdateLeaderboardFix && verse == 12290) {
@@ -209,7 +208,6 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 			if turnInDay == 1 {
 				log.Infof("[processor|timezone %v] update leaderboard", timezoneIdx)
 				leaderboardService := leaderboard.NewLeaderboardService(storagepostgres.NewStorageService(tx))
-
 				verseCalculateLeaderboardFix := viper.GetUint64("patch.calculate_leaderboard_fix")
 
 				if verse < verseCalculateLeaderboardFix {
@@ -382,11 +380,11 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 		return err
 	}
 	// Suggest to make Clean set ALL = false
-	err = storage.TeamCleanZombies(tx)
+	err = storage.TeamCleanZombies(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
-	err = storage.TeamUpdateZombies(tx)
+	err = storage.TeamUpdateZombies(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}

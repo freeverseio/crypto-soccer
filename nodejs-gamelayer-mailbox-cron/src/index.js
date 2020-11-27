@@ -8,8 +8,8 @@ const logger = require('./logger');
 
 cron.schedule(MAILBOX_CRON, async () => {
   logger.info('Initiating mailbox events polling...');
+  await processOffersHistories();
   await processBidsHistories();
   await processAuctionHistories();
-  await processOffersHistories();
   await processPendingPayingBids();
 });

@@ -222,15 +222,17 @@ func TestUpdateTeamOwner(t *testing.T) {
 }
 
 func TestZombies(t *testing.T) {
+	countryIdx := uint32(4)
+	timezoneIdx := uint8(1)
 	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	err = storage.TeamUpdateZombies(tx)
+	err = storage.TeamUpdateZombies(tx, timezoneIdx, countryIdx)
 	assert.NilError(t, err)
 
-	err = storage.TeamCleanZombies(tx)
+	err = storage.TeamCleanZombies(tx, timezoneIdx, countryIdx)
 	assert.NilError(t, err)
 }
 
