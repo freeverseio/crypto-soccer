@@ -1,4 +1,4 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
+gpiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 commonLabels:
   app.kubernetes.io/part-of: cryptosoccer
@@ -8,37 +8,37 @@ resources:
 - configmap.yaml
 images:
 - name: freeverseio/authproxy
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/dashboard
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/horizon
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/market.db
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/market.notary
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/market.trader
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/relay.actions
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/synchronizer
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/universe.api
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/universe.db
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/dashboard
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/gamelayer
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/game.db
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/gamelayer.webhook
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/market.read.api
-  newTag: 0.25.1
+  newTag: 0.25.2
 - name: freeverseio/gamelayer.mailbox.cron
-  newTag: 0.25.1
+  newTag: 0.25.2
 patchesJson6902:
 - target:
     group: networking.k8s.io
