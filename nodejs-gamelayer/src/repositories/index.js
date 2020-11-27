@@ -11,6 +11,7 @@ const updateMessageRead = require('./updateMessageRead');
 const selectNumUnreadMessages = require('./selectNumUnreadMessages');
 const selectTeamLastTimeLoggedIn = require('./selectTeamLastTimeLoggedIn');
 const upsertTeamLastTimeLoggedIn = require('./upsertTeamLastTimeLoggedIn');
+const upsertTeamGetSocialId = require('./upsertTeamGetSocialId');
 
 module.exports = {
   selectTeamName,
@@ -26,4 +27,5 @@ module.exports = {
   selectNumUnreadMessages,
   selectTeamLastTimeLoggedIn,
   upsertTeamLastTimeLoggedIn,
+  upsertTeamGetSocialId,
 };

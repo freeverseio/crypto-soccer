@@ -16,6 +16,7 @@ const setLastTimeLoggedInResolver = require('./setLastTimeLoggedIn');
 const createBidResolver = require('./createBidResolver');
 const auctionPassByOwnerResolver = require('./auctionPassByOwnerResolver');
 const playerHistoryGraphByPlayerIdResolver = require('./playerHistoryGraphByPlayerIdResolver');
+const setGetSocialIdResolver = require('./setGetSocialIdResolver');
 
 const web3 = new Web3('');
 
@@ -242,6 +243,7 @@ const resolvers = ({ horizonRemoteSchema }) => {
       setMailboxStart: setMailboxStartResolver,
       setMessageRead: setMessageReadResolver,
       setLastTimeLoggedIn: setLastTimeLoggedInResolver,
+      setGetSocialId: async (parent, args, context, info) => setGetSocialIdResolver(parent, args, context, info, web3),
     },
     Query: {
       getMessages: getMessagesResolver,
