@@ -118,7 +118,7 @@ const main = async () => {
     }
     
     extend type Player {
-      playerHistoryGraphByPlayerId: PlayerHistoryGraph
+      playerHistoryGraphByPlayerId(first: Int!): PlayerHistoryGraph
     }
   `;
 

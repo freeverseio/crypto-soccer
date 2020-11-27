@@ -3,6 +3,7 @@ const HorizonService = require('../services/HorizonService.js');
 const playerHistoryGraphByPlayerIdResolver = async (parent, args, context, info, schema) => {
   const teamId = parent.teamId;
   const playerId = parent.playerId;
+  const first = args.first;
 
   const matchesBlockNumbers = await HorizonService.getMatchesPlayedByTeamId({ teamId });
   const playerHistoryGraph = [];
@@ -15,7 +16,7 @@ const playerHistoryGraphByPlayerIdResolver = async (parent, args, context, info,
     playerHistoryGraph.push({ encodedSkills: encodedSkills });
   }
 
-  return { nodes: playerHistoryGraph };
+  return { nodes: playerHistoryGraph.slice(0, first) };
 };
 
 module.exports = playerHistoryGraphByPlayerIdResolver;
