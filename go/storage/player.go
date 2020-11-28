@@ -344,11 +344,7 @@ func PlayersBulkInsertUpdate(rowsToBeInserted []Player, tx *sql.Tx) error {
 			tiredness = excluded.tiredness,
 			country_of_birth = excluded.country_of_birth,
 			race = excluded.race,
-			yellow_card_1st_half = excluded.yellow_card_1st_half,
-			preferred_position = excluded.preferred_position,
-			potential = excluded.potential,
-			day_of_birth = excluded.day_of_birth,
-			encoded_state = excluded.encoded_state
+			yellow_card_1st_half = excluded.yellow_card_1st_half
 			`, strings.Join(valueStrings, ","))
 		_, err = tx.Exec(stmt, valueArgs...)
 		if err != nil {
