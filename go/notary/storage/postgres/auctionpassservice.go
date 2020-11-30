@@ -6,10 +6,7 @@ import (
 
 func (b *Tx) AuctionPass(owner string) (*storage.AuctionPass, error) {
 	rows, err := b.tx.Query(`SELECT 
-	owner,
-	purchased_for_team_id,
-	product_id,
-	ack
+	owner
 	FROM auction_pass WHERE owner=$1;`, owner)
 	if err != nil {
 		return nil, err
@@ -24,9 +21,6 @@ func (b *Tx) AuctionPass(owner string) (*storage.AuctionPass, error) {
 
 	err = rows.Scan(
 		&order.Owner,
-		&order.PurchasedForTeamId,
-		&order.ProductId,
-		&order.Ack,
 	)
 	if err != nil {
 		return nil, err
@@ -37,23 +31,9 @@ func (b *Tx) AuctionPass(owner string) (*storage.AuctionPass, error) {
 
 func (b *Tx) AuctionPassInsert(order storage.AuctionPass) error {
 	_, err := b.tx.Exec(`INSERT INTO auction_pass (
-		owner,
-		purchased_for_team_id,
-		product_id
-		) VALUES ($1, $2, $3);`,
+		owner
+		) VALUES ($1);`,
 		order.Owner,
-		order.PurchasedForTeamId,
-		order.ProductId,
-	)
-	return err
-}
-
-func (b *Tx) AuctionPassAcknowledge(ap storage.AuctionPass) error {
-	_, err := b.tx.Exec(`UPDATE auction_pass SET 
-		ack=$1
-		WHERE owner=$2;`,
-		ap.Ack,
-		ap.Owner,
 	)
 	return err
 }

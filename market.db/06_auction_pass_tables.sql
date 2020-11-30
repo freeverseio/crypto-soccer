@@ -27,9 +27,6 @@ CREATE TABLE auction_pass_playstore_orders_histories(
 
 CREATE TABLE auction_pass(
     owner TEXT NOT NULL,
-    purchased_for_team_id TEXT NOT NULL,
-    product_id TEXT NOT NULL,
-    ack BOOLEAN DEFAULT false,
     PRIMARY KEY(owner)
 );
 

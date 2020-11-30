@@ -38,18 +38,6 @@ func (b *AuctionPassMachine) processAuctionPassOpenState(ctx context.Context, se
 		return nil
 	}
 
-	auctionPass := storage.AuctionPass{
-		Owner:              string(b.order.Owner),
-		PurchasedForTeamId: string(b.order.TeamId),
-		ProductId:          string(b.order.ProductId),
-		Ack:                false,
-	}
-	err = service.AuctionPassInsert(auctionPass)
-	if err != nil {
-		b.setState(storage.AuctionPassPlaystoreOrderOpen, err.Error())
-		return nil
-	}
-
 	payload := fmt.Sprintf("owner: %v", b.order.Owner)
 	if err := b.client.AcknowledgePurchase(
 		ctx,

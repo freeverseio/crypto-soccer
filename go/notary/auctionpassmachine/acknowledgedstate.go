@@ -40,19 +40,19 @@ func (b *AuctionPassMachine) processAuctionPassAcknowledged(ctx context.Context,
 }
 
 func (b AuctionPassMachine) acknowledgeAuctionPass(service storage.Tx) error {
+
 	teamId, _ := new(big.Int).SetString(b.order.TeamId, 10)
 	if teamId == nil {
 		return errors.New("invalid team")
 	}
+
 	auctionPass := storage.AuctionPass{
-		Owner:              string(b.order.Owner),
-		PurchasedForTeamId: string(b.order.TeamId),
-		ProductId:          string(b.order.ProductId),
-		Ack:                true,
+		Owner: string(b.order.Owner),
 	}
-	err := service.AuctionPassAcknowledge(auctionPass)
+	err := service.AuctionPassInsert(auctionPass)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

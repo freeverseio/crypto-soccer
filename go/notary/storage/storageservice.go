@@ -50,5 +50,4 @@ type Tx interface {
 	// AuctionPass
 	AuctionPass(owner string) (*AuctionPass, error)
 	AuctionPassInsert(order AuctionPass) error
-	AuctionPassAcknowledge(ap AuctionPass) error
 }

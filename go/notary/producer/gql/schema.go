@@ -81,16 +81,8 @@ const Schema = `
 		id: ID!
 	}
 
-	input GetAuctionPassInput {
-		teamId: ID!
-		signature: String!
-	}
-
-	type AuctionPass {
-		Owner: String!
-		PurchasedForTeamId: String!
-		ProductId: String!
-		Ack: Boolean!
+	input HasAuctionPassInput {
+		owner: ID!
 	}
 
 	type WorldPlayer {
@@ -112,7 +104,7 @@ const Schema = `
 
 	type Query {
 		getWorldPlayers(input: GetWorldPlayersInput!): [WorldPlayer]! 
-		getAuctionPass(input: GetAuctionPassInput!): AuctionPass
+		hasAuctionPass(input: HasAuctionPassInput!): Boolean
 	}
 
 	type Mutation {

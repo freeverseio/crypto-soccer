@@ -1,6 +1,3 @@
 (*storage.AuctionPass)({
-	Owner: (string) "",
-	PurchasedForTeamId: (string) "",
-	ProductId: (string) "",
-	Ack: (bool) false
+	Owner: (string) ""
 })

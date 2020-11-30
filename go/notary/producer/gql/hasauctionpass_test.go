@@ -28,11 +28,16 @@ func TestGetAuctionPass(t *testing.T) {
 
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
-	in := input.GetAuctionPassInput{}
-	in.Signature = "a67621b4763db406f404c4a600ce0e79ee50147c209e85d2f146f0d760c0a1ac2a213a06f702995cee279af1f588b55c9fa462b2e6a9502d25cede77ec690ced1c"
-	in.TeamId = "274877906944"
+	in := input.HasAuctionPassInput{}
+	in.Owner = "274877906944"
 
-	auctionPass, err := r.GetAuctionPass(struct{ Input input.GetAuctionPassInput }{in})
+	auctionPass, err := r.HasAuctionPass(struct{ Input input.HasAuctionPassInput }{in})
 	assert.NilError(t, err)
-	assert.Assert(t, auctionPass.Owner() == "yo")
+	assert.Equal(t, *auctionPass, false)
+
+	in.Owner = "yo"
+
+	auctionPass, err = r.HasAuctionPass(struct{ Input input.HasAuctionPassInput }{in})
+	assert.NilError(t, err)
+	assert.Equal(t, *auctionPass, true)
 }

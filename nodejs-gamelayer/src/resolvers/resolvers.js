@@ -14,6 +14,7 @@ const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
 const getLastTimeLoggedInResolver = require('./getLastTimeLoggedIn');
 const setLastTimeLoggedInResolver = require('./setLastTimeLoggedIn');
 const createBidResolver = require('./createBidResolver');
+const auctionPassByOwnerResolver = require('./auctionPassByOwnerResolver');
 
 const web3 = new Web3('');
 
@@ -44,6 +45,12 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return selectTeamManagerName({ teamId: team.teamId }).then((result) => {
             return result && result.team_manager_name ? result.team_manager_name : team.managerName;
           });
+        },
+      },
+      auctionPassByOwner: {
+        fragment: `... on Team { owner }`,
+        resolve(parent, args, context, info) {
+          return auctionPassByOwnerResolver(parent, args, context, info, horizonRemoteSchema);
         },
       },
     },
