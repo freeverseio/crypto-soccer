@@ -94,6 +94,12 @@ const main = async () => {
   		rnd: Int!
   		teamId: String!
     }
+    
+    input SetGetSocialIdInput {
+      signature: String!
+      teamId: String!
+      getSocialId: String!
+    }
 
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
@@ -104,6 +110,7 @@ const main = async () => {
       setMessageRead(id: ID!): Boolean
       setLastTimeLoggedIn(teamId: ID!): Boolean
       createBid(input: CreateBidInput!): ID!
+      setGetSocialId(input: SetGetSocialIdInput!): Boolean
     }
     
     extend type Query {
