@@ -1,24 +1,27 @@
-package playstore_test
+package auctionpassmachine_test
 
 import (
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/auctionpassmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
-	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"gotest.tools/assert"
 )
 
-func TestMachineCreation(t *testing.T) {
+func TestAuctionPassMachineCreation(t *testing.T) {
 	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
-	order := storage.NewPlaystoreOrder()
-	_, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	order := storage.NewAuctionPassPlaystoreOrder()
+	_, err = auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -27,14 +30,17 @@ func TestMachineCreation(t *testing.T) {
 func TestMachineCreationFailedState(t *testing.T) {
 	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
-	order := storage.NewPlaystoreOrder()
-	order.State = storage.PlaystoreOrderFailed
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	order := storage.NewAuctionPassPlaystoreOrder()
+	order.State = storage.AuctionPassPlaystoreOrderFailed
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -44,14 +50,17 @@ func TestMachineCreationFailedState(t *testing.T) {
 func TestMachineCreationRefundedState(t *testing.T) {
 	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
-	order := storage.NewPlaystoreOrder()
-	order.State = storage.PlaystoreOrderRefunded
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	order := storage.NewAuctionPassPlaystoreOrder()
+	order.State = storage.AuctionPassPlaystoreOrderRefunded
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
@@ -61,14 +70,17 @@ func TestMachineCreationRefundedState(t *testing.T) {
 func TestMachineCreationCompleteState(t *testing.T) {
 	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
-	order := storage.NewPlaystoreOrder()
-	order.State = storage.PlaystoreOrderComplete
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	order := storage.NewAuctionPassPlaystoreOrder()
+	order.State = storage.AuctionPassPlaystoreOrderComplete
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)

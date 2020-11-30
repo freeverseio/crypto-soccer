@@ -4,15 +4,15 @@ import (
 	"crypto/ecdsa"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
+	"github.com/freeverseio/crypto-soccer/go/notary/auctionpassmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	log "github.com/sirupsen/logrus"
 )
 
-func ProcessPlaystoreOrders(
+func ProcessAuctionPassPlaystoreOrders(
 	service storage.Tx,
 	contracts contracts.Contracts,
 	pvc *ecdsa.PrivateKey,
@@ -20,7 +20,7 @@ func ProcessPlaystoreOrders(
 	namesdb *names.Generator,
 	iapTestOn bool,
 ) error {
-	orders, err := service.PlayStorePendingOrders()
+	orders, err := service.AuctionPassPlayStorePendingOrders()
 	if err != nil {
 		return err
 	}
@@ -31,12 +31,12 @@ func ProcessPlaystoreOrders(
 	}
 
 	for _, order := range orders {
-		machine, err := playstore.New(
+		machine, err := auctionpassmachine.New(
+			service,
 			client,
 			order,
 			contracts,
 			pvc,
-			namesdb,
 			iapTestOn,
 		)
 		if err != nil {
@@ -46,7 +46,7 @@ func ProcessPlaystoreOrders(
 			log.Error(err)
 			continue
 		}
-		if err := service.PlayStoreUpdateState(machine.Order()); err != nil {
+		if err := service.AuctionPassPlayStoreUpdateState(machine.Order()); err != nil {
 			return err
 		}
 	}

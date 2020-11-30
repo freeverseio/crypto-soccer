@@ -1,18 +1,18 @@
-package playstore_test
+package auctionpassmachine_test
 
 import (
 	"errors"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/auctionpassmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
-	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"google.golang.org/api/androidpublisher/v3"
 	"gotest.tools/assert"
 )
 
 func TestOpenStateProcessInvalidPurchaseState(t *testing.T) {
-	order := storage.NewPlaystoreOrder()
+	order := storage.NewAuctionPassPlaystoreOrder()
 	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
@@ -21,22 +21,25 @@ func TestOpenStateProcessInvalidPurchaseState(t *testing.T) {
 	}
 	client.AcknowledgedPurchaseFunc = func() error { return nil }
 	iapTestOn := true
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process())
-	assert.Equal(t, m.Order().State, storage.PlaystoreOrderFailed)
+	assert.Equal(t, m.Order().State, storage.AuctionPassPlaystoreOrderFailed)
 	assert.Equal(t, m.Order().StateExtra, "invalid puchase state")
 }
 
 func TestOpenStateProcessPendingPurchaseState(t *testing.T) {
-	order := storage.NewPlaystoreOrder()
+	order := storage.NewAuctionPassPlaystoreOrder()
 	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
@@ -45,22 +48,25 @@ func TestOpenStateProcessPendingPurchaseState(t *testing.T) {
 	}
 	client.AcknowledgedPurchaseFunc = func() error { return nil }
 	iapTestOn := true
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process())
-	assert.Equal(t, m.Order().State, storage.PlaystoreOrderOpen)
+	assert.Equal(t, m.Order().State, storage.AuctionPassPlaystoreOrderOpen)
 	assert.Equal(t, m.Order().StateExtra, "pending")
 }
 
 func TestOpenStateProcessCancelledPurchaseState(t *testing.T) {
-	order := storage.NewPlaystoreOrder()
+	order := storage.NewAuctionPassPlaystoreOrder()
 	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
@@ -69,25 +75,27 @@ func TestOpenStateProcessCancelledPurchaseState(t *testing.T) {
 	}
 	client.AcknowledgedPurchaseFunc = func() error { return nil }
 	iapTestOn := true
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process())
-	assert.Equal(t, m.Order().State, storage.PlaystoreOrderComplete)
+	assert.Equal(t, m.Order().State, storage.AuctionPassPlaystoreOrderComplete)
 	assert.Equal(t, m.Order().StateExtra, "cancelled")
 }
 
 func TestOpenStateProcessPurchasedPurchaseState(t *testing.T) {
-	order := storage.NewPlaystoreOrder()
+	order := storage.NewAuctionPassPlaystoreOrder()
 	order.OrderId = "3"
 	order.TeamId = "1099511627776"
-	order.PlayerId = "333"
 	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
@@ -96,22 +104,25 @@ func TestOpenStateProcessPurchasedPurchaseState(t *testing.T) {
 	}
 	client.AcknowledgedPurchaseFunc = func() error { return nil }
 	iapTestOn := true
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process())
-	assert.Equal(t, m.Order().State, storage.PlaystoreOrderRefunding)
-	assert.Equal(t, m.Order().StateExtra, "orderId 3 has an invalid playerId 333")
+	assert.Equal(t, m.Order().State, storage.AuctionPassPlaystoreOrderAcknowledged)
+	assert.Equal(t, m.Order().StateExtra, "")
 }
 
 func TestOpenStateProcessErrorInAck(t *testing.T) {
-	order := storage.NewPlaystoreOrder()
+	order := storage.NewAuctionPassPlaystoreOrder()
 	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
@@ -120,22 +131,25 @@ func TestOpenStateProcessErrorInAck(t *testing.T) {
 	}
 	client.AcknowledgedPurchaseFunc = func() error { return errors.New("horrorrrrr") }
 	iapTestOn := true
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process())
-	assert.Equal(t, m.Order().State, storage.PlaystoreOrderOpen)
-	assert.Equal(t, m.Order().StateExtra, "invalid teamId")
+	assert.Equal(t, m.Order().State, storage.AuctionPassPlaystoreOrderOpen)
+	assert.Equal(t, m.Order().StateExtra, "horrorrrrr")
 }
 
 func TestOpenStateProcessAlreadyAck(t *testing.T) {
-	order := storage.NewPlaystoreOrder()
+	order := storage.NewAuctionPassPlaystoreOrder()
 	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
@@ -145,16 +159,19 @@ func TestOpenStateProcessAlreadyAck(t *testing.T) {
 	}
 	client.AcknowledgedPurchaseFunc = func() error { return errors.New("horrorrrrr") }
 	iapTestOn := true
-	m, err := playstore.New(
+	tx, err := service.Begin()
+	assert.NilError(t, err)
+	defer tx.Rollback()
+	m, err := auctionpassmachine.New(
+		tx,
 		client,
 		*order,
 		*bc.Contracts,
 		bc.Owner,
-		namesdb,
 		iapTestOn,
 	)
 	assert.NilError(t, err)
 	assert.NilError(t, m.Process())
-	assert.Equal(t, m.Order().State, storage.PlaystoreOrderFailed)
+	assert.Equal(t, m.Order().State, storage.AuctionPassPlaystoreOrderFailed)
 	assert.Equal(t, m.Order().StateExtra, "already acknowledged")
 }

@@ -85,7 +85,7 @@ const main = async () => {
   		extraPrice: Int!
   		rnd: Int!
   		teamId: String!
-	  }
+    }
 
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
@@ -103,6 +103,10 @@ const main = async () => {
       getNumUnreadMessages(teamId : ID!): Int!
       createBid(input: CreateBidInput!): ID!
       getLastTimeLoggedIn(teamId: ID!): String!
+    }
+
+    extend type Team {
+      auctionPassByOwner(owner: String!): Boolean
     }
   `;
 

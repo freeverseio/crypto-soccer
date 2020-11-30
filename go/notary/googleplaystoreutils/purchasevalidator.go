@@ -1,4 +1,4 @@
-package playstore
+package googleplaystoreutils
 
 import "google.golang.org/api/androidpublisher/v3"
 

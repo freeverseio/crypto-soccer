@@ -1,4 +1,4 @@
-package playstore
+package googleplaystoreutils
 
 import (
 	"encoding/json"

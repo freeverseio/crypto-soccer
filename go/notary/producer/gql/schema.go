@@ -35,6 +35,12 @@ const Schema = `
 		playerId: ID!
 		teamId: ID!
 	}
+	
+	input SubmitAuctionPassPlayStorePurchaseInput {
+		signature: String!
+		receipt: String!
+		teamId: ID!
+	}
 
 	input DismissPlayerInput {
 		signature: String!
@@ -75,6 +81,10 @@ const Schema = `
 		id: ID!
 	}
 
+	input HasAuctionPassInput {
+		owner: ID!
+	}
+
 	type WorldPlayer {
 		playerId: ID!
 		name: String!
@@ -94,6 +104,7 @@ const Schema = `
 
 	type Query {
 		getWorldPlayers(input: GetWorldPlayersInput!): [WorldPlayer]! 
+		hasAuctionPass(input: HasAuctionPassInput!): Boolean
 	}
 
 	type Mutation {
@@ -103,6 +114,7 @@ const Schema = `
 		createBid(input: CreateBidInput!): ID!
 		cancelAuction(input: CancelAuctionInput!): ID!
 		submitPlayStorePlayerPurchase(input: SubmitPlayStorePlayerPurchaseInput!): ID!
+		submitAuctionPassPlayStorePurchase(input: SubmitAuctionPassPlayStorePurchaseInput!): ID!
 		dismissPlayer(input: DismissPlayerInput!): ID!
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
 		cancelAllOffersBySeller(input: CancelAllOffersBySellerInput!): ID!

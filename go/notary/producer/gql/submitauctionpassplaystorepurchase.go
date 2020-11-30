@@ -11,10 +11,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
-	Input input.SubmitPlayStorePlayerPurchaseInput
+func (b *Resolver) SubmitAuctionPassPlayStorePurchase(args struct {
+	Input input.SubmitAuctionPassPlayStorePurchaseInput
 }) (graphql.ID, error) {
-	log.Infof("[notary|producer|gql] submit IAP %+v", args.Input)
+	log.Infof("[notary|producer|gql] submit AuctionPass IAP %+v", args.Input)
 
 	result := graphql.ID("")
 
@@ -51,7 +51,7 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	if err != nil {
 		return result, err
 	}
-	if err := submitPlayStorePlayerPurchase(tx, args.Input); err != nil {
+	if err := submitAuctionPassPlayStorePurchase(tx, args.Input); err != nil {
 		tx.Rollback()
 		return result, err
 	}
@@ -59,27 +59,31 @@ func (b *Resolver) SubmitPlayStorePlayerPurchase(args struct {
 	return graphql.ID(data.PurchaseToken), tx.Commit()
 }
 
-func submitPlayStorePlayerPurchase(
+func submitAuctionPassPlayStorePurchase(
 	service storage.Tx,
-	in input.SubmitPlayStorePlayerPurchaseInput,
+	in input.SubmitAuctionPassPlayStorePurchaseInput,
 ) error {
-	log.Debugf("SubmitPlayStorePlayerPurchase %+v", in)
+	log.Debugf("SubmitAuctionPassPlayStorePurchase %+v", in)
 
 	data, err := googleplaystoreutils.DataFromReceipt(in.Receipt)
 	if err != nil {
 		return err
 	}
 
-	order := storage.NewPlaystoreOrder()
+	order := storage.NewAuctionPassPlaystoreOrder()
 	order.OrderId = data.OrderId
 	order.PackageName = data.PackageName
 	order.ProductId = data.ProductId
 	order.PurchaseToken = data.PurchaseToken
-	order.PlayerId = string(in.PlayerId)
 	order.TeamId = string(in.TeamId)
+	owner, err := in.SignerAddress()
+	if err != nil {
+		return err
+	}
+	order.Owner = string(owner.Hex())
 	order.Signature = in.Signature
 
-	if err := service.PlayStoreInsert(*order); err != nil {
+	if err := service.AuctionPassPlayStoreInsert(*order); err != nil {
 		return err
 	}
 

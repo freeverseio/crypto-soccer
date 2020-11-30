@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/notary/worldplayer"
 )
@@ -21,7 +22,7 @@ func (b *Machine) processOpenState(ctx context.Context) error {
 		return nil
 	}
 
-	validator := NewPurchaseValidator(*purchase)
+	validator := googleplaystoreutils.NewPurchaseValidator(*purchase)
 	if validator.IsCanceled() {
 		b.setState(storage.PlaystoreOrderComplete, "cancelled")
 		return nil
