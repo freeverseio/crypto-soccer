@@ -79,6 +79,14 @@ const main = async () => {
       nodes: [Message]
     }
 
+    type PlayerHistoryGraphEncodedSkills {
+      encodedSkills: String
+    }
+    
+    type PlayerHistoryGraph {
+      nodes: [PlayerHistoryGraphEncodedSkills]
+    }
+
     input CreateBidInput {
   		signature: String!
 		  auctionId: ID!
@@ -107,6 +115,10 @@ const main = async () => {
 
     extend type Team {
       auctionPassByOwner: Boolean!
+    }
+    
+    extend type Player {
+      playerHistoryGraphByPlayerId(first: Int!): PlayerHistoryGraph
     }
   `;
 
