@@ -60,6 +60,6 @@ func TestGetNilAuctionPass(t *testing.T) {
 	in.Owner = "274877906944"
 
 	_, err := r.HasAuctionPass(struct{ Input input.HasAuctionPassInput }{in})
-	assert.Error(t, err, "auciton pass not exists for this owner")
+	assert.NilError(t, err)
 
 }
