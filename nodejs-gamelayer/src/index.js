@@ -106,7 +106,7 @@ const main = async () => {
     }
 
     extend type Team {
-      auctionPassByOwner(owner: String!): Boolean
+      auctionPassByOwner: Boolean!
     }
   `;
 

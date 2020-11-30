@@ -13,18 +13,18 @@ func (b *Resolver) HasAuctionPass(args struct{ Input input.HasAuctionPassInput }
 	tx, err := b.service.Begin()
 	owner := string(args.Input.Owner)
 	storageAuctionPass, err := tx.AuctionPass(owner)
-	auctionPassExists := owner == storageAuctionPass.Owner
+	auctionPassExists := false
 	if err != nil {
 		tx.Rollback()
-		auctionPassExists = false
 		return &auctionPassExists, err
 	}
 
 	if storageAuctionPass == nil {
 		tx.Rollback()
-		auctionPassExists = false
 		return &auctionPassExists, errors.New("auciton pass not exists for this owner")
 	}
+
+	auctionPassExists = owner == storageAuctionPass.Owner
 
 	return &auctionPassExists, tx.Commit()
 }
