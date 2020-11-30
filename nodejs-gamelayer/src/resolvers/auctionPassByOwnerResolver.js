@@ -1,14 +1,19 @@
 const auctionPassByOwnerResolver = async (parent, args, context, info, schema) => {
-  return await info.mergeInfo.delegateToSchema({
+  const result = await info.mergeInfo.delegateToSchema({
     schema,
     operation: 'query',
     fieldName: 'hasAuctionPass',
     args: {
-      owner: parent.owner,
+      input: { owner: parent.owner },
     },
     context,
     info,
   });
+  if (!result) {
+    return false;
+  }
+
+  return result;
 };
 
 module.exports = auctionPassByOwnerResolver;

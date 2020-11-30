@@ -41,3 +41,25 @@ func TestGetAuctionPass(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, *auctionPass, true)
 }
+
+func TestGetNilAuctionPass(t *testing.T) {
+	ch := make(chan interface{}, 10)
+
+	mock := mockup.Tx{
+		AuctionPassFunc: func(owner string) (*storage.AuctionPass, error) { return nil, nil },
+		RollbackFunc:    func() error { return nil },
+		CommitFunc:      func() error { return nil },
+	}
+	service := &mockup.StorageService{
+		BeginFunc: func() (storage.Tx, error) { return &mock, nil },
+	}
+
+	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
+
+	in := input.HasAuctionPassInput{}
+	in.Owner = "274877906944"
+
+	_, err := r.HasAuctionPass(struct{ Input input.HasAuctionPassInput }{in})
+	assert.Error(t, err, "auciton pass not exists for this owner")
+
+}
