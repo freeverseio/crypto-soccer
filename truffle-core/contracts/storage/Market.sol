@@ -130,8 +130,8 @@ contract Market is MarketView {
         uint256 targetTeamId
      ) 
         external 
-        onlyMarket 
     {
+        require((msg.sender == _market) || (msg.sender == _relay), "Only market or relay are authorized.");
         /// isAcademy checks that player isSpecial, and not written.
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
         require(getSumOfSkills(playerId) < _maxSumSkillsBuyNowPlayer, "buy now player has sum of skills larger than allowed");

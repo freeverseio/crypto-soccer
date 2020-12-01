@@ -1,7 +1,7 @@
 {
     "patch": {
         "engine_version_2": "1598918400",
-        "use_zombies": "9999999",
+        "use_zombies": "15250",
         "reset_timezone_24": "674",
         "reset_timezone_1": "678",
         "calculate_leaderboard_fix": "1200",
