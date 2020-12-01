@@ -1,8 +1,6 @@
 package gql
 
 import (
-	"errors"
-
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,7 +19,7 @@ func (b *Resolver) HasAuctionPass(args struct{ Input input.HasAuctionPassInput }
 
 	if storageAuctionPass == nil {
 		tx.Rollback()
-		return &auctionPassExists, errors.New("auciton pass not exists for this owner")
+		return &auctionPassExists, nil
 	}
 
 	auctionPassExists = owner == storageAuctionPass.Owner
