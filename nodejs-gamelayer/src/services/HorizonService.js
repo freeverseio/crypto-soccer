@@ -199,9 +199,7 @@ class HorizonService {
 
     const result = await request(this.endpoint, query);
 
-    return result && result.playerByPlayerId && result.playerByPlayerId.playersHistoriesByPlayerId && result.playerByPlayerId.playersHistoriesByPlayerId.nodes
-      ? result.playerByPlayerId.playersHistoriesByPlayerId
-      : '';
+    return result && result.playerByPlayerId && result.playerByPlayerId.playersHistoriesByPlayerId ? result.playerByPlayerId.playersHistoriesByPlayerId : '';
   }
 }
 
