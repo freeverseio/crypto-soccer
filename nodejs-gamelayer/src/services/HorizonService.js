@@ -183,6 +183,26 @@ class HorizonService {
       ? result.allPlayersHistories.nodes[0].encodedSkills
       : '';
   }
+
+  async getPlayerHistory({ playerId, count }) {
+    const query = gql`
+      {
+        playerByPlayerId(playerId: "${playerId}") {
+          playersHistoriesByPlayerId(first: ${count}, orderBy: BLOCK_NUMBER_DESC) {
+            nodes {
+              encodedSkills
+            }
+          }
+        }
+      }
+    `;
+
+    const result = await request(this.endpoint, query);
+
+    return result && result.playerByPlayerId && result.playerByPlayerId.playersHistoriesByPlayerId && result.playerByPlayerId.playersHistoriesByPlayerId.nodes
+      ? result.playerByPlayerId.playersHistoriesByPlayerId
+      : '';
+  }
 }
 
 module.exports = new HorizonService();
