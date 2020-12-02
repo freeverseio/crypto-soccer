@@ -31,7 +31,7 @@ func (b *StorageHistoryTx) AuctionPassPlayStoreInsert(order storage.AuctionPassP
 }
 
 func auctionPassPlayStoreInsertHistory(tx *sql.Tx, order storage.AuctionPassPlaystoreOrder) error {
-	_, err := tx.Exec(`INSERT INTO playstore_orders_histories (
+	_, err := tx.Exec(`INSERT INTO auction_pass_playstore_orders_histories (
 		order_id,
 		package_name,
 		product_id,
@@ -52,5 +52,6 @@ func auctionPassPlayStoreInsertHistory(tx *sql.Tx, order storage.AuctionPassPlay
 		order.State,
 		order.StateExtra,
 	)
+
 	return err
 }
