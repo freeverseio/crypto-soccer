@@ -35,6 +35,7 @@ type Team struct {
 	Tactic              string
 	MatchLog            string
 	IsZombie            bool
+	Promo               uint32
 }
 
 type TeamStorageService interface {
@@ -132,8 +133,9 @@ func (b *Team) Update(tx *sql.Tx) error {
 						tactic=$14,
 						match_log=$15,
 						manager_name=$16,
-						leaderboard_position=$17
-						WHERE team_id=$18`,
+						leaderboard_position=$17,
+						promo=$18
+						WHERE team_id=$19`,
 		b.Owner,
 		b.LeagueIdx,
 		b.TeamIdxInLeague,
@@ -151,6 +153,7 @@ func (b *Team) Update(tx *sql.Tx) error {
 		b.MatchLog,
 		b.ManagerName,
 		b.LeaderboardPosition,
+		b.Promo,
 		b.TeamID,
 	)
 	return err
@@ -255,7 +258,8 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	match_log,
 	manager_name,
 	leaderboard_position,
-	is_zombie
+	is_zombie,
+	promo
 	FROM teams WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return team, err
@@ -286,6 +290,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 		&team.ManagerName,
 		&team.LeaderboardPosition,
 		&team.IsZombie,
+		&team.Promo,
 	)
 	if err != nil {
 		return team, err
