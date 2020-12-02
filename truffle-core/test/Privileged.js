@@ -34,6 +34,31 @@ contract('Privileged', (accounts) => {
         utils = await Utils.new().should.be.fulfilled;
     });
 
+    it('testing distribution of weights', async () => {
+        const seed = 4;
+        const nPlayers = 80;
+        const nPlayersPerForwardPos = [nPlayers, 0, 0, 0];
+        const epochDays = Math.floor(1588668910 / (3600 * 24));
+        const timezone = 1;
+        const countryIdxInTz = 0;
+        const levelRanges = [30, 40];
+        const potentialWeights = [1, 2, 3, 4, 5, 0, 7, 8 ,9 ,10];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+        ).should.be.fulfilled;
+        // build a historgram and check that it resembles the potentialWeights distribution
+        const hist = Array.from(new Array(10), (x,i) => 0);
+        for (trait of traitsArray) {
+            hist[trait[0]] += 1
+        }
+        const sumPots = potentialWeights.reduce((a, b) => a + b, 0);
+        // normalize so that the largest number coincides
+        const factor = potentialWeights[potentialWeights.length-1]/hist[hist.length-1];
+        const histNorm = Array.from(hist, (x,i) => Math.round(x*factor));
+        assert.deepEqual(histNorm, [ 1, 1, 3, 4, 2, 0, 4, 6, 6, 10 ]); // not too bad, quite close to potentialWeights
+        assert.equal(histNorm[5], 0);
+    });
+
     it('create batch of world players', async () => {
         const seed = 4;
         const nPlayersPerForwardPos = [1, 2, 3, 4];
