@@ -71,6 +71,43 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     }
     
     function createBuyNowPlayerIdPure(
+        uint256 playerValue, 
+        uint8 maxPotential,
+        uint256 seed, 
+        uint8 forwardPos,
+        uint8 tz,
+        uint256 countryIdxInTZ
+    ) 
+        public 
+        pure 
+        returns(uint32[N_SKILLS] memory skillsVec, uint256 ageYears, uint8[4] memory birthTraits, uint256 internalPlayerId) 
+    {
+        require(maxPotential < 10, "potential out of bouds");
+        uint8 potential = uint8(seed % (maxPotential+1));
+        seed /= 10;
+        ageYears = 16 + (seed % 20);
+        seed /= 20;
+        uint8 shirtNum;
+        if (forwardPos == IDX_GK) {
+            shirtNum = uint8(seed % 2);
+        } else if (forwardPos == IDX_D) {
+            shirtNum = 2 + uint8(seed % 5);
+        } else if (forwardPos == IDX_M) {
+            shirtNum = 7 + uint8(seed % 7);
+        } else if (forwardPos == IDX_F) {
+            shirtNum = 14 + uint8(seed % 4);
+        }
+        seed /= 8;
+        (skillsVec, birthTraits, ) = computeSkills(seed, shirtNum, potential);
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+            skillsVec[sk] = uint16(
+                (uint256(skillsVec[sk]) * computeAvgSkills(playerValue, ageYears, potential))/uint256(1000)
+            );
+        }
+        internalPlayerId = encodeTZCountryAndVal(tz, countryIdxInTZ, seed % 268435455); /// maxPlayerIdxInCountry (28b) = 2**28 - 1 = 268435455
+    }
+
+    function createBuyNowPlayerIdPureV2(
         uint256[2] memory levelRanges, 
         uint256[10] memory potentialWeights,
         uint256 seed, 
@@ -115,8 +152,36 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
         skillsVec[(seed % N_SKILLS)] += uint32((targetLevel - tempLevel) * 1000);
     }
 
-    /// birthTraits = [potential, forwardness, leftishness, aggressiveness]
     function createBuyNowPlayerId(
+        uint256 playerValue, 
+        uint8 maxPotential,
+        uint256 seed, 
+        uint8 forwardPos,
+        uint256 epochInDays,
+        uint8 tz,
+        uint256 countryIdxInTZ
+    ) 
+        public 
+        pure 
+        returns
+    (
+        uint256 playerId,
+        uint32[N_SKILLS] memory skillsVec, 
+        uint16 dayOfBirth, 
+        uint8[4] memory birthTraits, 
+        uint256 internalPlayerId
+    )
+    {
+        uint256 ageYears;
+        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, maxPotential, seed, forwardPos, tz, countryIdxInTZ);
+        /// 1 year = 31536000 sec
+        playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId, epochInDays*24*3600);
+        dayOfBirth = uint16(getBirthDay(playerId));
+    }
+    
+
+    /// birthTraits = [potential, forwardness, leftishness, aggressiveness]
+    function createBuyNowPlayerIdV2(
         uint256[2] memory levelRanges, 
         uint256[10] memory potentialWeights,
         uint256 seed, 
@@ -137,13 +202,53 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     )
     {
         uint256 ageYears;
-        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(levelRanges, potentialWeights, seed, forwardPos, tz, countryIdxInTZ);
+        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPureV2(levelRanges, potentialWeights, seed, forwardPos, tz, countryIdxInTZ);
         /// 1 year = 31536000 sec
         playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId, epochInDays*24*3600);
         dayOfBirth = uint16(getBirthDay(playerId));
     }
     
     function createBuyNowPlayerIdBatch(
+        uint256 playerValue, 
+        uint8 maxPotential,
+        uint256 seed, 
+        uint8[4] memory nPlayersPerForwardPos,
+        uint256 epochInDays,
+        uint8 tz,
+        uint256 countryIdxInTZ
+    ) 
+        public 
+        pure 
+        returns
+    (
+        uint256[] memory playerIdArray,
+        uint32[N_SKILLS][] memory skillsVecArray, 
+        uint16[] memory dayOfBirthArray, 
+        uint8[4][] memory birthTraitsArray, 
+        uint256[] memory internalPlayerIdArray
+    )
+    {
+        uint16 counter;
+        for (uint8 pos = 0; pos < 4; pos++) { counter += nPlayersPerForwardPos[pos]; }
+
+        playerIdArray = new uint256[](counter);
+        skillsVecArray = new uint32[N_SKILLS][](counter);
+        dayOfBirthArray = new uint16[](counter);
+        birthTraitsArray = new uint8[4][](counter);
+        internalPlayerIdArray = new uint256[](counter);
+
+        counter = 0;
+        for (uint8 pos = 0; pos < 4; pos++) { 
+            for (uint16 n = 0; n < nPlayersPerForwardPos[pos]; n++) {
+                seed = uint256(keccak256(abi.encode(seed, n)));
+                (playerIdArray[counter], skillsVecArray[counter], dayOfBirthArray[counter], birthTraitsArray[counter], internalPlayerIdArray[counter]) =
+                    createBuyNowPlayerId(playerValue, maxPotential, seed, pos, epochInDays, tz, countryIdxInTZ);
+                counter++;
+            }
+        }
+    }
+
+    function createBuyNowPlayerIdBatchV2(
         uint256[2] memory levelRanges, 
         uint256[10] memory potentialWeights, 
         uint256 seed, 
@@ -177,7 +282,7 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
             for (uint16 n = 0; n < nPlayersPerForwardPos[pos]; n++) {
                 seed = uint256(keccak256(abi.encode(seed, n)));
                 (playerIdArray[counter], skillsVecArray[counter], dayOfBirthArray[counter], birthTraitsArray[counter], internalPlayerIdArray[counter]) =
-                    createBuyNowPlayerId(levelRanges, potentialWeights, seed, pos, epochInDays, tz, countryIdxInTZ);
+                    createBuyNowPlayerIdV2(levelRanges, potentialWeights, seed, pos, epochInDays, tz, countryIdxInTZ);
                 counter++;
             }
         }

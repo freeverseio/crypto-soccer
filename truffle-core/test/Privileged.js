@@ -43,7 +43,7 @@ contract('Privileged', (accounts) => {
         const countryIdxInTz = 0;
         const levelRanges = [30, 40];
         const potentialWeights = [1, 2, 3, 4, 5, 0, 7, 8 ,9 ,10];
-        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
             levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
         // build a historgram and check that it resembles the potentialWeights distribution
@@ -67,7 +67,7 @@ contract('Privileged', (accounts) => {
         const countryIdxInTz = 0;
         const levelRanges = [30, 40];
         const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
-        await privileged.createBuyNowPlayerIdBatch(
+        await privileged.createBuyNowPlayerIdBatchV2(
             levelRanges,
             potentialWeights,
             seed,
@@ -105,7 +105,7 @@ contract('Privileged', (accounts) => {
         expectedSkills = [ 9167, 5789, 8488, 5257, 9297 ];
         expectedTraits = [ 7, 3, 6, 2 ];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(levelRanges, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
+        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPureV2(levelRanges, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
         // compare actual values
         debug.compareArrays(skills, expectedSkills, toNum = true);
         ageYears.toNumber().should.be.equal(29);
@@ -116,7 +116,7 @@ contract('Privileged', (accounts) => {
         assert.equal((level >= levelRanges[0]) && (level <= levelRanges[1]), true);
         
         // test that you get the same via the non-pure function:
-        var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerId(levelRanges, potentialWeights, seed, forwardPos = 3, epochInDays, tz, countryIdxInTz).should.be.fulfilled;
+        var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerIdV2(levelRanges, potentialWeights, seed, forwardPos = 3, epochInDays, tz, countryIdxInTz).should.be.fulfilled;
         debug.compareArrays(skills2, expectedSkills, toNum = true);
         debug.compareArrays(traits2, expectedTraits, toNum = true);
         internalId2.should.be.bignumber.equal(internalId);
@@ -134,8 +134,8 @@ contract('Privileged', (accounts) => {
         const levelRanges2 = [60, 60];
         const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
         
-        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPure(levelRanges, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
-        var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPure(levelRanges2, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
+        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPureV2(levelRanges, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
+        var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPureV2(levelRanges2, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
         level = skills.reduce((a, b) => a + Math.floor(Number(b)/1000), 0);
         level2 = skills2.reduce((a, b) => a + Math.floor(Number(b)/1000), 0);
         assert.equal(level2, 2 * level);
@@ -159,7 +159,7 @@ contract('Privileged', (accounts) => {
         expectedTraits = [ 6, 3, 3, 1 ];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,2];
-        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
             levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
 
@@ -192,7 +192,7 @@ contract('Privileged', (accounts) => {
         const potentialWeights = [0, 0, 0, 1, 1, 0, 0, 0 ,0 ,0];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,20];
-        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
             levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
         
@@ -207,11 +207,11 @@ contract('Privileged', (accounts) => {
         const potentialWeights = [0, 1, 2, 4, 8, 10, 8, 4, 2 , 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [10,10,10,10];
-        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
             levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
         h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
-        assert.equal(h, '0xd883e2f6396726bc882f2bc5cbbed50b6c973d21d178ec5c3674c033e5082954', "createBuyNowPlayerIdBatch not as expected");
+        assert.equal(h, '0xd883e2f6396726bc882f2bc5cbbed50b6c973d21d178ec5c3674c033e5082954', "createBuyNowPlayerIdBatchV2 not as expected");
 
         if (false) {
             // traits: shoot, speed, pass, defence, endurance
