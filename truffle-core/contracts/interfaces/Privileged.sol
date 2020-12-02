@@ -15,6 +15,8 @@ import "../encoders/EncodingIDs.sol";
 
 contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, EncodingSkillsSetters, EncodingIDs {
     
+    uint256 public constant MAX_RND = 68719476735; /// Max random number used in throwDice
+
     /// order of idxs:
     /// skills: shoot, speed, pass, defence, endurance
     /// birthTraits: potential, forwardness, leftishness, aggressiveness
@@ -69,8 +71,8 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     }
     
     function createBuyNowPlayerIdPure(
-        uint256 playerValue, 
-        uint8 maxPotential,
+        uint256[2] memory levelRanges, 
+        uint256[10] memory potentialWeights,
         uint256 seed, 
         uint8 forwardPos,
         uint8 tz,
@@ -80,8 +82,7 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
         pure 
         returns(uint32[N_SKILLS] memory skillsVec, uint256 ageYears, uint8[4] memory birthTraits, uint256 internalPlayerId) 
     {
-        require(maxPotential < 10, "potential out of bouds");
-        uint8 potential = uint8(seed % (maxPotential+1));
+        uint8 potential = throwDiceArray(potentialWeights, seed % MAX_RND);  
         seed /= 10;
         ageYears = 16 + (seed % 20);
         seed /= 20;
@@ -97,18 +98,27 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
         }
         seed /= 8;
         (skillsVec, birthTraits, ) = computeSkills(seed, shirtNum, potential);
-        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
-            skillsVec[sk] = uint16(
-                (uint256(skillsVec[sk]) * computeAvgSkills(playerValue, ageYears, potential))/uint256(1000)
-            );
-        }
+        uint256 targetLevel = levelRanges[0] + ((seed % 1000000) * (levelRanges[1]- levelRanges[0])) / 1000000;
+        recascaleToTarget(skillsVec, targetLevel, seed);
         internalPlayerId = encodeTZCountryAndVal(tz, countryIdxInTZ, seed % 268435455); /// maxPlayerIdxInCountry (28b) = 2**28 - 1 = 268435455
+    }
+
+    function recascaleToTarget(uint32[N_SKILLS] memory skillsVec, uint256 targetLevel, uint256 seed) public pure {
+        uint256 level;
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) { level += skillsVec[sk]; }
+
+        uint32 tempLevel;
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+            skillsVec[sk] = uint32((uint256(skillsVec[sk]) * targetLevel * 1000) / level);
+            tempLevel += skillsVec[sk]/1000;
+        }
+        skillsVec[(seed % N_SKILLS)] += uint32((targetLevel - tempLevel) * 1000);
     }
 
     /// birthTraits = [potential, forwardness, leftishness, aggressiveness]
     function createBuyNowPlayerId(
-        uint256 playerValue, 
-        uint8 maxPotential,
+        uint256[2] memory levelRanges, 
+        uint256[10] memory potentialWeights,
         uint256 seed, 
         uint8 forwardPos,
         uint256 epochInDays,
@@ -127,15 +137,15 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     )
     {
         uint256 ageYears;
-        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(playerValue, maxPotential, seed, forwardPos, tz, countryIdxInTZ);
+        (skillsVec, ageYears, birthTraits, internalPlayerId) = createBuyNowPlayerIdPure(levelRanges, potentialWeights, seed, forwardPos, tz, countryIdxInTZ);
         /// 1 year = 31536000 sec
         playerId = createSpecialPlayer(skillsVec, ageYears * 31536000, birthTraits, internalPlayerId, epochInDays*24*3600);
         dayOfBirth = uint16(getBirthDay(playerId));
     }
     
     function createBuyNowPlayerIdBatch(
-        uint256 playerValue, 
-        uint8 maxPotential,
+        uint256[2] memory levelRanges, 
+        uint256[10] memory potentialWeights, 
         uint256 seed, 
         uint8[4] memory nPlayersPerForwardPos,
         uint256 epochInDays,
@@ -167,7 +177,7 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
             for (uint16 n = 0; n < nPlayersPerForwardPos[pos]; n++) {
                 seed = uint256(keccak256(abi.encode(seed, n)));
                 (playerIdArray[counter], skillsVecArray[counter], dayOfBirthArray[counter], birthTraitsArray[counter], internalPlayerIdArray[counter]) =
-                    createBuyNowPlayerId(playerValue, maxPotential, seed, pos, epochInDays, tz, countryIdxInTZ);
+                    createBuyNowPlayerId(levelRanges, potentialWeights, seed, pos, epochInDays, tz, countryIdxInTZ);
                 counter++;
             }
         }
@@ -176,4 +186,26 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     function getTZandCountryIdxFromPlayerId(uint256 playerId) public pure returns (uint8 tz, uint256 countryIdxInTZ) {
         (tz, countryIdxInTZ, ) = decodeTZCountryAndVal(getInternalPlayerId(playerId));
     } 
+
+    //// @dev Throws any number of dice and returns the winner's idx.
+    //// @dev Following the explanation above, consider this limits:
+    function throwDiceArray(uint256[10] memory weights, uint256 rndNum) private pure returns(uint8 w) {
+        uint256 uniformRndInSumOfWeights;
+        for (w = 0; w < weights.length; w++) {
+            uniformRndInSumOfWeights += weights[w];
+        }
+        /// if all weights are null, return uniform chance
+        if (uniformRndInSumOfWeights == 0) return uint8(rndNum % weights.length);
+
+        uniformRndInSumOfWeights *= rndNum;
+        uint256 maxRndPlusOne = MAX_RND + 1;
+        uint256 cumSum = 0;
+        for (w = 0; w < weights.length-1; w++) {
+            cumSum += weights[w];
+            if( uniformRndInSumOfWeights < ( cumSum * maxRndPlusOne)) {
+                return w;
+            }
+        }
+        return w;
+    }
 }
