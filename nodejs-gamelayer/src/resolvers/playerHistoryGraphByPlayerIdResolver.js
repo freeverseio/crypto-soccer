@@ -6,7 +6,6 @@ const playerHistoryGraphByPlayerIdResolver = async (parent, args, context, info,
   const step = 28;
 
   const playerHistory = await HorizonService.getPlayerHistory({playerId, count: (first * step)})
-  console.log(playerHistory.nodes.length)
 
   const playerHistoryGraph = [];
   for (let i = 0 ; i < playerHistory.nodes.length ; i += step) {
