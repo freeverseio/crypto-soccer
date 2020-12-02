@@ -1,22 +1,17 @@
 const HorizonService = require('../services/HorizonService.js');
 
 const playerHistoryGraphByPlayerIdResolver = async (parent, args, context, info, schema) => {
-  const teamId = parent.teamId;
   const playerId = parent.playerId;
   const first = args.first;
+  const step = 28;
 
-  const matchesBlockNumbers = await HorizonService.getMatchesPlayedByTeamId({ teamId });
+  const playerHistory = await HorizonService.getPlayerHistory({ playerId, count: first * step });
+
   const playerHistoryGraph = [];
-  for (const blockNumber of matchesBlockNumbers) {
-    const encodedSkills = await HorizonService.getEncodedSkillsByBlockNumberPlayerId({
-      playerId,
-      blockNumber: blockNumber.blockNumber,
-    });
-
-    playerHistoryGraph.push({ encodedSkills: encodedSkills });
+  for (let i = 0; i < playerHistory.nodes.length; i += step) {
+    playerHistoryGraph.push(playerHistory.nodes[i]);
   }
-
-  return { nodes: playerHistoryGraph.slice(0, first) };
+  return { nodes: playerHistoryGraph };
 };
 
 module.exports = playerHistoryGraphByPlayerIdResolver;
