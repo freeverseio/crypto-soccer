@@ -34,7 +34,7 @@ contract('Privileged', (accounts) => {
         utils = await Utils.new().should.be.fulfilled;
     });
 
-    it2('create batch of world players', async () => {
+    it('create batch of world players', async () => {
         const seed = 4;
         const nPlayersPerForwardPos = [1, 2, 3, 4];
         const epochDays = Math.floor(1588668910 / (3600 * 24));
@@ -53,7 +53,7 @@ contract('Privileged', (accounts) => {
         ).should.be.fulfilled;
     });
 
-    it2('creating buyNow players: ageModifier', async () =>  {
+    it('creating buyNow players: ageModifier', async () =>  {
         mods = [];
         for (age = 16; age < 38; age += 3) {
             mod = await privileged.ageModifier(age).should.be.fulfilled;
@@ -63,7 +63,7 @@ contract('Privileged', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true);
     });
 
-    it2('creating buyNow players: potentialModifier', async () =>  {
+    it('creating buyNow players: potentialModifier', async () =>  {
         mods = [];
         for (pot = 0; pot < 10; pot++) {
             mod = await privileged.potentialModifier(pot).should.be.fulfilled;
@@ -73,7 +73,7 @@ contract('Privileged', (accounts) => {
         debug.compareArrays(mods, expectedMods, toNum = true);
     });
     
-    it2('creating one buyNow player', async () =>  {
+    it('creating one buyNow player', async () =>  {
         const levelRanges = [30, 40];
         const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
         
@@ -127,13 +127,15 @@ contract('Privileged', (accounts) => {
         ageYears.should.be.bignumber.equal(ageYears2);
     });
 
-    it2('creating a batch of buyNow players', async () =>  {
-        expectedSkills = [ 665, 912, 1048, 615, 848 ];
-        expectedTraits = [ 3, 3, 3, 1 ];
+    it('creating a batch of buyNow players', async () =>  {
+        const levelRanges = [10, 20];
+        const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
+        expectedSkills = [ 2602, 5568, 4103, 2406, 3319 ];
+        expectedTraits = [ 6, 3, 3, 1 ];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,2];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1000, maxPot = 9, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
 
         // checking that the values of the player props can be extracted from playerId only
@@ -158,26 +160,33 @@ contract('Privileged', (accounts) => {
         countryIdxInTz2.toNumber().should.be.equal(countryIdxInTz);
     });
     
-    it2('creating a batch of buyNow players with less maxPotential', async () =>  {
+    it('creating a batch of buyNow players with restricted potential ranges', async () =>  {
+        const levelRanges = [10, 20];
+        const minPot = 3;
+        const maxPot = 4;
+        const potentialWeights = [0, 0, 0, 1, 1, 0, 0, 0 ,0 ,0];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-        const nPlayersPerForwardPos = [0,0,0,2];
+        const nPlayersPerForwardPos = [0,0,0,20];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1000, maxPot = 4, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
         
         for (const trait of traitsArray) {
             (trait[0].toNumber() <= maxPot).should.be.equal(true);
+            (trait[0].toNumber() >= minPot).should.be.equal(true);
         }
     });
     
-    it2('creating a batch of buyNow players and displaying', async () =>  {
+    it('creating a batch of buyNow players and displaying', async () =>  {
+        const levelRanges = [10, 20];
+        const potentialWeights = [0, 1, 2, 4, 8, 10, 8, 4, 2 , 1];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [10,10,10,10];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatch(
-            playerValue = 1800, maxPot = 9, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
         h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
-        assert.equal(h, '0xc70729c165b3f583cf654dbab489dab5fb5d21ff63e22d30704ad5bcdc01cedf', "createBuyNowPlayerIdBatch not as expected");
+        assert.equal(h, '0xd883e2f6396726bc882f2bc5cbbed50b6c973d21d178ec5c3674c033e5082954', "createBuyNowPlayerIdBatch not as expected");
 
         if (false) {
             // traits: shoot, speed, pass, defence, endurance
