@@ -14,6 +14,16 @@ import (
 	"gotest.tools/golden"
 )
 
+func TestIsPromoPlayer(t *testing.T) {
+	// the string to be passed is part of the struct: WorldPlayersTier.ProductId
+	assert.Assert(t, worldplayer.IsPromoPlayer("pepe") == false)
+	assert.Assert(t, worldplayer.IsPromoPlayer("player_tier_1") == false)
+	assert.Assert(t, worldplayer.IsPromoPlayer("player_tier_2") == true)
+	assert.Assert(t, worldplayer.IsPromoPlayer("player_tier_3") == false)
+	assert.Assert(t, worldplayer.IsPromoPlayer("player_tier_4") == false)
+	assert.Assert(t, worldplayer.IsPromoPlayer("player_tier_5") == false)
+}
+
 func TestGetWorldPlayersDeterministicResult(t *testing.T) {
 	now := int64(3600 * 24 * 7 * 2571) // first second of a week, and of a day
 	teamId := "274877906944"

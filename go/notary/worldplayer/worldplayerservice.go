@@ -20,6 +20,10 @@ type WorldPlayerService struct {
 
 const PeriodSec = 3600 * 12 // half a day
 
+func IsPromoPlayer(productId string) bool {
+	return productId == "player_tier_2"
+}
+
 func NewWorldPlayerService(contracts contracts.Contracts, namesdb *names.Generator) *WorldPlayerService {
 	return &WorldPlayerService{
 		contracts: contracts,
