@@ -70,6 +70,7 @@
 		"Tactic": "340596594427581673436941882753025",
 		"MatchLog": "0",
 		"IsZombie": false,
+		"PromoTimeout": 0,
 		"Players": [
 			{
 				"PlayerId": null,
@@ -684,6 +685,7 @@
 		"Tactic": "340596594427581673436941882753025",
 		"MatchLog": "0",
 		"IsZombie": false,
+		"PromoTimeout": 0,
 		"Players": [
 			{
 				"PlayerId": null,
