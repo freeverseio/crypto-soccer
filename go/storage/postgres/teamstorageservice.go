@@ -65,3 +65,16 @@ func (b TeamStorageService) TeamCleanZombies(timezoneIdx uint8, countryIdx uint3
 
 	return storage.TeamCleanZombies(b.tx, timezoneIdx, countryIdx)
 }
+
+func (b TeamStorageService) TeamPromoTimeout(teamId string) (uint32, error) {
+	team, err := storage.TeamByTeamId(b.tx, teamId)
+	if err != nil {
+		return 0, err
+	}
+	return team.PromoTimeout, nil
+}
+
+func (b TeamStorageService) TeamSetPromoTimeout(teamId string, promoTimeout uint32) error {
+	_, err := b.tx.Exec("UPDATE teams SET promo_timeout=$1 WHERE team_id=$2", promoTimeout, teamId)
+	return err
+}
