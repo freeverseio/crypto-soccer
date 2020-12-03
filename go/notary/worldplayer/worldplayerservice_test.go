@@ -19,10 +19,10 @@ func TestWorldPlayerService(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Assert(t, wp == nil)
 
-	// given this teamId and time, you get 28 players because noone shows up in tier3
+	// we have, per tier, nPlayers = 21 + 11 + 7 + 4 + 1 = 44
 	batch, err := service.CreateBatch(teamId, now)
 	assert.NilError(t, err)
-	assert.Equal(t, len(batch), 28)
+	assert.Equal(t, len(batch), 44)
 
 	playerId = string(batch[1].PlayerId())
 	wp, err = service.GetWorldPlayer(playerId, teamId, now)
