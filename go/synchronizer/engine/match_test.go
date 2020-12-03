@@ -386,7 +386,7 @@ func TestMatchJson(t *testing.T) {
 func TestMatchHash(t *testing.T) {
 	t.Parallel()
 	m := engine.NewMatch()
-	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "fcc60d2416e9a63b6f03e086ff8dc1449a6bf2397fe548b56c7819c1f98e4338")
+	assert.Equal(t, fmt.Sprintf("%x", m.Hash()), "5280571abde2864b703b2821a082ea305bd14e357c0452b1f14c0be3a92adf8a")
 }
 
 func TestMatchError2ndHalf(t *testing.T) {
