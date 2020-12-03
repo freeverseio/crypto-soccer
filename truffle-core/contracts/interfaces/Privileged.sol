@@ -180,8 +180,8 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     } 
 
     function createBuyNowPlayerIdPureV2(
-        uint256[2] memory levelRanges, 
-        uint256[10] memory potentialWeights,
+        uint32[2] memory levelRanges, 
+        uint32[10] memory potentialWeights,
         uint256 seed, 
         uint8 forwardPos,
         uint8 tz,
@@ -207,7 +207,7 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
         }
         seed /= 8;
         (skillsVec, birthTraits, ) = computeSkills(seed, shirtNum, potential);
-        uint256 targetLevel = levelRanges[0] + ((seed % 1000000) * (levelRanges[1]- levelRanges[0])) / 1000000;
+        uint256 targetLevel = uint256(levelRanges[0]) + ((seed % 1000000) * uint256(levelRanges[1]- levelRanges[0])) / 1000000;
         recascaleToTarget(skillsVec, targetLevel, seed);
         internalPlayerId = encodeTZCountryAndVal(tz, countryIdxInTZ, seed % 268435455); /// maxPlayerIdxInCountry (28b) = 2**28 - 1 = 268435455
     }
@@ -221,13 +221,25 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
             skillsVec[sk] = uint32((uint256(skillsVec[sk]) * targetLevel * 1000) / level);
             tempLevel += skillsVec[sk]/1000;
         }
-        skillsVec[(seed % N_SKILLS)] += uint32((targetLevel - tempLevel) * 1000);
+        uint8 skToFineTune = uint8(seed % N_SKILLS);
+
+        if (targetLevel == tempLevel) return;
+
+        // formula: newSkill = skillsVec[(seed % N_SKILLS)] + uint32((targetLevel - tempLevel) * 1000);
+        // beware: we want newSkill > 300;
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+            if ((skillsVec[skToFineTune] + uint32(targetLevel)*1000) > (300 + uint32(targetLevel)*1000)) {
+                skillsVec[skToFineTune] += uint32((targetLevel - tempLevel) * 1000);
+                return;
+            }
+            skToFineTune = (skToFineTune + 1) % N_SKILLS;
+        }
     }
 
     /// birthTraits = [potential, forwardness, leftishness, aggressiveness]
     function createBuyNowPlayerIdV2(
-        uint256[2] memory levelRanges, 
-        uint256[10] memory potentialWeights,
+        uint32[2] memory levelRanges, 
+        uint32[10] memory potentialWeights,
         uint256 seed, 
         uint8 forwardPos,
         uint256 epochInDays,
@@ -253,8 +265,8 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     }
 
     function createBuyNowPlayerIdBatchV2(
-        uint256[2] memory levelRanges, 
-        uint256[10] memory potentialWeights, 
+        uint32[2] memory levelRanges, 
+        uint32[10] memory potentialWeights, 
         uint256 seed, 
         uint8[4] memory nPlayersPerForwardPos,
         uint256 epochInDays,
@@ -294,10 +306,10 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
     
     //// @dev Throws any number of dice and returns the winner's idx.
     //// @dev Following the explanation above, consider this limits:
-    function throwDiceArray(uint256[10] memory weights, uint256 rndNum) private pure returns(uint8 w) {
+    function throwDiceArray(uint32[10] memory weights, uint256 rndNum) private pure returns(uint8 w) {
         uint256 uniformRndInSumOfWeights;
         for (w = 0; w < weights.length; w++) {
-            uniformRndInSumOfWeights += weights[w];
+            uniformRndInSumOfWeights += uint256(weights[w]);
         }
         /// if all weights are null, return uniform chance
         if (uniformRndInSumOfWeights == 0) return uint8(rndNum % weights.length);
@@ -306,7 +318,7 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
         uint256 maxRndPlusOne = MAX_RND + 1;
         uint256 cumSum = 0;
         for (w = 0; w < weights.length-1; w++) {
-            cumSum += weights[w];
+            cumSum += uint256(weights[w]);
             if( uniformRndInSumOfWeights < ( cumSum * maxRndPlusOne)) {
                 return w;
             }
