@@ -41,6 +41,8 @@ func (b ConsumePromo) Process(tx *sql.Tx, in gql.ConsumePromoInput) error {
 	if err := service.TeamSetPromoTimeout(in.TeamId, 0); err != nil {
 		return err
 	}
+
+	return nil
 }
 
 func (b ConsumePromo) assignAsset(in gql.ConsumePromoInput) error {
