@@ -188,4 +188,189 @@ contract('Privileged', (accounts) => {
         }
     });
     
+    // Version 2 of tiers:
+
+    it('testing distribution of weights (v2)', async () => {
+        const seed = 4;
+        const nPlayers = 80;
+        const nPlayersPerForwardPos = [nPlayers, 0, 0, 0];
+        const epochDays = Math.floor(1588668910 / (3600 * 24));
+        const timezone = 1;
+        const countryIdxInTz = 0;
+        const levelRanges = [30, 40];
+        const potentialWeights = [1, 2, 3, 4, 5, 0, 7, 8 ,9 ,10];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
+            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+        ).should.be.fulfilled;
+        // build a historgram and check that it resembles the potentialWeights distribution
+        const hist = Array.from(new Array(10), (x,i) => 0);
+        for (trait of traitsArray) {
+            hist[trait[0]] += 1
+        }
+        const sumPots = potentialWeights.reduce((a, b) => a + b, 0);
+        // normalize so that the largest number coincides
+        const factor = potentialWeights[potentialWeights.length-1]/hist[hist.length-1];
+        const histNorm = Array.from(hist, (x,i) => Math.round(x*factor));
+        assert.deepEqual(histNorm, [ 1, 1, 3, 4, 2, 0, 4, 6, 6, 10 ]); // not too bad, quite close to potentialWeights
+        assert.equal(histNorm[5], 0);
+    });
+
+    it('create batch of world players (v2)', async () => {
+        const seed = 4;
+        const nPlayersPerForwardPos = [1, 2, 3, 4];
+        const epochDays = Math.floor(1588668910 / (3600 * 24));
+        const timezone = 1;
+        const countryIdxInTz = 0;
+        const levelRanges = [30, 40];
+        const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
+        await privileged.createBuyNowPlayerIdBatchV2(
+            levelRanges,
+            potentialWeights,
+            seed,
+            nPlayersPerForwardPos,
+            epochDays,
+            timezone,
+            countryIdxInTz,
+        ).should.be.fulfilled;
+    });
+
+    it('creating one buyNow player (v2)', async () =>  {
+        const levelRanges = [30, 40];
+        const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
+        
+        expectedSkills = [ 9167, 5789, 8488, 5257, 9297 ];
+        expectedTraits = [ 7, 3, 6, 2 ];
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPureV2(levelRanges, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
+        // compare actual values
+        debug.compareArrays(skills, expectedSkills, toNum = true);
+        ageYears.toNumber().should.be.equal(29);
+        debug.compareArrays(traits, expectedTraits, toNum = true);
+        internalId.should.be.bignumber.equal("275260863937");
+        // check that the average skill is as expected:
+        level = expectedSkills.reduce((a, b) => a + Math.floor(b/1000), 0);
+        assert.equal((level >= levelRanges[0]) && (level <= levelRanges[1]), true);
+        
+        // test that you get the same via the non-pure function:
+        var {0: finalId, 1: skills2, 2: dayOfBirth, 3: traits2, 4: internalId2} = await privileged.createBuyNowPlayerIdV2(levelRanges, potentialWeights, seed, forwardPos = 3, epochInDays, tz, countryIdxInTz).should.be.fulfilled;
+        debug.compareArrays(skills2, expectedSkills, toNum = true);
+        debug.compareArrays(traits2, expectedTraits, toNum = true);
+        internalId2.should.be.bignumber.equal(internalId);
+        now = epochInDays*24*3600;
+        expectedDayOfBirth = Math.floor(secsToDays(now) - ageYears*365/14);
+        (Math.abs(dayOfBirth.toNumber() - expectedDayOfBirth) < 14).should.be.equal(true);
+        
+    });
+
+    
+
+    it('creating buyNow players scales linearly with value, while other data remains the same (v2)', async () =>  {
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const levelRanges = [30, 30];
+        const levelRanges2 = [60, 60];
+        const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
+        
+        var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPureV2(levelRanges, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
+        var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPureV2(levelRanges2, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
+        level = skills.reduce((a, b) => a + Math.floor(Number(b)/1000), 0);
+        level2 = skills2.reduce((a, b) => a + Math.floor(Number(b)/1000), 0);
+        assert.equal(level2, 2 * level);
+        skillsOK = 0;
+        for (s = 0; s < skills.length; s++) {
+            if (Math.abs(skills2[s].toNumber() - 2*skills[s].toNumber()) < 20) { skillsOK++; }
+        }
+        assert.equal(skillsOK >= 4, true);
+       
+        for (t = 0; t < traits.length; t++) {
+            traits2[t].toNumber().should.be.equal(traits[t].toNumber());
+        }
+        internalId2.should.be.bignumber.equal(internalId);
+        ageYears.should.be.bignumber.equal(ageYears2);
+    });
+
+    it('creating a batch of buyNow players (v2)', async () =>  {
+        const levelRanges = [10, 20];
+        const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
+        expectedSkills = [ 2602, 5568, 4103, 2406, 3319 ];
+        expectedTraits = [ 6, 3, 3, 1 ];
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const nPlayersPerForwardPos = [0,0,0,2];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
+            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+        ).should.be.fulfilled;
+
+        // checking that the values of the player props can be extracted from playerId only
+        for (p = 0; p < playerIdArray.length; p++) {
+            var {0: _skills, 1: _day, 2: _traits, 3: _playerId, 4: _alignedSubstRed, 5: _genNonstopInj} = await utils.fullDecodeSkills(playerIdArray[p]).should.be.fulfilled     
+            _day.should.be.bignumber.equal(dayOfBirthArray[p]);
+            debug.compareArrays(skillsArray[p], _skills, toNum = false, isBig = true);
+            debug.compareArrays(traitsArray[p], _traits, toNum = false, isBig = true);
+            debug.compareArrays([false, false, false, false, false], _alignedSubstRed, toNum = false);
+            for (i = 0; i < _genNonstopInj.length; i++) { _genNonstopInj[i].toNumber().should.be.equal(0); }
+        }
+
+        // compare actual values
+        debug.compareArrays(skillsArray[0], expectedSkills, toNum = true);
+        debug.compareArrays(traitsArray[0], expectedTraits, toNum = true);
+        internalIdArray[0].should.be.bignumber.equal("275195391431");
+        internalIdArray[1].should.not.be.bignumber.equal("275195391431");
+      
+        // testing that they are created with the expected country and tz:
+        var {0: tz2, 1: countryIdxInTz2} = await privileged.getTZandCountryIdxFromPlayerId(playerIdArray[0]).should.be.fulfilled;
+        tz2.toNumber().should.be.equal(tz);
+        countryIdxInTz2.toNumber().should.be.equal(countryIdxInTz);
+    });
+    
+    it('creating a batch of buyNow players with restricted potential ranges (v2)', async () =>  {
+        const levelRanges = [10, 20];
+        const minPot = 3;
+        const maxPot = 4;
+        const potentialWeights = [0, 0, 0, 1, 1, 0, 0, 0 ,0 ,0];
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const nPlayersPerForwardPos = [0,0,0,20];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
+            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+        ).should.be.fulfilled;
+        
+        for (const trait of traitsArray) {
+            (trait[0].toNumber() <= maxPot).should.be.equal(true);
+            (trait[0].toNumber() >= minPot).should.be.equal(true);
+        }
+    });
+    
+    it('creating a batch of buyNow players and displaying (v2)', async () =>  {
+        const levelRanges = [10, 20];
+        const potentialWeights = [0, 1, 2, 4, 8, 10, 8, 4, 2 , 1];
+        const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
+        const nPlayersPerForwardPos = [10,10,10,10];
+        var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
+            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+        ).should.be.fulfilled;
+        h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
+        assert.equal(h, '0xd883e2f6396726bc882f2bc5cbbed50b6c973d21d178ec5c3674c033e5082954', "createBuyNowPlayerIdBatchV2 not as expected");
+
+        if (false) {
+            // traits: shoot, speed, pass, defence, endurance
+            labels = ["GoalKeepers", "Defenders", "Midfielders", "Attackers"];
+            st = "";
+            st2 = "";
+            counter = 0;
+            for (pos = 0; pos < nPlayersPerForwardPos.length; pos++) {
+                st += labels[pos];
+                for (p = 0; p < nPlayersPerForwardPos[pos]; p++) {
+                    st += "\nPot: " + traitsArray[counter][0];
+                    st += " | Age: " + Math.floor(dayOfBirthToAgeYears(dayOfBirthArray[counter].toNumber(), epochInDays));
+                    st += " | Shoot: " + skillsArray[counter][0];
+                    st += " | Speed: " + skillsArray[counter][1];
+                    st += " | Pass: " + skillsArray[counter][2];
+                    st += " | Defence: " + skillsArray[counter][3];
+                    st += " | Endurance: " + skillsArray[counter][4];
+                    counter++;
+                }
+                st += "\n"
+            }
+            console.log(st);
+        }
+    });
+    
 })
