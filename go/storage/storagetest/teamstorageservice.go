@@ -69,4 +69,45 @@ func TestTeamStorageService(t *testing.T, service storage.TeamStorageService) {
 		assert.NilError(t, err)
 		assert.Equal(t, team1.LeaderboardPosition, 4)
 	})
+	t.Run("default promo timeout", func(t *testing.T) {
+		team := storage.NewTeam()
+		team.TeamID = "6"
+		team.TimezoneIdx = 1
+		team.CountryIdx = 0
+		team.LeagueIdx = 0
+		team.ManagerName = "pippo"
+		assert.NilError(t, service.Insert(*team))
+		team0, err := service.Team(team.TeamID)
+		assert.NilError(t, err)
+		assert.Equal(t, team0.PromoTimeout, uint32(0))
+	})
+	t.Run("promo timeout", func(t *testing.T) {
+		team := storage.NewTeam()
+		team.TeamID = "7"
+		team.TimezoneIdx = 1
+		team.CountryIdx = 0
+		team.LeagueIdx = 0
+		team.ManagerName = "pippo"
+		team.PromoTimeout = 20
+		assert.NilError(t, service.Insert(*team))
+		team0, err := service.Team(team.TeamID)
+		assert.NilError(t, err)
+		assert.Equal(t, team0.PromoTimeout, uint32(20))
+		promo, err := service.TeamPromoTimeout(team.TeamID)
+		assert.NilError(t, err)
+		assert.Equal(t, promo, uint32(20))
+	})
+	t.Run("set promo timeout", func(t *testing.T) {
+		team := storage.NewTeam()
+		team.TeamID = "8"
+		team.TimezoneIdx = 1
+		team.CountryIdx = 0
+		team.LeagueIdx = 0
+		team.ManagerName = "pippo"
+		assert.NilError(t, service.Insert(*team))
+		assert.NilError(t, service.TeamSetPromoTimeout(team.TeamID, 21))
+		promo, err := service.TeamPromoTimeout(team.TeamID)
+		assert.NilError(t, err)
+		assert.Equal(t, promo, uint32(21))
+	})
 }

@@ -35,6 +35,7 @@ type Team struct {
 	Tactic              string
 	MatchLog            string
 	IsZombie            bool
+	PromoTimeout        uint32
 }
 
 type TeamStorageService interface {
@@ -46,6 +47,8 @@ type TeamStorageService interface {
 	TeamsByTimezoneIdxCountryIdxLeagueIdx(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error)
 	TeamUpdateZombies(timezoneIdx uint8, countryIdx uint32) error
 	TeamCleanZombies(timezoneIdx uint8, countryIdx uint32) error
+	TeamPromoTimeout(teamId string) (uint32, error)
+	TeamSetPromoTimeout(teamId string, promoTimeout uint32) error
 }
 
 func NewTeam() *Team {
@@ -76,8 +79,9 @@ func (b *Team) Insert(tx *sql.Tx) error {
 			tactic,
 			match_log,
 			manager_name,
-			leaderboard_position
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
+			leaderboard_position,
+			promo_timeout
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);`,
 		b.TeamID,
 		b.TimezoneIdx,
 		b.CountryIdx,
@@ -90,6 +94,7 @@ func (b *Team) Insert(tx *sql.Tx) error {
 		b.MatchLog,
 		b.ManagerName,
 		b.LeaderboardPosition,
+		b.PromoTimeout,
 	)
 	if err != nil {
 		return err
@@ -132,8 +137,9 @@ func (b *Team) Update(tx *sql.Tx) error {
 						tactic=$14,
 						match_log=$15,
 						manager_name=$16,
-						leaderboard_position=$17
-						WHERE team_id=$18`,
+						leaderboard_position=$17,
+						promo_timeout=$18
+						WHERE team_id=$19`,
 		b.Owner,
 		b.LeagueIdx,
 		b.TeamIdxInLeague,
@@ -151,6 +157,7 @@ func (b *Team) Update(tx *sql.Tx) error {
 		b.MatchLog,
 		b.ManagerName,
 		b.LeaderboardPosition,
+		b.PromoTimeout,
 		b.TeamID,
 	)
 	return err
@@ -255,7 +262,8 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 	match_log,
 	manager_name,
 	leaderboard_position,
-	is_zombie
+	is_zombie,
+	promo_timeout
 	FROM teams WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return team, err
@@ -286,6 +294,7 @@ func TeamByTeamId(tx *sql.Tx, teamID string) (Team, error) {
 		&team.ManagerName,
 		&team.LeaderboardPosition,
 		&team.IsZombie,
+		&team.PromoTimeout,
 	)
 	if err != nil {
 		return team, err
