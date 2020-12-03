@@ -215,6 +215,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 	team.Owner = "pippo"
 	team.TrainingPoints = 4
 	team.MatchLog = "Gimme gasolina!"
+	team.PromoTimeout = 21
 	assert.NilError(t, team.Update(tx))
 	result, err := storage.TeamByTeamId(tx, team.TeamID)
 	assert.NilError(t, err)
