@@ -14,7 +14,7 @@ const Schema = `
           	countryIdxInTimezone: ID!,
           	address: String!
 		): Boolean!
-		consumePromo(input: ConsumePromoInput!): ID!
+		consumePromo(input: ConsumePromoInput!): Boolean!
 	}
 
 	type Query {
