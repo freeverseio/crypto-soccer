@@ -42,6 +42,7 @@ func NewConsumer(
 func (b *Consumer) Start() {
 	firstBotTransfer := NewFirstBotTransfer(b.client, b.auth, b.contracts)
 	actionsSubmitter := NewActionsSubmitter(b.client, b.auth, b.contracts, b.useractionsPublishService)
+	consumePromo := NewConsumePromo(b.client, b.auth, b.contracts)
 	for {
 		event := <-b.ch
 		switch ev := event.(type) {
@@ -64,6 +65,12 @@ func (b *Consumer) Start() {
 			}
 			if err = tx.Commit(); err != nil {
 				log.Error(err)
+			}
+		case gql.ConsumePromoInput:
+			log.Debug("[relay|consumer] Consume Promo Input")
+			if err := consumePromo.Process(ev); err != nil {
+				log.Error(err)
+				break
 			}
 		default:
 			log.Errorf("unknown event: %v", event)
