@@ -68,9 +68,18 @@ func (b *Consumer) Start() {
 			}
 		case gql.ConsumePromoInput:
 			log.Debug("[relay|consumer] Consume Promo Input")
-			if err := consumePromo.Process(ev); err != nil {
+			tx, err := b.db.Begin()
+			if err != nil {
 				log.Error(err)
 				break
+			}
+			if err := consumePromo.Process(tx, ev); err != nil {
+				tx.Rollback()
+				log.Error(err)
+				break
+			}
+			if err = tx.Commit(); err != nil {
+				log.Error(err)
 			}
 		default:
 			log.Errorf("unknown event: %v", event)
