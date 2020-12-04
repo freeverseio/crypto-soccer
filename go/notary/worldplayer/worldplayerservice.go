@@ -131,9 +131,12 @@ func (b WorldPlayerService) createBatchByTier(
 		leftishness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsLeftishnessIdx]
 		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
 		generation := uint8(0)
-		name, countryOfBirth, race, err := b.namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
-		if err != nil {
-			return nil, err
+		var name, countryOfBirth, race string
+		if b.namesdb != nil {
+			name, countryOfBirth, race, err = b.namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
+			if err != nil {
+				return nil, err
+			}
 		}
 		dayOfBirth := int32(worldPlayers.DayOfBirthArray[i])
 		preferredPosition, err := utils.PreferredPosition(forwardness, leftishness)
