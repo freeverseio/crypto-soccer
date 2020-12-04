@@ -9,6 +9,6 @@ import (
 )
 
 func TestSchemaParsing(t *testing.T) {
-	_, err := graphql.ParseSchema(gql.Schema, gql.NewResolver(nil, *bc.Contracts))
+	_, err := graphql.ParseSchema(gql.Schema, gql.NewResolver(nil, *bc.Contracts, db))
 	assert.NilError(t, err)
 }

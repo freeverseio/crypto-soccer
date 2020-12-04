@@ -1,8 +1,11 @@
 package consumer
 
 import (
+	"database/sql"
 	"errors"
 	"math/big"
+
+	"github.com/freeverseio/crypto-soccer/go/storage/postgres"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -29,8 +32,17 @@ func NewConsumePromo(
 	}
 }
 
-func (b ConsumePromo) Process(in gql.ConsumePromoInput) error {
-	return b.assignAsset(in)
+func (b ConsumePromo) Process(tx *sql.Tx, in gql.ConsumePromoInput) error {
+	if err := b.assignAsset(in); err != nil {
+		return err
+	}
+
+	service := postgres.NewTeamStorageService(tx)
+	if err := service.TeamSetPromoTimeout(in.TeamId, 0); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b ConsumePromo) assignAsset(in gql.ConsumePromoInput) error {
