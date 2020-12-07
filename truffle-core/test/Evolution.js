@@ -704,6 +704,64 @@ contract('Evolution', (accounts) => {
 
     });
 
+    it('bots generate children', async () => {
+        expectedGoals = [3,0];
+        expectedPoints = [45,11];
+        expectedSums = [90000, 54000];
+        expectedFwds = [ 1, 3, 2 ];     
+        expectedSho = [ 1, 10, 7];     
+        expectedAss = [ 6, 10, 8 ];   
+        
+        assignment = 0;
+        // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the assignedTPs:
+        prev2ndHalfLog = 0;
+        teamIds = [1,2]
+        verseSeed = '0x234ab3'
+
+        lineUpNew = [...lineupConsecutive];
+        subst = [NO_SUBST, NO_SUBST, NO_SUBST]
+        tacticsNew = await engine.encodeTactics(subst, subsRounds, setNoSubstInLineUp(lineUpNew, subst), extraAttackNull, tacticId433).should.be.fulfilled;
+        teamStateAll1000Half1 = await createTeamStateFromSinglePlayer([1000, 1000, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
+        teamStateAll700Half1 = await createTeamStateFromSinglePlayer([0, 0, 1000, 1000, 1000], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
+
+        // we set one of the players to 38 years old, and expect his bday to change after playing 1st half.
+        const dayOfBirth38 = secsToDays(now) - 13860/INGAMETIME_VS_REALTIME; // = 13860 is a bit more than 38 years, and exactly divisible by 14
+        teamStateAll1000Half1[1] = await assets.encodePlayerSkills(
+            [1000, 1000, 1000, 1000, 1000], dayOfBirth38, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr],
+            aligned, redCardLastGame = false, gamesNonStopping = 0, 
+            injuryWeeksLeft = 0, false, sumSk = 5000
+        ).should.be.fulfilled;
+
+        bDayTeam1 = [];
+        bDayTeam2 = [];
+        for (p = 0; p < 2; p++) {
+            var bday = await assets.getBirthDay(teamStateAll1000Half1[p]);
+            bDayTeam1.push(bday);
+            bday = await assets.getBirthDay(teamStateAll700Half1[p]);
+            bDayTeam2.push(bday);
+        }                
+        console.log(bDayTeam1, bDayTeam2);
+
+        var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play1stHalfAndEvolve(
+            verseSeed, now, [teamStateAll1000Half1, teamStateAll700Half1], teamIds, [tacticsNew, tacticsNew], [prev2ndHalfLog, prev2ndHalfLog],
+            [is2nd = false, isHomeStadium, isPlayoff, isB = true, isB = true], [assignment, assignment]
+        ).should.be.fulfilled;
+        
+        newbDayTeam1 = [];
+        newbDayTeam2 = [];
+        for (p = 0; p < 2; p++) {
+            var bday = await assets.getBirthDay(skills[0][p]);
+            newbDayTeam1.push(bday);
+            bday = await assets.getBirthDay(skills[1][p]);
+            newbDayTeam2.push(bday);
+        }      
+        // team2 has same bdays
+        debug.compareArrays(newbDayTeam2, bDayTeam2, toNum = false, isBigNumber = true);
+        // team1 has changed bday of the old player only
+        newbDayTeam1[0].toNumber().should.be.equal(bDayTeam1[0].toNumber());
+        newbDayTeam1[1].toNumber().should.not.be.equal(bDayTeam1[1].toNumber());
+    });
+
     it('thorough test of training points after 1st and 2nd halves ==> BOTS = true', async () => {
         // [ 2, 3,  1, 3, 3, 2,  3, 1, 3 ]  => fwd
         // [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ]  => sho
