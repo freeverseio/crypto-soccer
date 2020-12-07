@@ -69,6 +69,7 @@ contract PlayAndEvolve is ErrorCodes, EncodingTacticsBase1, EncodingSkillsSetter
         for (uint8 team = 0; team < 2; team++) {
             if (matchBools[IDX_IS_BOT_HOME + team]) {
                 tactics[team] = getBotTactics();
+                skills[team] = training.evolveBot(skills[team], matchStartTime);
             } else {
                 (skills[team], err) = training.applyTrainingPoints(skills[team], assignedTPs[team], tactics[team], matchStartTime, evo.getTrainingPoints(matchLogs[team]));
                 if (err > 0) return cancelHalf(skills, false, err);
