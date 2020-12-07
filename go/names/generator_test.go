@@ -15,7 +15,130 @@ func int_hash(s string) uint64 {
 	return h.Sum64()
 }
 
-func TestGeneratePlayerName(t *testing.T) {
+func TestGeneratePlayerNamePoland(t *testing.T) {
+	generator, err := names.New("./sql/names.db")
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
+	// WARNING: both timezone and countryIdxInTZ are derivable from playerId
+	var timezone uint8
+	var countryIdxInTZ uint64
+	var result string = ""
+	generation := uint8(0)
+	for i := 0; i < 100; i++ {
+		playerId := big.NewInt(int64(i))
+		timezone = 8
+		countryIdxInTZ = 0
+		name, countryISO2, region, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+		if err != nil {
+			t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
+		}
+		fmt.Println(name + " (" + countryISO2 + ", " + region + ") ")
+		if len(name) == 0 {
+			t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
+		}
+		result += name + " (" + countryISO2 + ", " + region + ") "
+	}
+	if int_hash(result) != uint64(12191899905785622891) {
+		fmt.Println("the just-obtained hash is: ")
+		fmt.Println(int_hash(result))
+		t.Fatal("result of generating names not as expected")
+	}
+}
+
+func TestGeneratePlayerNameItaly(t *testing.T) {
+	generator, err := names.New("./sql/names.db")
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
+	// WARNING: both timezone and countryIdxInTZ are derivable from playerId
+	var timezone uint8
+	var countryIdxInTZ uint64
+	var result string = ""
+	generation := uint8(0)
+	for i := 0; i < 100; i++ {
+		playerId := big.NewInt(int64(i))
+		timezone = 11
+		countryIdxInTZ = 0
+		name, countryISO2, region, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+		if err != nil {
+			t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
+		}
+		fmt.Println(name + " (" + countryISO2 + ", " + region + ") ")
+		if len(name) == 0 {
+			t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
+		}
+		result += name + " (" + countryISO2 + ", " + region + ") "
+	}
+	if int_hash(result) != uint64(6009804721545048910) {
+		fmt.Println("the just-obtained hash is: ")
+		fmt.Println(int_hash(result))
+		t.Fatal("result of generating names not as expected")
+	}
+}
+func TestGeneratePlayerNameBelgium(t *testing.T) {
+	generator, err := names.New("./sql/names.db")
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
+	// WARNING: both timezone and countryIdxInTZ are derivable from playerId
+	var timezone uint8
+	var countryIdxInTZ uint64
+	var result string = ""
+	generation := uint8(0)
+	for i := 0; i < 100; i++ {
+		playerId := big.NewInt(int64(i))
+		timezone = 9
+		countryIdxInTZ = 1
+		name, countryISO2, region, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+		if err != nil {
+			t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
+		}
+		fmt.Println(name + " (" + countryISO2 + ", " + region + ") ")
+		if len(name) == 0 {
+			t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
+		}
+		result += name + " (" + countryISO2 + ", " + region + ") "
+	}
+	if int_hash(result) != uint64(15455280794236233387) {
+		fmt.Println("the just-obtained hash is: ")
+		fmt.Println(int_hash(result))
+		t.Fatal("result of generating names not as expected")
+	}
+}
+
+func TestGeneratePlayerNameNetherlands(t *testing.T) {
+	generator, err := names.New("./sql/names.db")
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
+	// WARNING: both timezone and countryIdxInTZ are derivable from playerId
+	var timezone uint8
+	var countryIdxInTZ uint64
+	var result string = ""
+	generation := uint8(0)
+	for i := 0; i < 100; i++ {
+		playerId := big.NewInt(int64(i))
+		timezone = 9
+		countryIdxInTZ = 0
+		name, countryISO2, region, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+		if err != nil {
+			t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
+		}
+		fmt.Println(name + " (" + countryISO2 + ", " + region + ") ")
+		if len(name) == 0 {
+			t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
+		}
+		result += name + " (" + countryISO2 + ", " + region + ") "
+	}
+	if int_hash(result) != uint64(8719546611057531656) {
+		fmt.Println("the just-obtained hash is: ")
+		fmt.Println(int_hash(result))
+		t.Fatal("result of generating names not as expected")
+	}
+}
+
+func TestGeneratePlayerNameSpain(t *testing.T) {
 	generator, err := names.New("./sql/names.db")
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
@@ -39,7 +162,7 @@ func TestGeneratePlayerName(t *testing.T) {
 		}
 		result += name + " (" + countryISO2 + ", " + region + ") "
 	}
-	if int_hash(result) != uint64(17820092263754406170) {
+	if int_hash(result) != uint64(12560545947695793294) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -69,7 +192,7 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 		}
 		result += name + " (" + countryISO2 + ", " + region + ") "
 	}
-	if int_hash(result) != uint64(17820092263754406170) {
+	if int_hash(result) != uint64(12560545947695793294) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
