@@ -1,5 +1,11 @@
 const Web3 = require('web3');
-const { selectTeamName, selectTeamManagerName, updateTeamName, updateTeamManagerName } = require('../repositories');
+const {
+  selectTeamName,
+  selectTeamManagerName,
+  updateTeamName,
+  updateTeamManagerName,
+  selectPlayerName,
+} = require('../repositories');
 const { TeamValidation } = require('../validations');
 const getMessagesResolver = require('./getMessagesResolver');
 const setMessageReadResolver = require('./setMessageReadResolver');
@@ -17,11 +23,20 @@ const createBidResolver = require('./createBidResolver');
 const auctionPassByOwnerResolver = require('./auctionPassByOwnerResolver');
 const playerHistoryGraphByPlayerIdResolver = require('./playerHistoryGraphByPlayerIdResolver');
 const setGetSocialIdResolver = require('./setGetSocialIdResolver');
+const playerByPlayerIdResolver = require('./playerByPlayerId');
 
 const web3 = new Web3('');
 
 const resolvers = ({ horizonRemoteSchema }) => {
   return {
+    Auction: {
+      playerByPlayerId: {
+        fragment: `... on Auction { playerId }`,
+        resolve(parent, args, context, info) {
+          return playerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+    },
     TeamsHistory: {
       name: {
         fragment: `... on TeamsHistory { teamId }`,
@@ -61,6 +76,18 @@ const resolvers = ({ horizonRemoteSchema }) => {
         fragment: `... on MatchEvent { teamId }`,
         resolve(parent, args, context, info) {
           return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+      playerByPrimaryPlayerId: {
+        fragment: `... on MatchEvent { primaryPlayerId }`,
+        resolve(parent, args, context, info) {
+          return playerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+      playerBySecondaryPlayerId: {
+        fragment: `... on MatchEvent { secondaryPlayerId }`,
+        resolve(parent, args, context, info) {
+          return playerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
         },
       },
     },
@@ -105,12 +132,26 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return playerHistoryGraphByPlayerIdResolver(parent, args, context, info);
         },
       },
+      name: {
+        selectionSet: `{ playerId }`,
+        resolve(player, args, context, info) {
+          return selectPlayerName({ playerId: player.playerId }).then((result) => {
+            return result && result.player_name ? result.player_name : player.name;
+          });
+        },
+      },
     },
     PlayersHistory: {
       teamByTeamId: {
         fragment: `... on PlayersHistory { teamId }`,
         resolve(parent, args, context, info) {
           return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+      playerByPlayerId: {
+        fragment: `... on PlayersHistory { playerId }`,
+        resolve(parent, args, context, info) {
+          return playerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
         },
       },
     },
@@ -127,6 +168,12 @@ const resolvers = ({ horizonRemoteSchema }) => {
         fragment: `... on Offer { buyerTeamId }`,
         resolve(offer, args, context, info) {
           return teamByBuyerTeamId(offer, args, context, info, horizonRemoteSchema);
+        },
+      },
+      playerByPlayerId: {
+        fragment: `... on Offer { playerId }`,
+        resolve(parent, args, context, info) {
+          return playerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
         },
       },
     },
@@ -249,6 +296,7 @@ const resolvers = ({ horizonRemoteSchema }) => {
       getMessages: getMessagesResolver,
       getNumUnreadMessages: getNumUnreadMessagesResolver,
       getLastTimeLoggedIn: getLastTimeLoggedInResolver,
+      playerByPlayerId: playerByPlayerIdResolver,
     },
   };
 };
