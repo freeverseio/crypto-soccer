@@ -23,7 +23,7 @@ func TestConsumePromoHash(t *testing.T) {
 	assert.Equal(t, hash.Hex(), "0x77ea2a719178d7a661ebfa08532c933b85ed56c55081d4bf6b7b08cd25978d4d")
 }
 
-func TestCancelAuctionGetSigner(t *testing.T) {
+func TestConsumePromoGetSigner(t *testing.T) {
 	in := gql.ConsumePromoInput{}
 	in.TeamId = "64645"
 	in.PlayerId = "333"
