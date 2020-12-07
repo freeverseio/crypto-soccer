@@ -81,7 +81,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25741652489166099667841745459515420712608044711718401630798618",
-		name: (string) (len=15) "Jorge Whiteface",
+		name: (string) (len=14) "Jorge Van Dijk",
 		dayOfBirth: (int32) 17345,
 		preferredPosition: (string) (len=4) "D LR",
 		defence: (int32) 5907,
@@ -92,12 +92,12 @@
 		potential: (int32) 3,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
-		race: (string) (len=14) "AmericanIndian",
+		race: (string) (len=15) "BelgiumSurnames",
 		productId: (string) (len=13) "player_tier_1"
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25741652489166122268503017471383023974299641615144939001220914",
-		name: (string) (len=13) "Caoimhin Mesa",
+		name: (string) (len=14) "Caoimhin Atsma",
 		dayOfBirth: (int32) 17579,
 		preferredPosition: (string) (len=3) "D R",
 		defence: (int32) 2102,
@@ -108,7 +108,7 @@
 		potential: (int32) 4,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "GB",
-		race: (string) (len=7) "Spanish",
+		race: (string) (len=19) "NetherlandsSurnames",
 		productId: (string) (len=13) "player_tier_1"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -161,7 +161,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25744717480247927998658090231826601491510183140220895440667770",
-		name: (string) (len=11) "Alex Yellow",
+		name: (string) (len=8) "Alex Yuk",
 		dayOfBirth: (int32) 17345,
 		preferredPosition: (string) (len=4) "MD C",
 		defence: (int32) 1369,
@@ -172,7 +172,7 @@
 		potential: (int32) 3,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
-		race: (string) (len=14) "AmericanIndian",
+		race: (string) (len=7) "Chinese",
 		productId: (string) (len=13) "player_tier_1"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -193,7 +193,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25738587498084351425623524372327583011701645475814339742008115",
-		name: (string) (len=15) "Demosten Tamayo",
+		name: (string) (len=16) "Demosten Aguglia",
 		dayOfBirth: (int32) 17579,
 		preferredPosition: (string) (len=4) "MD L",
 		defence: (int32) 1103,
@@ -204,7 +204,7 @@
 		potential: (int32) 6,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "AL",
-		race: (string) (len=8) "Hispanic",
+		race: (string) (len=13) "ItalySurnames",
 		productId: (string) (len=13) "player_tier_1"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -225,7 +225,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25735525571993703296995770757062794132658560685377342470620722",
-		name: (string) (len=12) "Ruben Sehgal",
+		name: (string) (len=14) "Ruben Carreras",
 		dayOfBirth: (int32) 17240,
 		preferredPosition: (string) (len=6) "MF LCR",
 		defence: (int32) 2049,
@@ -236,7 +236,7 @@
 		potential: (int32) 4,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
-		race: (string) (len=15) "PacificIslander",
+		race: (string) (len=7) "Spanish",
 		productId: (string) (len=13) "player_tier_1"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -289,7 +289,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25744714415256754207945242720285336896649915994014665975793064",
-		name: (string) (len=14) "Telmo Apachito",
+		name: (string) (len=13) "Telmo Brouwer",
 		dayOfBirth: (int32) 17397,
 		preferredPosition: (string) (len=4) "F CR",
 		defence: (int32) 1270,
@@ -300,7 +300,7 @@
 		potential: (int32) 4,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
-		race: (string) (len=14) "AmericanIndian",
+		race: (string) (len=15) "BelgiumSurnames",
 		productId: (string) (len=13) "player_tier_1"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -417,7 +417,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25793757337555512153715655490522501768835926426797932749524306",
-		name: (string) (len=14) "Georgy Marques",
+		name: (string) (len=14) "Georgy Tumbaga",
 		dayOfBirth: (int32) 17110,
 		preferredPosition: (string) (len=4) "MD R",
 		defence: (int32) 4952,
@@ -428,7 +428,7 @@
 		potential: (int32) 5,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "UA",
-		race: (string) (len=7) "Spanish",
+		race: (string) (len=15) "PacificIslander",
 		productId: (string) (len=13) "player_tier_2"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -497,7 +497,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25793763467537769802135255638570057033136771373794034121184326",
-		name: (string) (len=11) "Krister Kan",
+		name: (string) (len=14) "Krister Concho",
 		dayOfBirth: (int32) 17162,
 		preferredPosition: (string) (len=4) "F LC",
 		defence: (int32) 5330,
@@ -508,7 +508,7 @@
 		potential: (int32) 5,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "NO",
-		race: (string) (len=7) "Chinese",
+		race: (string) (len=14) "AmericanIndian",
 		productId: (string) (len=13) "player_tier_2"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -577,7 +577,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25848927177026799142342563812200785739954450595947605795018154",
-		name: (string) (len=13) "Robert Ocaña",
+		name: (string) (len=10) "Robert Ota",
 		dayOfBirth: (int32) 17527,
 		preferredPosition: (string) (len=5) "MD CR",
 		defence: (int32) 9952,
@@ -588,12 +588,12 @@
 		potential: (int32) 3,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "EE",
-		race: (string) (len=7) "Spanish",
+		race: (string) (len=15) "PacificIslander",
 		productId: (string) (len=13) "player_tier_3"
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25851989103117473953529491587041172518472013819920862215685458",
-		name: (string) (len=15) "Uggi Castañeda",
+		name: (string) (len=11) "Uggi Vittal",
 		dayOfBirth: (int32) 17162,
 		preferredPosition: (string) (len=4) "F LC",
 		defence: (int32) 7121,
@@ -604,7 +604,7 @@
 		potential: (int32) 2,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "IS",
-		race: (string) (len=7) "Spanish",
+		race: (string) (len=15) "PacificIslander",
 		productId: (string) (len=13) "player_tier_3"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -657,7 +657,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "25937808853405873314596139494499148759264012567952960886156511",
-		name: (string) (len=15) "Calisto Alvarez",
+		name: (string) (len=18) "Calisto De Brouwer",
 		dayOfBirth: (int32) 17293,
 		preferredPosition: (string) (len=5) "MD LC",
 		defence: (int32) 8633,
@@ -668,7 +668,7 @@
 		potential: (int32) 4,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "ES",
-		race: (string) (len=7) "Spanish",
+		race: (string) (len=19) "NetherlandsSurnames",
 		productId: (string) (len=13) "player_tier_4"
 	}),
 	(*worldplayer.WorldPlayer)({
@@ -689,7 +689,7 @@
 	}),
 	(*worldplayer.WorldPlayer)({
 		playerId: (graphql.ID) (len=62) "26032823576939612044214552520065857510271517745375592776226181",
-		name: (string) (len=7) "Luka Lu",
+		name: (string) (len=9) "Luka Soap",
 		dayOfBirth: (int32) 17162,
 		preferredPosition: (string) (len=2) "GK",
 		defence: (int32) 29933,
@@ -700,7 +700,7 @@
 		potential: (int32) 3,
 		validUntil: (string) (len=10) "1554984000",
 		countryOfBirth: (string) (len=2) "GE",
-		race: (string) (len=7) "Chinese",
+		race: (string) (len=14) "AmericanIndian",
 		productId: (string) (len=13) "player_tier_5"
 	})
 }
