@@ -296,7 +296,7 @@ func TestMatchHardInjuryAmongBots(t *testing.T) {
 		m.HomeTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 		m.VisitorTeam.Players[i].SetPlayerId(new(big.Int).SetUint64(21342314523))
 	}
-	// check that skills are 1000 before and after
+	// check that skills are 1000 before and 942 after, because bots gave rise to a child
 	assert.Equal(t, m.HomeTeam.Players[0].Defence, uint64(1000))
 	golden.Assert(t, dump.Sdump(m), t.Name()+".starting.golden")
 	assert.NilError(t, m.Play1stHalf(*bc.Contracts))
@@ -306,7 +306,7 @@ func TestMatchHardInjuryAmongBots(t *testing.T) {
 		assert.Equal(t, m.HomeTeam.Players[i].YellowCard1stHalf, false)
 		assert.Equal(t, m.HomeTeam.Players[i].Tiredness, 0)
 		assert.Equal(t, m.HomeTeam.Players[i].InjuryMatchesLeft, uint8(0))
-		assert.Equal(t, m.HomeTeam.Players[i].Defence, uint64(1000))
+		assert.Equal(t, m.HomeTeam.Players[i].Defence, uint64(942))
 	}
 	assert.NilError(t, m.Play2ndHalf(*bc.Contracts))
 	golden.Assert(t, dump.Sdump(m), t.Name()+".end.golden")
@@ -315,7 +315,7 @@ func TestMatchHardInjuryAmongBots(t *testing.T) {
 		assert.Equal(t, m.HomeTeam.Players[i].YellowCard1stHalf, false)
 		assert.Equal(t, m.HomeTeam.Players[i].Tiredness, 0)
 		assert.Equal(t, m.HomeTeam.Players[i].InjuryMatchesLeft, uint8(0))
-		assert.Equal(t, m.HomeTeam.Players[i].Defence, uint64(1000))
+		assert.Equal(t, m.HomeTeam.Players[i].Defence, uint64(942))
 	}
 }
 
