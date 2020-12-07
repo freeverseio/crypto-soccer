@@ -24,6 +24,9 @@ const auctionPassByOwnerResolver = require('./auctionPassByOwnerResolver');
 const playerHistoryGraphByPlayerIdResolver = require('./playerHistoryGraphByPlayerIdResolver');
 const setGetSocialIdResolver = require('./setGetSocialIdResolver');
 const playerByPlayerIdResolver = require('./playerByPlayerId');
+const primaryPlayerByPlayerIdResolver = require('./primaryPlayerByPlayerIdResolver');
+const secondaryPlayerByPlayerIdResolver = require('./secondaryPlayerByPlayerIdResolver');
+const queryPlayerByPlayerIdResolver = require('./queryPlayerByPlayerId');
 
 const web3 = new Web3('');
 
@@ -81,13 +84,13 @@ const resolvers = ({ horizonRemoteSchema }) => {
       playerByPrimaryPlayerId: {
         fragment: `... on MatchEvent { primaryPlayerId }`,
         resolve(parent, args, context, info) {
-          return playerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
+          return primaryPlayerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
         },
       },
       playerBySecondaryPlayerId: {
         fragment: `... on MatchEvent { secondaryPlayerId }`,
         resolve(parent, args, context, info) {
-          return playerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
+          return secondaryPlayerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema);
         },
       },
     },
@@ -133,7 +136,7 @@ const resolvers = ({ horizonRemoteSchema }) => {
         },
       },
       name: {
-        selectionSet: `{ playerId }`,
+        fragment: `... on Player { playerId }`,
         resolve(player, args, context, info) {
           return selectPlayerName({ playerId: player.playerId }).then((result) => {
             return result && result.player_name ? result.player_name : player.name;
@@ -296,7 +299,8 @@ const resolvers = ({ horizonRemoteSchema }) => {
       getMessages: getMessagesResolver,
       getNumUnreadMessages: getNumUnreadMessagesResolver,
       getLastTimeLoggedIn: getLastTimeLoggedInResolver,
-      playerByPlayerId: playerByPlayerIdResolver,
+      playerByPlayerId: async (parent, args, context, info) =>
+        queryPlayerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema),
     },
   };
 };

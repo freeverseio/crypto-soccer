@@ -1,12 +1,12 @@
 const { selectPlayerName } = require('../repositories');
 
-const playerByPlayerId = async (parent, args, context, info, schema) => {
+const queryPlayerByPlayerId = async (parent, args, context, info, schema) => {
   const result = await info.mergeInfo.delegateToSchema({
     schema,
     operation: 'query',
     fieldName: 'playerByPlayerId',
     args: {
-      playerId: parent.playerId,
+      playerId: args.playerId,
     },
     context,
     info,
@@ -16,10 +16,10 @@ const playerByPlayerId = async (parent, args, context, info, schema) => {
     return;
   }
 
-  const playerName = await selectPlayerName({ playerId: parent.playerId });
+  const playerName = await selectPlayerName({ playerId: args.playerId });
 
   result.name = playerName && playerName.player_name ? playerName.player_name : result.name;
   return result;
 };
 
-module.exports = playerByPlayerId;
+module.exports = queryPlayerByPlayerId;
