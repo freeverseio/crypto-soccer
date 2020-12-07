@@ -3,6 +3,7 @@ package playstore_test
 import (
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/notary/googleplaystoreutils"
 	"github.com/freeverseio/crypto-soccer/go/notary/playstore"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"google.golang.org/api/androidpublisher/v3"
@@ -12,7 +13,7 @@ import (
 func TestAckStateProcessErrorInCLient(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderAcknowledged
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	iapTestOn := true
 	m, err := playstore.New(
 		client,
@@ -31,7 +32,7 @@ func TestAckStateProcessErrorInCLient(t *testing.T) {
 func TestAckStateProcessTestPurchaseWithTestOff(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderAcknowledged
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
 			PurchaseType: new(int64),
@@ -55,7 +56,7 @@ func TestAckStateProcessTestPurchaseWithTestOff(t *testing.T) {
 func TestAckStateProcessTestPurchaseWithTestOn(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderAcknowledged
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{
 			PurchaseType: new(int64),
@@ -79,7 +80,7 @@ func TestAckStateProcessTestPurchaseWithTestOn(t *testing.T) {
 func TestAckStateProcess(t *testing.T) {
 	order := storage.NewPlaystoreOrder()
 	order.State = storage.PlaystoreOrderAcknowledged
-	client := NewMockClientService()
+	client := googleplaystoreutils.NewMockClientService()
 	client.GetPurchaseFunc = func() (*androidpublisher.ProductPurchase, error) {
 		return &androidpublisher.ProductPurchase{}, nil
 	}

@@ -80,6 +80,16 @@ func (b *Consumer) Consume(event interface{}) error {
 			b.namesdb,
 			b.iapTestOn,
 		)
+	case producer.AuctionPassPlaystoreOrderEvent:
+		log.Info("[consumer] process auction pass playstore events")
+		return ProcessAuctionPassPlaystoreOrders(
+			tx,
+			b.contracts,
+			b.pvc,
+			b.googleCredentials,
+			b.namesdb,
+			b.iapTestOn,
+		)
 	case input.DismissPlayerInput:
 		log.Debug("Received DismissPlayerInput")
 		return DismissPlayer(b.contracts, b.pvc, in)

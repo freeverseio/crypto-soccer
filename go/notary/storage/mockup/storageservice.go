@@ -44,6 +44,17 @@ type Tx struct {
 	OffersByPlayerIdFunc          func(playerId string) ([]storage.Offer, error)
 	OffersStartedByPlayerIdFunc   func(playerId string) ([]storage.Offer, error)
 	CancelAllOffersByPlayerIdFunc func(playerId string) error
+
+	// AuctionPassPlayStore
+	AuctionPassPlayStoreOrderFunc         func(orderId string) (*storage.AuctionPassPlaystoreOrder, error)
+	AuctionPassPlayStorePendingOrdersFunc func() ([]storage.AuctionPassPlaystoreOrder, error)
+	AuctionPassPlayStoreInsertFunc        func(order storage.AuctionPassPlaystoreOrder) error
+	AuctionPassPlayStoreUpdateStateFunc   func(order storage.AuctionPassPlaystoreOrder) error
+
+	// AuctionPass
+	AuctionPassFunc            func(owner string) (*storage.AuctionPass, error)
+	AuctionPassInsertFunc      func(order storage.AuctionPass) error
+	AuctionPassAcknowledgeFunc func(ap storage.AuctionPass) error
 }
 
 func (b *StorageService) Begin() (storage.Tx, error) {
@@ -130,4 +141,25 @@ func (b *Tx) OffersStartedByPlayerId(playerId string) ([]storage.Offer, error) {
 }
 func (b *Tx) CancelAllOffersByPlayerId(playerId string) error {
 	return b.CancelAllOffersByPlayerIdFunc(playerId)
+}
+func (b *Tx) AuctionPassPlayStoreOrder(orderId string) (*storage.AuctionPassPlaystoreOrder, error) {
+	return b.AuctionPassPlayStoreOrderFunc(orderId)
+}
+func (b *Tx) AuctionPassPlayStorePendingOrders() ([]storage.AuctionPassPlaystoreOrder, error) {
+	return b.AuctionPassPlayStorePendingOrdersFunc()
+}
+func (b *Tx) AuctionPassPlayStoreInsert(order storage.AuctionPassPlaystoreOrder) error {
+	return b.AuctionPassPlayStoreInsertFunc(order)
+}
+func (b *Tx) AuctionPassPlayStoreUpdateState(order storage.AuctionPassPlaystoreOrder) error {
+	return b.AuctionPassPlayStoreUpdateStateFunc(order)
+}
+func (b *Tx) AuctionPass(owner string) (*storage.AuctionPass, error) {
+	return b.AuctionPassFunc(owner)
+}
+func (b *Tx) AuctionPassInsert(order storage.AuctionPass) error {
+	return b.AuctionPassInsertFunc(order)
+}
+func (b *Tx) AuctionPassAcknowledge(ap storage.AuctionPass) error {
+	return b.AuctionPassAcknowledgeFunc(ap)
 }

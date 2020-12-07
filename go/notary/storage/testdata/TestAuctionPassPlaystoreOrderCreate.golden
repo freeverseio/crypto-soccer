@@ -1,0 +1,11 @@
+(*storage.AuctionPassPlaystoreOrder)({
+	OrderId: (string) "",
+	PackageName: (string) "",
+	ProductId: (string) "",
+	PurchaseToken: (string) "",
+	TeamId: (string) "",
+	Owner: (string) "",
+	Signature: (string) "",
+	State: (storage.AuctionPassPlaystoreOrderState) (len=4) "open",
+	StateExtra: (string) ""
+})

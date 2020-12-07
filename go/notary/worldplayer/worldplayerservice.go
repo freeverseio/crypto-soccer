@@ -99,10 +99,10 @@ func (b WorldPlayerService) createBatchByTier(
 
 	seed := new(big.Int).SetUint64(generateRnd(id, string(epochDays), 0))
 
-	worldPlayers, err := b.contracts.Privileged.CreateBuyNowPlayerIdBatch(
+	worldPlayers, err := b.contracts.Privileged.CreateBuyNowPlayerIdBatchV2(
 		&bind.CallOpts{},
-		big.NewInt(tier.Value),
-		tier.MaxPotential,
+		tier.LevelRange,
+		tier.PotentialWeights,
 		seed,
 		[4]uint8{
 			tier.GoalKeepersCount,
@@ -131,9 +131,12 @@ func (b WorldPlayerService) createBatchByTier(
 		leftishness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsLeftishnessIdx]
 		forwardness := worldPlayers.BirthTraitsArray[i][contracts.BirthTraitsForwardnessIdx]
 		generation := uint8(0)
-		name, countryOfBirth, race, err := b.namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
-		if err != nil {
-			return nil, err
+		var name, countryOfBirth, race string
+		if b.namesdb != nil {
+			name, countryOfBirth, race, err = b.namesdb.GeneratePlayerFullName(worldPlayers.PlayerIdArray[i], generation, timezone, countryIdxInTZ.Uint64())
+			if err != nil {
+				return nil, err
+			}
 		}
 		dayOfBirth := int32(worldPlayers.DayOfBirthArray[i])
 		preferredPosition, err := utils.PreferredPosition(forwardness, leftishness)

@@ -43,7 +43,8 @@ RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 10,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
 MatchLog: (string) (len=75) "453417719909338256976916699897424949063345289966945781921898429245907009536",
-IsZombie: (bool) false
+IsZombie: (bool) false,
+PromoTimeout: (uint32) 0
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -711,7 +712,8 @@ RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 67,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
 MatchLog: (string) (len=75) "459712112814563907405310867031241055348278958008079585648494602262480421025",
-IsZombie: (bool) false
+IsZombie: (bool) false,
+PromoTimeout: (uint32) 0
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -1712,7 +1714,8 @@ RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 43,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
 MatchLog: (string) (len=75) "457061841982089179214003457028852136853792823072590605814179088473559924736",
-IsZombie: (bool) false
+IsZombie: (bool) false,
+PromoTimeout: (uint32) 0
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({
@@ -2380,7 +2383,8 @@ RankingPoints: (uint64) 0,
 TrainingPoints: (uint16) 36,
 Tactic: (string) (len=33) "340596594427581673436941882753025",
 MatchLog: (string) (len=75) "456288846628098448289231785992732649085157666284792659431036307064204820480",
-IsZombie: (bool) false
+IsZombie: (bool) false,
+PromoTimeout: (uint32) 0
 },
 Players: ([25]*engine.Player) (len=25 cap=25) {
 (*engine.Player)({

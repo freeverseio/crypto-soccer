@@ -14,6 +14,9 @@ const getNumUnreadMessagesResolver = require('./getNumUnreadMessagesResolver');
 const getLastTimeLoggedInResolver = require('./getLastTimeLoggedIn');
 const setLastTimeLoggedInResolver = require('./setLastTimeLoggedIn');
 const createBidResolver = require('./createBidResolver');
+const auctionPassByOwnerResolver = require('./auctionPassByOwnerResolver');
+const playerHistoryGraphByPlayerIdResolver = require('./playerHistoryGraphByPlayerIdResolver');
+const setGetSocialIdResolver = require('./setGetSocialIdResolver');
 
 const web3 = new Web3('');
 
@@ -44,6 +47,12 @@ const resolvers = ({ horizonRemoteSchema }) => {
           return selectTeamManagerName({ teamId: team.teamId }).then((result) => {
             return result && result.team_manager_name ? result.team_manager_name : team.managerName;
           });
+        },
+      },
+      auctionPassByOwner: {
+        fragment: `... on Team { owner }`,
+        resolve(parent, args, context, info) {
+          return auctionPassByOwnerResolver(parent, args, context, info, horizonRemoteSchema);
         },
       },
     },
@@ -88,6 +97,12 @@ const resolvers = ({ horizonRemoteSchema }) => {
         fragment: `... on Player { teamId }`,
         resolve(parent, args, context, info) {
           return teamByTeamId(parent, args, context, info, horizonRemoteSchema);
+        },
+      },
+      playerHistoryGraphByPlayerId: {
+        fragment: `... on Player { teamId, playerId}`,
+        resolve(parent, args, context, info) {
+          return playerHistoryGraphByPlayerIdResolver(parent, args, context, info);
         },
       },
     },
@@ -228,6 +243,7 @@ const resolvers = ({ horizonRemoteSchema }) => {
       setMailboxStart: setMailboxStartResolver,
       setMessageRead: setMessageReadResolver,
       setLastTimeLoggedIn: setLastTimeLoggedInResolver,
+      setGetSocialId: async (parent, args, context, info) => setGetSocialIdResolver(parent, args, context, info, web3),
     },
     Query: {
       getMessages: getMessagesResolver,
