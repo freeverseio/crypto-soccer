@@ -15,7 +15,7 @@ func TestNew(t *testing.T) {
 	})
 	t.Run("new", func(t *testing.T) {
 		_, err := refunder.New(
-			&mockup.PaymentService{},
+			&mockup.OrderService{},
 			&mockup.UniverseService{},
 			&mockup.MarketService{},
 		)

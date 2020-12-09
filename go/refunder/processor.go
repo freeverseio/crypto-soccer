@@ -5,24 +5,24 @@ import (
 )
 
 type Processor struct {
-	pService PaymentService
-	uService UniverseService
-	mService MarketService
+	orderS    OrderService
+	universeS UniverseService
+	marketS   MarketService
 }
 
 func New(
-	pService PaymentService,
-	uService UniverseService,
-	mService MarketService,
+	orderS OrderService,
+	universeS UniverseService,
+	marketS MarketService,
 ) (*Processor, error) {
-	if uService == nil || mService == nil {
+	if universeS == nil || marketS == nil || orderS == nil {
 		return nil, errors.New("invalid params")
 	}
 
 	return &Processor{
-		pService,
-		uService,
-		mService,
+		orderS,
+		universeS,
+		marketS,
 	}, nil
 }
 

@@ -1,4 +1,4 @@
 package refunder
 
-type PaymentService interface {
+type OrderService interface {
 }
