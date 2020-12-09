@@ -11,6 +11,15 @@ const Utils = artifacts.require('Utils');
 const debug = require('../utils/debugUtils.js');
 const { isBigNumber } = require('web3-utils');
 
+
+function getLevel(skills) {
+    var level = 0;
+    for (sk of skills) {
+        level += Math.ceil(sk.toNumber()/1000);
+    }
+    return level;
+}
+
 contract('Privileged', (accounts) => {
     let privileged = null;
     const epochInDays = 18387; // May 5th 2020
@@ -238,7 +247,7 @@ contract('Privileged', (accounts) => {
         const levelRanges = [30, 40];
         const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
         
-        expectedSkills = [ 9167, 5789, 8488, 5257, 9297 ];
+        expectedSkills = [ 9167, 5789, 5488, 4257, 8297 ];
         expectedTraits = [ 7, 3, 6, 2 ];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPureV2(levelRanges, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
@@ -262,8 +271,6 @@ contract('Privileged', (accounts) => {
         
     });
 
-    
-
     it('creating buyNow players scales linearly with value, while other data remains the same (v2)', async () =>  {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const levelRanges = [30, 30];
@@ -272,14 +279,14 @@ contract('Privileged', (accounts) => {
         
         var {0: skills, 1: ageYears, 2: traits, 3: internalId} = await privileged.createBuyNowPlayerIdPureV2(levelRanges, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
         var {0: skills2, 1: ageYears2, 2: traits2, 3: internalId2} = await privileged.createBuyNowPlayerIdPureV2(levelRanges2, potentialWeights, seed, forwardPos = 3, tz, countryIdxInTz).should.be.fulfilled;
-        level = skills.reduce((a, b) => a + Math.floor(Number(b)/1000), 0);
-        level2 = skills2.reduce((a, b) => a + Math.floor(Number(b)/1000), 0);
+        level = skills.reduce((a, b) => a + Math.ceil(Number(b)/1000), 0);
+        level2 = skills2.reduce((a, b) => a + Math.ceil(Number(b)/1000), 0);
         assert.equal(level2, 2 * level);
         skillsOK = 0;
         for (s = 0; s < skills.length; s++) {
             if (Math.abs(skills2[s].toNumber() - 2*skills[s].toNumber()) < 20) { skillsOK++; }
         }
-        assert.equal(skillsOK >= 4, true);
+        assert.equal(skillsOK >= 3, true);
        
         for (t = 0; t < traits.length; t++) {
             traits2[t].toNumber().should.be.equal(traits[t].toNumber());
@@ -291,7 +298,7 @@ contract('Privileged', (accounts) => {
     it('creating a batch of buyNow players (v2)', async () =>  {
         const levelRanges = [10, 20];
         const potentialWeights = [1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1];
-        expectedSkills = [ 2602, 5568, 4103, 2406, 3319 ];
+        expectedSkills = [ 2602, 2568, 3103, 1406, 3319 ];
         expectedTraits = [ 6, 3, 3, 1 ];
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [0,0,0,2];
@@ -344,10 +351,10 @@ contract('Privileged', (accounts) => {
         const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
         const nPlayersPerForwardPos = [10,10,10,10];
         var {0: playerIdArray, 1: skillsArray, 2: dayOfBirthArray, 3: traitsArray, 4: internalIdArray} = await privileged.createBuyNowPlayerIdBatchV2(
-            levelRanges, potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
+            levs = [5,10], potentialWeights, seed, nPlayersPerForwardPos, epochInDays, tz, countryIdxInTz
         ).should.be.fulfilled;
         h = web3.utils.keccak256(JSON.stringify(skillsArray) + JSON.stringify(traitsArray));
-        assert.equal(h, '0xd883e2f6396726bc882f2bc5cbbed50b6c973d21d178ec5c3674c033e5082954', "createBuyNowPlayerIdBatchV2 not as expected");
+        assert.equal(h, '0x79951785d3a3ce9ad3e441ada4293c37a13d3d970557275c53e78f892767f9db', "createBuyNowPlayerIdBatchV2 not as expected");
 
         if (false) {
             // traits: shoot, speed, pass, defence, endurance
@@ -365,6 +372,7 @@ contract('Privileged', (accounts) => {
                     st += " | Pass: " + skillsArray[counter][2];
                     st += " | Defence: " + skillsArray[counter][3];
                     st += " | Endurance: " + skillsArray[counter][4];
+                    st += " | Level: " + getLevel([...skillsArray[counter]]);
                     counter++;
                 }
                 st += "\n"
