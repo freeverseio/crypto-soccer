@@ -212,28 +212,36 @@ contract Privileged is ComputeSkills, EncodingSkills, EncodingSkillsGetters, Enc
         internalPlayerId = encodeTZCountryAndVal(tz, countryIdxInTZ, seed % 268435455); /// maxPlayerIdxInCountry (28b) = 2**28 - 1 = 268435455
     }
 
+    function divideAndCeil(uint256 numerator, uint256 denominator) public pure returns (uint256) {
+        uint256 quotient = numerator / denominator;
+        return (numerator == quotient * denominator) ? quotient : (quotient + 1);
+    }
+
     function recascaleToTarget(uint32[N_SKILLS] memory skillsVec, uint256 targetLevel, uint256 seed) public pure {
         uint256 level;
         for (uint8 sk = 0; sk < N_SKILLS; sk++) { level += skillsVec[sk]; }
 
-        uint32 tempLevel;
+        uint256 tempLevel;
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             skillsVec[sk] = uint32((uint256(skillsVec[sk]) * targetLevel * 1000) / level);
-            tempLevel += skillsVec[sk]/1000;
+            tempLevel += divideAndCeil(uint256(skillsVec[sk]), 1000);
         }
+
+        // It could be that we reached a level up to +5 from target due to use of ceiling.
+        // If so, decrease by 1000 some skills, starting with a random skill, until you reach correct level.
+        // Do not repeat attempts more than 5 times.
         uint8 skToFineTune = uint8(seed % N_SKILLS);
+        uint8 attempts = 0;
 
-        if (targetLevel == tempLevel) return;
-
-        // formula: newSkill = skillsVec[(seed % N_SKILLS)] + uint32((targetLevel - tempLevel) * 1000);
-        // beware: we want newSkill > 300;
-        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
-            if ((skillsVec[skToFineTune] + uint32(targetLevel)*1000) > (300 + uint32(targetLevel)*1000)) {
-                skillsVec[skToFineTune] += uint32((targetLevel - tempLevel) * 1000);
-                return;
+        while((tempLevel > targetLevel) && (attempts < 6)) {
+            if (skillsVec[skToFineTune] > 1300) {
+                skillsVec[skToFineTune] -= 1000;
+                tempLevel -= 1;
             }
             skToFineTune = (skToFineTune + 1) % N_SKILLS;
+            attempts++;
         }
+        return;
     }
 
     /// birthTraits = [potential, forwardness, leftishness, aggressiveness]
