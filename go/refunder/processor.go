@@ -2,25 +2,30 @@ package refunder
 
 import (
 	"errors"
-
-	"github.com/freeverseio/crypto-soccer/go/refunder/storage"
 )
 
 type Processor struct {
-	uService storage.UniverseService
-	mService storage.MarketService
+	pService PaymentService
+	uService UniverseService
+	mService MarketService
 }
 
 func New(
-	uService storage.UniverseService,
-	mService storage.MarketService,
+	pService PaymentService,
+	uService UniverseService,
+	mService MarketService,
 ) (*Processor, error) {
 	if uService == nil || mService == nil {
 		return nil, errors.New("invalid params")
 	}
 
 	return &Processor{
+		pService,
 		uService,
 		mService,
 	}, nil
+}
+
+func GetVoidedOrders() error {
+	return nil
 }

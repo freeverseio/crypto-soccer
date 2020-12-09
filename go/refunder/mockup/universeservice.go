@@ -1,14 +1,14 @@
 package mockup
 
 import (
-	"github.com/freeverseio/crypto-soccer/go/refunder/storage"
+	"github.com/freeverseio/crypto-soccer/go/refunder"
 )
 
 type UniverseService struct {
-	BeginFunc func() (storage.UniverseTx, error)
+	BeginFunc func() (refunder.UniverseTx, error)
 }
 
-func (b *UniverseService) Begin() (storage.UniverseTx, error) {
+func (b *UniverseService) Begin() (refunder.UniverseTx, error) {
 	return b.BeginFunc()
 }
 

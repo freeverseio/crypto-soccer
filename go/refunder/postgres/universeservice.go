@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 
-	"github.com/freeverseio/crypto-soccer/go/refunder/storage"
+	"github.com/freeverseio/crypto-soccer/go/refunder"
 	_ "github.com/lib/pq"
 )
 
@@ -11,13 +11,13 @@ type UniverseService struct {
 	db *sql.DB
 }
 
-func NewUniverseService(db *sql.DB) storage.UniverseService {
+func NewUniverseService(db *sql.DB) refunder.UniverseService {
 	return &UniverseService{
 		db: db,
 	}
 }
 
-func (b *UniverseService) Begin() (storage.UniverseTx, error) {
+func (b *UniverseService) Begin() (refunder.UniverseTx, error) {
 	var err error
 	tx, err := b.db.Begin()
 	if err != nil {
