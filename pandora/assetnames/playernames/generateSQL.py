@@ -123,6 +123,10 @@ properNaming = {
     1009: "TwoOrMoreRegions",
     1010: "Hispanic",
     1100: "Spanish",
+    1141: "BelgiumSurnames",
+    1125: "PolandSurnames",
+    1105: "ItalySurnames",
+    1112: "NetherlandsSurnames"
 }
 
 for code in allCodes:
@@ -159,7 +163,10 @@ CREATE TABLE surnames (
 cur.execute(surnames_sql)
 for surname in allSurnames:
     regionName = properNaming[surname[0]]
-    cur.execute("INSERT INTO surnames VALUES ('%s', '%s');" %(surname[1], regionName))
+    exists = cur.execute("SELECT COUNT(*) FROM surnames WHERE (surname='%s' AND region='%s');" % (surname[1], regionName))
+    row = cur.fetchone()
+    if row[0] == 0: # avoid repeating
+        cur.execute("INSERT INTO surnames VALUES ('%s', '%s');" %(surname[1], regionName))
 
 con.commit()
 con.close()

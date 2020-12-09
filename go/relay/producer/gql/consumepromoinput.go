@@ -3,6 +3,7 @@ package gql
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -37,7 +38,11 @@ func (b ConsumePromoInput) Hash() (common.Hash, error) {
 	if err != nil {
 		return common.Hash{}, err
 	}
-	return crypto.Keccak256Hash(bytes), nil
+
+	hash := [32]byte{}
+	copy(hash[:], crypto.Keccak256Hash(bytes).Bytes())
+	ss := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(hash), hash)
+	return crypto.Keccak256Hash([]byte(ss)), nil
 }
 
 func (b ConsumePromoInput) SignerAddress() (common.Address, error) {
@@ -45,7 +50,6 @@ func (b ConsumePromoInput) SignerAddress() (common.Address, error) {
 	if err != nil {
 		return common.Address{}, err
 	}
-	hash = helper.PrefixedHash(hash)
 	sign, err := hex.DecodeString(b.Signature)
 	if err != nil {
 		return common.Address{}, err
