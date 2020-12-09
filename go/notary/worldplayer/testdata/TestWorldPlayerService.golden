@@ -1,16 +1,16 @@
 (*worldplayer.WorldPlayer)({
-	playerId: (graphql.ID) (len=62) "25735522507002755307532591671300778429390569882344094023287993",
-	name: (string) (len=13) "Raimon Cabeza",
+	playerId: (graphql.ID) (len=62) "25726327533757559974382441589137876574288857445411968106103993",
+	name: (string) (len=10) "Manolo Pin",
 	dayOfBirth: (int32) 17136,
 	preferredPosition: (string) (len=2) "GK",
 	defence: (int32) 1113,
-	speed: (int32) 1663,
-	pass: (int32) 2909,
+	speed: (int32) 663,
+	pass: (int32) 909,
 	shoot: (int32) 1209,
 	endurance: (int32) 1104,
 	potential: (int32) 6,
 	validUntil: (string) (len=10) "1554984000",
 	countryOfBirth: (string) (len=2) "ES",
-	race: (string) (len=7) "Spanish",
+	race: (string) (len=7) "Chinese",
 	productId: (string) (len=13) "player_tier_1"
 })
