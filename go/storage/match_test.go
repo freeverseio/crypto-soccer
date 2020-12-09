@@ -62,8 +62,8 @@ func TestMatchStartTimeByTimezone(t *testing.T) {
 	assert.NilError(t, err)
 	defer tx.Rollback()
 
-	timezoneIdx := uint8(1)
-	countryIdx := uint32(4)
+	timezoneIdx := uint8(0)
+	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
 	var team storage.Team
 	team.TeamID = "10"
