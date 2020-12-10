@@ -18,7 +18,6 @@ func New(
 	if universeS == nil || marketS == nil || orderS == nil {
 		return nil, errors.New("invalid params")
 	}
-
 	return &Processor{
 		orderS,
 		universeS,
