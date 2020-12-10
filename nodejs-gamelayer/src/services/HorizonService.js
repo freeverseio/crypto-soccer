@@ -203,6 +203,32 @@ class HorizonService {
       ? result.playerByPlayerId.playersHistoriesByPlayerId
       : '';
   }
+
+  async hasAuctionPass({ owner }) {
+    const query = gql`
+      query {
+        hasAuctionPass(input: { owner: "${owner}" })
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.hasAuctionPass ? result.hasAuctionPass : false;
+  }
+
+  async hasSpentInWorldPlayers({ teamId }) {
+    const query = gql`
+      {
+        allPlaystoreOrders(condition: { teamId: "${teamId}" }) {
+          totalCount
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allPlaystoreOrders && result.allPlaystoreOrders.totalCount
+      ? result.allPlaystoreOrders.totalCount > 0
+      : false;
+  }
 }
 
 module.exports = new HorizonService();
