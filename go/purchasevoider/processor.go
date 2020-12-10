@@ -52,3 +52,12 @@ func (b Processor) GetPlayerIds(tokens []string) ([]string, error) {
 	}
 	return ids, nil
 }
+
+func (b Processor) MarkForDeletion(playerIds []string) error {
+	for _, id := range playerIds {
+		if err := b.universeS.MarkForDeletion(id); err != nil {
+			return err
+		}
+	}
+	return nil
+}

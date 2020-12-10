@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/purchasevoider"
 	_ "github.com/lib/pq"
@@ -17,23 +18,6 @@ func NewUniverseService(db *sql.DB) purchasevoider.UniverseService {
 	}
 }
 
-func (b *UniverseService) Begin() (purchasevoider.UniverseTx, error) {
-	var err error
-	tx, err := b.db.Begin()
-	if err != nil {
-		return nil, err
-	}
-	return &UniverseTx{tx}, nil
-}
-
-type UniverseTx struct {
-	Tx *sql.Tx
-}
-
-func (b UniverseTx) Rollback() error {
-	return b.Tx.Rollback()
-}
-
-func (b UniverseTx) Commit() error {
-	return b.Tx.Commit()
+func (b UniverseService) MarkForDeletion(id string) error {
+	return errors.New("not implemented")
 }

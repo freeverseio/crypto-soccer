@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/purchasevoider"
 	_ "github.com/lib/pq"
@@ -17,5 +18,5 @@ func NewMarketService(db *sql.DB) purchasevoider.MarketService {
 	}
 }
 func (b *MarketService) GetPlayerIdByPurchaseToken(token string) (string, error) {
-	return "", nil
+	return "", errors.New("not implemented")
 }
