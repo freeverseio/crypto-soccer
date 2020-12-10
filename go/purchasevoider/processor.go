@@ -46,7 +46,9 @@ func (b Processor) GetPlayerIds(tokens []string) ([]string, error) {
 		if err != nil {
 			return ids, err
 		}
-		ids = append(ids, id)
+		if id != "" {
+			ids = append(ids, id)
+		}
 	}
 	return ids, nil
 }

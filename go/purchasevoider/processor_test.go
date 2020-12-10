@@ -77,3 +77,62 @@ func TestGetVoidedTokens(t *testing.T) {
 		assert.Equal(t, tokens[0], "ciao")
 	})
 }
+
+func TestGetPlayerIds(t *testing.T) {
+	t.Run("0 tokens", func(t *testing.T) {
+		pv, err := purchasevoider.New(
+			&mockup.VoidPurchaseService{},
+			&mockup.UniverseService{},
+			&mockup.MarketService{},
+		)
+		assert.NilError(t, err)
+		ids, err := pv.GetPlayerIds([]string{})
+		assert.NilError(t, err)
+		assert.Equal(t, len(ids), 0)
+	})
+	t.Run("no id from service", func(t *testing.T) {
+		pv, err := purchasevoider.New(
+			&mockup.VoidPurchaseService{},
+			&mockup.UniverseService{},
+			&mockup.MarketService{
+				GetPlayerIdByPurchaseTokenFunc: func(token string) (string, error) {
+					return "", nil
+				},
+			},
+		)
+		assert.NilError(t, err)
+		ids, err := pv.GetPlayerIds([]string{"ciao"})
+		assert.NilError(t, err)
+		assert.Equal(t, len(ids), 0)
+	})
+	t.Run("error from service", func(t *testing.T) {
+		pv, err := purchasevoider.New(
+			&mockup.VoidPurchaseService{},
+			&mockup.UniverseService{},
+			&mockup.MarketService{
+				GetPlayerIdByPurchaseTokenFunc: func(token string) (string, error) {
+					return "", errors.New("error")
+				},
+			},
+		)
+		assert.NilError(t, err)
+		_, err = pv.GetPlayerIds([]string{"ciao"})
+		assert.Error(t, err, "error")
+	})
+	t.Run("service returns ids", func(t *testing.T) {
+		pv, err := purchasevoider.New(
+			&mockup.VoidPurchaseService{},
+			&mockup.UniverseService{},
+			&mockup.MarketService{
+				GetPlayerIdByPurchaseTokenFunc: func(token string) (string, error) {
+					return "id", nil
+				},
+			},
+		)
+		assert.NilError(t, err)
+		ids, err := pv.GetPlayerIds([]string{"ciao"})
+		assert.NilError(t, err)
+		assert.Equal(t, len(ids), 1)
+		assert.Equal(t, ids[0], "id")
+	})
+}
