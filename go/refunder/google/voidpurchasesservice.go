@@ -12,15 +12,15 @@ import (
 	"google.golang.org/api/option"
 )
 
-type OrderService struct {
+type VoidPurchasesService struct {
 	service     *androidpublisher.Service
 	packageName string
 }
 
-func NewOrderService(
+func NewVoidPurchasesService(
 	credentials []byte,
 	packageName string,
-) (refunder.OrderService, error) {
+) (refunder.VoidPurchasesService, error) {
 	c := &http.Client{Timeout: 10 * time.Second}
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, c)
 
@@ -40,14 +40,15 @@ func NewOrderService(
 		return nil, err
 	}
 
-	return &OrderService{
+	return &VoidPurchasesService{
 		service,
 		packageName,
 	}, nil
 }
 
-func (b OrderService) List(ctx context.Context) *androidpublisher.PurchasesVoidedpurchasesListCall {
+func (b VoidPurchasesService) VoidedPurchases(ctx context.Context) ([]*androidpublisher.VoidedPurchase, error) {
 	ps := androidpublisher.NewPurchasesVoidedpurchasesService(b.service)
 	list := ps.List(b.packageName)
-	return list
+	response, err := list.Context(ctx).Do()
+	return response.VoidedPurchases, err
 }
