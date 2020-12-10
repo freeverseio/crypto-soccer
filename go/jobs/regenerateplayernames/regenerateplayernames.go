@@ -1,11 +1,13 @@
 package regenerateplayernames
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/storage/postgres"
+	_ "github.com/lib/pq"
+
 	"github.com/shurcooL/graphql"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,11 +34,10 @@ func New(
 	}
 }
 
-func NewJob(universeDB *string, universeURL *string, gameURL *string, debug *bool) {
+func NewJob(universeDB *string, universeURL *string, debug *bool) {
 
 	log.Infof("[PARAM] universedb                 : %v", *universeDB)
 	log.Infof("[PARAM] universe                   : %v", *universeURL)
-	log.Infof("[PARAM] game                       : %v", *gameURL)
 	log.Infof("[PARAM] debug                      : %v", *debug)
 	log.Infof("-------------------------------------------------------------------")
 
@@ -47,16 +48,17 @@ func NewJob(universeDB *string, universeURL *string, gameURL *string, debug *boo
 	if err := func() error {
 		start := time.Now()
 		log.Info("Create the clients to GQL APIs")
-		game := graphql.NewClient(*gameURL, nil)
 		universe := graphql.NewClient(*universeURL, nil)
 
 		log.Info("Create the db client")
-		universedb, err := postgres.New(*universeDB)
+
+		universedb, err := NewDB(*universeDB)
 		if err != nil {
+			log.Info("The error %v", err)
 			return err
 		}
 		defer universedb.Close()
-		playerService := NewPlayerService(universedb, universe, game)
+		playerService := NewPlayerService(universedb, universe)
 
 		log.Info("Retrieving all players")
 		players, err := playerService.getAllPlayers()
@@ -64,7 +66,7 @@ func NewJob(universeDB *string, universeURL *string, gameURL *string, debug *boo
 			return err
 		}
 
-		log.Info("Updating all players names and races")
+		log.Info("Updating all players names and races for tz 7,8,9,11")
 		err = playerService.updatetAllPlayerNamesAndRaces(players)
 		if err != nil {
 			return err
@@ -77,4 +79,16 @@ func NewJob(universeDB *string, universeURL *string, gameURL *string, debug *boo
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func NewDB(url string) (*sql.DB, error) {
+	var err error
+	db, err := sql.Open("postgres", url)
+	if err != nil {
+		return nil, fmt.Errorf("Postgres connect err: (%v)", err)
+	}
+	if err = db.Ping(); err != nil {
+		return nil, fmt.Errorf("Postgres Ping err: (%v)", err)
+	}
+	return db, nil
 }
