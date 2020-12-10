@@ -26,6 +26,15 @@ func New(
 	}, nil
 }
 
-func GetVoidedOrders() error {
-	return nil
+func (b Processor) GetVoidedTokens() ([]string, error) {
+	var tokens []string
+	voidPurchases, err := b.orderS.VoidedPurchases(nil)
+	if err != nil {
+		return tokens, err
+	}
+
+	for _, p := range voidPurchases {
+		tokens = append(tokens, p.PurchaseToken)
+	}
+	return tokens, nil
 }
