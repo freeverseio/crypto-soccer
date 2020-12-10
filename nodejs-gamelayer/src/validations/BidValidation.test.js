@@ -7,6 +7,9 @@ jest.mock('../services/HorizonService.js', () => ({
   getBidsPayedByOwner: jest.fn().mockReturnValue([{ extraPrice: 1, auctionByAuctionId: { price: 5 } }]),
   getAuction: jest.fn().mockReturnValue({ price: 10 }),
   getTeamOwner: jest.fn().mockReturnValue('0x7AAB315885FB74a292781e78c33E130be0e326c4'),
+  getTeamsByOwner: jest.fn().mockReturnValue([{ teamId: '123123123' }]),
+  hasAuctionPass: jest.fn().mockReturnValue(false),
+  hasSpentInWorldPlayers: jest.fn().mockReturnValue(false),
 }));
 
 afterEach(() => {
@@ -47,33 +50,9 @@ test('Bid expected owner', async () => {
   expect(addressRecovered).toBe('0x1760B51E59C7378607B59aA05aB315AeB4c8C39F');
 });
 
-test('not allowed to bid because computed maximum bid is lower than total price', async () => {
-  const web3 = new Web3('');
-  HorizonService.getTeamOwner.mockReturnValue('0x65879739f8523163300586992eC5c2d0a367ecE7');
-  bidValidation = new BidValidation({
-    teamId: '234',
-    rnd: 12345,
-    auctionId: '555',
-    extraPrice: 2000,
-    signature:
-      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
-    web3,
-  });
-  const result = await bidValidation.isAllowedToBid();
-
-  expect(result).toBe(false);
-  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
-  expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledWith({
-    owner: '0x65879739f8523163300586992eC5c2d0a367ecE7',
-  });
-});
-
-test('allowed to bid because computed is greater', async () => {
+test('allowed to bid because bid is lower than minimum default bid', async () => {
   const web3 = new Web3('');
   HorizonService.getTeamOwner.mockReturnValue('0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD');
-  HorizonService.getBidsPayedByOwner.mockRestore();
-  HorizonService.getBidsPayedByOwner.mockReturnValueOnce([{ extraPrice: 1001, auctionByAuctionId: { price: 50 } }]);
-
   bidValidation = new BidValidation({
     teamId: '234',
     rnd: 12345,
@@ -87,8 +66,82 @@ test('allowed to bid because computed is greater', async () => {
 
   expect(result).toBe(true);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
+  expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
+  expect(HorizonService.hasAuctionPass).not.toHaveBeenCalled();
+  expect(HorizonService.hasSpentInWorldPlayers).not.toHaveBeenCalled();
+  expect(HorizonService.getBidsPayedByOwner).not.toHaveBeenCalled();
+});
+
+test('allowed to bid because has auction passs', async () => {
+  const web3 = new Web3('');
+  HorizonService.getTeamOwner.mockReturnValue('0x65879739f8523163300586992eC5c2d0a367ecE7');
+  HorizonService.hasAuctionPass.mockReturnValue(true);
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 2000,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedToBid();
+
+  expect(result).toBe(true);
+  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
+  expect(HorizonService.hasAuctionPass).toHaveBeenCalledWith({ owner: '0x65879739f8523163300586992eC5c2d0a367ecE7' });
+  expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalledWith();
+  expect(HorizonService.hasSpentInWorldPlayers).not.toHaveBeenCalled();
+  expect(HorizonService.getBidsPayedByOwner).not.toHaveBeenCalled();
+});
+
+test('allowed to bid because has spent in worldplayers', async () => {
+  const web3 = new Web3('');
+  HorizonService.getTeamOwner.mockReturnValue('0x65879739f8523163300586992eC5c2d0a367ecE7');
+  HorizonService.hasAuctionPass.mockReturnValue(false);
+  HorizonService.hasSpentInWorldPlayers.mockReturnValue(true);
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 2000,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedToBid();
+
+  expect(result).toBe(true);
+  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
+  expect(HorizonService.hasAuctionPass).toHaveBeenCalledWith({ owner: '0x65879739f8523163300586992eC5c2d0a367ecE7' });
+  expect(HorizonService.hasSpentInWorldPlayers).toHaveBeenCalledWith({ teamId: '123123123' });
+  expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalledWith();
+  expect(HorizonService.getBidsPayedByOwner).not.toHaveBeenCalled();
+});
+
+test('allowed to bid because has spent in bids', async () => {
+  const web3 = new Web3('');
+  HorizonService.getTeamOwner.mockReturnValue('0x65879739f8523163300586992eC5c2d0a367ecE7');
+  HorizonService.hasAuctionPass.mockReturnValue(false);
+  HorizonService.hasSpentInWorldPlayers.mockReturnValue(false);
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 2000,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedToBid();
+
+  expect(result).toBe(true);
+  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
+  expect(HorizonService.hasAuctionPass).toHaveBeenCalledWith({ owner: '0x65879739f8523163300586992eC5c2d0a367ecE7' });
+  expect(HorizonService.getTeamsByOwner).toHaveBeenCalledWith({ owner: '0x65879739f8523163300586992eC5c2d0a367ecE7' });
+  expect(HorizonService.hasSpentInWorldPlayers).toHaveBeenCalledWith({ teamId: '123123123' });
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledWith({
-    owner: '0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD',
+    owner: '0x65879739f8523163300586992eC5c2d0a367ecE7',
   });
 });
 
@@ -109,28 +162,4 @@ test('not allowed to bid because signer is not owner', async () => {
   expect(result).toBe(false);
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(0);
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledTimes(0);
-});
-
-test('allowed to bid because bid is less than minimum default bid', async () => {
-  const web3 = new Web3('');
-  HorizonService.getTeamOwner.mockReturnValue('0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD');
-  HorizonService.getBidsPayedByOwner.mockRestore();
-  HorizonService.getBidsPayedByOwner.mockReturnValueOnce([]);
-
-  bidValidation = new BidValidation({
-    teamId: '234',
-    rnd: 12345,
-    auctionId: '555',
-    extraPrice: 10,
-    signature:
-      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
-    web3,
-  });
-  const result = await bidValidation.isAllowedToBid();
-
-  expect(result).toBe(true);
-  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
-  expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledWith({
-    owner: '0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD',
-  });
 });
