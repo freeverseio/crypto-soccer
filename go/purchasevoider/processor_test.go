@@ -136,3 +136,41 @@ func TestGetPlayerIds(t *testing.T) {
 		assert.Equal(t, ids[0], "id")
 	})
 }
+
+func TestMarkForDeletion(t *testing.T) {
+	t.Run("no ids", func(t *testing.T) {
+		pv, err := purchasevoider.New(
+			&mockup.VoidPurchaseService{},
+			&mockup.UniverseService{},
+			&mockup.MarketService{},
+		)
+		assert.NilError(t, err)
+		assert.NilError(t, pv.MarkForDeletion([]string{}))
+	})
+	t.Run("error from service", func(t *testing.T) {
+		pv, err := purchasevoider.New(
+			&mockup.VoidPurchaseService{},
+			&mockup.UniverseService{
+				MarkForDeletionFn: func(id string) error {
+					return errors.New("error")
+				},
+			},
+			&mockup.MarketService{},
+		)
+		assert.NilError(t, err)
+		assert.Error(t, pv.MarkForDeletion([]string{"ciao"}), "error")
+	})
+	t.Run("no error from service", func(t *testing.T) {
+		pv, err := purchasevoider.New(
+			&mockup.VoidPurchaseService{},
+			&mockup.UniverseService{
+				MarkForDeletionFn: func(id string) error {
+					return nil
+				},
+			},
+			&mockup.MarketService{},
+		)
+		assert.NilError(t, err)
+		assert.NilError(t, pv.MarkForDeletion([]string{"ciao"}))
+	})
+}

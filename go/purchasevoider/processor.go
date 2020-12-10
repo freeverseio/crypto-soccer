@@ -26,6 +26,18 @@ func New(
 	}, nil
 }
 
+func (b Processor) Run() error {
+	tokens, err := b.GetVoidedTokens()
+	if err != nil {
+		return err
+	}
+	playerIds, err := b.GetPlayerIds(tokens)
+	if err != nil {
+		return err
+	}
+	return b.MarkForDeletion(playerIds)
+}
+
 func (b Processor) GetVoidedTokens() ([]string, error) {
 	var tokens []string
 	voidPurchases, err := b.orderS.VoidedPurchases(nil) // TODO context
