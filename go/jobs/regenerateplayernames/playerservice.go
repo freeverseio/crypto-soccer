@@ -119,6 +119,7 @@ func (b PlayerService) updatePlayers(players []Player) error {
 	if err != nil {
 		return err
 	}
+	var playersToUpdate []Player
 	for _, player := range players {
 		var timezone uint8
 		var countryIdxInTZ uint64
@@ -136,13 +137,14 @@ func (b PlayerService) updatePlayers(players []Player) error {
 		}
 		player.Name = graphql.String(name)
 		player.Race = graphql.String(region)
+		playersToUpdate = append(playersToUpdate, player)
 	}
 	fmt.Println("Generated names")
 	tx, err := b.universeDB.Begin()
 	if err != nil {
 		return err
 	}
-	err = b.PlayersBulkInsertUpdateNameRace(players, tx)
+	err = b.PlayersBulkInsertUpdateNameRace(playersToUpdate, tx)
 	if err != nil {
 		tx.Rollback()
 		return err
