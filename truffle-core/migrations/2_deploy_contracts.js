@@ -98,8 +98,7 @@ module.exports = function (deployer, network, accounts) {
       await assets.setRelay(accounts[0]).should.be.fulfilled;
       
       await market.setCryptoMarketAddress(marketCrypto.address).should.be.fulfilled;
-      await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
-      await market.updateNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
+      await market.setNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600).should.be.fulfilled;
       await updates.initUpdates(DEPLOY_TIME).should.be.fulfilled; 
       await updates.setStakersAddress(stakers.address).should.be.fulfilled;
       await stakers.setGameOwner(updates.address).should.be.fulfilled;
