@@ -1,8 +1,11 @@
 package refunder
 
-type UniverseService interface {
-	Begin() (UniverseTx, error)
-}
+import (
+	"context"
 
-type UniverseTx interface {
+	"google.golang.org/api/androidpublisher/v3"
+)
+
+type OrderService interface {
+	List(context.Context) *androidpublisher.PurchasesVoidedpurchasesListCall
 }
