@@ -28,7 +28,7 @@ func New(
 
 func (b Processor) GetVoidedTokens() ([]string, error) {
 	var tokens []string
-	voidPurchases, err := b.orderS.VoidedPurchases(nil)
+	voidPurchases, err := b.orderS.VoidedPurchases(nil) // TODO context
 	if err != nil {
 		return tokens, err
 	}
@@ -37,4 +37,16 @@ func (b Processor) GetVoidedTokens() ([]string, error) {
 		tokens = append(tokens, p.PurchaseToken)
 	}
 	return tokens, nil
+}
+
+func (b Processor) GetPlayerIds(tokens []string) ([]string, error) {
+	var ids []string
+	for _, t := range tokens {
+		id, err := b.marketS.GetPlayerIdByPurchaseToken(t)
+		if err != nil {
+			return ids, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
 }

@@ -16,24 +16,6 @@ func NewMarketService(db *sql.DB) purchasevoider.MarketService {
 		db: db,
 	}
 }
-
-func (b *MarketService) Begin() (purchasevoider.MarketTx, error) {
-	var err error
-	tx, err := b.db.Begin()
-	if err != nil {
-		return nil, err
-	}
-	return &MarketTx{tx}, nil
-}
-
-type MarketTx struct {
-	Tx *sql.Tx
-}
-
-func (b MarketTx) Rollback() error {
-	return b.Tx.Rollback()
-}
-
-func (b MarketTx) Commit() error {
-	return b.Tx.Commit()
+func (b *MarketService) GetPlayerIdByPurchaseToken(token string) (string, error) {
+	return "", nil
 }
