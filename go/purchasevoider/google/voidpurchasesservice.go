@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/refunder"
+	"github.com/freeverseio/crypto-soccer/go/purchasevoider"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/androidpublisher/v3"
@@ -20,7 +20,7 @@ type VoidPurchasesService struct {
 func NewVoidPurchasesService(
 	credentials []byte,
 	packageName string,
-) (refunder.VoidPurchasesService, error) {
+) (purchasevoider.VoidPurchasesService, error) {
 	c := &http.Client{Timeout: 10 * time.Second}
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, c)
 

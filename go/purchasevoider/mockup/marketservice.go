@@ -1,14 +1,14 @@
 package mockup
 
 import (
-	"github.com/freeverseio/crypto-soccer/go/refunder"
+	"github.com/freeverseio/crypto-soccer/go/purchasevoider"
 )
 
 type MarketService struct {
-	BeginFunc func() (refunder.MarketTx, error)
+	BeginFunc func() (purchasevoider.MarketTx, error)
 }
 
-func (b *MarketService) Begin() (refunder.MarketTx, error) {
+func (b *MarketService) Begin() (purchasevoider.MarketTx, error) {
 	return b.BeginFunc()
 }
 

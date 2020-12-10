@@ -1,4 +1,4 @@
-package refunder
+package purchasevoider
 
 import (
 	"errors"

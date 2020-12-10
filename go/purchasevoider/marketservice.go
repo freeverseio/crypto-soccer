@@ -1,4 +1,4 @@
-package refunder
+package purchasevoider
 
 type MarketService interface {
 	Begin() (MarketTx, error)

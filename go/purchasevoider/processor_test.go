@@ -1,20 +1,20 @@
-package refunder_test
+package purchasevoider_test
 
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/refunder"
-	"github.com/freeverseio/crypto-soccer/go/refunder/mockup"
+	"github.com/freeverseio/crypto-soccer/go/purchasevoider"
+	"github.com/freeverseio/crypto-soccer/go/purchasevoider/mockup"
 	"gotest.tools/assert"
 )
 
 func TestNew(t *testing.T) {
 	t.Run("nil param", func(t *testing.T) {
-		_, err := refunder.New(nil, nil, nil)
+		_, err := purchasevoider.New(nil, nil, nil)
 		assert.Error(t, err, "invalid params")
 	})
 	t.Run("new", func(t *testing.T) {
-		_, err := refunder.New(
+		_, err := purchasevoider.New(
 			&mockup.VoidPurchasesService{},
 			&mockup.UniverseService{},
 			&mockup.MarketService{},

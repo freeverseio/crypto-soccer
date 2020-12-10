@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 
-	"github.com/freeverseio/crypto-soccer/go/refunder"
+	"github.com/freeverseio/crypto-soccer/go/purchasevoider"
 	_ "github.com/lib/pq"
 )
 
@@ -11,13 +11,13 @@ type MarketService struct {
 	db *sql.DB
 }
 
-func NewMarketService(db *sql.DB) refunder.MarketService {
+func NewMarketService(db *sql.DB) purchasevoider.MarketService {
 	return &MarketService{
 		db: db,
 	}
 }
 
-func (b *MarketService) Begin() (refunder.MarketTx, error) {
+func (b *MarketService) Begin() (purchasevoider.MarketTx, error) {
 	var err error
 	tx, err := b.db.Begin()
 	if err != nil {
