@@ -5,13 +5,13 @@ import (
 )
 
 type Processor struct {
-	orderS    VoidPurchasesService
+	orderS    VoidPurchaseService
 	universeS UniverseService
 	marketS   MarketService
 }
 
 func New(
-	orderS VoidPurchasesService,
+	orderS VoidPurchaseService,
 	universeS UniverseService,
 	marketS MarketService,
 ) (*Processor, error) {
