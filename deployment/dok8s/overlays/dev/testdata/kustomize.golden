@@ -633,7 +633,7 @@ spec:
         - mountPath: /var/secrets/google
           name: google-cloud-key
       imagePullSecrets:
-      - name: docker-secreMarket
+      - name: docker-secret
       volumes:
       - name: google-cloud-key
         secret:
@@ -720,6 +720,8 @@ spec:
         - postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable
         - -google_key
         - /var/secrets/google/key.json
+        - -package_name
+        - com.freeverse.phoenix
         - -period
         - "60"
         envFrom:

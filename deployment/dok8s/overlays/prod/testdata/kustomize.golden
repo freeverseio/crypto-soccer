@@ -717,6 +717,8 @@ spec:
         - postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable
         - -google_key
         - /var/secrets/google/key.json
+        - -package_name
+        - com.freeverse.phoenix
         - -period
         - "60"
         envFrom:
