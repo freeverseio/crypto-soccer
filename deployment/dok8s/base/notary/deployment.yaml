@@ -45,4 +45,4 @@ spec:
         ports:
         - containerPort: 4000
       imagePullSecrets:
-      - name: docker-secreMarket
+      - name: docker-secret
