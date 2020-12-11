@@ -207,8 +207,7 @@ jobs:
           POSTGRES_PASSWORD: freeverse
           POSTGRES_DB: freeverse
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
       - run: sudo apt-get install -yy postgresql-client
       - run: | 
           PGPASSWORD=freeverse psql -U freeverse -h localhost -p 5432 -c 'CREATE DATABASE cryptosoccer'
