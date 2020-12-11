@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"database/sql"
-	"errors"
 
 	_ "github.com/lib/pq"
 )
@@ -12,5 +11,9 @@ type UniverseService struct {
 }
 
 func (b UniverseService) MarkForDeletion(id string) error {
-	return errors.New("not implemented")
+	_, err := b.DB.Exec("UPDATE INTO players SET voided='true' WHERE player_id=$1", id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
