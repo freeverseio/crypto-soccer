@@ -1,0 +1,1 @@
+ALTER TABLE team_props ADD COLUMN get_social_id TEXT;

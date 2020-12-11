@@ -59,20 +59,32 @@ class BidValidation {
       return false;
     }
 
-    const owner = await this.signerAddress();
     const auction = await HorizonService.getAuction({
       auctionId: this.auctionId,
     });
     const totalPrice = parseInt(auction.price) + parseInt(this.extraPrice);
+    if (parseInt(totalPrice) < parseInt(MINIMUM_DEFAULT_BID)) {
+      return true;
+    }
+    const owner = await this.signerAddress();
+    const hasAuctionPass = await HorizonService.hasAuctionPass({ owner });
+    if (hasAuctionPass) {
+      return true;
+    }
+    const teamsByOwner = await HorizonService.getTeamsByOwner({ owner });
+    let hasSpentInWorldPlayers = false;
+    for (const team of teamsByOwner) {
+      const hasSpentWP = await HorizonService.hasSpentInWorldPlayers({ teamId: team.teamId });
+      hasSpentInWorldPlayers = hasSpentInWorldPlayers || hasSpentWP;
+    }
+
+    if (hasSpentInWorldPlayers) {
+      return true;
+    }
 
     const bidsPayed = await HorizonService.getBidsPayedByOwner({ owner });
-    const totalAmountSpent = bidsPayed.reduce(
-      (acc, curr) => (acc += parseInt(curr.extraPrice) + parseInt(curr.auctionByAuctionId.price)),
-      0
-    );
-    const newMaximumBid = parseInt(totalAmountSpent) + parseInt(MINIMUM_DEFAULT_BID);
-
-    if (newMaximumBid >= totalPrice) {
+    const hasSpentInBids = bidsPayed.length > 0;
+    if (hasSpentInBids) {
       return true;
     }
 

@@ -1,6 +1,7 @@
 package gql
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -12,10 +13,11 @@ import (
 func NewServer(
 	ch chan interface{},
 	contracts contracts.Contracts,
+	db *sql.DB,
 ) error {
 	log.Info("New GraphQL server staring ...")
 
-	resolver := NewResolver(ch, contracts)
+	resolver := NewResolver(ch, contracts, db)
 	schema := graphql.MustParseSchema(Schema, resolver)
 
 	handler := relay.Handler{Schema: schema}

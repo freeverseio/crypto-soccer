@@ -113,6 +113,7 @@ func main() {
 		go producer.NewProcessorOrderlessAuctions(ch, time.Duration(*processWait)*time.Second)
 		go producer.NewProcessorOffer(ch, time.Duration(40)*time.Second)
 		go producer.NewPlaystoreOrderEventProcessor(ch, time.Duration(2)*time.Second)
+		go producer.NewAuctionPassPlaystoreOrderEventProcessor(ch, time.Duration(2)*time.Second)
 
 		var market marketpay.MarketPayService
 		if *marketID == "" {

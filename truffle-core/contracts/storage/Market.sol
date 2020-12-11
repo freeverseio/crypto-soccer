@@ -64,21 +64,18 @@ contract Market is MarketView {
     /// by suddenly offering amazing players to some user.
     /// The company must let everyone know the new value first (propose), and then wait
     /// for some time (Lapse) until it can be made effective.
-    function proposeNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime) external onlyCOO{
-        _maxSumSkillsBuyNowPlayerProposed = newSumSkills;
-        _maxSumSkillsBuyNowPlayerMinLapseProposed = newLapseTime;
-        _maxSumSkillsBuyNowPlayerLastUpdate = now;
-        emit ProposedNewMaxSumSkillsBuyNowPlayer(newSumSkills, newLapseTime);
-    }
+    // function proposeNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime) external onlyCOO{
+    //     _maxSumSkillsBuyNowPlayerProposed = newSumSkills;
+    //     _maxSumSkillsBuyNowPlayerMinLapseProposed = newLapseTime;
+    //     _maxSumSkillsBuyNowPlayerLastUpdate = now;
+    //     emit ProposedNewMaxSumSkillsBuyNowPlayer(newSumSkills, newLapseTime);
+    // }
 
     /// maxSumSkills can only grow if enough time has passed 
-    function updateNewMaxSumSkillsBuyNowPlayer() external onlyCOO {
-        require (now >= (_maxSumSkillsBuyNowPlayerLastUpdate + _maxSumSkillsBuyNowPlayerMinLapse),
-            "not enough time passed to update new maxSumSkills"
-        );
-        _maxSumSkillsBuyNowPlayer = _maxSumSkillsBuyNowPlayerProposed;
-        _maxSumSkillsBuyNowPlayerMinLapse = _maxSumSkillsBuyNowPlayerMinLapseProposed;
-        emit UpdatedNewMaxSumSkillsBuyNowPlayer(_maxSumSkillsBuyNowPlayer, _maxSumSkillsBuyNowPlayerMinLapse);
+    function setNewMaxSumSkillsBuyNowPlayer(uint256 newSumSkills, uint256 newLapseTime) external onlyCOO {
+        _maxSumSkillsBuyNowPlayer = newSumSkills;
+        _maxSumSkillsBuyNowPlayerMinLapse = newLapseTime;
+        emit UpdatedNewMaxSumSkillsBuyNowPlayer(newSumSkills, newLapseTime);
     }
     
     /// Lowering maxSumSkills can always be made instantly, as this restricts the company further.
@@ -130,8 +127,8 @@ contract Market is MarketView {
         uint256 targetTeamId
      ) 
         external 
-        onlyMarket 
     {
+        require((msg.sender == _market) || (msg.sender == _relay), "Only market or relay are authorized.");
         /// isAcademy checks that player isSpecial, and not written.
         require(getCurrentTeamIdFromPlayerId(playerId) == ACADEMY_TEAM, "only Academy players can be sold via buy-now");
         require(getSumOfSkills(playerId) < _maxSumSkillsBuyNowPlayer, "buy now player has sum of skills larger than allowed");

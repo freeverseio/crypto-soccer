@@ -69,8 +69,7 @@ contract("Market", accounts => {
     [proxy, assets, market, updates] = depl;
     await deployUtils.setProxyContractOwners(proxy, assets, owners, owners.company).should.be.fulfilled;
 
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
+    await market.setNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 20000, newLapseTime = 5*24*3600, {from: owners.COO}).should.be.fulfilled;
 
     constants = await ConstantsGetters.new().should.be.fulfilled;
     marketCrypto = await MarketCrypto.new(proxy.address, {from: owners.superuser}).should.be.fulfilled;
@@ -126,28 +125,17 @@ contract("Market", accounts => {
     minLapseTime.toNumber().should.be.equal(3600*24*5);
   
     // cannot change because I didn't wait enough
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 25000, newLapseTime = 3600*24*4, {from: owners.COO}).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.rejected;
-
-    await timeTravel.advanceTime(minLapseTime.toNumber()+100);
-    await timeTravel.advanceBlock().should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
+    await market.setNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 25000, newLapseTime = 3600*24*4, {from: owners.COO}).should.be.fulfilled;
 
     var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(sumSkillsAllowed);
     minLapseTime.toNumber().should.be.equal(newLapseTime);
     
     // But now we will fail if we don't wait for 4 days...
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 30000, newLapseTime2 = 3600*24*1, {from: owners.COO}).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.rejected;
-
-    await timeTravel.advanceTime(minLapseTime.toNumber()+100);
-    await timeTravel.advanceBlock().should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
+    await market.setNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 30000, newLapseTime2 = 3600*24*1, {from: owners.COO}).should.be.fulfilled;
 
     // we will now have to wait for 1 day... or decrease the value:
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 31000, newLapseTime2 = 3600*24*1, {from: owners.COO}).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.rejected;
+    await market.setNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 31000, newLapseTime2 = 3600*24*1, {from: owners.COO}).should.be.fulfilled;
     await market.lowerNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed = 29000, {from: owners.COO}).should.be.fulfilled;
     var {0: sumSkills, 1: minLapseTime2, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     sumSkills.toNumber().should.be.equal(sumSkillsAllowed);
@@ -1250,18 +1238,16 @@ contract("Market", accounts => {
     
     var {0: sumSkills, 1: minLapseTime, 2: lastUpdate} = await market.getNewMaxSumSkillsBuyNowPlayer().should.be.fulfilled;
     
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0, {from: owners.COO}).should.be.fulfilled;
+    await market.setNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0, {from: owners.COO}).should.be.fulfilled;
     await timeTravel.advanceTime(minLapseTime.toNumber()+100);
     await timeTravel.advanceBlock().should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId, {from: owners.market}).should.be.rejected;
 
     // if value is too low, it fails
     sumSkillsAllowed = 20000;
     sum = await market.getSumOfSkills(playerId).should.be.fulfilled;
     (sum.toNumber() < sumSkillsAllowed).should.be.equal(true);
-    await market.proposeNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0, {from: owners.COO}).should.be.fulfilled;
-    await market.updateNewMaxSumSkillsBuyNowPlayer({from: owners.COO}).should.be.fulfilled;
+    await market.setNewMaxSumSkillsBuyNowPlayer(sumSkillsAllowed, newLapseTime = 0, {from: owners.COO}).should.be.fulfilled;
     tx = await market.transferBuyNowPlayer(playerId.toString(), targetTeamId, {from: owners.market}).should.be.fulfilled;
   });
   

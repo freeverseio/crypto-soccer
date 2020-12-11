@@ -79,13 +79,27 @@ const main = async () => {
       nodes: [Message]
     }
 
+    type PlayerHistoryGraphEncodedSkills {
+      encodedSkills: String
+    }
+    
+    type PlayerHistoryGraph {
+      nodes: [PlayerHistoryGraphEncodedSkills]
+    }
+
     input CreateBidInput {
   		signature: String!
 		  auctionId: ID!
   		extraPrice: Int!
   		rnd: Int!
   		teamId: String!
-	  }
+    }
+    
+    input SetGetSocialIdInput {
+      signature: String!
+      teamId: String!
+      getSocialId: String!
+    }
 
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
@@ -96,6 +110,7 @@ const main = async () => {
       setMessageRead(id: ID!): Boolean
       setLastTimeLoggedIn(teamId: ID!): Boolean
       createBid(input: CreateBidInput!): ID!
+      setGetSocialId(input: SetGetSocialIdInput!): Boolean
     }
     
     extend type Query {
@@ -103,6 +118,14 @@ const main = async () => {
       getNumUnreadMessages(teamId : ID!): Int!
       createBid(input: CreateBidInput!): ID!
       getLastTimeLoggedIn(teamId: ID!): String!
+    }
+
+    extend type Team {
+      auctionPassByOwner: Boolean!
+    }
+    
+    extend type Player {
+      playerHistoryGraphByPlayerId(first: Int!): PlayerHistoryGraph
     }
   `;
 

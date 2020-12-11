@@ -113,7 +113,25 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             if (getShooter(matchLog, goal) != getAssister(matchLog, goal)) {points += 3;}
         }
     }
-    
+
+    // bot evolution is restricted to generating children if needed, to avoid assigning teams with very old players
+    function evolveBot(
+        uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills, 
+        uint256 matchStartTime
+    ) 
+        public
+        pure
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
+    {
+        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            uint256 thisSkills = teamSkills[p];
+            if (thisSkills == 0) continue; 
+            uint256 ageInSecs = INGAMETIME_VS_REALTIME * (matchStartTime - getBirthDay(thisSkills) * DAYS_1); 
+            teamSkills[p] = generateChildIfNeeded(thisSkills, ageInSecs, matchStartTime);
+        }
+        return teamSkills;
+    }
+
     function applyTrainingPoints(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamSkills, 
         uint256 assignedTPs,

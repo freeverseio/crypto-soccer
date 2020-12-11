@@ -67,7 +67,7 @@ func main() {
 
 	ch := make(chan interface{}, *bufferSize)
 
-	go gql.NewServer(ch, *bc)
+	go gql.NewServer(ch, *bc, db)
 	go producer.NewSubmitUserActionsTimer(ch, 5*time.Second)
 
 	consumer.NewConsumer(

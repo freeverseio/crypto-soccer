@@ -15,6 +15,8 @@ type TeamStorageService struct {
 	TeamsByTimezoneIdxCountryIdxLeagueIdxFunc func(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]storage.Team, error)
 	TeamUpdateZombiesFunc                     func(timezoneIdx uint8, countryIdx uint32) error
 	TeamCleanZombiesFunc                      func(timezoneIdx uint8, countryIdx uint32) error
+	TeamPromoTimeoutFunc                      func(teamId string) (uint32, error)
+	TeamSetPromoTimeoutFunc                   func(teamId string, promoTimeout uint32) error
 }
 
 func (b TeamStorageService) Team(teamId string) (*storage.Team, error) {
@@ -71,4 +73,12 @@ func (b TeamStorageService) TeamCleanZombies(timezoneIdx uint8, countryIdx uint3
 		return errors.New("TeamStorageService::TeamCleanZombies is nil")
 	}
 	return b.TeamCleanZombiesFunc(timezoneIdx, countryIdx)
+}
+
+func (b TeamStorageService) TeamPromoTimeout(teamId string) (uint32, error) {
+	return b.TeamPromoTimeoutFunc(teamId)
+}
+
+func (b TeamStorageService) TeamSetPromoTimeout(teamId string, promoTimeout uint32) error {
+	return b.TeamSetPromoTimeoutFunc(teamId, promoTimeout)
 }

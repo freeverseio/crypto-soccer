@@ -121,6 +121,114 @@ class HorizonService {
 
     return result && result.allTeams && result.allTeams.nodes ? result.allTeams.nodes : [];
   }
+
+  async getMatchesPlayedByTeamId({ teamId }) {
+    const query = gql`
+      {
+        allMatchesHistories(
+          condition: { matchDayIdx: 13, state: END }
+          orderBy: BLOCK_NUMBER_DESC
+          filter: {
+            or: [{ homeTeamId: { equalTo: "${teamId}" } }, { visitorTeamId: { equalTo: "${teamId}" } }]
+          }
+        ) {
+          nodes {
+            blockNumber
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allMatchesHistories && result.allMatchesHistories.nodes
+      ? result.allMatchesHistories.nodes
+      : [];
+  }
+
+  async getPlayerTeamId({ playerId }) {
+    const query = gql`
+    {
+        playerByPlayerId(playerId: "${playerId}"){ 
+            teamId
+              teamByTeamId {
+              teamId
+            }
+        }
+    }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result &&
+      result.playerByPlayerId &&
+      result.playerByPlayerId.teamByTeamId &&
+      result.playerByPlayerId.teamByTeamId.teamId
+      ? result.playerByPlayerId.teamByTeamId.teamId
+      : '';
+  }
+
+  async getEncodedSkillsByBlockNumberPlayerId({ playerId, blockNumber }) {
+    const query = gql`
+      {
+        allPlayersHistories(condition: { playerId: "${playerId}", blockNumber: "${blockNumber}" }) {
+          nodes {
+            encodedSkills
+          }
+        }
+      }
+    `;
+
+    const result = await request(this.endpoint, query);
+
+    return result && result.allPlayersHistories && result.allPlayersHistories.nodes
+      ? result.allPlayersHistories.nodes[0].encodedSkills
+      : '';
+  }
+
+  async getPlayerHistory({ playerId, count }) {
+    const query = gql`
+      {
+        playerByPlayerId(playerId: "${playerId}") {
+          playersHistoriesByPlayerId(first: ${count}, orderBy: BLOCK_NUMBER_DESC) {
+            nodes {
+              encodedSkills
+            }
+          }
+        }
+      }
+    `;
+
+    const result = await request(this.endpoint, query);
+
+    return result && result.playerByPlayerId && result.playerByPlayerId.playersHistoriesByPlayerId
+      ? result.playerByPlayerId.playersHistoriesByPlayerId
+      : '';
+  }
+
+  async hasAuctionPass({ owner }) {
+    const query = gql`
+      query {
+        hasAuctionPass(input: { owner: "${owner}" })
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.hasAuctionPass ? result.hasAuctionPass : false;
+  }
+
+  async hasSpentInWorldPlayers({ teamId }) {
+    const query = gql`
+      {
+        allPlaystoreOrders(condition: { teamId: "${teamId}" }) {
+          totalCount
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allPlaystoreOrders && result.allPlaystoreOrders.totalCount
+      ? result.allPlaystoreOrders.totalCount > 0
+      : false;
+  }
 }
 
 module.exports = new HorizonService();
