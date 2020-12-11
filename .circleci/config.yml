@@ -241,6 +241,7 @@ jobs:
       - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:dev -t freeverseio/gamelayer.webhook:${CIRCLE_SHA1} .
       - run: cd market-read-api && docker build -t freeverseio/market.read.api:dev -t freeverseio/market.read.api:${CIRCLE_SHA1} .
       - run: cd nodejs-gamelayer-mailbox-cron && docker build -t freeverseio/gamelayer.mailbox.cron:dev -t freeverseio/gamelayer.mailbox.cron:${CIRCLE_SHA1} .
+      - run: cd purchasevoider && docker build -t freeverseio/purchasevoider:dev -t freeverseio/purchasevoider:${CIRCLE_SHA1} .
 
       # push images
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
@@ -259,6 +260,7 @@ jobs:
       - run: docker push freeverseio/gamelayer.webhook
       - run: docker push freeverseio/market.read.api
       - run: docker push freeverseio/gamelayer.mailbox.cron
+      - run: docker push freeverseio/purchasevoider
 
   dockerization-production:
     executor: freeverse
@@ -283,6 +285,7 @@ jobs:
       - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:${CIRCLE_TAG} .
       - run: cd market-read-api && docker build -t freeverseio/market.read.api:${CIRCLE_TAG} .
       - run: cd nodejs-gamelayer-mailbox-cron && docker build -t freeverseio/gamelayer.mailbox.cron:${CIRCLE_TAG} .
+      - run: cd purchasevoider && docker build -t freeverseio/purchasevoider:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
       - run: docker push freeverseio/horizon:${CIRCLE_TAG}
@@ -299,6 +302,7 @@ jobs:
       - run: docker push freeverseio/gamelayer.webhook:${CIRCLE_TAG}
       - run: docker push freeverseio/market.read.api:${CIRCLE_TAG}
       - run: docker push freeverseio/gamelayer.mailbox.cron:${CIRCLE_TAG}
+      - run: docker push freeverseio/purchasevoider:${CIRCLE_TAG} 
   deployk8s:
     docker:
       - image: cimg/base:2020.01
@@ -326,6 +330,7 @@ jobs:
           kustomize edit set image freeverseio/gamelayer.webhook:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/market.read.api:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/gamelayer.mailbox.cron:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/purchasevoider:${CIRCLE_SHA1}
           kustomize build . -o app.yaml
           cat app.yaml
           kubectl -n freeverse apply -f app.yaml
