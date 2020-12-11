@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: purchasevoider
+  labels:
+    app.kubernetes.io/app: purchasevoider
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: purchasevoider
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: purchasevoider
+    spec:
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: google-iap-key
+      containers:
+      - name: purchasevoider
+        image: freeverseio/market.purchasevoider:dev
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /var/secrets/google
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        args: [-universedb, "postgres://$(freeverse_username):$(freeverse_password)@synchronizer-with-universe-db:5432/cryptosoccer?sslmode=disable",
+               -marketdb, "postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable",
+               -google_key, "/var/secrets/google/key.json",
+               -period , "60"]
+        ports:
+        - containerPort: 4000
+      imagePullSecrets:
+      - name: docker-secret
