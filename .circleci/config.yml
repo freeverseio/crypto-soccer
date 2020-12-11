@@ -198,6 +198,25 @@ jobs:
       - checkout
       - run: cd universe.api && npm install
       - run: cd universe.api && npm test
+  purchasevoider: 
+    docker:
+      - image: circleci/golang:1.15
+      - image: circleci/postgres:12-alpine
+        environment:
+          POSTGRES_USER: freeverse
+          POSTGRES_PASSWORD: freeverse
+          POSTGRES_DB: freeverse
+    steps:
+      - attach_workspace:
+          at: .
+      - run: sudo apt-get install -yy postgresql-client
+      - run: | 
+          PGPASSWORD=freeverse psql -U freeverse -h localhost -p 5432 -c 'CREATE DATABASE cryptosoccer'
+          cd universedb && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f $f; done
+      - run: | 
+          PGPASSWORD=freeverse psql -U freeverse -h localhost -p 5432 -c 'CREATE DATABASE market'
+          cd marketdb && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d market -h localhost -p 5432 -f $f; done
+      - run: cd go/purchasevoider && go test ./... -v 
   dockerization-development:
     executor: freeverse
     resource_class: xlarge
@@ -350,6 +369,11 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - purchasevoider:
+          context: dockerhub
+          filters:
+            tags:
+              only: /.*/
       - universe-api:
           context: dockerhub
           filters:
@@ -384,6 +408,7 @@ workflows:
             - deployment-test
             - universe-api
             - dashboard
+            - purchasevoider
       - dockerization-production:
           context: dockerhub
           filters:
@@ -399,6 +424,7 @@ workflows:
             - deployment-test
             - universe-api
             - dashboard
+            - purchasevoider
       - deployk8s:
           filters:
             branches:
