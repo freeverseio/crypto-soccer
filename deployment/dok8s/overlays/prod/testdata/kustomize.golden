@@ -711,9 +711,9 @@ spec:
     spec:
       containers:
       - args:
-        - -universedb
+        - -universe_url
         - postgres://$(freeverse_username):$(freeverse_password)@synchronizer-with-universe-db:5432/cryptosoccer?sslmode=disable
-        - -marketdb
+        - -market_url
         - postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable
         - -google_key
         - /var/secrets/google/key.json
@@ -724,7 +724,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.purchasevoider:dev
+        image: freeverseio/purchasevoider:dev
         imagePullPolicy: Always
         name: purchasevoider
         ports:
