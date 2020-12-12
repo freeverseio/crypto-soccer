@@ -240,7 +240,7 @@ jobs:
       - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:dev -t freeverseio/gamelayer.webhook:${CIRCLE_SHA1} .
       - run: cd market-read-api && docker build -t freeverseio/market.read.api:dev -t freeverseio/market.read.api:${CIRCLE_SHA1} .
       - run: cd nodejs-gamelayer-mailbox-cron && docker build -t freeverseio/gamelayer.mailbox.cron:dev -t freeverseio/gamelayer.mailbox.cron:${CIRCLE_SHA1} .
-      - run: cd purchasevoider && docker build -t freeverseio/purchasevoider:dev -t freeverseio/purchasevoider:${CIRCLE_SHA1} .
+      - run: cd go && docker build -f Dockerfile.purchasevoider -t freeverseio/purchasevoider:dev -t freeverseio/purchasevoider:${CIRCLE_SHA1} .
 
       # push images
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
@@ -284,7 +284,7 @@ jobs:
       - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:${CIRCLE_TAG} .
       - run: cd market-read-api && docker build -t freeverseio/market.read.api:${CIRCLE_TAG} .
       - run: cd nodejs-gamelayer-mailbox-cron && docker build -t freeverseio/gamelayer.mailbox.cron:${CIRCLE_TAG} .
-      - run: cd purchasevoider && docker build -t freeverseio/purchasevoider:${CIRCLE_TAG} .
+      - run: cd go && docker build -f Dockerfile.purchasevoider -t freeverseio/purchasevoider:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
       - run: docker push freeverseio/horizon:${CIRCLE_TAG}
