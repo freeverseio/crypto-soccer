@@ -2,6 +2,8 @@ package purchasevoider
 
 import (
 	"errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Processor struct {
@@ -26,10 +28,12 @@ func New(
 }
 
 func (b Processor) Run() error {
+	log.Info("get voided tokens ...")
 	tokens, err := b.GetVoidedTokens()
 	if err != nil {
 		return err
 	}
+	log.Infof("found %v tokens", len(tokens))
 	playerIds, err := b.GetPlayerIds(tokens)
 	if err != nil {
 		return err
