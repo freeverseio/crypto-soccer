@@ -100,6 +100,11 @@ func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 	return nil
 }
 
+func PlayerDelete(tx *sql.Tx, playerID string) error {
+	_, err := tx.Exec(`DELETE FROM players WHERE player_id=$1`, playerID)
+	return err
+}
+
 func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
 	if _, err := tx.Exec(`UPDATE players SET 
