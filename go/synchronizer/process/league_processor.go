@@ -161,6 +161,11 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return fmt.Errorf("UserActions Root mismatch bc: %v ipfs: %v", hex.EncodeToString(event.Root[:]), hex.EncodeToString(root[:]))
 	}
 
+	log.Info("check for players to be voided")
+	if err := storage.VerseByNumber(tx); err != nil {
+		return err
+	}
+
 	log.Infof("[processor|timezone %v] loading matches from storage", timezoneIdx)
 	matches, err := NewMatchesFromTimezoneIdxMatchdayIdx(tx, timezoneIdx, day)
 	if err != nil {

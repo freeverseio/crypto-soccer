@@ -100,8 +100,8 @@ func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 	return nil
 }
 
-func PlayerDelete(tx *sql.Tx, playerID string) error {
-	_, err := tx.Exec(`DELETE FROM players WHERE player_id=$1`, playerID)
+func VoidPlayers(tx *sql.Tx) error {
+	_, err := tx.Exec(`UPDATE players SET team_id='1' WHERE voided='true';`)
 	return err
 }
 
