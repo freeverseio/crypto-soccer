@@ -19,7 +19,7 @@ func main() {
 	marketURL := flag.String("market_url", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres url")
 	googleKey := flag.String("google_key", "", "google credentials")
 	packageName := flag.String("package_name", "", "packege name to scan")
-	periodSec := flag.Int64("period", 10000, "period")
+	periodSec := flag.Int64("period", 10, "period")
 
 	flag.Parse()
 	flag.VisitAll(func(f *flag.Flag) {
@@ -63,16 +63,16 @@ func main() {
 			return err
 		}
 
-		log.Info("start ...")
+		sleepDuration := time.Duration(*periodSec) * time.Second
 
+		log.Info("start ...")
 		for {
-			time.Sleep(time.Duration(*periodSec) * time.Second)
+			log.Infof("sleep for %v seconds", sleepDuration.Seconds())
+			time.Sleep(sleepDuration)
 			if err != processor.Run() {
 				return err
 			}
 		}
-
-		return nil
 	}(); err != nil {
 		log.Fatal(err)
 	}
