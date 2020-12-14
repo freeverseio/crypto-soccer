@@ -162,7 +162,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	}
 
 	log.Info("check for players to be voided")
-	if err := storage.VerseByNumber(tx); err != nil {
+	if err := storage.VoidPlayers(tx); err != nil {
 		return err
 	}
 
