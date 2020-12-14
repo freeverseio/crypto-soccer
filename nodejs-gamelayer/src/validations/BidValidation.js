@@ -1,5 +1,6 @@
 const HorizonService = require('../services/HorizonService.js');
 const { MINIMUM_DEFAULT_BID } = require('../config.js');
+const { selectOwnerMaxBidAllowed } = require('../repositories/index.js');
 
 class BidValidation {
   constructor({ teamId, rnd, auctionId, extraPrice, signature, web3 }) {
@@ -58,19 +59,30 @@ class BidValidation {
     if (!isSignerOwner) {
       return false;
     }
-
+    const owner = await this.signerAddress();
     const auction = await HorizonService.getAuction({
       auctionId: this.auctionId,
     });
     const totalPrice = parseInt(auction.price) + parseInt(this.extraPrice);
+
+    const maxBidAllowedByOwnerRow = await selectOwnerMaxBidAllowed({ owner });
+    if (maxBidAllowedByOwnerRow) {
+      const maxBid = parseInt(maxBidAllowedByOwnerRow.max_bid_allowed);
+      if (Number.isInteger(maxBid)) {
+        if (totalPrice > maxBid) {
+          return false;
+        }
+      }
+    }
+
     if (parseInt(totalPrice) < parseInt(MINIMUM_DEFAULT_BID)) {
       return true;
     }
-    const owner = await this.signerAddress();
     const hasAuctionPass = await HorizonService.hasAuctionPass({ owner });
     if (hasAuctionPass) {
       return true;
     }
+
     const teamsByOwner = await HorizonService.getTeamsByOwner({ owner });
     let hasSpentInWorldPlayers = false;
     for (const team of teamsByOwner) {

@@ -12,6 +12,10 @@ jest.mock('../services/HorizonService.js', () => ({
   hasSpentInWorldPlayers: jest.fn().mockReturnValue(false),
 }));
 
+jest.mock('../repositories', () => ({
+  selectOwnerMaxBidAllowed: jest.fn().mockReturnValue(undefined),
+}));
+
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -162,4 +166,82 @@ test('not allowed to bid because signer is not owner', async () => {
   expect(result).toBe(false);
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(0);
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledTimes(0);
+});
+
+test('not allowed to bid because max bid allowed by owner is 0', async () => {
+  const web3 = new Web3('');
+  HorizonService.getTeamOwner.mockReturnValue('0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD');
+  repositories.selectOwnerMaxBidAllowed.mockReturnValue({ max_bid_allowed: 0 });
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 10,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedToBid();
+
+  expect(result).toBe(false);
+  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
+  expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
+  expect(repositories.selectOwnerMaxBidAllowed).toHaveBeenCalledWith({
+    owner: '0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD',
+  });
+  expect(HorizonService.hasAuctionPass).not.toHaveBeenCalled();
+  expect(HorizonService.hasSpentInWorldPlayers).not.toHaveBeenCalled();
+  expect(HorizonService.getBidsPayedByOwner).not.toHaveBeenCalled();
+});
+
+test('allowed to bid because bid is lower than minimum default bid and maxbidowner has row and is set to null', async () => {
+  const web3 = new Web3('');
+  HorizonService.getTeamOwner.mockReturnValue('0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD');
+  repositories.selectOwnerMaxBidAllowed.mockReturnValue({ max_bid_allowed: null });
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 10,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedToBid();
+
+  expect(result).toBe(true);
+  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
+  expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
+  expect(repositories.selectOwnerMaxBidAllowed).toHaveBeenCalledWith({
+    owner: '0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD',
+  });
+  expect(HorizonService.hasAuctionPass).not.toHaveBeenCalled();
+  expect(HorizonService.hasSpentInWorldPlayers).not.toHaveBeenCalled();
+  expect(HorizonService.getBidsPayedByOwner).not.toHaveBeenCalled();
+});
+
+test('allowed to bid because bid is lower than minimum default bid and less thahn maxbidowner', async () => {
+  const web3 = new Web3('');
+  HorizonService.getTeamOwner.mockReturnValue('0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD');
+  repositories.selectOwnerMaxBidAllowed.mockReturnValue({ max_bid_allowed: 21 });
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 10,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedToBid();
+
+  expect(result).toBe(true);
+  expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
+  expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
+  expect(repositories.selectOwnerMaxBidAllowed).toHaveBeenCalledWith({
+    owner: '0x6a3F80b7171db8EdD14fd2b1f265BcA7F0d839fD',
+  });
+  expect(HorizonService.hasAuctionPass).not.toHaveBeenCalled();
+  expect(HorizonService.hasSpentInWorldPlayers).not.toHaveBeenCalled();
+  expect(HorizonService.getBidsPayedByOwner).not.toHaveBeenCalled();
 });
