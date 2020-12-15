@@ -724,7 +724,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/purchasevoider:dev
+        image: freeverseio/purchasevoider:0.25.5
         imagePullPolicy: Always
         name: purchasevoider
         ports:

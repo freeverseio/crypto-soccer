@@ -39,6 +39,8 @@ images:
   newTag: 0.25.5
 - name: freeverseio/gamelayer.mailbox.cron
   newTag: 0.25.5
+- name: freeverseio/purchasevoider
+  newTag: 0.25.5
 patchesJson6902:
 - target:
     group: networking.k8s.io
