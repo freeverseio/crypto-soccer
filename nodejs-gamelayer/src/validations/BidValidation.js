@@ -1,7 +1,9 @@
 const HorizonService = require('../services/HorizonService.js');
 const { MINIMUM_DEFAULT_BID } = require('../config.js');
 const { selectOwnerMaxBidAllowed } = require('../repositories/index.js');
-
+const utc = require('dayjs/plugin/utc');
+const dayjs = require('dayjs');
+dayjs.extend(utc);
 class BidValidation {
   constructor({ teamId, rnd, auctionId, extraPrice, signature, web3 }) {
     this.teamId = teamId;
@@ -52,6 +54,29 @@ class BidValidation {
     const signerAddress = await this.signerAddress();
 
     return teamOwner === signerAddress;
+  }
+
+  async isAllowedByUnpayments({ owner }) {
+    const unpayment = await HorizonService.getUnpaymentsByOwner({ owner });
+    if (unpayment.owner) {
+      if (unpayment.numOfUnpayments > 2) {
+        return false;
+      }
+      const lastTimeOfUnpayment = dayjs(unpayment.lastTimeOfUnpayment).utc();
+      console.log(
+        '🚀 ~ file: BidValidation.js ~ line 66 ~ BidValidation ~ isAllowedByUnpayments ~ lastTimeOfUnpayment',
+        lastTimeOfUnpayment.format()
+      );
+      const daysSinceLastTimeOfUnpayment = dayjs.utc().diff(lastTimeOfUnpayment, 'day');
+      console.log(
+        '🚀 ~ file: BidValidation.js ~ line 67 ~ BidValidation ~ isAllowedByUnpayments ~ daysSinceLastTimeOfUnpayment',
+        daysSinceLastTimeOfUnpayment
+      );
+      if (daysSinceLastTimeOfUnpayment < 7) {
+        return false;
+      }
+    }
+    return true;
   }
 
   async isAllowedToBid() {

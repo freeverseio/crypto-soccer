@@ -10,6 +10,7 @@ jest.mock('../services/HorizonService.js', () => ({
   getTeamsByOwner: jest.fn().mockReturnValue([{ teamId: '123123123' }]),
   hasAuctionPass: jest.fn().mockReturnValue(false),
   hasSpentInWorldPlayers: jest.fn().mockReturnValue(false),
+  getUnpaymentsByOwner: jest.fn().mockReturnValue({ owner: 'chico', numOfUnpayments: 0, lastTimeOfUnpayment: '' }),
 }));
 
 jest.mock('../repositories', () => ({
@@ -244,4 +245,62 @@ test('allowed to bid because bid is lower than minimum default bid and less thah
   expect(HorizonService.hasAuctionPass).not.toHaveBeenCalled();
   expect(HorizonService.hasSpentInWorldPlayers).not.toHaveBeenCalled();
   expect(HorizonService.getBidsPayedByOwner).not.toHaveBeenCalled();
+});
+
+// 2020-12-15 11:08:25
+test('isAllowedByUnpayments is true because there is no unpayment record', async () => {
+  const web3 = new Web3('');
+  HorizonService.getUnpaymentsByOwner.mockReturnValue({});
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 10,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedByUnpayments({ owner: 'chico' });
+  expect(result).toBe(true);
+
+  HorizonService.getUnpaymentsByOwner.mockReturnValue({});
+  const resultWhenIs0 = await bidValidation.isAllowedByUnpayments({ owner: 'chico' });
+
+  expect(resultWhenIs0).toBe(true);
+});
+
+test('isAllowedByUnpayments is false because there is 3 unpayments', async () => {
+  const web3 = new Web3('');
+  HorizonService.getUnpaymentsByOwner.mockReturnValue({ owner: 'chico', numOfUnpayments: 3, lastTimeOfUnpayment: '' });
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 10,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedByUnpayments({ owner: 'chico' });
+  expect(result).toBe(false);
+});
+
+test('isAllowedByUnpayments is false because there is 1 unpayments but from less than 7 days ago', async () => {
+  const web3 = new Web3('');
+  HorizonService.getUnpaymentsByOwner.mockReturnValue({
+    owner: 'chico',
+    numOfUnpayments: 1,
+    lastTimeOfUnpayment: '2020-12-5 11:08:25',
+  });
+  bidValidation = new BidValidation({
+    teamId: '234',
+    rnd: 12345,
+    auctionId: '555',
+    extraPrice: 10,
+    signature:
+      '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
+    web3,
+  });
+  const result = await bidValidation.isAllowedByUnpayments({ owner: 'chico' });
+  expect(result).toBe(false);
 });
