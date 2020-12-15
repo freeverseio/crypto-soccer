@@ -321,7 +321,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/authproxy:0.25.4
+        image: freeverseio/authproxy:0.25.5
         imagePullPolicy: Always
         name: authproxy
       imagePullSecrets:
@@ -353,7 +353,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/dashboard:0.25.4
+      - image: freeverseio/dashboard:0.25.5
         imagePullPolicy: Always
         name: dashboard
       imagePullSecrets:
@@ -393,7 +393,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer:0.25.4
+        image: freeverseio/gamelayer:0.25.5
         imagePullPolicy: Always
         name: gamelayer
       imagePullSecrets:
@@ -439,7 +439,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer.mailbox.cron:0.25.4
+        image: freeverseio/gamelayer.mailbox.cron:0.25.5
         imagePullPolicy: Always
         name: gamelayer-mailbox-cron
       imagePullSecrets:
@@ -479,7 +479,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer.webhook:0.25.4
+        image: freeverseio/gamelayer.webhook:0.25.5
         imagePullPolicy: Always
         name: gamelayer-webhook
       imagePullSecrets:
@@ -524,7 +524,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/horizon:0.25.4
+        image: freeverseio/horizon:0.25.5
         imagePullPolicy: Always
         name: horizon
       imagePullSecrets:
@@ -564,7 +564,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.read.api:0.25.4
+        image: freeverseio/market.read.api:0.25.5
         imagePullPolicy: Always
         name: market-read-api
       imagePullSecrets:
@@ -621,7 +621,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.notary:0.25.4
+        image: freeverseio/market.notary:0.25.5
         imagePullPolicy: Always
         name: notary
         ports:
@@ -688,6 +688,61 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/app: purchasevoider
+    app.kubernetes.io/component: purchasevoider
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: purchasevoider
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: purchasevoider
+      app.kubernetes.io/component: purchasevoider
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: purchasevoider
+        app.kubernetes.io/component: purchasevoider
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - -universe_url
+        - postgres://$(freeverse_username):$(freeverse_password)@synchronizer-with-universe-db:5432/cryptosoccer?sslmode=disable
+        - -market_url
+        - postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable
+        - -google_key
+        - /var/secrets/google/key.json
+        - -package_name
+        - com.freeverse.phoenix
+        - -period
+        - "60"
+        envFrom:
+        - configMapRef:
+            name: freeverse-configmap
+        image: freeverseio/purchasevoider:dev
+        imagePullPolicy: Always
+        name: purchasevoider
+        ports:
+        - containerPort: 4000
+        volumeMounts:
+        - mountPath: /var/secrets/google
+          name: google-cloud-key
+      imagePullSecrets:
+      - name: docker-secret
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: google-iap-key
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
     app.kubernetes.io/app: relayactions
     app.kubernetes.io/component: relayactions
     app.kubernetes.io/part-of: cryptosoccer
@@ -730,7 +785,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/relay.actions:0.25.4
+        image: freeverseio/relay.actions:0.25.5
         imagePullPolicy: Always
         name: relayactions
         ports:
@@ -772,7 +827,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.trader:0.25.4
+        image: freeverseio/market.trader:0.25.5
         imagePullPolicy: Always
         name: trader
       imagePullSecrets:
@@ -810,7 +865,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/universe.api:0.25.4
+        image: freeverseio/universe.api:0.25.5
         imagePullPolicy: Always
         name: universeapi
         ports:
@@ -848,7 +903,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/game.db:0.25.4
+        image: freeverseio/game.db:0.25.5
         imagePullPolicy: Always
         name: gamedb
         ports:
@@ -905,7 +960,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/market.db:0.25.4
+        image: freeverseio/market.db:0.25.5
         imagePullPolicy: Always
         name: marketdb
         ports:
@@ -983,13 +1038,13 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/synchronizer:0.25.4
+        image: freeverseio/synchronizer:0.25.5
         imagePullPolicy: Always
         name: synchronizer
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/universe.db:0.25.4
+        image: freeverseio/universe.db:0.25.5
         imagePullPolicy: Always
         name: universedb
         ports:

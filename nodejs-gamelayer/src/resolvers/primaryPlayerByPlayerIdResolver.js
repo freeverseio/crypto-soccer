@@ -1,6 +1,9 @@
 const { selectPlayerName } = require('../repositories');
 
 const primaryPlayerByPlayerIdResolver = async (parent, args, context, info, schema) => {
+  if (!parent.primaryPlayerId) {
+    return;
+  }
   const result = await info.mergeInfo.delegateToSchema({
     schema,
     operation: 'query',

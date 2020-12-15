@@ -198,6 +198,24 @@ jobs:
       - checkout
       - run: cd universe.api && npm install
       - run: cd universe.api && npm test
+  purchasevoider: 
+    docker:
+      - image: circleci/golang:1.15
+      - image: circleci/postgres:12-alpine
+        environment:
+          POSTGRES_USER: freeverse
+          POSTGRES_PASSWORD: freeverse
+          POSTGRES_DB: freeverse
+    steps:
+      - checkout
+      - run: sudo apt-get install -yy postgresql-client
+      - run: | 
+          PGPASSWORD=freeverse psql -U freeverse -h localhost -p 5432 -c 'CREATE DATABASE cryptosoccer'
+          cd universe.db && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d cryptosoccer -h localhost -p 5432 -f $f; done
+      - run: | 
+          PGPASSWORD=freeverse psql -U freeverse -h localhost -p 5432 -c 'CREATE DATABASE market'
+          cd market.db && for f in *.sql; do PGPASSWORD=freeverse psql -U freeverse -d market -h localhost -p 5432 -f $f; done
+      - run: cd go/purchasevoider && go test ./... -v 
   dockerization-development:
     executor: freeverse
     resource_class: xlarge
@@ -222,6 +240,7 @@ jobs:
       - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:dev -t freeverseio/gamelayer.webhook:${CIRCLE_SHA1} .
       - run: cd market-read-api && docker build -t freeverseio/market.read.api:dev -t freeverseio/market.read.api:${CIRCLE_SHA1} .
       - run: cd nodejs-gamelayer-mailbox-cron && docker build -t freeverseio/gamelayer.mailbox.cron:dev -t freeverseio/gamelayer.mailbox.cron:${CIRCLE_SHA1} .
+      - run: cd go && docker build -f Dockerfile.purchasevoider -t freeverseio/purchasevoider:dev -t freeverseio/purchasevoider:${CIRCLE_SHA1} .
 
       # push images
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
@@ -240,6 +259,7 @@ jobs:
       - run: docker push freeverseio/gamelayer.webhook
       - run: docker push freeverseio/market.read.api
       - run: docker push freeverseio/gamelayer.mailbox.cron
+      - run: docker push freeverseio/purchasevoider
 
   dockerization-production:
     executor: freeverse
@@ -264,6 +284,7 @@ jobs:
       - run: cd nodejs-gamelayer-webhook && docker build -t freeverseio/gamelayer.webhook:${CIRCLE_TAG} .
       - run: cd market-read-api && docker build -t freeverseio/market.read.api:${CIRCLE_TAG} .
       - run: cd nodejs-gamelayer-mailbox-cron && docker build -t freeverseio/gamelayer.mailbox.cron:${CIRCLE_TAG} .
+      - run: cd go && docker build -f Dockerfile.purchasevoider -t freeverseio/purchasevoider:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
       - run: docker push freeverseio/horizon:${CIRCLE_TAG}
@@ -280,6 +301,7 @@ jobs:
       - run: docker push freeverseio/gamelayer.webhook:${CIRCLE_TAG}
       - run: docker push freeverseio/market.read.api:${CIRCLE_TAG}
       - run: docker push freeverseio/gamelayer.mailbox.cron:${CIRCLE_TAG}
+      - run: docker push freeverseio/purchasevoider:${CIRCLE_TAG} 
   deployk8s:
     docker:
       - image: cimg/base:2020.01
@@ -307,6 +329,7 @@ jobs:
           kustomize edit set image freeverseio/gamelayer.webhook:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/market.read.api:${CIRCLE_SHA1}
           kustomize edit set image freeverseio/gamelayer.mailbox.cron:${CIRCLE_SHA1}
+          kustomize edit set image freeverseio/purchasevoider:${CIRCLE_SHA1}
           kustomize build . -o app.yaml
           cat app.yaml
           kubectl -n freeverse apply -f app.yaml
@@ -350,6 +373,11 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - purchasevoider:
+          context: dockerhub
+          filters:
+            tags:
+              only: /.*/
       - universe-api:
           context: dockerhub
           filters:
@@ -384,6 +412,7 @@ workflows:
             - deployment-test
             - universe-api
             - dashboard
+            - purchasevoider
       - dockerization-production:
           context: dockerhub
           filters:
@@ -399,6 +428,7 @@ workflows:
             - deployment-test
             - universe-api
             - dashboard
+            - purchasevoider
       - deployk8s:
           filters:
             branches:

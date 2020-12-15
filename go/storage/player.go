@@ -100,6 +100,11 @@ func (b Player) Insert(tx *sql.Tx, blockNumber uint64) error {
 	return nil
 }
 
+func VoidPlayers(tx *sql.Tx) error {
+	_, err := tx.Exec(`UPDATE players SET team_id='1' WHERE voided='true';`)
+	return err
+}
+
 func (b Player) Update(tx *sql.Tx, blockNumber uint64) error {
 	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
 	if _, err := tx.Exec(`UPDATE players SET 

@@ -19,3 +19,4 @@ resources:
 - synchronizer-with-universe-db
 - market-read-api
 - gamelayer-mailbox-cron
+- purchasevoider
