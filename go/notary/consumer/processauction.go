@@ -2,7 +2,10 @@ package consumer
 
 import (
 	"crypto/ecdsa"
+	"errors"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/marketpay"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
@@ -61,6 +64,23 @@ func processAuction(
 	for _, bid := range am.Bids() {
 		if err := service.BidUpdate(bid); err != nil {
 			return err
+		}
+		if bid.State == storage.BidFailed && bid.StateExtra == "expired" {
+			teamID, _ := new(big.Int).SetString(bid.TeamID, 10)
+			if teamID == nil {
+				return errors.New("invalid teamd")
+			}
+			owner, err := contracts.Market.GetOwnerTeam(&bind.CallOpts{}, teamID)
+			if err != nil {
+				return err
+			}
+			unpayment := storage.NewUnpayment()
+			unpayment.Owner = owner.Hex()
+			unpayment.NumOfUnpayments = 1
+			err = service.UnpaymentUpsert(*unpayment)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

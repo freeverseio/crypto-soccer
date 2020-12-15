@@ -55,6 +55,10 @@ type Tx struct {
 	AuctionPassFunc            func(owner string) (*storage.AuctionPass, error)
 	AuctionPassInsertFunc      func(order storage.AuctionPass) error
 	AuctionPassAcknowledgeFunc func(ap storage.AuctionPass) error
+
+	// Unpayment
+	UnpaymentFunc       func(owner string) (*storage.Unpayment, error)
+	UnpaymentUpsertFunc func(unpayment storage.Unpayment) error
 }
 
 func (b *StorageService) Begin() (storage.Tx, error) {
@@ -162,4 +166,10 @@ func (b *Tx) AuctionPassInsert(order storage.AuctionPass) error {
 }
 func (b *Tx) AuctionPassAcknowledge(ap storage.AuctionPass) error {
 	return b.AuctionPassAcknowledgeFunc(ap)
+}
+func (b *Tx) Unpayment(owner string) (*storage.Unpayment, error) {
+	return b.UnpaymentFunc(owner)
+}
+func (b *Tx) UnpaymentUpsert(unpayment storage.Unpayment) error {
+	return b.UnpaymentUpsertFunc(unpayment)
 }
