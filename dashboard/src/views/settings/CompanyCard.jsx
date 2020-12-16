@@ -57,13 +57,6 @@ const CompanyWidget = ({proxyContract, multisigContract, account}) => {
             <Table.Row>
                 <Table.Cell singleLine>Company Role</Table.Cell>
                 <Table.Cell>{company}</Table.Cell>
-                <Table.Cell >
-                    <RoleCard account={proxyContract} onChange={proposeCompany} />
-                    <Button.Group size='mini' fluid>
-                        <Button color='grey' disabled={true}>{proposedCompany}</Button>
-                        <Button color='red' onClick={accept} disabled={!validAddress || !account}>Accept</Button>
-                    </Button.Group>
-                </Table.Cell>
             </Table.Row>
             <Table.Row>
                 <Table.Cell singleLine>Company owners</Table.Cell>
