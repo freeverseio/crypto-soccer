@@ -6,16 +6,21 @@ import RelayCard from './RelayCard';
 import CryptoMarketCard from './CryptoMarketCard';
 import SuperUserCard from './SuperUserCard';
 import CompanyCard from './CompanyCard';
+import Config from '../../Config';
 
 const proxyJSON = require("../../contracts/Proxy.json");
 const assetsJSON = require("../../contracts/Assets.json");
 const marketJSON = require("../../contracts/Market.json");
+const multisigJSON = require("../../contracts/MultiSigWallet.json");
 
 const PermissionTable = ({ web3, account, proxyAddress }) => {
     const [seconds, setSeconds] = useState(0);
     const proxyContract = new web3.eth.Contract(proxyJSON.abi, proxyAddress);
     const assetsContract = new web3.eth.Contract(assetsJSON.abi, proxyAddress);
     const marketContract = new web3.eth.Contract(marketJSON.abi, proxyAddress);
+    const multisigContract = new web3.eth.Contract(multisigJSON.abi, Config.multiSigAddress);
+
+    console.log(multisigContract)
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -38,8 +43,8 @@ return (
                     <Table.Cell>Proxy Address</Table.Cell>
                     <Table.Cell>{proxyAddress}</Table.Cell>
                 </Table.Row>
-                {proxyContract && <CompanyCard account={account} proxyContract={proxyContract} />}
-                {proxyContract && <SuperUserCard account={account} proxyContract={proxyContract} />}
+                {proxyContract && <CompanyCard account={account} proxyContract={proxyContract}  multisigContract={multisigContract}/>}
+                {proxyContract && <SuperUserCard account={account} proxyContract={proxyContract} multisigContract={multisigContract}/>}
                 {assetsContract && <COOCard account={account} assetsContract={assetsContract} />}
                 {assetsContract && <RelayCard account={account} assetsContract={assetsContract} />}
                 {assetsContract && <MarketCard account={account} assetsContract={assetsContract} />}

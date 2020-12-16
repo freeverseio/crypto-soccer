@@ -3,7 +3,7 @@ import { Table } from 'semantic-ui-react';
 import Config from '../../Config';
 import RoleCard from './RoleCard';
 
-const SuperUserWidget = ({ proxyContract, account }) => {
+const SuperUserWidget = ({ proxyContract, multisigContract, account }) => {
     const [superUser, setSuperUser] = useState();
 
     useEffect(() => {
@@ -16,8 +16,9 @@ const SuperUserWidget = ({ proxyContract, account }) => {
     }, [proxyContract]);
 
     const setAddress = (address) => {
-        proxyContract.methods.setSuperUser(address).send({ from: account, gasPrice: Config.gasPrice })
-        .catch(console.error);
+        const data = proxyContract.methods.setSuperUser(address).encodeABI();
+        multisigContract.methods.submitTransaction(proxyContract.options.address, 0, data).send({ from: account, gasPrice: Config.gasPrice })
+            .catch(console.error);
     }
 
     return (

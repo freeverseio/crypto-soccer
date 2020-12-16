@@ -4,8 +4,9 @@ import RoleCard from './RoleCard';
 import Config from '../../Config';
 const Web3 = require('web3');
 
-const CompanyWidget = ({proxyContract, account}) => {
+const CompanyWidget = ({proxyContract, multisigContract, account}) => {
     const [company, setCompany] = useState();
+    const [owners, setOwners] = useState([]);
     const [proposedCompany, setProposedCompany] = useState();
 
     useEffect(() => {
@@ -23,6 +24,15 @@ const CompanyWidget = ({proxyContract, account}) => {
                 setProposedCompany("error");
             });
     }, [proxyContract]);
+
+    useEffect(() => {
+        multisigContract.methods.getOwners().call()
+            .then(setOwners)
+            .catch(error => {
+                console.error(error);
+                setOwners("error");
+            });
+    }, [multisigContract]);
 
     const accept = () => {
         proxyContract.methods.acceptCompany().send({
@@ -43,17 +53,25 @@ const CompanyWidget = ({proxyContract, account}) => {
     const validAddress = proposedCompany !== '0x0000000000000000000000000000000000000000' && Web3.utils.isAddress(proposedCompany);
 
     return (
-        <Table.Row>
-            <Table.Cell singleLine>Company Role</Table.Cell>
-            <Table.Cell>{company}</Table.Cell>
-            <Table.Cell >
-                <RoleCard account={proxyContract} onChange={proposeCompany}/>
-                <Button.Group size='mini' fluid>
-                    <Button color='grey' disabled={true}>{proposedCompany}</Button>
-                    <Button color='red' onClick={accept} disabled={!validAddress || !account}>Accept</Button>
-                </Button.Group>
-            </Table.Cell>
-        </Table.Row>
+        <React.Fragment>
+            <Table.Row>
+                <Table.Cell singleLine>Company Role</Table.Cell>
+                <Table.Cell>{company}</Table.Cell>
+                <Table.Cell >
+                    <RoleCard account={proxyContract} onChange={proposeCompany} />
+                    <Button.Group size='mini' fluid>
+                        <Button color='grey' disabled={true}>{proposedCompany}</Button>
+                        <Button color='red' onClick={accept} disabled={!validAddress || !account}>Accept</Button>
+                    </Button.Group>
+                </Table.Cell>
+            </Table.Row>
+            <Table.Row>
+                <Table.Cell singleLine>Company owners</Table.Cell>
+                <Table.Cell>
+                    {owners.map(owner => owner + " ")}
+                </Table.Cell>
+            </Table.Row>
+        </React.Fragment>
     )
 }
 

@@ -4,7 +4,6 @@ import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import Config from '../../Config';
 import PermissionTable from './PermissionTable';
-import MultiSigTable from './MultiSigTable';
 
 const GET_PROXY_ADDRESS = gql`
     {
@@ -37,7 +36,6 @@ const Settings = ({ web3, account }) => {
                 </Table.Body>
             </Table>
            <PermissionTable web3={web3} account={account} proxyAddress={proxyAddress} />
-           <MultiSigTable web3={web3} account={account} proxyAddress={proxyAddress} />
         </Container>
     )
 }
