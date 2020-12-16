@@ -101,6 +101,12 @@ const main = async () => {
       getSocialId: String!
     }
 
+    input SetMaxBidAllowedIdInput {
+      owner: String!
+      maxBidAllowed: Int!
+      token: String!
+    }
+
     extend type Mutation {
       setTeamName(input: SetTeamNameInput!): ID!
       setTeamManagerName(input: SetTeamManagerNameInput!): ID!
@@ -111,6 +117,7 @@ const main = async () => {
       setLastTimeLoggedIn(teamId: ID!): Boolean
       createBid(input: CreateBidInput!): ID!
       setGetSocialId(input: SetGetSocialIdInput!): Boolean
+      setMaxBidAllowedByOwner(input: SetMaxBidAllowedByOwner): Boolean
     }
     
     extend type Query {

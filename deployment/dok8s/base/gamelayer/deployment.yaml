@@ -26,5 +26,7 @@ spec:
             value: postgresql://$(freeverse_username):$(freeverse_password)@gamedb:5432/game
           - name: HORIZON_URL
             value: http://horizon:4000/graphql
+          - name: TOKEN
+            value: $(gamelayer_token)
       imagePullSecrets:
       - name: docker-secret

@@ -14,6 +14,7 @@ const upsertTeamLastTimeLoggedIn = require('./upsertTeamLastTimeLoggedIn');
 const upsertTeamGetSocialId = require('./upsertTeamGetSocialId');
 const selectPlayerName = require('./selectPlayerName.js');
 const selectOwnerMaxBidAllowed = require('./selectOwnerMaxBidAllowed.js');
+const upsertOwnerMaxBidAllowed = require('./upsertOwnerMaxBidAllowed');
 
 module.exports = {
   selectTeamName,
@@ -32,4 +33,5 @@ module.exports = {
   upsertTeamGetSocialId,
   selectPlayerName,
   selectOwnerMaxBidAllowed,
+  upsertOwnerMaxBidAllowed,
 };

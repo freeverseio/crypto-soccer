@@ -2,6 +2,7 @@ const repositories = require('../repositories');
 const HorizonService = require('../services/HorizonService.js');
 const BidValidation = require('./BidValidation.js');
 const Web3 = require('web3');
+const dayjs = require('dayjs');
 
 jest.mock('../services/HorizonService.js', () => ({
   getBidsPayedByOwner: jest.fn().mockReturnValue([{ extraPrice: 1, auctionByAuctionId: { price: 5 } }]),
@@ -290,7 +291,7 @@ test('isAllowedByUnpayments is false because there is 1 unpayments but from less
   HorizonService.getUnpaymentsByOwner.mockReturnValue({
     owner: 'chico',
     numOfUnpayments: 1,
-    lastTimeOfUnpayment: '2020-12-5 11:08:25',
+    lastTimeOfUnpayment: dayjs().subtract(6, 'day'),
   });
   bidValidation = new BidValidation({
     teamId: '234',
