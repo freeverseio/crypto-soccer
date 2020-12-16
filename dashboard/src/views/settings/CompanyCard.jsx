@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button } from 'semantic-ui-react';
+import { Table, Button, Divider } from 'semantic-ui-react';
+import RoleCard from './RoleCard';
 import Config from '../../Config';
 const Web3 = require('web3');
 
@@ -31,6 +32,14 @@ const CompanyWidget = ({proxyContract, account}) => {
             .catch(console.error);
     };
 
+    const proposeCompany = (address) => {
+        proxyContract.methods.proposeCompany(address).send({
+            from: account,
+            gasPrice: Config.gasPrice,
+        })
+            .catch(console.error);
+    }
+
     const validAddress = proposedCompany !== '0x0000000000000000000000000000000000000000' && Web3.utils.isAddress(proposedCompany);
 
     return (
@@ -38,8 +47,9 @@ const CompanyWidget = ({proxyContract, account}) => {
             <Table.Cell singleLine>Company Role</Table.Cell>
             <Table.Cell>{company}</Table.Cell>
             <Table.Cell >
+                <RoleCard account={proxyContract} onChange={proposeCompany}/>
                 <Button.Group size='mini' fluid>
-                    <Button color='grey' onClick={accept} disabled={true}>{proposedCompany}</Button>
+                    <Button color='grey' disabled={true}>{proposedCompany}</Button>
                     <Button color='red' onClick={accept} disabled={!validAddress || !account}>Accept</Button>
                 </Button.Group>
             </Table.Cell>
