@@ -27,7 +27,7 @@ const playerByPlayerIdResolver = require('./playerByPlayerId');
 const primaryPlayerByPlayerIdResolver = require('./primaryPlayerByPlayerIdResolver');
 const secondaryPlayerByPlayerIdResolver = require('./secondaryPlayerByPlayerIdResolver');
 const queryPlayerByPlayerIdResolver = require('./queryPlayerByPlayerId');
-const setMaxBidAllowedByOwnerResolver = require('./setMaxBidAllowedbyOwnerResolver');
+const setMaxBidAllowedByOwnerResolver = require('./setMaxBidAllowedByOwnerResolver');
 
 const web3 = new Web3('');
 

@@ -26,7 +26,7 @@ func TestSetUnpaymentNotified(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	in := input.SetUnpaymentNotifiedInput{}
-	in.Owner = "274877906944"
+	in.Id = "274877906944"
 
 	_, err := r.SetUnpaymentNotified(struct {
 		Input input.SetUnpaymentNotifiedInput
@@ -49,7 +49,7 @@ func TestSetUnpaymentNotifiedErr(t *testing.T) {
 	r := gql.NewResolver(ch, *bc.Contracts, namesdb, googleCredentials, service)
 
 	in := input.SetUnpaymentNotifiedInput{}
-	in.Owner = "274877906944"
+	in.Id = "274877906944"
 
 	_, err := r.SetUnpaymentNotified(struct {
 		Input input.SetUnpaymentNotifiedInput

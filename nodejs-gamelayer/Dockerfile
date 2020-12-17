@@ -10,4 +10,4 @@ USER node
 FROM gcr.io/distroless/nodejs:10
 COPY --from=build-env /app /app
 WORKDIR /app
-ENTRYPOINT [ "npm", "start", "--" ]
+CMD ["src/index.js"]

@@ -5,5 +5,5 @@ import (
 )
 
 type SetUnpaymentNotifiedInput struct {
-	Owner graphql.ID
+	Id graphql.ID
 }

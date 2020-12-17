@@ -101,7 +101,7 @@ const main = async () => {
       getSocialId: String!
     }
 
-    input SetMaxBidAllowedIdInput {
+    input SetMaxBidAllowedInput {
       owner: String!
       maxBidAllowed: Int!
       token: String!
@@ -117,7 +117,7 @@ const main = async () => {
       setLastTimeLoggedIn(teamId: ID!): Boolean
       createBid(input: CreateBidInput!): ID!
       setGetSocialId(input: SetGetSocialIdInput!): Boolean
-      setMaxBidAllowedByOwner(input: SetMaxBidAllowedByOwner): Boolean
+      setMaxBidAllowedByOwner(input: SetMaxBidAllowedInput): Boolean
     }
     
     extend type Query {

@@ -1,6 +1,9 @@
 package gql
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/freeverseio/crypto-soccer/go/notary/producer/gql/input"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
@@ -11,13 +14,17 @@ func (b *Resolver) SetUnpaymentNotified(args struct {
 }) (*bool, error) {
 	log.Debugf("SetUnpaymentNotified %v", args)
 
+	ok := true
 	tx, err := b.service.Begin()
-	owner := string(args.Input.Owner)
+	id, err := strconv.ParseInt(string(args.Input.Id), 10, 64)
+	if err != nil {
+		ok = false
+		return &ok, errors.New("Invalid id")
+	}
 	unpayment := storage.NewUnpayment()
-	unpayment.Owner = owner
+	unpayment.Id = id
 	unpayment.Notified = true
 	err = tx.UnpaymentUpdateNotified(*unpayment)
-	ok := true
 	if err != nil {
 		ok = false
 		tx.Rollback()

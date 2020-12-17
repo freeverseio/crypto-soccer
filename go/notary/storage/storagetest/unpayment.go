@@ -25,7 +25,7 @@ func testUnpaymentServiceInterface(t *testing.T, service storage.StorageService)
 
 		unpayment := storage.NewUnpayment()
 		unpayment.Owner = "ciao"
-		unpayment.LastTimeOfUnpayment = "3"
+		unpayment.TimeOfUnpayment = "3"
 		assert.NilError(t, tx.UnpaymentInsert(*unpayment))
 
 		result, err := tx.Unpayments(unpayment.Owner)
@@ -38,6 +38,30 @@ func testUnpaymentServiceInterface(t *testing.T, service storage.StorageService)
 		result, err = tx.Unpayments(unpayment.Owner)
 		assert.NilError(t, err)
 		assert.Equal(t, len(result), 2)
+
+	})
+
+	t.Run("TestUnpaymentUpdateNotifed", func(t *testing.T) {
+		tx, err := service.Begin()
+		assert.NilError(t, err)
+		defer tx.Rollback()
+
+		unpayment := storage.NewUnpayment()
+		unpayment.Owner = "ciao"
+		unpayment.TimeOfUnpayment = "3"
+		assert.NilError(t, tx.UnpaymentInsert(*unpayment))
+
+		result, err := tx.Unpayments(unpayment.Owner)
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 1)
+		assert.Equal(t, result[0], unpayment)
+		unpayment.Notified = true
+		assert.NilError(t, tx.UnpaymentUpdateNotified(*unpayment))
+
+		result, err = tx.Unpayments(unpayment.Owner)
+		assert.NilError(t, err)
+		assert.Equal(t, len(result), 1)
+		assert.Equal(t, result[0].Notified, true)
 
 	})
 

@@ -57,14 +57,13 @@ class BidValidation {
   }
 
   async isAllowedByUnpayments({ owner }) {
-    const unpayment = await HorizonService.getUnpaymentsByOwner({ owner });
-    if (unpayment.owner) {
-      switch (parseInt(unpayment.numOfUnpayments)) {
-        case 0:
+    const unpayments = await HorizonService.getUnpaymentsByOwner({ owner });
+    if (unpayments.length) {
+      switch (unpayments.length) {
         case 1:
         case 2:
-          const lastTimeOfUnpayment = dayjs(unpayment.lastTimeOfUnpayment).utc();
-          const daysSinceLastTimeOfUnpayment = dayjs.utc().diff(lastTimeOfUnpayment, 'day');
+          const timeOfUnpayment = dayjs(unpayments[0].timeOfUnpayment).utc();
+          const daysSinceLastTimeOfUnpayment = dayjs.utc().diff(timeOfUnpayment, 'day');
           if (daysSinceLastTimeOfUnpayment < 7) {
             return false;
           }

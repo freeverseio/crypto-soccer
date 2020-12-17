@@ -4,6 +4,7 @@ const processOffersHistories = require('./services/offers/processOffersHistories
 const processAuctionHistories = require('./services/auctions/processAuctionHistories');
 const processPendingPayingBids = require('./services/bids/processPendingPayingBids');
 const processBidsHistories = require('./services/bids/processBidsHistories');
+const processUnpayments = require('./services/unpayments/processUnpayments');
 const logger = require('./logger');
 
 cron.schedule(MAILBOX_CRON, async () => {
@@ -12,4 +13,5 @@ cron.schedule(MAILBOX_CRON, async () => {
   await processBidsHistories();
   await processAuctionHistories();
   await processPendingPayingBids();
+  await processUnpayments();
 });

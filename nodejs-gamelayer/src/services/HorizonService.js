@@ -233,18 +233,17 @@ class HorizonService {
   async getUnpaymentsByOwner({ owner }) {
     const query = gql`
       {
-        allUnpayments(condition: { owner: "${owner}" }) {
+        allUnpayments(condition: { owner: "${owner}" }, orderBy: TIME_OF_UNPAYMENT_DESC) {
           nodes{
             owner
-            numOfUnpayments
-            lastTimeOfUnpayment
+            timeOfUnpayment
           }
         }
       }
     `;
     const result = await request(this.endpoint, query);
 
-    return result && result.allUnpayments && result.allUnpayments.nodes ? result.allUnpayments.nodes[0] : {};
+    return result && result.allUnpayments && result.allUnpayments.nodes ? result.allUnpayments.nodes : [];
   }
 }
 

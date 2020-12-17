@@ -86,7 +86,7 @@ const Schema = `
 	}
 
 	input SetUnpaymentNotifiedInput {
-		owner: ID!
+		id: ID!
 	}
 
 	type WorldPlayer {

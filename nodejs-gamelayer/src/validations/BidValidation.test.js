@@ -11,7 +11,7 @@ jest.mock('../services/HorizonService.js', () => ({
   getTeamsByOwner: jest.fn().mockReturnValue([{ teamId: '123123123' }]),
   hasAuctionPass: jest.fn().mockReturnValue(false),
   hasSpentInWorldPlayers: jest.fn().mockReturnValue(false),
-  getUnpaymentsByOwner: jest.fn().mockReturnValue({ owner: 'chico', numOfUnpayments: 0, lastTimeOfUnpayment: '' }),
+  getUnpaymentsByOwner: jest.fn().mockReturnValue([]),
 }));
 
 jest.mock('../repositories', () => ({
@@ -272,7 +272,11 @@ test('isAllowedByUnpayments is true because there is no unpayment record', async
 
 test('isAllowedByUnpayments is false because there is 3 unpayments', async () => {
   const web3 = new Web3('');
-  HorizonService.getUnpaymentsByOwner.mockReturnValue({ owner: 'chico', numOfUnpayments: 3, lastTimeOfUnpayment: '' });
+  HorizonService.getUnpaymentsByOwner.mockReturnValue([
+    { owner: 'chico', TimeOfUnpayment: '' },
+    { owner: 'chico', TimeOfUnpayment: '' },
+    { owner: 'chico', TimeOfUnpayment: '' },
+  ]);
   bidValidation = new BidValidation({
     teamId: '234',
     rnd: 12345,
@@ -288,11 +292,12 @@ test('isAllowedByUnpayments is false because there is 3 unpayments', async () =>
 
 test('isAllowedByUnpayments is false because there is 1 unpayments but from less than 7 days ago', async () => {
   const web3 = new Web3('');
-  HorizonService.getUnpaymentsByOwner.mockReturnValue({
-    owner: 'chico',
-    numOfUnpayments: 1,
-    lastTimeOfUnpayment: dayjs().subtract(6, 'day'),
-  });
+  HorizonService.getUnpaymentsByOwner.mockReturnValue([
+    {
+      owner: 'chico',
+      TimeOfUnpayment: dayjs().subtract(6, 'day'),
+    },
+  ]);
   bidValidation = new BidValidation({
     teamId: '234',
     rnd: 12345,
