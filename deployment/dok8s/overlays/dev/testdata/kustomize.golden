@@ -1038,7 +1038,7 @@ spec:
       containers:
       - args:
         - --chain
-        - openethereum
+        - xdai
         - --no-warp
         - --base-path
         - /home/openethereum/.local/share/openethereum/
