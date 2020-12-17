@@ -10,7 +10,7 @@ data:
   notary_process_wait: "30"
   mailbox_cron: "15 * * * *"
   PROXY_CONTRACT_ADDRESS: 0x7334A1E445B4E1Fb94001E1a9F772212b6D9de46
-  gamelayer_token: "1234ldsaj234daf3"
+  gamelayer_token: "58f871a7b0873849a3c50170c193e371ec844cb2d785180cf7ff72d444a49b79"
   BLOCKS_PER_STEP: "1000"
   domain: "https://market.goalrevolution.live"
   SYNC_CONFIG_FILE: "config_prod.json"

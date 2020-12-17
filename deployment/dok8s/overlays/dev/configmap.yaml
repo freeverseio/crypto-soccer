@@ -13,7 +13,7 @@ data:
   horizon_extra_args: "--enableCors"
   mailbox_cron: "* * * * *"
   PROXY_CONTRACT_ADDRESS: 0x720C10669287462Bb96eFd9bb5220EcfcBfd88cf
-  gamelayer_token: "1234ldsaj234daf3"
+  gamelayer_token: "58f871a7b0873849a3c50170c193e371ec844cb2d785180cf7ff72d444a49b79"
   BLOCKS_PER_STEP: "10000"
   domain: "*"
   SYNC_CONFIG_FILE: "config_dev.json"

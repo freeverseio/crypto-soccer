@@ -6,6 +6,7 @@ data:
   domain: https://market.goalrevolution.live
   freeverse_password: freeverse
   freeverse_username: freeverse
+  gamelayer_token: 58f871a7b0873849a3c50170c193e371ec844cb2d785180cf7ff72d444a49b79
   mailbox_cron: 15 * * * *
   market_id: sk_production_AjWbpOPwS3HNi821Ma9mIgA2
   notary_process_wait: "30"
@@ -409,6 +410,8 @@ spec:
           value: postgresql://$(freeverse_username):$(freeverse_password)@gamedb:5432/game
         - name: HORIZON_URL
           value: http://horizon:4000/graphql
+        - name: TOKEN
+          value: $(gamelayer_token)
         envFrom:
         - configMapRef:
             name: freeverse-configmap

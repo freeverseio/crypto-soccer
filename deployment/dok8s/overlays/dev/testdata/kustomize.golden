@@ -7,6 +7,7 @@ data:
   domain: '*'
   freeverse_password: freeverse
   freeverse_username: freeverse
+  gamelayer_token: 58f871a7b0873849a3c50170c193e371ec844cb2d785180cf7ff72d444a49b79
   horizon_extra_args: --enableCors
   mailbox_cron: '* * * * *'
   market_id: ""
@@ -412,6 +413,8 @@ spec:
           value: postgresql://$(freeverse_username):$(freeverse_password)@gamedb:5432/game
         - name: HORIZON_URL
           value: http://horizon:4000/graphql
+        - name: TOKEN
+          value: $(gamelayer_token)
         envFrom:
         - configMapRef:
             name: freeverse-configmap
