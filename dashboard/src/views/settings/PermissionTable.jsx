@@ -32,9 +32,9 @@ const PermissionTable = ({ web3, account, proxyAddress }) => {
     return (
         <Table color='orange'>
             <Table.Header>
-                <Table.Row>
-                    <Table.HeaderCell colSpan='3' textAlign='center'>roles</Table.HeaderCell>
-                </Table.Row>
+                <Table.HeaderCell width={1}></Table.HeaderCell>
+                <Table.HeaderCell width={1}></Table.HeaderCell>
+                <Table.HeaderCell width='six'></Table.HeaderCell>
             </Table.Header>
             <Table.Body>
                 <Table.Row>
