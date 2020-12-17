@@ -23,7 +23,7 @@ spec:
         volumeMounts:
         - name: openethereum-storage
           mountPath: /home/openethereum/.local/share/openethereum/
-        args: [--chain, openethereum, 
+        args: [--chain, xdai, 
                --no-warp,
                --base-path, /home/openethereum/.local/share/openethereum/,
                --jsonrpc-interface, all]
