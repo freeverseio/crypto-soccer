@@ -13,32 +13,31 @@ func testUnpaymentServiceInterface(t *testing.T, service storage.StorageService)
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
-		unpayment, err := tx.Unpayment("4343")
+		unpayment, err := tx.Unpayments("4343")
 		assert.NilError(t, err)
 		assert.Assert(t, unpayment == nil)
 	})
 
-	t.Run("TestUnpaymentUpsert", func(t *testing.T) {
+	t.Run("TestUnpaymentInsert", func(t *testing.T) {
 		tx, err := service.Begin()
 		assert.NilError(t, err)
 		defer tx.Rollback()
 
 		unpayment := storage.NewUnpayment()
 		unpayment.Owner = "ciao"
-		unpayment.NumOfUnpayments = 0
 		unpayment.LastTimeOfUnpayment = "3"
-		assert.NilError(t, tx.UnpaymentUpsert(*unpayment))
+		assert.NilError(t, tx.UnpaymentInsert(*unpayment))
 
-		result, err := tx.Unpayment(unpayment.Owner)
+		result, err := tx.Unpayments(unpayment.Owner)
 		assert.NilError(t, err)
-		assert.Equal(t, *result, *unpayment)
+		assert.Equal(t, len(result), 1)
+		assert.Equal(t, result[0], unpayment)
 
-		assert.NilError(t, tx.UnpaymentUpsert(*unpayment))
+		assert.NilError(t, tx.UnpaymentInsert(*unpayment))
 
-		unpayment.NumOfUnpayments = 1
-		result, err = tx.Unpayment(unpayment.Owner)
+		result, err = tx.Unpayments(unpayment.Owner)
 		assert.NilError(t, err)
-		assert.Equal(t, *result, *unpayment)
+		assert.Equal(t, len(result), 2)
 
 	})
 

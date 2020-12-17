@@ -2,8 +2,8 @@ package storage
 
 type Unpayment struct {
 	Owner               string
-	NumOfUnpayments     int
 	LastTimeOfUnpayment string
+	Notified            bool
 }
 
 func NewUnpayment() *Unpayment {

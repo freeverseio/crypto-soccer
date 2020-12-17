@@ -76,8 +76,7 @@ func processAuction(
 			}
 			unpayment := storage.NewUnpayment()
 			unpayment.Owner = owner.Hex()
-			unpayment.NumOfUnpayments = 1
-			err = service.UnpaymentUpsert(*unpayment)
+			err = service.UnpaymentInsert(*unpayment)
 			if err != nil {
 				return err
 			}

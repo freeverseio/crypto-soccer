@@ -52,6 +52,7 @@ type Tx interface {
 	AuctionPassInsert(order AuctionPass) error
 
 	// Unpayment
-	Unpayment(owner string) (*Unpayment, error)
-	UnpaymentUpsert(unpayment Unpayment) error
+	Unpayments(owner string) ([]Unpayment, error)
+	UnpaymentInsert(unpayment Unpayment) error
+	UnpaymentUpdateNotified(unpayment Unpayment) error
 }

@@ -1,7 +1,8 @@
 
 CREATE TABLE unpayment (
+    id BIGINT GENERATED ALWAYS AS IDENTITY,
     owner TEXT NOT NULL,
-    num_of_unpayments INT DEFAULT 0,
     last_time_of_unpayment timestamp without time zone NOT NULL,
-    PRIMARY KEY(owner)
+    notified BOOLEAN DEFAULT false,
+    PRIMARY KEY(ID)
 );

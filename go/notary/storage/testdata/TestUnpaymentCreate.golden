@@ -1,5 +1,5 @@
 (*storage.Unpayment)({
 	Owner: (string) "",
-	NumOfUnpayments: (int) 0,
-	LastTimeOfUnpayment: (string) ""
+	LastTimeOfUnpayment: (string) "",
+	Notified: (bool) false
 })

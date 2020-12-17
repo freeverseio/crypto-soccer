@@ -5,31 +5,38 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Tx) Unpayment(owner string) (*storage.Unpayment, error) {
-	rows, err := b.tx.Query("SELECT num_of_unpayments, last_time_of_unpayment FROM unpayment WHERE owner = $1;", owner)
+func (b *Tx) Unpayments(owner string) ([]storage.Unpayment, error) {
+	rows, err := b.tx.Query("SELECT last_time_of_unpayment, notified FROM unpayment WHERE owner = $1;", owner)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	if !rows.Next() {
-		return nil, nil
+	var unpayments []storage.Unpayment
+	for rows.Next() {
+		var unpayment storage.Unpayment
+		unpayment.Owner = owner
+		err = rows.Scan(
+			&unpayment.LastTimeOfUnpayment,
+			&unpayment.Notified,
+		)
+		unpayments = append(unpayments, unpayment)
 	}
-	var unpayment storage.Unpayment
-	unpayment.Owner = owner
-	err = rows.Scan(
-		&unpayment.NumOfUnpayments,
-		&unpayment.LastTimeOfUnpayment,
-	)
-	return &unpayment, err
+	return unpayments, err
 }
 
-func (b *Tx) UnpaymentUpsert(unpayment storage.Unpayment) error {
-	log.Debugf("[DBMS] + create or update unpayment %v", b)
-	_, err := b.tx.Exec(`INSERT INTO unpayment (owner, num_of_unpayments, last_time_of_unpayment) VALUES ($1, $2, NOW()) 
-	ON CONFLICT(owner) DO UPDATE SET num_of_unpayments=num_of_unpayments + 1, last_time_of_unpayment=NOW();`,
+func (b *Tx) UnpaymentInsert(unpayment storage.Unpayment) error {
+	log.Debugf("[DBMS] + create unpayment %v", b)
+	_, err := b.tx.Exec(`INSERT INTO unpayment (owner, last_time_of_unpayment) VALUES ($1, NOW());`,
 		unpayment.Owner,
-		unpayment.NumOfUnpayments,
-		unpayment.LastTimeOfUnpayment,
+	)
+	return err
+}
+
+func (b *Tx) UnpaymentUpdateNotified(unpayment storage.Unpayment) error {
+	log.Debugf("[DBMS] + update unpayment %v", b)
+	_, err := b.tx.Exec(`UPDATE unpayment SET notified=$1 WHERE owner=$2;`,
+		unpayment.Notified,
+		unpayment.Owner,
 	)
 	return err
 }

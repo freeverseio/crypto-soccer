@@ -85,6 +85,10 @@ const Schema = `
 		owner: ID!
 	}
 
+	input SetUnpaymentNotifiedInput {
+		owner: ID!
+	}
+
 	type WorldPlayer {
 		playerId: ID!
 		name: String!
@@ -119,5 +123,6 @@ const Schema = `
 		completePlayerTransit(input: CompletePlayerTransitInput!): ID!
 		cancelAllOffersBySeller(input: CancelAllOffersBySellerInput!): ID!
 		processAuction(input: ProcessAuctionInput!): ID!
+		setUnpaymentNotified(input: SetUnpaymentNotifiedInput!): Boolean
 	}
 `
