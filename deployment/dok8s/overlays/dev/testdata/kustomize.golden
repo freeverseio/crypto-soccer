@@ -210,6 +210,25 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/app: openethereum
+    app.kubernetes.io/component: openethereum
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: openethereum
+spec:
+  ports:
+  - port: 8545
+    targetPort: 8545
+  selector:
+    app.kubernetes.io/app: openethereum
+    app.kubernetes.io/component: openethereum
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
     app.kubernetes.io/app: relayactions
     app.kubernetes.io/component: relayactions
     app.kubernetes.io/part-of: cryptosoccer
@@ -988,6 +1007,77 @@ spec:
       resources:
         requests:
           storage: 200Gi
+      storageClassName: do-block-storage
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/app: openethereum
+    app.kubernetes.io/component: openethereum
+    app.kubernetes.io/part-of: cryptosoccer
+    app.kubernetes.io/version: 1.0.0
+  name: openethereum
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: openethereum
+      app.kubernetes.io/component: openethereum
+      app.kubernetes.io/part-of: cryptosoccer
+      app.kubernetes.io/version: 1.0.0
+  serviceName: openethereum
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: openethereum
+        app.kubernetes.io/component: openethereum
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      containers:
+      - args:
+        - --chain
+        - openethereum
+        - --no-warp
+        - --base-path
+        - /home/openethereum/.local/share/openethereum/
+        - --jsonrpc-interface
+        - all
+        image: openethereum/openethereum:v3.0.1
+        imagePullPolicy: Always
+        name: openethereum
+        ports:
+        - containerPort: 8545
+        volumeMounts:
+        - mountPath: /home/openethereum/.local/share/openethereum/
+          name: openethereum-storage
+      initContainers:
+      - command:
+        - /bin/chmod
+        - -R
+        - "777"
+        - /data
+        image: busybox
+        name: openethereum-storage-permission-fix
+        volumeMounts:
+        - mountPath: /data
+          name: openethereum-storage
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/app: openethereum
+        app.kubernetes.io/component: openethereum
+        app.kubernetes.io/part-of: cryptosoccer
+        app.kubernetes.io/version: 1.0.0
+      name: openethereum-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 40Gi
       storageClassName: do-block-storage
 ---
 apiVersion: apps/v1

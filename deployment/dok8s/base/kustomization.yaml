@@ -7,10 +7,8 @@ resources:
 - marketdb
 - notary
 - relayactions
-# - synchronizer
 - trader
 - universeapi
-# - universedb
 - dashboard
 - oauth2-proxy
 - gamedb
@@ -20,3 +18,4 @@ resources:
 - market-read-api
 - gamelayer-mailbox-cron
 - purchasevoider
+- openethereum
