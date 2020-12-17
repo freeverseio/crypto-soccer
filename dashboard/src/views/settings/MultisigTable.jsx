@@ -15,6 +15,7 @@ const multisigJSON = require("../../contracts/MultiSigWallet.json");
 
 const PermissionTable = ({ web3, account, proxyAddress }) => {
     const [seconds, setSeconds] = useState(0);
+    const [owners, setOwners] = useState([]);
     const proxyContract = new web3.eth.Contract(proxyJSON.abi, proxyAddress);
     const assetsContract = new web3.eth.Contract(assetsJSON.abi, proxyAddress);
     const marketContract = new web3.eth.Contract(marketJSON.abi, proxyAddress);
@@ -29,24 +30,33 @@ const PermissionTable = ({ web3, account, proxyAddress }) => {
         return () => clearInterval(interval);
     },[seconds]);
 
+    useEffect(() => {
+        multisigContract.methods.getOwners().call()
+            .then(setOwners)
+            .catch(error => {
+                console.error(error);
+                setOwners("error");
+            });
+    }, [multisigContract]);
+
     return (
-        <Table color='orange'>
+        <Table color='green' columns={2}>
             <Table.Header>
                 <Table.Row>
-                    <Table.HeaderCell colSpan='3' textAlign='center'>roles</Table.HeaderCell>
+                    <Table.HeaderCell colSpan='2' textAlign='center'>multisig wallet</Table.HeaderCell>
                 </Table.Row>
             </Table.Header>
             <Table.Body>
                 <Table.Row>
-                    <Table.Cell>Proxy Address</Table.Cell>
-                    <Table.Cell>{proxyAddress}</Table.Cell>
+                    <Table.Cell>contract address</Table.Cell>
+                    <Table.Cell>{multisigContract.options.address}</Table.Cell>
                 </Table.Row>
-                {proxyContract && <CompanyCard account={account} proxyContract={proxyContract}  multisigContract={multisigContract}/>}
-                {proxyContract && <SuperUserCard account={account} proxyContract={proxyContract} multisigContract={multisigContract}/>}
-                {assetsContract && <COOCard account={account} assetsContract={assetsContract} />}
-                {assetsContract && <RelayCard account={account} assetsContract={assetsContract} />}
-                {assetsContract && <MarketCard account={account} assetsContract={assetsContract} />}
-                {marketContract && <CryptoMarketCard account={account} marketContract={marketContract} />}
+                <Table.Row>
+                    <Table.Cell singleLine>owners</Table.Cell>
+                    <Table.Cell>
+                        {owners.map(owner => owner + " ")}
+                    </Table.Cell>
+                </Table.Row>
             </Table.Body>
         </Table>
     )
