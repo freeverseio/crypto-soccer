@@ -2,5 +2,6 @@
 	Id: (int64) 0,
 	Owner: (string) "",
 	TimeOfUnpayment: (string) "",
+	AuctionId: (string) "",
 	Notified: (bool) false
 })

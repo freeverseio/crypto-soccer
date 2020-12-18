@@ -23,7 +23,7 @@ const processUnpayments = async () => {
         });
         //send mailbox for each team
         message = {
-          destinatary: team,
+          destinatary: '',
           category: 'ban',
           auctionId: '',
           title: '',
@@ -33,7 +33,7 @@ const processUnpayments = async () => {
         };
         if (unpaymentsByOwner.length > 2) {
           message = {
-            destinatary: team,
+            destinatary: '',
             category: 'permaban',
             auctionId: '',
             title: '',
@@ -44,6 +44,7 @@ const processUnpayments = async () => {
         }
 
         for (const team of teamsOfOwner) {
+          message.destinatary = team.teamId;
           await GamelayerService.setMessage(message);
         }
         //set unpayment notified

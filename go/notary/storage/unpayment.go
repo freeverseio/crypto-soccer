@@ -4,6 +4,7 @@ type Unpayment struct {
 	Id              int64
 	Owner           string
 	TimeOfUnpayment string
+	AuctionId       string
 	Notified        bool
 }
 
