@@ -1,4 +1,4 @@
-const { PG_CONNECTION_STRING, HORIZON_URL, TOKEN } = process.env;
+const { PG_CONNECTION_STRING, HORIZON_URL } = process.env;
 
 const postgreSQLConfig = {
   connectionString: PG_CONNECTION_STRING,
@@ -12,5 +12,4 @@ module.exports = {
   postgreSQLConfig,
   horizonConfig,
   MINIMUM_DEFAULT_BID: 1000,
-  TOKEN,
 };

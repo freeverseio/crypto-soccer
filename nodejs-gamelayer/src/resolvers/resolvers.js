@@ -27,7 +27,6 @@ const playerByPlayerIdResolver = require('./playerByPlayerId');
 const primaryPlayerByPlayerIdResolver = require('./primaryPlayerByPlayerIdResolver');
 const secondaryPlayerByPlayerIdResolver = require('./secondaryPlayerByPlayerIdResolver');
 const queryPlayerByPlayerIdResolver = require('./queryPlayerByPlayerId');
-const setMaxBidAllowedByOwnerResolver = require('./setMaxBidAllowedByOwnerResolver');
 
 const web3 = new Web3('');
 
@@ -295,7 +294,6 @@ const resolvers = ({ horizonRemoteSchema }) => {
       setMessageRead: setMessageReadResolver,
       setLastTimeLoggedIn: setLastTimeLoggedInResolver,
       setGetSocialId: async (parent, args, context, info) => setGetSocialIdResolver(parent, args, context, info, web3),
-      setMaxBidAllowedByOwner: setMaxBidAllowedByOwnerResolver,
     },
     Query: {
       getMessages: getMessagesResolver,
