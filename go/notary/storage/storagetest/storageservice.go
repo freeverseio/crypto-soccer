@@ -11,4 +11,5 @@ func TestStorageService(t *testing.T, service storage.StorageService) {
 	testOfferServiceInterface(t, service)
 	testPlaystoreOrderServiceInterface(t, service)
 	testAuctionPassServiceInterface(t, service)
+	testUnpaymentServiceInterface(t, service)
 }

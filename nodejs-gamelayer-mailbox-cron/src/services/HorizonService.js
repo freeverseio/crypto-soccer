@@ -313,7 +313,7 @@ class HorizonService {
         allUnpayments(condition: { notified: false }) {
           nodes {
             owner
-            TimeOfUnpayment
+            timeOfUnpayment
             notified
           }
         }
