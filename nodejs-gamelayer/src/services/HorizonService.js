@@ -229,6 +229,22 @@ class HorizonService {
       ? result.allPlaystoreOrders.totalCount > 0
       : false;
   }
+
+  async getUnpaymentsByOwner({ owner }) {
+    const query = gql`
+      {
+        allUnpayments(condition: { owner: "${owner}" }, orderBy: TIME_OF_UNPAYMENT_DESC) {
+          nodes{
+            owner
+            timeOfUnpayment
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allUnpayments && result.allUnpayments.nodes ? result.allUnpayments.nodes : [];
+  }
 }
 
 module.exports = new HorizonService();

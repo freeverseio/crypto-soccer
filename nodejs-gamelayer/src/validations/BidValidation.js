@@ -1,6 +1,9 @@
 const HorizonService = require('../services/HorizonService.js');
 const { MINIMUM_DEFAULT_BID } = require('../config.js');
-
+const { selectOwnerMaxBidAllowed } = require('../repositories/index.js');
+const utc = require('dayjs/plugin/utc');
+const dayjs = require('dayjs');
+dayjs.extend(utc);
 class BidValidation {
   constructor({ teamId, rnd, auctionId, extraPrice, signature, web3 }) {
     this.teamId = teamId;
@@ -53,24 +56,48 @@ class BidValidation {
     return teamOwner === signerAddress;
   }
 
-  async isAllowedToBid() {
+  async isAllowedByUnpayments({ owner }) {
+    const unpayments = await HorizonService.getUnpaymentsByOwner({ owner });
+    if (unpayments.length) {
+      switch (unpayments.length) {
+        case 1:
+        case 2:
+          const timeOfUnpayment = dayjs(unpayments[0].timeOfUnpayment).utc();
+          const daysSinceLastTimeOfUnpayment = dayjs.utc().diff(timeOfUnpayment, 'day');
+          if (daysSinceLastTimeOfUnpayment < 7) {
+            return false;
+          }
+          break;
+        default:
+          return false;
+      }
+    }
+    return true;
+  }
+
+  async isAllowedToBidBySignerOwner() {
     const isSignerOwner = await this.isSignerOwner();
     if (!isSignerOwner) {
       return false;
     }
+    return true;
+  }
 
-    const auction = await HorizonService.getAuction({
-      auctionId: this.auctionId,
-    });
-    const totalPrice = parseInt(auction.price) + parseInt(this.extraPrice);
-    if (parseInt(totalPrice) < parseInt(MINIMUM_DEFAULT_BID)) {
-      return true;
+  async isAllowedToBidByMaxBidAllowedByOwner({ owner, totalPrice }) {
+    const maxBidAllowedByOwnerRow = await selectOwnerMaxBidAllowed({ owner });
+    if (maxBidAllowedByOwnerRow) {
+      const maxBid = parseInt(maxBidAllowedByOwnerRow.max_bid_allowed);
+      if (Number.isInteger(maxBid)) {
+        if (totalPrice > maxBid) {
+          return false;
+        }
+      }
     }
-    const owner = await this.signerAddress();
-    const hasAuctionPass = await HorizonService.hasAuctionPass({ owner });
-    if (hasAuctionPass) {
-      return true;
-    }
+
+    return true;
+  }
+
+  async isAllowedToBidBySpentInWorldplayers({ owner }) {
     const teamsByOwner = await HorizonService.getTeamsByOwner({ owner });
     let hasSpentInWorldPlayers = false;
     for (const team of teamsByOwner) {
@@ -79,6 +106,46 @@ class BidValidation {
     }
 
     if (hasSpentInWorldPlayers) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async isAllowedToBid() {
+    const isAllowedToBidBySignerOwner = await this.isAllowedToBidBySignerOwner();
+    if (!isAllowedToBidBySignerOwner) {
+      return false;
+    }
+
+    const owner = await this.signerAddress();
+    const auction = await HorizonService.getAuction({
+      auctionId: this.auctionId,
+    });
+    const totalPrice = parseInt(auction.price) + parseInt(this.extraPrice);
+
+    const isAllowedToBidByMaxBidAllowedByOwner = await this.isAllowedToBidByMaxBidAllowedByOwner({ owner, totalPrice });
+    if (!isAllowedToBidByMaxBidAllowedByOwner) {
+      return false;
+    }
+
+    const isAllowedToBidByUnpayments = await this.isAllowedByUnpayments({ owner });
+    if (!isAllowedToBidByUnpayments) {
+      return false;
+    }
+
+    const isTotalPriceLessThanMinimum = parseInt(totalPrice) < parseInt(MINIMUM_DEFAULT_BID);
+    if (isTotalPriceLessThanMinimum) {
+      return true;
+    }
+
+    const hasAuctionPass = await HorizonService.hasAuctionPass({ owner });
+    if (hasAuctionPass) {
+      return true;
+    }
+
+    const isAllowedToBidByWorldplayers = await this.isAllowedToBidBySpentInWorldplayers({ owner });
+    if (isAllowedToBidByWorldplayers) {
       return true;
     }
 

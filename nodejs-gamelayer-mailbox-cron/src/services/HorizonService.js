@@ -306,6 +306,57 @@ class HorizonService {
       ? result.allBidsHistories.nodes
       : [];
   }
+
+  async getLastUnpayments() {
+    const query = gql`
+      {
+        allUnpayments(condition: { notified: false }) {
+          nodes {
+            owner
+            TimeOfUnpayment
+            notified
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allUnpayments && result.allUnpayments.nodes
+      ? result.allUnpayments.nodes
+      : [];
+  }
+
+  async getUnpaymentsByOwner({ owner }) {
+    const query = gql`
+      {
+        allUnpayments(condition: { owner: ${owner} }) {
+          nodes {
+            id
+            owner
+            timeOfUnpayment
+            notified
+          }
+        }
+      }
+    `;
+    const result = await request(this.endpoint, query);
+
+    return result && result.allUnpayments && result.allUnpayments.nodes
+      ? result.allUnpayments.nodes
+      : [];
+  }
+
+  async setUnpaymentNotified({ unpayment }) {
+    const query = gql`
+    mutation {
+        setUnpaymentNotified(input: { id: "${unpayment.id}"})
+    }
+    `;
+    logger.debug(
+      `Sending setUnpaymentNotified(id:${unpayment.id}) mutation...`
+    );
+    await request(this.endpoint, query);
+  }
 }
 
 module.exports = new HorizonService();

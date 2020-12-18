@@ -1,0 +1,6 @@
+(*storage.Unpayment)({
+	Id: (int64) 0,
+	Owner: (string) "",
+	TimeOfUnpayment: (string) "",
+	Notified: (bool) false
+})
