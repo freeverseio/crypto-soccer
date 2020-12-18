@@ -27,6 +27,7 @@ const playerByPlayerIdResolver = require('./playerByPlayerId');
 const primaryPlayerByPlayerIdResolver = require('./primaryPlayerByPlayerIdResolver');
 const secondaryPlayerByPlayerIdResolver = require('./secondaryPlayerByPlayerIdResolver');
 const queryPlayerByPlayerIdResolver = require('./queryPlayerByPlayerId');
+const createOfferResolver = require('./createOfferResolver');
 
 const web3 = new Web3('');
 
@@ -287,6 +288,9 @@ const resolvers = ({ horizonRemoteSchema }) => {
       },
       createBid: async (parent, args, context, info) => {
         return createBidResolver(parent, args, context, info, horizonRemoteSchema, web3);
+      },
+      createOffer: async (parent, args, context, info) => {
+        return createOfferResolver(parent, args, context, info, horizonRemoteSchema, web3);
       },
       setMessage: setMessageResolver,
       setBroadcastMessage: setBroadcastMessageResolver,
