@@ -13,20 +13,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "apollo-link-http": "^1.5.16",
-    "apollo-server": "^2.9.14",
-    "dayjs": "^1.8.36",
-    "graphql": "^14.5.8",
-    "graphql-request": "^3.0.0",
+    "apollo-link-http": "1.5.16",
+    "apollo-server": "2.9.14",
+    "dayjs": "1.8.36",
+    "graphql": "14.5.8",
+    "graphql-request": "3.0.0",
     "pg": "8.3.0",
     "pg-copy-streams": "5.1.1",
     "web3": "1.2.11"
   },
   "devDependencies": {
-    "jest": "^26.3.0",
-    "eslint": "^7.7.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "prettier": "^2.0.5"
+    "eslint": "7.7.0",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-plugin-prettier": "3.1.4",
+    "jest": "26.3.0",
+    "prettier": "2.0.5",
+    "rewire": "5.0.0"
   }
 }

@@ -340,4 +340,8 @@ func TestCreateOfferInputHashBigIntPlayer(t *testing.T) {
 	hash, err := in.Hash(*bc.Contracts)
 	assert.NilError(t, err)
 	assert.Equal(t, hash.Hex(), "0x84347c60199d0444e4ec8bbdf788ab1afff4a59f02c146a8c493d2f73955d7c6")
+	id, err := in.ID(*bc.Contracts)
+	assert.NilError(t, err)
+	assert.Equal(t, string(id), "a51ac22be9bcc29236b88373d494c30c5dff2108059aa14c00e4c2a1d4061eba")
+
 }

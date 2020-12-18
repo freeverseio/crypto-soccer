@@ -94,6 +94,16 @@ const main = async () => {
   		rnd: Int!
   		teamId: String!
     }
+
+    input CreateOfferInput {
+      signature: String!
+      playerId: String!
+      currencyId: Int!
+      price: Int!
+      validUntil: String!
+      rnd: Int!
+      buyerTeamId: String!
+    }
     
     input SetGetSocialIdInput {
       signature: String!
@@ -151,6 +161,18 @@ const main = async () => {
     }),
     new FilterTypes((typeName, fieldName, field) => {
       if (fieldName == 'CreateBidInput') {
+        return false;
+      }
+      return true;
+    }),
+    new FilterRootFields((operation, fieldName, field) => {
+      if (fieldName == 'createOffer') {
+        return false;
+      }
+      return true;
+    }),
+    new FilterTypes((typeName, fieldName, field) => {
+      if (fieldName == 'CreateOfferInput') {
         return false;
       }
       return true;
