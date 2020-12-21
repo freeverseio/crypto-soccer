@@ -3,13 +3,12 @@ const resolvers = (sql) => {
     Query: {
       getBestPlayers: async (parent, args, context, info) => {
         const { limit } = args;
-        const query = sql.query`SELECT SUM(defence + speed + pass + shoot + endurance) AS sum_of_skills 
-        FROM players GROUP BY player_id ORDER BY sum_of_skills DESC LIMIT ${limit};`
+        const query = sql.query`SELECT player_id, SUM(defence + speed + pass + shoot + endurance) AS sum_of_skills 
+        FROM players GROUP BY player_id ORDER BY sum_of_skills DESC LIMIT ${sql.value(limit)};`
 
         const { text, values } = sql.compile(query);
         const result = await context.pgClient.query(text, values);
-        console.log("🚀 ~ file: resolvers.js ~ line 11 ~ getBestPlayers: ~ result", result)
-        return result.rows;
+        return result.rows.map(obj => obj.player_id);
       }
     },
     Mutation: {

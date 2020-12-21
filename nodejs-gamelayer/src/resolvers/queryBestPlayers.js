@@ -1,3 +1,6 @@
+const utc = require('dayjs/plugin/utc');
+const dayjs = require('dayjs');
+dayjs.extend(utc);
 const { selectCachedQueryByKey, upsertCachedQueryData } = require('../repositories');
 
 const queryBestPlayers = async (parent, args, context, info, schema) => {
@@ -6,7 +9,11 @@ const queryBestPlayers = async (parent, args, context, info, schema) => {
   const cachedData = await selectCachedQueryByKey({ key });
 
   if (cachedData) {
-    return cachedData;
+    const cachedDataTime = dayjs(cachedData.updated_at).utc();
+    const daysSinceCachedDataUpdatedAt = dayjs.utc().diff(cachedDataTime, 'day');
+    if (daysSinceCachedDataUpdatedAt < 1) {
+      return cachedData.data;
+    }
   }
 
   const result = await info.mergeInfo.delegateToSchema({
@@ -24,7 +31,7 @@ const queryBestPlayers = async (parent, args, context, info, schema) => {
     return;
   }
 
-  await upsertCachedQueryData({ key, data: result });
+  await upsertCachedQueryData({ key, data: JSON.stringify(result) });
 
   return result;
 };

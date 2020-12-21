@@ -129,7 +129,6 @@ const main = async () => {
       getNumUnreadMessages(teamId : ID!): Int!
       createBid(input: CreateBidInput!): ID!
       getLastTimeLoggedIn(teamId: ID!): String!
-      getBestPlayers(limit: Int!): [String!]
     }
 
     extend type Team {
