@@ -28,6 +28,7 @@ const primaryPlayerByPlayerIdResolver = require('./primaryPlayerByPlayerIdResolv
 const secondaryPlayerByPlayerIdResolver = require('./secondaryPlayerByPlayerIdResolver');
 const queryPlayerByPlayerIdResolver = require('./queryPlayerByPlayerId');
 const createOfferResolver = require('./createOfferResolver');
+const queryBestPlayers = require('./queryBestPlayers');
 
 const web3 = new Web3('');
 
@@ -305,6 +306,8 @@ const resolvers = ({ horizonRemoteSchema }) => {
       getLastTimeLoggedIn: getLastTimeLoggedInResolver,
       playerByPlayerId: async (parent, args, context, info) =>
         queryPlayerByPlayerIdResolver(parent, args, context, info, horizonRemoteSchema),
+      getBestPlayers: async (parent, args, context, info) =>
+        queryBestPlayers(parent, args, context, info, horizonRemoteSchema),
     },
   };
 };

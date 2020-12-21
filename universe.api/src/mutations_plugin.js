@@ -23,6 +23,10 @@ module.exports = makeExtendSchemaPlugin(build => {
         deleteSpecialPlayer(
           playerId: String!
         ): Boolean
+      }
+      
+      extend type Query {
+        getBestPlayers(limit: Int!): [String!]
       }`,
     resolvers: Resolvers(sql),
   }
