@@ -120,6 +120,7 @@ const main = async () => {
       setMessageRead(id: ID!): Boolean
       setLastTimeLoggedIn(teamId: ID!): Boolean
       createBid(input: CreateBidInput!): ID!
+      createOffer(input: CreateOfferInput): ID!
       setGetSocialId(input: SetGetSocialIdInput!): Boolean
     }
     
