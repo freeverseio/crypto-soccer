@@ -15,6 +15,8 @@ const upsertTeamGetSocialId = require('./upsertTeamGetSocialId');
 const selectPlayerName = require('./selectPlayerName.js');
 const selectOwnerMaxBidAllowed = require('./selectOwnerMaxBidAllowed.js');
 const upsertOwnerMaxBidAllowed = require('./upsertOwnerMaxBidAllowed');
+const selectCachedQueryByKey = require('./selectCachedQueryByKey.js');
+const upsertCachedQueryData = require('./upsertCachedQueryData');
 
 module.exports = {
   selectTeamName,
@@ -34,4 +36,6 @@ module.exports = {
   selectPlayerName,
   selectOwnerMaxBidAllowed,
   upsertOwnerMaxBidAllowed,
+  selectCachedQueryByKey,
+  upsertCachedQueryData,
 };

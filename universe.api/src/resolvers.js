@@ -1,5 +1,16 @@
 const resolvers = (sql) => {
   return {
+    Query: {
+      getBestPlayers: async (parent, args, context, info) => {
+        const { limit } = args;
+        const query = sql.query`SELECT player_id, SUM(defence + speed + pass + shoot + endurance) AS sum_of_skills 
+        FROM players GROUP BY player_id ORDER BY sum_of_skills DESC LIMIT ${sql.value(limit)};`
+
+        const { text, values } = sql.compile(query);
+        const result = await context.pgClient.query(text, values);
+        return result.rows.map(obj => obj.player_id);
+      }
+    },
     Mutation: {
       createSpecialPlayer: async (_, params, context) => {
         const { playerId, name, defence, speed, pass, shoot, endurance, preferredPosition, potential, dayOfBirth } = params;

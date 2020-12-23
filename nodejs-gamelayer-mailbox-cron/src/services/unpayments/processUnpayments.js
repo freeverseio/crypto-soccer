@@ -19,7 +19,7 @@ const processUnpayments = async () => {
           owner: unpayment.owner,
         });
         const unpaymentsByOwner = await HorizonService.getUnpaymentsByOwner({
-          owner,
+          owner: unpayment.owner,
         });
         //send mailbox for each team
         message = {
