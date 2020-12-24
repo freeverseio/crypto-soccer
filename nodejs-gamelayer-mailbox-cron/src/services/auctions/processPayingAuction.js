@@ -5,6 +5,21 @@ const HorizonService = require('../HorizonService');
 const getTeamIdFromAuctionSeller = require('./getTeamIdFromAuctionSeller.js');
 const logger = require('../../logger');
 
+const getFormattedPaymentDeadline = async ({ paymentDeadline }) => {
+  logger.debug(
+    `unix now: ${dayjs().unix()} || bids[0].paymentDeadline: ${
+      bids[0].paymentDeadline
+    } || deadline: ${deadline}`
+  );
+  let deadline = dayjs().add(46, 'hour').unix();
+
+  if (bids[0].paymentDeadline && bids[0].paymentDeadline > dayjs().unix()) {
+    deadline = bids[0].paymentDeadline;
+  }
+
+  return deadline;
+};
+
 const processPayingAuction = async ({ auctionHistory }) => {
   const destinataryTeamId = await getTeamIdFromAuctionSeller({
     auction: auctionHistory,
@@ -34,16 +49,16 @@ const processPayingAuction = async ({ auctionHistory }) => {
     const maxBidIndex = bids.findIndex((b) => b.extraPrice == maxExtraPrice);
     logger.debug(`Maxbid(bids[${maxBidIndex}]): ${JSON.stringify(maxBid)}`);
     bids[maxBidIndex].state = 'PAYING';
-    bids[maxBidIndex].paymentDeadline = bids[maxBidIndex].paymentDeadline
-      ? bids[maxBidIndex].paymentDeadline
-      : dayjs().add(2, 'day').unix();
+    bids[maxBidIndex].paymentDeadline = getFormattedPaymentDeadline({
+      paymentDeadline: bids[maxBidIndex].paymentDeadline,
+    });
   }
 
   if (bids.length == 1) {
     bids[0].state = 'PAYING';
-    bids[0].paymentDeadline = bids[0].paymentDeadline
-      ? bids[0].paymentDeadline
-      : dayjs().add(2, 'day').unix();
+    bids[0].paymentDeadline = getFormattedPaymentDeadline({
+      paymentDeadline: bids[0].paymentDeadline,
+    });
   }
 
   const { name: maxBidderTeamName } = await GamelayerService.getInfoFromTeamId({
