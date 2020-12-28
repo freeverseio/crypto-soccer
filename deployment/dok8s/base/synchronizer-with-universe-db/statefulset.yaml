@@ -32,7 +32,7 @@ spec:
               -postgres,
               "postgres://$(freeverse_username):$(freeverse_password)@localhost:5432/cryptosoccer?sslmode=disable",
               -ethereum,
-              http://xdai:8545,
+              http://openethereum:8545,
               -ipfs,
               "/dns4/ipfsnode/tcp/5001",
               -proxy_address,
