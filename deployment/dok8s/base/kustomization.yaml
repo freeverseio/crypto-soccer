@@ -20,3 +20,4 @@ resources:
 - market-read-api
 - gamelayer-mailbox-cron
 - purchasevoider
+- openethereum
