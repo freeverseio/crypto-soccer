@@ -81,6 +81,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 		if err != nil {
 			return err
 		}
+		log.Infof("Hola")
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 			if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx, verse); err != nil {
 				return err

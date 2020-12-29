@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -86,7 +87,7 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 	if league == nil {
 		return errors.New("Unexistent league")
 	}
-
+	var matchesToSetTeams []storage.Match
 	for matchDay := uint8(0); matchDay < contracts.MatchDays; matchDay++ {
 		for match := uint8(0); match < contracts.MatchesPerDay; match++ {
 			teams, err := b.contracts.Leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
@@ -101,11 +102,30 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 			if err != nil {
 				return err
 			}
-			err = storage.MatchSetTeams(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID, matchesStart[matchDay])
-			if err != nil {
-				return err
+			matchObj := storage.Match{
+				TimezoneIdx:   timezoneIdx,
+				CountryIdx:    countryIdx,
+				LeagueIdx:     leagueIdx,
+				MatchDayIdx:   matchDay,
+				MatchIdx:      match,
+				HomeTeamID:    homeTeamID,
+				VisitorTeamID: visitorTeamID,
+				HomeGoals:     0,
+				VisitorGoals:  0,
+				State:         "begin",
+				StateExtra:    "",
+				StartEpoch:    matchesStart[matchDay].Int64(),
 			}
+			matchesToSetTeams = append(matchesToSetTeams, matchObj)
+			// err = storage.MatchSetTeams(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID, matchesStart[matchDay])
+			// if err != nil {
+			// 	return err
+			// }
 		}
+	}
+	err = storage.MatchesSetTeamsBulkInsertUpdate(matchesToSetTeams, tx)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -119,13 +139,32 @@ func (b *Calendar) Reset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagu
 		return errors.New("Unexistent league")
 	}
 
+	var matchesToReset []storage.Match
 	for matchDay := uint8(0); matchDay < contracts.MatchDays; matchDay++ {
 		for match := uint8(0); match < contracts.MatchesPerDay; match++ {
-			err = storage.MatchReset(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match)
-			if err != nil {
-				return err
+			matchObj := storage.Match{
+				TimezoneIdx:   timezoneIdx,
+				CountryIdx:    countryIdx,
+				LeagueIdx:     leagueIdx,
+				MatchDayIdx:   matchDay,
+				MatchIdx:      match,
+				HomeTeamID:    nil,
+				VisitorTeamID: nil,
+				HomeGoals:     0,
+				VisitorGoals:  0,
+				State:         "begin",
+				StateExtra:    "",
+				StartEpoch:    0,
 			}
+			matchesToReset = append(matchesToReset, matchObj)
+
 		}
+	}
+	log.Infof("Num matchesToReset %v", len(matchesToReset))
+
+	err = storage.MatchesResetBulkInsertUpdate(matchesToReset, tx)
+	if err != nil {
+		return err
 	}
 	return nil
 }
