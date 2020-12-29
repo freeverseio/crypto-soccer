@@ -25,5 +25,27 @@ func (b *Resolver) DismissPlayer(args struct{ Input input.DismissPlayerInput }) 
 		return id, errors.New("not player owner")
 	}
 
+	tx, err := b.service.Begin()
+	if err != nil {
+		return graphql.ID(""), err
+	}
+
+	isPlayerOnSale, auctionID, err := args.Input.IsPlayerOnSale(tx)
+	if err != nil {
+		return id, err
+	}
+
+	if isPlayerOnSale {
+		if err := tx.AuctionCancel(string(auctionID)); err != nil {
+			tx.Rollback()
+			return id, err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return id, err
+	}
+
 	return id, b.push(args.Input)
 }
