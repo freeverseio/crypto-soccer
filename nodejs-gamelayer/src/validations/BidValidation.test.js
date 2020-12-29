@@ -261,11 +261,11 @@ test('isAllowedByUnpayments is true because there is no unpayment record', async
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedByUnpayments({ owner: 'chico' });
+  const result = await bidValidation.validation.isAllowedByUnpayments({ owner: 'chico' });
   expect(result).toBe(true);
 
   HorizonService.getUnpaymentsByOwner.mockReturnValue({});
-  const resultWhenIs0 = await bidValidation.isAllowedByUnpayments({ owner: 'chico' });
+  const resultWhenIs0 = await bidValidation.validation.isAllowedByUnpayments({ owner: 'chico' });
 
   expect(resultWhenIs0).toBe(true);
 });
@@ -286,7 +286,7 @@ test('isAllowedByUnpayments is false because there is 3 unpayments', async () =>
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedByUnpayments({ owner: 'chico' });
+  const result = await bidValidation.validation.isAllowedByUnpayments({ owner: 'chico' });
   expect(result).toBe(false);
 });
 
@@ -307,6 +307,6 @@ test('isAllowedByUnpayments is false because there is 1 unpayments but from less
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedByUnpayments({ owner: 'chico' });
+  const result = await bidValidation.validation.isAllowedByUnpayments({ owner: 'chico' });
   expect(result).toBe(false);
 });

@@ -1,29 +1,46 @@
 const HorizonService = require('../services/HorizonService.js');
-const Validation = require('./Validation');
 const { MINIMUM_DEFAULT_BID } = require('../config.js');
 const utc = require('dayjs/plugin/utc');
 const dayjs = require('dayjs');
+const Validation = require('./Validation.js');
 dayjs.extend(utc);
-class BidValidation {
-  constructor({ teamId, rnd, auctionId, extraPrice, signature, web3 }) {
-    this.teamId = teamId;
-    this.auctionId = auctionId;
-    this.extraPrice = extraPrice;
+class OfferValidation {
+  constructor({ currencyId, rnd, price, signature, web3, playerId, validUntil, buyerTeamId }) {
+    this.currencyId = currencyId;
+    this.playerId = playerId;
+    this.price = price;
     this.rnd = rnd;
     this.signature = signature;
     this.web3 = web3;
+    this.validUntil = validUntil;
+    this.buyerTeamId = buyerTeamId;
     this.validation = new Validation();
+  }
+  computeAuctionId() {
+    const paramsSellerHiddenPrice = this.web3.eth.abi.encodeParameters(
+      ['uint8', 'uint256', 'uint256'],
+      [this.currencyId || 0, this.price || 0, this.rnd || 0]
+    );
+    const sellerHiddenPrice = this.web3.utils.soliditySha3(paramsSellerHiddenPrice);
+    const params = this.web3.eth.abi.encodeParameters(
+      ['bytes32', 'uint256', 'uint32'],
+      [sellerHiddenPrice || '', this.playerId || 0, this.validUntil || 0]
+    );
+    return this.web3.utils.soliditySha3(params).slice(2);
   }
 
   hash() {
+    const dummyExtraPrice = 0;
+    const dummyRnd = 0;
+    const auctionId = this.computeAuctionId();
     const paramsBidHiddenPrice = this.web3.eth.abi.encodeParameters(
       ['uint256', 'uint256'],
-      [this.extraPrice || 0, this.rnd || 0]
+      [dummyExtraPrice, dummyRnd]
     );
     const bidHiddenPrice = this.web3.utils.soliditySha3(paramsBidHiddenPrice);
     const params = this.web3.eth.abi.encodeParameters(
       ['bytes32', 'bytes32', 'uint256'],
-      ['0x' + this.auctionId || '', bidHiddenPrice || '', this.teamId || 0]
+      ['0x' + auctionId || '', bidHiddenPrice || '', this.buyerTeamId || 0]
     );
     return this.web3.utils.soliditySha3(params);
   }
@@ -65,17 +82,14 @@ class BidValidation {
     return true;
   }
 
-  async isAllowedToBid() {
+  async isAllowedToOffer() {
     const isAllowedToBidBySignerOwner = await this.isAllowedToBidBySignerOwner();
     if (!isAllowedToBidBySignerOwner) {
       return false;
     }
 
-    const owner = await this.signerAddress({ web3: this.web3, signature: this.signature });
-    const auction = await HorizonService.getAuction({
-      auctionId: this.auctionId,
-    });
-    const totalPrice = parseInt(auction.price) + parseInt(this.extraPrice);
+    const owner = await this.signerAddress();
+    const totalPrice = parseInt(this.price);
 
     const isAllowedToBidByMaxBidAllowedByOwner = await this.validation.isAllowedToBidByMaxBidAllowedByOwner({
       owner,
@@ -115,4 +129,4 @@ class BidValidation {
   }
 }
 
-module.exports = BidValidation;
+module.exports = OfferValidation;

@@ -1,17 +1,4 @@
-const { BidValidation } = require('../validations');
-
-const computeAuctionId = ({ currencyId, price, rnd, playerId, validUntil, web3 }) => {
-  const paramsSellerHiddenPrice = web3.eth.abi.encodeParameters(
-    ['uint8', 'uint256', 'uint256'],
-    [currencyId || 0, price || 0, rnd || 0]
-  );
-  const sellerHiddenPrice = web3.utils.soliditySha3(paramsSellerHiddenPrice);
-  const params = web3.eth.abi.encodeParameters(
-    ['bytes32', 'uint256', 'uint32'],
-    [sellerHiddenPrice || '', playerId || 0, validUntil || 0]
-  );
-  return web3.utils.soliditySha3(params).slice(2);
-};
+const { OfferValidation } = require('../validations');
 
 const createOfferResolver = async (_, args, context, info, horizonRemoteSchema, web3) => {
   try {
@@ -21,8 +8,17 @@ const createOfferResolver = async (_, args, context, info, horizonRemoteSchema, 
 
     auctionId = await computeAuctionId({ currencyId, price, rnd, playerId, validUntil, web3 });
 
-    const bidValidation = new BidValidation({ teamId: buyerTeamId, rnd: 0, auctionId, extraPrice: 0, signature, web3 });
-    const isAllowed = await bidValidation.isAllowedToBid();
+    const offerValidation = new OfferValidation({
+      currencyId,
+      playerId,
+      price,
+      validUntil,
+      buyerTeamId,
+      rnd,
+      signature,
+      web3,
+    });
+    const isAllowed = await offerValidation.isAllowedToOffer(true);
 
     if (!isAllowed) {
       return new Error('User not allowed to offer for that amount');
