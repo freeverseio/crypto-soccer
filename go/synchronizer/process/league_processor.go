@@ -308,6 +308,9 @@ func (b *LeagueProcessor) TeamsWithStateByTimezoneIdxCountryIdxLeagueIdx(tx *sql
 		teamID := teamIds[i]
 		var team storage.Team
 		team, err = storage.TeamByTeamId(tx, teamID)
+		if err != nil {
+			return teamsWithState, err
+		}
 		teamState, err := b.GetTeamState(tx, team.TeamID)
 		if err != nil {
 			return teamsWithState, err
@@ -397,7 +400,6 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountryWithZombie
 		}
 		teamStatesPerLeague = append(teamStatesPerLeague, teamsWithStateInLeague)
 	}
-
 	orgMap, err := b.GenerateOrgMap(teamStatesPerLeague)
 	if err != nil {
 		return err

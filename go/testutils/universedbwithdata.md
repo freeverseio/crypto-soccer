@@ -49,3 +49,23 @@ docker load --input universe.db.with.data.tar.gz
 docker run freeverseio/universe.db.with.data:latest
 
 It will rerun all the sql scripts the same way for every docker run.
+
+## Method 4
+
+From a running postgres container with data (which you can set from the previous methods) exec a terminal onto it and run this command:
+`docker exec -it 39c7d20aadca /bin/bash`
+
+Then:
+```
+mkdir /postgres
+cp -r /var/lib/postgresql/data/* /postgres 
+```
+
+This will make the data be part of the image, and not from the volume. Now exit the container terminal and run:
+
+`docker commit 39c7d20aadca freeverseio/universe.db:data`
+
+You can push this image wherever you want. To run this image:
+
+`docker run --env PGDATA=postgres -p 5444:5432 -i freeverseio/universe.db:data`
+
