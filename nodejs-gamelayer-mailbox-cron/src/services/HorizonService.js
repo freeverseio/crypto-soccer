@@ -329,7 +329,7 @@ class HorizonService {
   async getUnpaymentsByOwner({ owner }) {
     const query = gql`
       {
-        allUnpayments(condition: { owner: ${owner} }) {
+        allUnpayments(condition: { owner: "${owner}" }) {
           nodes {
             id
             owner
