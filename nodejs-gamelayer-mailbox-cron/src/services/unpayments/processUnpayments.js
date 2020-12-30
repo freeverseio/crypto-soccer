@@ -1,4 +1,5 @@
 const HorizonService = require('../HorizonService');
+const GamelayerService = require('../GamelayerService');
 const logger = require('../../logger');
 
 const processUnpayments = async () => {
