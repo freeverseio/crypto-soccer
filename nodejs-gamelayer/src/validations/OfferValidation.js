@@ -67,7 +67,7 @@ class OfferValidation {
 
   async isSignerOwner() {
     const teamOwner = await HorizonService.getTeamOwner({
-      teamId: this.teamId,
+      teamId: this.buyerTeamId,
     });
     const signerAddress = await this.signerAddress();
 
