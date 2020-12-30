@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"github.com/spf13/viper"
@@ -52,6 +53,10 @@ func NewLeagueProcessor(
 }
 
 func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *big.Int) error {
+	startResetTimezone := time.Now()
+	timeUpdating := 0.0
+	timeReseting := 0.0
+	timeDeleting := 0.0
 	log.Infof("[processor|consume] shuffling timezone %v and create calendars", timezoneIdx)
 	countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 	if err != nil {
@@ -62,6 +67,7 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 	zombieVerse := viper.GetUint64("patch.use_zombies")
 
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
+		startUpdating := time.Now()
 		// if a new league is starting shuffle the teams
 		if verseNumber >= zombieVerse {
 			if verseNumber == zombieVerse {
@@ -81,16 +87,29 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 		if err != nil {
 			return err
 		}
-		log.Infof("Hola")
+		endUpdating := time.Since(startUpdating)
+		timeUpdating = timeUpdating + endUpdating.Seconds()
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-			if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx, verse); err != nil {
+			startReseting := time.Now()
+			if err = b.ResetLeague(tx, timezoneIdx, countryIdx, leagueIdx, verse); err != nil {
 				return err
 			}
+			endReseting := time.Since(startReseting)
+			timeReseting = timeReseting + endReseting.Seconds()
+
+			startDeleting := time.Now()
 			if err = storage.DeleteAllMatchEvents(tx, int(timezoneIdx), int(countryIdx), int(leagueIdx)); err != nil {
 				return err
 			}
+			endDeleting := time.Since(startDeleting)
+			timeDeleting = timeDeleting + endDeleting.Seconds()
 		}
 	}
+	endResetTimezone := time.Since(startResetTimezone)
+	log.Infof("Total time elapsed: %s", endResetTimezone)
+	log.Infof("Time updating: %v", timeUpdating)
+	log.Infof("Time reseting: %v", timeReseting)
+	log.Infof("Time deleting: %v", timeDeleting)
 	return nil
 }
 
@@ -466,7 +485,12 @@ func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID string) ([25]*big.Int,
 	return state, nil
 }
 
-func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, verse *big.Int) error {
+func (b *LeagueProcessor) ResetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, verse *big.Int) error {
+	startResetLeague := time.Now()
+	timeWithTeams := 0.0
+	timeReseting := 0.0
+	timeMatches := 0.0
+	timePopulating := 0.0
 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
@@ -484,17 +508,37 @@ func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx 
 			return err
 		}
 	}
+	// err = storage.TeamsBulkInsertUpdate(teams, tx)
+	// if err != nil {
+	// 	return err
+	// }
+	timeWithTeams = timeWithTeams + time.Since(startResetLeague).Seconds()
+	startReset := time.Now()
 	err = b.calendarProcessor.Reset(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}
+	timeReseting = timeReseting + time.Since(startReset).Seconds()
+
+	startMatches := time.Now()
 	matchesStart, err := b.calendarProcessor.GetAllMatchdaysUTCInNextRound(timezoneIdx, verse)
 	if err != nil {
 		return err
 	}
+	timeMatches = timeMatches + time.Since(startMatches).Seconds()
+
+	startPopulate := time.Now()
 	err = b.calendarProcessor.Populate(tx, timezoneIdx, countryIdx, leagueIdx, matchesStart)
 	if err != nil {
 		return err
 	}
+	timePopulating = timePopulating + time.Since(startPopulate).Seconds()
+
+	// endResetLeague := time.Since(startResetLeague)
+	// log.Infof("Time reseting league %s", endResetLeague)
+	// log.Infof("time w teams %v", timeWithTeams)
+	// log.Infof("time reseting %v", timeReseting)
+	// log.Infof("time  matechs %v", timeMatches)
+	// log.Infof("time  pouplating %v", timePopulating)
 	return nil
 }

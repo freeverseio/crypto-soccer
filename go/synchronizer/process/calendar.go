@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/storage"
@@ -79,6 +78,60 @@ func (b Calendar) GetAllMatchdaysUTCInNextRound(timezoneIdx uint8, verse *big.In
 	return matchesStart, nil
 }
 
+func shiftBack(t uint8) uint8 {
+	if t < TEAMS_PER_LEAGUE {
+		return t
+	}
+
+	return t - (TEAMS_PER_LEAGUE - 1)
+}
+
+func getTeamsInMatchFirstHalf(matchday uint8, matchIdxInDay uint8) (uint8, uint8) {
+	team1 := uint8(0)
+	if matchIdxInDay > 0 {
+		team1 = shiftBack(TEAMS_PER_LEAGUE - matchIdxInDay + matchday)
+	}
+
+	team2 := uint8(shiftBack(matchIdxInDay + 1 + matchday))
+	if (matchday % 2) == 0 {
+		return team1, team2
+	}
+	return team2, team1
+}
+
+type teamsDuple struct {
+	HomeIdx    uint8
+	VisitorIdx uint8
+}
+
+func (b *Calendar) getTeamsInLeagueMatch(matchday uint8, matchIdxInDay uint8) (teamsDuple, error) {
+	MATCHDAYS := uint8(14)
+	MATCHES_PER_DAY := uint8(4)
+	homeIdx := uint8(0)
+	visitorIdx := uint8(0)
+
+	if matchday > MATCHDAYS {
+		return teamsDuple{homeIdx, visitorIdx}, errors.New("wrong match day")
+	}
+
+	if matchIdxInDay > MATCHES_PER_DAY {
+		return teamsDuple{homeIdx, visitorIdx}, errors.New("wrong match")
+	}
+	teamsDup := teamsDuple{0, 0}
+	if matchday < (TEAMS_PER_LEAGUE - 1) {
+		homeIdx, visitorIdx := getTeamsInMatchFirstHalf(matchday, matchIdxInDay)
+		teamsDup.HomeIdx = homeIdx
+		teamsDup.VisitorIdx = visitorIdx
+	} else {
+		visitorIdx, homeIdx := getTeamsInMatchFirstHalf(matchday-(TEAMS_PER_LEAGUE-1), matchIdxInDay)
+		teamsDup.HomeIdx = homeIdx
+		teamsDup.VisitorIdx = visitorIdx
+
+	}
+
+	return teamsDup, nil
+}
+
 func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchesStart [14]*big.Int) error {
 	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
@@ -90,9 +143,13 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 	var matchesToSetTeams []storage.Match
 	for matchDay := uint8(0); matchDay < contracts.MatchDays; matchDay++ {
 		for match := uint8(0); match < contracts.MatchesPerDay; match++ {
-			teams, err := b.contracts.Leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
+			// teams, err := b.contracts.Leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
+			// if err != nil {
+			// 	return err
+			// }
+			teams, err := b.getTeamsInLeagueMatch(matchDay, match)
 			if err != nil {
-				return nil
+				return err
 			}
 			homeTeamID, err := storage.TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx, uint32(teams.HomeIdx))
 			if err != nil {
@@ -117,16 +174,16 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 				StartEpoch:    matchesStart[matchDay].Int64(),
 			}
 			matchesToSetTeams = append(matchesToSetTeams, matchObj)
-			// err = storage.MatchSetTeams(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID, matchesStart[matchDay])
-			// if err != nil {
-			// 	return err
-			// }
+			err = storage.MatchSetTeams(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID, matchesStart[matchDay])
+			if err != nil {
+				return err
+			}
 		}
 	}
-	err = storage.MatchesSetTeamsBulkInsertUpdate(matchesToSetTeams, tx)
-	if err != nil {
-		return err
-	}
+	// err = storage.MatchesSetTeamsBulkInsertUpdate(matchesToSetTeams, tx)
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
@@ -157,14 +214,16 @@ func (b *Calendar) Reset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagu
 				StartEpoch:    0,
 			}
 			matchesToReset = append(matchesToReset, matchObj)
-
+			err = storage.MatchReset(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	log.Infof("Num matchesToReset %v", len(matchesToReset))
 
-	err = storage.MatchesResetBulkInsertUpdate(matchesToReset, tx)
-	if err != nil {
-		return err
-	}
+	// err = storage.MatchesResetBulkInsertUpdate(matchesToReset, tx)
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }

@@ -138,6 +138,54 @@ func TestLeagueProcessMatchWithData(t *testing.T) {
 	assert.NilError(t, err)
 }
 
+func TestSuffleTzWithData(t *testing.T) {
+	t.Parallel()
+	tx, err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	timezoneIdx := uint8(9)
+	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
+	day := uint8(0)
+	seed := [32]byte{0x2}
+	turnInDay := uint8(0)
+	gameDeployDay, err := bc.Contracts.Assets.GameDeployDay(&bind.CallOpts{})
+	assert.NilError(t, err)
+	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
+	ua := useractions.UserActions{}
+	cid, err := useractionsPublishService.Publish(ua)
+	assert.NilError(t, err)
+	root, err := ua.Root()
+	assert.NilError(t, err)
+	err = processor.Process(tx, updates.UpdatesActionsSubmission{
+		big.NewInt(12913),
+		timezoneIdx,
+		day,
+		turnInDay,
+		seed,
+		big.NewInt(actionsSubmissionTime),
+		root,
+		cid,
+		types.Log{BlockNumber: 1000},
+	})
+	assert.NilError(t, err)
+}
+
+func BenchmarkResetLeague10(b *testing.B) {
+	tx, err := universedb.Begin()
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer tx.Rollback()
+	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
+	for n := 0; n < b.N; n++ {
+		err = processor.ResetLeague(tx, uint8(10), uint32(0), uint32(3), big.NewInt(12913))
+		assert.NilError(b, err)
+	}
+
+}
+
 func TestGenerateOrgMapWithoutBots(t *testing.T) {
 	var teamStatesPerLeague []process.TeamsWithStateInLeague
 
