@@ -6,8 +6,6 @@ const createOfferResolver = async (_, args, context, info, horizonRemoteSchema, 
       input: { buyerTeamId, rnd, signature, playerId, currencyId, price, validUntil },
     } = args;
 
-    auctionId = await computeAuctionId({ currencyId, price, rnd, playerId, validUntil, web3 });
-
     const offerValidation = new OfferValidation({
       currencyId,
       playerId,
