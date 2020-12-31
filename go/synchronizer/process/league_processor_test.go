@@ -180,7 +180,8 @@ func BenchmarkResetLeague10(b *testing.B) {
 	defer tx.Rollback()
 	processor := process.NewLeagueProcessor(bc.Contracts, useractionsPublishService)
 	for n := 0; n < b.N; n++ {
-		err = processor.ResetLeague(tx, uint8(10), uint32(0), uint32(3), big.NewInt(12913))
+		var teamsInLeague []storage.Team
+		err = processor.ResetLeague(tx, uint8(10), uint32(0), uint32(3), big.NewInt(12913), teamsInLeague)
 		assert.NilError(b, err)
 	}
 

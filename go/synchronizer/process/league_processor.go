@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
-	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/leaderboard"
 	"github.com/spf13/viper"
@@ -53,10 +52,6 @@ func NewLeagueProcessor(
 }
 
 func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *big.Int) error {
-	startResetTimezone := time.Now()
-	timeUpdating := 0.0
-	timeReseting := 0.0
-	timeDeleting := 0.0
 	log.Infof("[processor|consume] shuffling timezone %v and create calendars", timezoneIdx)
 	countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 	if err != nil {
@@ -67,7 +62,6 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 	zombieVerse := viper.GetUint64("patch.use_zombies")
 
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
-		startUpdating := time.Now()
 		// if a new league is starting shuffle the teams
 		if verseNumber >= zombieVerse {
 			if verseNumber == zombieVerse {
@@ -83,33 +77,16 @@ func (b *LeagueProcessor) resetTimezone(tx *sql.Tx, timezoneIdx uint8, verse *bi
 				return err
 			}
 		}
-		leagueCount, err := storage.LeagueCountByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
-		if err != nil {
+
+		if err = b.ResetLeagues(tx, timezoneIdx, countryIdx, verse); err != nil {
 			return err
 		}
-		endUpdating := time.Since(startUpdating)
-		timeUpdating = timeUpdating + endUpdating.Seconds()
-		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-			startReseting := time.Now()
-			if err = b.ResetLeague(tx, timezoneIdx, countryIdx, leagueIdx, verse); err != nil {
-				return err
-			}
-			endReseting := time.Since(startReseting)
-			timeReseting = timeReseting + endReseting.Seconds()
 
-			startDeleting := time.Now()
-			if err = storage.DeleteAllMatchEvents(tx, int(timezoneIdx), int(countryIdx), int(leagueIdx)); err != nil {
-				return err
-			}
-			endDeleting := time.Since(startDeleting)
-			timeDeleting = timeDeleting + endDeleting.Seconds()
+		if err = storage.DeleteAllMatchEventsByTzCountry(tx, int(timezoneIdx), int(countryIdx)); err != nil {
+			return err
 		}
 	}
-	endResetTimezone := time.Since(startResetTimezone)
-	log.Infof("Total time elapsed: %s", endResetTimezone)
-	log.Infof("Time updating: %v", timeUpdating)
-	log.Infof("Time reseting: %v", timeReseting)
-	log.Infof("Time deleting: %v", timeDeleting)
+
 	return nil
 }
 
@@ -485,16 +462,8 @@ func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID string) ([25]*big.Int,
 	return state, nil
 }
 
-func (b *LeagueProcessor) ResetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, verse *big.Int) error {
-	startResetLeague := time.Now()
-	timeWithTeams := 0.0
-	timeReseting := 0.0
-	timeMatches := 0.0
-	timePopulating := 0.0
-	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
-	if err != nil {
-		return err
-	}
+func (b *LeagueProcessor) ResetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, verse *big.Int, teamsInLeague []storage.Team) error {
+	teams := teamsInLeague
 	for i := 0; i < len(teams); i++ {
 		team := teams[i]
 		team.D = 0
@@ -503,42 +472,70 @@ func (b *LeagueProcessor) ResetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx 
 		team.GoalsAgainst = 0
 		team.GoalsForward = 0
 		team.Points = 0
-		err = team.Update(tx)
-		if err != nil {
-			return err
-		}
 	}
-	// err = storage.TeamsBulkInsertUpdate(teams, tx)
-	// if err != nil {
-	// 	return err
-	// }
-	timeWithTeams = timeWithTeams + time.Since(startResetLeague).Seconds()
-	startReset := time.Now()
+	err := storage.TeamsResetBulkInsertUpdate(teams, tx)
+	if err != nil {
+		return err
+	}
+
 	err = b.calendarProcessor.Reset(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}
-	timeReseting = timeReseting + time.Since(startReset).Seconds()
 
-	startMatches := time.Now()
 	matchesStart, err := b.calendarProcessor.GetAllMatchdaysUTCInNextRound(timezoneIdx, verse)
 	if err != nil {
 		return err
 	}
-	timeMatches = timeMatches + time.Since(startMatches).Seconds()
 
-	startPopulate := time.Now()
-	err = b.calendarProcessor.Populate(tx, timezoneIdx, countryIdx, leagueIdx, matchesStart)
+	err = b.calendarProcessor.Populate(tx, timezoneIdx, countryIdx, leagueIdx, matchesStart, teamsInLeague)
 	if err != nil {
 		return err
 	}
-	timePopulating = timePopulating + time.Since(startPopulate).Seconds()
 
-	// endResetLeague := time.Since(startResetLeague)
-	// log.Infof("Time reseting league %s", endResetLeague)
-	// log.Infof("time w teams %v", timeWithTeams)
-	// log.Infof("time reseting %v", timeReseting)
-	// log.Infof("time  matechs %v", timeMatches)
-	// log.Infof("time  pouplating %v", timePopulating)
+	return nil
+}
+
+func (b *LeagueProcessor) ResetLeagues(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, verse *big.Int) error {
+	teamsInTzCountry, err := storage.TeamsByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
+	if err != nil {
+		return err
+	}
+
+	teams := teamsInTzCountry
+	for i := 0; i < len(teams); i++ {
+		team := teams[i]
+		team.D = 0
+		team.W = 0
+		team.L = 0
+		team.GoalsAgainst = 0
+		team.GoalsForward = 0
+		team.Points = 0
+	}
+	err = storage.TeamsResetBulkInsertUpdate(teams, tx)
+	if err != nil {
+		return err
+	}
+
+	leagues, err := storage.LeaguesByTimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
+	if err != nil {
+		return err
+	}
+
+	err = b.calendarProcessor.ResetByTzCountry(tx, timezoneIdx, countryIdx, leagues)
+	if err != nil {
+		return err
+	}
+
+	matchesStart, err := b.calendarProcessor.GetAllMatchdaysUTCInNextRound(timezoneIdx, verse)
+	if err != nil {
+		return err
+	}
+
+	err = b.calendarProcessor.PopulateByTzCountry(tx, timezoneIdx, countryIdx, matchesStart, teams, leagues)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

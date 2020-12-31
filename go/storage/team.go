@@ -195,6 +195,70 @@ func TeamsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countr
 	return teams, nil
 }
 
+func TeamsByTimezoneIdxCountryIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) ([]Team, error) {
+	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2) ORDER BY team_idx_in_league;", timezoneIdx, countryIdx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var teamsIds []string
+	for rows.Next() {
+		var teamID string
+		err = rows.Scan(
+			&teamID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		teamsIds = append(teamsIds, teamID)
+	}
+	rows.Close()
+	var teams []Team
+	for i := 0; i < len(teamsIds); i++ {
+		teamID := teamsIds[i]
+		var team Team
+		team, err = TeamByTeamId(tx, teamID)
+
+		if err != nil {
+			return teams, err
+		}
+		teams = append(teams, team)
+	}
+	return teams, nil
+}
+
+func TeamsByTimezoneIdxCountryIdxLeagueIdxOrdered(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error) {
+	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3) ORDER BY team_idx_in_league;", timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var teamsIds []string
+	for rows.Next() {
+		var teamID string
+		err = rows.Scan(
+			&teamID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		teamsIds = append(teamsIds, teamID)
+	}
+	rows.Close()
+	var teams []Team
+	for i := 0; i < len(teamsIds); i++ {
+		teamID := teamsIds[i]
+		var team Team
+		team, err = TeamByTeamId(tx, teamID)
+
+		if err != nil {
+			return teams, err
+		}
+		teams = append(teams, team)
+	}
+	return teams, nil
+}
+
 func TeamIdsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]string, error) {
 	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
@@ -432,6 +496,84 @@ func TeamsBulkInsertUpdate(rowsToBeInserted []Team, tx *sql.Tx) error {
 		match_log = excluded.match_log,
 		manager_name = excluded.manager_name,
 		leaderboard_position = excluded.leaderboard_position
+		`, strings.Join(valueStrings, ","))
+		_, err = tx.Exec(stmt, valueArgs...)
+		if err != nil {
+			return err
+		}
+		x = newX
+	}
+	return err
+}
+
+func TeamsResetBulkInsertUpdate(rowsToBeInserted []Team, tx *sql.Tx) error {
+	numParams := 20
+	var err error = nil
+	maxRowsToBeInserted := int(MAX_PARAMS_IN_PG_STMT / numParams)
+	x := 0
+	for x < len(rowsToBeInserted) {
+		newX := x + maxRowsToBeInserted
+		if newX > len(rowsToBeInserted) {
+			newX = len(rowsToBeInserted)
+		}
+		currentRowsToBeInserted := rowsToBeInserted[x:newX]
+
+		valueStrings := make([]string, 0, len(currentRowsToBeInserted))
+		valueArgs := make([]interface{}, 0, len(currentRowsToBeInserted)*numParams)
+		i := 0
+		for _, post := range currentRowsToBeInserted {
+			valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*numParams+1, i*numParams+2, i*numParams+3, i*numParams+4, i*numParams+5, i*numParams+6, i*numParams+7, i*numParams+8, i*numParams+9, i*numParams+10, i*numParams+11, i*numParams+12, i*numParams+13, i*numParams+14, i*numParams+15, i*numParams+16, i*numParams+17, i*numParams+18, i*numParams+19, i*numParams+20))
+			valueArgs = append(valueArgs, post.TeamID)
+			valueArgs = append(valueArgs, post.Owner)
+			valueArgs = append(valueArgs, post.LeagueIdx)
+			valueArgs = append(valueArgs, post.TeamIdxInLeague)
+			valueArgs = append(valueArgs, post.Points)
+			valueArgs = append(valueArgs, post.W)
+			valueArgs = append(valueArgs, post.D)
+			valueArgs = append(valueArgs, post.L)
+			valueArgs = append(valueArgs, post.GoalsForward)
+			valueArgs = append(valueArgs, post.GoalsAgainst)
+			valueArgs = append(valueArgs, post.PrevPerfPoints)
+			valueArgs = append(valueArgs, strconv.FormatUint(post.RankingPoints, 10))
+			valueArgs = append(valueArgs, post.TrainingPoints)
+			valueArgs = append(valueArgs, post.Name)
+			valueArgs = append(valueArgs, post.Tactic)
+			valueArgs = append(valueArgs, post.MatchLog)
+			valueArgs = append(valueArgs, post.ManagerName)
+			valueArgs = append(valueArgs, post.LeaderboardPosition)
+			valueArgs = append(valueArgs, post.TimezoneIdx)
+			valueArgs = append(valueArgs, post.CountryIdx)
+			i++
+		}
+		stmt := fmt.Sprintf(`INSERT INTO teams (
+		team_id,
+		owner, 
+		league_idx, 
+		team_idx_in_league,
+		points,
+		w,
+		d,
+		l,
+		goals_forward,
+		goals_against,
+		prev_perf_points,
+		ranking_points,
+		training_points,
+		name,
+		tactic,
+		match_log,
+		manager_name,
+		leaderboard_position,
+		timezone_idx,
+		country_idx
+		) VALUES %s
+		ON CONFLICT(team_id) DO UPDATE SET
+		points = excluded.points,
+		w = excluded.w,
+		d = excluded.d,
+		l = excluded.l,
+		goals_forward = excluded.goals_forward,
+		goals_against = excluded.goals_against
 		`, strings.Join(valueStrings, ","))
 		_, err = tx.Exec(stmt, valueArgs...)
 		if err != nil {
