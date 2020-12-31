@@ -308,3 +308,25 @@ INFO[3415] [processor|timezone 9] ... end
 ```
 
 Shuffling took 70 secs
+
+Run addteams with 29315 teams:
+
+```
+./addteams 
+INFO[0000] [DBMS] ... connected                         
+INFO[0000] Repo root at: /home/christian/Projects/crypto-soccer 
+INFO[0000] Deploy by truffle: ./node_modules/.bin/truffle migrate --network local --reset 
+INFO[0010] PROXY=0xEedE65eD217C735B892c8D71531ab523958fEe17 
+INFO[0010] Aqui hay 29315 teams                         
+INFO[0010] [processor|timezone 9] start process matches ... 
+INFO[0010] [processor|consume] shuffling timezone 10 and create calendars 
+INFO[0379] [processor|timezone 9] Retriving user actions QmceyngPuA2PGz8K8CefP28YASDDJnsaWPvow2nXo4NRJz 
+INFO[0379] [processor|timezone 9] loading matches from storage 
+INFO[0379] [processor|timezone 9] reset trainings       
+INFO[0379] [processor|timezone 9] processing 1st half of 64 matches 
+INFO[0379] [precessor|1stHalfParallelProcess] 8 workers, took 0.367866524 secs 
+INFO[0379] [processor|timezone 9] save user action in history 
+INFO[0379] [processor|timezone 9] save matches to storage
+```
+
+Shuffling took 369 seconds
