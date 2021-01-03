@@ -53,7 +53,7 @@ func main() {
 		}
 	}()
 
-	xbackend, err := xolo.NewAbiBackend(rpcURL, "http://localhost:8004", "main")
+	xbackend, err := xolo.NewAbiBackend(rpcURL, "http://crypto-soccer_devcontainer_dockerhost_1:8004", "main")
 	assert(err)
 
 	counter, err := abigen.NewCounter(common.HexToAddress("0x7cf3ab3954ac41a53294d55262b5bc5c62c2b000"), xbackend)

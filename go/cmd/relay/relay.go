@@ -20,12 +20,12 @@ import (
 )
 
 func main() {
-	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@crypto-soccer_devcontainer_dockerhost_1:5432/cryptosoccer?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
-	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
+	ethereumClient := flag.String("ethereum", "http://crypto-soccer_devcontainer_dockerhost_1:8545", "ethereum node")
 	proxyAddress := flag.String("proxy_address", "", "")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
-	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
+	ipfsURL := flag.String("ipfs", "crypto-soccer_devcontainer_dockerhost_1:5001", "ipfs node url")
 	bufferSize := flag.Int("buffer_size", 10000, "size of event buffer")
 	flag.Parse()
 

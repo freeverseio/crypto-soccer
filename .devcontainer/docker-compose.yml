@@ -1,0 +1,19 @@
+version: "3"
+services:
+  freeverse:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # init: true
+    volumes:
+      # Update this to wherever you want VS Code to mount the folder of your project
+      - ../:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: /usr/local/share/docker-init.sh
+    command: sleep infinity
+  dockerhost:
+    image: qoomon/docker-host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: on-failure

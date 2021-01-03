@@ -22,8 +22,8 @@ import (
 )
 
 func main() {
-	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres url")
-	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@crypto-soccer_devcontainer_dockerhost_1:5432/market?sslmode=disable", "postgres url")
+	ethereumClient := flag.String("ethereum", "http://crypto-soccer_devcontainer_dockerhost_1:8545", "ethereum node")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	proxyAddress := flag.String("proxy_address", "", "proxy contract address")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")

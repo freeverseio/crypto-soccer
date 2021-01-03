@@ -15,8 +15,8 @@ import (
 
 func main() {
 	debug := flag.Bool("debug", false, "print debug logs")
-	universeURL := flag.String("universe_url", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
-	marketURL := flag.String("market_url", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres url")
+	universeURL := flag.String("universe_url", "postgres://freeverse:freeverse@crypto-soccer_devcontainer_dockerhost_1:5432/cryptosoccer?sslmode=disable", "postgres url")
+	marketURL := flag.String("market_url", "postgres://freeverse:freeverse@crypto-soccer_devcontainer_dockerhost_1:5432/market?sslmode=disable", "postgres url")
 	googleKey := flag.String("google_key", "", "google credentials")
 	packageName := flag.String("package_name", "", "packege name to scan")
 	periodSec := flag.Int64("period", 10, "period")

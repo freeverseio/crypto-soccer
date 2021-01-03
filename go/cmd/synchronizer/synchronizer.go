@@ -19,13 +19,13 @@ import (
 )
 
 func main() {
-	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@crypto-soccer_devcontainer_dockerhost_1:5432/cryptosoccer?sslmode=disable", "postgres url")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
-	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
+	ethereumClient := flag.String("ethereum", "http://crypto-soccer_devcontainer_dockerhost_1:8545", "ethereum node")
 	proxyContractAddress := flag.String("proxy_address", "", "")
 	stakerPrivateKey := flag.String("staker", "", "the private key if it's a staker")
-	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
+	ipfsURL := flag.String("ipfs", "crypto-soccer_devcontainer_dockerhost_1:5001", "ipfs node url")
 	delta := flag.Int("delta", 10, "number of block to process at maximum")
 	basePath := flag.String("base-path", "./data", "Specify the base data storage path")
 	configFile := flag.String("config-file", "config.json", "config JSON file")

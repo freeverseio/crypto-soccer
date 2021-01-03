@@ -32,5 +32,5 @@ api:
   port: 3000
 
 web3:
-  rpcurl: http://localhost:8545
+  rpcurl: http://crypto-soccer_devcontainer_dockerhost_1:8545
   maxgasprice: 40000000000

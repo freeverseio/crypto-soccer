@@ -23,7 +23,7 @@ var namesdb *names.Generator
 var useractionsPublishService useractions.UserActionsPublishService
 
 func main() {
-	universedb, err := storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	universedb, err := storage.New("postgres://freeverse:freeverse@crypto-soccer_devcontainer_dockerhost_1:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

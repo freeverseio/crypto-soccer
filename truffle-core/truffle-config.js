@@ -76,7 +76,7 @@ module.exports = {
     local: { // 0x83A909262608c650BD9b0ae06E29D90D0F67aC5e
       provider: new HDWalletProvider(
         "FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85",
-        "http://localhost:8545"
+        "http://crypto-soccer_devcontainer_dockerhost_1:8545"
       ),
       network_id: 63819,
       singleTimezone: 1,

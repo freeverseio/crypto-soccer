@@ -107,7 +107,7 @@ func main() {
 		"bb4cce73db59f456ea427e5862fdb0d5bc038a7d0b930cbb45e1c4f6d122289e",
 	}
 
-	client, err := ethclient.Dial("http://localhost:8545")
+	client, err := ethclient.Dial("http://crypto-soccer_devcontainer_dockerhost_1:8545")
 	AssertNoErr(err)
 	privateKey, err := crypto.HexToECDSA(ownerPrivateKey)
 	AssertNoErr(err)

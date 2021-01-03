@@ -20,7 +20,7 @@ var dump spew.ConfigState
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = storage.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	db, err = storage.New("postgres://freeverse:freeverse@crypto-soccer_devcontainer_dockerhost_1:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
