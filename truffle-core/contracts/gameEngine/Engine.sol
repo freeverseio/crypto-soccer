@@ -315,13 +315,14 @@ contract Engine is EngineLib, EncodingMatchLogBase1, EncodingMatchLogBase3, Enco
         returns (bool)
     {
         if (globSkills[teamThatAttacks][IDX_CREATE_SHOOT] == 0) return false;
+        // goalDelta =  0, 1, 2, 3, 4, 5, 6, 7
+        // penalty   =  1, 1, 2, 3, 4, 5, 6, 7
         uint256 penaltyForMasacre = 1; 
         uint256 goalsTeamThatAttacks = getNGoals(matchLogs[teamThatAttacks]);
         uint256 goalsTeamThatDefends = getNGoals(matchLogs[1-teamThatAttacks]);
-        if (goalsTeamThatAttacks >= goalsTeamThatDefends + 3) {
-            penaltyForMasacre = goalsTeamThatAttacks - (goalsTeamThatDefends + 3) + 2;
+        if (goalsTeamThatAttacks >= goalsTeamThatDefends + 2) {
+            penaltyForMasacre = goalsTeamThatAttacks - (goalsTeamThatDefends + 2) + 2;
         }
-        
         return throwDice(
             (globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT]),       /// globSkills[IDX_DEFEND_SHOOT] of defending team against...
             (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/(10 * penaltyForMasacre),  /// globSkills[IDX_CREATE_SHOOT] of attacking team.
