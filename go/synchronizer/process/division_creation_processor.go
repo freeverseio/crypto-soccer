@@ -145,8 +145,8 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, blockNu
 				matchesStart[i] = big.NewInt(matchesTimesByTimezone[i])
 			}
 		}
-		var teamsInLeague []storage.Team
-		if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx), matchesStart, teamsInLeague); err != nil {
+
+		if err := b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx), matchesStart); err != nil {
 			return err
 		}
 	}
