@@ -30,7 +30,7 @@ const processUnpayments = async () => {
           title: '',
           text: 'ban',
           customImageUrl: '',
-          metadata: '',
+          metadata: '{}',
         };
         if (unpaymentsByOwner.length > 2) {
           message = {
@@ -40,7 +40,7 @@ const processUnpayments = async () => {
             title: '',
             text: 'permaban',
             customImageUrl: '',
-            metadata: '',
+            metadata: '{}',
           };
         }
 
