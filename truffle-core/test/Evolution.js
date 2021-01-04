@@ -594,7 +594,7 @@ contract('Evolution', (accounts) => {
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
         expectedGoals = [4, 0];
-        expectedPoints = [58, 10];
+        expectedPoints = [56, 10];
         expectedSums = [90000,54036];
         expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
@@ -696,7 +696,7 @@ contract('Evolution', (accounts) => {
         yellow2.toNumber().should.be.equal(14);
 
         debug.compareArrays(goals, expectedGoals, toNum = false, isBigNumber = false);
-        assert.equal(points, expectedPoints);
+        assert.deepEqual(points, expectedPoints);
         // debug.compareArrays(points, expectedPoints, toNum = false, isBigNumber = false);
         debug.compareArrays(sums, expectedSums, toNum = false, isBigNumber = false);
         debug.compareArrays(fwds, expectedFwds, toNum = false, isBigNumber = false);
