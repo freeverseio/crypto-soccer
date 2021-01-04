@@ -15,22 +15,22 @@ import (
 	"gotest.tools/golden"
 )
 
-// func BenchmarkPlayer1stHalfParallel(b *testing.B) {
-// 	matchesCount := []int{50, 100, 200, 400, 800, 1600, 3200}
-// 	for _, count := range matchesCount {
-// 		b.Run(fmt.Sprintf("%d", count), func(b *testing.B) {
-// 			for i := 0; i < b.N; i++ {
-// 				b.StopTimer()
-// 				var matches process.Matches
-// 				for n := 0; n < count; n++ {
-// 					matches = append(matches, *engine.NewMatch())
-// 				}
-// 				b.StartTimer()
-// 				matches.Play1stHalfParallel(context.Background(), *bc.Contracts)
-// 			}
-// 		})
-// 	}
-// }
+func BenchmarkPlayer1stHalfParallel(b *testing.B) {
+	matchesCount := []int{50, 100, 200, 400, 800, 1600, 3200}
+	for _, count := range matchesCount {
+		b.Run(fmt.Sprintf("%d", count), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				b.StopTimer()
+				var matches process.Matches
+				for n := 0; n < count; n++ {
+					matches = append(matches, *engine.NewMatch())
+				}
+				b.StartTimer()
+				matches.Play1stHalfParallel(context.Background(), *bc.Contracts)
+			}
+		})
+	}
+}
 
 func TestMatchesPlaySequentialAndPlayParallal(t *testing.T) {
 	t.Parallel()
