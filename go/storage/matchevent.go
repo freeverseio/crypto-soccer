@@ -65,6 +65,11 @@ func DeleteAllMatchEvents(tx *sql.Tx, timezone int, countryIdx int, leagueIdx in
 	return err
 }
 
+func DeleteAllMatchEventsByTzCountry(tx *sql.Tx, timezone int, countryIdx int) error {
+	_, err := tx.Exec("DELETE FROM match_events WHERE timezone_idx=$1 AND country_idx=$2;", timezone, countryIdx)
+	return err
+}
+
 func MatchEventsBulkInsert(rowsToBeInserted []*MatchEvent, tx *sql.Tx) error {
 	numParams := 12
 	var err error = nil
