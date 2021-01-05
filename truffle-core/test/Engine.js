@@ -810,7 +810,7 @@ contract('Engine', (accounts) => {
         err.toNumber().should.be.equal(0);
         var {0: log12, 1: err} = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], extractMatchLogs(log0), [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]).should.be.fulfilled;
         err.toNumber().should.be.equal(0);
-        expected1 = [1, 3];
+        expected1 = [1, 2];
         expected2 = [1, 2];
         goals1 = [];
         goals2 = [];
@@ -823,7 +823,7 @@ contract('Engine', (accounts) => {
         debug.compareArrays(goals1, expected1, toNum = true);
         debug.compareArrays(goals2, expected2, toNum = true);
 
-        expected = [2, 5];
+        expected = [2, 4];
         goals = [];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log12[team]);
@@ -1466,7 +1466,7 @@ contract('Engine', (accounts) => {
         result.should.be.equal(true);
         logMasacre = await precomp.addNGoals(log = 0, nGoals = 2).should.be.fulfilled;
         result = await engine.managesToShoot(logs = [logMasacre, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
-        result.should.be.equal(true);
+        result.should.be.equal(false);
         logMasacre = await precomp.addNGoals(log = 0, nGoals = 3).should.be.fulfilled;
         result = await engine.managesToShoot(logs = [logMasacre, 0], teamThatAttacks = 0, globSkills, rnd).should.be.fulfilled;
         result.should.be.equal(false);
@@ -1740,7 +1740,7 @@ contract('Engine', (accounts) => {
             }
         }
         expectedNoExtra = [ 2, 2, 3, 3, 0, 2, 0, 4, 0, 0, 2, 3, 3, 1, 3, 1, 0, 2, 2, 3 ];
-        expectedExtra = [ 3, 3, 3, 3, 0, 4, 0, 4, 2, 0, 2, 3, 3, 2, 3, 1, 1, 3, 3, 2 ];
+        expectedExtra = [3, 3, 3, 3, 0, 3, 0, 4, 2, 0, 2, 3, 3, 2, 3, 1, 1, 3, 3, 2];
         debug.compareArrays(resultsNoExtra, expectedNoExtra, toNum = false);
         debug.compareArrays(resultsExtra, expectedExtra, toNum = false);
         

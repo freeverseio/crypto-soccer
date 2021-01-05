@@ -17,6 +17,7 @@ const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
 const deployUtils = require('../utils/deployUtils.js');
+const { assert } = require('chai');
 
 const Utils = artifacts.require('Utils');
 const TrainingPoints = artifacts.require('TrainingPoints');
@@ -593,7 +594,7 @@ contract('Evolution', (accounts) => {
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
         expectedGoals = [4, 0];
-        expectedPoints = [58, 10];
+        expectedPoints = [56, 10];
         expectedSums = [90000,54036];
         expectedFwds = [ 2, 3, 1, 3, 3, 1 ];     
         expectedSho = [ 6, 8,  1, 9, 8, 6,  8, 1, 9 ];     
@@ -642,7 +643,7 @@ contract('Evolution', (accounts) => {
         yellow2.toNumber().should.be.equal(4);
 
         // 2nd half:
-        expectedGoals = [7, 0];
+        expectedGoals = [6, 0];
         var {0: skills, 1: matchLogsAndEvents, 2: err} = await play.play2ndHalfAndEvolve(
             verseSeed, now, [skills[0], skills[1]], teamIds, [tacticsNew, tacticsNew], [matchLogsAndEvents[0], matchLogsAndEvents[1]],
             [is2nd = true, isHomeStadium, isPlayoff, isBotHome, isBotAway]
@@ -695,7 +696,8 @@ contract('Evolution', (accounts) => {
         yellow2.toNumber().should.be.equal(14);
 
         debug.compareArrays(goals, expectedGoals, toNum = false, isBigNumber = false);
-        debug.compareArrays(points, expectedPoints, toNum = false, isBigNumber = false);
+        assert.deepEqual(points, expectedPoints);
+        // debug.compareArrays(points, expectedPoints, toNum = false, isBigNumber = false);
         debug.compareArrays(sums, expectedSums, toNum = false, isBigNumber = false);
         debug.compareArrays(fwds, expectedFwds, toNum = false, isBigNumber = false);
         debug.compareArrays(sho, expectedSho, toNum = false, isBigNumber = false);
@@ -776,12 +778,12 @@ contract('Evolution', (accounts) => {
         // yellows -1
         // total = 21+12+10+20+12+32-1= 106 
         // we should therefore expect: 106 * 33022 / 55000 = 63
-        expectedGoals = [3,0];
-        expectedPoints = [45,11];
+        expectedGoals = [2,0];
+        expectedPoints = [40,13];
         expectedSums = [90000, 54000];
-        expectedFwds = [ 1, 3, 2 ];     
-        expectedSho = [ 1, 10, 7];     
-        expectedAss = [ 6, 10, 8 ];   
+        expectedFwds = [ 1, 3];     
+        expectedSho = [ 1, 10];     
+        expectedAss = [ 6, 10];   
         
         assignment = 0;
         // Should be rejected if we earned 0 TPs in previous match, and now we claim 200 in the assignedTPs:
@@ -864,9 +866,9 @@ contract('Evolution', (accounts) => {
         yellow2.toNumber().should.be.equal(14);
 
         debug.compareArrays(goals, expectedGoals, toNum = false, isBigNumber = false);
-        debug.compareArrays(points, expectedPoints, toNum = false, isBigNumber = false);
+        assert.deepEqual(points, expectedPoints);
         debug.compareArrays(sums, expectedSums, toNum = false, isBigNumber = false);
-        debug.compareArrays(fwds, expectedFwds, toNum = false, isBigNumber = false);
+        assert.deepEqual(fwds, expectedFwds);
         debug.compareArrays(sho, expectedSho, toNum = false, isBigNumber = false);
         debug.compareArrays(ass, expectedAss, toNum = false, isBigNumber = false);
 
@@ -1666,7 +1668,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(sumSkills1, expectedSums, toNum = true, isBigNumber = false);
 
         // check that the game is played, ends up in 2-2, and that there are no TPs assigned (this is 1st half)
-        expectedGoals = [2, 3];
+        expectedGoals = [2, 2];
         expectedPoints = [0, 0];
         goals = []
         points = []
@@ -1679,7 +1681,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(goals, expectedGoals, toNum = true, isBigNumber = false);
         debug.compareArrays(points, expectedPoints, toNum = true, isBigNumber = false);
         // check that the events are generated, and match whatever we got once.
-        expected = [ 1, 1, 8, 1, 8, 1, 1, 7, 1, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 10, 1, 10, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 1, 9, 1, 9 ];
+        expected = [ 1, 1, 8, 1, 8, 1, 1, 7, 1, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 0, 1, 9, 1, 9 ];
         debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, isBigNumber = false);
 
         // check that all 3 substitutions took place
@@ -1822,7 +1824,7 @@ contract('Evolution', (accounts) => {
             nGoals = await encodeLog.getNGoals(matchLogsAndEvents0[team]);
             goals.push(nGoals);
         }
-        debug.compareArrays(goals, [2,3], toNum = true, isBigNumber = false);
+        debug.compareArrays(goals, [2,2], toNum = true, isBigNumber = false);
 
         // first: check correct properties for team1:
             // recall:   lineUp = consecutive,  subst = [6, NO_SUBST, NO_SUBST]
@@ -1872,8 +1874,8 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(halfTimeSubs, expectedHalfTimeSubs, toNum = true, isBigNumber = false);
 
         // check Training Points (and Goals)
-        expectedGoals = [5, 5];
-        expectedPoints = [39, 21];
+        expectedGoals = [5, 4];
+        expectedPoints = [51, 17];
         goals = []
         points = []
         for (team = 0; team < 2; team++) {
