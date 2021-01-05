@@ -26,7 +26,12 @@ const EncodingState = artifacts.require('EncodingState');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 const UpdatesBase = artifacts.require('UpdatesBase');
 
-const DEPLOY_TIME = 1592785800 - 1800; // half an hour before the first match played in PROD
+// here's the deploy time used in prod, and a candidate for dev
+const DEPLOY_TIME_PROD = 1592785800 - 1800; // half an hour before the first match played in PROD
+const ONE_WEEK = 7 * 24 * 3600; // one week in secs
+const DEPLOY_TIME_DEV = DEPLOY_TIME_PROD + 28 * ONE_WEEK; // 28 weeks after prod => 4th of Jan, 2021
+// make your final choice:
+const DEPLOY_TIME = DEPLOY_TIME_DEV;
 
 require('chai')
     .use(require('chai-as-promised'))
