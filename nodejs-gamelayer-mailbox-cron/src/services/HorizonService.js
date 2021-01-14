@@ -1,5 +1,6 @@
 const { request, gql } = require('graphql-request');
 const { horizonConfig } = require('../config.js');
+const logger = require('../logger');
 
 class HorizonService {
   constructor() {

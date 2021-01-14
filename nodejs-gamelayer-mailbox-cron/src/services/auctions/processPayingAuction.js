@@ -6,15 +6,13 @@ const getTeamIdFromAuctionSeller = require('./getTeamIdFromAuctionSeller.js');
 const logger = require('../../logger');
 
 const getFormattedPaymentDeadline = async ({ paymentDeadline }) => {
-  logger.debug(
-    `unix now: ${dayjs().unix()} || bids[0].paymentDeadline: ${
-      bids[0].paymentDeadline
-    } || deadline: ${deadline}`
-  );
   let deadline = dayjs().add(46, 'hour').unix();
+  logger.debug(
+    `unix now: ${dayjs().unix()} || paymentDeadline: ${paymentDeadline} || deadline: ${deadline}`
+  );
 
-  if (bids[0].paymentDeadline && bids[0].paymentDeadline > dayjs().unix()) {
-    deadline = bids[0].paymentDeadline;
+  if (paymentDeadline && paymentDeadline > dayjs().unix()) {
+    deadline = paymentDeadline;
   }
 
   return deadline;

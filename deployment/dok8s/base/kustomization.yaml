@@ -19,3 +19,4 @@ resources:
 - gamelayer-mailbox-cron
 - purchasevoider
 - openethereum
+- openethereum-failover

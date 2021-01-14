@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openethereum-failover
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: openethereum-failover # has to match .spec.template.metadata.labels
+  serviceName: openethereum-failover
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: openethereum-failover # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: openethereum
+          image: openethereum/openethereum:v3.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8545
+          volumeMounts:
+            - name: openethereum-storage
+              mountPath: /home/openethereum/.local/share/openethereum/
+          args:
+            [
+              --chain,
+              xdai,
+              --no-warp,
+              --base-path,
+              /home/openethereum/.local/share/openethereum/,
+              --jsonrpc-interface,
+              all,
+            ]
+      initContainers:
+        - name: openethereum-storage-permission-fix
+          image: busybox
+          command: ["/bin/chmod", "-R", "777", "/data"]
+          volumeMounts:
+            - name: openethereum-storage
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: openethereum-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: do-block-storage
+        resources:
+          requests:
+            storage: 400Gi
