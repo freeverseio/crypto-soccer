@@ -173,11 +173,11 @@ contract Leagues is SortIdxs, EncodingIDs, GetSumSkills {
     function getPerfPoints(uint8 leagueRanking) public pure returns (uint64) {
         if (leagueRanking == 0) return 100;
         else if (leagueRanking == 1) return 65;
-        else if (leagueRanking == 2) return 40;
-        else if (leagueRanking == 3) return 35;
+        else if (leagueRanking == 2) return 35;
+        else if (leagueRanking == 3) return 30;
         else if (leagueRanking == 4) return 25;
         else if (leagueRanking == 5) return 20;
-        else if (leagueRanking == 6) return 10;
+        else if (leagueRanking == 6) return 15;
         else return 0;
     }
 
