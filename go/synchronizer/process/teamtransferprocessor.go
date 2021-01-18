@@ -19,6 +19,6 @@ func ConsumeTeamTransfer(tx *sql.Tx, v assets.AssetsTeamTransfer) error {
 	}
 	// team.BlockNumber = blockNumber
 	team.Owner = newOwner
-	team.PromoTimeout = 1610668800
+	team.PromoTimeout = 1613606400
 	return team.Update(tx)
 }
