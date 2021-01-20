@@ -18,7 +18,7 @@ contract Leagues is SortIdxs, EncodingIDs, GetSumSkills {
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
     uint8 constant public MATCHES_PER_LEAGUE = 56; /// = 4 * 14 = 7*8
-    uint64 constant private INERTIA = 2;
+    uint64 constant private INERTIA = 0;
     uint64 constant private WEIGHT_SKILLS = 100;
     uint64 constant private SKILLS_AT_START = 90000; /// 18 players per team at start with 5 skills of 50 on avg
     uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; /// 268435455 = 2**28 - 1 
@@ -171,13 +171,13 @@ contract Leagues is SortIdxs, EncodingIDs, GetSumSkills {
     }
 
     function getPerfPoints(uint8 leagueRanking) public pure returns (uint64) {
-        if (leagueRanking == 0) return 50;
-        else if (leagueRanking == 1) return 42;
-        else if (leagueRanking == 2) return 30;
-        else if (leagueRanking == 3) return 25;
-        else if (leagueRanking == 4) return 20;
-        else if (leagueRanking == 5) return 15;
-        else if (leagueRanking == 6) return 5;
+        if (leagueRanking == 0) return 100;
+        else if (leagueRanking == 1) return 65;
+        else if (leagueRanking == 2) return 35;
+        else if (leagueRanking == 3) return 30;
+        else if (leagueRanking == 4) return 25;
+        else if (leagueRanking == 5) return 20;
+        else if (leagueRanking == 6) return 15;
         else return 0;
     }
 
