@@ -622,7 +622,7 @@ spec:
         - -postgres
         - postgres://$(freeverse_username):$(freeverse_password)@marketdb:5432/market?sslmode=disable
         - -ethereum
-        - http://xdai:8545
+        - http://openethereum:8545
         - -private_key
         - $(MARKET_PRIVATE_KEY)
         - -proxy_address
@@ -791,7 +791,7 @@ spec:
         - -postgres
         - postgres://$(freeverse_username):$(freeverse_password)@synchronizer-with-universe-db:5432/cryptosoccer?sslmode=disable
         - -ethereum
-        - http://xdai:8545
+        - http://openethereum:8545
         - -proxy_address
         - $(PROXY_CONTRACT_ADDRESS)
         - -ipfs
@@ -1111,7 +1111,7 @@ spec:
         - -postgres
         - postgres://$(freeverse_username):$(freeverse_password)@localhost:5432/cryptosoccer?sslmode=disable
         - -ethereum
-        - http://xdai:8545
+        - http://openethereum:8545
         - -ipfs
         - /dns4/ipfsnode/tcp/5001
         - -proxy_address
