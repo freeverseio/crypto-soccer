@@ -41,7 +41,7 @@ const PermissionTable = ({ web3, account, proxyAddress }) => {
                     <Table.Cell>Proxy Address</Table.Cell>
                     <Table.Cell>{proxyAddress}</Table.Cell>
                 </Table.Row>
-                {proxyContract && <CompanyCard account={account} proxyContract={proxyContract}  multisigContract={multisigContract}/>}
+                {proxyContract && <CompanyCard account={account} proxyContract={proxyContract} multisigContract={multisigContract}/>}
                 {proxyContract && <SuperUserCard account={account} proxyContract={proxyContract} multisigContract={multisigContract}/>}
                 {assetsContract && <COOCard account={account} assetsContract={assetsContract} />}
                 {assetsContract && <RelayCard account={account} assetsContract={assetsContract} />}
