@@ -1,4 +1,5 @@
 const { OfferValidation } = require('../validations');
+const CustomError = require('./CustomError');
 
 const createOfferResolver = async (_, args, context, info, horizonRemoteSchema, web3) => {
   try {
@@ -19,7 +20,8 @@ const createOfferResolver = async (_, args, context, info, horizonRemoteSchema, 
     const isAllowed = await offerValidation.isAllowedToOffer(true);
 
     if (!isAllowed) {
-      return new Error('User not allowed to offer for that amount');
+      err = new CustomError('101', 'User not allowed to offer for that amount');
+      return err;
     } else {
       return info.mergeInfo.delegateToSchema({
         schema: horizonRemoteSchema,
