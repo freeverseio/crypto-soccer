@@ -10,7 +10,7 @@ import (
 )
 
 func NewByTruffle() (*Contracts, error) {
-	client, err := ethclient.Dial("http://localhost:8545")
+	client, err := ethclient.Dial("http://crypto-soccer_devcontainer_dockerhost_1:8545")
 	if err != nil {
 		return nil, err
 	}

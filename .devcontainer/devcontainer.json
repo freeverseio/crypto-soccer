@@ -29,11 +29,11 @@
 	],
 	"overrideCommand": false,
 	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": [],
+	"extensions": ["hediet.vscode-drawio","dbaeumer.vscode-eslint","eamodio.gitlens","golang.go","orta.vscode-jest","esbenp.prettier-vscode","chakrounanas.turbo-console-log"],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [],
-	"initializeCommand": 
-		"docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' crypto-soccer_devcontainer_dockerhost_1"
+	// "initializeCommand": 
+	// 	"docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' crypto-soccer_devcontainer_dockerhost_1"
 	
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
 	// "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
