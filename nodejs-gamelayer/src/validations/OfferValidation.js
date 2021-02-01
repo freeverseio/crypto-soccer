@@ -1,5 +1,5 @@
 const HorizonService = require('../services/HorizonService.js');
-const { MINIMUM_DEFAULT_BID } = require('../config.js');
+const { MINIMUM_DEFAULT_BID, errorCodes } = require('../config.js');
 const utc = require('dayjs/plugin/utc');
 const dayjs = require('dayjs');
 const Validation = require('./Validation.js');
@@ -85,7 +85,7 @@ class OfferValidation {
   async isAllowedToOffer() {
     const isAllowedToBidBySignerOwner = await this.isAllowedToBidBySignerOwner();
     if (!isAllowedToBidBySignerOwner) {
-      return false;
+      return { allowed: false, code: errorCodes.OFFER_NOT_ALLOWED };
     }
 
     const owner = await this.signerAddress();
@@ -96,36 +96,36 @@ class OfferValidation {
       totalPrice,
     });
     if (!isAllowedToBidByMaxBidAllowedByOwner) {
-      return false;
+      return { allowed: false, code: errorCodes.OFFER_NOT_ALLOWED_BY_BAN };
     }
 
     const isAllowedToBidByUnpayments = await this.validation.isAllowedByUnpayments({ owner });
     if (!isAllowedToBidByUnpayments) {
-      return false;
+      return { allowed: false, code: errorCodes.OFFER_NOT_ALLOWED_BY_BAN };
     }
 
     const isTotalPriceLessThanMinimum = parseInt(totalPrice) < parseInt(MINIMUM_DEFAULT_BID);
     if (isTotalPriceLessThanMinimum) {
-      return true;
+      return { allowed: true };
     }
 
     const hasAuctionPass = await HorizonService.hasAuctionPass({ owner });
     if (hasAuctionPass) {
-      return true;
+      return { allowed: true };
     }
 
     const isAllowedToBidByWorldplayers = await this.validation.isAllowedToBidBySpentInWorldplayers({ owner });
     if (isAllowedToBidByWorldplayers) {
-      return true;
+      return { allowed: true };
     }
 
     const bidsPayed = await HorizonService.getBidsPayedByOwner({ owner });
     const hasSpentInBids = bidsPayed.length > 0;
     if (hasSpentInBids) {
-      return true;
+      return { allowed: true };
     }
 
-    return false;
+    return { allowed: false, code: errorCodes.OFFER_NOT_ALLOWED };
   }
 }
 

@@ -17,10 +17,10 @@ const createOfferResolver = async (_, args, context, info, horizonRemoteSchema, 
       signature,
       web3,
     });
-    const isAllowed = await offerValidation.isAllowedToOffer(true);
+    const { allowed, code } = await offerValidation.isAllowedToOffer(true);
 
-    if (!isAllowed) {
-      err = new CustomError('101', 'User not allowed to offer for that amount');
+    if (!allowed) {
+      err = new CustomError(code, 'User not allowed to offer for that amount');
       return err;
     } else {
       return info.mergeInfo.delegateToSchema({

@@ -7,10 +7,10 @@ const createBidResolver = async (_, args, context, info, horizonRemoteSchema, we
       input: { teamId, rnd, auctionId, extraPrice, signature },
     } = args;
     const bidValidation = new BidValidation({ teamId, rnd, auctionId, extraPrice, signature, web3 });
-    const isAllowed = await bidValidation.isAllowedToBid();
+    const { allowed, code } = await bidValidation.isAllowedToBid();
 
-    if (!isAllowed) {
-      err = new CustomError('100', 'User not allowed to bid for that amount');
+    if (!allowed) {
+      err = new CustomError(code, 'User not allowed to bid for that amount');
       return err;
     } else {
       return info.mergeInfo.delegateToSchema({

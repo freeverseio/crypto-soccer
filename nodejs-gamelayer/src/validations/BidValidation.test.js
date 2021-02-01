@@ -68,7 +68,7 @@ test('allowed to bid because bid is lower than minimum default bid', async () =>
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedToBid();
+  const { allowed: result } = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(true);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
@@ -91,7 +91,7 @@ test('allowed to bid because has auction passs', async () => {
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedToBid();
+  const { allowed: result } = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(true);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
@@ -115,7 +115,7 @@ test('allowed to bid because has spent in worldplayers', async () => {
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedToBid();
+  const { allowed: result } = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(true);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
@@ -139,7 +139,7 @@ test('allowed to bid because has spent in bids', async () => {
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedToBid();
+  const { allowed: result } = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(true);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
@@ -163,7 +163,7 @@ test('not allowed to bid because signer is not owner', async () => {
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedToBid();
+  const { allowed: result } = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(false);
   expect(HorizonService.getAuction).toHaveBeenCalledTimes(0);
@@ -183,7 +183,7 @@ test('not allowed to bid because max bid allowed by owner is 0', async () => {
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedToBid();
+  const { allowed: result } = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(false);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
@@ -209,7 +209,7 @@ test('allowed to bid because bid is lower than minimum default bid and maxbidown
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedToBid();
+  const { allowed: result } = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(true);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
@@ -235,7 +235,7 @@ test('allowed to bid because bid is lower than minimum default bid and less thah
       '4fe5772189b4e448e528257f6b32b3ebc90ed8f52fc7c9b04594d86adb74875147f62c6d83b8555c63d622b2248bb6846c75912a684490a68de46ede201ecf0f1b',
     web3,
   });
-  const result = await bidValidation.isAllowedToBid();
+  const { allowed: result } = await bidValidation.isAllowedToBid();
 
   expect(result).toBe(true);
   expect(HorizonService.getAuction).toHaveBeenCalledWith({ auctionId: '555' });
