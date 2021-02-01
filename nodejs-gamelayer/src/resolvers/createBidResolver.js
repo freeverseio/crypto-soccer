@@ -1,4 +1,5 @@
 const { BidValidation } = require('../validations');
+const CustomError = require('./CustomError');
 
 const createBidResolver = async (_, args, context, info, horizonRemoteSchema, web3) => {
   try {
@@ -9,7 +10,8 @@ const createBidResolver = async (_, args, context, info, horizonRemoteSchema, we
     const isAllowed = await bidValidation.isAllowedToBid();
 
     if (!isAllowed) {
-      return new Error('User not allowed to bid for that amount');
+      err = new CustomError('100', 'User not allowed to bid for that amount');
+      return err;
     } else {
       return info.mergeInfo.delegateToSchema({
         schema: horizonRemoteSchema,
