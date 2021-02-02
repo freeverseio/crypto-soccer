@@ -93,7 +93,7 @@ test('allowed to offer because offer is lower than minimum default offer', async
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(true);
   expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
@@ -115,7 +115,7 @@ test('not allowed to offer because offer is grater than minimum default offer', 
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(false);
   expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
@@ -139,7 +139,7 @@ test('allowed to offer because has auction passs', async () => {
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(true);
   expect(HorizonService.hasAuctionPass).toHaveBeenCalledWith({ owner: '0x83A909262608c650BD9b0ae06E29D90D0F67aC5e' });
@@ -164,7 +164,7 @@ test('allowed to offer because has spent in worldplayers', async () => {
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(true);
   expect(HorizonService.hasAuctionPass).toHaveBeenCalledWith({ owner: '0x83A909262608c650BD9b0ae06E29D90D0F67aC5e' });
@@ -189,7 +189,7 @@ test('allowed to offer because has spent in offers', async () => {
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(true);
   expect(HorizonService.hasAuctionPass).toHaveBeenCalledWith({ owner: '0x83A909262608c650BD9b0ae06E29D90D0F67aC5e' });
@@ -214,7 +214,7 @@ test('not allowed to offer because signer is not owner', async () => {
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(false);
   expect(HorizonService.getBidsPayedByOwner).toHaveBeenCalledTimes(0);
@@ -235,7 +235,7 @@ test('not allowed to offer because max offer allowed by owner is 0', async () =>
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(false);
   expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
@@ -262,7 +262,7 @@ test('allowed to offer because offer is lower than minimum default offer and max
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(true);
   expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
@@ -289,7 +289,7 @@ test('allowed to offer because offer is lower than minimum default offer and les
       '84beb98c6770b70000e37e56adf4a46b0c208bb207e4a2fc5a510d42f2186a500e1ab0c2586fdebf8fed7843d0f636c438de7a111f926de6adcbcb52da6b63141b---',
     web3,
   });
-  const result = await offerValidation.isAllowedToOffer();
+  const { allowed: result } = await offerValidation.isAllowedToOffer();
 
   expect(result).toBe(true);
   expect(HorizonService.getTeamsByOwner).not.toHaveBeenCalled();
