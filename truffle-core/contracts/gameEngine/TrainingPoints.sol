@@ -84,6 +84,11 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             points[1] = (points[1] * teamSumSkills0) / (teamSumSkills1);
         }
 
+        if ((nGoals1 > (nGoals0 + 7)) || (nGoals0 > (nGoals1 + 7))) {
+            points[0] = POINTS_FOR_HAVING_PLAYED;
+            points[1] = POINTS_FOR_HAVING_PLAYED;
+        }
+
         if (points[0] < POINTS_FOR_HAVING_PLAYED) points[0] = POINTS_FOR_HAVING_PLAYED;
         if (points[1] < POINTS_FOR_HAVING_PLAYED) points[1] = POINTS_FOR_HAVING_PLAYED;
         
