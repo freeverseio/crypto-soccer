@@ -22,7 +22,7 @@ module.exports = {
     xdai: { // 0xA9c0F76cA045163E28afDdFe035ec76a44f5C1F3
       provider: new HDWalletProvider(
         "a98c8730d71a46bcc40fb06fc68142edbc2fdf17b89197db0fbe41d35718d5fc",
-        "https://dai.poa.network"
+        "https://dai.poa.network" // if it fails, try this one: "http://node1.goalrevolution.live:9999/"
       ),
       network_id: 100,
       gasPrice: 1000000000,
