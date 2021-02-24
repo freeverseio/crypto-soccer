@@ -63,7 +63,7 @@ func (b ConsumePromo) assignAsset(in gql.ConsumePromoInput) error {
 	if err != nil {
 		return err
 	}
-	if _, err = helper.WaitReceipt(b.contracts.Client, tx, 60); err != nil {
+	if _, err = helper.WaitReceiptAndCheckSuccess(b.contracts.Client, tx, 60); err != nil {
 		return err
 	}
 	return nil

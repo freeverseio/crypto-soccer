@@ -74,7 +74,7 @@ func (b Staker) SubmitRoot(contracts contracts.Contracts, verse int64, root [32]
 	if err != nil {
 		return err
 	}
-	_, err = helper.WaitReceipt(contracts.Client, tx, 60)
+	_, err = helper.WaitReceiptAndCheckSuccess(contracts.Client, tx, 60)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (b Staker) enrol(contracts contracts.Contracts, stake *big.Int) error {
 	if err != nil {
 		return err
 	}
-	if _, err := helper.WaitReceipt(contracts.Client, tx, 60); err != nil {
+	if _, err := helper.WaitReceiptAndCheckSuccess(contracts.Client, tx, 60); err != nil {
 		return err
 	}
 	return nil

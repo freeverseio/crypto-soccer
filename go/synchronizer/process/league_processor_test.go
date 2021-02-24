@@ -387,7 +387,7 @@ func TestGenerateOrgMapWithBots(t *testing.T) {
 // 		countryIdx,
 // 		common.HexToAddress("0x8724aC60ac290837a1fe2d441279413d5B058E5F"),
 // 	)
-// 	_, err = helper.WaitReceipt(bc.Client, tx0, 10)
+// 	_, err = helper.WaitReceiptAndCheckSuccess(bc.Client, tx0, 10)
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

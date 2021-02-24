@@ -22,7 +22,7 @@ func (b *AuctionMachine) ProcessPaying(market marketpay.MarketPayService) error 
 	bid := bidmachine.FirstAlive(b.bids)
 	if bid == nil {
 		b.SetState(storage.AuctionFailed, "No available healty bid")
-		
+
 		return nil
 	}
 
@@ -129,7 +129,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 			sigV,
 		)
 	}
-	receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
+	receipt, err := helper.WaitReceiptAndCheckSuccess(b.contracts.Client, tx, 60)
 	if err != nil {
 		return errors.Wrap(err, "WaitReceipt")
 	}
