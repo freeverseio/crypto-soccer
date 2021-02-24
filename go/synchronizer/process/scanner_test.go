@@ -48,8 +48,8 @@ func TestScanningIniting(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	helper.WaitReceipt(bc.Client, tx, 3)
-// 	helper.WaitReceipt(bc.Client, tx1, 3)
+// 	helper.WaitReceiptAndCheckSuccess(bc.Client, tx, 3)
+// 	helper.WaitReceiptAndCheckSuccess(bc.Client, tx1, 3)
 
 // 	if scanner := process.NewEventScanner(bc.Contracts); scanner != nil {
 // 		err = scanner.Process(nil)

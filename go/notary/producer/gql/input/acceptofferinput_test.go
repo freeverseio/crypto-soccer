@@ -99,7 +99,7 @@ func TestAcceptOfferIsSignerOwner(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = helper.WaitReceipt(bc.Client, tx, 5)
+	_, err = helper.WaitReceiptAndCheckSuccess(bc.Client, tx, 5)
 	if err != nil {
 		t.Fatal(err)
 	}

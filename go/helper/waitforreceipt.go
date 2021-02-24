@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -29,6 +30,16 @@ func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec int
 	}
 
 	return nil, fmt.Errorf("Timout in transaction: %s", string(dump))
+}
+
+func WaitReceiptAndCheckSuccess(client *ethclient.Client, tx *types.Transaction, timeoutSec int) (*types.Receipt, error) {
+	receipt, err := WaitReceipt(client, tx, timeoutSec)
+
+	if err == nil && receipt.Status == 0 {
+		return receipt, errors.New("receipt.Status is 0")
+	}
+
+	return receipt, err
 }
 
 func WaitReceipts(client *ethclient.Client, txs []*types.Transaction, timeoutSec int) error {

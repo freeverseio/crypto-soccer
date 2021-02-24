@@ -41,7 +41,7 @@ func DismissPlayer(
 	if err != nil {
 		return err
 	}
-	_, err = helper.WaitReceipt(contracts.Client, tx, 30)
+	_, err = helper.WaitReceiptAndCheckSuccess(contracts.Client, tx, 30)
 	if err != nil {
 		return err
 	}
