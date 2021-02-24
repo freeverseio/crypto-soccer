@@ -95,7 +95,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = helper.WaitReceipt(bc.Client, tx0, 3)
+	_, err = helper.WaitReceiptAndCheckSuccess(bc.Client, tx0, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +153,7 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = helper.WaitReceipt(bc.Client, tx0, 3)
+	_, err = helper.WaitReceiptAndCheckSuccess(bc.Client, tx0, 3)
 	if err != nil {
 		t.Fatal(err)
 	}

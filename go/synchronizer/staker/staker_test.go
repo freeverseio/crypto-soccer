@@ -63,7 +63,7 @@ func TestStakerEnroll(t *testing.T) {
 	t.Run("be trusted party", func(t *testing.T) {
 		tx, err := bc.Contracts.Stakers.AddTrustedParty(bind.NewKeyedTransactor(bc.Owner), s.Address())
 		assert.NilError(t, err)
-		_, err = helper.WaitReceipt(bc.Client, tx, 60)
+		_, err = helper.WaitReceiptAndCheckSuccess(bc.Client, tx, 60)
 		assert.NilError(t, err)
 		isTrusted, err := s.IsTrustedParty(*bc.Contracts)
 		assert.NilError(t, err)

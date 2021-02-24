@@ -42,7 +42,7 @@ func (b FirstBotTransfer) Process(event gql.TransferFirstBotToAddrInput) error {
 	if err != nil {
 		return err
 	}
-	_, err = helper.WaitReceipt(b.client, transaction, 30) // TODO make timeout configurable
+	_, err = helper.WaitReceiptAndCheckSuccess(b.client, transaction, 30) // TODO make timeout configurable
 	if err != nil {
 		return err
 	}

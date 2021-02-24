@@ -61,7 +61,7 @@ func TestGetWorldPlayersOfSoldPlayer(t *testing.T) {
 		targetTeamId,
 	)
 	assert.NilError(t, err)
-	_, err = helper.WaitReceipt(bc.Client, tx, 60)
+	_, err = helper.WaitReceiptAndCheckSuccess(bc.Client, tx, 60)
 	assert.NilError(t, err)
 
 	players, err = service.CreateBatch(teamId, now)

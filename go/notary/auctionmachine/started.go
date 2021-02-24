@@ -84,7 +84,7 @@ func (b *AuctionMachine) processStarted() error {
 		b.SetState(storage.AuctionFailed, "Failed to freeze: "+err.Error())
 		return err
 	}
-	receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
+	receipt, err := helper.WaitReceiptAndCheckSuccess(b.contracts.Client, tx, 60)
 	if err != nil {
 		b.SetState(storage.AuctionFailed, "Failed to Freeze: waiting for receipt timeout")
 		return err
