@@ -359,7 +359,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/authproxy:0.26.0
+        image: freeverseio/authproxy:0.26.1
         imagePullPolicy: Always
         name: authproxy
       imagePullSecrets:
@@ -391,7 +391,7 @@ spec:
         app.kubernetes.io/version: 1.0.0
     spec:
       containers:
-      - image: freeverseio/dashboard:0.26.0
+      - image: freeverseio/dashboard:0.26.1
         imagePullPolicy: Always
         name: dashboard
       imagePullSecrets:
@@ -431,7 +431,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer:0.26.0
+        image: freeverseio/gamelayer:0.26.1
         imagePullPolicy: Always
         name: gamelayer
       imagePullSecrets:
@@ -477,7 +477,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer.mailbox.cron:0.26.0
+        image: freeverseio/gamelayer.mailbox.cron:0.26.1
         imagePullPolicy: Always
         name: gamelayer-mailbox-cron
       imagePullSecrets:
@@ -517,7 +517,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/gamelayer.webhook:0.26.0
+        image: freeverseio/gamelayer.webhook:0.26.1
         imagePullPolicy: Always
         name: gamelayer-webhook
       imagePullSecrets:
@@ -562,7 +562,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/horizon:0.26.0
+        image: freeverseio/horizon:0.26.1
         imagePullPolicy: Always
         name: horizon
       imagePullSecrets:
@@ -602,7 +602,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.read.api:0.26.0
+        image: freeverseio/market.read.api:0.26.1
         imagePullPolicy: Always
         name: market-read-api
       imagePullSecrets:
@@ -659,7 +659,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.notary:0.26.0
+        image: freeverseio/market.notary:0.26.1
         imagePullPolicy: Always
         name: notary
         ports:
@@ -762,7 +762,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/purchasevoider:0.26.0
+        image: freeverseio/purchasevoider:0.26.1
         imagePullPolicy: Always
         name: purchasevoider
         ports:
@@ -823,7 +823,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/relay.actions:0.26.0
+        image: freeverseio/relay.actions:0.26.1
         imagePullPolicy: Always
         name: relayactions
         ports:
@@ -865,7 +865,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/market.trader:0.26.0
+        image: freeverseio/market.trader:0.26.1
         imagePullPolicy: Always
         name: trader
       imagePullSecrets:
@@ -903,7 +903,7 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/universe.api:0.26.0
+        image: freeverseio/universe.api:0.26.1
         imagePullPolicy: Always
         name: universeapi
         ports:
@@ -941,7 +941,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/game.db:0.26.0
+        image: freeverseio/game.db:0.26.1
         imagePullPolicy: Always
         name: gamedb
         ports:
@@ -998,7 +998,7 @@ spec:
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/market.db:0.26.0
+        image: freeverseio/market.db:0.26.1
         imagePullPolicy: Always
         name: marketdb
         ports:
@@ -1218,13 +1218,13 @@ spec:
         envFrom:
         - configMapRef:
             name: freeverse-configmap
-        image: freeverseio/synchronizer:0.26.0
+        image: freeverseio/synchronizer:0.26.1
         imagePullPolicy: Always
         name: synchronizer
       - env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: freeverseio/universe.db:0.26.0
+        image: freeverseio/universe.db:0.26.1
         imagePullPolicy: Always
         name: universedb
         ports:
