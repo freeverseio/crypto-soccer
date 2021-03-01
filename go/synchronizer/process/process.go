@@ -204,7 +204,7 @@ func (p *EventProcessor) nextRange(tx *sql.Tx, delta uint64) (*bind.FilterOpts, 
 			return nil, errors.New("Block range overflow")
 		}
 	}
-	end := p.clientLastBlockNumber()
+	end := p.clientLastBlockNumber() - 9
 	if delta != 0 {
 		end = uint64(math.Min(float64(start+delta-1), float64(end)))
 	}
