@@ -94,12 +94,14 @@ func main() {
 		defer namesdb.Close()
 
 		useractionsPublishService := ipfs.NewUserActionsPublishService(*ipfsURL)
+		blocksUntilFinal := uint64(9)
 		processor := process.NewEventProcessor(
 			client,
 			*proxyContractAddress,
 			namesdb,
 			useractionsPublishService,
 			stkr,
+			blocksUntilFinal,
 		)
 
 		log.Info("On Going ...")

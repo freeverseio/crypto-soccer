@@ -32,6 +32,7 @@ func TestProcessorDispatchUpdatesTimezoneUpdate(t *testing.T) {
 		namesdb,
 		useractionsPublishService,
 		nil,
+		0,
 	)
 	assert.Error(t, p.Dispatch(tx, abstractEvent), "unexistent hash for verse 2")
 }
@@ -47,6 +48,7 @@ func TestSyncTeams(t *testing.T) {
 		namesdb,
 		useractionsPublishService,
 		nil,
+		0,
 	)
 	log.Info(bc.Contracts.ProxyAddress)
 	_, err = p.Process(tx, 0)
