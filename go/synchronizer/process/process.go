@@ -33,6 +33,7 @@ type EventProcessor struct {
 	staker               *staker.Staker
 	namesdb              *names.Generator
 	useractionsPublisher useractions.UserActionsPublishService
+	blocksUntilFinal     uint64
 }
 
 // *****************************************************************************
@@ -46,6 +47,7 @@ func NewEventProcessor(
 	namesdb *names.Generator,
 	useractionsPublisher useractions.UserActionsPublishService,
 	staker *staker.Staker,
+	blocksUntilFinal uint64,
 ) *EventProcessor {
 	return &EventProcessor{
 		client,
@@ -54,6 +56,7 @@ func NewEventProcessor(
 		staker,
 		namesdb,
 		useractionsPublisher,
+		blocksUntilFinal,
 	}
 }
 
@@ -204,7 +207,7 @@ func (p *EventProcessor) nextRange(tx *sql.Tx, delta uint64) (*bind.FilterOpts, 
 			return nil, errors.New("Block range overflow")
 		}
 	}
-	end := p.clientLastBlockNumber()
+	end := p.clientLastBlockNumber() - p.blocksUntilFinal
 	if delta != 0 {
 		end = uint64(math.Min(float64(start+delta-1), float64(end)))
 	}
