@@ -82,7 +82,7 @@ func TestPhoenixAuthIsValid(t *testing.T) {
 	address := common.HexToAddress("12890D2cce102216644c59daE5baed380d84830c")
 	token := "1579870008:Wic7VnPY+w4HwIGDvxpoDhXUyFBEJodyGsIOoN7iKmYZXa+lk3Zji5EfJtabXGnNblQOUl9bLPsFITSBqfNWawA="
 
-	addr, _, err := authproxy.VerifyToken(token, time.Hour*10000)
+	addr, _, err := authproxy.VerifyToken(token, time.Hour*1000000)
 
 	assert.Nil(t, err)
 	assert.EqualValues(t, address, addr)
