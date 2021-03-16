@@ -2038,7 +2038,7 @@ contract('Evolution', (accounts) => {
     
         logFinal = await training.computeTrainingPoints(log0, log1)
         POINTS_FOR_HAVING_PLAYED = 10 
-        expected = [POINTS_FOR_HAVING_PLAYED, POINTS_FOR_HAVING_PLAYED];
+        expected = [POINTS_FOR_HAVING_PLAYED, 138];
         points = [];
         for (team = 0; team < 2; team++) {
             point = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
