@@ -75,3 +75,30 @@ func LeagueByLeagueIdx(tx *sql.Tx, id uint32) (*League, error) {
 	}
 	return &league, nil
 }
+
+func LeaguesByTimezoneIdxCountryIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) ([]League, error) {
+	rows, err := tx.Query("SELECT timezone_idx, country_idx, league_idx FROM leagues WHERE (timezone_idx = $1 AND country_idx = $2);", timezoneIdx, countryIdx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var leagues []League
+	for rows.Next() {
+		var league League
+		err = rows.Scan(
+			&league.TimezoneIdx,
+			&league.CountryIdx,
+			&league.LeagueIdx,
+		)
+		if err != nil {
+			return nil, err
+		}
+		leagues = append(leagues, league)
+	}
+	rows.Close()
+
+	if err != nil {
+		return nil, err
+	}
+	return leagues, nil
+}
