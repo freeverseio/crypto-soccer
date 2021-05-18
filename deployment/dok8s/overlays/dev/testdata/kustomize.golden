@@ -1063,7 +1063,7 @@ spec:
         - /home/openethereum/.local/share/openethereum/
         - --jsonrpc-interface
         - all
-        image: openethereum/openethereum:v3.0.1
+        image: openethereum/openethereum:v3.2.5
         imagePullPolicy: Always
         name: openethereum
         ports:
