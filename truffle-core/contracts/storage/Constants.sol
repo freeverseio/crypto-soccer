@@ -65,7 +65,8 @@ contract Constants {
  
     uint8 constant internal NO_OUT_OF_GAME_PLAYER  = 14;   /// noone saw a card
     uint8 constant internal RED_CARD = 3;   /// noone saw a card
-    uint256 constant internal POINTS_FOR_HAVING_PLAYED  = 10; /// beyond this diff among team qualities, it's basically infinite
+    uint256 constant internal POINTS_FOR_HAVING_PLAYED  = 10; 
+    uint256 constant internal MAX_POINTS_PER_GAME  = 150; 
 
  
     /// POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.

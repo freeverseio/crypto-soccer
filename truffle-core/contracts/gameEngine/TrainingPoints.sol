@@ -84,6 +84,9 @@ contract TrainingPoints is EncodingMatchLog, EngineLib, EncodingTPAssignment, En
             points[1] = (points[1] * teamSumSkills0) / (teamSumSkills1);
         }
 
+        if (points[0] > MAX_POINTS_PER_GAME) points[0] = MAX_POINTS_PER_GAME;
+        if (points[1] > MAX_POINTS_PER_GAME) points[1] = MAX_POINTS_PER_GAME;
+
         if (points[0] < POINTS_FOR_HAVING_PLAYED) points[0] = POINTS_FOR_HAVING_PLAYED;
         if (points[1] < POINTS_FOR_HAVING_PLAYED) points[1] = POINTS_FOR_HAVING_PLAYED;
         
