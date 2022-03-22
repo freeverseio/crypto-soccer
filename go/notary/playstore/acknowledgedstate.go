@@ -52,7 +52,7 @@ func (b Machine) assignAsset() error {
 	}
 
 	auth := bind.NewKeyedTransactor(b.pvc)
-	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
+	auth.GasPrice = big.NewInt(3000000000) // in xdai is fixe to 3 GWei
 	tx, err := b.contracts.Market.TransferBuyNowPlayer(
 		auth,
 		playerId,
