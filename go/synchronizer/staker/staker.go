@@ -99,6 +99,7 @@ func requiredStake(contracts contracts.Contracts) (*big.Int, error) {
 		return nil, err
 	}
 	return stake, nil
+
 }
 
 func (b Staker) enrol(contracts contracts.Contracts, stake *big.Int) error {
