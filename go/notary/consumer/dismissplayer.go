@@ -29,7 +29,7 @@ func DismissPlayer(
 		return err
 	}
 	auth := bind.NewKeyedTransactor(pvc)
-	auth.GasPrice = big.NewInt(3000000000) // in xdai is fixe to 3 GWei
+	auth.GasPrice = big.NewInt(10000000000) // in xdai is fixe to 3 GWei
 	tx, err := contracts.Market.DismissPlayer(
 		auth,
 		validUntil,

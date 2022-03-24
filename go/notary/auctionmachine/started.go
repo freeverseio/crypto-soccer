@@ -69,7 +69,7 @@ func (b *AuctionMachine) processStarted() error {
 		return err
 	}
 	auth := bind.NewKeyedTransactor(b.freeverse)
-	auth.GasPrice = big.NewInt(3000000000) // in xdai is fixe to 3 GWei
+	auth.GasPrice = big.NewInt(10000000000) // in xdai is fixe to 3 GWei
 
 	tx, err := b.contracts.Market.FreezePlayer(
 		auth,

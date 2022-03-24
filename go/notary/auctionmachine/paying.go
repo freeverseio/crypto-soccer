@@ -105,7 +105,7 @@ func (b AuctionMachine) transferAuction(bid storage.Bid) error {
 		return errors.Wrap(err, "RSV")
 	}
 	auth := bind.NewKeyedTransactor(b.freeverse)
-	auth.GasPrice = big.NewInt(3000000000) // in xdai is fixe to 3 GWei
+	auth.GasPrice = big.NewInt(10000000000) // in xdai is fixe to 3 GWei
 	// fails here
 	tx, err := b.contracts.Market.CompletePlayerAuction(
 		auth,
