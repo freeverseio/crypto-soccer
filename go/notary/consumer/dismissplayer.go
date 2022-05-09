@@ -30,6 +30,7 @@ func DismissPlayer(
 	}
 	auth := bind.NewKeyedTransactor(pvc)
 	auth.GasPrice = big.NewInt(10000000000) // in xdai is fixe to 3 GWei
+	auth.GasLimit = uint64(20000000000)
 	tx, err := contracts.Market.DismissPlayer(
 		auth,
 		validUntil,

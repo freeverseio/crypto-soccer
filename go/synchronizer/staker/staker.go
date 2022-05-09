@@ -70,6 +70,7 @@ func (b Staker) IsTrustedParty(contracts contracts.Contracts) (bool, error) {
 func (b Staker) SubmitRoot(contracts contracts.Contracts, verse int64, root [32]byte) error {
 	auth := bind.NewKeyedTransactor(b.privateKey)
 	auth.GasPrice = big.NewInt(10000000000) // in xdai is fixed to 3 GWei
+	auth.GasLimit = uint64(20000000000)
 	tx, err := contracts.Updates.UpdateTZ(auth, big.NewInt(verse), root)
 	if err != nil {
 		return err
@@ -104,6 +105,7 @@ func requiredStake(contracts contracts.Contracts) (*big.Int, error) {
 func (b Staker) enrol(contracts contracts.Contracts, stake *big.Int) error {
 	auth := bind.NewKeyedTransactor(b.privateKey)
 	auth.GasPrice = big.NewInt(10000000000) // in xdai is fixed to 3 GWei
+	auth.GasLimit = uint64(20000000000)
 	auth.Value = stake
 
 	tx, err := contracts.Stakers.Enrol(auth)
