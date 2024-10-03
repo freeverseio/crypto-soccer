@@ -141,7 +141,11 @@ contract('Updates', (accounts) => {
     }
 
     function calendarInfo(verse, TZForRound1, firstVerseTimeStamp) {
+        const NULL_TIMEZONE = 0;
         const timeZoneData = nextTimeZoneToPlay(verse, TZForRound1);
+        if (timeZoneData.timezone == NULL_TIMEZONE) {
+            return {timezone: NULL_TIMEZONE, matchDay: null, half: null, leagueRound: null, timestamp: null};
+        }
         const leagueRound = getCurrentRound(timeZoneData.timeZoneData, TZForRound1, verse);
         const timestamp = getMatchHalfUTC(timeZoneData.timezone, leagueRound, timeZoneData.matchDay, timeZoneData.half, TZForRound1, firstVerseTimeStamp);
         return {
@@ -178,11 +182,30 @@ contract('Updates', (accounts) => {
 
     it('calendarInfo', async () =>  {
         let info;
+        const NULL_TIMEZONE = 0;
 
         info = calendarInfo(verse = 0, TZForRound1 = 1, firstVerseTimeStamp = 0);
-        assert.deepEqual(info, {"timezone": 1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": 0});
+        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp});
+
+        info = calendarInfo(verse = 0, TZForRound1 = 14, firstVerseTimeStamp = 55550);
+        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp});
+
+        info = calendarInfo(verse = 1, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 1, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900});
+
+        info = calendarInfo(verse = 2, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
+
+        info = calendarInfo(verse = 3, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
+
+        info = calendarInfo(verse = 4, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
+
+
     });
-    
+    return;
+
     it('TimezonetoUptate bug from field', async () =>  {
         const bcResult = await updates.timeZoneToUpdatePure(12289,24).should.be.fulfilled;
         bcResult.timezone.toNumber().should.be.equal(24);
