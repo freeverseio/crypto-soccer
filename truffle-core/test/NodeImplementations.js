@@ -67,7 +67,7 @@ contract('Updates', (accounts) => {
         // recall that timeZones range from 1...24 (not from 0...24)
 
         let half = verse % 4;
-        let delta = 9 * 4 + half;
+        const delta = 9 * 4 + half;
         let tz, dia;
 
         // if the half is greater or equal to 2 and verse is less than delta, return NULL_TIMEZONE
@@ -82,8 +82,8 @@ contract('Updates', (accounts) => {
             half -= 2;
         }
 
-        let timezone = normalizeTZ(tz);
-        let matchDay = dia % MATCHDAYS_PER_ROUND;
+        const timezone = normalizeTZ(tz);
+        const matchDay = dia % MATCHDAYS_PER_ROUND;
 
         return { timezone, matchDay, half };
     }
@@ -96,8 +96,8 @@ contract('Updates', (accounts) => {
     function getCurrentRound(tz, TZForRound1, verse) {
         const VERSES_PER_ROUND = 672; /// 96 * 7days
         if (verse < VERSES_PER_ROUND) return 0;
-        let round = Math.floor(verse / VERSES_PER_ROUND);
-        let deltaN = (tz >= TZForRound1) ? (tz - TZForRound1) : ((tz + 24) - TZForRound1);
+        const round = Math.floor(verse / VERSES_PER_ROUND);
+        const deltaN = (tz >= TZForRound1) ? (tz - TZForRound1) : ((tz + 24) - TZForRound1);
         if (verse < 4 * deltaN + round * VERSES_PER_ROUND) {
             return round - 1;
         } else {
@@ -146,7 +146,9 @@ contract('Updates', (accounts) => {
         if (timeZoneData.timezone == NULL_TIMEZONE) {
             return {timezone: NULL_TIMEZONE, matchDay: null, half: null, leagueRound: null, timestamp: null};
         }
+        console.log(timeZoneData, TZForRound1, verse);
         const leagueRound = getCurrentRound(timeZoneData.timeZoneData, TZForRound1, verse);
+        console.log(timeZoneData, TZForRound1, verse, leagueRound);
         const timestamp = getMatchHalfUTC(timeZoneData.timezone, leagueRound, timeZoneData.matchDay, timeZoneData.half, TZForRound1, firstVerseTimeStamp);
         return {
             timezone: timeZoneData.timezone,
@@ -232,7 +234,7 @@ contract('Updates', (accounts) => {
         assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 1, "leagueRound": 1, "timestamp": firstVerseTimeStamp + 900 * verse});
 
         info = calendarInfo(verse = VERSES_PER_ROUND + 2, TZForRound1 = 1, firstVerseTimeStamp = 0);
-        assert.deepEqual(info, {"timezone": 16, "matchDay": 13, "half": 0, "leagueRound": 1, "timestamp": firstVerseTimeStamp + 900 * verse});
+        assert.deepEqual(info, {"timezone": 16, "matchDay": 13, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
     });
 
     it('TimezonetoUptate bug from field', async () =>  {
@@ -373,5 +375,9 @@ contract('Updates', (accounts) => {
         result = await assets.getCurrentRoundPure(tz = 24, TZForRound1 = 5, verse).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
         result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 16, TZForRound1 = 1, verse = 674).should.be.fulfilled;
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+        result.toNumber().should.be.equal(0);
     });
 });
