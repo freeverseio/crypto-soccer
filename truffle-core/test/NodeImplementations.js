@@ -188,10 +188,10 @@ contract('Updates', (accounts) => {
         assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp});
 
         info = calendarInfo(verse = 0, TZForRound1 = 14, firstVerseTimeStamp = 55550);
-        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp});
+        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
 
         info = calendarInfo(verse = 1, TZForRound1 = 1, firstVerseTimeStamp = 0);
-        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 1, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900});
+        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 1, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
 
         info = calendarInfo(verse = 2, TZForRound1 = 1, firstVerseTimeStamp = 0);
         assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
@@ -200,7 +200,22 @@ contract('Updates', (accounts) => {
         assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
 
         info = calendarInfo(verse = 4, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": TZForRound1 + 1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
+
+        info = calendarInfo(verse = 5, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": TZForRound1 + 1, "matchDay": 0, "half": 1, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
+
+        info = calendarInfo(verse = 6, TZForRound1 = 1, firstVerseTimeStamp = 0);
         assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
+
+        info = calendarInfo(verse = 7, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
+
+        info = calendarInfo(verse = 8, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": TZForRound1 + 2, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
+
+        info = calendarInfo(verse = 9, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": TZForRound1 + 2, "matchDay": 0, "half": 1, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
 
 
     });
