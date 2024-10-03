@@ -61,7 +61,7 @@ contract('Updates', (accounts) => {
         const VERSES_PER_DAY = 96; 
         const MATCHDAYS_PER_ROUND = 14;
 
-        // if _currentVerse = 0, we should be updating _timeZoneForRound1
+        // if _currentVerse = 0, we should be updating TZForRound1
         // recall that timeZones range from 1...24 (not from 0...24)
 
         let turn = verse % 4;
@@ -90,6 +90,26 @@ contract('Updates', (accounts) => {
         return 1 + ((24 + tz - 1) % 24);
     }
 
+    // example firstVerseTimeStamp = 1633046400; // Example Unix timestamp (in seconds)
+    function getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimeStamp) {
+        const DAYS_PER_ROUND = 7;
+        if (tz <= 0 || tz >= 25) {
+            throw new Error("timezone out of range");
+        }
+
+        const deltaN = (tz >= TZForRound1) ? 
+            (tz - TZForRound1) : 
+            ((tz + 24) - TZForRound1);
+
+        let timeUTC;
+        if (matchDay % 2 === 0) {
+            timeUTC = firstVerseTimeStamp + (deltaN + 12 * matchDay + 24 * DAYS_PER_ROUND * round) * 3600;
+        } else {
+            timeUTC = firstVerseTimeStamp + (19 + 2 * deltaN + 24 * (matchDay - 1) + 48 * DAYS_PER_ROUND * round) * 1800;
+        }
+        return timeUTC;
+    }
+
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
@@ -113,7 +133,7 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
     });
 
-    it('TimezonetoUptate bug from field', async () =>  {
+    it2('TimezonetoUptate bug from field', async () =>  {
         const bcResult = await updates.timeZoneToUpdatePure(12289,24).should.be.fulfilled;
         bcResult.timezone.toNumber().should.be.equal(24);
         bcResult.turnInDay.toNumber().should.be.equal(1);
@@ -125,7 +145,7 @@ contract('Updates', (accounts) => {
         nodeResult.day.should.be.equal(4);
     });
 
-    it('TimezonetoUptate bug from field with random inputs', async () =>  {
+    it2('TimezonetoUptate bug from field with random inputs', async () =>  {
         const numberOfTests = 100;
         const rng = seedrandom('dummyseed');
 
@@ -146,4 +166,34 @@ contract('Updates', (accounts) => {
         }
     });
 
+    it('test getMatchUTC', async () =>  {
+        let nodeUTC, bcUTC;
+        const nextVerseTimestamp = Number(await updates.getNextVerseTimestamp());
+        console.log(nextVerseTimestamp);
+        const timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
+
+        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 0).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(nextVerseTimestamp);
+
+        nodeUTC = getMatchUTC(tz, round, matchDay, timeZoneForRound1, nextVerseTimestamp);
+        bcUTC.toNumber().should.be.equal(nodeUTC);
+
+        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 2).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + 24*3600);
+        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 1).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600);
+        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 1, matchDay = 1).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600 + 7*24*3600);
+        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 1, matchDay = 2).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + 24*3600 + 7*24*3600);
+        // tests for other timezones
+        tz = 1;
+        let deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
+        bcUTC = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+        tz = 24;
+        deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
+        bcUTC = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+    });
 });
