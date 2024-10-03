@@ -168,32 +168,54 @@ contract('Updates', (accounts) => {
 
     it('test getMatchUTC', async () =>  {
         let nodeUTC, bcUTC;
-        const nextVerseTimestamp = Number(await updates.getNextVerseTimestamp());
-        console.log(nextVerseTimestamp);
-        const timeZoneForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
 
-        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 0).should.be.fulfilled;
-        bcUTC.toNumber().should.be.equal(nextVerseTimestamp);
+        const firstVerseTimestamp = Number(await updates.getNextVerseTimestamp());
+        const TZForRound1 = await updates.getTimeZoneForRound1().should.be.fulfilled;
 
-        nodeUTC = getMatchUTC(tz, round, matchDay, timeZoneForRound1, nextVerseTimestamp);
+        bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 0, matchDay = 0).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(firstVerseTimestamp);
+
+        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
         bcUTC.toNumber().should.be.equal(nodeUTC);
 
-        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 2).should.be.fulfilled;
-        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + 24*3600);
-        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 0, matchDay = 1).should.be.fulfilled;
-        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600);
-        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 1, matchDay = 1).should.be.fulfilled;
-        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + 9.5*3600 + 7*24*3600);
-        bcUTC = await updates.getMatchUTC(tz = timeZoneForRound1, round = 1, matchDay = 2).should.be.fulfilled;
-        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + 24*3600 + 7*24*3600);
+        bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 0, matchDay = 2).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(firstVerseTimestamp + 24*3600);
+
+        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
+        bcUTC.toNumber().should.be.equal(nodeUTC);
+
+        bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 0, matchDay = 1).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(firstVerseTimestamp + 9.5*3600);
+
+        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
+        bcUTC.toNumber().should.be.equal(nodeUTC);
+
+        bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 1, matchDay = 1).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(firstVerseTimestamp + 9.5*3600 + 7*24*3600);
+
+        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
+        bcUTC.toNumber().should.be.equal(nodeUTC);
+
+        bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 1, matchDay = 2).should.be.fulfilled;
+        bcUTC.toNumber().should.be.equal(firstVerseTimestamp + 24*3600 + 7*24*3600);
+
+
         // tests for other timezones
         tz = 1;
-        let deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
+        let deltaN = (tz >= TZForRound1) ? (tz-TZForRound1) : (24+tz-TZForRound1); 
         bcUTC = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
-        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+        bcUTC.toNumber().should.be.equal(firstVerseTimestamp + deltaN * 3600);
+
+        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
+        bcUTC.toNumber().should.be.equal(nodeUTC);
+
         tz = 24;
-        deltaN = (tz >= timeZoneForRound1) ? (tz-timeZoneForRound1) : (24+tz-timeZoneForRound1); 
+        deltaN = (tz >= TZForRound1) ? (tz-TZForRound1) : (24+tz-TZForRound1); 
         bcUTC = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
-        bcUTC.toNumber().should.be.equal(nextVerseTimestamp + deltaN * 3600);
+        bcUTC.toNumber().should.be.equal(firstVerseTimestamp + deltaN * 3600);
+
+        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
+        bcUTC.toNumber().should.be.equal(nodeUTC);
+
     });
 });
