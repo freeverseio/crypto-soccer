@@ -57,7 +57,7 @@ contract('Updates', (accounts) => {
     // Outputs: for the verse to be played:
     // - timezone: which timezone plays
     // - matchDay: what matchDay of the league it corresponds to: a number in [0, 13]
-    // - half: whether it corresponds to the first half (half = 0), or to the second half (half = 1)
+    // - turn: whether it corresponds to the first half (turn = 0), or to the second half (turn = 1)
     function nextTimeZoneToPlay(verse, TZForRound1) {
         const NULL_TIMEZONE = 0; 
         const VERSES_PER_DAY = 96; 
@@ -66,26 +66,26 @@ contract('Updates', (accounts) => {
         // if _currentVerse = 0, we should be updating TZForRound1
         // recall that timeZones range from 1...24 (not from 0...24)
 
-        let half = verse % 4;
-        let delta = 9 * 4 + half;
+        let turn = verse % 4;
+        let delta = 9 * 4 + turn;
         let tz, dia;
 
-        // if the half is greater or equal to 2 and verse is less than delta, return NULL_TIMEZONE
-        if (half >= 2 && verse < delta) return { timezone: NULL_TIMEZONE, day: 0, turnInDay: 0 };
+        // if the turn is greater or equal to 2 and verse is less than delta, return NULL_TIMEZONE
+        if (turn >= 2 && verse < delta) return { timezone: NULL_TIMEZONE, day: 0, turnInDay: 0 };
 
-        if (half < 2) {
-            tz = TZForRound1 + Math.floor((verse - half) % VERSES_PER_DAY / 4);
-            dia = 2 * Math.floor((verse - 4 * (tz - TZForRound1) - half) / VERSES_PER_DAY);
+        if (turn < 2) {
+            tz = TZForRound1 + Math.floor((verse - turn) % VERSES_PER_DAY / 4);
+            dia = 2 * Math.floor((verse - 4 * (tz - TZForRound1) - turn) / VERSES_PER_DAY);
         } else {
             tz = TZForRound1 + Math.floor((verse - delta) % VERSES_PER_DAY / 4);
             dia = 1 + 2 * Math.floor((verse - 4 * (tz - TZForRound1) - delta) / VERSES_PER_DAY);
-            half -= 2;
+            turn -= 2;
         }
 
         let timezone = normalizeTZ(tz);
         let day = dia % MATCHDAYS_PER_ROUND;
 
-        return { timezone, day, half };
+        return { timezone, day, turnInDay: turn };
     }
 
     function normalizeTZ(tz) {
@@ -172,7 +172,7 @@ contract('Updates', (accounts) => {
 
         const nodeResult = nextTimeZoneToPlay(12289,24);
         nodeResult.timezone.should.be.equal(24);
-        nodeResult.half.should.be.equal(1);
+        nodeResult.turnInDay.should.be.equal(1);
         nodeResult.day.should.be.equal(4);
     });
 
@@ -192,7 +192,7 @@ contract('Updates', (accounts) => {
             const nodeResult = nextTimeZoneToPlay(randomVerse, randomTZForRound1);
     
             bcResult.timezone.toNumber().should.be.equal(nodeResult.timezone);
-            bcResult.turnInDay.toNumber().should.be.equal(nodeResult.half);
+            bcResult.turnInDay.toNumber().should.be.equal(nodeResult.turnInDay);
             bcResult.day.toNumber().should.be.equal(nodeResult.day);
         }
     });
