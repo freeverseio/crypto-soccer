@@ -134,6 +134,12 @@ contract('Updates', (accounts) => {
         return timeUTC;
     }
 
+    function getMatchUTCPerHalf(tz, round, matchDay, turn, TZForRound1, firstVerseTimeStamp) {
+        const SECS_BETWEEN_VERSES = 900; /// 15 mins
+        const extraSeconds = turn == 0 ? 0 : SECS_BETWEEN_VERSES;
+        return getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimeStamp) + extraSeconds;
+    }
+
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
@@ -190,7 +196,7 @@ contract('Updates', (accounts) => {
         }
     });
 
-    it2('test getMatchUTC', async () =>  {
+    it('test getMatchUTC', async () =>  {
         let nodeUTC, bcUTC;
 
         const firstVerseTimestamp = Number(await updates.getNextVerseTimestamp());
@@ -198,27 +204,19 @@ contract('Updates', (accounts) => {
 
         bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 0, matchDay = 0).should.be.fulfilled;
         bcUTC.toNumber().should.be.equal(firstVerseTimestamp);
-
-        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
-        bcUTC.toNumber().should.be.equal(nodeUTC);
+        bcUTC.toNumber().should.be.equal(getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp));
 
         bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 0, matchDay = 2).should.be.fulfilled;
         bcUTC.toNumber().should.be.equal(firstVerseTimestamp + 24*3600);
-
-        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
-        bcUTC.toNumber().should.be.equal(nodeUTC);
+        bcUTC.toNumber().should.be.equal(getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp));
 
         bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 0, matchDay = 1).should.be.fulfilled;
         bcUTC.toNumber().should.be.equal(firstVerseTimestamp + 9.5*3600);
-
-        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
-        bcUTC.toNumber().should.be.equal(nodeUTC);
+        bcUTC.toNumber().should.be.equal(getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp));
 
         bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 1, matchDay = 1).should.be.fulfilled;
         bcUTC.toNumber().should.be.equal(firstVerseTimestamp + 9.5*3600 + 7*24*3600);
-
-        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
-        bcUTC.toNumber().should.be.equal(nodeUTC);
+        bcUTC.toNumber().should.be.equal(getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp));
 
         bcUTC = await updates.getMatchUTC(tz = TZForRound1, round = 1, matchDay = 2).should.be.fulfilled;
         bcUTC.toNumber().should.be.equal(firstVerseTimestamp + 24*3600 + 7*24*3600);
@@ -229,17 +227,13 @@ contract('Updates', (accounts) => {
         let deltaN = (tz >= TZForRound1) ? (tz-TZForRound1) : (24+tz-TZForRound1); 
         bcUTC = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
         bcUTC.toNumber().should.be.equal(firstVerseTimestamp + deltaN * 3600);
-
-        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
-        bcUTC.toNumber().should.be.equal(nodeUTC);
+        bcUTC.toNumber().should.be.equal(getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp));
 
         tz = 24;
         deltaN = (tz >= TZForRound1) ? (tz-TZForRound1) : (24+tz-TZForRound1); 
         bcUTC = await updates.getMatchUTC(tz, round = 0, matchDay = 0).should.be.fulfilled;
         bcUTC.toNumber().should.be.equal(firstVerseTimestamp + deltaN * 3600);
-
-        nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
-        bcUTC.toNumber().should.be.equal(nodeUTC);
+        bcUTC.toNumber().should.be.equal(getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp));
     });
 
     it('test getCurrentRound', async () =>  {
