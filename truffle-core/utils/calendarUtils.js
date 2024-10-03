@@ -113,10 +113,34 @@ function getMatchHalfUTC(tz, round, matchDay, half, TZForRound1, firstVerseTimeS
 }
 
 
+function initMatchtimeAndTimezone(deployTimeInUnixEpochSecs) {
+  const secsOfDay = deployTimeInUnixEpochSecs % (3600 * 24);
+  const hour = Math.floor(secsOfDay / 3600);  // 0, ..., 23
+  const minute = Math.floor((secsOfDay - hour * 3600) / 60);  // 0, ..., 59
+  const secs = secsOfDay - hour * 3600 - minute * 60;  // 0, ..., 59
+
+  let TZForRound1;
+  let firstVerseTimeStamp;
+  
+  if (minute < 27) {
+      TZForRound1 = normalizeTZ(hour);
+      firstVerseTimeStamp = deployTimeInUnixEpochSecs + (29 - minute) * 60 + (60 - secs);
+  } else {
+      TZForRound1 = normalizeTZ(hour + 1);
+      firstVerseTimeStamp = deployTimeInUnixEpochSecs + (29 - minute) * 60 + (60 - secs) + 3600;
+  }
+
+  return {
+      TZForRound1,
+      firstVerseTimeStamp,
+  };
+}
+
 module.exports = {
   nextTimeZoneToPlay,
   getCurrentRound,
   getMatch1stHalfUTC,
   getMatchHalfUTC,
   calendarInfo,
+  initMatchtimeAndTimezone,
 }

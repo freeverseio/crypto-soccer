@@ -27,7 +27,7 @@ const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 const UpdatesBase = artifacts.require('UpdatesBase');
 
 const seedrandom = require('seedrandom');
-const {nextTimeZoneToPlay, getCurrentRound, getMatch1stHalfUTC, getMatchHalfUTC, calendarInfo} = require('../utils/calendarUtils.js');
+const {nextTimeZoneToPlay, getCurrentRound, getMatch1stHalfUTC, getMatchHalfUTC, calendarInfo, initMatchtimeAndTimezone} = require('../utils/calendarUtils.js');
 
 contract('Updates', (accounts) => {
     const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
@@ -74,6 +74,68 @@ contract('Updates', (accounts) => {
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         VERSES_PER_DAY = await constants.get_VERSES_PER_DAY().should.be.fulfilled;
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
+    });
+
+    it('initMatchtimeAndTimezone', async () =>  {
+        let info;
+
+        // If we deploy exactly at midnight, we need to wait half an hour
+        info1 = initMatchtimeAndTimezone(deployTimeInUnixEpochSecs = 0);
+        assert.deepEqual(info1, {"TZForRound1": 24, "firstVerseTimeStamp": 1800});
+
+        info2 = calendarInfo(verse = 0, info1.TZForRound1 = 15, info1.firstVerseTimeStamp);
+        assert.deepEqual(info2, {"timezone": info1.TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": info1.firstVerseTimeStamp});
+
+        info1 = initMatchtimeAndTimezone(deployTimeInUnixEpochSecs = 600);
+        assert.deepEqual(info1, {"TZForRound1": 24, "firstVerseTimeStamp": 1800});
+
+        info2 = calendarInfo(verse = 0, info1.TZForRound1 = 15, info1.firstVerseTimeStamp);
+        assert.deepEqual(info2, {"timezone": info1.TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": info1.firstVerseTimeStamp});
+        
+        // After half an hour, we would have to wait under hour
+        info1 = initMatchtimeAndTimezone(deployTimeInUnixEpochSecs = 1801);
+        assert.deepEqual(info1, {"TZForRound1": 1, "firstVerseTimeStamp": 1800 + 3600});
+
+        info2 = calendarInfo(verse = 0, info1.TZForRound1 = 15, info1.firstVerseTimeStamp);
+        assert.deepEqual(info2, {"timezone": info1.TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": info1.firstVerseTimeStamp});
+
+        info1 = initMatchtimeAndTimezone(deployTimeInUnixEpochSecs = 1801 + 1800);
+        assert.deepEqual(info1, {"TZForRound1": 1, "firstVerseTimeStamp": 1800 + 3600});
+
+        info2 = calendarInfo(verse = 0, info1.TZForRound1 = 15, info1.firstVerseTimeStamp);
+        assert.deepEqual(info2, {"timezone": info1.TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": info1.firstVerseTimeStamp});
+
+        // After 1 hour...
+        info1 = initMatchtimeAndTimezone(deployTimeInUnixEpochSecs = 1801 + 3600);
+        assert.deepEqual(info1, {"TZForRound1": 2, "firstVerseTimeStamp": 1800 + 3600  * 2});
+
+        info2 = calendarInfo(verse = 0, info1.TZForRound1 = 15, info1.firstVerseTimeStamp);
+        assert.deepEqual(info2, {"timezone": info1.TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": info1.firstVerseTimeStamp});
+
+        // 1727967000 = GMT: Thursday, 3 October 2024 14:50:00 (16:50 in Spain)
+        // 1727969400 = GMT: Thursday, 3 October 2024 15:30:00 (17:50 in Spain)
+        const referenceDeploy = 1727967000;
+        info1 = initMatchtimeAndTimezone(deployTimeInUnixEpochSecs = referenceDeploy);
+        const referenceDeployTZ = 15;
+        const referenceDeployTimestamp = 1727969400;
+        assert.deepEqual(info1, {"TZForRound1": referenceDeployTZ, "firstVerseTimeStamp": referenceDeployTimestamp});
+
+        info2 = calendarInfo(verse = 0, info1.TZForRound1 = 15, info1.firstVerseTimeStamp);
+        assert.deepEqual(info2, {"timezone": info1.TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": info1.firstVerseTimeStamp});
+
+        // Spain is in timezone 10, he would play on 1728037800, 1728072000, 1728124200
+        //   1728037800 = GMT: Friday, 4 October 2024 10:30:00 (12:30)
+        //   1728072000 = GMT: Friday, 4 October 2024 20:00:00 (22:30)
+        //   1728124200 = GMT: Saturday, 5 October 2024 10:30:00 (12:30)
+        const spainTZ = 10;
+        info2 = calendarInfo(76, referenceDeployTZ, referenceDeployTimestamp);
+        assert.deepEqual(info2, {"timezone": spainTZ, "matchDay": 0, "half": 0, "leagueRound": 0, "timestamp": 1728037800});
+        
+        info2 = calendarInfo(114, referenceDeployTZ, referenceDeployTimestamp);
+        assert.deepEqual(info2, {"timezone": spainTZ, "matchDay": 1, "half": 0, "leagueRound": 0, "timestamp": 1728072000});
+
+        info2 = calendarInfo(172, referenceDeployTZ, referenceDeployTimestamp);
+        assert.deepEqual(info2, {"timezone": spainTZ, "matchDay": 2, "half": 0, "leagueRound": 0, "timestamp": 1728124200});
     });
 
     it('calendarInfo', async () =>  {
