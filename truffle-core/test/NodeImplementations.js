@@ -51,11 +51,13 @@ contract('Updates', (accounts) => {
     }
     
 
-    // Inputs: the verse to be played, and the timezone that played the very first games
+    // Inputs:
+    // - verse: the verse to be played
+    // - TZForRound1: the timezone that played the very first games
     // Outputs: for the verse to be played:
-    // - which timezone plays
-    // - what matchDay of the league it corresponds to: a number in [0, 13]
-    // - whether it corresponds to the first half (turn = 0), or to the second half (turn = 1)
+    // - timezone: which timezone plays
+    // - matchDay: what matchDay of the league it corresponds to: a number in [0, 13]
+    // - turn: whether it corresponds to the first half (turn = 0), or to the second half (turn = 1)
     function timeZoneToUpdatePure(verse, TZForRound1) {
         const NULL_TIMEZONE = 0; 
         const VERSES_PER_DAY = 96; 
@@ -90,7 +92,15 @@ contract('Updates', (accounts) => {
         return 1 + ((24 + tz - 1) % 24);
     }
 
-    // example firstVerseTimeStamp = 1633046400; // Example Unix timestamp (in seconds)
+    // Returns the Unix timestamp in UTC (seconds) corresponding to the start of a match's first half 
+    // Inputs:
+    // - tz: the timezone where the match belongs
+    // - round: the round of a league (the first league played is round 0, the next league is round 1, etc.)
+    // - matchDay: what matchDay of the league it corresponds to: a number in [0, 13]
+    // - TZForRound1: the timezone that played the very first games
+    // - firstVerseTimeStamp: the timestamp the very first games where played at 
+    // Outputs:
+    // - timeUTC: the Unix timestamp in UTC (seconds) corresponding to the start of a match's first half 
     function getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimeStamp) {
         const DAYS_PER_ROUND = 7;
         if (tz <= 0 || tz >= 25) {
