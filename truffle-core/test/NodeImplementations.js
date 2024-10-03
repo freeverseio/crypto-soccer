@@ -1,8 +1,5 @@
 /*
- Tests for all functions in
-    Updates.sol
-    Challenges.sol
-    and how Updates relates to Stakers.sol
+ Tests node js implementations agains solidity ones
 */
 const BN = require('bn.js');
 require('chai')
@@ -31,6 +28,8 @@ const EncodingSkills = artifacts.require('EncodingSkills');
 const EncodingState = artifacts.require('EncodingState');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 const UpdatesBase = artifacts.require('UpdatesBase');
+
+const seedrandom = require('seedrandom');
 
 
 contract('Updates', (accounts) => {
@@ -150,6 +149,27 @@ contract('Updates', (accounts) => {
         nodeResult.timezone.should.be.equal(24);
         nodeResult.turnInDay.should.be.equal(1);
         nodeResult.day.should.be.equal(4);
+    });
+
+    it('TimezonetoUptate bug from field with random inputs', async () =>  {
+        const numberOfTests = 100;
+        const rng = seedrandom('dummyseed');
+
+        function getRandomValue(min, max) {
+            return Math.floor(rng() * (max - min + 1)) + min;
+        }
+    
+        for (let i = 0; i < numberOfTests; i++) {
+            const randomVerse = getRandomValue(1, 1000000);
+            const randomTZForRound1 = getRandomValue(0, 24); // Timezones range from 1 to 24
+    
+            const bcResult = await updates.timeZoneToUpdatePure(randomVerse, randomTZForRound1).should.be.fulfilled;
+            const nodeResult = timeZoneToUpdatePure(randomVerse, randomTZForRound1);
+    
+            bcResult.timezone.toNumber().should.be.equal(nodeResult.timezone);
+            bcResult.turnInDay.toNumber().should.be.equal(nodeResult.turnInDay);
+            bcResult.day.toNumber().should.be.equal(nodeResult.day);
+        }
     });
 
 });
