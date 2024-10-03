@@ -58,7 +58,7 @@ contract('Updates', (accounts) => {
     // - timezone: which timezone plays
     // - matchDay: what matchDay of the league it corresponds to: a number in [0, 13]
     // - turn: whether it corresponds to the first half (turn = 0), or to the second half (turn = 1)
-    function timeZoneToUpdatePure(verse, TZForRound1) {
+    function nextTimeZoneToPlay(verse, TZForRound1) {
         const NULL_TIMEZONE = 0; 
         const VERSES_PER_DAY = 96; 
         const MATCHDAYS_PER_ROUND = 14;
@@ -140,6 +140,7 @@ contract('Updates', (accounts) => {
         return getMatch1stHalfUTC(tz, round, matchDay, TZForRound1, firstVerseTimeStamp) + extraSeconds;
     }
 
+
     beforeEach(async () => {
         defaultSetup = deployUtils.getDefaultSetup(accounts);
         owners = defaultSetup.owners;
@@ -163,19 +164,19 @@ contract('Updates', (accounts) => {
         VERSES_PER_ROUND = await constants.get_VERSES_PER_ROUND().should.be.fulfilled;
     });
 
-    it2('TimezonetoUptate bug from field', async () =>  {
+    it('TimezonetoUptate bug from field', async () =>  {
         const bcResult = await updates.timeZoneToUpdatePure(12289,24).should.be.fulfilled;
         bcResult.timezone.toNumber().should.be.equal(24);
         bcResult.turnInDay.toNumber().should.be.equal(1);
         bcResult.day.toNumber().should.be.equal(4);
 
-        const nodeResult = timeZoneToUpdatePure(12289,24);
+        const nodeResult = nextTimeZoneToPlay(12289,24);
         nodeResult.timezone.should.be.equal(24);
         nodeResult.turnInDay.should.be.equal(1);
         nodeResult.day.should.be.equal(4);
     });
 
-    it2('TimezonetoUptate bug from field with random inputs', async () =>  {
+    it('TimezonetoUptate bug from field with random inputs', async () =>  {
         const numberOfTests = 100;
         const rng = seedrandom('dummyseed');
 
@@ -188,7 +189,7 @@ contract('Updates', (accounts) => {
             const randomTZForRound1 = getRandomValue(0, 24); // Timezones range from 1 to 24
     
             const bcResult = await updates.timeZoneToUpdatePure(randomVerse, randomTZForRound1).should.be.fulfilled;
-            const nodeResult = timeZoneToUpdatePure(randomVerse, randomTZForRound1);
+            const nodeResult = nextTimeZoneToPlay(randomVerse, randomTZForRound1);
     
             bcResult.timezone.toNumber().should.be.equal(nodeResult.timezone);
             bcResult.turnInDay.toNumber().should.be.equal(nodeResult.turnInDay);
