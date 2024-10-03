@@ -113,10 +113,10 @@ function getMatchHalfUTC(tz, round, matchDay, half, TZForRound1, firstVerseTimeS
 }
 
 
-  module.exports = {
-    nextTimeZoneToPlay,
-    getCurrentRound,
-    getMatch1stHalfUTC,
-    getMatchHalfUTC,
-    calendarInfo,
-  }
+module.exports = {
+  nextTimeZoneToPlay,
+  getCurrentRound,
+  getMatch1stHalfUTC,
+  getMatchHalfUTC,
+  calendarInfo,
+}
