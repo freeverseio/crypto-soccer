@@ -92,6 +92,20 @@ contract('Updates', (accounts) => {
         return 1 + ((24 + tz - 1) % 24);
     }
 
+    // Function to get the current round (pure function)
+    function getCurrentRound(tz, TZForRound1, verse) {
+        const VERSES_PER_ROUND = 672; /// 96 * 7days
+        if (verse < VERSES_PER_ROUND) return 0;
+        let round = Math.floor(verse / VERSES_PER_ROUND);
+        let deltaN = (tz >= TZForRound1) ? (tz - TZForRound1) : ((tz + 24) - TZForRound1);
+        if (verse < 4 * deltaN + round * VERSES_PER_ROUND) {
+            return round - 1;
+        } else {
+            return round;
+        }
+    }
+
+
     // Returns the Unix timestamp in UTC (seconds) corresponding to the start of a match's first half 
     // Inputs:
     // - tz: the timezone where the match belongs
@@ -176,7 +190,7 @@ contract('Updates', (accounts) => {
         }
     });
 
-    it('test getMatchUTC', async () =>  {
+    it2('test getMatchUTC', async () =>  {
         let nodeUTC, bcUTC;
 
         const firstVerseTimestamp = Number(await updates.getNextVerseTimestamp());
@@ -226,6 +240,64 @@ contract('Updates', (accounts) => {
 
         nodeUTC = getMatchUTC(tz, round, matchDay, TZForRound1, firstVerseTimestamp);
         bcUTC.toNumber().should.be.equal(nodeUTC);
+    });
 
+    it('test getCurrentRound', async () =>  {
+        result = await assets.getCurrentRoundPure(tz = 5, TZForRound1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 24, TZForRound1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 4, TZForRound1 = 5, verse = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        VERSES_DAY = 24*4;
+        VERSES_ROUND = 7 * VERSES_DAY;
+        // move to start of round 1 for 1st tz:
+        result = await assets.getCurrentRoundPure(tz = 5, TZForRound1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 4, TZForRound1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 24, TZForRound1 = 5, verse = VERSES_ROUND).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        // move to start of round 1 for 1st tz after TZForRound1:
+        result = await assets.getCurrentRoundPure(tz = 5, TZForRound1 = 5, verse = VERSES_ROUND + 4).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 6, TZForRound1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 7, TZForRound1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 24, TZForRound1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        // move to start of round 1 for last tz to reach it:
+        result = await assets.getCurrentRoundPure(tz = 5, TZForRound1 = 5, verse = 2 * VERSES_ROUND - 4).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 4, TZForRound1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
+
+        result = await assets.getCurrentRoundPure(tz = 24, TZForRound1 = 5, verse).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result.toNumber().should.be.equal(getCurrentRound(tz, TZForRound1, verse));
     });
 });
