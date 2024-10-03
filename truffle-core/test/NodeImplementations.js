@@ -233,6 +233,9 @@ contract('Updates', (accounts) => {
 
         info = calendarInfo(verse = VERSES_PER_ROUND + 2, TZForRound1 = 1, firstVerseTimeStamp = 0);
         assert.deepEqual(info, {"timezone": 16, "matchDay": 13, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
+
+        info = calendarInfo(verse = VERSES_PER_ROUND + 2, TZForRound1 = 1, firstVerseTimeStamp = 534535);
+        assert.deepEqual(info, {"timezone": 16, "matchDay": 13, "half": 0, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
     });
 
     it('TimezonetoUptate bug from field', async () =>  {
