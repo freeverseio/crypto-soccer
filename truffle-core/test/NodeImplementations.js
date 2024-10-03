@@ -146,9 +146,7 @@ contract('Updates', (accounts) => {
         if (timeZoneData.timezone == NULL_TIMEZONE) {
             return {timezone: NULL_TIMEZONE, matchDay: null, half: null, leagueRound: null, timestamp: null};
         }
-        console.log(timeZoneData, TZForRound1, verse);
-        const leagueRound = getCurrentRound(timeZoneData.timeZoneData, TZForRound1, verse);
-        console.log(timeZoneData, TZForRound1, verse, leagueRound);
+        const leagueRound = getCurrentRound(timeZoneData.timezone, TZForRound1, verse);
         const timestamp = getMatchHalfUTC(timeZoneData.timezone, leagueRound, timeZoneData.matchDay, timeZoneData.half, TZForRound1, firstVerseTimeStamp);
         return {
             timezone: timeZoneData.timezone,
