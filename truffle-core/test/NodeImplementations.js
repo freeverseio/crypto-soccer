@@ -217,9 +217,23 @@ contract('Updates', (accounts) => {
         info = calendarInfo(verse = 9, TZForRound1 = 1, firstVerseTimeStamp = 0);
         assert.deepEqual(info, {"timezone": TZForRound1 + 2, "matchDay": 0, "half": 1, "leagueRound": 0, "timestamp": firstVerseTimeStamp + 900 * verse});
 
+        info = calendarInfo(verse = 10, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
 
+        info = calendarInfo(verse = 11, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": NULL_TIMEZONE, "matchDay": null, "half": null, "leagueRound": null, "timestamp": null});
+
+        // after one leage:
+        const VERSES_PER_ROUND = 672; /// 96 * 7days
+        info = calendarInfo(verse = VERSES_PER_ROUND, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 0, "leagueRound": 1, "timestamp": firstVerseTimeStamp + 900 * verse});
+
+        info = calendarInfo(verse = VERSES_PER_ROUND + 1, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": TZForRound1, "matchDay": 0, "half": 1, "leagueRound": 1, "timestamp": firstVerseTimeStamp + 900 * verse});
+
+        info = calendarInfo(verse = VERSES_PER_ROUND + 2, TZForRound1 = 1, firstVerseTimeStamp = 0);
+        assert.deepEqual(info, {"timezone": 16, "matchDay": 13, "half": 0, "leagueRound": 1, "timestamp": firstVerseTimeStamp + 900 * verse});
     });
-    return;
 
     it('TimezonetoUptate bug from field', async () =>  {
         const bcResult = await updates.timeZoneToUpdatePure(12289,24).should.be.fulfilled;
