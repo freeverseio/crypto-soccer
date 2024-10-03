@@ -6,11 +6,8 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
-const truffleAssert = require('truffle-assertions');
 const timeTravel = require('../utils/TimeTravel.js');
 const deployUtils = require('../utils/deployUtils.js');
-const merkleUtils = require('../utils/merkleUtils.js');
-const chllUtils = require('../utils/challengeUtils.js');
 const { assert } = require('chai');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
@@ -34,40 +31,12 @@ const seedrandom = require('seedrandom');
 
 contract('Updates', (accounts) => {
     const inheritedArtfcts = [UniverseInfo, EncodingSkills, EncodingState, EncodingSkillsSetters, UpdatesBase];
-    const nullHash = web3.eth.abi.encodeParameter('bytes32','0x0');
     const nLevelsInOneChallenge = 11;
     const nNonNullLeafsInLeague = 640;
     const nLevelsInLastChallenge = 10; // must be nearest exponent to 640 ... 1024
     
     const it2 = async(text, f) => {};
     
-    function normalizeTZ(tz) {
-        return 1 + ((tz - 1) % 24);
-    }
-
-    const moveToNextVerse = async (updates, extraSecs = 0) => {
-        now = await utils.getNow().should.be.fulfilled;
-        nextTime = await updates.getNextVerseTimestamp().should.be.fulfilled;
-        await timeTravel.advanceTime(nextTime - now + extraSecs);
-        await timeTravel.advanceBlock().should.be.fulfilled;
-    };
-
-    function isCloseEnough(timeResult, timeExpected) {
-        // everything is in secs
-        allowedError = 4;
-        closeEnough  = (timeResult > timeExpected - allowedError); 
-        closeEnough = closeEnough && (timeResult < timeExpected + allowedError);
-        return closeEnough;
-    };
-    
-    function arrayToHex(x) {
-        y = [...x];
-        for (i = 0; i < x.length; i++) {
-            y[i] = web3.utils.toHex(x[i]);
-        }
-        return y;
-    }
-
     async function deployAndConfigureStakers(Stakers, updates, setup) {
         const { singleTimezone, owners, requiredStake } = setup;
         const stakers  = await Stakers.new(updates.address, requiredStake).should.be.fulfilled;
