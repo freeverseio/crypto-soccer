@@ -51,6 +51,11 @@ contract('Updates', (accounts) => {
     }
     
 
+    // Inputs: the verse to be played, and the timezone that played the very first games
+    // Outputs: for the verse to be played:
+    // - which timezone plays
+    // - what matchDay of the league it corresponds to: a number in [0, 13]
+    // - whether it corresponds to the first half (turn = 0), or to the second half (turn = 1)
     function timeZoneToUpdatePure(verse, TZForRound1) {
         const NULL_TIMEZONE = 0; 
         const VERSES_PER_DAY = 96; 
