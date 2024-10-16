@@ -1,15 +1,36 @@
 pragma solidity >= 0.6.3;
 import "../encoders/EncodingMatchLog.sol";
 import "../encoders/EncodingTacticsBase3.sol";
-import "../encoders/EncodingSkillsGetters.sol";
-import "../storage/Constants.sol";
+import "../storage/AssetsView.sol";
 
 /**
  @title Library of pure functions used by company to compute useful data
  @author Freeverse.io, www.freeverse.io
 */
 
-contract Utils is EncodingMatchLog, EncodingTacticsBase3, EncodingSkillsGetters, Constants {
+contract Utils is AssetsView, EncodingMatchLog, EncodingTacticsBase3 {
+
+    function createTeam(
+        uint8 timeZone,
+        uint256 countryIdxInTZ,
+        uint256 teamIdxInTZ,
+        uint256 deployTimeInUnixEpochSecs,
+        uint256 divisionCreationRound
+    ) public pure returns (
+        uint256 teamId,
+        uint256[PLAYERS_PER_TEAM_INIT] memory playerIds,
+        uint256[PLAYERS_PER_TEAM_INIT] memory playerSkillsAtBirth
+    ) {
+        teamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInTZ);
+        uint256 playerIdxInCountry = teamIdxInTZ * PLAYERS_PER_TEAM_INIT;
+        uint256 gameDeployDay = secsToDays(deployTimeInUnixEpochSecs);
+
+        for (uint256 i = 0; i < PLAYERS_PER_TEAM_INIT; i++ ) {
+            uint256 playerId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, playerIdxInCountry + i);
+            playerIds[i] = playerId;
+            playerSkillsAtBirth[i] = getPlayerSkillsAtBirthPure(playerId, gameDeployDay, divisionCreationRound);
+        }
+    }
 
     function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {
         decodedLog[0] = uint32(getTeamSumSkills(log));
