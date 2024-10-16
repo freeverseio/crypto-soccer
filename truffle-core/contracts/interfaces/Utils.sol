@@ -1,4 +1,4 @@
-pragma solidity >= 0.6.3;
+pragma solidity >=0.6.3;
 import "../encoders/EncodingMatchLog.sol";
 import "../encoders/EncodingTacticsBase3.sol";
 import "../storage/AssetsView.sol";
@@ -29,6 +29,62 @@ contract Utils is AssetsView, EncodingMatchLog, EncodingTacticsBase3 {
             uint256 playerId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, playerIdxInCountry + i);
             playerIds[i] = playerId;
             playerSkillsAtBirth[i] = getPlayerSkillsAtBirthPure(playerId, gameDeployDay, divisionCreationRound);
+        }
+    }
+
+
+    function fullDecodeSkillsForEntireTeam(
+        uint256[PLAYERS_PER_TEAM_INIT] memory encodedSkills
+    )
+        public
+        pure
+        returns (
+            uint32[PLAYERS_PER_TEAM_INIT][N_SKILLS] memory skills,
+            uint16[PLAYERS_PER_TEAM_INIT] memory dayOfBirth,
+            uint8[PLAYERS_PER_TEAM_INIT][4] memory birthTraits,
+            uint256[PLAYERS_PER_TEAM_INIT] memory playerId,
+            bool[PLAYERS_PER_TEAM_INIT][5]
+                memory aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st,
+            uint8[PLAYERS_PER_TEAM_INIT][3]
+                memory generationGamesNonStopInjuryWeeks
+        )
+    {
+        for (uint256 i = 0; i < PLAYERS_PER_TEAM_INIT; i++) {
+            (
+                uint32[5] memory playerSkills,
+                uint16 birth,
+                uint8[4] memory traits,
+                uint256 id,
+                bool[5] memory status,
+                uint8[3] memory genGamesInjury
+            ) = fullDecodeSkills(encodedSkills[i]);
+
+            // Now copy the smaller arrays into the larger arrays
+            for (uint8 j = 0; j < 5; j++) {
+                skills[i][j] = playerSkills[j];
+                aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[i][j] = status[j];
+            }
+
+            for (uint8 j = 0; j < 4; j++) {
+                birthTraits[i][j] = traits[j];
+            }
+
+            for (uint8 j = 0; j < 3; j++) {
+                generationGamesNonStopInjuryWeeks[i][j] = genGamesInjury[j];
+            }
+
+            dayOfBirth[i] = birth;
+            playerId[i] = id;
+        }
+
+        return (
+            skills,
+            dayOfBirth,
+            birthTraits,
+            playerId,
+            aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st,
+            generationGamesNonStopInjuryWeeks
+        );
         }
     }
 

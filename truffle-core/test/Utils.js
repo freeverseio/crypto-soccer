@@ -52,6 +52,7 @@ contract('Privileged', (accounts) => {
         assert.equal(teamId.toString(), "2748779069440");
         assert.equal(playerIds.length, 18);
         assert.equal(playerSkillsAtBirth.length, 18);
+        const teamDecodedSkills = await utils.fullDecodeSkillsForEntireTeam(playerSkillsAtBirth);
         for (let i = 0; i < 18; i++) {
             const decodedSkills = await utils.fullDecodeSkills(playerSkillsAtBirth[i]);
             assert.equal(decodedSkills.playerId.toString(), playerIds[i].toString())
