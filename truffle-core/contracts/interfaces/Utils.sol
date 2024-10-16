@@ -10,6 +10,40 @@ import "../storage/AssetsView.sol";
 
 contract Utils is AssetsView, EncodingMatchLog, EncodingTacticsBase3 {
 
+    struct PlayerSkills {
+        uint32[N_SKILLS] skills;
+        uint16 dayOfBirth;
+        uint8[4] birthTraits;
+        uint256 playerId;
+        bool[5] aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st;
+        uint8[3] generationGamesNonStopInjuryWeeks;
+    }
+
+    function createTeamAndDecodeSkills(
+        uint8 timeZone,
+        uint256 countryIdxInTZ,
+        uint256 teamIdxInTZ,
+        uint256 deployTimeInUnixEpochSecs,
+        uint256 divisionCreationRound
+    ) public pure returns (
+        uint256 teamId,
+        uint256[PLAYERS_PER_TEAM_INIT] memory playerIds,
+        PlayerSkills[PLAYERS_PER_TEAM_INIT] memory decodedPlayerSkills
+    ) {
+        uint256[PLAYERS_PER_TEAM_INIT] memory encodedSkills;
+        (teamId, playerIds, encodedSkills) = createTeam(timeZone, countryIdxInTZ, teamIdxInTZ, deployTimeInUnixEpochSecs, divisionCreationRound);
+        for (uint256 i = 0; i < PLAYERS_PER_TEAM_INIT; i++ ) {
+            (
+                decodedPlayerSkills[i].skills,
+                decodedPlayerSkills[i].dayOfBirth,
+                decodedPlayerSkills[i].birthTraits,
+                decodedPlayerSkills[i].playerId,
+                decodedPlayerSkills[i].aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st,
+                decodedPlayerSkills[i].generationGamesNonStopInjuryWeeks
+            ) = fullDecodeSkills(encodedSkills[i]);
+        }
+    }
+
     function createTeam(
         uint8 timeZone,
         uint256 countryIdxInTZ,
