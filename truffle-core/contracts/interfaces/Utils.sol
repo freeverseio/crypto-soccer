@@ -39,13 +39,13 @@ contract Utils is AssetsView, EncodingMatchLog, EncodingTacticsBase3 {
         public
         pure
         returns (
-            uint32[PLAYERS_PER_TEAM_INIT][N_SKILLS] memory skills,
+            uint32[N_SKILLS][PLAYERS_PER_TEAM_INIT] memory skills,
             uint16[PLAYERS_PER_TEAM_INIT] memory dayOfBirth,
-            uint8[PLAYERS_PER_TEAM_INIT][4] memory birthTraits,
+            uint8[4][PLAYERS_PER_TEAM_INIT] memory birthTraits,
             uint256[PLAYERS_PER_TEAM_INIT] memory playerId,
-            bool[PLAYERS_PER_TEAM_INIT][5]
+            bool[5][PLAYERS_PER_TEAM_INIT]
                 memory aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st,
-            uint8[PLAYERS_PER_TEAM_INIT][3]
+            uint8[3][PLAYERS_PER_TEAM_INIT]
                 memory generationGamesNonStopInjuryWeeks
         )
     {
@@ -60,16 +60,16 @@ contract Utils is AssetsView, EncodingMatchLog, EncodingTacticsBase3 {
             ) = fullDecodeSkills(encodedSkills[i]);
 
             for (uint8 j = 0; j < N_SKILLS; j++) {
-                skills[j][i] = playerSkills[j];
-                aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[j][i] = status[j];
+                skills[i][j] = playerSkills[j];
+                aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[i][j] = status[j];
             }
 
             for (uint8 j = 0; j < 4; j++) {
-                birthTraits[j][i] = traits[j];
+                birthTraits[i][j] = traits[j];
             }
 
             for (uint8 j = 0; j < 3; j++) {
-                generationGamesNonStopInjuryWeeks[j][i] = genGamesInjury[j];
+                generationGamesNonStopInjuryWeeks[i][j] = genGamesInjury[j];
             }
 
             dayOfBirth[i] = birth;
