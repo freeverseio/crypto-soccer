@@ -51,7 +51,7 @@ contract Utils is AssetsView, EncodingMatchLog, EncodingTacticsBase3 {
     {
         for (uint256 i = 0; i < PLAYERS_PER_TEAM_INIT; i++) {
             (
-                uint32[5] memory playerSkills,
+                uint32[N_SKILLS] memory playerSkills,
                 uint16 birth,
                 uint8[4] memory traits,
                 uint256 id,
@@ -59,18 +59,17 @@ contract Utils is AssetsView, EncodingMatchLog, EncodingTacticsBase3 {
                 uint8[3] memory genGamesInjury
             ) = fullDecodeSkills(encodedSkills[i]);
 
-            // Now copy the smaller arrays into the larger arrays
-            for (uint8 j = 0; j < 5; j++) {
-                skills[i][j] = playerSkills[j];
-                aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[i][j] = status[j];
+            for (uint8 j = 0; j < N_SKILLS; j++) {
+                skills[j][i] = playerSkills[j];
+                aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st[j][i] = status[j];
             }
 
             for (uint8 j = 0; j < 4; j++) {
-                birthTraits[i][j] = traits[j];
+                birthTraits[j][i] = traits[j];
             }
 
             for (uint8 j = 0; j < 3; j++) {
-                generationGamesNonStopInjuryWeeks[i][j] = genGamesInjury[j];
+                generationGamesNonStopInjuryWeeks[j][i] = genGamesInjury[j];
             }
 
             dayOfBirth[i] = birth;
@@ -85,7 +84,6 @@ contract Utils is AssetsView, EncodingMatchLog, EncodingTacticsBase3 {
             aligned1stSubst1stRedCardLastGameOutOfGame1stYellow1st,
             generationGamesNonStopInjuryWeeks
         );
-        }
     }
 
     function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {

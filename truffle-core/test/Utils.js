@@ -21,7 +21,7 @@ function getLevel(skills) {
     return level;
 }
 
-contract('Privileged', (accounts) => {
+contract('Utils', (accounts) => {
     let privileged = null;
     const epochInDays = 18387; // May 5th 2020
     const tz = 1;
