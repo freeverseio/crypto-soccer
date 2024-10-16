@@ -52,9 +52,10 @@ contract('Privileged', (accounts) => {
         assert.equal(playerIds.length, 18);
         assert.equal(playerSkillsAtBirth.length, 18);
         for (let i = 0; i < 18; i++) {
-            console.log(playerIds[i].toString(), playerSkillsAtBirth[i].toString());
+            const decodedSkills = await utils.fullDecodeSkills(playerSkillsAtBirth[i]);
+            assert.equal(decodedSkills.playerId.toString(), playerIds[i].toString())
+            console.log(decodedSkills.dayOfBirth.toString())
         }
-
     });
 
     
