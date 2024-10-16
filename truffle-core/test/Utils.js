@@ -6,7 +6,6 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
-const Privileged = artifacts.require('Privileged');
 const Utils = artifacts.require('Utils');
 const debug = require('../utils/debugUtils.js');
 const { isBigNumber } = require('web3-utils');
@@ -21,11 +20,9 @@ function getLevel(skills) {
     return level;
 }
 
-contract('Privileged', (accounts) => {
-    let privileged = null;
-    const epochInDays = 18387; // May 5th 2020
-    const tz = 1;
-    const countryIdxInTz = 1;
+contract('Utils', (accounts) => {
+    let utils = null;
+    const N_PLAYERS_IN_TEAM = 18;
 
     const it2 = async(text, f) => {};
 
@@ -50,10 +47,14 @@ contract('Privileged', (accounts) => {
         const divisionCreationRound = 0;
         const {teamId, playerIds, playerSkillsAtBirth} = await utils.createTeam(timeZone, countryIdxInTZ, teamIdxInTZ, deployTimeInUnixEpochSecs, divisionCreationRound);
         assert.equal(teamId.toString(), "2748779069440");
-        assert.equal(playerIds.length, 18);
-        assert.equal(playerSkillsAtBirth.length, 18);
-        for (let i = 0; i < 18; i++) {
+        assert.equal(playerIds.length, N_PLAYERS_IN_TEAM);
+        assert.equal(playerSkillsAtBirth.length, N_PLAYERS_IN_TEAM);
+        const teamDecodedSkills = await utils.fullDecodeSkillsForEntireTeam(playerSkillsAtBirth);
+
+        for (let i = 0; i < N_PLAYERS_IN_TEAM; i++) {
+            assert.equal(teamDecodedSkills.skills[i].length, 5);
             const decodedSkills = await utils.fullDecodeSkills(playerSkillsAtBirth[i]);
+            debug.compareArrays(teamDecodedSkills, decodedSkills, toNum = true);
             assert.equal(decodedSkills.playerId.toString(), playerIds[i].toString())
             const decodedPlayerId = await utils.decodeTZCountryAndVal(playerIds[i]);
             assert.equal(decodedPlayerId[0].toString(), timeZone.toString())
@@ -70,15 +71,17 @@ contract('Privileged', (accounts) => {
         const divisionCreationRound = 0;
         const {teamId, playerIds, playerSkillsAtBirth} = await utils.createTeam(timeZone, countryIdxInTZ, teamIdxInTZ, deployTimeInUnixEpochSecs, divisionCreationRound);
         assert.equal(teamId.toString(), "6322997166085");
-        assert.equal(playerIds.length, 18);
-        assert.equal(playerSkillsAtBirth.length, 18);
-        for (let i = 0; i < 18; i++) {
+        assert.equal(playerIds.length, N_PLAYERS_IN_TEAM);
+        assert.equal(playerSkillsAtBirth.length, N_PLAYERS_IN_TEAM);
+        const teamDecodedSkills = await utils.fullDecodeSkillsForEntireTeam(playerSkillsAtBirth);
+        for (let i = 0; i < N_PLAYERS_IN_TEAM; i++) {
             const decodedSkills = await utils.fullDecodeSkills(playerSkillsAtBirth[i]);
+            debug.compareArrays(teamDecodedSkills, decodedSkills, toNum = true);
             assert.equal(decodedSkills.playerId.toString(), playerIds[i].toString())
             const decodedPlayerId = await utils.decodeTZCountryAndVal(playerIds[i]);
             assert.equal(decodedPlayerId[0].toString(), timeZone.toString())
             assert.equal(decodedPlayerId[1].toString(), countryIdxInTZ.toString())
-            assert.equal(decodedPlayerId[2].toString(), (i + 5 * 18).toString())
+            assert.equal(decodedPlayerId[2].toString(), (i + 5 * N_PLAYERS_IN_TEAM).toString())
         }
     });
 
