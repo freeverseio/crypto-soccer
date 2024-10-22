@@ -12,10 +12,18 @@ const debug = require('../utils/debugUtils.js');
 
 const ConstantsGetters = artifacts.require('ConstantsGetters');
 const Encoding = artifacts.require('EncodingSkills');
-const EncodingTact = artifacts.require('EncodingTactics');
+const EncodingTact = artifacts.require('EncodingTacticsBase3');
 const EncodingSet = artifacts.require('EncodingSkillsSetters');
 const EncodingGet = artifacts.require('EncodingSkillsGetters');
 const Utils = artifacts.require('Utils');
+const EnginePrecomp = artifacts.require('EnginePreComp');
+
+
+function readAndParseJson(filePath) {
+    console.log('TRYING: ', filePath);
+    readData = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(readData);
+}
 
 async function skillsWrapper(skills) {
     var result = {
@@ -91,20 +99,38 @@ contract('EncodingSkills', (accounts) => {
         encodingSet = await EncodingSet.new().should.be.fulfilled;
         encodingGet = await EncodingGet.new().should.be.fulfilled;
         encodingTact = await EncodingTact.new().should.be.fulfilled;
+        enginePrecomp = await EnginePrecomp.new().should.be.fulfilled;
+        
     });
 
 
     it('encodeTactics incorrect lineup', async () =>  {
-        PLAYERS_PER_TEAM_MAX = await constants.get_PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
-        PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
-        lineup = Array.from(new Array(14), (x,i) => i);
-        substitutions = [4,10,2];
-        subsRounds = [3,7,1];
-        extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
-        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
-        lineup[0] = PLAYERS_PER_TEAM_MAX;
-        encoded = await encodingTact.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        NO_LINEUP = 25;
+        is2ndHalf = true;
+        fieldPlayers = 0;
+        changes = 0;
+
+        const half1 = readAndParseJson('./half2.json');
+        const lineup = await enginePrecomp.getFullLineUp(half1.encodedTactics[0]);
+        let linedUpSkills = new Array(25);
+        console.log(half1.skills[0])
+        for (let p = 0; p < 11; p++) {
+            if (lineup[p] != NO_LINEUP) {   
+                linedUpSkills[p] = await enginePrecomp.verifyCanPlay(lineup[p], half1.skills[0][lineup[p]], is2ndHalf, false);
+                if (linedUpSkills[p] != 0) {
+                    fieldPlayers++;
+                    const wasAligned1stHalf = await enginePrecomp.getAlignedEndOfFirstHalf(linedUpSkills[p]);
+                    console.log(p, wasAligned1stHalf);
+                    if (is2ndHalf && !wasAligned1stHalf) {
+                        changes++;
+                    }
+                }
+            }
+        }
+        console.log('changes: ', changes);
     })
+
+    return
     
     it('encodeTactics', async () =>  {
         toWrite = [];
