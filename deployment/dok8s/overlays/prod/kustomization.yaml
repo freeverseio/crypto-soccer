@@ -8,39 +8,39 @@ resources:
 - configmap.yaml
 images:
 - name: freeverseio/authproxy
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/dashboard
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/horizon
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/market.db
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/market.notary
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/market.trader
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/relay.actions
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/synchronizer
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/universe.api
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/universe.db
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/dashboard
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/gamelayer
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/game.db
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/gamelayer.webhook
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/market.read.api
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/gamelayer.mailbox.cron
-  newTag: 0.26.2
+  newTag: 0.26.3
 - name: freeverseio/purchasevoider
-  newTag: 0.26.2
+  newTag: 0.26.3
 patchesJson6902:
 - target:
     group: networking.k8s.io

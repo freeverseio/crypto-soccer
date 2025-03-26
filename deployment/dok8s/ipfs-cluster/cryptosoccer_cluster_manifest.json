@@ -6,8 +6,8 @@
       "/ip4/0.0.0.0/udp/9096/quic"
     ],
     "connection_manager": {
-      "high_water": 400,
-      "low_water": 100,
+      "high_water": 30,
+      "low_water": 10,
       "grace_period": "2m"
     },
     "state_sync_interval": "2h",
@@ -18,16 +18,16 @@
     "disable_repinning": true,
     "follower_mode": true,
     "peer_addresses": [
-      "/dns4/ipfs-cluster.gorengine.com/tcp/9096/p2p/12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ",
-      "/dns4/ipfs-cluster.gorengine.com/tcp/9096/p2p/12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs"
+      "/dns4/ipfs.goalrevolution.live/tcp/9096/p2p/12D3KooWDiqzKDNA7pEbeHLbkHqDkgTD6FMdRaJDLicmVbTYd63k",
+      "/dns4/ipfs.gorengine.com/tcp/9096/p2p/12D3KooWF1hZAzDXFJpmmMi6Fh3uAECuUpqv1jPr9TvaV2rV3T3k"
     ]
   },
   "consensus": {
     "crdt": {
       "cluster_name": "gr-ipfs-cluster",
       "trusted_peers": [
-          "12D3KooWQykVgEXTSn3f5YHvSccvCtm37DS4MNonmCfZXpKAqiiZ",
-          "12D3KooWN95D1J4rcqkeAmADZbtBLZiExX6qKDGum5TMMoSQhmEs"
+          "12D3KooWDiqzKDNA7pEbeHLbkHqDkgTD6FMdRaJDLicmVbTYd63k",
+          "12D3KooWF1hZAzDXFJpmmMi6Fh3uAECuUpqv1jPr9TvaV2rV3T3k"
       ],
       "rebroadcast_interval": "10s",
       "peerset_metric": "ping"
