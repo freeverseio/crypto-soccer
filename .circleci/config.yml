@@ -404,15 +404,7 @@ workflows:
             branches:
               only:
                 - dev
-          requires:
-            - synchronizer
-            - relay-actions
-            - market-notary
-            - go1
-            - deployment-test
-            - universe-api
-            - dashboard
-            - purchasevoider
+                - xdaigas
       - dockerization-production:
           context: dockerhub
           filters:

@@ -49,7 +49,8 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 	auth := bind.NewKeyedTransactor(privateKey)
-	auth.GasPrice = big.NewInt(1000000000) // in xdai is fixe to 1 GWei
+	auth.GasPrice = big.NewInt(10000000000) // in xdai is fixe to 3 GWei
+	auth.GasLimit = uint64(20000000000)
 	log.Infof("Address : %v", crypto.PubkeyToAddress(privateKey.PublicKey).Hex())
 
 	bc, err := contracts.NewByProxyAddress(client, *proxyAddress)
